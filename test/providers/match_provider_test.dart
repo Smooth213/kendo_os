@@ -29,11 +29,6 @@ class MockSettingsNotifier extends SettingsNotifier {
   SettingsModel build() => const SettingsModel();
 }
 
-class MockMatchListNotifier extends MatchListNotifier {
-  @override
-  List<MatchModel> build() => [];
-}
-
 void main() {
   late ProviderContainer container;
   late MockMatchRepository mockRepository;
@@ -58,7 +53,7 @@ void main() {
         soundServiceProvider.overrideWithValue(mockSound),
         matchCommandProvider.overrideWithValue(mockCommand),
         settingsProvider.overrideWith(() => MockSettingsNotifier()),
-        matchListProvider.overrideWith(() => MockMatchListNotifier()),
+        matchListProvider.overrideWith((ref) => <MatchModel>[]), // ★ 新しい Provider の仕様に合わせて、空のリストを直接返す
       ],
     );
   });

@@ -38,6 +38,9 @@ dependencies:
   freezed_annotation: ^3.1.0
   json_annotation: ^4.11.0
   cloud_firestore: ^6.2.0
+  isar_community: ^3.3.2
+  isar_community_flutter_libs: ^3.3.0
+  path_provider: ^2.1.2
   uuid: ^4.5.3
   pdf: ^3.12.0
   printing: ^5.14.3
@@ -49,7 +52,6 @@ dependencies:
     sdk: flutter
   url_launcher: ^6.3.0
   share_plus: any # ★ 生成した画像をLINEや他アプリにシェアするための部品
-  path_provider: any # ★ 画像をシェアする前に、スマホの中に一時保存するための部品
   shared_preferences: ^2.5.5
   wakelock_plus: ^1.5.1
 
@@ -63,10 +65,11 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  build_runner: ^2.13.1
+  build_runner: ^2.4.13
   mocktail: ^1.0.3
-  riverpod_test: ^0.1.0
+  riverpod_test: any
   freezed: ^3.2.5
+  isar_community_generator: ^3.3.2
   json_serializable: ^6.13.1
   fake_cloud_firestore: ^4.1.0+1
 

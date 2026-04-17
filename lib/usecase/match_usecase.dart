@@ -71,6 +71,8 @@ class MatchUseCase {
       status: 'in_progress',
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
+      isDirty: true, // 変更ありとしてマーク
+      lastUpdatedAt: DateTime.now(),
     );
   }
 
@@ -87,14 +89,19 @@ class MatchUseCase {
     );
 
     if (_engine.shouldEnterEncho(timeUpContext, isEnchoEnabled)) {
-      // ★ 修正：統合テストの期待値に合わせ、note に「延長」を記録するように変更
       final newNote = currentMatch.note.isEmpty ? '延長' : '${currentMatch.note}, 延長';
       return currentMatch.copyWith(
         matchType: '延長戦',
         note: newNote,
+        isDirty: true,
+        lastUpdatedAt: DateTime.now(),
       ); 
     } else {
-      return currentMatch.copyWith(status: 'finished');
+      return currentMatch.copyWith(
+        status: 'finished',
+        isDirty: true,
+        lastUpdatedAt: DateTime.now(),
+      );
     }
   }
 
@@ -106,12 +113,14 @@ class MatchUseCase {
     final analysis = _engine.analyzeHistory(baseMatch.events, baseMatch, rule);
     final result = _engine.decideResult(analysis.context);
 
-    // ★ 修正：現在のステータスを維持しつつ、スコアのみを「歴史の真実」に強制同期させる
+    // 歴史から再構築したデータも、最新のローカルデータとしてマーク
     return baseMatch.copyWith(
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
       status: (result != MatchResultStatus.inProgress && baseMatch.status != 'approved') 
           ? 'finished' : baseMatch.status,
+      isDirty: true,
+      lastUpdatedAt: DateTime.now(),
     );
   }
 }

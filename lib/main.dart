@@ -24,6 +24,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui'; // ★ 追加：エラーキャッチの仕組みを使うための部品
 import 'package:flutter/foundation.dart'; // ★ 追加：裏側にエラーログを残すための部品
 import 'providers/settings_provider.dart'; // ★ Phase 1: プロバイダーの読み込み
+import 'package:path_provider/path_provider.dart';
+import 'package:isar_community/isar.dart';
+import 'models/local/match_entity.dart';
+import 'repositories/local_match_repository.dart';
 
 void main() async {
   // Flutterのエンジンを初期化（非同期処理を行う前に必須）
@@ -34,6 +38,14 @@ void main() async {
 
   // ★ 修正：SharedPreferences のインスタンスをここで確実に取得する
   final prefs = await SharedPreferences.getInstance();
+
+  // ★ Phase 1-4: Isar（ローカルDB）の起動
+  // 端末内の安全な保存場所を取得し、そこにデータベースファイルを作成・展開します
+  final dir = await getApplicationDocumentsDirectory();
+  final isar = await Isar.open(
+    [MatchEntitySchema], // Step 1-2 で自動生成されたテーブル設計図
+    directory: dir.path,
+  );
 
   // ★ 1. 描画やUI関連のエラーをキャッチしてフリーズを防ぐ
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -63,11 +75,12 @@ void main() async {
     );
   };
 
-  // ProviderScopeに確実に読み込み済みの prefs を注入してアプリを起動！
+  // ProviderScopeに確実に読み込み済みの prefs と isar を注入してアプリを起動！
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        isarProvider.overrideWithValue(isar), // ★ アプリ全体にローカル金庫の鍵を渡す
       ],
       child: const KendoOSApp(),
     ),

@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import '../models/match_model.dart';
 import '../models/score_event.dart';
@@ -8,6 +7,7 @@ import 'match_list_provider.dart';
 import 'match_provider.dart'; // ★ MatchActionProviderを参照するために必要
 import '../domain/kendo_rule_engine.dart'; // ★ DomainExceptionを参照するために必要
 import 'match_rule_provider.dart';
+import '../repositories/local_match_repository.dart'; // ★ Firestore版からIsar版に差し替え
 
 // ★ Phase 3: 書き込み（保存・更新）専用のプロバイダ
 final matchCommandProvider = Provider<MatchCommand>((ref) {
@@ -25,38 +25,25 @@ class MatchCommand {
   final Ref ref;
   MatchCommand(this.ref);
 
-  FirebaseFirestore get _firestore => ref.read(firestoreProvider);
-
   // ★ Step 7-3: 誤操作防止（デバウンス）用の管理変数
   DateTime? _lastScoreTime;
   String? _lastScoreKey;
 
-  // 1. 試合の保存（連打防止、例外処理、楽観的ロック）
+  // 1. 試合の保存（UI/Providerレベルの制御のみを行う）
   Future<void> saveMatch(MatchModel match) async {
     if (ref.read(isMatchCommandProcessingProvider)) return;
     
     ref.read(isMatchCommandProcessingProvider.notifier).state = true;
-    ref.read(matchCommandErrorProvider.notifier).state = null; // エラーをクリア
+    ref.read(matchCommandErrorProvider.notifier).state = null;
 
-    final docRef = _firestore.collection('matches').doc(match.id);
     try {
-      await _firestore.runTransaction((transaction) async {
-        final snapshot = await transaction.get(docRef);
-        int remoteVersion = 1;
-        if (snapshot.exists) {
-          remoteVersion = (snapshot.data()!['version'] as num?)?.toInt() ?? 1;
-          if (remoteVersion != match.version) throw ConflictException();
-        }
-        final updatedMatch = match.copyWith(version: remoteVersion + 1);
-        transaction.set(docRef, updatedMatch.toJson());
-      });
+      // ★ Step 1-3 完了: Isarのローカルリポジトリに保存を委譲！これで完全オフライン対応に。
+      await ref.read(localMatchRepositoryProvider).saveMatch(match);
     } catch (e) {
       debugPrint('🔥 [Command Error]: $e');
-      // ★ Step 4-3: 特定の例外をユーザー向けメッセージに変換して配信
       String msg = '保存に失敗しました';
-      if (e is DomainException) msg = e.message; // ルール違反（試合終了済み等）
+      if (e is DomainException) msg = e.message;
       if (e is ConflictException) msg = '他の端末で更新されたため、最新の状態でやり直してください';
-      
       ref.read(matchCommandErrorProvider.notifier).state = msg;
     } finally {
       ref.read(isMatchCommandProcessingProvider.notifier).state = false;
@@ -67,51 +54,39 @@ class MatchCommand {
   Future<void> saveMatchesBulk(List<MatchModel> newMatches) async {
     if (newMatches.isEmpty) return;
     try {
-      final batch = _firestore.batch();
-      for (var match in newMatches) {
-        final docRef = _firestore.collection('matches').doc(match.id);
-        batch.set(docRef, match.toJson());
-      }
-      await batch.commit();
+      await ref.read(localMatchRepositoryProvider).saveMatchesBulk(newMatches);
     } catch (e) {
       debugPrint('🔥 [Command Error] saveMatchesBulk: $e');
       throw Exception('一括保存に失敗しました');
     }
   }
 
-  // 3. 判定による試合終了処理
+  // 3. 判定による試合終了処理（Firestoreトランザクションを撤廃）
   Future<void> completeMatchWithHantei(MatchModel currentMatch, String hanteiResult, String? userId) async {
-    final docRef = _firestore.collection('matches').doc(currentMatch.id);
     try {
-      await _firestore.runTransaction((transaction) async {
-        final snapshot = await transaction.get(docRef);
-        if (!snapshot.exists) return;
-        final int remoteVersion = (snapshot.data()!['version'] as num?)?.toInt() ?? 1;
-
-        MatchModel updatedMatch = currentMatch;
-        if (hanteiResult == 'red' || hanteiResult == 'white') {
-          final newEvent = ScoreEvent(
-            id: const Uuid().v4(),
-            side: hanteiResult == 'red' ? Side.red : Side.white,
-            type: PointType.hantei,
-            timestamp: DateTime.now(),
-            userId: userId,
-            sequence: currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1,
-          );
-          updatedMatch = updatedMatch.copyWith(
-            events: [...currentMatch.events, newEvent],
-            redScore: (currentMatch.redScore as num).toInt() + (hanteiResult == 'red' ? 1 : 0),
-            whiteScore: (currentMatch.whiteScore as num).toInt() + (hanteiResult == 'white' ? 1 : 0),
-          );
-        }
-        updatedMatch = updatedMatch.copyWith(
-          status: 'finished',
-          remainingSeconds: 0,
-          timerIsRunning: false,
-          version: remoteVersion + 1,
+      MatchModel updatedMatch = currentMatch;
+      if (hanteiResult == 'red' || hanteiResult == 'white') {
+        final newEvent = ScoreEvent(
+          id: const Uuid().v4(),
+          side: hanteiResult == 'red' ? Side.red : Side.white,
+          type: PointType.hantei,
+          timestamp: DateTime.now(),
+          userId: userId,
+          sequence: currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1,
         );
-        transaction.set(docRef, updatedMatch.toJson());
-      });
+        updatedMatch = updatedMatch.copyWith(
+          events: [...currentMatch.events, newEvent],
+          redScore: (currentMatch.redScore as num).toInt() + (hanteiResult == 'red' ? 1 : 0),
+          whiteScore: (currentMatch.whiteScore as num).toInt() + (hanteiResult == 'white' ? 1 : 0),
+        );
+      }
+      updatedMatch = updatedMatch.copyWith(
+        status: 'finished',
+        remainingSeconds: 0,
+        timerIsRunning: false,
+      );
+      // 単一のsaveMatch（ローカルへの書き込み）に委譲
+      await saveMatch(updatedMatch);
     } catch (e) {
       debugPrint('🔥 [Command Error] completeMatchWithHantei: $e');
       rethrow;
@@ -149,7 +124,7 @@ class MatchCommand {
 
   // 5. 試合削除
   Future<void> deleteMatch(String matchId) async {
-    await _firestore.collection('matches').doc(matchId).delete();
+    await ref.read(localMatchRepositoryProvider).deleteMatch(matchId);
   }
 
   // 6. ★ Step 7-3: 誤操作防止ガード（テスト用：SnackBar表示版）

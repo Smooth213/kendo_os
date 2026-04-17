@@ -38,34 +38,35 @@ class MatchRepository {
     });
   }
 
-  // 3. 試合を保存・更新（★楽観的ロック対応）
+  // 3. 試合を保存・更新
+  // ★ Phase 0-3: トランザクション等の詳細ロジックをリポジトリ内に隠蔽する
   Future<void> saveMatch(MatchModel match) async {
-    final collection = _firestore.collection('matches');
+    final docRef = _firestore.collection('matches').doc(match.id);
     
-    if (match.id.isEmpty) {
-      final data = match.toJson();
-      data.remove('id');
-      data['version'] = 1; // 新規作成時はバージョン1をセット
-      await collection.add(data);
-    } else {
-      try {
-        // 現在のDB（またはオフラインキャッシュ）のデータを取得
-        final docSnap = await collection.doc(match.id).get();
-        final currentVersion = docSnap.data()?['version'] as int? ?? 0;
-
-        // ★ 自分が持っているバージョンが、DBのバージョンより古ければ書き込みを拒否！
-        if (match.version < currentVersion) {
-          debugPrint('【楽観的ロック】古いバージョンのため書き込みを破棄しました (DB: $currentVersion, Req: ${match.version})');
-          return; // エラーは出さず、静かに破棄して最新データを守る
+    try {
+      await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+        
+        int remoteVersion = 1;
+        if (snapshot.exists) {
+          remoteVersion = (snapshot.data()!['version'] as num?)?.toInt() ?? 1;
+          // 楽観的ロックのチェック
+          if (match.version < remoteVersion) {
+            throw Exception('ConflictException: 古いバージョンです');
+          }
         }
-
-        // バージョンを+1して上書き保存
-        final data = match.toJson();
-        data['version'] = currentVersion + 1;
-        await collection.doc(match.id).set(data);
-      } catch (e) {
-        debugPrint('保存エラー: $e');
-      }
+        
+        // 保存時にバージョンをインクリメントし、isDirty フラグを管理する
+        final updatedData = match.copyWith(
+          version: remoteVersion + 1,
+          // ※ ここではまだオンライン前提だが、PHASE 1以降でここを「Local保存のみ」に切り替える
+        ).toJson();
+        
+        transaction.set(docRef, updatedData);
+      });
+    } catch (e) {
+      debugPrint('Repository保存エラー: $e');
+      rethrow;
     }
   }
 }
