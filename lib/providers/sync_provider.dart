@@ -5,6 +5,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../repositories/local_match_repository.dart';
 import 'match_list_provider.dart'; // firestoreProviderを参照するため
+import 'package:flutter/material.dart';
+import '../main.dart'; // rootScaffoldMessengerKey を使用するため
 
 // ★ Step 4-1: ネットワーク接続状態をリアルタイムで監視するProvider
 final connectivityProvider = StreamProvider<bool>((ref) {
@@ -109,6 +111,25 @@ class SyncEngine {
         if (!failedMatchIds.contains(match.id)) {
            await localRepo.markAsSynced(match.id);
         }
+      }
+
+      // ★ Step 5-2: UIへのフィードバック（通知）
+      if (failedMatchIds.isNotEmpty) {
+        rootScaffoldMessengerKey.currentState?.showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ 他の端末で更新されたデータがあります。最新の状態を確認してください。'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (pendingMatches.isNotEmpty) {
+        rootScaffoldMessengerKey.currentState?.showSnackBar(
+          const SnackBar(
+            content: Text('✅ オフライン中のデータをクラウドに同期しました'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
 
       debugPrint('✅ [Sync Engine] 同期完了: すべてのデータがクラウドに保存されました。');

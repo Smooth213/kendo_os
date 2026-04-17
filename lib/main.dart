@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 import 'screens/team_registration_screen.dart'; // ★ 追加：チーム登録画面
 import 'package:go_router/go_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; 
@@ -166,6 +170,7 @@ class KendoOSApp extends ConsumerWidget {
       data: (user) {
         if (user == null) {
           return MaterialApp(
+            scaffoldMessengerKey: rootScaffoldMessengerKey, // ★ バックグラウンド通知用
             debugShowCheckedModeBanner: false,
             themeMode: currentThemeMode,
             theme: lightThemeBase,
@@ -175,6 +180,7 @@ class KendoOSApp extends ConsumerWidget {
         }
 
         return MaterialApp.router(
+          scaffoldMessengerKey: rootScaffoldMessengerKey, // ★ バックグラウンド通知用
           debugShowCheckedModeBanner: false,
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
