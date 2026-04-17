@@ -73,19 +73,42 @@ class SyncEngine {
 
       debugPrint('🔄 [Sync Engine] ネットワーク復帰を検知。${pendingMatches.length}件のデータをFirestoreへ送信します...');
 
-      // 2. Firestoreのバッチ処理で一括送信（途中で失敗してもデータが壊れないようにする）
+      // 2. 楽観的ロックによる競合チェックと一括送信
       final batch = firestore.batch();
+      List<String> failedMatchIds = []; // 競合で弾かれた試合IDのリスト
+
       for (final match in pendingMatches) {
         final docRef = firestore.collection('matches').doc(match.id);
-        // クラウド上では「最新の同期済みデータ」となるため、isDirtyをfalseにして送信
-        final uploadData = match.copyWith(isDirty: false).toJson();
+        
+        // ★ 楽観的ロック：Firestore側の現在のバージョンを確認
+        final snapshot = await docRef.get();
+        if (snapshot.exists) {
+          final remoteVersion = (snapshot.data()!['version'] as num?)?.toInt() ?? 1;
+          
+          // 自分が持っているバージョンが、クラウドより古ければ競合発生！
+          if (match.version < remoteVersion) {
+            debugPrint('⚠️ [Sync Engine] 競合検知！試合ID: ${match.id} (Local: ${match.version}, Remote: $remoteVersion)');
+            failedMatchIds.add(match.id);
+            continue; // この試合は送信せずスキップ
+          }
+        }
+
+        // 競合がなければ、バージョンを+1して送信準備
+        final uploadData = match.copyWith(
+          isDirty: false,
+          version: snapshot.exists ? (snapshot.data()!['version'] as num?)?.toInt() ?? 1 : match.version + 1, // ★ バージョン更新
+        ).toJson();
         batch.set(docRef, uploadData);
       }
+      
+      // 競合しなかったものだけをFirestoreに一括送信
       await batch.commit();
 
-      // 3. 送信が完了したら、ローカルDBのフラグを下ろす（キューから削除）
+      // 3. 送信が成功した試合だけ、ローカルDBのフラグを下ろす
       for (final match in pendingMatches) {
-        await localRepo.markAsSynced(match.id);
+        if (!failedMatchIds.contains(match.id)) {
+           await localRepo.markAsSynced(match.id);
+        }
       }
 
       debugPrint('✅ [Sync Engine] 同期完了: すべてのデータがクラウドに保存されました。');
