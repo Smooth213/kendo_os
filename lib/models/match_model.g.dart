@@ -1,0 +1,94 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'match_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
+  id: json['id'] as String,
+  matchType: json['matchType'] as String,
+  redName: json['redName'] as String,
+  whiteName: json['whiteName'] as String,
+  redScore: (json['redScore'] as num?)?.toInt() ?? 0,
+  whiteScore: (json['whiteScore'] as num?)?.toInt() ?? 0,
+  status: json['status'] as String? ?? 'waiting',
+  events:
+      (json['events'] as List<dynamic>?)
+          ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  refereeNames:
+      (json['refereeNames'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  countForStandings: json['countForStandings'] as bool? ?? true,
+  scorerId: json['scorerId'] as String?,
+  version: (json['version'] as num?)?.toInt() ?? 1,
+  isAutoAssigned: json['isAutoAssigned'] as bool? ?? false,
+  order: json['order'] == null
+      ? 0.0
+      : const DoubleConverter().fromJson(json['order']),
+  source: json['source'] as String? ?? 'manual',
+  tournamentId: json['tournamentId'] as String?,
+  category: json['category'] as String?,
+  groupName: json['groupName'] as String?,
+  matchOrder: (json['matchOrder'] as num?)?.toInt(),
+  matchTimeMinutes: (json['matchTimeMinutes'] as num?)?.toInt() ?? 3,
+  isRunningTime: json['isRunningTime'] as bool? ?? false,
+  hasExtension: json['hasExtension'] as bool? ?? false,
+  extensionTimeMinutes: (json['extensionTimeMinutes'] as num?)?.toInt(),
+  extensionCount: (json['extensionCount'] as num?)?.toInt(),
+  hasHantei: json['hasHantei'] as bool? ?? false,
+  remainingSeconds: (json['remainingSeconds'] as num?)?.toInt() ?? 180,
+  timerIsRunning: json['timerIsRunning'] as bool? ?? false,
+  note: json['note'] as String? ?? '',
+  isKachinuki: json['isKachinuki'] as bool? ?? false,
+  redRemaining:
+      (json['redRemaining'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  whiteRemaining:
+      (json['whiteRemaining'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+);
+
+Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'matchType': instance.matchType,
+      'redName': instance.redName,
+      'whiteName': instance.whiteName,
+      'redScore': instance.redScore,
+      'whiteScore': instance.whiteScore,
+      'status': instance.status,
+      'events': instance.events.map((e) => e.toJson()).toList(),
+      'refereeNames': instance.refereeNames,
+      'countForStandings': instance.countForStandings,
+      'scorerId': instance.scorerId,
+      'version': instance.version,
+      'isAutoAssigned': instance.isAutoAssigned,
+      'order': const DoubleConverter().toJson(instance.order),
+      'source': instance.source,
+      'tournamentId': instance.tournamentId,
+      'category': instance.category,
+      'groupName': instance.groupName,
+      'matchOrder': instance.matchOrder,
+      'matchTimeMinutes': instance.matchTimeMinutes,
+      'isRunningTime': instance.isRunningTime,
+      'hasExtension': instance.hasExtension,
+      'extensionTimeMinutes': instance.extensionTimeMinutes,
+      'extensionCount': instance.extensionCount,
+      'hasHantei': instance.hasHantei,
+      'remainingSeconds': instance.remainingSeconds,
+      'timerIsRunning': instance.timerIsRunning,
+      'note': instance.note,
+      'isKachinuki': instance.isKachinuki,
+      'redRemaining': instance.redRemaining,
+      'whiteRemaining': instance.whiteRemaining,
+    };

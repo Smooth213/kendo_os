@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # すべてのモデルで「深い階層」のJSON変換を強制的に有効にする
+          explicit_to_json: true

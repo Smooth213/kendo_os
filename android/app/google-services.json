@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "779304236953",
+    "project_id": "kendo-os",
+    "storage_bucket": "kendo-os.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779304236953:android:58bbd2ed68a2045c404508",
+        "android_client_info": {
+          "package_name": "com.example.kendo_os"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "779304236953-1n10veviag63fi0dgm73i7cf6o2r1uim.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kendo_os",
+            "certificate_hash": "5c49f29b7110432e9a69adbc86e559a570a998c1"
+          }
+        },
+        {
+          "client_id": "779304236953-e65a453e6qluhg18o2s0q0524saoc735.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw_EqGL7LebEhwcQ0YvFNEXdpJby0uenA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "779304236953-e65a453e6qluhg18o2s0q0524saoc735.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "779304236953-h8v7msrenmfut67fl1kkcj24qv0q0fcv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kendoOs"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
