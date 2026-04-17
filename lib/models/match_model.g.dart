@@ -19,6 +19,8 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
           ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
+  isDirty: json['isDirty'] as bool? ?? false,
+  lastUpdatedAt: const TimestampConverter().fromJson(json['lastUpdatedAt']),
   refereeNames:
       (json['refereeNames'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -68,6 +70,11 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'whiteScore': instance.whiteScore,
       'status': instance.status,
       'events': instance.events.map((e) => e.toJson()).toList(),
+      'isDirty': instance.isDirty,
+      'lastUpdatedAt': _$JsonConverterToJson<dynamic, DateTime>(
+        instance.lastUpdatedAt,
+        const TimestampConverter().toJson,
+      ),
       'refereeNames': instance.refereeNames,
       'countForStandings': instance.countForStandings,
       'scorerId': instance.scorerId,
@@ -92,3 +99,8 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'redRemaining': instance.redRemaining,
       'whiteRemaining': instance.whiteRemaining,
     };
+
+Json? _$JsonConverterToJson<Json, Value>(
+  Value? value,
+  Json? Function(Value value) toJson,
+) => value == null ? null : toJson(value);

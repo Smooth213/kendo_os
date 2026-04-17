@@ -19,6 +19,8 @@ abstract class MatchModel with _$MatchModel {
     @Default(0) int whiteScore,
     @Default('waiting') String status,
     @Default([]) List<ScoreEvent> events, // ★ これが「真実のデータ（Single Source of Truth）」となる
+    @Default(false) bool isDirty, // ローカルで変更があり、同期が必要な場合に true
+    @TimestampConverter() DateTime? lastUpdatedAt, // 競合解決のための最終更新日時
     @Default([]) List<String> refereeNames,
     @Default(true) bool countForStandings,
     String? scorerId,

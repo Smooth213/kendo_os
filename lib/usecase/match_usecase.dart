@@ -35,6 +35,8 @@ class MatchUseCase {
       events: updatedEvents,
       redScore: nextAnalysis.context.redIppon,
       whiteScore: nextAnalysis.context.whiteIppon,
+      isDirty: true, // 変更があったので同期フラグを立てる
+      lastUpdatedAt: DateTime.now(), // 更新日時を記録
     );
 
     final result = _engine.decideResult(nextAnalysis.context);
