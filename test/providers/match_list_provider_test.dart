@@ -19,6 +19,7 @@ import 'package:kendo_os/providers/match_rule_provider.dart';
 import 'package:kendo_os/services/sound_service.dart';
 import 'package:kendo_os/repositories/match_repository.dart'; // ★ MatchRepositoryの型を読み込む
 import 'dart:async'; // ★ StreamController用
+import 'dart:io'; // ★ 一時ディレクトリ取得のために追加
 
 class MockAuditService extends Mock implements AuditService {}
 class MockSoundService extends Mock implements SoundService {}
@@ -99,10 +100,13 @@ void main() {
       // Isarのコアライブラリを初期化 (テスト実行に必須)
       await Isar.initializeIsarCore(download: true);
       
-      // テスト用のメモリ上データベースを構築
+      // OSの一時フォルダ（tmp）を取得して、そこにテスト用DBを作る
+      final tempDir = Directory.systemTemp.createTempSync('isar_test_');
+      
+      // テスト用のデータベースを構築
       isar = await Isar.open(
-        [MatchEntitySchema], // ★ 修正：空のリストから、生成済みの設計図を渡すように変更
-        directory: '', 
+        [MatchEntitySchema],
+        directory: tempDir.path, // ★ プロジェクト直下ではなく、一時フォルダを指定
         name: 'test_isar_${DateTime.now().microsecondsSinceEpoch}', 
       );
 

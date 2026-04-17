@@ -54,6 +54,7 @@ dependencies:
   share_plus: any # ★ 生成した画像をLINEや他アプリにシェアするための部品
   shared_preferences: ^2.5.5
   wakelock_plus: ^1.5.1
+  connectivity_plus: ^6.0.3 # ★ Phase 4: オフライン/オンラインの検知センサー
 
 dev_dependencies:
   flutter_test:
