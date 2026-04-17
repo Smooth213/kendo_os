@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../repositories/local_match_repository.dart';
-import 'match_list_provider.dart'; // firestoreProviderを参照するため
-import 'package:flutter/material.dart';
-import '../main.dart'; // rootScaffoldMessengerKey を使用するため
+import 'match_list_provider.dart'; 
+import '../main.dart'; 
 
 // ★ Step 4-1: ネットワーク接続状態をリアルタイムで監視するProvider
 final connectivityProvider = StreamProvider<bool>((ref) {
@@ -144,4 +142,9 @@ class SyncEngine {
 // アプリ起動時から常に常駐させるためのProvider
 final syncEngineProvider = Provider<SyncEngine>((ref) {
   return SyncEngine(ref);
+});
+
+// ★ Phase 6: UIのステータスバーに表示するための「未送信データ件数」Provider
+final pendingMatchesCountProvider = StreamProvider<int>((ref) {
+  return ref.watch(localMatchRepositoryProvider).watchPendingMatchesCount();
 });

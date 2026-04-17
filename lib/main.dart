@@ -1,38 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
-final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
-
-import 'screens/team_registration_screen.dart'; // ★ 追加：チーム登録画面
 import 'package:go_router/go_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; 
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:isar_community/isar.dart';
+import 'dart:ui'; 
+import 'package:flutter/foundation.dart'; 
 
+import 'firebase_options.dart';
+import 'screens/team_registration_screen.dart'; 
 import 'screens/start_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/tournament_list_screen.dart'; // ★ 新しい画面を読み込む！
+import 'screens/tournament_list_screen.dart'; 
 import 'screens/match_screen.dart';
 import 'screens/master_management_screen.dart';
 import 'screens/create_tournament_screen.dart';
 import 'screens/setup_match_format_screen.dart';
 import 'screens/order_setup_screen.dart'; 
-import 'screens/team_scoreboard_screen.dart'; // ★ これだけでOK！
-import 'screens/login_screen.dart'; // ★ 追加：ログイン画面を読み込む
-import 'package:shared_preferences/shared_preferences.dart'; // ★ Phase 1: 設定保存用
-import 'screens/settings_screen.dart'; // ★ Phase 2: 設定画面を読み込む
-
+import 'screens/team_scoreboard_screen.dart'; 
+import 'screens/login_screen.dart'; 
+import 'screens/settings_screen.dart'; 
 import 'providers/auth_provider.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'dart:ui'; // ★ 追加：エラーキャッチの仕組みを使うための部品
-import 'package:flutter/foundation.dart'; // ★ 追加：裏側にエラーログを残すための部品
-import 'providers/settings_provider.dart'; // ★ Phase 1: プロバイダーの読み込み
-import 'package:path_provider/path_provider.dart';
-import 'providers/sync_provider.dart'; // ★ Phase 4: 同期エンジンの読み込み
-import 'package:isar_community/isar.dart';
+import 'providers/settings_provider.dart'; 
+import 'providers/sync_provider.dart'; 
 import 'models/local/match_entity.dart';
 import 'repositories/local_match_repository.dart';
+import 'widgets/sync_status_bar.dart'; 
+
+// ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   // Flutterのエンジンを初期化（非同期処理を行う前に必須）
@@ -182,6 +181,17 @@ class KendoOSApp extends ConsumerWidget {
         return MaterialApp.router(
           scaffoldMessengerKey: rootScaffoldMessengerKey, // ★ バックグラウンド通知用
           debugShowCheckedModeBanner: false,
+          
+          // ★ Phase 6: 全ての画面の「さらに上」にステータスバーを強制表示する魔法
+          builder: (context, child) {
+            return Column(
+              children: [
+                const SyncStatusBar(), // 常に画面の一番上に鎮座する
+                Expanded(child: child!), // アプリの本来の画面はここに入る
+              ],
+            );
+          },
+
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,

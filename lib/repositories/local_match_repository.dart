@@ -65,6 +65,28 @@ class LocalMatchRepository {
     });
   }
 
+  // ★ Phase 3 復旧: 同期キュー（未送信データ）の取得
+  Future<List<MatchModel>> getPendingMatches() async {
+    final entities = await _isar.matchEntitys.filter().isDirtyEqualTo(true).findAll();
+    return entities.map((e) => _toModel(e)).toList();
+  }
+
+  // ★ Phase 3 復旧: 同期完了処理（isDirtyをfalseにする）
+  Future<void> markAsSynced(String matchId) async {
+    await _isar.writeTxn(() async {
+      final entity = await _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).findFirst();
+      if (entity != null) {
+        entity.isDirty = false;
+        await _isar.matchEntitys.put(entity);
+      }
+    });
+  }
+
+  // ★ Phase 6: UI表示用 - 未送信データの「件数」をリアルタイム監視するストリーム
+  Stream<int> watchPendingMatchesCount() {
+    return _isar.matchEntitys.filter().isDirtyEqualTo(true).watch(fireImmediately: true).map((events) => events.length);
+  }
+
   // --- 翻訳機（マッパー関数） ---
   MatchEntity _toEntity(MatchModel model) {
     return MatchEntity()
