@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../repositories/tournament_repository.dart';
 import '../models/tournament_model.dart';
+import '../providers/sync_provider.dart'; // ★ Phase 6: 手動同期用Providerのインポート
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -87,10 +88,15 @@ class TournamentListScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // 余白の統一
-            itemCount: filteredTournaments.length,
-            itemBuilder: (context, index) {
+          // ★ Phase 6: 手動同期トリガー（引っ張って更新）の追加
+          return RefreshIndicator(
+            onRefresh: () async {
+              await ref.read(syncEngineProvider).forceSync();
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // 余白の統一
+              itemCount: filteredTournaments.length,
+              itemBuilder: (context, index) {
               final tournament = filteredTournaments[index];
               final id = tournament.id;
               
@@ -99,50 +105,93 @@ class TournamentListScreen extends ConsumerWidget {
               final showHeader = currentMonth != previousMonth;
 
               Widget buildUnifiedCard() {
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  elevation: 0,
-                  color: cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // iOS 標準の角丸
-                    // iOS Native では枠線を使わず Elevation（色差）で表現
-                    side: isDark ? BorderSide.none : BorderSide(color: separatorColor.withValues(alpha: 0.5), width: 0.5),
+                // ★ Phase 7-2: スワイプして一括削除（Dismissible）の追加
+                return Dismissible(
+                  key: Key(id),
+                  direction: DismissDirection.endToStart, // 右から左へのスワイプのみ許可
+                  background: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade400,
+                      borderRadius: BorderRadius.circular(12), // カードの丸みと合わせる
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                  child: InkWell(
-                    onTap: () => context.push('/home/$id'),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(color: softAccentColor, shape: BoxShape.circle),
-                            child: Icon(isArchive ? Icons.history : Icons.emoji_events, color: accentColor, size: 24),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  tournament.name, 
-                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: textColor)
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Text(
-                                      DateFormat('yyyy年MM月dd日').format(tournament.date), 
-                                      style: TextStyle(fontSize: 14, color: subTextColor)
-                                    ),
-                                  ],
-                                ),
-                              ],
+                  confirmDismiss: (direction) async {
+                    // ★ 誤操作防止の確認ダイアログ
+                    return await showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('大会の削除'),
+                          content: const Text('この大会と、紐づくすべての試合データを削除します。\n本当によろしいですか？\n（※この操作は取り消せません）'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('キャンセル'),
                             ),
-                          ),
-                          Icon(Icons.chevron_right, color: subTextColor, size: 20), // iOS風の山形アイコン
-                        ],
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('削除する', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  onDismissed: (direction) {
+                    // 一括削除処理の実行
+                    ref.read(tournamentRepositoryProvider).deleteTournament(id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('大会と関連データを削除しました')),
+                    );
+                  },
+                  child: Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    elevation: 0,
+                    color: cardColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), 
+                      side: isDark ? BorderSide.none : BorderSide(color: separatorColor.withValues(alpha: 0.5), width: 0.5),
+                    ),
+                    child: InkWell(
+                      onTap: () => context.push('/home/$id'),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(color: softAccentColor, shape: BoxShape.circle),
+                              child: Icon(isArchive ? Icons.history : Icons.emoji_events, color: accentColor, size: 24),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    tournament.name, 
+                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: textColor)
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        DateFormat('yyyy年MM月dd日').format(tournament.date), 
+                                        style: TextStyle(fontSize: 14, color: subTextColor)
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: subTextColor, size: 20),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -174,6 +223,7 @@ class TournamentListScreen extends ConsumerWidget {
                 ],
               );
             },
+            ),
           );
         },
       ),

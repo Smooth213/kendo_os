@@ -452,6 +452,10 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
   Widget _buildDynamicHeader() {
     return LayoutBuilder(
       builder: (context, constraints) {
+        // ★ Phase 8-1: 画面が横向き（かつ高さ500以下）のスマホ・タブレットではヘッダーを隠して作業領域を確保
+        final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+        if (isLandscape && MediaQuery.of(context).size.height < 500) return const SizedBox.shrink();
+
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final t = (_currentPage / 2).clamp(0.0, 1.0); 
         
@@ -900,8 +904,9 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
                       onChanged: (v) { if (v != null) setState(() => _isDaihyoIpponShobu = v); },
                       child: Row(
                         children: [
-                          Expanded(child: RadioListTile<bool>(title: const Text('1本勝負'), value: true, activeColor: Colors.teal.shade600, contentPadding: const EdgeInsets.only(left: 8))),
-                          Expanded(child: RadioListTile<bool>(title: const Text('3本勝負'), value: false, activeColor: Colors.teal.shade600, contentPadding: EdgeInsets.zero)),
+                          // ★ Phase 8-1: パディングを無くして文字サイズを調整（1.4pxのオーバーフロー対策）
+                          Expanded(child: RadioListTile<bool>(title: const Text('1本', style: TextStyle(fontSize: 14)), value: true, activeColor: Colors.teal.shade600, contentPadding: EdgeInsets.zero)),
+                          Expanded(child: RadioListTile<bool>(title: const Text('3本', style: TextStyle(fontSize: 14)), value: false, activeColor: Colors.teal.shade600, contentPadding: EdgeInsets.zero)),
                         ],
                       ),
                     ),

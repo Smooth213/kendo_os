@@ -54,81 +54,84 @@ class MatchScoreboard extends ConsumerWidget {
         : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade800);
 
     return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start, 
-        children: [
-          const SizedBox(height: 24),
-          GestureDetector(
-            onTap: () => onNameTap(side.name),
-            child: Container(
-              height: 44,
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: // ★ Step 6-2: 長い名前（特に外部選手や道場名付き）でも枠をはみ出さない動的スケーリング
-                  FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  _cleanName(side == Side.red ? match.redName : match.whiteName),
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: nameColor),
-                  textAlign: TextAlign.center,
+      child: FittedBox( // ★ Phase 8-1: 横画面で縦幅が足りない場合、自動で縮小させてエラーを防ぐ
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start, 
+          children: [
+            const SizedBox(height: 24),
+            GestureDetector(
+              onTap: () => onNameTap(side.name),
+              child: Container(
+                height: 44,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: // ★ Step 6-2: 長い名前（特に外部選手や道場名付き）でも枠をはみ出さない動的スケーリング
+                    FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    _cleanName(side == Side.red ? match.redName : match.whiteName),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: nameColor),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          SizedBox(
-            width: 150,
-            height: 150,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                if (isFinished && isWinner)
-                  Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: nameColor.withValues(alpha: 0.6), width: 6),
+            
+            const SizedBox(height: 24),
+            
+            SizedBox(
+              width: 150,
+              height: 150,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (isFinished && isWinner)
+                    Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: nameColor.withValues(alpha: 0.6), width: 6),
+                      ),
+                    ),
+                  
+                  SizedBox(
+                    width: 100, 
+                    height: 100,
+                    child: Stack(
+                      children: [
+                        if (pts.isNotEmpty)
+                          Positioned(top: 0, left: 0, child: _buildPointMark(pts[0], nameColor, isDark)),
+                        if (pts.length > 1)
+                          Positioned(bottom: 0, right: 0, child: _buildPointMark(pts[1], nameColor, isDark)),
+                        if (pts.length > 2)
+                          Positioned(top: 25, left: 25, child: _buildPointMark(pts[2], nameColor, isDark)),
+                      ],
                     ),
                   ),
-                
-                SizedBox(
-                  width: 100, 
-                  height: 100,
-                  child: Stack(
-                    children: [
-                      if (pts.isNotEmpty)
-                        Positioned(top: 0, left: 0, child: _buildPointMark(pts[0], nameColor, isDark)),
-                      if (pts.length > 1)
-                        Positioned(bottom: 0, right: 0, child: _buildPointMark(pts[1], nameColor, isDark)),
-                      if (pts.length > 2)
-                        Positioned(top: 25, left: 25, child: _buildPointMark(pts[2], nameColor, isDark)),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          
-          const SizedBox(height: 12),
-          
-          SizedBox(
-            height: 36, 
-            child: Text(
-              List.filled(match.events.where((e) => e.side == side && e.type == PointType.hansoku).length, '▲').join(''),
-              style: const TextStyle(fontSize: 24, color: Colors.amber),
+            
+            const SizedBox(height: 12),
+            
+            SizedBox(
+              height: 36, 
+              child: Text(
+                List.filled(match.events.where((e) => e.side == side && e.type == PointType.hansoku).length, '▲').join(''),
+                style: const TextStyle(fontSize: 24, color: Colors.amber),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

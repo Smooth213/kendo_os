@@ -40,6 +40,7 @@ class MatchContext {
   final int whiteHansoku;
   final bool isTimeUp;
   final int targetIppon;
+  final bool hasHantei; // ★ Phase 7-1: 判定ありフラグを追加
 
   MatchContext({
     required this.redIppon,
@@ -48,6 +49,7 @@ class MatchContext {
     required this.whiteHansoku,
     required this.isTimeUp,
     required this.targetIppon,
+    required this.hasHantei,
   });
 }
 
@@ -117,11 +119,15 @@ class KendoRuleEngine {
     final strategy = MatchStrategyFactory.getStrategy(match);
     final target = strategy.getTargetIppon(match, rule);
 
+    // ★ Phase 7-1: 延長戦・代表戦は強制的に「1本勝負（サドンデス）」に変更
+    final finalTarget = (match.matchType == '延長戦' || match.matchType == '代表戦') ? 1 : target;
+
     final context = MatchContext(
       redIppon: rPts, whiteIppon: wPts,
       redHansoku: rHansoku, whiteHansoku: wHansoku,
-      isTimeUp: false, // デフォルト
-      targetIppon: target,
+      isTimeUp: false, 
+      targetIppon: finalTarget,
+      hasHantei: rule?.hasHantei ?? false, // ★ 判定の有無をルールから継承
     );
 
     return MatchAnalysis(
@@ -137,6 +143,11 @@ class KendoRuleEngine {
     if (ctx.isTimeUp) {
       if (ctx.redIppon > ctx.whiteIppon) return MatchResultStatus.redWin;
       if (ctx.whiteIppon > ctx.redIppon) return MatchResultStatus.whiteWin;
+      
+      // ★ Phase 7-1: 時間切れ・同点の場合、判定(Hantei)があるなら「引き分け」にせず入力待ちを継続
+      if (ctx.hasHantei) {
+        return MatchResultStatus.inProgress;
+      }
       return MatchResultStatus.draw;
     }
     return MatchResultStatus.inProgress;

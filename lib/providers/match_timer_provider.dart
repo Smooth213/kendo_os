@@ -40,8 +40,12 @@ class MatchTimer {
 
       final currentLive = ref.read(liveRemainingSecondsProvider(matchId));
       
-      if (match.matchType == '代表戦') {
-        // 代表戦はカウントアップ
+      // ★ Phase 7-1: 無制限延長戦の判定
+      // 代表戦、または「延長戦かつ UseCase で 0秒 にリセットされている場合」は無制限とみなしてカウントアップ
+      bool isUnlimited = match.matchType == '代表戦' || 
+                        (match.matchType == '延長戦' && match.remainingSeconds == 0);
+
+      if (isUnlimited) {
         ref.read(liveRemainingSecondsProvider(matchId).notifier).state = currentLive + 1;
       } else if (currentLive > 0) {
         // 通常はカウントダウン

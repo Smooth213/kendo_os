@@ -55,6 +55,17 @@ class SyncEngine {
     });
   }
 
+  // ★ Phase 6: ユーザーの手動操作（引っ張って更新など）で強制的に同期を走らせるメソッド
+  Future<void> forceSync() async {
+    final isOnline = ref.read(isOnlineProvider);
+    if (!isOnline) {
+      debugPrint('🚫 [Sync Engine] オフラインのため手動同期をスキップします');
+      return;
+    }
+    debugPrint('🔄 [Sync Engine] 手動同期(forceSync)を開始します...');
+    await syncNow();
+  }
+
   Future<void> syncNow() async {
     if (_isSyncing) return; // 既に同期中なら重複実行を防ぐ
     _isSyncing = true;

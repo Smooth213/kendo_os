@@ -197,6 +197,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   }
 
   Widget _buildStaticHeader() {
+    // ★ Phase 8-1: 横画面ではヘッダーを隠す
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    if (isLandscape && MediaQuery.of(context).size.height < 500) return const SizedBox.shrink();
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // iOS Native: ダークモード時は彩度を抑えた深みのあるTealへ
@@ -251,7 +255,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
           _buildStaticHeader(),
           Expanded(
             child: playerListAsync.when(
-              data: (masterPlayers) => Column(
+              // ★ Phase 8-1: ColumnをListViewに変更し、画面全体をスクロール可能にして縦幅エラー(63px)を解消
+              data: (masterPlayers) => ListView(
+                padding: EdgeInsets.zero,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -446,11 +452,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      itemCount: _positions.length,
-                      itemBuilder: (context, index) {
+                  // ★ Phase 8-1: 親がListViewになったので、ここはExpandedを外してshrinkWrapを付与
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    itemCount: _positions.length,
+                    itemBuilder: (context, index) {
                         final posName = _positions[index];
                         final playerName = _selectedPlayers[index] ?? '未定';
                         final isSelected = _selectedPlayers.containsKey(index);
@@ -541,7 +549,6 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                         );
                       },
                     ),
-                  ),
                 ],
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -594,6 +601,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     if (isStartNow == null) return; 
 
                     if (!context.mounted) return;
+                    // ★ Phase 8-1: ダイアログの「戻る」が画面を消さないように、rootNavigatorを使う
                     showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: CircularProgressIndicator()));
 
                     try {
@@ -708,7 +716,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       if (matchesToSave.isNotEmpty) await ref.read(matchCommandProvider).saveMatchesBulk(matchesToSave);
                       
                       if (!context.mounted) return;
-                      Navigator.pop(context); 
+                      Navigator.of(context, rootNavigator: true).pop(); // ★ Phase 8-1: ローディングダイアログだけを確実に閉じる！
                       
                       if (isStartNow) {
                         if (senpoMatchId.isNotEmpty) {
@@ -722,7 +730,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       }
                     } catch (e) {
                       if (!context.mounted) return;
-                      Navigator.pop(context);
+                      Navigator.of(context, rootNavigator: true).pop();
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存に失敗しました: $e')));
                     }
                   },

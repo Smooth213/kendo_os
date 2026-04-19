@@ -70,6 +70,7 @@ void main() {
         whiteHansoku: 0,
         isTimeUp: true, // 時間切れ
         targetIppon: 2,
+        hasHantei: false,
       );
       
       final shouldExtend = engine.shouldEnterEncho(ctx, true); // 延長を許可する設定
@@ -85,6 +86,7 @@ void main() {
         whiteHansoku: 0,
         isTimeUp: true,
         targetIppon: 2,
+        hasHantei: false,
       );
       
       final shouldExtend = engine.shouldEnterEncho(ctx, true);
@@ -102,6 +104,7 @@ void main() {
         whiteHansoku: 0,
         isTimeUp: false,
         targetIppon: 2,
+        hasHantei: false,
       );
       
       final result = engine.decideResult(ctx);
@@ -117,6 +120,7 @@ void main() {
         whiteHansoku: 0,
         isTimeUp: true,
         targetIppon: 2,
+        hasHantei: false,
       );
       
       final result = engine.decideResult(ctx);
@@ -132,6 +136,7 @@ void main() {
         whiteHansoku: 0,
         isTimeUp: true,
         targetIppon: 2,
+        hasHantei: false,
       );
       
       final result = engine.decideResult(ctx);
@@ -147,6 +152,7 @@ void main() {
         whiteHansoku: 0,
         isTimeUp: false,
         targetIppon: 2,
+        hasHantei: false,
       );
       
       final result = engine.decideResult(ctx);
@@ -159,7 +165,7 @@ void main() {
     test('試合ステータスが「finished」の場合、新しいイベントは無効と判定されること', () {
       final match = TestMatchFactory.createIndividualMatch().copyWith(status: 'finished');
       final event = TestMatchFactory.createEvent(side: Side.red, type: PointType.men);
-      final ctx = MatchContext(redIppon: 0, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2);
+      final ctx = MatchContext(redIppon: 0, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2, hasHantei: false);
       
       final validation = engine.validateEvent(match, event, ctx);
 
@@ -171,7 +177,7 @@ void main() {
       final match = TestMatchFactory.createIndividualMatch();
       final event = TestMatchFactory.createEvent(side: Side.red, type: PointType.men);
       // 赤が既に2本取っている状況
-      final ctx = MatchContext(redIppon: 2, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2);
+      final ctx = MatchContext(redIppon: 2, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2, hasHantei: false);
       
       final validation = engine.validateEvent(match, event, ctx);
 
@@ -182,7 +188,7 @@ void main() {
     test('既に規定本数に達していても、Undo（取り消し）イベントは有効と判定されること', () {
       final match = TestMatchFactory.createIndividualMatch();
       final event = TestMatchFactory.createEvent(side: Side.none, type: PointType.undo);
-      final ctx = MatchContext(redIppon: 2, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2);
+      final ctx = MatchContext(redIppon: 2, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2, hasHantei: false);
       
       final validation = engine.validateEvent(match, event, ctx);
 

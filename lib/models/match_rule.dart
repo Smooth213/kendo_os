@@ -16,6 +16,11 @@ class MatchRule {
   final int overallTimeMinutes; 
   final bool isDaihyoIpponShobu;
 
+  // ★ Phase 7-1: 延長戦の実践向けルール定義
+  final bool isEnchoUnlimited; // 無制限か（true）、回数/時間指定か（false）
+  final int enchoTimeMinutes;  // 指定の場合の延長時間（分）
+  final bool hasHantei;        // 時間切れ時に判定(旗)を行うか
+
   MatchRule({
     this.positions = const ['選手'],
     this.matchTimeMinutes = 3,
@@ -32,6 +37,9 @@ class MatchRule {
     this.renseikaiType = '一試合制',
     this.overallTimeMinutes = 30,
     this.isDaihyoIpponShobu = true,
+    this.isEnchoUnlimited = true, // 基本は無制限
+    this.enchoTimeMinutes = 3,
+    this.hasHantei = false,       // 基本は判定なし
   });
 
   // 中身の一部だけを書き換えるための便利機能
@@ -51,6 +59,9 @@ class MatchRule {
     String? renseikaiType,          
     int? overallTimeMinutes,
     bool? isDaihyoIpponShobu, 
+    bool? isEnchoUnlimited,
+    int? enchoTimeMinutes,
+    bool? hasHantei,
   }) {
     return MatchRule(
       positions: positions ?? this.positions,
@@ -68,6 +79,9 @@ class MatchRule {
       renseikaiType: renseikaiType ?? this.renseikaiType,
       overallTimeMinutes: overallTimeMinutes ?? this.overallTimeMinutes,
       isDaihyoIpponShobu: isDaihyoIpponShobu ?? this.isDaihyoIpponShobu,
+      isEnchoUnlimited: isEnchoUnlimited ?? this.isEnchoUnlimited,
+      enchoTimeMinutes: enchoTimeMinutes ?? this.enchoTimeMinutes,
+      hasHantei: hasHantei ?? this.hasHantei,
     );
   }
 }

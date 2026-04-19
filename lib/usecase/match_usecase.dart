@@ -86,13 +86,20 @@ class MatchUseCase {
       whiteHansoku: analysis.context.whiteHansoku,
       isTimeUp: true,
       targetIppon: analysis.context.targetIppon,
+      hasHantei: rule.hasHantei, // ★ 追加
     );
 
     if (_engine.shouldEnterEncho(timeUpContext, isEnchoEnabled)) {
       final newNote = currentMatch.note.isEmpty ? '延長' : '${currentMatch.note}, 延長';
+      
+      // ★ Phase 7-1: 無制限なら0（カウントアップ用）、指定なら分数×60（カウントダウン用）
+      final enchoSeconds = rule.isEnchoUnlimited ? 0 : rule.enchoTimeMinutes * 60;
+
       return currentMatch.copyWith(
         matchType: '延長戦',
         note: newNote,
+        remainingSeconds: enchoSeconds, // ★ タイマーのリセット
+        timerIsRunning: false,          // 自動開始を防ぐため一旦止める
         isDirty: true,
         lastUpdatedAt: DateTime.now(),
       ); 

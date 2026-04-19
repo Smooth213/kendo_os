@@ -6,10 +6,7 @@ import 'package:flutter/foundation.dart';
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     FirebaseAuth.instance,
-    GoogleSignIn(
-      // ★ あなたのWebクライアントIDを直接組み込みました（' ' も完璧です）
-      clientId: '779304236953-e65a453e6qluhg18o2s0q0524saoc735.apps.googleusercontent.com',
-    ),
+    GoogleSignIn(), // ★ 余計な古い鍵を削除！これでXcodeの正しい鍵を自動で読み込みます
   );
 });
 

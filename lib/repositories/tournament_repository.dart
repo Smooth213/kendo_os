@@ -58,9 +58,24 @@ class TournamentRepository {
     }).toList();
   }
 
-  // ★ 追加：大会を削除する
+  // ★ Phase 7-2: 大会と、それに紐づく全試合データを一括削除する（カスケード削除）
   Future<void> deleteTournament(String id) async {
-    await _firestore.collection('tournaments').doc(id).delete();
+    final batch = _firestore.batch();
+    
+    // 1. この大会に紐づく試合データをすべて取得して削除バッチに追加
+    final matchesSnapshot = await _firestore.collection('matches')
+        .where('tournamentId', isEqualTo: id)
+        .get();
+        
+    for (var doc in matchesSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    // 2. 大会本体の削除をバッチに追加
+    batch.delete(_firestore.collection('tournaments').doc(id));
+    
+    // 3. 一括実行（途中で通信が切れても、データが中途半端に残るのを防ぐ）
+    await batch.commit();
   }
 
   // ★ 追加：大会情報をまるごと更新する
