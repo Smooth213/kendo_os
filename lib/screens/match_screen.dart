@@ -309,10 +309,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         ),
         body: Stack(
           children: [
-            // ★ Phase 8-1: 全体を LayoutBuilder で包み、タイマー等の配置も iPad 最適化
+            // ★ Phase 8-1: 全体を LayoutBuilder で包み、iPad 向けに 2カラム構造化
             LayoutBuilder(
               builder: (context, constraints) {
-                final isTablet = constraints.maxWidth > 600;
+                // ★ 修正: iPadでも「縦向き」の時は通常のレイアウトにするため、Landscape（横向き）判定を追加
+                final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+                final isTabletLandscape = isLandscape && constraints.maxWidth > 600;
 
                 // 閲覧専用バナー（共通）
                 final viewOnlyBanner = (isViewOnly && !isApproved) 
@@ -369,19 +371,20 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   onNameTap: (side) => _showNameEditBottomSheet(match, side),
                 );
 
-                final actionPanelPart = Expanded(
-                  child: Container(
-                    color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Consumer(
-                      builder: (context, ref, child) {
-                        final settings = ref.watch(settingsProvider);
-                        final redPanel = ScoreActionPanel(matchId: match.id, side: Side.red, color: Colors.red.shade600, isLocked: isInputLocked);
-                        final whitePanel = ScoreActionPanel(matchId: match.id, side: Side.white, color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100, textColor: isDark ? Colors.white : Colors.black87, isLocked: isInputLocked);
-                        final divider = VerticalDivider(width: 1, color: isDark ? Colors.white10 : Colors.black12);
-                        return Row(children: settings.leftHanded ? [whitePanel, divider, redPanel] : [redPanel, divider, whitePanel]);
-                      }
-                    ),
+                final actionPanelPart = Container(
+                  color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final settings = ref.watch(settingsProvider);
+                      final redPanel = ScoreActionPanel(matchId: match.id, side: Side.red, color: Colors.red.shade600, isLocked: isInputLocked);
+                      final whitePanel = ScoreActionPanel(matchId: match.id, side: Side.white, color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100, textColor: isDark ? Colors.white : Colors.black87, isLocked: isInputLocked);
+                      final divider = VerticalDivider(width: 1, color: isDark ? Colors.white10 : Colors.black12);
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch, // ★ Phase 8-2: ボタン群を縦いっぱいに引き伸ばす魔法
+                        children: settings.leftHanded ? [whitePanel, divider, redPanel] : [redPanel, divider, whitePanel]
+                      );
+                    }
                   ),
                 );
 
@@ -580,8 +583,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   ),
                 );
 
-                if (isTablet) {
-                  // ★ iPad（タブレット）: 左右2カラム構造
+                if (isTabletLandscape) {
+                  // ★ iPad（横画面のみ）: 左右2カラム構造
                   return Column(
                     children: [
                       viewOnlyBanner,
@@ -606,7 +609,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               flex: 6,
                               child: Column(
                                 children: [
-                                  actionPanelPart,
+                                  // ★ Expandedの二重ネストを解消し、必要なここで適用
+                                  Expanded(child: actionPanelPart),
                                   bottomButtonPart,
                                 ],
                               ),
@@ -617,14 +621,15 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     ],
                   );
                 } else {
-                  // ★ スマホ: 従来の縦積み
+                // ★ スマホ・iPad縦向き: 従来の縦積み
                   return Column(
                     children: [
                       viewOnlyBanner,
                       timerPart,
                       groupButtonPart,
                       Expanded(flex: 5, child: scoreboardPart),
-                      actionPanelPart,
+                    // ★ Phase 8-2: iPadの縦画面では actionPanelPart が小さくなりすぎないよう flex または固定高を考慮
+                    Expanded(flex: 4, child: actionPanelPart), 
                       bottomButtonPart,
                     ],
                   );

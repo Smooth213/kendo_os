@@ -38,30 +38,32 @@ class ScoreActionPanel extends ConsumerWidget {
         // ★ 修正：ボタン群全体を囲う上下の固定余白を最小限(2px)に
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), 
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(child: _buildBtn(context, ref, 'メ', color, PointType.men, settings, effectiveLocked)),
+                  _buildBtn(context, ref, 'メ', color, PointType.men, settings, effectiveLocked),
                   const SizedBox(width: 6), // ★ ボタン同士の横の隙間も少し締める
-                  Expanded(child: _buildBtn(context, ref, 'コ', color, PointType.kote, settings, effectiveLocked)),
+                  _buildBtn(context, ref, 'コ', color, PointType.kote, settings, effectiveLocked),
                 ],
               ),
             ),
             const SizedBox(height: 4), // ★ ボタン同士の縦の隙間を8pxから4pxに圧縮（ここで高さを確保）
             Expanded(
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(child: _buildBtn(context, ref, 'ド', color, PointType.doIdo, settings, effectiveLocked)),
+                  _buildBtn(context, ref, 'ド', color, PointType.doIdo, settings, effectiveLocked),
                   const SizedBox(width: 6),
-                  Expanded(child: _buildBtn(context, ref, 'ツ', color, PointType.tsuki, settings, effectiveLocked)),
+                  _buildBtn(context, ref, 'ツ', color, PointType.tsuki, settings, effectiveLocked),
                 ],
               ),
             ),
             const SizedBox(height: 4), // ★ ここも4pxに
-            Expanded(
-              child: _buildBtn(context, ref, '反', color, PointType.hansoku, settings, effectiveLocked),
-            ),
+            // 反則ボタンはColumnの直接の子として配置
+            _buildBtn(context, ref, '反', color, PointType.hansoku, settings, effectiveLocked),
           ],
         ),
       ),
@@ -72,6 +74,9 @@ class ScoreActionPanel extends ConsumerWidget {
   Widget _buildBtn(BuildContext context, WidgetRef ref, String label, Color btnColor, PointType type, SettingsModel settings, bool effectiveLocked) {
     final isHansoku = type == PointType.hansoku;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // ★ Phase 8-2: iPad（横幅が広いデバイス）かどうかを判定
+    final isTablet = MediaQuery.of(context).size.width > 600;
     
     Color effectiveBtnColor;
     Color effectiveLabelColor;
@@ -97,13 +102,19 @@ class ScoreActionPanel extends ConsumerWidget {
           : BorderSide.none;
     }
 
-    return SizedBox(
-      width: double.infinity,
-      height: double.infinity,
-      child: ElevatedButton(
-        onPressed: effectiveLocked
-            ? null
-            : () {
+    if (effectiveLocked) {
+      effectiveBtnColor = isDark ? Colors.white10 : Colors.grey.shade200;
+      effectiveLabelColor = isDark ? Colors.white24 : Colors.grey.shade400;
+      borderSide = BorderSide.none;
+    }
+
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(4.0), // ボタン同士の間隔を少し広げて誤タップ防止
+        child: ElevatedButton(
+          onPressed: effectiveLocked
+              ? null
+              : () {
                 if (settings.strikeVib) {
                   // ★ Step 7-2: 陣営（Side）によっても振動に微細な変化を加え、
                   // 部位（強弱）× 陣営（リズム）で「今どちらに何を打ったか」を直感させる
@@ -118,25 +129,26 @@ class ScoreActionPanel extends ConsumerWidget {
                 }
                 ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
               },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: effectiveBtnColor, 
-          foregroundColor: effectiveLabelColor, 
-          elevation: isDark ? 0 : (side == Side.white ? 2 : 8), // ★ Enum比較に修正
-          shadowColor: btnColor.withValues(alpha: 0.5), 
-          padding: EdgeInsets.zero, 
-          minimumSize: Size.zero, 
-          // ★ 追加：Flutter標準の「見えないタップ確保領域」を完全に無効化する魔法のコード
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap, 
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10), // 角丸もスペースに合わせて少しシャープに
-            side: borderSide,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: effectiveBtnColor, 
+            foregroundColor: effectiveLabelColor, 
+            elevation: effectiveLocked ? 0 : 4,
+            padding: EdgeInsets.zero, 
+            minimumSize: Size.zero, 
+            // ★ 追加：Flutter標準の「見えないタップ確保領域」を完全に無効化する魔法のコード
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap, 
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 10), // iPadではより丸みを持たせて高級感を
+              side: borderSide,
+            ),
           ),
-        ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Padding(
-            padding: const EdgeInsets.all(2), // 内部余白も極限まで削る
-            child: Text(label, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+          child: Text(
+            label, 
+            style: TextStyle(
+              // ★ iPadなら文字サイズを 40、スマホなら 24 に動的変更
+              fontSize: isTablet ? 40 : 24, 
+              fontWeight: FontWeight.w900
+            )
           ),
         ),
       ),

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../models/match_model.dart';
 import '../../../../providers/match_rule_provider.dart';
 import '../../../../providers/match_timer_provider.dart';
-import '../../../../models/score_event.dart'; // ★ 追加: Side 型の定義用
+import '../../../../providers/match_command_provider.dart';
 
 class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
   final MatchModel match;
@@ -21,117 +21,63 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(160); // AppBar + Status + MasterTimerの高さ
+  Size get preferredSize => const Size.fromHeight(150); // AppBar + Status + MasterTimerの高さ
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final rule = ref.watch(matchRuleProvider);
     final isApproved = match.status == 'approved';
-    
-    final isDark = Theme.of(context).brightness == Brightness.dark; // ★ 追加: isDark の定義
     final headerColor = Colors.indigo.shade900;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ★ Phase 8-1: iPadなどの大画面でヘッダーがオーバーフロー(Infinity)しないよう保護
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: kToolbarHeight, // ★ AppBarに明確な高さを与えて崩壊を防ぐ
-            child: AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1C1C1E) : headerColor,
-                ),
-              ),
-              title: Text(
-                // ★ 修正: match.category が null の場合を考慮
-                (match.category ?? '').isNotEmpty ? '${match.category} - ${match.matchType}' : match.matchType,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              centerTitle: true,
-              leading: IconButton(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ★ ステータスバーへのめり込みを防ぐため、AppBarを自前のセーフエリア付きContainerに置き換え
+        Container(
+          color: isDark ? const Color(0xFF1C1C1E) : headerColor,
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top, // ここで時計やバッテリーのスペースを確実に確保
+            bottom: 4,
+            left: 8,
+            right: 16,
+          ),
+          child: Row(
+            children: [
+              IconButton(
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
                 onPressed: () => context.go('/home/${match.tournamentId}'),
               ),
-              actions: [
-                if (isApproved)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 16),
-                    child: Center(child: Text('確定済', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold))),
-                  ),
-              ],
-            ),
-          ),
-          if (match.groupName != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(match.groupName!, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
-            ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildPlayerName(context, Side.red, isDark),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('vs', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey.shade500, fontSize: 16)),
+              Expanded(
+                child: Text(
+                  (match.category ?? '').isNotEmpty ? '${match.category} - ${match.matchType}' : match.matchType,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                _buildPlayerName(context, Side.white, isDark),
-              ],
-            ),
+              ),
+              if (isApproved)
+                const Text('確定済', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 13))
+              else
+                IconButton(
+                  icon: Icon(Icons.undo, color: isInputLocked ? Colors.white38 : Colors.white, size: 24),
+                  tooltip: '1つ前の入力を取り消す',
+                  onPressed: isInputLocked
+                      ? null
+                      : () => ref.read(matchCommandProvider).undoLastEvent(match.id),
+                ),
+            ],
           ),
-          // ★ 修正: 未定義だった変数を削除し、既存の専用メソッド呼び出しに戻す
-          if (rule.isRenseikai && rule.renseikaiType == '時間制' && match.groupName != null)
-            _buildMasterTimerDisplay(context, ref, match.groupName!),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlayerName(BuildContext context, Side side, bool isDark) {
-    final bool isActive = !isInputLocked && (side == Side.red ? match.timerIsRunning : match.timerIsRunning); 
-    final String name = side == Side.red ? match.redName : match.whiteName;
-    final bool isMissing = name.contains('欠員');
-
-    final Color activeColor = side == Side.red ? Colors.red.shade600 : (isDark ? Colors.grey.shade100 : Colors.white);
-    final Color inactiveColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300;
-
-    return Flexible(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 600),
-        padding: EdgeInsets.symmetric(horizontal: isActive ? 24 : 16, vertical: isActive ? 8 : 6),
-        decoration: BoxDecoration(
-          color: isDark 
-              ? (isActive ? activeColor.withValues(alpha: 0.2) : const Color(0xFF1C1C1E))
-              : (isActive ? activeColor : inactiveColor),
-          border: Border.all(
-            color: isActive ? (isDark ? activeColor : Colors.white) : (isDark ? const Color(0xFF38383A) : Colors.indigo.shade400),
-            width: isActive ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          // ★ Phase 8-1: アニメーション時の「マイナスの影」計算エラーを防ぐため、空ではなく透明な影を指定
-          boxShadow: isActive && !isDark
-              ? [BoxShadow(color: activeColor.withValues(alpha: 0.5), blurRadius: 12, spreadRadius: 2)]
-              : const [BoxShadow(color: Colors.transparent, blurRadius: 0, spreadRadius: 0)],
         ),
-        child: Text(
-          isMissing ? '欠員' : name.split(' ').last,
-          style: TextStyle(
-            fontSize: isActive ? 20 : 16,
-            fontWeight: FontWeight.bold,
-            color: isMissing 
-                ? Colors.grey 
-                : (isActive ? (side == Side.red || isDark ? Colors.white : Colors.indigo.shade900) : (isDark ? Colors.grey.shade500 : Colors.indigo.shade300)),
+        // 大会サブタイトル（団体戦名など）が必要な場合のみ表示
+        if (match.groupName != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(match.groupName!, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
           ),
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
+        
+        if (rule.isRenseikai && rule.renseikaiType == '時間制' && match.groupName != null)
+          _buildMasterTimerDisplay(context, ref, match.groupName!),
+      ],
     );
   }
 

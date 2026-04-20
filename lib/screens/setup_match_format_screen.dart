@@ -534,7 +534,8 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
     final selectedChipColor = isDark ? Colors.teal.shade900.withValues(alpha: 0.5) : Colors.teal.shade100;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      // ★ Phase 8-2: 余白のないページ（2ページ目以降）に合わせるため、パディングを調整
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       children: [
         Text(
           '対象のカテゴリと\n自チームを選んでください', 

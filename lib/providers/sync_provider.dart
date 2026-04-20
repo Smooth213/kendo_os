@@ -40,6 +40,9 @@ final isOnlineProvider = Provider<bool>((ref) {
   return ref.watch(connectivityProvider).value ?? false;
 });
 
+// ★ Phase 8-1: 「現在リアルタイムに同期処理が動いているか」をUIへ通知するプロバイダ
+final isSyncingStateProvider = StateProvider<bool>((ref) => false);
+
 // ★ Step 4-2: バックグラウンド同期エンジン
 // オフラインからオンラインに復帰した瞬間を検知し、溜まったデータを一気に送信する心臓部
 class SyncEngine {
@@ -69,6 +72,9 @@ class SyncEngine {
   Future<void> syncNow() async {
     if (_isSyncing) return; // 既に同期中なら重複実行を防ぐ
     _isSyncing = true;
+    
+    // ★ Phase 8-1: UIに「同期中」状態を通知
+    ref.read(isSyncingStateProvider.notifier).state = true;
 
     try {
       final localRepo = ref.read(localMatchRepositoryProvider);
@@ -146,6 +152,25 @@ class SyncEngine {
       debugPrint('🔥 [Sync Engine] 同期エラー: $e');
     } finally {
       _isSyncing = false;
+      // ★ Phase 8-1: 同期終了（またはスキップ）をUIに通知
+      ref.read(isSyncingStateProvider.notifier).state = false;
+    }
+  }
+
+  // ★ Phase 8-1.5: 競合の強制解決（サーバーデータを優先し、未送信状態をクリア）
+  Future<void> resolveConflictByKeepingServer() async {
+    try {
+      // ★ 追加：localRepo の定義を補完
+      final localRepo = ref.read(localMatchRepositoryProvider);
+      // syncNow() と同じ方法で未送信データを取得
+      final pendingMatches = await localRepo.getPendingMatches();
+      for (final match in pendingMatches) {
+         // ローカルの未送信フラグ（isDirty）を下ろす
+         await localRepo.markAsSynced(match.id);
+      }
+      debugPrint('✅ [Sync Engine] 競合状態をクリアしました（サーバー優先）');
+    } catch (e) {
+      debugPrint('🔥 [Sync Engine] 競合クリアエラー: $e');
     }
   }
 }
