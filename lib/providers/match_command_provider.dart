@@ -37,8 +37,13 @@ class MatchCommand {
     ref.read(matchCommandErrorProvider.notifier).state = null;
 
     try {
-      // ★ Step 1-3 完了: Isarのローカルリポジトリに保存を委譲！これで完全オフライン対応に。
-      await ref.read(localMatchRepositoryProvider).saveMatch(match);
+      // ★ Phase 2: すべてのローカル操作を「未送信（isDirty = true）」として確実に同期キューへ入れる
+      // タイムスタンプも更新し、クラウド側での競合解決（バージョン管理）に備える
+      final matchToSave = match.copyWith(
+        isDirty: true,
+        lastUpdatedAt: DateTime.now(),
+      );
+      await ref.read(localMatchRepositoryProvider).saveMatch(matchToSave);
     } catch (e) {
       debugPrint('🔥 [Command Error]: $e');
       String msg = '保存に失敗しました';
@@ -93,12 +98,19 @@ class MatchCommand {
     }
   }
 
-  // 4. スコアラー権限
+  // 4. ★ Phase 3: スコアラー権限（有効期限付きロック機構）
   Future<bool> claimScorer(String matchId, String userId) async {
     final match = _getMatch(matchId);
     if (match == null) return false;
-    if (match.scorerId == null || match.scorerId == userId) {
-      await saveMatch(match.copyWith(scorerId: userId));
+    
+    final now = DateTime.now();
+    final isLockExpired = match.lockExpiresAt != null && match.lockExpiresAt!.isBefore(now);
+    
+    // ロックが空、自分のロック、または「他人のロックだが有効期限切れ（放置状態）」の場合
+    if (match.scorerId == null || match.scorerId == userId || isLockExpired) {
+      // 30分の有効期限でロックを取得・更新（剣道の試合には十分すぎる猶予時間）
+      final expiresAt = now.add(const Duration(minutes: 30));
+      await saveMatch(match.copyWith(scorerId: userId, lockExpiresAt: expiresAt));
       return true;
     }
     return false;
@@ -107,19 +119,18 @@ class MatchCommand {
   Future<void> releaseScorer(String matchId, String userId) async {
     final match = _getMatch(matchId);
     if (match != null && match.scorerId == userId) {
-      await saveMatch(match.copyWith(scorerId: null));
+      await saveMatch(match.copyWith(scorerId: null, lockExpiresAt: null));
     }
   }
 
-  // ★ Step 5-2: スコアラー権限の強制奪取 (テイクオーバー)
-  // 前の担当者が操作不能になった場合などに、新しいユーザーが権限を上書きする
+  // ★ Phase 3: スコアラー権限の強制奪取 (テイクオーバー)
   Future<void> forceClaimScorer(String matchId, String userId) async {
     final match = _getMatch(matchId);
     if (match == null) return;
     
-    // 現在の scorerId を無視して自分をセット
-    await saveMatch(match.copyWith(scorerId: userId));
-    debugPrint('⚡ Scorer Overwritten by: $userId');
+    final expiresAt = DateTime.now().add(const Duration(minutes: 30));
+    await saveMatch(match.copyWith(scorerId: userId, lockExpiresAt: expiresAt));
+    debugPrint('⚡ Scorer Overwritten by: $userId (Lock Extended)');
   }
 
   // 5. 試合削除
@@ -147,22 +158,33 @@ class MatchCommand {
     final match = _getMatch(matchId);
     if (match == null) return;
     
+    // ★ 修正: バトンタッチ。スナップショットが追加された「最新の状態」を受け取る
+    // type.name から type.label (日本語) に変更
+    final updatedMatch = await takeSnapshot(matchId, '【${side == Side.red ? "赤" : "白"}】${type.label} 入力前');
+    if (updatedMatch == null) return;
+
     final event = ScoreEvent(
       id: const Uuid().v4(),
       side: side,
       type: type,
       timestamp: now,
-      userId: match.scorerId,
-      sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
+      userId: updatedMatch.scorerId,
+      sequence: updatedMatch.events.isEmpty ? 1 : updatedMatch.events.last.sequence + 1,
     );
 
-    await ref.read(matchActionProvider).processScoreEvent(match, event);
+    // 古い match ではなく、updatedMatch を渡すことで上書き消滅を防ぐ
+    await ref.read(matchActionProvider).processScoreEvent(updatedMatch, event);
   }
 
   Future<void> undoLastEvent(String matchId) async {
     final match = _getMatch(matchId);
     if (match == null || match.events.isEmpty) return;
-    ref.read(matchActionProvider).undoEvent(match);
+    
+    // ★ 修正: Undo直前のスナップショットを撮り、最新の状態を受け取る
+    final updatedMatch = await takeSnapshot(matchId, '取り消し 実行前');
+    if (updatedMatch == null) return;
+    
+    ref.read(matchActionProvider).undoEvent(updatedMatch);
   }
 
   // 7. 新規試合の追加
@@ -181,6 +203,60 @@ class MatchCommand {
     
     // 計算結果をFirestoreへ強制同期
     await saveMatch(rebuiltMatch);
+  }
+
+  // ==========================================
+  // ★ Phase 1: スナップショット（エラー復旧）機能
+  // ==========================================
+
+  // スナップショットの作成（特定時点のバックアップ）
+  // ★ 修正: 保存後の最新データを return で返すように変更
+  Future<MatchModel?> takeSnapshot(String matchId, String reason) async {
+    final match = _getMatch(matchId);
+    if (match == null) return null;
+    
+    final snapshot = MatchSnapshot(
+      id: const Uuid().v4(),
+      createdAt: DateTime.now(),
+      reason: reason,
+      events: List.from(match.events), // その時点のイベント履歴を完全コピー
+    );
+
+    // ★ プロの工夫: ストレージ圧迫を防ぐため、最新20件のみを保持する（古いものを捨てる）
+    final newSnapshots = [...match.snapshots, snapshot];
+    if (newSnapshots.length > 20) {
+      newSnapshots.removeRange(0, newSnapshots.length - 20);
+    }
+
+    final updatedMatch = match.copyWith(snapshots: newSnapshots);
+    await saveMatch(updatedMatch);
+    return updatedMatch; // 最新の状態を返す
+  }
+
+  // スナップショットからの復元
+  Future<void> restoreFromSnapshot(String matchId, MatchSnapshot snapshot) async {
+    final match = _getMatch(matchId);
+    if (match == null) return;
+
+    // 復元したという事実も「1つのイベント」として歴史に刻む（非破壊原則）
+    final restoreEvent = ScoreEvent(
+      id: const Uuid().v4(),
+      side: Side.none,
+      type: PointType.restore,
+      timestamp: DateTime.now(),
+      userId: match.scorerId,
+      sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
+    );
+
+    // 新しい歴史 ＝ スナップショット時点の歴史 ＋ 復元イベント
+    final newEvents = [...snapshot.events, restoreEvent];
+
+    // 状態を上書きし、rebuildMatchSnapshot を呼んでスコアなどを再計算させる
+    await saveMatch(match.copyWith(events: newEvents));
+    await rebuildMatchSnapshot(matchId);
+    
+    // 復元後、現在の状態を「復元直後」として再度スナップショットを取っておくとさらに安全
+    await takeSnapshot(matchId, '【復元】${snapshot.reason} の時点');
   }
 
   // 内部ヘルパー

@@ -164,7 +164,9 @@ void main() {
       match = verify(() => mockCommand.saveMatch(captureAny())).captured.last as MatchModel;
       expect(match.redScore, 1);
       expect(match.whiteScore, 0);
-      expect(match.events.last.type, PointType.undo);
+      // ★ 白の小手イベントが「論理削除」されていることを検証
+      expect(match.events.last.isCanceled, true);
+      expect(match.events.last.type, PointType.kote);
 
       // 4. 赤が胴を決めて決着 (2-0)
       await controller.processScoreEvent(match, TestMatchFactory.createEvent(side: Side.red, type: PointType.doIdo, sequence: 4));

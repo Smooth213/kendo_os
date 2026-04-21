@@ -15,8 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ScoreEvent {
 
- String get id; Side get side;// ★ String から Side(Enum) へ変更
- PointType get type;@TimestampConverter() DateTime get timestamp; String? get userId; int get sequence;
+ String get id; Side get side; PointType get type;@TimestampConverter() DateTime get timestamp; String? get userId; int get sequence; bool get isCanceled;
 /// Create a copy of ScoreEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +28,16 @@ $ScoreEventCopyWith<ScoreEvent> get copyWith => _$ScoreEventCopyWithImpl<ScoreEv
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScoreEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.side, side) || other.side == side)&&(identical(other.type, type) || other.type == type)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sequence, sequence) || other.sequence == sequence));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScoreEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.side, side) || other.side == side)&&(identical(other.type, type) || other.type == type)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sequence, sequence) || other.sequence == sequence)&&(identical(other.isCanceled, isCanceled) || other.isCanceled == isCanceled));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,side,type,timestamp,userId,sequence);
+int get hashCode => Object.hash(runtimeType,id,side,type,timestamp,userId,sequence,isCanceled);
 
 @override
 String toString() {
-  return 'ScoreEvent(id: $id, side: $side, type: $type, timestamp: $timestamp, userId: $userId, sequence: $sequence)';
+  return 'ScoreEvent(id: $id, side: $side, type: $type, timestamp: $timestamp, userId: $userId, sequence: $sequence, isCanceled: $isCanceled)';
 }
 
 
@@ -49,7 +48,7 @@ abstract mixin class $ScoreEventCopyWith<$Res>  {
   factory $ScoreEventCopyWith(ScoreEvent value, $Res Function(ScoreEvent) _then) = _$ScoreEventCopyWithImpl;
 @useResult
 $Res call({
- String id, Side side, PointType type,@TimestampConverter() DateTime timestamp, String? userId, int sequence
+ String id, Side side, PointType type,@TimestampConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled
 });
 
 
@@ -66,7 +65,7 @@ class _$ScoreEventCopyWithImpl<$Res>
 
 /// Create a copy of ScoreEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? side = null,Object? type = null,Object? timestamp = null,Object? userId = freezed,Object? sequence = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? side = null,Object? type = null,Object? timestamp = null,Object? userId = freezed,Object? sequence = null,Object? isCanceled = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
@@ -74,7 +73,8 @@ as Side,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_n
 as PointType,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
 as DateTime,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String?,sequence: null == sequence ? _self.sequence : sequence // ignore: cast_nullable_to_non_nullable
-as int,
+as int,isCanceled: null == isCanceled ? _self.isCanceled : isCanceled // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -159,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  Side side,  PointType type, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  Side side,  PointType type, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScoreEvent() when $default != null:
-return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_that.sequence);case _:
+return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled);case _:
   return orElse();
 
 }
@@ -180,10 +180,10 @@ return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  Side side,  PointType type, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  Side side,  PointType type, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled)  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEvent():
-return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_that.sequence);case _:
+return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +200,10 @@ return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  Side side,  PointType type, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  Side side,  PointType type, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled)?  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEvent() when $default != null:
-return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_that.sequence);case _:
+return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled);case _:
   return null;
 
 }
@@ -215,16 +215,16 @@ return $default(_that.id,_that.side,_that.type,_that.timestamp,_that.userId,_tha
 @JsonSerializable()
 
 class _ScoreEvent implements ScoreEvent {
-  const _ScoreEvent({this.id = '', required this.side, required this.type, @TimestampConverter() required this.timestamp, this.userId, this.sequence = 0});
+  const _ScoreEvent({this.id = '', required this.side, required this.type, @TimestampConverter() required this.timestamp, this.userId, this.sequence = 0, this.isCanceled = false});
   factory _ScoreEvent.fromJson(Map<String, dynamic> json) => _$ScoreEventFromJson(json);
 
 @override@JsonKey() final  String id;
 @override final  Side side;
-// ★ String から Side(Enum) へ変更
 @override final  PointType type;
 @override@TimestampConverter() final  DateTime timestamp;
 @override final  String? userId;
 @override@JsonKey() final  int sequence;
+@override@JsonKey() final  bool isCanceled;
 
 /// Create a copy of ScoreEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -239,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScoreEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.side, side) || other.side == side)&&(identical(other.type, type) || other.type == type)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sequence, sequence) || other.sequence == sequence));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScoreEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.side, side) || other.side == side)&&(identical(other.type, type) || other.type == type)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sequence, sequence) || other.sequence == sequence)&&(identical(other.isCanceled, isCanceled) || other.isCanceled == isCanceled));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,side,type,timestamp,userId,sequence);
+int get hashCode => Object.hash(runtimeType,id,side,type,timestamp,userId,sequence,isCanceled);
 
 @override
 String toString() {
-  return 'ScoreEvent(id: $id, side: $side, type: $type, timestamp: $timestamp, userId: $userId, sequence: $sequence)';
+  return 'ScoreEvent(id: $id, side: $side, type: $type, timestamp: $timestamp, userId: $userId, sequence: $sequence, isCanceled: $isCanceled)';
 }
 
 
@@ -259,7 +259,7 @@ abstract mixin class _$ScoreEventCopyWith<$Res> implements $ScoreEventCopyWith<$
   factory _$ScoreEventCopyWith(_ScoreEvent value, $Res Function(_ScoreEvent) _then) = __$ScoreEventCopyWithImpl;
 @override @useResult
 $Res call({
- String id, Side side, PointType type,@TimestampConverter() DateTime timestamp, String? userId, int sequence
+ String id, Side side, PointType type,@TimestampConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled
 });
 
 
@@ -276,7 +276,7 @@ class __$ScoreEventCopyWithImpl<$Res>
 
 /// Create a copy of ScoreEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? side = null,Object? type = null,Object? timestamp = null,Object? userId = freezed,Object? sequence = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? side = null,Object? type = null,Object? timestamp = null,Object? userId = freezed,Object? sequence = null,Object? isCanceled = null,}) {
   return _then(_ScoreEvent(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
@@ -284,7 +284,8 @@ as Side,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_n
 as PointType,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
 as DateTime,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String?,sequence: null == sequence ? _self.sequence : sequence // ignore: cast_nullable_to_non_nullable
-as int,
+as int,isCanceled: null == isCanceled ? _self.isCanceled : isCanceled // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

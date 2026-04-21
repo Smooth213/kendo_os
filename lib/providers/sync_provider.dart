@@ -6,6 +6,11 @@ import '../repositories/local_match_repository.dart';
 import 'match_list_provider.dart'; 
 import '../main.dart'; 
 
+// ★ Phase 2: 自動バックアップ用のパッケージを追加
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
 // ★ Step 4-1: ネットワーク接続状態をリアルタイムで監視するProvider
 final connectivityProvider = StreamProvider<bool>((ref) {
   final controller = StreamController<bool>();
@@ -56,6 +61,44 @@ class SyncEngine {
         syncNow();
       }
     });
+
+    // ★ Phase 2: 自動バックアップ（アプリがバックグラウンドに回った時に作動）
+    final lifecycleListener = AppLifecycleListener(
+      onStateChange: (AppLifecycleState state) {
+        // ユーザーがアプリを閉じた、または別のアプリに切り替えた瞬間に実行
+        if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+          _autoBackupToJson();
+        }
+      },
+    );
+    ref.onDispose(() => lifecycleListener.dispose());
+  }
+
+  // ★ Phase 2: 裏でひっそりとJSONを書き出すメソッド
+  Future<void> _autoBackupToJson() async {
+    try {
+      final matches = ref.read(matchListProvider);
+      if (matches.isEmpty) return;
+
+      final jsonStr = jsonEncode(
+        matches.map((m) => m.toJson()).toList(),
+        toEncodable: (dynamic item) {
+          if (item is DateTime) return item.toIso8601String();
+          if (item.runtimeType.toString() == 'Timestamp') {
+            try { return (item as dynamic).toDate().toIso8601String(); } catch (_) { return item.toString(); }
+          }
+          return item.toString();
+        }
+      );
+
+      final dir = await getApplicationDocumentsDirectory();
+      // ストレージを圧迫しないよう、1つのファイルを上書きし続ける
+      final file = File('${dir.path}/kendo_autobackup.json');
+      await file.writeAsString(jsonStr);
+      debugPrint('💾 [Auto Backup] 自動バックアップ完了: ${file.path}');
+    } catch (e) {
+      debugPrint('🔥 [Auto Backup] 自動バックアップ失敗: $e');
+    }
   }
 
   // ★ Phase 6: ユーザーの手動操作（引っ張って更新など）で強制的に同期を走らせるメソッド

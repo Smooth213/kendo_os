@@ -18,8 +18,6 @@ import '../models/player_model.dart';
 import '../repositories/player_repository.dart';
 import '../models/team_model.dart';
 import '../repositories/team_repository.dart';
-// ★ 追加：先ほど作成した勝ち抜き戦スコアボード画面を読み込む
-import 'kachinuki_scoreboard_screen.dart'; 
 // ★ Phase 3: 分割した専用Widgetをインポート
 import '../domain/strategy/match_strategy.dart'; // ★ Phase 5: 戦略ファクトリの読み込み
 
@@ -32,6 +30,8 @@ import 'match/widgets/match_header.dart';
 // ★ 追加：システム設定プロバイダの読み込み
 import '../providers/settings_provider.dart';
 import '../providers/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
+import '../providers/share_provider.dart'; // ★ Phase 3: 観戦共有用に追加
+
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
 });
@@ -261,8 +261,17 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     bool wMiss = match.whiteName.contains('欠員');
 
     final isApproved = match.status == 'approved';
-    final isViewOnly = match.scorerId != null && match.scorerId != _myUserId;
     final settings = ref.watch(settingsProvider); // 設定を読み込む
+
+    // ★ Phase 5: 記録員画面につき、ReadOnly判定を削除（ルーター側で保証済み）
+    final now = DateTime.now();
+    final isLockExpired = match.lockExpiresAt != null && match.lockExpiresAt!.isBefore(now);
+    
+    // 他の記録員が「有効なロック」を持っているかどうかの競合チェックのみを行う
+    final hasLockConflict = match.scorerId != null && match.scorerId != _myUserId && !isLockExpired;
+    
+    // この画面では isViewOnly は「他端末との競合」時のみ true となる
+    final isViewOnly = hasLockConflict;
 
     // ★ Step 4-3: ドメインエラーを監視し、発生したらSnackBarで通知する
     ref.listen<String?>(matchCommandErrorProvider, (previous, next) {
@@ -316,20 +325,21 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
                 final isTabletLandscape = isLandscape && constraints.maxWidth > 600;
 
-                // 閲覧専用バナー（共通）
+                // 競合警告バナー（記録員画面専用）
                 final viewOnlyBanner = (isViewOnly && !isApproved) 
                   ? Container(
                       width: double.infinity,
-                      color: Colors.amber.shade900.withValues(alpha: 0.9),
+                      color: Colors.red.shade900.withValues(alpha: 0.9), // より警告色の強い赤へ
                       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       child: Row(
                         children: [
-                          const Icon(Icons.visibility, color: Colors.white, size: 18),
+                          const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 18),
                           const SizedBox(width: 12),
-                          const Expanded(child: Text('他のユーザーが入力中（閲覧専用）', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+                          const Expanded(child: Text('他の記録員が入力中です', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+                          // 記録員画面には必ず canLockMatch 権限があるため、強制ボタンを表示
                           TextButton(
                             onPressed: () async {
-                              final confirmed = await _showConfirmDialog('権限の切り替え', '入力権限を自分に変更しますか？\n（現在の担当者の入力が中断されます）');
+                              final confirmed = await _showConfirmDialog('入力権限の奪取', '他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？');
                               if (confirmed) {
                                 await ref.read(matchCommandProvider).forceClaimScorer(match.id, _myUserId!);
                               }
@@ -345,26 +355,52 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 // 共通パーツ
                 final timerPart = TimerWidget(match: match, isInputLocked: isInputLocked);
                 
-                final groupButtonPart = (match.groupName != null)
-                  ? Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: SizedBox(
+                final groupButtonPart = Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8, // 横の隙間
+                    runSpacing: 8, // はみ出して次の行に行った時の縦の隙間
+                    children: [
+                      if (match.groupName != null)
+                        SizedBox(
+                          height: 36,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              if (match.isKachinuki) {
+                                context.push('/kachinuki-scoreboard/${match.groupName}');
+                              } else {
+                                context.push('/team-scoreboard/${match.groupName}');
+                              }
+                            },
+                            icon: Icon(match.isKachinuki ? Icons.timeline : Icons.table_chart_outlined, size: 18, color: isDark ? Colors.indigoAccent.shade100 : Colors.indigo.shade400),
+                            label: Text(match.isKachinuki ? 'タイムラインを確認' : '星取り表を確認', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.indigo.shade700)),
+                            style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.indigo.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          ),
+                        ),
+                      // ★ Phase 1: 復元ボタンの追加
+                      SizedBox(
                         height: 36,
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            if (match.isKachinuki) {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => KachinukiScoreboardScreen(groupName: match.groupName!)));
-                            } else {
-                              context.push('/team-scoreboard/${match.groupName}');
-                            }
-                          },
-                          icon: Icon(match.isKachinuki ? Icons.timeline : Icons.table_chart_outlined, size: 18, color: isDark ? Colors.indigoAccent.shade100 : Colors.indigo.shade400),
-                          label: Text(match.isKachinuki ? 'タイムラインを確認' : '星取り表を確認', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.indigo.shade700)),
-                          style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.indigo.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          onPressed: isInputLocked ? null : () => _showSnapshotDialog(context, ref, match),
+                          icon: Icon(Icons.history, size: 18, color: isDark ? Colors.orangeAccent : Colors.orange.shade800),
+                          label: Text('履歴から復元', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.orangeAccent : Colors.orange.shade800)),
+                          style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? Colors.orangeAccent.withValues(alpha: 0.5) : Colors.orange.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         ),
                       ),
-                    )
-                  : const SizedBox.shrink();
+                      // ★ Phase 3: 観戦共有ボタンの追加
+                      SizedBox(
+                        height: 36,
+                        child: OutlinedButton.icon(
+                          onPressed: () => ref.read(shareProvider).shareMatch(match),
+                          icon: Icon(Icons.ios_share, size: 18, color: isDark ? Colors.blueAccent : Colors.blue.shade700),
+                          label: Text('観戦URLを共有', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.blueAccent : Colors.blue.shade700)),
+                          style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? Colors.blueAccent.withValues(alpha: 0.5) : Colors.blue.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
 
                 final scoreboardPart = MatchScoreboard(
                   match: match, myUserId: _myUserId,
@@ -1099,4 +1135,66 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     ));
   }
 
+  // =========================================================================
+  // ★ Phase 1: タイムマシン（スナップショットからの復元UI）
+  // =========================================================================
+  void _showSnapshotDialog(BuildContext context, WidgetRef ref, MatchModel match) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // 最新のバックアップが一番上に来るように反転
+    final snapshots = match.snapshots.reversed.toList(); 
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.only(top: 16),
+        child: Column(
+          children: [
+            Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10))),
+            const SizedBox(height: 16),
+            const Text('タイムマシン（エラー復旧）', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('過去の特定の時点にスコアや時間を安全に巻き戻します。\n（復元した事実も記録されるためデータは壊れません）', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+            ),
+            Expanded(
+              child: snapshots.isEmpty
+                  ? Center(child: Text('バックアップ履歴がありません', style: TextStyle(color: Colors.grey.shade500)))
+                  : ListView.builder(
+                      itemCount: snapshots.length,
+                      itemBuilder: (context, index) {
+                        final snap = snapshots[index];
+                        final timeStr = '${snap.createdAt.hour}:${snap.createdAt.minute.toString().padLeft(2, '0')}:${snap.createdAt.second.toString().padLeft(2, '0')}';
+                        
+                        return ListTile(
+                          leading: const CircleAvatar(backgroundColor: Colors.orange, child: Icon(Icons.restore, color: Colors.white)),
+                          title: Text(snap.reason, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                          subtitle: Text('$timeStr に自動保存', style: TextStyle(color: isDark ? Colors.grey.shade500 : Colors.grey)),
+                          trailing: ElevatedButton(
+                            onPressed: () async {
+                              final confirm = await _showConfirmDialog('この時点に復元しますか？', 'スコアと時間が「${snap.reason}」の時点に戻ります。');
+                              if (confirm) {
+                                await ref.read(matchCommandProvider).restoreFromSnapshot(match.id, snap);
+                                if (ctx.mounted) Navigator.pop(ctx);
+                                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ 復元が完了しました')));
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white, elevation: 0),
+                            child: const Text('復元', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

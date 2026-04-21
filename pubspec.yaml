@@ -51,10 +51,11 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   url_launcher: ^6.3.0
-  share_plus: any # ★ 生成した画像をLINEや他アプリにシェアするための部品
+  share_plus: ^13.0.0 # ★ 生成した画像をLINEや他アプリにシェアするための部品
   shared_preferences: ^2.5.5
   wakelock_plus: ^1.5.1
   connectivity_plus: ^6.0.3 # ★ Phase 4: オフライン/オンラインの検知センサー
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

@@ -61,9 +61,18 @@ class ScoreActionPanel extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 4), // ★ ここも4pxに
-            // 反則ボタンはColumnの直接の子として配置
-            _buildBtn(context, ref, '反', color, PointType.hansoku, settings, effectiveLocked),
+            const SizedBox(height: 4), 
+            // ★ Phase 4: Undo(取り消し)を親指圏内・常時表示の特等席へ配置
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildBtn(context, ref, '反', color, PointType.hansoku, settings, effectiveLocked),
+                  const SizedBox(width: 6),
+                  _buildUndoBtn(context, ref, settings, effectiveLocked),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -173,5 +182,42 @@ class ScoreActionPanel extends ConsumerWidget {
       default:
         HapticFeedback.selectionClick();
     }
+  }
+
+  // ★ Phase 4: 左手・右手どちらの親指からでも即座に押せる、直感的なUndoボタン
+  Widget _buildUndoBtn(BuildContext context, WidgetRef ref, SettingsModel settings, bool effectiveLocked) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet = MediaQuery.of(context).size.width > 600;
+    
+    // 他のボタンの邪魔をしないよう、落ち着いたグレーの配色
+    final btnColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
+    final labelColor = isDark ? Colors.white70 : Colors.black87;
+
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: ElevatedButton.icon(
+          onPressed: effectiveLocked
+              ? null
+              : () {
+                  // ミスを「取り消した」という安堵感を与える中程度の振動
+                  if (settings.haptic) HapticFeedback.mediumImpact();
+                  ref.read(matchCommandProvider).undoLastEvent(matchId);
+                },
+          icon: Icon(Icons.undo, size: isTablet ? 32 : 20, color: labelColor),
+          label: Text('取消', style: TextStyle(fontSize: isTablet ? 28 : 18, fontWeight: FontWeight.bold, color: labelColor)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: btnColor,
+            foregroundColor: labelColor,
+            elevation: effectiveLocked ? 0 : 2,
+            padding: EdgeInsets.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 10),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

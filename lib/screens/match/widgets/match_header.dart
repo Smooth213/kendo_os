@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../models/match_model.dart';
 import '../../../../providers/match_rule_provider.dart';
 import '../../../../providers/match_timer_provider.dart';
-import '../../../../providers/match_command_provider.dart';
 
 class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
   final MatchModel match;
@@ -56,15 +55,13 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
                 ),
               ),
               if (isApproved)
-                const Text('確定済', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 13))
+                const Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child: Text('確定済', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 13)),
+                )
               else
-                IconButton(
-                  icon: Icon(Icons.undo, color: isInputLocked ? Colors.white38 : Colors.white, size: 24),
-                  tooltip: '1つ前の入力を取り消す',
-                  onPressed: isInputLocked
-                      ? null
-                      : () => ref.read(matchCommandProvider).undoLastEvent(match.id),
-                ),
+                const SizedBox(width: 48), // ★ Phase 4: Undoボタンを下部に移したため削除。タイトルを中央に保つための見えない余白。
+              // ★ Phase 7: 大会ホームに集約したため、個別試合のQRボタンは削除
             ],
           ),
         ),

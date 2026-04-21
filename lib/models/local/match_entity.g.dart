@@ -124,31 +124,38 @@ const MatchEntitySchema = CollectionSchema(
       name: r'scorerId',
       type: IsarType.string,
     ),
-    r'source': PropertySchema(id: 25, name: r'source', type: IsarType.string),
-    r'status': PropertySchema(id: 26, name: r'status', type: IsarType.string),
+    r'snapshots': PropertySchema(
+      id: 25,
+      name: r'snapshots',
+      type: IsarType.objectList,
+
+      target: r'MatchSnapshotEntity',
+    ),
+    r'source': PropertySchema(id: 26, name: r'source', type: IsarType.string),
+    r'status': PropertySchema(id: 27, name: r'status', type: IsarType.string),
     r'timerIsRunning': PropertySchema(
-      id: 27,
+      id: 28,
       name: r'timerIsRunning',
       type: IsarType.bool,
     ),
     r'tournamentId': PropertySchema(
-      id: 28,
+      id: 29,
       name: r'tournamentId',
       type: IsarType.string,
     ),
-    r'version': PropertySchema(id: 29, name: r'version', type: IsarType.long),
+    r'version': PropertySchema(id: 30, name: r'version', type: IsarType.long),
     r'whiteName': PropertySchema(
-      id: 30,
+      id: 31,
       name: r'whiteName',
       type: IsarType.string,
     ),
     r'whiteRemaining': PropertySchema(
-      id: 31,
+      id: 32,
       name: r'whiteRemaining',
       type: IsarType.stringList,
     ),
     r'whiteScore': PropertySchema(
-      id: 32,
+      id: 33,
       name: r'whiteScore',
       type: IsarType.long,
     ),
@@ -175,7 +182,10 @@ const MatchEntitySchema = CollectionSchema(
     ),
   },
   links: {},
-  embeddedSchemas: {r'ScoreEventEntity': ScoreEventEntitySchema},
+  embeddedSchemas: {
+    r'ScoreEventEntity': ScoreEventEntitySchema,
+    r'MatchSnapshotEntity': MatchSnapshotEntitySchema,
+  },
 
   getId: _matchEntityGetId,
   getLinks: _matchEntityGetLinks,
@@ -237,6 +247,18 @@ int _matchEntityEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.snapshots.length * 3;
+  {
+    final offsets = allOffsets[MatchSnapshotEntity]!;
+    for (var i = 0; i < object.snapshots.length; i++) {
+      final value = object.snapshots[i];
+      bytesCount += MatchSnapshotEntitySchema.estimateSize(
+        value,
+        offsets,
+        allOffsets,
+      );
+    }
+  }
   bytesCount += 3 + object.source.length * 3;
   bytesCount += 3 + object.status.length * 3;
   {
@@ -292,14 +314,20 @@ void _matchEntitySerialize(
   writer.writeStringList(offsets[22], object.refereeNames);
   writer.writeLong(offsets[23], object.remainingSeconds);
   writer.writeString(offsets[24], object.scorerId);
-  writer.writeString(offsets[25], object.source);
-  writer.writeString(offsets[26], object.status);
-  writer.writeBool(offsets[27], object.timerIsRunning);
-  writer.writeString(offsets[28], object.tournamentId);
-  writer.writeLong(offsets[29], object.version);
-  writer.writeString(offsets[30], object.whiteName);
-  writer.writeStringList(offsets[31], object.whiteRemaining);
-  writer.writeLong(offsets[32], object.whiteScore);
+  writer.writeObjectList<MatchSnapshotEntity>(
+    offsets[25],
+    allOffsets,
+    MatchSnapshotEntitySchema.serialize,
+    object.snapshots,
+  );
+  writer.writeString(offsets[26], object.source);
+  writer.writeString(offsets[27], object.status);
+  writer.writeBool(offsets[28], object.timerIsRunning);
+  writer.writeString(offsets[29], object.tournamentId);
+  writer.writeLong(offsets[30], object.version);
+  writer.writeString(offsets[31], object.whiteName);
+  writer.writeStringList(offsets[32], object.whiteRemaining);
+  writer.writeLong(offsets[33], object.whiteScore);
 }
 
 MatchEntity _matchEntityDeserialize(
@@ -342,14 +370,22 @@ MatchEntity _matchEntityDeserialize(
   object.refereeNames = reader.readStringList(offsets[22]) ?? [];
   object.remainingSeconds = reader.readLong(offsets[23]);
   object.scorerId = reader.readStringOrNull(offsets[24]);
-  object.source = reader.readString(offsets[25]);
-  object.status = reader.readString(offsets[26]);
-  object.timerIsRunning = reader.readBool(offsets[27]);
-  object.tournamentId = reader.readStringOrNull(offsets[28]);
-  object.version = reader.readLong(offsets[29]);
-  object.whiteName = reader.readString(offsets[30]);
-  object.whiteRemaining = reader.readStringList(offsets[31]) ?? [];
-  object.whiteScore = reader.readLong(offsets[32]);
+  object.snapshots =
+      reader.readObjectList<MatchSnapshotEntity>(
+        offsets[25],
+        MatchSnapshotEntitySchema.deserialize,
+        allOffsets,
+        MatchSnapshotEntity(),
+      ) ??
+      [];
+  object.source = reader.readString(offsets[26]);
+  object.status = reader.readString(offsets[27]);
+  object.timerIsRunning = reader.readBool(offsets[28]);
+  object.tournamentId = reader.readStringOrNull(offsets[29]);
+  object.version = reader.readLong(offsets[30]);
+  object.whiteName = reader.readString(offsets[31]);
+  object.whiteRemaining = reader.readStringList(offsets[32]) ?? [];
+  object.whiteScore = reader.readLong(offsets[33]);
   return object;
 }
 
@@ -418,20 +454,29 @@ P _matchEntityDeserializeProp<P>(
     case 24:
       return (reader.readStringOrNull(offset)) as P;
     case 25:
-      return (reader.readString(offset)) as P;
+      return (reader.readObjectList<MatchSnapshotEntity>(
+                offset,
+                MatchSnapshotEntitySchema.deserialize,
+                allOffsets,
+                MatchSnapshotEntity(),
+              ) ??
+              [])
+          as P;
     case 26:
       return (reader.readString(offset)) as P;
     case 27:
-      return (reader.readBool(offset)) as P;
-    case 28:
-      return (reader.readStringOrNull(offset)) as P;
-    case 29:
-      return (reader.readLong(offset)) as P;
-    case 30:
       return (reader.readString(offset)) as P;
+    case 28:
+      return (reader.readBool(offset)) as P;
+    case 29:
+      return (reader.readStringOrNull(offset)) as P;
+    case 30:
+      return (reader.readLong(offset)) as P;
     case 31:
-      return (reader.readStringList(offset) ?? []) as P;
+      return (reader.readString(offset)) as P;
     case 32:
+      return (reader.readStringList(offset) ?? []) as P;
+    case 33:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -2811,6 +2856,59 @@ extension MatchEntityQueryFilter
     });
   }
 
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  snapshotsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'snapshots', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  snapshotsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'snapshots', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  snapshotsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'snapshots', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  snapshotsLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'snapshots', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  snapshotsLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'snapshots', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  snapshotsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'snapshots',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition> sourceEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -3728,6 +3826,13 @@ extension MatchEntityQueryObject
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'events');
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  snapshotsElement(FilterQuery<MatchSnapshotEntity> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'snapshots');
     });
   }
 }
@@ -4864,6 +4969,13 @@ extension MatchEntityQueryProperty
     });
   }
 
+  QueryBuilder<MatchEntity, List<MatchSnapshotEntity>, QQueryOperations>
+  snapshotsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'snapshots');
+    });
+  }
+
   QueryBuilder<MatchEntity, String, QQueryOperations> sourceProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'source');
@@ -5055,6 +5167,7 @@ const _ScoreEventEntitytypeEnumValueMap = {
   'undo': 5,
   'fusen': 6,
   'hantei': 7,
+  'restore': 8,
 };
 const _ScoreEventEntitytypeValueEnumMap = {
   0: PointType.men,
@@ -5065,6 +5178,7 @@ const _ScoreEventEntitytypeValueEnumMap = {
   5: PointType.undo,
   6: PointType.fusen,
   7: PointType.hantei,
+  8: PointType.restore,
 };
 
 extension ScoreEventEntityQueryFilter
@@ -5624,3 +5738,593 @@ extension ScoreEventEntityQueryFilter
 
 extension ScoreEventEntityQueryObject
     on QueryBuilder<ScoreEventEntity, ScoreEventEntity, QFilterCondition> {}
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const MatchSnapshotEntitySchema = Schema(
+  name: r'MatchSnapshotEntity',
+  id: -2426652353465081499,
+  properties: {
+    r'createdAt': PropertySchema(
+      id: 0,
+      name: r'createdAt',
+      type: IsarType.dateTime,
+    ),
+    r'events': PropertySchema(
+      id: 1,
+      name: r'events',
+      type: IsarType.objectList,
+
+      target: r'ScoreEventEntity',
+    ),
+    r'id': PropertySchema(id: 2, name: r'id', type: IsarType.string),
+    r'reason': PropertySchema(id: 3, name: r'reason', type: IsarType.string),
+  },
+
+  estimateSize: _matchSnapshotEntityEstimateSize,
+  serialize: _matchSnapshotEntitySerialize,
+  deserialize: _matchSnapshotEntityDeserialize,
+  deserializeProp: _matchSnapshotEntityDeserializeProp,
+);
+
+int _matchSnapshotEntityEstimateSize(
+  MatchSnapshotEntity object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.events.length * 3;
+  {
+    final offsets = allOffsets[ScoreEventEntity]!;
+    for (var i = 0; i < object.events.length; i++) {
+      final value = object.events[i];
+      bytesCount += ScoreEventEntitySchema.estimateSize(
+        value,
+        offsets,
+        allOffsets,
+      );
+    }
+  }
+  {
+    final value = object.id;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.reason;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  return bytesCount;
+}
+
+void _matchSnapshotEntitySerialize(
+  MatchSnapshotEntity object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeDateTime(offsets[0], object.createdAt);
+  writer.writeObjectList<ScoreEventEntity>(
+    offsets[1],
+    allOffsets,
+    ScoreEventEntitySchema.serialize,
+    object.events,
+  );
+  writer.writeString(offsets[2], object.id);
+  writer.writeString(offsets[3], object.reason);
+}
+
+MatchSnapshotEntity _matchSnapshotEntityDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = MatchSnapshotEntity();
+  object.createdAt = reader.readDateTimeOrNull(offsets[0]);
+  object.events =
+      reader.readObjectList<ScoreEventEntity>(
+        offsets[1],
+        ScoreEventEntitySchema.deserialize,
+        allOffsets,
+        ScoreEventEntity(),
+      ) ??
+      [];
+  object.id = reader.readStringOrNull(offsets[2]);
+  object.reason = reader.readStringOrNull(offsets[3]);
+  return object;
+}
+
+P _matchSnapshotEntityDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 1:
+      return (reader.readObjectList<ScoreEventEntity>(
+                offset,
+                ScoreEventEntitySchema.deserialize,
+                allOffsets,
+                ScoreEventEntity(),
+              ) ??
+              [])
+          as P;
+    case 2:
+      return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader.readStringOrNull(offset)) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension MatchSnapshotEntityQueryFilter
+    on
+        QueryBuilder<
+          MatchSnapshotEntity,
+          MatchSnapshotEntity,
+          QFilterCondition
+        > {
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  createdAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'createdAt'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  createdAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'createdAt'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  createdAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'createdAt', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  createdAtGreaterThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  createdAtLessThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  createdAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'createdAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  eventsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'events', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  eventsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'events', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  eventsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'events', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  eventsLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'events', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  eventsLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'events', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  eventsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'events',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'id'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'id'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idLessThan(String? value, {bool include = false, bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'id',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  idIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'id', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'reason'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'reason'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'reason',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'reason',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'reason',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'reason',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'reason',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'reason',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'reason',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'reason',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'reason', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  reasonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'reason', value: ''),
+      );
+    });
+  }
+}
+
+extension MatchSnapshotEntityQueryObject
+    on
+        QueryBuilder<
+          MatchSnapshotEntity,
+          MatchSnapshotEntity,
+          QFilterCondition
+        > {
+  QueryBuilder<MatchSnapshotEntity, MatchSnapshotEntity, QAfterFilterCondition>
+  eventsElement(FilterQuery<ScoreEventEntity> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'events');
+    });
+  }
+}

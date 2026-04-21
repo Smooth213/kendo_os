@@ -55,7 +55,9 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     bool? sleepPrevent,
     bool? leftHanded,
     bool? showConfirmDialog, // ★ 追加
-    String? themeMode, // 追加
+    String? themeMode,
+    int? securityLevel, // ★ Phase 8: 1(自由), 2(標準), 3(厳格)
+    String? adminPasscode, // ★ Phase 8: 英数8文字
   }) {
     updateSettings(state.copyWith(
       confirmBehavior: confirmBehavior ?? state.confirmBehavior,
@@ -66,7 +68,9 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       sleepPrevent: sleepPrevent ?? state.sleepPrevent,
       leftHanded: leftHanded ?? state.leftHanded,
       showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog, // ★ 追加
-      themeMode: themeMode ?? state.themeMode, // 追加
+      themeMode: themeMode ?? state.themeMode,
+      securityLevel: securityLevel ?? state.securityLevel,
+      adminPasscode: adminPasscode ?? state.adminPasscode,
     ));
   }
 
@@ -78,6 +82,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
         confirmBehavior: 'long', isLocked: true, showConfirmDialog: true, 
         haptic: true, strikeVib: true, sound: true, 
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
+        securityLevel: 2, // 🏆 公式はデフォルトで「標準」ガード
       ));
     } else if (presetName == 'renseikai') {
       // 🤺 試合・錬成会モード（アプリのデフォルト）：テンポ重視
@@ -85,6 +90,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
         confirmBehavior: 'double', isLocked: false, showConfirmDialog: false, 
         haptic: true, strikeVib: true, sound: false, 
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
+        securityLevel: 1,
       ));
     } else if (presetName == 'practice') {
       // 🏠 練習・道場モード：極限までテンポと静かさを重視
@@ -92,6 +98,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
         confirmBehavior: 'single', isLocked: false, showConfirmDialog: false, 
         haptic: false, strikeVib: false, sound: false, 
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
+        securityLevel: 1,
       ));
     }
   }

@@ -11,6 +11,11 @@ import 'kachinuki_scoreboard_screen.dart';
 import '../models/tournament_model.dart';
 import '../repositories/tournament_repository.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+
+// ★ Phase 7: 閲覧権限によるUI制御のため追加
+import '../providers/permission_provider.dart';
 
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
   final repo = ref.watch(tournamentRepositoryProvider);
@@ -27,6 +32,9 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // ★ Phase 7: 現在の権限（Permission）を取得
+    final permissions = ref.watch(permissionProvider);
     
     // iOS Native カラーパレット
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
@@ -82,28 +90,41 @@ class HomeScreen extends ConsumerWidget {
       matchesByCategory.putIfAbsent(cat, () => []).add(m);
     }
 
-    return Scaffold(
-      backgroundColor: bgColor, 
-      appBar: AppBar(
-        title: Text('大会ホーム', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
-        backgroundColor: Colors.transparent, 
-        elevation: 0,
-        iconTheme: IconThemeData(color: textColor),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: ElevatedButton.icon(
-              onPressed: () => context.go('/'), 
-              icon: Icon(Icons.home, color: isDark ? Colors.white : Colors.indigo.shade700, size: 18),
-              label: Text('トップへ', style: TextStyle(color: isDark ? Colors.white : Colors.indigo.shade700, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.indigo.shade50, 
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    // ★ Phase 7: 閲覧者の場合は「戻る」を禁止し、大会内にロックする
+    return PopScope(
+      canPop: !permissions.isReadOnly, // 閲覧者はシステムの戻るボタンを無効化
+      child: Scaffold(
+        backgroundColor: bgColor, 
+        appBar: AppBar(
+          automaticallyImplyLeading: !permissions.isReadOnly, // 閲覧者には左側の「戻る」を出さない
+          title: Text('大会ホーム', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
+          backgroundColor: Colors.transparent, 
+          elevation: 0,
+          iconTheme: IconThemeData(color: textColor),
+          actions: [
+            // ★ Phase 7: 閲覧専用モードでは「トップへ」を隠し、QR共有を置く
+            if (!permissions.isReadOnly)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              child: ElevatedButton.icon(
+                onPressed: () => context.go('/'), 
+                icon: Icon(Icons.home, color: isDark ? Colors.white : Colors.indigo.shade700, size: 18),
+                label: Text('トップへ', style: TextStyle(color: isDark ? Colors.white : Colors.indigo.shade700, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.indigo.shade50, 
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
               ),
             ),
+          // ★ 案A：AppBarの右端にQR共有ボタンを集約
+          IconButton(
+            icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
+            tooltip: '大会を共有する',
+            onPressed: () => _showShareDialog(context, tournamentId),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
@@ -144,49 +165,59 @@ class HomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
             child: Column(
               children: [
-                Container(
-                  width: double.infinity,
-                  height: 60, 
-                  decoration: BoxDecoration(
-                    color: Colors.indigo.shade600, 
-                    borderRadius: BorderRadius.circular(16), 
-                    boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))], 
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: () => context.push('/setup-match/$tournamentId'),
-                    icon: const Icon(Icons.add_circle, color: Colors.white, size: 24),
-                    label: const Text('この大会に試合を追加する', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                // ★ 修正：試合作成権限（canCreateMatch）がある場合のみ表示（管理者・記録係）
+                if (permissions.canCreateMatch) ...[
+                  Container(
+                    width: double.infinity,
+                    height: 60, 
+                    decoration: BoxDecoration(
+                      color: Colors.indigo.shade600, 
+                      borderRadius: BorderRadius.circular(16), 
+                      boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))], 
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () => context.push('/setup-match/$tournamentId'),
+                      icon: const Icon(Icons.add_circle, color: Colors.white, size: 24),
+                      label: const Text('この大会に試合を追加する', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                ],
                 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StandingsScreen(tournamentId: tournamentId))),
-                        icon: Icon(Icons.emoji_events, size: 18, color: Colors.amber.shade600),
-                        label: Text('自チーム成績', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.grey.shade800)),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
-                          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                    // ★ Phase 7: 閲覧専用モードでは「自チーム成績」を非表示にする
+                    if (!permissions.isReadOnly) ...[
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StandingsScreen(tournamentId: tournamentId))),
+                          icon: Icon(Icons.emoji_events, size: 18, color: Colors.amber.shade600),
+                          label: Text('自チーム成績', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.grey.shade800)),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
+                            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => OfficialRecordScreen(tournamentId: tournamentId))),
                         icon: Icon(Icons.print, size: 18, color: isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade600),
-                        label: Text('出力用スコア', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.grey.shade800)),
+                        // ★ Phase 7: 役割に応じてボタンのラベルを変更（現場UX対応）
+                        label: Text(
+                          permissions.isReadOnly ? '全試合スコア' : '出力用スコア', 
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.grey.shade800)
+                        ),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
                           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -421,6 +452,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -455,9 +487,11 @@ class HomeScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(tournament.name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
                 ),
-                PopupMenuButton<String>(
-                  icon: Icon(Icons.more_horiz, color: popupIconColor),
-                  color: cardColor,
+                // ★ 修正：大会管理権限（canManageTournament）がある場合のみ表示（管理者限定）
+                if (ref.watch(permissionProvider).canManageTournament)
+                  PopupMenuButton<String>(
+                    icon: Icon(Icons.more_horiz, color: popupIconColor),
+                    color: cardColor,
                   onSelected: (value) async {
                     if (value == 'edit') {
                       final nameController = TextEditingController(text: tournament.name);
@@ -615,7 +649,8 @@ class HomeScreen extends ConsumerWidget {
             ),
           ],
         ),
-        trailing: IconButton(
+        // ★ Phase 7: 閲覧専用モードではゴミ箱（削除）ボタンを完全に隠す
+        trailing: ref.watch(permissionProvider).isReadOnly ? null : IconButton(
           icon: Icon(Icons.delete_outline, color: Colors.grey.shade400, size: 20),
           onPressed: () async {
             final confirm = await showDialog<bool>(
@@ -681,5 +716,49 @@ class HomeScreen extends ConsumerWidget {
     final teamName = parts[0].trim();
     final playerName = parts[1].trim();
     return '$playerName : $teamName';
+  }
+
+  // ★ Phase 7: 大会全体の共有ダイアログ
+  void _showShareDialog(BuildContext context, String tournamentId) {
+    final String shareUrl = 'https://kendo-os.web.app/home/$tournamentId?role=viewer';
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('大会観戦リンク', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        content: SizedBox(
+          width: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('この大会の全試合・スコアを\nリアルタイムで共有できます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(8),
+                color: Colors.white,
+                child: QrImageView(
+                  data: shareUrl,
+                  version: QrVersions.auto,
+                  size: 200.0,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => SharePlus.instance.share(
+                  ShareParams(text: '【剣道OS】大会の進行状況をリアルタイムで観戦できます！\n$shareUrl'),
+                ),
+                icon: const Icon(Icons.share),
+                label: const Text('LINEやSNSでURLを送る'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる', style: TextStyle(color: Colors.grey))),
+        ],
+      ),
+    );
   }
 }

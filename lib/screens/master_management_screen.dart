@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/player_model.dart';
 import '../repositories/player_repository.dart';
+import '../providers/permission_provider.dart';
+// ★ Phase 2: JSONエクスポートに必要なパッケージを追加
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import '../providers/match_list_provider.dart';
 
 // 選手一覧のProvider
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
@@ -26,6 +32,7 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
   @override
   Widget build(BuildContext context) {
     final playerListAsync = ref.watch(playerListProvider);
+    final permissions = ref.watch(permissionProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final Color primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
@@ -33,8 +40,8 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
     final Color textColor = isDark ? Colors.white : Colors.black87;
 
     return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
+        backgroundColor: bgColor,
+        appBar: AppBar(
         // ★ 修正：選択モード中は「戻る」ではなく「キャンセル（×）」ボタンを表示
         leading: _isSelectionMode
             ? IconButton(
@@ -214,7 +221,8 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
         error: (err, stack) => Center(child: Text('エラーが発生しました: $err')),
       ),
       // ★ 修正：選択モード中はフローティングボタンを非表示にする
-      floatingActionButton: _isSelectionMode 
+      // ★ Phase 8: 閲覧のみ（記録係）の場合は、追加ボタンを表示しない
+      floatingActionButton: permissions.isReadOnly || _isSelectionMode 
         ? null 
         : FloatingActionButton.extended(
             onPressed: () => _showPlayerBottomSheet(context, ref),
@@ -817,6 +825,55 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
                 ),
                 child: const Text('実行', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const Divider(height: 24),
+            
+            // ★ Phase 2: JSONエクスポート（物理バックアップ）
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(backgroundColor: Colors.blue.shade50, child: Icon(Icons.download, color: Colors.blue.shade700)),
+              title: const Text('全データをJSONでバックアップ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              subtitle: const Text('端末内に完全な状態のファイルを書き出します', style: TextStyle(fontSize: 12)),
+              trailing: ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  try {
+                    // 全試合データを取得してJSON文字列に変換
+                    final matches = ref.read(matchListProvider);
+                    // ★ 修正：Timestamp型のエンコードエラーを回避する変換ルールを追加
+                    final jsonStr = jsonEncode(
+                      matches.map((m) => m.toJson()).toList(),
+                      toEncodable: (dynamic item) {
+                        if (item is DateTime) return item.toIso8601String();
+                        if (item.runtimeType.toString() == 'Timestamp') {
+                          try { return (item as dynamic).toDate().toIso8601String(); } catch (_) { return item.toString(); }
+                        }
+                        return item.toString();
+                      },
+                    );
+                    
+                    // 端末のドキュメントディレクトリに保存
+                    final dir = await getApplicationDocumentsDirectory();
+                    final file = File('${dir.path}/kendo_backup_${DateTime.now().millisecondsSinceEpoch}.json');
+                    await file.writeAsString(jsonStr);
+                    
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('✅ バックアップ完了\n${file.path}'), duration: const Duration(seconds: 4)));
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ バックアップ失敗: $e')));
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade50, 
+                  foregroundColor: Colors.blue.shade800, 
+                  elevation: 0, 
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
+                ),
+                child: const Text('書き出し', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
             const Divider(height: 24),

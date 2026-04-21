@@ -5,6 +5,19 @@ import 'score_event.dart';
 part 'match_model.freezed.dart';
 part 'match_model.g.dart';
 
+// ★ Phase 1: 復元用のスナップショットモデル
+@freezed
+abstract class MatchSnapshot with _$MatchSnapshot {
+  const factory MatchSnapshot({
+    required String id,
+    @TimestampConverter() required DateTime createdAt,
+    required String reason,
+    @Default([]) List<ScoreEvent> events,
+  }) = _MatchSnapshot;
+
+  factory MatchSnapshot.fromJson(Map<String, dynamic> json) => _$MatchSnapshotFromJson(json);
+}
+
 @freezed
 abstract class MatchModel with _$MatchModel {
   // ★ フェーズ4：イベントリストからスコアを算出するなど、将来的にカスタムメソッド(派生データ)を持たせるための準備
@@ -19,11 +32,13 @@ abstract class MatchModel with _$MatchModel {
     @Default(0) int whiteScore,
     @Default('waiting') String status,
     @Default([]) List<ScoreEvent> events, // ★ これが「真実のデータ（Single Source of Truth）」となる
+    @Default([]) List<MatchSnapshot> snapshots, // ★ Phase 1: 保存されたスナップショットの履歴
     @Default(false) bool isDirty, // ローカルで変更があり、同期が必要な場合に true
     @TimestampConverter() DateTime? lastUpdatedAt, // 競合解決のための最終更新日時
     @Default([]) List<String> refereeNames,
     @Default(true) bool countForStandings,
     String? scorerId,
+    @TimestampConverter() DateTime? lockExpiresAt, // ★ Phase 3: デッドロック防止の有効期限
     @Default(1) int version,
     @Default(false) bool isAutoAssigned,
     @DoubleConverter() @Default(0.0) double order,

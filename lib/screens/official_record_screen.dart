@@ -7,6 +7,8 @@ import '../providers/match_list_provider.dart';
 import '../services/pdf_service.dart'; 
 // ★ 追加：先ほど作成した勝ち抜き戦の最強描画エンジンを呼び出す
 import 'kachinuki_scoreboard_screen.dart'; 
+// ★ Phase 7: 権限プロバイダのインポート
+import '../providers/permission_provider.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -21,6 +23,11 @@ class OfficialRecordScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // ★ Phase 7: 権限プロバイダから取得
+    final permissions = ref.watch(permissionProvider);
+    final String screenTitle = permissions.isReadOnly ? '全試合スコア' : '大会 公式記録';
+
     final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
@@ -43,7 +50,7 @@ class OfficialRecordScreen extends ConsumerWidget {
         backgroundColor: bgColor,
         appBar: AppBar(
           leading: IconButton(icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), onPressed: () => Navigator.pop(context)),
-          title: Text('大会 公式記録', style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
+          title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           elevation: 0,
         ),
@@ -62,7 +69,7 @@ class OfficialRecordScreen extends ConsumerWidget {
             icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), 
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text('大会 公式記録', style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
+          title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, 
           elevation: 0,
           actions: [

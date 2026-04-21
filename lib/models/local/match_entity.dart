@@ -1,3 +1,4 @@
+
 import 'package:isar_community/isar.dart'; // ★ パッケージ名は isar_community ですが、ファイル名は isar.dart です
 import '../score_event.dart';
 
@@ -19,6 +20,15 @@ class ScoreEventEntity {
   int sequence = 0;
 }
 
+// ★ Phase 1: 復元用のスナップショット（特定の時点のイベント履歴を丸ごと保存）
+@embedded
+class MatchSnapshotEntity {
+  String? id;
+  DateTime? createdAt;
+  String? reason; // 例: "試合開始", "赤 メ 取得後"
+  List<ScoreEventEntity> events = [];
+}
+
 // ★ Step 1-2: 試合データの保存用テーブル（Collection）
 @collection
 class MatchEntity {
@@ -38,6 +48,9 @@ class MatchEntity {
 
   // 履歴（SSOTの要）
   List<ScoreEventEntity> events = [];
+
+  // ★ Phase 1: 保存されたスナップショットの履歴
+  List<MatchSnapshotEntity> snapshots = [];
 
   // ★ オフライン同期用のフラグ
   bool isDirty = false;

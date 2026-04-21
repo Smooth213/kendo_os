@@ -185,6 +185,10 @@ class KendoRuleEngine {
   List<ScoreEvent> _filterActiveEvents(List<ScoreEvent> events) {
     List<ScoreEvent> active = [];
     for (var e in events) {
+      // ★ Phase 4: キャンセル済みのイベントは歴史には残るが、計算からは完全に無視する
+      if (e.isCanceled) continue; 
+      
+      // （※過去の互換性のために PointType.undo のロジックも残しておきます）
       if (e.type == PointType.undo) {
         if (active.isNotEmpty) active.removeLast();
       } else {

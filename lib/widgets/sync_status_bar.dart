@@ -1,95 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/role_provider.dart';
 import '../providers/sync_provider.dart';
 
-class SyncStatusBar extends ConsumerStatefulWidget {
+class SyncStatusBar extends ConsumerWidget {
   const SyncStatusBar({super.key});
 
   @override
-  ConsumerState<SyncStatusBar> createState() => _SyncStatusBarState();
-}
-
-class _SyncStatusBarState extends ConsumerState<SyncStatusBar> {
-  bool _isConfirming = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(operationModeProvider);
+    final activeRole = ref.watch(activeRoleProvider);
     final isOnline = ref.watch(isOnlineProvider);
-    final isSyncing = ref.watch(isSyncingStateProvider); // ★ 追加：真の同期状態を監視
-    final pendingCountAsync = ref.watch(pendingMatchesCountProvider);
-    final pendingCount = pendingCountAsync.value ?? 0;
 
-    // 完全に同期されていてオンラインの時は、画面の邪魔にならないよう非表示にする
-    if (isOnline && pendingCount == 0) {
-      return const SizedBox.shrink();
-    }
-
-    // ★ Phase 8-1: 同期中ではないが、未送信データが残っている＝「競合」でスキップされた状態
-    final isConflict = isOnline && !isSyncing && pendingCount > 0;
-
-    Color bgColor;
-    IconData icon;
-    String text;
-
-    if (!isOnline) {
-      bgColor = Colors.red.shade700;
-      icon = Icons.cloud_off;
-      text = 'オフライン動作中 (未送信: $pendingCount件)';
-      _isConfirming = false;
-    } else if (isSyncing) {
-      bgColor = Colors.orange.shade700;
-      icon = Icons.cloud_sync;
-      text = 'クラウドへ同期中... (残り$pendingCount件)';
-      _isConfirming = false;
-    } else if (isConflict) {
-      if (_isConfirming) {
-        bgColor = Colors.red.shade900;
-        icon = Icons.delete_forever;
-        text = 'タップして上書き実行 (手元の未送信を破棄)';
-      } else {
-        bgColor = Colors.amber.shade900;
-        icon = Icons.warning_amber_rounded;
-        text = '⚠️ 競合データあり: $pendingCount件 (タップで解決)';
-      }
-    } else {
-      return const SizedBox.shrink();
+    Color barColor;
+    switch (activeRole) {
+      case Role.admin: barColor = Colors.indigo.shade800; break;   // 大会・管理者（紺）
+      case Role.scorer: barColor = Colors.teal.shade700; break;     // 大会・記録係（青緑）
+      case Role.editor: barColor = Colors.purple.shade700; break;   // マスタ・編集者（紫）
+      case Role.viewer: barColor = Colors.blueGrey.shade700; break; // 閲覧のみ（グレー）
     }
 
     return Material(
-      color: bgColor,
-      elevation: 2,
-      // ★ Phase 8-1.5: 競合時はタップして解決できるようにする
-      child: InkWell(
-        onTap: isConflict ? () async {
-          // Navigator が使えない階層のため、ダイアログを廃止し「ダブルタップ確認」を採用
-          if (_isConfirming) {
-            await ref.read(syncEngineProvider).resolveConflictByKeepingServer();
-            if (mounted) setState(() => _isConfirming = false);
-          } else {
-            setState(() => _isConfirming = true);
-            // 4秒間何もしなければ元の警告表示に戻る
-            Future.delayed(const Duration(seconds: 4), () {
-              if (mounted && _isConfirming) setState(() => _isConfirming = false);
-            });
-          }
-        } : null,
-        child: SafeArea(
-          bottom: false,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white, size: 14),
-                const SizedBox(width: 8),
-                Text(
-                  text,
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+      child: Container(
+        width: double.infinity,
+        // ★ 修正：SafeAreaの上の隙間（時計など）に被らないよう、最小限の高さを確保
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: 4),
+        color: barColor,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // 1. 左側：現在の状態（現場の言葉）
+              Text(
+                '【${mode.label}：${activeRole.label}】',
+                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+              ),
+              
+              // 2. 右側：同期の状態
+              Row(
+                children: [
+                  Icon(
+                    isOnline ? Icons.cloud_done : Icons.cloud_off,
+                    color: Colors.white70,
+                    size: 12,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    isOnline ? 'リアルタイム同期中' : 'オフライン動作中',
+                    style: const TextStyle(color: Colors.white70, fontSize: 10),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

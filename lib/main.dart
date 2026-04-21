@@ -15,20 +15,24 @@ import 'screens/team_registration_screen.dart';
 import 'screens/start_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/tournament_list_screen.dart'; 
-import 'screens/match_screen.dart';
+import 'screens/match_router.dart'; // ★ Phase 5: ルーターを追加
 import 'screens/master_management_screen.dart';
 import 'screens/create_tournament_screen.dart';
 import 'screens/setup_match_format_screen.dart';
 import 'screens/order_setup_screen.dart'; 
 import 'screens/team_scoreboard_screen.dart'; 
+import 'screens/kachinuki_scoreboard_screen.dart'; // ★ Phase 6: 勝ち抜き戦のルーティング用に追加
 import 'screens/login_screen.dart'; 
 import 'screens/settings_screen.dart'; 
 import 'providers/auth_provider.dart';
+import 'screens/audit_log_screen.dart'; // ★ Phase 5: 監査ログ画面を追加
 import 'providers/settings_provider.dart'; 
 import 'providers/sync_provider.dart'; 
 import 'models/local/match_entity.dart';
 import 'repositories/local_match_repository.dart';
 import 'widgets/sync_status_bar.dart'; 
+
+import 'providers/role_provider.dart';
 
 // ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -96,6 +100,7 @@ final _router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const StartScreen()),
     GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()), // ★ Phase 2: 設定画面へのルート
+    GoRoute(path: '/audit-log', builder: (context, state) => const AuditLogScreen()), // ★ Phase 5: 監査ログへのルート
     GoRoute(
       path: '/tournament-list', 
       builder: (context, state) {
@@ -104,32 +109,61 @@ final _router = GoRouter(
         return TournamentListScreen(isArchive: isArchive);
       }
     ),
-    // ★ 大会IDを受け取る専用のホーム画面に変更！
-    GoRoute(path: '/home/:tournamentId', builder: (context, state) => HomeScreen(tournamentId: state.pathParameters['tournamentId']!)),
-    GoRoute(path: '/match/:id', builder: (context, state) => MatchScreen(matchId: state.pathParameters['id']!)),
+    // ★ Phase 6: 全ての共有可能画面を RoleInjector で包み、URLからViewer権限を適用できるようにする
+    GoRoute(
+      path: '/home/:tournamentId', 
+      builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: HomeScreen(tournamentId: state.pathParameters['tournamentId']!))
+    ),
+    GoRoute(
+      path: '/match/:id', 
+      builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: MatchRouter(matchId: state.pathParameters['id']!))
+    ),
+    GoRoute(
+      path: '/team-scoreboard/:groupName',
+      builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: TeamScoreboardScreen(groupName: state.pathParameters['groupName']!))
+    ),
+    GoRoute(
+      path: '/kachinuki-scoreboard/:groupName',
+      builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: KachinukiScoreboardScreen(groupName: state.pathParameters['groupName']!))
+    ),
+
     GoRoute(path: '/master', builder: (context, state) => const MasterManagementScreen()),
     GoRoute(path: '/create-tournament', builder: (context, state) => const CreateTournamentScreen()),
     GoRoute(path: '/setup-match/:id', builder: (context, state) => SetupMatchFormatScreen(tournamentId: state.pathParameters['id']!)),
-    
     GoRoute(
       path: '/order-setup/:id',
-      builder: (context, state) {
-        final id = state.pathParameters['id']!;
-        // ★ バケツリレー（extra）を完全に廃止し、大会IDだけを渡す！
-        return OrderSetupScreen(tournamentId: id); 
-      },
+      builder: (context, state) => OrderSetupScreen(tournamentId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/team-registration/:id',
       builder: (context, state) => TeamRegistrationScreen(tournamentId: state.pathParameters['id']!),
     ),
-
-    GoRoute(
-      path: '/team-scoreboard/:groupName',
-      builder: (context, state) => TeamScoreboardScreen(groupName: state.pathParameters['groupName']!),
-    ),
   ],
 );
+
+final routerProvider = Provider<GoRouter>((ref) => _router);
+
+// ★ 中央司令部：ルーターの遷移イベントを監視してモードを自動同期する
+final routeObserverProvider = Provider<void>((ref) {
+  final router = ref.watch(routerProvider);
+
+  void listener() {
+    final location = router.routeInformationProvider.value.uri.path;
+    final targetMode = location.contains('master') 
+        ? OperationMode.local 
+        : OperationMode.tournament;
+
+    if (ref.read(operationModeProvider) != targetMode) {
+      Future.microtask(() {
+        ref.read(operationModeProvider.notifier).state = targetMode;
+      });
+    }
+  }
+
+  listener(); // 初期化時に1回実行
+  router.routerDelegate.addListener(listener); // 画面遷移（Pop含む）のたびに発火
+  ref.onDispose(() => router.routerDelegate.removeListener(listener));
+});
 
 class KendoOSApp extends ConsumerWidget {
   const KendoOSApp({super.key});
@@ -137,6 +171,10 @@ class KendoOSApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // ★ Phase 4: 同期エンジンを監視（起動）させ、バックグラウンドで常駐させる
     ref.watch(syncEngineProvider);
+
+    // ★ ここが「中央司令部」
+    // ルーターの遷移状態を監視し、パスに基づいてモードを自動決定する
+    ref.watch(routeObserverProvider);
 
     final authState = ref.watch(authStateProvider);
     final settings = ref.watch(settingsProvider);
@@ -182,12 +220,15 @@ class KendoOSApp extends ConsumerWidget {
           scaffoldMessengerKey: rootScaffoldMessengerKey, // ★ バックグラウンド通知用
           debugShowCheckedModeBanner: false,
           
-          // ★ Phase 6: 全ての画面の「さらに上」にステータスバーを強制表示する魔法
+          // ★ Phase 8: 全ての画面の「さらに上」に、役割と同期状態を常時表示
           builder: (context, child) {
+            // Roleの保存を有効化
+            ref.watch(rolePersistProvider); 
+            
             return Column(
               children: [
-                const SyncStatusBar(), // 常に画面の一番上に鎮座する
-                Expanded(child: child!), // アプリの本来の画面はここに入る
+                const SyncStatusBar(), // ここに新しいバーが鎮座
+                Expanded(child: child!),
               ],
             );
           },
@@ -252,5 +293,36 @@ class KendoOSApp extends ConsumerWidget {
       loading: () => const MaterialApp(home: Scaffold(body: Center(child: CircularProgressIndicator()))),
       error: (err, stack) => MaterialApp(home: Scaffold(body: Center(child: Text('エラー: $err')))),
     );
+  }
+}
+
+// ============================================================================
+// ★ Phase 6: URLからRoleを解析し、Providerにセットしてからルーターへ流す魔法の箱
+// ============================================================================
+class RoleInjector extends ConsumerStatefulWidget {
+  final Widget child; // ★ 修正：特定の画面に依存せず、どんな画面でも包めるようにする
+  final String? roleStr;
+  const RoleInjector({super.key, required this.child, this.roleStr});
+
+  @override
+  ConsumerState<RoleInjector> createState() => _RoleInjectorState();
+}
+
+class _RoleInjectorState extends ConsumerState<RoleInjector> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // ★ 修正：永続的な設定は変えず、一時的な上書き(temporaryOverride)にセットする
+      if (widget.roleStr == 'viewer') {
+        ref.read(temporaryRoleOverrideProvider.notifier).state = Role.viewer;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 権限をセットした後、指定された画面（星取表やホームなど）をそのまま表示する
+    return widget.child;
   }
 }

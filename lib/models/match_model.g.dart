@@ -6,6 +6,26 @@ part of 'match_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+_MatchSnapshot _$MatchSnapshotFromJson(Map<String, dynamic> json) =>
+    _MatchSnapshot(
+      id: json['id'] as String,
+      createdAt: const TimestampConverter().fromJson(json['createdAt']),
+      reason: json['reason'] as String,
+      events:
+          (json['events'] as List<dynamic>?)
+              ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+    );
+
+Map<String, dynamic> _$MatchSnapshotToJson(_MatchSnapshot instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'createdAt': const TimestampConverter().toJson(instance.createdAt),
+      'reason': instance.reason,
+      'events': instance.events.map((e) => e.toJson()).toList(),
+    };
+
 _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
   id: json['id'] as String,
   matchType: json['matchType'] as String,
@@ -19,6 +39,11 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
           ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
+  snapshots:
+      (json['snapshots'] as List<dynamic>?)
+          ?.map((e) => MatchSnapshot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
   isDirty: json['isDirty'] as bool? ?? false,
   lastUpdatedAt: const TimestampConverter().fromJson(json['lastUpdatedAt']),
   refereeNames:
@@ -28,6 +53,7 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
       const [],
   countForStandings: json['countForStandings'] as bool? ?? true,
   scorerId: json['scorerId'] as String?,
+  lockExpiresAt: const TimestampConverter().fromJson(json['lockExpiresAt']),
   version: (json['version'] as num?)?.toInt() ?? 1,
   isAutoAssigned: json['isAutoAssigned'] as bool? ?? false,
   order: json['order'] == null
@@ -70,6 +96,7 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'whiteScore': instance.whiteScore,
       'status': instance.status,
       'events': instance.events.map((e) => e.toJson()).toList(),
+      'snapshots': instance.snapshots.map((e) => e.toJson()).toList(),
       'isDirty': instance.isDirty,
       'lastUpdatedAt': _$JsonConverterToJson<dynamic, DateTime>(
         instance.lastUpdatedAt,
@@ -78,6 +105,10 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'refereeNames': instance.refereeNames,
       'countForStandings': instance.countForStandings,
       'scorerId': instance.scorerId,
+      'lockExpiresAt': _$JsonConverterToJson<dynamic, DateTime>(
+        instance.lockExpiresAt,
+        const TimestampConverter().toJson,
+      ),
       'version': instance.version,
       'isAutoAssigned': instance.isAutoAssigned,
       'order': const DoubleConverter().toJson(instance.order),

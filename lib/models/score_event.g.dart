@@ -13,6 +13,7 @@ _ScoreEvent _$ScoreEventFromJson(Map<String, dynamic> json) => _ScoreEvent(
   timestamp: const TimestampConverter().fromJson(json['timestamp']),
   userId: json['userId'] as String?,
   sequence: (json['sequence'] as num?)?.toInt() ?? 0,
+  isCanceled: json['isCanceled'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$ScoreEventToJson(_ScoreEvent instance) =>
@@ -23,6 +24,7 @@ Map<String, dynamic> _$ScoreEventToJson(_ScoreEvent instance) =>
       'timestamp': const TimestampConverter().toJson(instance.timestamp),
       'userId': instance.userId,
       'sequence': instance.sequence,
+      'isCanceled': instance.isCanceled,
     };
 
 const _$SideEnumMap = {Side.red: 'red', Side.white: 'white', Side.none: 'none'};
@@ -36,4 +38,5 @@ const _$PointTypeEnumMap = {
   PointType.undo: 'undo',
   PointType.fusen: 'fusen',
   PointType.hantei: 'hantei',
+  PointType.restore: 'restore',
 };

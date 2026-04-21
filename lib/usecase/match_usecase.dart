@@ -1,4 +1,3 @@
-import 'package:uuid/uuid.dart'; // ★ 追加: UndoイベントのID生成用
 import '../models/match_model.dart';
 import '../models/score_event.dart';
 import '../models/match_rule.dart';
@@ -47,23 +46,22 @@ class MatchUseCase {
     return updatedMatch;
   }
 
-  /// 2. Undo
+  /// 2. Undo (★ Phase 4: 非破壊Undoアーキテクチャ)
   MatchModel undoLastEvent(MatchModel currentMatch, MatchRule rule) {
     if (currentMatch.events.isEmpty) return currentMatch;
 
-    final undoEvent = ScoreEvent(
-      id: const Uuid().v4(),
-      side: Side.none, // ★ 修正：Side.none Enumを使用
-      type: PointType.undo,
-      timestamp: DateTime.now(),
-      userId: currentMatch.scorerId,
-      sequence: currentMatch.events.last.sequence + 1,
-    );
+    final updatedEvents = List<ScoreEvent>.from(currentMatch.events);
+    
+    // ★ リストの後ろから「まだキャンセルされていない実際のスコア」を探す
+    final lastValidIndex = updatedEvents.lastIndexWhere((e) => !e.isCanceled && e.type != PointType.undo);
+    
+    // 取り消せるイベントがなければ何もしない
+    if (lastValidIndex == -1) return currentMatch; 
 
-    final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(undoEvent);
-    // ★ Step 7-3: Undo時はデバウンス用の記録をクリアし、即座に次の入力ができるようにする
-    // (間違えてUndoした場合のリカバリ速度を優先)
-    // ※ MatchCommand のインスタンスにアクセスできる場合はそちらをクリア
+    // ★ 物理削除やダミーイベントの追加ではなく、対象イベントのフラグだけを更新（論理削除）
+    updatedEvents[lastValidIndex] = updatedEvents[lastValidIndex].copyWith(isCanceled: true);
+
+    // 更新された歴史（キャンセル済みを無視するエンジン）で再解析
     final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
 
     return currentMatch.copyWith(
@@ -71,7 +69,7 @@ class MatchUseCase {
       status: 'in_progress',
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
-      isDirty: true, // 変更ありとしてマーク
+      isDirty: true, 
       lastUpdatedAt: DateTime.now(),
     );
   }

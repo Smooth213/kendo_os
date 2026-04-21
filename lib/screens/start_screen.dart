@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/permission_provider.dart';
 
 // ★ シンプルなConsumerWidgetに戻りました（波紋アニメーションはFlutter標準に任せます）
 class StartScreen extends ConsumerWidget {
@@ -58,6 +59,8 @@ class StartScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final permissions = ref.watch(permissionProvider);
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : Colors.grey.shade50;
     
@@ -123,11 +126,14 @@ class StartScreen extends ConsumerWidget {
                       delegate: SliverChildListDelegate([
                         Row(
                           children: [
-                            Expanded(
-                              // ★ 直感UX改修：オレンジから「Emerald Green (Teal)」へ変更し、ウィザードへの入り口を色彩でリンクさせる
-                              child: _buildActionCard(context, icon: Icons.add_circle, title: '新しい大会\nを作る', subtitle: '新規トーナメント', color: Colors.teal.shade600, onTap: () => context.push('/create-tournament')),
-                            ),
-                            const SizedBox(width: 16),
+                            // ★ Phase 8: 記録係（Scorer）には大会作成ボタンを見せない
+                            if (permissions.canManageTournament) ...[
+                              Expanded(
+                                // ★ 直感UX改修：オレンジから「Emerald Green (Teal)」へ変更し、ウィザードへの入り口を色彩でリンクさせる
+                                child: _buildActionCard(context, icon: Icons.add_circle, title: '新しい大会\nを作る', subtitle: '新規トーナメント', color: Colors.teal.shade600, onTap: () => context.push('/create-tournament')),
+                              ),
+                              const SizedBox(width: 16),
+                            ],
                             Expanded(
                               child: _buildActionCard(context, icon: Icons.list_alt, title: '今日の試合\nを作る・見る', subtitle: '試合進行・記録', color: Colors.indigo.shade600, onTap: () => context.push('/tournament-list', extra: false)),
                             ),

@@ -105,6 +105,20 @@ class LocalMatchRepository {
         ..userId = e.userId
         ..sequence = e.sequence
       ).toList()
+      // ★ Phase 1: スナップショットのエンティティ変換を追加（Isarへの保存）
+      ..snapshots = model.snapshots.map((s) => MatchSnapshotEntity()
+        ..id = s.id
+        ..createdAt = s.createdAt
+        ..reason = s.reason
+        ..events = s.events.map((e) => ScoreEventEntity()
+          ..id = e.id
+          ..side = e.side
+          ..type = e.type
+          ..timestamp = e.timestamp
+          ..userId = e.userId
+          ..sequence = e.sequence
+        ).toList()
+      ).toList()
       ..isDirty = model.isDirty
       ..lastUpdatedAt = model.lastUpdatedAt
       ..refereeNames = model.refereeNames
@@ -148,6 +162,20 @@ class LocalMatchRepository {
         timestamp: e.timestamp ?? DateTime.now(),
         userId: e.userId,
         sequence: e.sequence,
+      )).toList(),
+      // ★ Phase 1: スナップショットのモデル変換を追加（Isarからの読み込み）
+      snapshots: entity.snapshots.map((s) => MatchSnapshot(
+        id: s.id ?? '',
+        createdAt: s.createdAt ?? DateTime.now(),
+        reason: s.reason ?? '',
+        events: s.events.map((e) => ScoreEvent(
+          id: e.id ?? '',
+          side: e.side,
+          type: e.type,
+          timestamp: e.timestamp ?? DateTime.now(),
+          userId: e.userId,
+          sequence: e.sequence,
+        )).toList(),
       )).toList(),
       isDirty: entity.isDirty,
       lastUpdatedAt: entity.lastUpdatedAt,

@@ -21,6 +21,10 @@ abstract class SettingsModel with _$SettingsModel {
     @Default(true) bool sleepPrevent,        // スリープ(画面消灯)防止
     @Default(false) bool leftHanded,         // 左利きモード（赤白反転）
     @Default('system') String themeMode,     // ★ ダークモード対応 ('system', 'light', 'dark')
+    
+    // 【セキュリティ・権限】 (Phase 8)
+    @Default(1) int securityLevel, // ★ Phase 8: 1(自由), 2(標準), 3(厳格)
+    String? adminPasscode,        // ★ Phase 8: 英数8文字パスコード
   }) = _SettingsModel;
 
   factory SettingsModel.fromJson(Map<String, dynamic> json) => _$SettingsModelFromJson(json);

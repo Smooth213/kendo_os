@@ -59,9 +59,10 @@ void main() {
       // When: Undoを実行
       final undoneMatch = useCase.undoLastEvent(matchWithScore, rule);
 
-      // Then: スコアが0に戻り、イベントリストにUndoが追加されていること
+      // Then: スコアが0に戻り、対象イベントが「論理削除（isCanceled = true）」されていること
       expect(undoneMatch.redScore, 0);
-      expect(undoneMatch.events.last.type, PointType.undo);
+      expect(undoneMatch.events.last.isCanceled, true); // ★ 非破壊Undoの検証
+      expect(undoneMatch.events.last.type, PointType.men); // ★ イベント自体は消えず残っていること
     });
 
     test('2本取って終了した試合でもUndoで再開できること', () {
@@ -153,8 +154,11 @@ void main() {
 
       expect(m3.redScore, 0);
       expect(m3.whiteScore, 1);
-      expect(m3.events.length, 3);
-      expect(m3.events[1].type, PointType.undo);
+      // ★ ダミーイベントは追加されなくなったため、全体の長さは2
+      expect(m3.events.length, 2); 
+      // ★ 1つ目のイベント（面）がキャンセルされていること
+      expect(m3.events[0].isCanceled, true); 
+      expect(m3.events[1].type, PointType.kote);
     });
   });
 }

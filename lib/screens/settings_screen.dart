@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import '../providers/settings_provider.dart';
+import '../providers/role_provider.dart';
+import 'package:go_router/go_router.dart'; // ★ Phase 5: 画面遷移用に追加
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -140,7 +142,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       },
                     ),
                   ),
+                  _buildDivider(),
+              // ==========================================
+              // 5. セキュリティ・権限セクション (Phase 8)
+              // ==========================================
+              _buildListTile(
+                title: 'セキュリティレベル',
+                trailing: DropdownButton<int>(
+                  value: settings.securityLevel,
+                  underline: const SizedBox(),
+                  items: const [
+                    DropdownMenuItem(value: 1, child: Text('Lv.1 自由')),
+                    DropdownMenuItem(value: 2, child: Text('Lv.2 標準')),
+                    DropdownMenuItem(value: 3, child: Text('Lv.3 厳格')),
+                  ],
+                  onChanged: (val) => _handleSecurityChange(context, ref, val!),
+                ),
+              ),
+              _buildDivider(),
+                  ListTile(
+                    title: const Text('端末の役割設定'),
+                    subtitle: Text('現在の設定: ${ref.watch(persistentRoleProvider).label}'),
+                    trailing: const Icon(Icons.person_search),
+                onTap: () => _handleRoleSwitch(context, ref),
+                  ),
                 ]),
+                
+                // ★ Phase 5: 監査ログ（非表示ログの緊急可視化）への入り口を追加
+                // 管理者権限を持っている場合のみ表示される秘密のメニュー
+                if (ref.watch(persistentRoleProvider) == Role.admin) ...[
+                  const SizedBox(height: 24),
+                  Text('トラブルシューティング (管理者専用)', style: TextStyle(color: dynamicTextColor, fontSize: 13, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  _buildSettingsBlock([
+                    ListTile(
+                      leading: Icon(Icons.policy, color: isDark ? Colors.orange.shade300 : Colors.orange.shade700),
+                      title: Text('システム監査ログ', style: TextStyle(color: dynamicTextColor, fontWeight: FontWeight.bold)),
+                      subtitle: const Text('誰が・いつ・何を変更したかを追跡します', style: TextStyle(fontSize: 12)),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                      onTap: () => context.push('/audit-log'),
+                    ),
+                  ]),
+                ],
               ],
             ),
           ),
@@ -315,5 +358,128 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     // iOS標準の区切り線の色と細さ
     return Divider(height: 1, thickness: 0.5, color: isDark ? const Color(0xFF38383A) : const Color(0xFFC6C6C8), indent: 16, endIndent: 0);
+  }
+
+  // ★ Phase 8: 英数混在8文字以上のバリデーション
+  bool _isValidPasscode(String code) {
+    final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(code);
+    final hasDigit = RegExp(r'[0-9]').hasMatch(code);
+    return code.length >= 8 && hasLetter && hasDigit;
+  }
+
+  // 立場（Role）を切り替える際のガード処理
+  void _handleRoleSwitch(BuildContext context, WidgetRef ref) {
+    final settings = ref.read(settingsProvider);
+    final currentRole = ref.read(persistentRoleProvider);
+
+    // すでに管理者なら、記録係へのダウングレードは自由
+    if (currentRole == Role.admin) {
+      _showRolePicker(context, ref);
+      return;
+    }
+
+    // 記録係から管理者へ昇格する場合
+    if (settings.securityLevel >= 2) {
+      _showPasscodeDialog(context, ref, onSuccess: () => _showRolePicker(context, ref));
+    } else {
+      _showRolePicker(context, ref);
+    }
+  }
+
+  // セキュリティレベル変更時のガード
+  void _handleSecurityChange(BuildContext context, WidgetRef ref, int newLevel) {
+    final settings = ref.read(settingsProvider);
+    // すでにパスコードが設定されている場合のみガード
+    if (settings.adminPasscode != null && settings.adminPasscode!.isNotEmpty) {
+      _showPasscodeDialog(context, ref, onSuccess: () {
+        ref.read(settingsProvider.notifier).updateField(securityLevel: newLevel);
+      });
+    } else {
+      // 初回設定時（Lv.1 -> Lv.2等）はパスコード作成へ
+      _showPasscodeCreationDialog(context, ref, newLevel);
+    }
+  }
+
+  void _showPasscodeDialog(BuildContext context, WidgetRef ref, {required VoidCallback onSuccess}) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('管理者パスコードを入力'),
+        content: TextField(controller: controller, obscureText: true, decoration: const InputDecoration(hintText: '英数8文字以上')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text == ref.read(settingsProvider).adminPasscode) {
+                Navigator.pop(ctx);
+                onSuccess();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('パスコードが正しくありません')));
+              }
+            },
+            child: const Text('照合'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPasscodeCreationDialog(BuildContext context, WidgetRef ref, int targetLevel) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('新規パスコードの設定'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('英字と数字を両方含む、8文字以上で設定してください。', style: TextStyle(fontSize: 12)),
+            TextField(controller: controller, obscureText: true, decoration: const InputDecoration(hintText: '英数8文字以上')),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              if (_isValidPasscode(controller.text)) {
+                ref.read(settingsProvider.notifier).updateField(securityLevel: targetLevel, adminPasscode: controller.text);
+                Navigator.pop(ctx);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ルール（英数8文字以上）に合致しません')));
+              }
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRolePicker(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.admin_panel_settings, color: Colors.indigo),
+            title: const Text('管理者（すべて）'),
+            onTap: () {
+              // ★ persistentRoleProvider を更新して永続化させる
+              ref.read(persistentRoleProvider.notifier).state = Role.admin;
+              Navigator.pop(ctx);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit_note, color: Colors.teal),
+            title: const Text('記録係（入力）'),
+            onTap: () {
+              ref.read(persistentRoleProvider.notifier).state = Role.scorer;
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
   }
 }
