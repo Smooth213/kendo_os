@@ -14,6 +14,9 @@ import 'firebase_options.dart';
 import 'screens/team_registration_screen.dart'; 
 import 'screens/start_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/program_management_screen.dart';
+import 'screens/program_viewer_screen.dart';
+import 'models/program_model.dart';
 import 'screens/tournament_list_screen.dart'; 
 import 'screens/match_router.dart'; // ★ Phase 5: ルーターを追加
 import 'screens/master_management_screen.dart';
@@ -31,6 +34,7 @@ import 'providers/sync_provider.dart';
 import 'models/local/match_entity.dart';
 import 'repositories/local_match_repository.dart';
 import 'widgets/sync_status_bar.dart'; 
+import 'models/local_stroke_model.dart'; // ★ これを追加
 
 import 'providers/role_provider.dart';
 
@@ -51,7 +55,10 @@ void main() async {
   // 端末内の安全な保存場所を取得し、そこにデータベースファイルを作成・展開します
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open(
-    [MatchEntitySchema], // Step 1-2 で自動生成されたテーブル設計図
+    [
+      MatchEntitySchema,
+      LocalStrokeModelSchema, // ★ これを配列の中に追加する！
+    ], // Step 1-2 で自動生成されたテーブル設計図
     directory: dir.path,
   );
 
@@ -113,6 +120,21 @@ final _router = GoRouter(
     GoRoute(
       path: '/home/:tournamentId', 
       builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: HomeScreen(tournamentId: state.pathParameters['tournamentId']!))
+    ),
+    GoRoute(
+      path: '/tournament/:id/programs',
+      builder: (context, state) => ProgramManagementScreen(tournamentId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/program-viewer',
+      builder: (context, state) {
+        // Map形式で programs と index を受け取る
+        final args = state.extra as Map<String, dynamic>;
+        return ProgramViewerScreen(
+          programs: args['programs'] as List<ProgramModel>,
+          initialIndex: args['index'] as int,
+        );
+      },
     ),
     GoRoute(
       path: '/match/:id', 
@@ -225,11 +247,23 @@ class KendoOSApp extends ConsumerWidget {
             // Roleの保存を有効化
             ref.watch(rolePersistProvider); 
             
-            return Column(
-              children: [
-                const SyncStatusBar(), // ここに新しいバーが鎮座
-                Expanded(child: child!),
-              ],
+            // ★ Phase 8-4: 画面の余白タップでキーボードをスッと隠す魔法（全画面共通）
+            return GestureDetector(
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              behavior: HitTestBehavior.translucent, // 背後のボタンタップなどは邪魔しない
+              child: Column(
+                children: [
+                  const SyncStatusBar(), // 常に最上部に表示されるステータスバー
+                  Expanded(
+                    // ★ Phase 8-3: 全画面の「謎の巨大な余白」を一撃で解消する魔法
+                    child: MediaQuery.removePadding(
+                      context: context,
+                      removeTop: true,
+                      child: child!,
+                    ),
+                  ),
+                ],
+              ),
             );
           },
 

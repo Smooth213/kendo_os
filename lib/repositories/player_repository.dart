@@ -63,4 +63,33 @@ class PlayerRepository {
     // 変更を一斉に保存！
     await batch.commit();
   }
+
+  // --- よく使う自チーム名（カスタムチーム名）の管理機能 ---
+
+  /// 所属道場に関連付けられたカスタムチーム名の一覧を監視する
+  Stream<List<String>> watchCustomTeamNames({String organization = '道上剣友会'}) {
+    return _firestore
+        .collection('custom_team_names')
+        .where('organization', isEqualTo: organization)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => doc.data()['name'] as String)
+            .toList()..sort());
+  }
+
+  /// 新しいカスタムチーム名を追加する
+  Future<void> addCustomTeamName(String name, {String organization = '道上剣友会'}) async {
+    final docId = '${organization}_$name'; // 重複防止のためのID
+    await _firestore.collection('custom_team_names').doc(docId).set({
+      'organization': organization,
+      'name': name,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// カスタムチーム名を削除する
+  Future<void> deleteCustomTeamName(String name, {String organization = '道上剣友会'}) async {
+    final docId = '${organization}_$name';
+    await _firestore.collection('custom_team_names').doc(docId).delete();
+  }
 }

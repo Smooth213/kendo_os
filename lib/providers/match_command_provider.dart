@@ -138,6 +138,64 @@ class MatchCommand {
     await ref.read(localMatchRepositoryProvider).deleteMatch(matchId);
   }
 
+  // --- ★ フェーズ4：チーム名の一括置換（合流）ロジック ---
+  /// 特定の大会内で、古いチーム名を新しいチーム名へ全試合一括で書き換える
+  Future<void> renameTeamBulk({
+    required String tournamentId,
+    required String oldTeamName,
+    required String newTeamName,
+  }) async {
+    final allMatches = ref.read(matchListProvider);
+    // 対象の大会の試合に絞り込む
+    final targetMatches = allMatches.where((m) => m.tournamentId == tournamentId).toList();
+    
+    List<MatchModel> updatedMatches = [];
+
+    for (var m in targetMatches) {
+      bool isChanged = false;
+      String rName = m.redName;
+      String wName = m.whiteName;
+
+      // 赤チームの判定と置換
+      if (rName.contains(':')) {
+        final parts = rName.split(':');
+        if (parts[0].trim() == oldTeamName) {
+          rName = '$newTeamName : ${parts[1].trim()}';
+          isChanged = true;
+        }
+      } else if (rName.trim() == oldTeamName) {
+        rName = newTeamName;
+        isChanged = true;
+      }
+
+      // 白チームの判定と置換
+      if (wName.contains(':')) {
+        final parts = wName.split(':');
+        if (parts[0].trim() == oldTeamName) {
+          wName = '$newTeamName : ${parts[1].trim()}';
+          isChanged = true;
+        }
+      } else if (wName.trim() == oldTeamName) {
+        wName = newTeamName;
+        isChanged = true;
+      }
+
+      if (isChanged) {
+        updatedMatches.add(m.copyWith(
+          redName: rName,
+          whiteName: wName,
+          isDirty: true,
+          lastUpdatedAt: DateTime.now(),
+        ));
+      }
+    }
+
+    if (updatedMatches.isNotEmpty) {
+      await saveMatchesBulk(updatedMatches);
+      debugPrint('⚡ Team Renamed Bulk: $oldTeamName -> $newTeamName (${updatedMatches.length} matches)');
+    }
+  }
+
   // 6. ★ Step 7-3: 誤操作防止ガード（テスト用：SnackBar表示版）
   Future<void> addScoreEvent(String matchId, Side side, PointType type) async {
     final now = DateTime.now();

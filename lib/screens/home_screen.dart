@@ -6,13 +6,12 @@ import '../providers/match_list_provider.dart';
 import '../providers/match_command_provider.dart';
 import 'standings_screen.dart';
 import 'official_record_screen.dart';
-import 'team_scoreboard_screen.dart'; 
-import 'kachinuki_scoreboard_screen.dart'; 
 import '../models/tournament_model.dart';
 import '../repositories/tournament_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import '../repositories/player_repository.dart';
 
 // ★ Phase 7: 閲覧権限によるUI制御のため追加
 import '../providers/permission_provider.dart';
@@ -24,6 +23,11 @@ final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref,
 
 // ★ 追加：カテゴリの並び順（昇順/降順）を管理するプロバイダ (true: 昇順, false: 降順)
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
+
+// ★ 追加：マスタで登録された「自チーム名」を取得して、ホーム画面の箱を作る基準にする
+final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
+  return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
+});
 
 class HomeScreen extends ConsumerWidget {
   final String tournamentId;
@@ -189,6 +193,30 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                 ],
                 
+                // ★ Step 2-3: プログラム画面への入り口（全員が見えるが、権限でラベルが変わる）
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push('/tournament/$tournamentId/programs'),
+                    icon: Icon(
+                      Icons.picture_as_pdf, 
+                      size: 20, 
+                      color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600
+                    ),
+                    label: Text(
+                      permissions.isReadOnly ? '大会プログラムを見る' : '大会プログラムの管理', 
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800)
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
+                      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -269,7 +297,7 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                 
-                // ★ 修正：カテゴリを単なるあいうえお順ではなく「年齢・学年順」で賢くソートする
+                // ★ 修正：カテゴリを単なるあいうえお順ではなく「年齢・学年順」で賢くソートし、さらにチーム別ツリー構造にする
                 ...(() {
                   final sortedEntries = matchesByCategory.entries.toList();
                   final isAscending = ref.watch(categorySortProvider);
@@ -287,7 +315,7 @@ class HomeScreen extends ConsumerWidget {
                       if (cat.contains('6年')) return 36;
                       if (cat.contains('低学年')) return 38;
                       if (cat.contains('高学年')) return 39;
-                      return 30; // 学年指定なしの小学生
+                      return 30;
                     }
                     if (cat.contains('中学生')) return 40;
                     if (cat.contains('高校生')) return 50;
@@ -301,7 +329,6 @@ class HomeScreen extends ConsumerWidget {
                     if (weightA != weightB) {
                       return isAscending ? weightA.compareTo(weightB) : weightB.compareTo(weightA);
                     }
-                    // 重みが同じ場合（例：小学生男子と小学生女子など）は文字列表現でソート
                     return isAscending ? a.key.compareTo(b.key) : b.key.compareTo(a.key);
                   });
 
@@ -309,140 +336,254 @@ class HomeScreen extends ConsumerWidget {
                     final categoryName = catEntry.key;
                     final catMatches = catEntry.value;
 
-                    final catGroupedMatches = <String, List<MatchModel>>{};
-                  final catIndividualMatches = <MatchModel>[];
+                    // ★ 1. 修正：「マスタに登録されている自チーム」だけの箱を作る最強ロジック
+                    final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+                    final matchesByTeam = <String, List<MatchModel>>{};
+                    
+                    for (var m in catMatches) {
+                      String rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : m.redName;
+                      String wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : m.whiteName;
+                      
+                      bool isRedOwn = ownTeams.contains(rTeam);
+                      bool isWhiteOwn = ownTeams.contains(wTeam);
 
-                  for (var m in catMatches) {
-                    if (m.groupName != null && m.groupName!.isNotEmpty) {
-                      catGroupedMatches.putIfAbsent(m.groupName!, () => []).add(m);
-                    } else {
-                      catIndividualMatches.add(m);
+                      // 自チームが赤なら赤の箱へ
+                      if (isRedOwn) matchesByTeam.putIfAbsent(rTeam, () => []).add(m);
+                      // 自チームが白なら白の箱へ
+                      if (isWhiteOwn && wTeam != rTeam) matchesByTeam.putIfAbsent(wTeam, () => []).add(m);
+                      
+                      // ※もし手入力ミスなどで「両方とも自チームリストにない」場合は、迷子を防ぐため強引に赤チームの箱を作る
+                      if (!isRedOwn && !isWhiteOwn && rTeam.isNotEmpty && !rTeam.contains('代表')) {
+                         matchesByTeam.putIfAbsent(rTeam, () => []).add(m);
+                      }
                     }
-                  }
 
-                // ★ 修正：1試合しかないグループは「団体戦」の折りたたみを作らず、単発の個人試合としてリストに直接出す
-                final actualGroupedMatches = <String, List<MatchModel>>{};
-                for (var entry in catGroupedMatches.entries) {
-                  if (entry.value.length > 1) {
-                    actualGroupedMatches[entry.key] = entry.value;
-                  } else {
-                    // 1試合しかないなら、単発試合のリストへ合流させる
-                    catIndividualMatches.addAll(entry.value);
-                  }
-                }
-
-                // ★ 修正：再分類されたリストでソートを行う
-                for (var list in actualGroupedMatches.values) {
-                    list.sort((a, b) => a.order.compareTo(b.order));
-                  }
-                  catIndividualMatches.sort((a, b) => b.order.compareTo(a.order));
-
-                final sortedGroups = actualGroupedMatches.entries.toList();
-                  sortedGroups.sort((a, b) {
-                    final aOrder = a.value.first.order;
-                    final bOrder = b.value.first.order;
-                    return bOrder.compareTo(aOrder); 
-                  });
+                    // チーム名でソート（あいうえお順）
+                    final sortedTeams = matchesByTeam.entries.toList();
+                    sortedTeams.sort((a, b) => a.key.compareTo(b.key));
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                        // --- カテゴリのヘッダー ---
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 16, 8),
-                        child: Text(categoryName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade600, letterSpacing: 1.2)),
+                          padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
+                          child: Text(categoryName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.indigo.shade300 : Colors.indigo.shade800, letterSpacing: 1.2)),
                       ),
-                      ...sortedGroups.map((entry) {
-                        final groupList = entry.value;
-                        final firstMatch = groupList.first;
-                        final rTeam = firstMatch.redName.contains(':') ? firstMatch.redName.split(':').first.trim() : firstMatch.redName;
-                        final wTeam = firstMatch.whiteName.contains(':') ? firstMatch.whiteName.split(':').first.trim() : firstMatch.whiteName;
-                        final groupTitle = '$rTeam vs $wTeam';
                         
-                        final hasInProgress = groupList.any((m) => m.status == 'in_progress');
-                        final allFinished = groupList.every((m) => m.status == 'finished' || m.status == 'approved');
+                        // --- ★ 2. 各チームの専用ブロック（ツリー構造）を描画 ---
+                        ...sortedTeams.map((teamEntry) {
+                          final teamName = teamEntry.key;
+                          final teamMatchesList = teamEntry.value;
 
-                        final cardColor = hasInProgress ? (isDark ? const Color(0xFF1C1C1E) : Colors.white) : (allFinished ? (isDark ? const Color(0xFF121212) : Colors.grey.shade200) : (isDark ? const Color(0xFF1C1C1E) : Colors.white));
-                        final borderColor = hasInProgress ? Colors.indigo.shade400 : (allFinished ? (isDark ? const Color(0xFF38383A) : Colors.grey.shade300) : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300));
-                        final double borderWidth = hasInProgress ? 2.0 : (isDark ? 0.5 : 1.0);
-                        final titleColor = hasInProgress ? (isDark ? Colors.indigo.shade300 : Colors.indigo.shade900) : (allFinished ? Colors.grey.shade500 : textColor);
-                        final subTitleColor = hasInProgress ? (isDark ? Colors.indigo.shade400 : Colors.indigo.shade600) : (allFinished ? Colors.grey.shade500 : (isDark ? const Color(0xFF8E8E93) : Colors.grey.shade700));
+                          // 1. 表示ラベルを判定する賢い関数
+                          String getMatchLabel(MatchModel m) {
+                            final bool isLeague = m.matchType == 'league';
+                            final bool isIndividual = m.matchType == 'individual';
+                            final bool isKachinuki = m.isKachinuki;
 
-                        return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                          elevation: hasInProgress ? 4 : 0, 
-                          color: cardColor,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(color: borderColor, width: borderWidth),
-                            borderRadius: BorderRadius.circular(12), // iOS標準
-                          ),
-                          child: ExpansionTile(
-                            shape: const Border(), 
-                            title: Column(
+                            if (isLeague) return isIndividual ? '個人戦/リーグ戦' : '団体戦/リーグ戦';
+                            if (isKachinuki) return '団体戦/勝ち抜き戦';
+                            return isIndividual ? '個人戦' : '団体戦';
+                          }
+
+                          // 2. 団体戦（グループ名あり）と個人戦（単発）に分類
+                          final catGroupedMatches = <String, List<MatchModel>>{};
+                          final catIndividualMatches = <MatchModel>[];
+
+                          for (var m in teamMatchesList) {
+                            if (m.groupName != null && m.groupName!.isNotEmpty) {
+                              catGroupedMatches.putIfAbsent(m.groupName!, () => []).add(m);
+                            } else {
+                              catIndividualMatches.add(m);
+                            }
+                          }
+
+                          // 3. 団体戦リストの整理（1試合しかないグループは個人戦へ）
+                          final actualGroupedMatches = <String, List<MatchModel>>{};
+                          for (var entry in catGroupedMatches.entries) {
+                            if (entry.value.length > 1) {
+                              actualGroupedMatches[entry.key] = entry.value;
+                            } else {
+                              catIndividualMatches.addAll(entry.value);
+                            }
+                          }
+
+                          // 4. ★個人戦を「選手名」でさらにまとめる（ご要望の階層構造）
+                          final matchesByPlayer = <String, List<MatchModel>>{};
+                          for (var m in catIndividualMatches) {
+                            String playerName = '選手名不明';
+                            if (m.redName.contains(teamName)) {
+                              playerName = m.redName.contains(':') ? m.redName.split(':').last.trim() : m.redName;
+                            } else if (m.whiteName.contains(teamName)) {
+                              playerName = m.whiteName.contains(':') ? m.whiteName.split(':').last.trim() : m.whiteName;
+                            }
+                            matchesByPlayer.putIfAbsent(playerName, () => []).add(m);
+                          }
+
+                          // ソート
+                          final sortedGroups = actualGroupedMatches.entries.toList()
+                            ..sort((a, b) => b.value.first.order.compareTo(a.value.first.order));
+                          final sortedPlayers = matchesByPlayer.entries.toList()
+                            ..sort((a, b) => a.key.compareTo(b.key));
+
+                          return Container(
+                            margin: const EdgeInsets.only(left: 12, right: 12, bottom: 24),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF161618) : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 2),
+                              boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
+                            ),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (firstMatch.note.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 4),
-                                    child: Text(firstMatch.note, style: TextStyle(fontSize: 11, color: subTitleColor, fontWeight: FontWeight.bold)),
+                                // --- 🏢 チーム名ヘッダー ---
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.indigo.shade900.withValues(alpha: 0.3) : Colors.indigo.shade50,
+                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                                    border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.indigo.shade100)),
                                   ),
-                                Text('団体戦: $groupTitle', style: TextStyle(fontWeight: FontWeight.bold, color: titleColor)),
-                              ],
-                            ),
-                            subtitle: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    '${groupList.length}試合 • ${allFinished ? '全試合終了' : (hasInProgress ? '試合進行中' : '待機中')}',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: subTitleColor, fontSize: 12, fontWeight: hasInProgress ? FontWeight.bold : FontWeight.normal),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.business, color: isDark ? Colors.indigo.shade300 : Colors.indigo.shade700, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: Text(teamName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.indigo.shade900))),
+                                      
+                                      // ★ 修正：管理者・記録係のみチーム名の編集（一括統合）を許可する
+                                      if (!permissions.isReadOnly)
+                                        IconButton(
+                                          icon: Icon(Icons.edit_note, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade300, size: 20),
+                                          tooltip: 'チーム名を修正して統合',
+                                          onPressed: () => _showRenameTeamSheet(context, ref, tournamentId, teamName),
+                                        ),
+                                    ],
                                   ),
                                 ),
-                                OutlinedButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                                    minimumSize: const Size(0, 32),
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    foregroundColor: allFinished ? Colors.grey.shade600 : (isDark ? Colors.indigo.shade300 : Colors.indigo.shade600),
-                                    side: BorderSide(color: allFinished ? (isDark ? const Color(0xFF38383A) : Colors.grey.shade400) : Colors.indigo.shade200),
-                                    backgroundColor: allFinished ? (isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade100) : (isDark ? const Color(0xFF2C2C2E) : Colors.white),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  ),
-                                  icon: const Icon(Icons.grid_on, size: 14),
-                                  label: const Text('スコア', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)), 
-                                  onPressed: () {
-                                    if (firstMatch.isKachinuki) {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => KachinukiScoreboardScreen(groupName: entry.key)));
-                                    } else {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => TeamScoreboardScreen(groupName: entry.key)));
+                                
+                                const SizedBox(height: 8),
+
+                                // --- 👥 団体戦セクション ---
+                                ...(() {
+                                  String lastGroupLabel = ''; // 前の試合のラベルを記憶する変数
+                                  
+                                  return sortedGroups.map((entry) {
+                                    final groupList = entry.value;
+                                    final firstMatch = groupList.first;
+                                    final label = getMatchLabel(firstMatch); // ★新ラベル取得
+                                    
+                                    Widget? headerWidget;
+                                    // ★ 修正：前のグループと試合形式（ラベル）が変わった時だけ、新しいヘッダーを表示する
+                                    if (label != lastGroupLabel) {
+                                      headerWidget = Padding(
+                                        padding: const EdgeInsets.only(left: 16, top: 12, bottom: 4),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.groups, color: isDark ? Colors.indigo.shade300 : Colors.indigo.shade700, size: 16),
+                                            const SizedBox(width: 4),
+                                            Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.indigo.shade300 : Colors.indigo.shade700)),
+                                          ],
+                                        ),
+                                      );
+                                      lastGroupLabel = label;
                                     }
-                                  },
-                                ),
+                                    
+                                    final rTeam = firstMatch.redName.contains(':') ? firstMatch.redName.split(':').first.trim() : firstMatch.redName;
+                                    final wTeam = firstMatch.whiteName.contains(':') ? firstMatch.whiteName.split(':').first.trim() : firstMatch.whiteName;
+                                    
+                                    final hasInProgress = groupList.any((m) => m.status == 'in_progress');
+                                    final allFinished = groupList.every((m) => m.status == 'finished' || m.status == 'approved');
+                                    final subTitleColor = hasInProgress ? (isDark ? Colors.indigo.shade400 : Colors.indigo.shade600) : (allFinished ? Colors.grey.shade500 : (isDark ? const Color(0xFF8E8E93) : Colors.grey.shade700));
+
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // ★ ヘッダーが必要な時だけ出力
+                                        ?headerWidget,
+                                        
+                                        Card(
+                                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          elevation: hasInProgress ? 4 : 0, 
+                                          color: allFinished ? (isDark ? const Color(0xFF121212) : Colors.grey.shade100) : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+                                          shape: RoundedRectangleBorder(
+                                            side: BorderSide(color: hasInProgress ? Colors.indigo.shade400 : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300), width: hasInProgress ? 2.0 : 1.0),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: ExpansionTile(
+                                            title: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                if (firstMatch.note.isNotEmpty)
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(bottom: 4),
+                                                    child: Text(firstMatch.note, style: TextStyle(fontSize: 11, color: subTitleColor, fontWeight: FontWeight.bold)),
+                                                  ),
+                                                Row(
+                                                  children: [
+                                                    // ★ 修正：タイトルから "$label: " を削除し、純粋な「チーム vs チーム」にする！
+                                                    Expanded(child: Text('$rTeam vs $wTeam', style: TextStyle(fontWeight: FontWeight.bold, color: hasInProgress ? (isDark ? Colors.indigo.shade300 : Colors.indigo.shade900) : textColor))),
+                                                    
+                                                    // 同門対決バッジ
+                                                    if (ownTeams.contains(rTeam) && ownTeams.contains(wTeam))
+                                                      Container(
+                                                        margin: const EdgeInsets.only(left: 8),
+                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                        decoration: BoxDecoration(color: Colors.pink.shade100, borderRadius: BorderRadius.circular(4), border: Border.all(color: Colors.pink.shade300)),
+                                                        child: Text('⚔️ 同門対決', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.pink.shade800)),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            subtitle: Text('${groupList.length}試合 • ${allFinished ? '終了' : '進行中'}', style: TextStyle(color: subTitleColor, fontSize: 12)),
+                                            children: groupList.map((match) => _buildMatchListTile(context, ref, match)).toList(),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }).toList();
+                                })(),
+
+                                // --- 👤 個人戦セクション（選手ごとにまとめる） ---
+                                if (sortedPlayers.isNotEmpty) ...[
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 16, top: 4, bottom: 8),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.person, color: Colors.orange.shade700, size: 16),
+                                        const SizedBox(width: 4),
+                                        Text('個人戦', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.orange.shade700)),
+                                      ],
+                                    ),
+                                  ),
+                                  ...sortedPlayers.map((playerEntry) {
+                                    final playerName = playerEntry.key;
+                                    final playerMatches = playerEntry.value;
+                                    final firstMatch = playerMatches.first;
+                                    final label = getMatchLabel(firstMatch); // ★新ラベル取得
+
+                                    return Card(
+                                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                      elevation: 0,
+                                      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+                                      child: ExpansionTile(
+                                        leading: CircleAvatar(backgroundColor: Colors.orange.shade100, child: Text(playerName[0], style: TextStyle(color: Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold))),
+                                        title: Text(playerName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                        subtitle: Text('$label • ${playerMatches.length}試合', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                        children: playerMatches.map((match) => _buildMatchListTile(context, ref, match)).toList(),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                                const SizedBox(height: 8),
                               ],
                             ),
-                            children: groupList.map((match) => _buildMatchListTile(context, ref, match)).toList(),
-                          ),
-                        );
-                      }),
-                      
-                      // 個人戦用のリスト描画
-                      if (catIndividualMatches.isNotEmpty) ...catIndividualMatches.map((match) {
-                        final isFinished = match.status == 'finished' || match.status == 'approved';
-                        final isPlaying = match.status == 'in_progress';
-                        return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          elevation: isPlaying ? 4 : 0,
-                          color: isFinished ? (isDark ? const Color(0xFF121212) : Colors.grey.shade200) : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12), 
-                            side: BorderSide(
-                              color: isPlaying ? Colors.indigo.shade400 : (isFinished ? (isDark ? const Color(0xFF38383A) : Colors.grey.shade300) : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
-                              width: isPlaying ? 2 : (isDark ? 0.5 : 1.0)
-                            )
-                          ),
-                          child: _buildMatchListTile(context, ref, match),
-                        );
-                      }),
-                      const SizedBox(height: 8),
+                          );
+                        }),
                     ],
                   );
                 }); // ★ 修正1：return文を終わらせるため「,」ではなく「;」にする
@@ -758,6 +899,80 @@ class HomeScreen extends ConsumerWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる', style: TextStyle(color: Colors.grey))),
         ],
+      ),
+    );
+  }
+
+  // ★ 追加：チーム名を一括置換して合流させるためのボトムシート
+  void _showRenameTeamSheet(BuildContext context, WidgetRef ref, String tournamentId, String oldName) {
+    final controller = TextEditingController(text: oldName);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? Colors.indigo.shade300 : Colors.indigo.shade700;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.only(top: 16, left: 24, right: 24, bottom: MediaQuery.of(ctx).viewInsets.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)))),
+            const SizedBox(height: 24),
+            Text('チーム名の修正・統合', style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 18)),
+            const SizedBox(height: 8),
+            const Text('名前を修正すると、この大会内のすべての試合データが自動で書き換わり、同じ名前のチームと合流します。', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 24),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: '新しいチーム名',
+                filled: true,
+                fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final newName = controller.text.trim();
+                  if (newName.isEmpty || newName == oldName) {
+                    Navigator.pop(ctx);
+                    return;
+                  }
+                  
+                  // 実行
+                  await ref.read(matchCommandProvider).renameTeamBulk(
+                    tournamentId: tournamentId,
+                    oldTeamName: oldName,
+                    newTeamName: newName,
+                  );
+                  
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('チーム名を一括更新しました ✨')));
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('一括修正して統合する', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

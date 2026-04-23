@@ -8,9 +8,27 @@ import '../repositories/player_repository.dart';
 import 'package:uuid/uuid.dart';
 import '../providers/match_rule_provider.dart';
 import '../providers/last_used_settings_provider.dart'; // ★ 追加：正確な小数の時間を取得するため
+import '../utils/text_sanitizer.dart'; // ★ 追加：お掃除フィルター
+import '../providers/match_list_provider.dart'; // ★ 追加：試合履歴の取得に必要
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
+});
+
+// ★ 追加：登録した「よく使うチーム名」を取得するプロバイダー
+final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
+  return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
+});
+
+// ★ 修正：相手チーム用に過去の全試合から履歴を抽出するプロバイダー
+final opponentTeamHistoryProvider = Provider.autoDispose<List<String>>((ref) {
+  final allMatches = ref.watch(matchListProvider);
+  final Set<String> history = {};
+  for (final m in allMatches) {
+    if (m.redName.contains(':')) history.add(m.redName.split(':').first.trim());
+    if (m.whiteName.contains(':')) history.add(m.whiteName.split(':').first.trim());
+  }
+  return history.toList()..sort();
 });
 
 class OrderSetupScreen extends ConsumerStatefulWidget {
@@ -247,12 +265,25 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
     final subTextColor = isDark ? const Color(0xFF8E8E93) : Colors.grey.shade600;
 
+    // ★ Phase 8-3: キーボードが開いているかを検知
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
       body: Column(
         children: [
-          _buildImmersiveAppBar(context),
-          _buildStaticHeader(),
+          // ★ キーボードが開いた時はヘッダーをスッと隠す
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: isKeyboardOpen ? const SizedBox.shrink() : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildImmersiveAppBar(context),
+                _buildStaticHeader(),
+              ],
+            ),
+          ),
           Expanded(
             child: playerListAsync.when(
               // ★ Phase 8-1: ColumnをListViewに変更し、画面全体をスクロール可能にして縦幅エラー(63px)を解消
@@ -280,19 +311,17 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           const SizedBox(height: 8),
                           ...List.generate(_leagueOpponentControllers.length, (i) => Padding(
                             padding: const EdgeInsets.only(bottom: 8),
-                            child: TextField(
+                            // ★ 修正：リーグ戦の入力欄もサジェスト対応にする
+                            child: _buildTeamAutocomplete(
                               controller: _leagueOpponentControllers[i],
-                              style: TextStyle(color: textColor),
-                              decoration: InputDecoration(
-                                labelText: 'リーグ相手 ${i + 1} (チーム名/選手名)',
-                                labelStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
-                                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: borderColor)),
-                                border: const OutlineInputBorder(),
-                                prefixIcon: const Icon(Icons.shield),
-                                fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.red.shade50,
-                                filled: true,
-                                isDense: true,
-                              ),
+                              suggestions: ref.watch(opponentTeamHistoryProvider),
+                              labelText: 'リーグ相手 ${i + 1} (チーム名/選手名)',
+                              hintText: 'タップして登録済みリストから選択',
+                              fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.red.shade50,
+                              borderColor: borderColor,
+                              textColor: textColor,
+                              subTextColor: subTextColor, // または Colors.grey.shade600
+                              isDark: isDark,
                             ),
                           )),
                           Align(
@@ -390,22 +419,17 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       ],
                                     ),
                                     const SizedBox(height: 12),
-                                    TextField(
+                                    // ★ 修正：先ほど作ったヘルパー関数を使ってサジェスト（予測変換）対応にする
+                                    _buildTeamAutocomplete(
                                       controller: _opponentTeamController,
-                                      style: TextStyle(color: textColor),
-                                      decoration: InputDecoration(
-                                        labelText: '相手チーム名・所属名（任意）',
-                                        labelStyle: TextStyle(color: subTextColor),
-                                        hintText: '例：広島剣道クラブ',
-                                        hintStyle: TextStyle(color: subTextColor),
-                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: borderColor)),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: borderColor)),
-                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.teal.shade500)),
-                                        prefixIcon: Icon(Icons.shield_outlined, color: isDark ? Colors.blueGrey.shade400 : Colors.blueGrey.shade400),
-                                        fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-                                        filled: true,
-                                        isDense: true,
-                                      ),
+                                      suggestions: ref.watch(opponentTeamHistoryProvider),
+                                      labelText: '相手チーム名・所属名（任意）',
+                                      hintText: 'タップして登録済みリストから選択',
+                                      fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                                      borderColor: borderColor,
+                                      textColor: textColor,
+                                      subTextColor: subTextColor,
+                                      isDark: isDark,
                                     ),
                                   ],
                                 ),
@@ -555,200 +579,282 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
               error: (err, stack) => Center(child: Text('エラー: $err')),
             ),
           ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(color: inputBgColor, border: Border(top: BorderSide(color: borderColor, width: 0.5))),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextButton.icon(
-                onPressed: _addExtraPosition,
-                icon: Icon(Icons.add_circle_outline, color: Colors.teal.shade600),
-                label: Text('イレギュラー枠を追加する（錬成会用）', style: TextStyle(color: isDark ? Colors.teal.shade400 : Colors.teal.shade700, fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (rule.isLeague) {
-                      bool hasOpponent = _leagueOpponentControllers.any((ctrl) => ctrl.text.trim().isNotEmpty);
-                      if (!hasOpponent) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('リーグ戦を行うには、少なくとも1つの相手チームを入力してください。')));
-                        return; 
-                      }
-                    }
+          // ★ キーボードが開いた時は下のボタンエリアも隠す
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: isKeyboardOpen ? const SizedBox.shrink() : SafeArea(
+              top: false, // 下側だけSafeAreaを効かせる
+              child: Container(
+                decoration: BoxDecoration(color: inputBgColor, border: Border(top: BorderSide(color: borderColor, width: 0.5))),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton.icon(
+                      onPressed: _addExtraPosition,
+                      icon: Icon(Icons.add_circle_outline, color: Colors.teal.shade600),
+                      label: Text('イレギュラー枠を追加する（錬成会用）', style: TextStyle(color: isDark ? Colors.teal.shade400 : Colors.teal.shade700, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (rule.isLeague) {
+                            bool hasOpponent = _leagueOpponentControllers.any((ctrl) => ctrl.text.trim().isNotEmpty);
+                            if (!hasOpponent) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('リーグ戦を行うには、少なくとも1つの相手チームを入力してください。')));
+                              return; 
+                            }
+                          }
 
-                    final bool? isStartNow = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('試合の登録', style: TextStyle(fontWeight: FontWeight.bold)),
-                        content: const Text('このオーダーで試合を登録します。今すぐ試合画面に進みますか？'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('後で（リストに保存）', style: TextStyle(color: Colors.grey))),
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(context, true), 
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, elevation: 0),
-                            child: const Text('今すぐ試合開始', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        ],
+                          final bool? isStartNow = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('試合の登録', style: TextStyle(fontWeight: FontWeight.bold)),
+                              content: const Text('このオーダーで試合を登録します。今すぐ試合画面に進みますか？'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('後で（リストに保存）', style: TextStyle(color: Colors.grey))),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(context, true), 
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, elevation: 0),
+                                  child: const Text('今すぐ試合開始', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (isStartNow == null) return; 
+
+                          if (!context.mounted) return;
+                          // ★ Phase 8-1: ダイアログの「戻る」が画面を消さないように、rootNavigatorを使う
+                          showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: CircularProgressIndicator()));
+
+                          try {
+                            // ★ 追加：ルールの分数（int切り捨て）ではなく、設定に保存された正確な小数（double）を読み込む
+                            final lastSettings = ref.read(lastUsedSettingsProvider);
+                            final double exactMatchTime = (lastSettings['matchTime'] as num?)?.toDouble() ?? rule.matchTimeMinutes.toDouble();
+                            final int initialSeconds = (exactMatchTime * 60).toInt(); // 1.5 なら 90秒 になる！
+
+                            String senpoMatchId = '';
+                            double baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
+                            List<MatchModel> matchesToSave = []; 
+
+                            List<List<String>> pairings = [];
+                            // ★ 修正：入力された相手チーム名をお掃除フィルターに通す！
+                            String myTeamName = rule.teamName.isNotEmpty ? rule.teamName : '自チーム';
+                            String opTeamName = TextSanitizer.clean(_opponentTeamController.text);
+                            if (opTeamName.isEmpty) opTeamName = '対戦相手';
+
+                            if (rule.isLeague) {
+                              List<String> leagueTeams = ['自チーム'];
+                              for (var ctrl in _leagueOpponentControllers) {
+                                // ★ リーグ戦の相手もお掃除フィルターを通す
+                                final cleanLeagueTeam = TextSanitizer.clean(ctrl.text);
+                                if (cleanLeagueTeam.isNotEmpty) leagueTeams.add(cleanLeagueTeam);
+                              }
+                              for (int i = 0; i < leagueTeams.length; i++) {
+                                for (int j = i + 1; j < leagueTeams.length; j++) {
+                                  pairings.add([leagueTeams[i], leagueTeams[j]]);
+                                }
+                              }
+                            } else {
+                              if (_isOwnTeamRed) {
+                                pairings.add([myTeamName, opTeamName]);
+                              } else {
+                                pairings.add([opTeamName, myTeamName]);
+                              }
+                            }
+
+                            await Future.microtask(() {
+                              for (int pIndex = 0; pIndex < pairings.length; pIndex++) {
+                                final pair = pairings[pIndex];
+                                final String teamGroupId = const Uuid().v4();
+
+                                if (rule.isKachinuki) {
+                                  List<String> redFull = [];
+                                  List<String> whiteFull = [];
+                                  
+                                  for (int i = 0; i < _positions.length; i++) {
+                                    String myP = _selectedPlayers[i] ?? '未定';
+                                    if (myP.isEmpty) myP = '未定';
+                                    String opP = _opponentPlayers[i]?.trim() ?? '';
+                                    if (opP.isEmpty) opP = '選手';
+                                    String myFull = '$myTeamName : $myP';
+                                    String opFull = '$opTeamName : $opP';
+                                    String rN, wN;
+                                    if (rule.isLeague) {
+                                      rN = pair[0] == '自チーム' ? myFull : '${pair[0]} : 選手';
+                                      wN = pair[1] == '自チーム' ? myFull : '${pair[1]} : 選手';
+                                    } else {
+                                      rN = _isOwnTeamRed ? myFull : opFull;
+                                      wN = _isOwnTeamRed ? opFull : myFull;
+                                    }
+                                    redFull.add(rN);
+                                    whiteFull.add(wN);
+                                  }
+                                  
+                                  final matchId = const Uuid().v4();
+                                  if (senpoMatchId.isEmpty) senpoMatchId = matchId;
+                                  
+                                  final newMatch = MatchModel(
+                                    id: matchId, tournamentId: widget.tournamentId, category: rule.category.isNotEmpty ? rule.category : null,
+                                    groupName: teamGroupId, matchType: _positions[0], whiteName: whiteFull[0], redName: redFull[0],
+                                    status: (isStartNow && pIndex == 0) ? 'in_progress' : 'waiting', refereeNames: [],
+                                    // ★ 修正：算出した正確な秒数(initialSeconds)をセットする！
+                                    matchTimeMinutes: exactMatchTime.toInt(), isRunningTime: rule.isRunningTime, remainingSeconds: initialSeconds,
+                                    order: baseOrder + (pIndex * 10), note: rule.note, isKachinuki: true,
+                                    redRemaining: redFull.length > 1 ? redFull.sublist(1) : [], whiteRemaining: whiteFull.length > 1 ? whiteFull.sublist(1) : [],
+                                  );
+                                  matchesToSave.add(newMatch); 
+
+                                } else {
+                                  for (int i = 0; i < _positions.length; i++) {
+                                    final String matchId = const Uuid().v4();
+                                    if (senpoMatchId.isEmpty) senpoMatchId = matchId; 
+                                    final posName = _positions[i];
+                                    String myP = _selectedPlayers[i] ?? '未定';
+                                    if (myP.isEmpty) myP = '未定'; 
+                                    String opP = _opponentPlayers[i]?.trim() ?? '';
+                                    if (opP.isEmpty) opP = '選手';
+                                    String myFull = '$myTeamName : $myP';
+                                    String opFull = '$opTeamName : $opP';
+                                    String rName, wName;
+                                    if (rule.isLeague) {
+                                      rName = pair[0] == '自チーム' ? myFull : '${pair[0]} : 選手';
+                                      wName = pair[1] == '自チーム' ? myFull : '${pair[1]} : 選手';
+                                    } else {
+                                      rName = _isOwnTeamRed ? myFull : opFull;
+                                      wName = _isOwnTeamRed ? opFull : myFull;
+                                    }
+                                    bool isFirstMatchOfAll = (pIndex == 0 && i == 0);
+                                    final newMatch = MatchModel(
+                                      id: matchId, tournamentId: widget.tournamentId, category: rule.category.isNotEmpty ? rule.category : null,
+                                      groupName: teamGroupId, matchType: posName, redName: rName, whiteName: wName,
+                                      status: (isStartNow && isFirstMatchOfAll) ? 'in_progress' : 'waiting', refereeNames: [],
+                                      // ★ 修正：算出した正確な秒数(initialSeconds)をセットする！
+                                      matchTimeMinutes: exactMatchTime.toInt(), isRunningTime: rule.isRunningTime, remainingSeconds: initialSeconds,
+                                      order: baseOrder + (pIndex * 10) + i, note: rule.note, 
+                                    );
+                                    matchesToSave.add(newMatch); 
+                                  }
+                                }
+                              }
+                            });
+
+                            if (matchesToSave.isNotEmpty) await ref.read(matchCommandProvider).saveMatchesBulk(matchesToSave);
+                            
+                            if (!context.mounted) return;
+                            Navigator.of(context, rootNavigator: true).pop(); // ★ Phase 8-1: ローディングダイアログだけを確実に閉じる！
+                            
+                            if (isStartNow) {
+                              if (senpoMatchId.isNotEmpty) {
+                                context.push('/match/$senpoMatchId');
+                              } else {
+                                context.go('/home/${widget.tournamentId}'); 
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('試合をプールしました（待機リストに追加）')));
+                              context.go('/home/${widget.tournamentId}'); 
+                            }
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            Navigator.of(context, rootNavigator: true).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存に失敗しました: $e')));
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          // iOS Native: ダークモード時に沈まないTeal
+                          backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.teal.shade600 : Colors.teal.shade700,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // 角丸をiOS標準の12に
+                          elevation: 0,
+                        ),
+                        child: const Text('このオーダーで確定して進む', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
-                    );
-
-                    if (isStartNow == null) return; 
-
-                    if (!context.mounted) return;
-                    // ★ Phase 8-1: ダイアログの「戻る」が画面を消さないように、rootNavigatorを使う
-                    showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: CircularProgressIndicator()));
-
-                    try {
-                      // ★ 追加：ルールの分数（int切り捨て）ではなく、設定に保存された正確な小数（double）を読み込む
-                      final lastSettings = ref.read(lastUsedSettingsProvider);
-                      final double exactMatchTime = (lastSettings['matchTime'] as num?)?.toDouble() ?? rule.matchTimeMinutes.toDouble();
-                      final int initialSeconds = (exactMatchTime * 60).toInt(); // 1.5 なら 90秒 になる！
-
-                      String senpoMatchId = '';
-                      double baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
-                      List<MatchModel> matchesToSave = []; 
-
-                      List<List<String>> pairings = [];
-                      String myTeamName = rule.teamName.isNotEmpty ? rule.teamName : '自チーム';
-                      String opTeamName = _opponentTeamController.text.trim();
-                      if (opTeamName.isEmpty) opTeamName = '対戦相手';
-
-                      if (rule.isLeague) {
-                        List<String> leagueTeams = ['自チーム'];
-                        for (var ctrl in _leagueOpponentControllers) {
-                          if (ctrl.text.trim().isNotEmpty) leagueTeams.add(ctrl.text.trim());
-                        }
-                        for (int i = 0; i < leagueTeams.length; i++) {
-                          for (int j = i + 1; j < leagueTeams.length; j++) {
-                            pairings.add([leagueTeams[i], leagueTeams[j]]);
-                          }
-                        }
-                      } else {
-                        if (_isOwnTeamRed) {
-                          pairings.add([myTeamName, opTeamName]);
-                        } else {
-                          pairings.add([opTeamName, myTeamName]);
-                        }
-                      }
-
-                      await Future.microtask(() {
-                        for (int pIndex = 0; pIndex < pairings.length; pIndex++) {
-                          final pair = pairings[pIndex];
-                          final String teamGroupId = const Uuid().v4();
-
-                          if (rule.isKachinuki) {
-                            List<String> redFull = [];
-                            List<String> whiteFull = [];
-                            
-                            for (int i = 0; i < _positions.length; i++) {
-                              String myP = _selectedPlayers[i] ?? '未定';
-                              if (myP.isEmpty) myP = '未定';
-                              String opP = _opponentPlayers[i]?.trim() ?? '';
-                              if (opP.isEmpty) opP = '選手';
-                              String myFull = '$myTeamName : $myP';
-                              String opFull = '$opTeamName : $opP';
-                              String rN, wN;
-                              if (rule.isLeague) {
-                                rN = pair[0] == '自チーム' ? myFull : '${pair[0]} : 選手';
-                                wN = pair[1] == '自チーム' ? myFull : '${pair[1]} : 選手';
-                              } else {
-                                rN = _isOwnTeamRed ? myFull : opFull;
-                                wN = _isOwnTeamRed ? opFull : myFull;
-                              }
-                              redFull.add(rN);
-                              whiteFull.add(wN);
-                            }
-                            
-                            final matchId = const Uuid().v4();
-                            if (senpoMatchId.isEmpty) senpoMatchId = matchId;
-                            
-                            final newMatch = MatchModel(
-                              id: matchId, tournamentId: widget.tournamentId, category: rule.category.isNotEmpty ? rule.category : null,
-                              groupName: teamGroupId, matchType: _positions[0], whiteName: whiteFull[0], redName: redFull[0],
-                              status: (isStartNow && pIndex == 0) ? 'in_progress' : 'waiting', refereeNames: [],
-                              // ★ 修正：算出した正確な秒数(initialSeconds)をセットする！
-                              matchTimeMinutes: exactMatchTime.toInt(), isRunningTime: rule.isRunningTime, remainingSeconds: initialSeconds,
-                              order: baseOrder + (pIndex * 10), note: rule.note, isKachinuki: true,
-                              redRemaining: redFull.length > 1 ? redFull.sublist(1) : [], whiteRemaining: whiteFull.length > 1 ? whiteFull.sublist(1) : [],
-                            );
-                            matchesToSave.add(newMatch); 
-
-                          } else {
-                            for (int i = 0; i < _positions.length; i++) {
-                              final String matchId = const Uuid().v4();
-                              if (senpoMatchId.isEmpty) senpoMatchId = matchId; 
-                              final posName = _positions[i];
-                              String myP = _selectedPlayers[i] ?? '未定';
-                              if (myP.isEmpty) myP = '未定'; 
-                              String opP = _opponentPlayers[i]?.trim() ?? '';
-                              if (opP.isEmpty) opP = '選手';
-                              String myFull = '$myTeamName : $myP';
-                              String opFull = '$opTeamName : $opP';
-                              String rName, wName;
-                              if (rule.isLeague) {
-                                rName = pair[0] == '自チーム' ? myFull : '${pair[0]} : 選手';
-                                wName = pair[1] == '自チーム' ? myFull : '${pair[1]} : 選手';
-                              } else {
-                                rName = _isOwnTeamRed ? myFull : opFull;
-                                wName = _isOwnTeamRed ? opFull : myFull;
-                              }
-                              bool isFirstMatchOfAll = (pIndex == 0 && i == 0);
-                              final newMatch = MatchModel(
-                                id: matchId, tournamentId: widget.tournamentId, category: rule.category.isNotEmpty ? rule.category : null,
-                                groupName: teamGroupId, matchType: posName, redName: rName, whiteName: wName,
-                                status: (isStartNow && isFirstMatchOfAll) ? 'in_progress' : 'waiting', refereeNames: [],
-                                // ★ 修正：算出した正確な秒数(initialSeconds)をセットする！
-                                matchTimeMinutes: exactMatchTime.toInt(), isRunningTime: rule.isRunningTime, remainingSeconds: initialSeconds,
-                                order: baseOrder + (pIndex * 10) + i, note: rule.note, 
-                              );
-                              matchesToSave.add(newMatch); 
-                            }
-                          }
-                        }
-                      });
-
-                      if (matchesToSave.isNotEmpty) await ref.read(matchCommandProvider).saveMatchesBulk(matchesToSave);
-                      
-                      if (!context.mounted) return;
-                      Navigator.of(context, rootNavigator: true).pop(); // ★ Phase 8-1: ローディングダイアログだけを確実に閉じる！
-                      
-                      if (isStartNow) {
-                        if (senpoMatchId.isNotEmpty) {
-                          context.push('/match/$senpoMatchId');
-                        } else {
-                          context.go('/home/${widget.tournamentId}'); 
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('試合をプールしました（待機リストに追加）')));
-                        context.go('/home/${widget.tournamentId}'); 
-                      }
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      Navigator.of(context, rootNavigator: true).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存に失敗しました: $e')));
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    // iOS Native: ダークモード時に沈まないTeal
-                    backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.teal.shade600 : Colors.teal.shade700,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // 角丸をiOS標準の12に
-                    elevation: 0,
-                  ),
-                  child: const Text('このオーダーで確定して進む', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+
+  // ★ 追加：予測変換（サジェスト）と手入力を両立する、最強の入力フィールドビルダー
+  Widget _buildTeamAutocomplete({
+    required TextEditingController controller,
+    required List<String> suggestions,
+    required String labelText,
+    required String hintText,
+    required Color fillColor,
+    required Color borderColor,
+    required Color textColor,
+    required Color subTextColor,
+    required bool isDark,
+  }) {
+    return RawAutocomplete<String>(
+      textEditingController: controller,
+      focusNode: FocusNode(),
+      // ユーザーが文字を打つたびに候補を絞り込む
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) return suggestions; // 空なら全件表示
+        return suggestions.where((option) => option.contains(textEditingValue.text));
+      },
+      // 実際の入力欄のデザイン（今までと同じ見た目を維持しつつ、右端に▼をつける）
+      fieldViewBuilder: (context, fieldController, focusNode, onFieldSubmitted) {
+        return TextField(
+          controller: fieldController,
+          focusNode: focusNode,
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            labelText: labelText,
+            labelStyle: TextStyle(color: subTextColor),
+            hintText: hintText,
+            hintStyle: TextStyle(color: subTextColor),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: borderColor)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: borderColor)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.teal.shade500)),
+            prefixIcon: Icon(Icons.shield_outlined, color: isDark ? Colors.blueGrey.shade400 : Colors.blueGrey.shade400),
+            suffixIcon: const Icon(Icons.arrow_drop_down, color: Colors.grey), // ▼アイコン
+            fillColor: fillColor,
+            filled: true,
+            isDense: true,
+          ),
+        );
+      },
+      // 浮かび上がる候補リストのデザイン
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 8.0,
+            borderRadius: BorderRadius.circular(12),
+            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+            child: ConstrainedBox(
+              // 幅を画面に合わせる
+              constraints: BoxConstraints(maxHeight: 250, maxWidth: MediaQuery.of(context).size.width - 48),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options.elementAt(index);
+                  return ListTile(
+                    title: Text(option, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                    trailing: const Icon(Icons.add_circle_outline, color: Colors.teal, size: 18),
+                    onTap: () => onSelected(option), // 選んだら一瞬で入力完了！
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

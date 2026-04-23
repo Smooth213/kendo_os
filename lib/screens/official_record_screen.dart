@@ -259,6 +259,9 @@ class OfficialRecordScreen extends ConsumerWidget {
     final headerTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
     final daihyoBgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50;
 
+    // ★ Phase 8-4: すべての試合が完了しているか判定
+    bool allFinished = matches.every((m) => m.status == 'approved' || m.status == 'finished');
+
     // ★ チーム勝敗判定ロジック
     String teamWinner = 'draw';
     int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
@@ -340,7 +343,7 @@ class OfficialRecordScreen extends ConsumerWidget {
               TableRow(children: [
                 const SizedBox.shrink(),
                 ...matches.map((m) => _scoreCell(m, isDark)),
-                _teamResultCell(teamWinner, isDark),
+                _teamResultCell(teamWinner, isDark, allFinished), // ★ allFinishedを渡す
               ]),
               TableRow(children: [
                 _teamCell(whiteTeam, isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade700),
@@ -366,7 +369,8 @@ class OfficialRecordScreen extends ConsumerWidget {
     return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
   }
 
-  Widget _teamResultCell(String winner, bool isDark) {
+  // ★ Phase 8-4: allFinished を受け取り、未完了なら勝敗を隠す
+  Widget _teamResultCell(String winner, bool isDark, bool allFinished) {
     final textColor = isDark ? Colors.white : Colors.black;
     final dividerColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
 
@@ -376,18 +380,22 @@ class OfficialRecordScreen extends ConsumerWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          if (winner != 'draw')
+          // 勝負がついていても、試合途中なら境界線（Divider）だけは表示してレイアウトを保つ
+          if (winner != 'draw' || !allFinished)
             Divider(color: dividerColor, thickness: 1, height: 0),
           
-          if (winner == 'draw')
-            Center(child: _buildVerticalName('引き分け', '', isDark))
-          else
-            Column(
-              children: [
-                Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? Colors.red.shade600 : textColor)))),
-                Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? Colors.red.shade600 : textColor)))),
-              ],
-            ),
+          // ★ すべての試合が終わっている場合のみテキストを表示
+          if (allFinished) ...[
+            if (winner == 'draw')
+              Center(child: _buildVerticalName('引き分け', '', isDark))
+            else
+              Column(
+                children: [
+                  Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? Colors.red.shade600 : textColor)))),
+                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? Colors.red.shade600 : textColor)))),
+                ],
+              ),
+          ]
         ],
       ),
     );

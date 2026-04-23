@@ -374,7 +374,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               }
                             },
                             icon: Icon(match.isKachinuki ? Icons.timeline : Icons.table_chart_outlined, size: 18, color: isDark ? Colors.indigoAccent.shade100 : Colors.indigo.shade400),
-                            label: Text(match.isKachinuki ? 'タイムラインを確認' : '星取り表を確認', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.indigo.shade700)),
+                            // ★ 変更：「星取り表を確認」を「スコアを確認」に変更
+                            label: Text(match.isKachinuki ? 'タイムラインを確認' : 'スコアを確認', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.indigo.shade700)),
                             style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.indigo.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                           ),
                         ),
@@ -749,20 +750,20 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
           bool isOwnTeam = registeredTeams.any((t) => t.teamName == teamName);
 
-          return Container(
-            height: MediaQuery.of(ctx).size.height * 0.85,
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom,
-              top: 16, left: 24, right: 24,
-            ),
-            child: Column(
-              children: [
-                Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10))),
-                const SizedBox(height: 24),
+          // ★ Phase 8-3: キーボードに潰されないようにコンテナごと上にスライドさせる
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.85),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+              child: Column(
+                children: [
+                  Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10))),
+                  const SizedBox(height: 24),
                 Text('選手名の変更', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
                 if (teamName.isNotEmpty) ...[
                   const SizedBox(height: 4),
@@ -857,6 +858,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 ]
               ],
             ),
+          ),
           );
         },
       ),
@@ -888,20 +890,20 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
-          return Container(
-            height: MediaQuery.of(ctx).size.height * 0.85, 
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom, 
-              top: 16, left: 24, right: 24
-            ),
-            child: Column(
-              children: [
-                Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10))),
-                const SizedBox(height: 24),
+          // ★ Phase 8-3: ここも同様にキーボード追従型へ変更
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.85),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+              child: Column(
+                children: [
+                  Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10))),
+                  const SizedBox(height: 24),
                 Text('代表戦の準備', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
                 const SizedBox(height: 8),
                 Text('代表戦を戦う選手を選んでください。\n決定するとタイマーが0:00にリセットされます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
@@ -1012,6 +1014,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 ),
               ],
             ),
+          ),
           );
         }
       )

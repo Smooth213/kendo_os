@@ -503,12 +503,25 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : Colors.grey.shade50;
 
+    // ★ Phase 8-3: キーボードが開いているかを検知
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: bgColor,
       body: Column(
         children: [
-          _buildImmersiveAppBar(context),
-          _buildDynamicHeader(),
+          // ★ キーボードが開いた時はヘッダーをスッと隠す
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: isKeyboardOpen ? const SizedBox.shrink() : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildImmersiveAppBar(context),
+                _buildDynamicHeader(),
+              ],
+            ),
+          ),
           Expanded(
             child: PageView(
               controller: _pageController,
@@ -521,7 +534,12 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
               ],
             ),
           ),
-          _buildStickyBottomAction(),
+          // ★ キーボードが開いた時は下のボタンも隠す
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: isKeyboardOpen ? const SizedBox.shrink() : _buildStickyBottomAction(),
+          ),
         ],
       ),
     );

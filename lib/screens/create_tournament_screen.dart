@@ -155,14 +155,27 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
 
+    // ★ Phase 8-3: キーボードが開いているかを検知
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: bgColor, 
       body: Stack(
         children: [
           Column(
             children: [
-              _buildImmersiveAppBar(context),
-              _buildDynamicHeader(),
+              // ★ キーボードが開いた時はヘッダーをスッと隠す
+              AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                child: isKeyboardOpen ? const SizedBox.shrink() : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildImmersiveAppBar(context),
+                    _buildDynamicHeader(),
+                  ],
+                ),
+              ),
               Expanded(
                 child: Form(
                   key: _formKey,
@@ -177,7 +190,12 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
                   ),
                 ),
               ),
-              _buildStickyBottomAction(),
+              // ★ キーボードが開いた時は下のボタンも隠す
+              AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                child: isKeyboardOpen ? const SizedBox.shrink() : _buildStickyBottomAction(),
+              ),
             ],
           ),
         ],

@@ -6,6 +6,7 @@ import '../repositories/team_repository.dart';
 import '../models/player_model.dart';
 import '../repositories/player_repository.dart';
 import '../providers/team_name_history_provider.dart'; // ★ 追加：履歴プロバイダ
+import '../utils/text_sanitizer.dart'; // ★ お掃除フィルターを追加
 
 // ★ 安定したProvider定義
 final registeredTeamsProvider = StreamProvider.family.autoDispose<List<TeamModel>, String>((ref, tournamentId) {
@@ -14,6 +15,11 @@ final registeredTeamsProvider = StreamProvider.family.autoDispose<List<TeamModel
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
+});
+
+// ★ 追加：登録した「よく使う自チーム名」をマスタから取得するプロバイダー
+final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
+  return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
 });
 
 class TeamRegistrationScreen extends ConsumerStatefulWidget {
@@ -206,14 +212,18 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
           // よみがな順でソート（常に美しく並ぶ）
           displayList.sort((a, b) => a.nameKana.compareTo(b.nameKana));
 
-          return Container(
-            height: MediaQuery.of(ctx).size.height * 0.85,
-            decoration: BoxDecoration(color: sheetBgColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, top: 16, left: 24, right: 24),
-            child: Column(
-              children: [
-                Container(width: 48, height: 5, decoration: BoxDecoration(color: borderColor, borderRadius: BorderRadius.circular(10))),
-                const SizedBox(height: 24),
+          // ★ Phase 8-3: BottomSheetをキーボードの上に「スライド」させる魔法
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              // 固定heightをやめ、maxHeightにすることでキーボード分上に持ち上がる
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.85),
+              decoration: BoxDecoration(color: sheetBgColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+              padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+              child: Column(
+                children: [
+                  Container(width: 48, height: 5, decoration: BoxDecoration(color: borderColor, borderRadius: BorderRadius.circular(10))),
+                  const SizedBox(height: 24),
                 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -310,6 +320,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                 ),
               ],
             ),
+          ),
           );
         }
       ),
@@ -419,12 +430,25 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // ★ Phase 8-3: キーボードが開いているかを検知
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
       body: Column(
         children: [
-          _buildImmersiveAppBar(context),
-          _buildDynamicHeader(),
+          // ★ キーボードが開いた時はヘッダーをスッと隠し、入力エリアを最大化する
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: isKeyboardOpen ? const SizedBox.shrink() : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildImmersiveAppBar(context),
+                _buildDynamicHeader(),
+              ],
+            ),
+          ),
           Expanded(
             child: PageView(
               controller: _pageController,
@@ -433,15 +457,20 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
               children: [
                 _buildPage1CategoryFormat(),
                 playerListAsync.when(
-                  data: (players) => _buildPage2TeamAndOrder(totalPlayerCount, posNames, players), // ★ 変更
+                  data: (players) => _buildPage2TeamAndOrder(totalPlayerCount, posNames, players), 
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (e, s) => Center(child: Text('エラー: $e')),
                 ),
-                _buildPage3Confirm(registeredTeamsAsync, totalPlayerCount), // ★ 変更
+                _buildPage3Confirm(registeredTeamsAsync, totalPlayerCount), 
               ],
             ),
           ),
-          _buildStickyBottomAction(totalPlayerCount), // ★ 変更
+          // ★ キーボードが開いた時は下のボタンも隠し、画面を押し潰さないようにする
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: isKeyboardOpen ? const SizedBox.shrink() : _buildStickyBottomAction(totalPlayerCount),
+          ),
         ],
       ),
     );
@@ -563,50 +592,17 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
       children: [
         Text('チーム名とオーダーを\n入力してください', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, height: 1.4, color: textColor)),
         const SizedBox(height: 24),
-        TextField(
+        // ★ 修正：通常のTextFieldと履歴チップを廃止し、マスタ連動のサジェスト入力に統合！
+        _buildTeamAutocomplete(
           controller: _teamNameController,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
-          decoration: InputDecoration(
-            labelText: 'チーム名 (例: 道上剣友会A)', 
-            labelStyle: TextStyle(color: Colors.teal.shade700, fontWeight: FontWeight.bold),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), 
-            filled: true, 
-            fillColor: inputBgColor, 
-            prefixIcon: Icon(Icons.shield, color: Colors.teal.shade600),
-            contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          ),
-        ),
-        // ★ 追加：入力履歴を横スワイプ可能なチップで表示（画面を圧迫しない）
-        Consumer(
-          builder: (context, ref, child) {
-            final history = ref.watch(teamNameHistoryProvider);
-            if (history.isEmpty) return const SizedBox.shrink();
-            
-            return Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: SizedBox(
-                height: 36, // チップの高さを固定してスリムに
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: history.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final name = history[index];
-                    return ActionChip(
-                      label: Text(name, style: TextStyle(fontSize: 13, color: isDark ? Colors.teal.shade200 : Colors.teal.shade800, fontWeight: FontWeight.bold)),
-                      backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.teal.shade50,
-                      side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.teal.shade100),
-                      onPressed: () {
-                        _teamNameController.text = name;
-                        _teamNameController.selection = TextSelection.fromPosition(TextPosition(offset: name.length)); // カーソルを末尾へ
-                      },
-                    );
-                  },
-                ),
-              ),
-            );
-          },
+          suggestions: ref.watch(customTeamNamesProvider).value ?? [],
+          labelText: 'チーム名 (例: 道上剣友会A)',
+          hintText: 'タップして登録済みリストから選択',
+          fillColor: inputBgColor,
+          borderColor: borderColor,
+          textColor: textColor,
+          subTextColor: Colors.teal.shade700,
+          isDark: isDark,
         ),
         const SizedBox(height: 32),
         _buildSectionTitle('オーダー編成（タップして選択）'),
@@ -816,11 +812,12 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('チーム名を入力してください')));
                         return;
                       }
+                      final cleanTeamName = TextSanitizer.clean(_teamNameController.text);
                       final team = TeamModel(
                         id: _editingTeamId ?? '',
                         tournamentId: widget.tournamentId,
                         category: _selectedCategory,
-                        teamName: _teamNameController.text,
+                        teamName: cleanTeamName,
                         matchType: _matchType,
                         playerNames: List.generate(playerCount, (i) => _tempSelectedPlayers[i] ?? ''), // ★ 補欠も含めて保存！
                       );
@@ -857,11 +854,12 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                 // ★ 自動保存機能
                 if (_teamNameController.text.trim().isNotEmpty) {
                   try {
+                    final cleanTeamName = TextSanitizer.clean(_teamNameController.text);
                     await ref.read(teamRepositoryProvider).saveTeam(TeamModel(
                       id: _editingTeamId ?? '',
                       tournamentId: widget.tournamentId,
                       category: _selectedCategory,
-                      teamName: _teamNameController.text.trim(),
+                      teamName: cleanTeamName,
                       matchType: _matchType,
                       playerNames: List.generate(playerCount, (i) => _tempSelectedPlayers[i] ?? ''),
                     ));
@@ -896,5 +894,74 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
     // iOS Native: ダークモード時は文字色をパステル調にして視認性を確保
     final color = isDark ? Colors.teal.shade400 : Colors.teal.shade700;
     return Padding(padding: const EdgeInsets.only(bottom: 12), child: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)));
+  }
+
+  // ★ 追加：予測変換（サジェスト）と手入力を両立する入力フィールドビルダー
+  Widget _buildTeamAutocomplete({
+    required TextEditingController controller,
+    required List<String> suggestions,
+    required String labelText,
+    required String hintText,
+    required Color fillColor,
+    required Color borderColor,
+    required Color textColor,
+    required Color subTextColor,
+    required bool isDark,
+  }) {
+    return RawAutocomplete<String>(
+      textEditingController: controller,
+      focusNode: FocusNode(),
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) return suggestions;
+        return suggestions.where((option) => option.contains(textEditingValue.text));
+      },
+      fieldViewBuilder: (context, fieldController, focusNode, onFieldSubmitted) {
+        return TextField(
+          controller: fieldController,
+          focusNode: focusNode,
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            labelText: labelText,
+            labelStyle: TextStyle(color: subTextColor, fontWeight: FontWeight.bold),
+            hintText: hintText,
+            hintStyle: TextStyle(color: Colors.grey),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.teal.shade500)),
+            prefixIcon: Icon(Icons.shield, color: Colors.teal.shade600),
+            suffixIcon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+            fillColor: fillColor,
+            filled: true,
+            contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 8.0,
+            borderRadius: BorderRadius.circular(12),
+            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: 250, maxWidth: MediaQuery.of(context).size.width - 48),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options.elementAt(index);
+                  return ListTile(
+                    title: Text(option, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                    trailing: const Icon(Icons.add_circle_outline, color: Colors.teal, size: 18),
+                    onTap: () => onSelected(option),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

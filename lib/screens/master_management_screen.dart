@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../providers/match_list_provider.dart';
+import '../utils/text_sanitizer.dart';
 
 // 選手一覧のProvider
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
@@ -76,37 +77,40 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                 ),
                 const SizedBox(width: 8),
               ]
-            : [
-                // ★ 通常モード時のアクション（選択モード切り替えボタンを追加）
-                IconButton(
-                  icon: Icon(Icons.checklist, color: primaryColor),
-                  tooltip: '選択して削除',
-                  onPressed: () {
-                    setState(() {
-                      _isSelectionMode = true;
-                      _selectedPlayerIds.clear();
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.cleaning_services, color: primaryColor),
-                  tooltip: 'データとストレージ管理',
-                  onPressed: () => _showDataCleanupDialog(context, ref),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showPromoteConfirmDialog(context, ref),
-                    icon: Icon(Icons.school, color: primaryColor, size: 14),
-                    label: Text('新年度 一括進級', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 11)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.purple.shade50,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            // ★ 修正：閲覧のみ権限（isReadOnly）の場合はすべて空っぽにして隠す！
+            : (permissions.isReadOnly 
+                ? [] 
+                : [
+                    // ★ 通常モード時のアクション（選択モード切り替えボタンを追加）
+                    IconButton(
+                      icon: Icon(Icons.checklist, color: primaryColor),
+                      tooltip: '選択して削除',
+                      onPressed: () {
+                        setState(() {
+                          _isSelectionMode = true;
+                          _selectedPlayerIds.clear();
+                        });
+                      },
                     ),
-                  ),
-                ),
-              ],
+                    IconButton(
+                      icon: Icon(Icons.cleaning_services, color: primaryColor),
+                      tooltip: 'データとストレージ管理',
+                      onPressed: () => _showDataCleanupDialog(context, ref),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showPromoteConfirmDialog(context, ref),
+                        icon: Icon(Icons.school, color: primaryColor, size: 14),
+                        label: Text('新年度 一括進級', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 11)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.purple.shade50,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        ),
+                      ),
+                    ),
+                  ]),
       ),
       body: playerListAsync.when(
         data: (players) {
@@ -163,13 +167,22 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                     Icon(Icons.account_balance, color: primaryColor, size: 24),
                     const SizedBox(width: 12),
                     Expanded(child: Text(orgName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor))),
-                    // ★ 修正：選択モード中は編集ボタンを隠す
-                    if (!_isSelectionMode)
+                    
+                    // ★ 閲覧制限がかかっていない場合のみ表示
+                    if (!_isSelectionMode && !permissions.isReadOnly) ...[
+                      // 1. よく使うチーム名の管理ボタン
+                      IconButton(
+                        icon: Icon(Icons.format_list_bulleted_add, color: primaryColor.withValues(alpha: 0.7)),
+                        tooltip: 'よく使うチーム名の管理',
+                        onPressed: () => _showCustomTeamNameManagementSheet(context, ref, orgName),
+                      ),
+                      // 2. 道場名の一括変更ボタン
                       IconButton(
                         icon: Icon(Icons.edit_note, color: Colors.grey.shade400),
                         tooltip: '道場名・学校名を一括変更',
                         onPressed: () => _showEditOrgBottomSheet(context, ref, orgName, players),
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -325,7 +338,8 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
               ),
             ],
           ),
-          trailing: _isSelectionMode ? null : Row(
+          // ★ 修正：選択モード中、または閲覧のみ権限（isReadOnly）の場合は各選手の編集・削除ボタンを隠す
+          trailing: _isSelectionMode || ref.watch(permissionProvider).isReadOnly ? null : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(icon: Icon(Icons.edit, color: Colors.grey.shade400, size: 20), onPressed: () => _showPlayerBottomSheet(context, ref, player: player)),
@@ -752,7 +766,8 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                     ),
                     icon: const Icon(Icons.check),
                     onPressed: () async {
-                      final newName = controller.text.trim();
+                      // ★ 修正：一括修正する道場名もお掃除フィルターに通す！
+                      final newName = TextSanitizer.clean(controller.text);
                       if (newName.isEmpty) return;
                       
                       Navigator.pop(ctx);
@@ -929,6 +944,96 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる', style: TextStyle(color: Colors.grey))),
         ],
+      ),
+    );
+  }
+
+  // ★ 追加：よく使うチーム名を管理するボトムシート
+  void _showCustomTeamNameManagementSheet(BuildContext context, WidgetRef ref, String orgName) {
+    final nameController = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.only(top: 16, left: 24, right: 24, bottom: MediaQuery.of(ctx).viewInsets.bottom + 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)))),
+            const SizedBox(height: 24),
+            Text('チーム名の管理', style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 20)),
+            const Text('試合作成時にボタンで選べる「自チーム名」を登録します。', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 24),
+            
+            // 入力エリア
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: nameController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: '例：道上剣友会A',
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: () async {
+                    final name = TextSanitizer.clean(nameController.text);
+                    if (name.isNotEmpty) {
+                      await ref.read(playerRepositoryProvider).addCustomTeamName(name, organization: orgName);
+                      nameController.clear();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: primaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  child: const Text('追加'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // リスト表示
+            Expanded(
+              child: StreamBuilder<List<String>>(
+                stream: ref.read(playerRepositoryProvider).watchCustomTeamNames(organization: orgName),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                  final names = snapshot.data!;
+                  if (names.isEmpty) return const Center(child: Text('登録されたチーム名はありません', style: TextStyle(color: Colors.grey, fontSize: 13)));
+                  
+                  return ListView.builder(
+                    itemCount: names.length,
+                    itemBuilder: (context, index) => Card(
+                      elevation: 0,
+                      color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        title: Text(names[index], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                          onPressed: () => ref.read(playerRepositoryProvider).deleteCustomTeamName(names[index], organization: orgName),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

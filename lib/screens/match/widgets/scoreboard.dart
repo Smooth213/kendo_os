@@ -59,7 +59,8 @@ class MatchScoreboard extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start, 
           children: [
-            const SizedBox(height: 24),
+            // ★ Phase 8-4: 試合終了時は勝敗バッジ(Overlay)を表示するため、名前を下に避ける
+            SizedBox(height: isFinished ? 72 : 24),
             GestureDetector(
               onTap: () => onNameTap(side.name),
               child: Container(
@@ -171,7 +172,7 @@ class MatchScoreboard extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Positioned(
-      top: 24, 
+      top: 16, // ★ 少し上に配置して名前との距離を確保
       child: Container(
         height: 44,
         alignment: Alignment.center,
