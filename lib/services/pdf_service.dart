@@ -4,12 +4,14 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../models/match_model.dart';
+import '../models/match_rule.dart'; // MatchRuleの参照に必要
 import '../models/score_event.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../domain/kendo_rule_engine.dart';
 
 class PdfService {
-  // ★ 共通処理：PDFのデータ（中身）を作成する裏方メソッド
+  // ★ 修正：リーグ戦も通常戦も全てここで美しく処理する完全版
   static Future<Uint8List> _generatePdfBytes(String categoryName, List<Map<String, dynamic>> groupDataList) async {
     final fontData = await rootBundle.load('assets/fonts/NotoSansJP-Regular.ttf');
     final ttf = pw.Font.ttf(fontData);
@@ -54,27 +56,89 @@ class PdfService {
         build: (pw.Context context) {
           final List<pw.Widget> contentWidgets = [];
 
-          // ★ 修正：勝ち抜き戦と団体戦でレイアウト（1列/2列）を賢く出し分ける
           for (int i = 0; i < groupDataList.length; i++) {
             final group = groupDataList[i];
             final matches = group['matches'] as List<MatchModel>;
-            final isKachinuki = matches.isNotEmpty && matches.first.isKachinuki;
+            if (matches.isEmpty) continue;
+
+            final isKachinuki = matches.isNotEmpty && matches.first.rule?.isKachinuki == true;
+            // ★ 修正ポイント：最初の試合ではなく、グループ内の全試合をチェックして「リーグ戦」タグを探す
+            final isLeague = matches.isNotEmpty && matches.any((m) => m.note.contains('[リーグ戦]'));
 
             if (isKachinuki) {
-              // 勝ち抜き戦は横に長くなるため、1行をまるごと使って描画する
               contentWidgets.add(_buildPdfKachinukiBracket(group['groupName'], matches, ttf, ttfBold));
               contentWidgets.add(pw.SizedBox(height: 16));
+            } else if (isLeague) {
+              // ★ 修正：PDFでも通常試合と決定戦を完全に分離して出力
+              final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
+              final tieBreakMatches = matches.where((m) => m.note.contains('[順位決定戦]')).toList();
+              
+              if (normalMatches.isNotEmpty) {
+                final allFinished = normalMatches.every((m) => m.status == 'finished' || m.status == 'approved');
+                final statusText = allFinished ? '（最終結果）' : '（進行中）';
+                
+                // 1. リーグ表（マトリックス）を出力
+                contentWidgets.add(pw.Text('【リーグ表】 $statusText', style: pw.TextStyle(font: ttfBold, fontSize: 14)));
+                contentWidgets.add(pw.SizedBox(height: 10));
+                contentWidgets.add(_buildPdfLeagueTable(group['groupName'], normalMatches, ttf, ttfBold));
+                contentWidgets.add(pw.SizedBox(height: 24));
+
+                // 2. 対戦詳細スコアを出力
+                contentWidgets.add(pw.Text('【対戦詳細スコア】', style: pw.TextStyle(font: ttfBold, fontSize: 12)));
+                contentWidgets.add(pw.SizedBox(height: 10));
+                
+                final matchups = _groupByMatchup(normalMatches);
+                final matchupLists = matchups.values.toList();
+                
+                for (int j = 0; j < matchupLists.length; j += 2) {
+                  final table1 = _buildPdfScoreTable('matchup', matchupLists[j], ttf, ttfBold);
+                  pw.Widget table2 = pw.SizedBox();
+                  if (j + 1 < matchupLists.length) {
+                    table2 = _buildPdfScoreTable('matchup', matchupLists[j + 1], ttf, ttfBold);
+                  }
+                  contentWidgets.add(
+                    pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Expanded(child: table1),
+                        pw.SizedBox(width: 16),
+                        pw.Expanded(child: table2),
+                      ],
+                    ),
+                  );
+                  contentWidgets.add(pw.SizedBox(height: 16));
+                }
+              }
+
+              // 3. 順位決定戦があれば独立して出力
+              if (tieBreakMatches.isNotEmpty) {
+                contentWidgets.add(pw.SizedBox(height: 8));
+                contentWidgets.add(pw.Text('▼ 順位決定戦', style: pw.TextStyle(font: ttfBold, fontSize: 12, color: PdfColors.orange700)));
+                contentWidgets.add(pw.SizedBox(height: 10));
+                
+                final tieMatchups = _groupByMatchup(tieBreakMatches);
+                for (var entry in tieMatchups.entries) {
+                  contentWidgets.add(
+                    pw.SizedBox(
+                      width: PdfPageFormat.a4.availableWidth / 2 - 8,
+                      child: _buildPdfScoreTable(entry.key, entry.value, ttf, ttfBold),
+                    )
+                  );
+                  contentWidgets.add(pw.SizedBox(height: 16));
+                }
+              }
+              contentWidgets.add(pw.SizedBox(height: 16));
+
             } else {
-              // 通常の団体戦は今まで通り2列で並べる
               final table1 = _buildPdfScoreTable(group['groupName'], matches, ttf, ttfBold);
               pw.Widget table2 = pw.SizedBox();
               
               if (i + 1 < groupDataList.length) {
                 final nextGroup = groupDataList[i + 1];
                 final nextMatches = nextGroup['matches'] as List<MatchModel>;
-                if (!(nextMatches.isNotEmpty && nextMatches.first.isKachinuki)) {
+                if (!(nextMatches.isNotEmpty && (nextMatches.first.isKachinuki || nextMatches.first.note.contains('[リーグ戦]')))) {
                   table2 = _buildPdfScoreTable(nextGroup['groupName'], nextMatches, ttf, ttfBold);
-                  i++; // 次のグループも消費したためスキップ
+                  i++; 
                 }
               }
               
@@ -93,7 +157,7 @@ class PdfService {
           }
 
           if (contentWidgets.isEmpty) {
-            contentWidgets.add(pw.Center(child: pw.Text('データがありません。')));
+            contentWidgets.add(pw.Center(child: pw.Text('データがありません。', style: pw.TextStyle(font: ttf))));
           }
 
           return contentWidgets;
@@ -104,7 +168,7 @@ class PdfService {
     return pdf.save();
   }
 
-  // ★ 1. PDFとして「印刷」するメイン関数
+  // 1. PDFとして「印刷」するメイン関数
   static Future<void> printOfficialRecord(String categoryName, List<Map<String, dynamic>> groupDataList) async {
     final pdfBytes = await _generatePdfBytes(categoryName, groupDataList);
     await Printing.layoutPdf(
@@ -113,7 +177,7 @@ class PdfService {
     );
   }
 
-  // ★ 2. 画像（PNG）としてLINEなどに「シェア」する機能
+  // 2. 画像（PNG）としてLINEなどに「シェア」する機能
   static Future<void> shareOfficialRecordAsImage(String categoryName, List<Map<String, dynamic>> groupDataList) async {
     final pdfBytes = await _generatePdfBytes(categoryName, groupDataList);
     final outputFiles = <XFile>[];
@@ -392,6 +456,9 @@ class PdfService {
     if (matches.isEmpty) return pw.SizedBox();
 
     final note = matches.first.note;
+    // ★ 修正：二重カッコを防ぐため、事前に [ ] を除去する
+    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
+
     final redTeam = matches.first.redName.split(':').first;
     final whiteTeam = matches.first.whiteName.split(':').first;
 
@@ -405,43 +472,50 @@ class PdfService {
     List<String> rLasts = matches.map((m) => parse(m.redName)['last']!).where((s) => s.isNotEmpty).toList();
     List<String> wLasts = matches.map((m) => parse(m.whiteName)['last']!).where((s) => s.isNotEmpty).toList();
 
-    // ★ 勝敗判定ロジック
-    String teamWinner = 'draw';
-    int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
-    MatchModel? daihyo;
-    for (var m in matches) {
-      final rs = (m.redScore as num).toInt(); 
-      final ws = (m.whiteScore as num).toInt();
-      rPts += rs; 
-      wPts += ws;
-      if (rs > ws) {
-        rWins++;
-      } else if (ws > rs) {
-        wWins++;
+    // ★ 修正：全試合終了するまでチーム勝敗は出さない！
+    final allFinished = matches.every((m) => m.status == 'finished' || m.status == 'approved');
+    String teamWinner = 'none';
+
+    if (allFinished) {
+      teamWinner = 'draw';
+      int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
+      MatchModel? daihyo;
+      for (var m in matches) {
+        final rs = (m.redScore as num).toInt(); 
+        final ws = (m.whiteScore as num).toInt();
+        rPts += rs; 
+        wPts += ws;
+        if (rs > ws) {
+          rWins++;
+        } else if (ws > rs) {
+          wWins++;
+        }
+        if (m.matchType == '代表戦') {
+          daihyo = m;
+        }
       }
-      if (m.matchType == '代表戦') {
-        daihyo = m;
-      }
-    }
-    if (rWins > wWins) {
-      teamWinner = 'red';
-    } else if (wWins > rWins) {
-      teamWinner = 'white';
-    } else if (rPts > wPts) {
-      teamWinner = 'red';
-    } else if (wPts > rPts) {
-      teamWinner = 'white';
-    } else if (daihyo != null) {
-      final rs = (daihyo.redScore as num).toInt(); 
-      final ws = (daihyo.whiteScore as num).toInt();
-      if (rs > ws) {
+      if (rWins > wWins) {
         teamWinner = 'red';
-      } else if (ws > rs) {
+      } else if (wWins > rWins) {
         teamWinner = 'white';
+      } else if (rPts > wPts) {
+        teamWinner = 'red';
+      } else if (wPts > rPts) {
+        teamWinner = 'white';
+      } else if (daihyo != null) {
+        final rs = (daihyo.redScore as num).toInt(); 
+        final ws = (daihyo.whiteScore as num).toInt();
+        if (rs > ws) {
+          teamWinner = 'red';
+        } else if (ws > rs) {
+          teamWinner = 'white';
+        }
       }
     }
 
-    final String titleText = note.isNotEmpty ? '【$note】 $redTeam vs $whiteTeam' : '$redTeam vs $whiteTeam';
+    // ★ 修正：綺麗になった note を使ってタイトルを生成
+    final String titleText = cleanNote.isNotEmpty ? '【$cleanNote】 $redTeam vs $whiteTeam' : '$redTeam vs $whiteTeam';
+    
     final Map<int, pw.TableColumnWidth> columnWidths = {
       0: const pw.FlexColumnWidth(1.4), 
       for (int i = 1; i <= matches.length; i++) i: const pw.FlexColumnWidth(1.0),
@@ -498,10 +572,13 @@ class PdfService {
         alignment: pw.Alignment.center,
         children: [
           // ★ 引き分け以外の場合、隣のセルの横線とシームレスに繋ぐ
-          if (winner != 'draw')
+          if (winner != 'draw' && winner != 'none')
             pw.Divider(color: PdfColors.black, thickness: 1, height: 0),
           
-          if (winner == 'draw')
+          // ★ 修正：全試合終了前（winner == 'none'）の場合は完全に空欄にする
+          if (winner == 'none')
+            pw.SizedBox()
+          else if (winner == 'draw')
             pw.Center(
               child: pw.Column(
                 mainAxisAlignment: pw.MainAxisAlignment.center, 
@@ -742,6 +819,265 @@ class PdfService {
       }
     }
     return {'red': redPts, 'white': whitePts};
+  }
+
+  // ★ 修正：アプリ画面と完全同期したPDF用の美しいリーグ表エンジン
+  static pw.Widget _buildPdfLeagueTable(String groupName, List<MatchModel> matches, pw.Font ttf, pw.Font ttfBold) {
+    if (matches.isEmpty) return pw.SizedBox();
+    
+    // 決定戦を除外した通常試合のみで計算
+    final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
+    if (normalMatches.isEmpty) return pw.SizedBox();
+
+    // アプリと同じルールエンジンで順位を計算
+    final rule = normalMatches.first.rule ?? const MatchRule();
+    final stats = KendoRuleEngine.calculateLeagueStandings(normalMatches, rule);
+    final isIndiv = normalMatches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
+    final allFinished = matches.every((m) => m.status == 'approved' || m.status == 'finished');
+    final hasMatchPoints = rule.isLeague;
+
+    final teams = <String>{};
+    for (var m in normalMatches) {
+      teams.add(m.redName.split(':').first.trim());
+      teams.add(m.whiteName.split(':').first.trim());
+    }
+    final teamList = teams.toList()..sort();
+
+    return pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.grey500, width: 0.5),
+      columnWidths: {
+        0: const pw.FixedColumnWidth(80), // チーム名
+        for (int i = 1; i <= teamList.length; i++) i: const pw.FixedColumnWidth(45), // 各対戦
+        teamList.length + 1: const pw.FixedColumnWidth(30), // 勝数
+        teamList.length + 2: const pw.FixedColumnWidth(30), // 勝者
+        teamList.length + 3: const pw.FixedColumnWidth(30), // 本数
+        if (hasMatchPoints) teamList.length + 4: const pw.FixedColumnWidth(30), // 勝点
+        teamList.length + (hasMatchPoints ? 5 : 4): const pw.FixedColumnWidth(30), // 順位
+      },
+      children: [
+        // ヘッダー行
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          children: [
+            pw.Container(height: 30),
+            ...teamList.map((t) => pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(2), child: pw.Text(t, style: pw.TextStyle(font: ttfBold, fontSize: 7), textAlign: pw.TextAlign.center)))),
+            _pdfHeaderCell('勝数', ttfBold), _pdfHeaderCell('勝者', ttfBold), _pdfHeaderCell('本数', ttfBold),
+            if (hasMatchPoints) _pdfHeaderCell('勝点', ttfBold),
+            _pdfHeaderCell('順位', ttfBold),
+          ]
+        ),
+        // データ行
+        ...teamList.map((rowTeam) {
+          final stat = stats.firstWhere((s) => s.name == rowTeam, orElse: () => stats.first);
+          final rankStr = allFinished ? '${stats.indexWhere((s) => s.name == rowTeam) + 1}' : '-';
+
+          return pw.TableRow(
+            children: [
+              pw.Container(
+                height: 40, alignment: pw.Alignment.center, decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                child: pw.Padding(padding: const pw.EdgeInsets.all(2), child: pw.Text(rowTeam, style: pw.TextStyle(font: ttfBold, fontSize: 7), textAlign: pw.TextAlign.center)),
+              ),
+              ...teamList.map((colTeam) {
+                if (rowTeam == colTeam) {
+                  // 自分自身のセル（美しい斜め線）
+                  return pw.Container(
+                    height: 40, color: PdfColors.grey300,
+                    child: pw.CustomPaint(
+                      painter: (PdfGraphics canvas, PdfPoint size) {
+                        canvas.setStrokeColor(PdfColors.grey500);
+                        canvas.setLineWidth(0.5);
+                        canvas.drawLine(0, size.y, size.x, 0); // 斜め線
+                        canvas.strokePath();
+                      }
+                    )
+                  );
+                }
+                
+                final bouts = normalMatches.where((m) {
+                  final r = m.redName.split(':').first.trim();
+                  final w = m.whiteName.split(':').first.trim();
+                  return (r == rowTeam && w == colTeam) || (r == colTeam && w == rowTeam);
+                }).toList();
+                
+                if (bouts.isEmpty) return pw.Container(height: 40);
+                // 修正済みのセル描画エンジン（◯△□）を呼び出す
+                return _buildPdfLeagueCell(rowTeam, colTeam, bouts, isIndiv, ttf, ttfBold);
+              }),
+              _pdfStatCell('${stat.matchWins}', ttfBold),
+              _pdfStatCell('${stat.individualWinners}', ttfBold),
+              _pdfStatCell('${stat.totalPointsScored}', ttfBold),
+              if (hasMatchPoints) _pdfStatCell(stat.customPoints.toStringAsFixed(stat.customPoints.truncateToDouble() == stat.customPoints ? 0 : 1), ttfBold),
+              _pdfStatCell(rankStr, ttfBold, isRank: true),
+            ]
+          );
+        }),
+      ]
+    );
+  }
+
+  static pw.Widget _pdfHeaderCell(String text, pw.Font font) {
+    return pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.symmetric(vertical: 8), child: pw.Text(text, style: pw.TextStyle(font: font, fontSize: 8, color: PdfColors.grey700))));
+  }
+
+  static pw.Widget _pdfStatCell(String text, pw.Font font, {bool isRank = false}) {
+    return pw.Container(
+      height: 40, alignment: pw.Alignment.center,
+      color: isRank ? PdfColors.orange50 : null,
+      child: pw.Text(text, style: pw.TextStyle(font: font, fontSize: isRank ? 11 : 8, color: isRank ? PdfColors.orange800 : PdfColors.black)),
+    );
+  }
+
+  // ★ 修正：塗りつぶし（Fill）の確実な適用と、極めて淡い色（不透明度0.08）を実現した最終版
+  static pw.Widget _buildPdfLeagueCell(String teamA, String teamB, List<MatchModel> pairMatches, bool isIndividual, pw.Font ttf, pw.Font ttfBold) {
+    final hasStarted = pairMatches.any((m) => m.status != 'waiting' || m.events.isNotEmpty);
+    if (!hasStarted) return pw.Container(height: 40);
+
+    String result = 'draw';
+    int aWins = 0, bWins = 0, aPts = 0, bPts = 0;
+    List<String> techs = [];
+
+    for (var m in pairMatches) {
+      final isRedA = m.redName.split(':').first.trim() == teamA;
+      final rs = (m.redScore as num).toInt();
+      final ws = (m.whiteScore as num).toInt();
+      if (rs > ws) { isRedA ? aWins++ : bWins++; }
+      else if (ws > rs) { isRedA ? bWins++ : aWins++; }
+      aPts += isRedA ? rs : ws;
+      bPts += isRedA ? ws : rs;
+      if (isIndividual) techs.addAll(_extractTechsForPdf(m.events, isRedA, isRedA ? rs : ws));
+    }
+    
+    // 記号の色設定（symbolColorは濃く、bgColorは印刷トラブルを防ぐため不透明な極薄カラーを直接指定）
+    // ※ PDFでアルファ値（透明度）は無視されることがあるため、RGB値で直接パステルカラーを作ります
+    PdfColor symbolColor = PdfColors.amber800; // □ 用
+    PdfColor bgColor = const PdfColor(1.0, 0.98, 0.95); // 引き分け：不透明な極薄のオレンジ（クリーム色）
+
+    if (aWins > bWins) { 
+      result = 'win'; 
+      symbolColor = PdfColors.red800; 
+      bgColor = const PdfColor(1.0, 0.95, 0.95); // 勝ち：不透明な極薄の赤（淡いピンク）
+    } else if (bWins > aWins) { 
+      result = 'loss'; 
+      symbolColor = PdfColors.indigo800; 
+      bgColor = const PdfColor(0.95, 0.95, 1.0); // 負け：不透明な極薄の青（淡い水色）
+    } else if (aPts != bPts) {
+      if (aPts > bPts) { 
+        result = 'win'; symbolColor = PdfColors.red800; bgColor = const PdfColor(1.0, 0.95, 0.95); 
+      } else { 
+        result = 'loss'; symbolColor = PdfColors.indigo800; bgColor = const PdfColor(0.95, 0.95, 1.0); 
+      }
+    }
+
+    final bool isAllFinished = pairMatches.every((m) => m.status == 'approved' || m.status == 'finished');
+    if (!isAllFinished) return pw.Container(height: 40);
+
+    // ★ PDF描画ロジックの再構築：fillとstrokeを完全に分離
+    void paintPdfShape(PdfGraphics canvas, PdfPoint size) {
+      final center = PdfPoint(size.x / 2, size.y / 2);
+      final radius = size.x * 0.42;
+
+      // 1. まず「塗りつぶし」を実行（背景）
+      canvas.setFillColor(bgColor);
+      if (result == 'win') {
+        canvas.drawEllipse(center.x, center.y, radius, radius);
+      } else if (result == 'loss') {
+        canvas.moveTo(center.x, center.y + radius);
+        canvas.lineTo(center.x + radius * 1.1, center.y - radius * 0.8);
+        canvas.lineTo(center.x - radius * 1.1, center.y - radius * 0.8);
+        canvas.closePath();
+      } else {
+        canvas.drawRect(center.x - radius * 0.8, center.y - radius * 0.8, radius * 1.6, radius * 1.6);
+      }
+      canvas.fillPath();
+
+      // 2. 次に「枠線」を描画（前面）
+      canvas.setStrokeColor(symbolColor);
+      canvas.setLineWidth(0.7);
+      if (result == 'win') {
+        canvas.drawEllipse(center.x, center.y, radius, radius);
+      } else if (result == 'loss') {
+        canvas.moveTo(center.x, center.y + radius);
+        canvas.lineTo(center.x + radius * 1.1, center.y - radius * 0.8);
+        canvas.lineTo(center.x - radius * 1.1, center.y - radius * 0.8);
+        canvas.closePath();
+      } else {
+        canvas.drawRect(center.x - radius * 0.8, center.y - radius * 0.8, radius * 1.6, radius * 1.6);
+      }
+      canvas.strokePath();
+    }
+
+    return pw.Container(
+      height: 40, 
+      alignment: pw.Alignment.center,
+      child: pw.Stack(
+        alignment: pw.Alignment.center,
+        children: [
+          pw.CustomPaint(size: const PdfPoint(32, 32), painter: paintPdfShape),
+          pw.Column(
+            mainAxisAlignment: pw.MainAxisAlignment.center,
+            children: [
+              isIndividual 
+                ? (techs.isNotEmpty ? _pdfIndivSingle(techs[0], true, PdfColors.black, ttfBold) : pw.SizedBox(height: 10))
+                : pw.Text('$aPts', style: pw.TextStyle(font: ttfBold, fontSize: 9)),
+              pw.Container(height: 0.5, width: 14, color: PdfColors.black, margin: const pw.EdgeInsets.symmetric(vertical: 1.5)),
+              isIndividual
+                ? (techs.length > 1 ? _pdfIndivSingle(techs[1], false, PdfColors.black, ttfBold) : pw.SizedBox(height: 10))
+                : pw.Text('$aWins', style: pw.TextStyle(font: ttfBold, fontSize: 9)),
+            ]
+          ),
+        ],
+      )
+    );
+  }
+
+  // ★ PDF用の個人戦・丸囲み技テキストヘルパー
+  static pw.Widget _pdfIndivSingle(String tech, bool isFirst, PdfColor color, pw.Font fontBold) {
+    if (isFirst && tech != '◯') {
+      return pw.Container(
+        width: 10, height: 10, alignment: pw.Alignment.center,
+        decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(color: color, width: 0.5)),
+        child: pw.Text(tech, style: pw.TextStyle(font: fontBold, fontSize: 6, color: color)),
+      );
+    }
+    return pw.Text(tech, style: pw.TextStyle(font: fontBold, fontSize: 8, color: color));
+  }
+
+  // ★ PDF用のログ抽出ヘルパー
+  static List<String> _extractTechsForPdf(List<ScoreEvent> events, bool isRed, int count) {
+    List<String> res = [];
+    int hCount = 0;
+    for (var e in events) {
+      if (e.type == PointType.undo) continue;
+      if (e.type == PointType.hansoku) {
+        if (e.side == Side.red) {
+          hCount++;
+          if (hCount % 2 == 0 && !isRed) res.add('反');
+        } else {
+          hCount++;
+          if (hCount % 2 == 0 && isRed) res.add('反');
+        }
+      } else {
+        if ((e.side == Side.red) == isRed) {
+          res.add(_toMark(e.type));
+        }
+      }
+    }
+    while (res.length < count) {
+      res.add('◯');
+    }
+    return res.take(count).toList();
+  }
+
+  // 対戦カード（チーム vs チーム）ごとにグルーピングするヘルパー
+  static Map<String, List<MatchModel>> _groupByMatchup(List<MatchModel> matches) {
+    final matchups = <String, List<MatchModel>>{};
+    for (var m in matches) {
+      final t1 = m.redName.split(':').first.trim();
+      final t2 = m.whiteName.split(':').first.trim();
+      final key = [t1, t2]..sort();
+      matchups.putIfAbsent(key.join(' vs '), () => []).add(m);
+    }
+    return matchups;
   }
 }
 

@@ -81,6 +81,7 @@ class MatchEntity {
   String note = '';
 
   bool isKachinuki = false;
+  String? ruleJson; // ★ 追加：圧縮したMatchRuleを保存しておくための新しい引き出し
   List<String> redRemaining = [];
   List<String> whiteRemaining = [];
 }

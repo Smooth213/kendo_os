@@ -399,6 +399,16 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? Colors.blueAccent.withValues(alpha: 0.5) : Colors.blue.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         ),
                       ),
+                      // ★ 追加: ルール確認ボタン
+                      SizedBox(
+                        height: 36,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showRuleInfoSheet(context, match), // ★ 修正：ref を削除
+                          icon: Icon(Icons.info_outline, size: 18, color: isDark ? Colors.tealAccent : Colors.teal.shade700),
+                          label: Text('ルールを確認', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.tealAccent : Colors.teal.shade700)),
+                          style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? Colors.tealAccent.withValues(alpha: 0.5) : Colors.teal.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -505,21 +515,57 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           }
 
                           if (!context.mounted) return;
+                          
+                          // ★ 真の解決：対戦カードが継続中（先鋒→次鋒など）か、終了した（大将・個人戦など）かを判定
+                          bool isCardOngoing = false;
+                          MatchModel? autoNextMatch;
+                          MatchModel? nextCardMatch;
+
                           if (nextMatchId != null) {
-                            context.go('/match/$nextMatchId');
+                            isCardOngoing = true; // 勝ち抜き戦の継続
                           } else {
                             final matches = ref.read(matchListProvider);
-                            final next = matches.where((m) => m.groupName == match.groupName && m.order > match.order && m.status != 'approved').toList();
-                            next.sort((a, b) => a.order.compareTo(b.order));
+                            final groupNextMatches = matches.where((m) => m.groupName == match.groupName && m.order > match.order && m.status != 'approved' && m.status != 'finished').toList();
+                            groupNextMatches.sort((a, b) => a.order.compareTo(b.order));
                             
-                            if (next.isNotEmpty) {
-                              context.go('/match/${next.first.id}');
-                            } else {
-                              if (isTie) {
-                                context.go('/team-scoreboard/${match.groupName}');
+                            if (groupNextMatches.isNotEmpty) {
+                              final nextM = groupNextMatches.first;
+                              final currentRedTeam = match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName;
+                              final currentWhiteTeam = match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName;
+                              final nextRedTeam = nextM.redName.contains(':') ? nextM.redName.split(':').first.trim() : nextM.redName;
+                              final nextWhiteTeam = nextM.whiteName.contains(':') ? nextM.whiteName.split(':').first.trim() : nextM.whiteName;
+
+                              // ★ 修正：大将戦、代表戦、個人戦の場合は、チーム名が同じでも「対戦カード終了」として強制的に足を止める
+                              bool isCardEndingPosition = match.matchType == '大将' || match.matchType == '代表戦' || match.matchType == '個人戦' || match.matchType == '選手';
+
+                              // 団体戦のオーダーの途中かどうか（チーム名が同じかつ、終了ポジションでなければ継続中）
+                              if (currentRedTeam == nextRedTeam && currentWhiteTeam == nextWhiteTeam && !isCardEndingPosition && !match.isKachinuki) {
+                                isCardOngoing = true;
+                                autoNextMatch = nextM;
                               } else {
-                                context.go('/home/${match.tournamentId}');
+                                nextCardMatch = nextM; // 次の対戦カード（リーグ戦の次の試合など）
                               }
+                            }
+                          }
+
+                          if (isCardOngoing) {
+                            // 団体戦の途中なので自動遷移
+                            if (nextMatchId != null) {
+                              context.go('/match/$nextMatchId');
+                            } else {
+                              context.go('/match/${autoNextMatch!.id}');
+                            }
+                          } else {
+                            // 対戦カードが終了した（大将が終わった、または個人戦が終わった）
+                            // ★ 修正：リーグ戦かどうかを判定し、代表戦フラグを正しく参照する
+                            bool hasDaihyo = rule.isLeague ? rule.hasLeagueDaihyo : rule.hasRepresentativeMatch;
+
+                            if (isTie && match.groupName != null && match.matchType != '代表戦' && hasDaihyo) {
+                              // 代表戦を促すため、強制的にスコアボードへ
+                              context.push('/team-scoreboard/${match.groupName}');
+                            } else {
+                              // 代表戦がない設定（リーグ戦で同点時代表戦なし等）なら、同点でもそのまま終了ダイアログを表示
+                              _showMatchFinishedDialog(context, match, nextCardMatch);
                             }
                           }
                         };
@@ -1197,6 +1243,250 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ★ 追加：試合終了時のナビゲーションダイアログ
+  void _showMatchFinishedDialog(BuildContext context, MatchModel match, MatchModel? nextCardMatch) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('対戦終了', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.teal.shade300 : Colors.teal.shade800)),
+        content: const Text('対戦がすべて終了しました。\n次のアクションを選択してください。'),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsOverflowDirection: VerticalDirection.down,
+        actions: [
+          if (nextCardMatch != null)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.go('/match/${nextCardMatch.id}');
+                },
+                icon: const Icon(Icons.play_arrow),
+                label: Text('次の試合へ進む (${nextCardMatch.matchType})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              ),
+            ),
+          if (nextCardMatch != null) const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.go('/home/${match.tournamentId}');
+              },
+              icon: const Icon(Icons.home),
+              label: const Text('大会ホームへ戻る', style: TextStyle(fontWeight: FontWeight.bold)),
+              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey.shade400), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            ),
+          ),
+          if (match.groupName != null) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  if (match.isKachinuki) {
+                    context.push('/kachinuki-scoreboard/${match.groupName}'); // ★ 真の解決: go()ではなくpush()にして履歴を残す
+                  } else {
+                    context.push('/team-scoreboard/${match.groupName}'); // ★ 真の解決: go()ではなくpush()にして履歴を残す
+                  }
+                },
+                icon: const Icon(Icons.table_chart_outlined),
+                label: const Text('スコアボードを確認する', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ★ 修正：すべてのレギュレーション情報を網羅した完璧なシート
+  void _showRuleInfoSheet(BuildContext context, MatchModel match) {
+    HapticFeedback.mediumImpact(); 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // 1. その試合が持っている「封印されたルール」を最優先で見る
+    final rule = match.rule; 
+
+    // ★ 修正：備考欄の文字からも形式を推測する（古いデータ救済用）
+    final bool isLegacyLeague = match.note.contains('[リーグ戦]');
+    final bool isLeague = (rule?.isLeague ?? false) || isLegacyLeague;
+
+    // 2. 形式の判定（matchTypeやポジション数から、個人戦を絶対に漏らさない判定）
+    final bool isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦') || (rule != null && rule.positions.length == 1 && (rule.positions.first == '選手' || rule.positions.first == '個人戦'));
+    
+    String formatText = isIndividual ? '個人戦' : '団体戦';
+    if (rule?.isRenseikai ?? false) {
+      formatText = '錬成会';
+    } else if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
+      formatText = '勝ち抜き戦';
+    } else if (isLeague) {
+      formatText = 'リーグ戦（総当たり）';
+    }
+
+    // 3. 各種ルールの取得
+    
+    // 試合時間
+    final double matchTime = rule?.matchTimeMinutes ?? match.matchTimeMinutes.toDouble();
+    final isRunningTime = rule?.isRunningTime ?? match.isRunningTime;
+    
+    // ★ 修正：1.5 を「1分30秒」に綺麗にフォーマットする
+    String timeStr = matchTime == matchTime.toInt() ? '${matchTime.toInt()}分' : '${matchTime.toInt()}分${((matchTime % 1) * 60).toInt()}秒';
+    final String timeDesc = '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
+
+    // 延長
+    final bool enchoUnlimited = rule?.isEnchoUnlimited ?? false;
+    final double enchoMins = rule?.enchoTimeMinutes ?? match.extensionTimeMinutes?.toDouble() ?? 0.0;
+    final int enchoCount = rule?.enchoCount ?? match.extensionCount ?? 1;
+    final bool enchoEnabled = match.hasExtension || enchoUnlimited || enchoMins > 0;
+    
+    String enchoDesc = 'なし';
+    if (enchoEnabled) {
+      if (enchoUnlimited) {
+        enchoDesc = 'あり (無制限)';
+      } else {
+        // ★ 修正：「1.5分・2回」を「1分30秒・2回」として表示する
+        String extTimeStr = enchoMins == enchoMins.toInt() ? '${enchoMins.toInt()}分' : '${enchoMins.toInt()}分${((enchoMins % 1) * 60).toInt()}秒';
+        enchoDesc = 'あり ($extTimeStr・$enchoCount回)';
+      }
+    }
+    
+    final bool hanteiEnabled = rule?.hasHantei ?? match.hasHantei;
+
+    String daihyoDesc = 'なし';
+    if (rule != null) {
+      final bool hasRep = rule.hasRepresentativeMatch;
+      final bool isIppon = rule.isDaihyoIpponShobu;
+      daihyoDesc = hasRep ? (isIppon ? 'あり (一本勝負)' : 'あり (三本勝負)') : 'なし';
+    } else {
+      daihyoDesc = '不明（古いデータ）';
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10)))),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Icon(Icons.gavel_rounded, color: isDark ? Colors.teal.shade300 : Colors.teal.shade700, size: 22),
+                const SizedBox(width: 8),
+                Text('試合レギュレーション', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+              ],
+            ),
+            const Divider(height: 32),
+            
+            if (rule == null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.orange.shade300)),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text('この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。', style: TextStyle(color: Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold))),
+                  ],
+                ),
+              ),
+
+            _buildRuleRow('試合形式', formatText, isDark),
+            _buildRuleRow('試合時間', timeDesc, isDark),
+
+            if (rule?.isRenseikai ?? false) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('錬成会設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('進行方式', rule!.renseikaiType, isDark),
+              if (rule.renseikaiType == '時間制') _buildRuleRow('制限時間', '${rule.overallTimeMinutes} 分', isDark),
+            ] else ...[
+              _buildRuleRow('延長戦', enchoDesc, isDark),
+              _buildRuleRow('判定', hanteiEnabled ? 'あり' : 'なし', isDark),
+            ],
+
+            if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('勝ち抜き戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('無制限条件', rule?.kachinukiUnlimitedType ?? '大将対大将', isDark),
+              // ★ 修正：ポジション表示を勝ち抜き戦の枠組みの中に統合する
+              if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            // ★ 修正：予備判定(isLeague)を使って、古いデータでも確実に隠す
+            if (!isIndividual && !(rule?.isRenseikai ?? false) && !match.isKachinuki && !(rule?.isKachinuki ?? false) && !isLeague) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('団体戦・チーム設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('代表戦', daihyoDesc, isDark),
+              if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            if (!isIndividual && (rule?.isRenseikai ?? false) && rule != null && rule.positions.isNotEmpty) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('ポジション設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            if (rule != null && rule.isLeague) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('リーグ戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange))),
+              // ★ 修正：リーグ戦のポジション表示を、リーグ戦専用枠の中に美しく統合する
+              if (!isIndividual && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+              _buildRuleRow('勝ち点設定', '勝: ${rule.winPoint} / 分: ${rule.drawPoint} / 負: ${rule.lossPoint}', isDark),
+              _buildRuleRow('同点時代表戦', rule.hasLeagueDaihyo ? 'あり' : 'なし', isDark),
+            ],
+
+            if (match.note.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _buildRuleRow('備考・メモ', match.note, isDark),
+            ],
+              
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                  foregroundColor: isDark ? Colors.white : Colors.black87,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8), 
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRuleRow(String label, String value, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 100, child: Text(label, style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, fontSize: 13))),
+          Expanded(child: Text(value, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 14))),
+        ],
       ),
     );
   }

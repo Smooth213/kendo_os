@@ -85,6 +85,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
   int _substituteCount = 0;
   
   final _teamNameController = TextEditingController();
+  final FocusNode _teamNameFocusNode = FocusNode(); // ★ 追加：フォーカス状態を永続化
   
   // ★ 修正：ルール設定画面と完全に一致するよう「勝ち抜き戦」と「団体戦（それ以上）」を追加
   final List<String> _mainMatchTypes = ['団体戦（5人制）', '団体戦（3人制）', '勝ち抜き戦', '個人戦'];
@@ -99,6 +100,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
   @override
   void dispose() {
     _teamNameController.dispose();
+    _teamNameFocusNode.dispose(); // ★ 追加：メモリリーク防止
     _pageController.dispose();
     super.dispose();
   }
@@ -595,6 +597,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
         // ★ 修正：通常のTextFieldと履歴チップを廃止し、マスタ連動のサジェスト入力に統合！
         _buildTeamAutocomplete(
           controller: _teamNameController,
+          focusNode: _teamNameFocusNode, // ★ 追加：永続化したFocusNodeを渡す
           suggestions: ref.watch(customTeamNamesProvider).value ?? [],
           labelText: 'チーム名 (例: 道上剣友会A)',
           hintText: 'タップして登録済みリストから選択',
@@ -621,8 +624,13 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
               return Column(
                 children: [
                   ListTile(
-                    // ★ 変更：役職名(posNames)もダイアログに渡す
-                    onTap: () => _selectPlayerDialog(index, players, posNames),
+                    // ★ 真の解決：ダイアログ終了後に自動でフォーカスが戻ってサジェストが暴発する「ゴーストフォーカス」を完全に殺す
+                    onTap: () async {
+                      FocusManager.instance.primaryFocus?.unfocus(); // 開く前に殺す
+                      await _selectPlayerDialog(index, players, posNames);
+                      if (!mounted) return;
+                      FocusManager.instance.primaryFocus?.unfocus(); // 閉じた直後に確実にもう一度殺す
+                    },
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), 
                     leading: CircleAvatar(
                       radius: 22,
@@ -899,6 +907,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
   // ★ 追加：予測変換（サジェスト）と手入力を両立する入力フィールドビルダー
   Widget _buildTeamAutocomplete({
     required TextEditingController controller,
+    required FocusNode focusNode, // ★ 追加
     required List<String> suggestions,
     required String labelText,
     required String hintText,
@@ -910,10 +919,15 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
   }) {
     return RawAutocomplete<String>(
       textEditingController: controller,
-      focusNode: FocusNode(),
+      focusNode: focusNode, // ★ 修正：再生成を防ぐ
       optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty) return suggestions;
-        return suggestions.where((option) => option.contains(textEditingValue.text));
+        // ★ 真の解決：IME入力（日本語変換中）のゴースト状態を正確に捉えるため、textEditingValueを使用する
+        final text = textEditingValue.text;
+        
+        if (text.isEmpty) {
+          return suggestions;
+        }
+        return suggestions.where((option) => option.contains(text));
       },
       fieldViewBuilder: (context, fieldController, focusNode, onFieldSubmitted) {
         return TextField(
@@ -954,7 +968,10 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                   return ListTile(
                     title: Text(option, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
                     trailing: const Icon(Icons.add_circle_outline, color: Colors.teal, size: 18),
-                    onTap: () => onSelected(option),
+                    onTap: () {
+                      onSelected(option);
+                      FocusScope.of(context).unfocus(); // ★ 追加：タップ直後にキーボードとサジェストを隠す
+                    },
                   );
                 },
               ),

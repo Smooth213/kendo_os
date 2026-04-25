@@ -59,6 +59,7 @@ class MatchCommand {
   Future<void> saveMatchesBulk(List<MatchModel> newMatches) async {
     if (newMatches.isEmpty) return;
     try {
+      debugPrint('🚚 [2. 保存センサー] DBに渡す直前のRuleがnullか?: ${newMatches.first.rule == null}'); // ★ デバッグ用センサー
       await ref.read(localMatchRepositoryProvider).saveMatchesBulk(newMatches);
     } catch (e) {
       debugPrint('🔥 [Command Error] saveMatchesBulk: $e');

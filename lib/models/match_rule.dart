@@ -1,87 +1,37 @@
-// 1. 保管したい荷物（6点セット＋錬成会情報）をまとめた箱の設計図
-class MatchRule {
-  final List<String> positions;
-  final int matchTimeMinutes; 
-  final bool isRunningTime;
-  final bool isLeague;
-  final String category;
-  final String note;
-  final bool isRenseikai; 
-  final List<String> baseOrder; 
-  final String teamName; 
-  final bool isKachinuki; 
-  final String kachinukiUnlimitedType; 
-  final bool hasLeagueDaihyo;          
-  final String renseikaiType;          
-  final int overallTimeMinutes; 
-  final bool isDaihyoIpponShobu;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  // ★ Phase 7-1: 延長戦の実践向けルール定義
-  final bool isEnchoUnlimited; // 無制限か（true）、回数/時間指定か（false）
-  final int enchoTimeMinutes;  // 指定の場合の延長時間（分）
-  final bool hasHantei;        // 時間切れ時に判定(旗)を行うか
+part 'match_rule.freezed.dart';
+part 'match_rule.g.dart';
 
-  MatchRule({
-    this.positions = const ['選手'],
-    this.matchTimeMinutes = 3,
-    this.isRunningTime = false,
-    this.isLeague = false,
-    this.category = '',
-    this.note = '',
-    this.isRenseikai = false, 
-    this.baseOrder = const [], 
-    this.teamName = '', 
-    this.isKachinuki = false, 
-    this.kachinukiUnlimitedType = '大将対大将',
-    this.hasLeagueDaihyo = false,
-    this.renseikaiType = '一試合制',
-    this.overallTimeMinutes = 30,
-    this.isDaihyoIpponShobu = true,
-    this.isEnchoUnlimited = true, // 基本は無制限
-    this.enchoTimeMinutes = 3,
-    this.hasHantei = false,       // 基本は判定なし
-  });
+// ★ 修正: MatchRule自体は内部に別のモデルを持たないので、通常の @freezed だけでOKです
+@freezed
+abstract class MatchRule with _$MatchRule {
+  const factory MatchRule({
+    @Default(['選手']) List<String> positions,
+    @Default(3.0) double matchTimeMinutes, // ★ 修正：1.5分などの小数に対応するため double に変更
+    @Default(false) bool isRunningTime,
+    @Default(false) bool isLeague,
+    @Default('') String category,
+    @Default('') String note,
+    @Default(false) bool isRenseikai,
+    @Default([]) List<String> baseOrder,
+    @Default('') String teamName,
+    @Default(false) bool isKachinuki,
+    @Default('大将対大将') String kachinukiUnlimitedType,
+    @Default(false) bool hasLeagueDaihyo,
+    @Default('一試合制') String renseikaiType,
+    @Default(30) int overallTimeMinutes,
+    @Default(true) bool isDaihyoIpponShobu,
+    @Default(true) bool hasRepresentativeMatch,
+    @Default(false) bool isEnchoUnlimited, // ★ 修正：デフォルトを「無制限ではない（回数指定）」に変更
+    @Default(3.0) double enchoTimeMinutes, // ★ 修正：小数を許容する
+    @Default(1) int enchoCount, // ★ 追加：延長回数を記憶する引き出し
+    @Default(false) bool hasHantei,
+    @Default([]) List<String> leagueOrder,
+    @Default(0.0) double winPoint,
+    @Default(0.0) double lossPoint,
+    @Default(0.0) double drawPoint,
+  }) = _MatchRule;
 
-  // 中身の一部だけを書き換えるための便利機能
-  MatchRule copyWith({
-    List<String>? positions,
-    int? matchTimeMinutes,
-    bool? isRunningTime,
-    bool? isLeague,
-    String? category,
-    String? note,
-    bool? isRenseikai, 
-    List<String>? baseOrder, 
-    String? teamName, 
-    bool? isKachinuki, 
-    String? kachinukiUnlimitedType, 
-    bool? hasLeagueDaihyo,          
-    String? renseikaiType,          
-    int? overallTimeMinutes,
-    bool? isDaihyoIpponShobu, 
-    bool? isEnchoUnlimited,
-    int? enchoTimeMinutes,
-    bool? hasHantei,
-  }) {
-    return MatchRule(
-      positions: positions ?? this.positions,
-      matchTimeMinutes: matchTimeMinutes ?? this.matchTimeMinutes,
-      isRunningTime: isRunningTime ?? this.isRunningTime,
-      isLeague: isLeague ?? this.isLeague,
-      category: category ?? this.category,
-      note: note ?? this.note,
-      isRenseikai: isRenseikai ?? this.isRenseikai,
-      baseOrder: baseOrder ?? this.baseOrder,
-      teamName: teamName ?? this.teamName,
-      isKachinuki: isKachinuki ?? this.isKachinuki,
-      kachinukiUnlimitedType: kachinukiUnlimitedType ?? this.kachinukiUnlimitedType,
-      hasLeagueDaihyo: hasLeagueDaihyo ?? this.hasLeagueDaihyo,
-      renseikaiType: renseikaiType ?? this.renseikaiType,
-      overallTimeMinutes: overallTimeMinutes ?? this.overallTimeMinutes,
-      isDaihyoIpponShobu: isDaihyoIpponShobu ?? this.isDaihyoIpponShobu,
-      isEnchoUnlimited: isEnchoUnlimited ?? this.isEnchoUnlimited,
-      enchoTimeMinutes: enchoTimeMinutes ?? this.enchoTimeMinutes,
-      hasHantei: hasHantei ?? this.hasHantei,
-    );
-  }
+  factory MatchRule.fromJson(Map<String, dynamic> json) => _$MatchRuleFromJson(json);
 }

@@ -15,6 +15,7 @@ class PlayerStats {
   int losses = 0;
   int draws = 0;
   int pointsScored = 0;
+  double matchPoints = 0.0; // ★ 追加：勝ち点
 
   PlayerStats(this.name);
 }
@@ -68,41 +69,54 @@ class StandingsScreen extends ConsumerWidget {
       body: playerListAsync.when(
         data: (players) {
           final statsMap = <String, PlayerStats>{};
-          for (var p in players) {
-            statsMap[p.name] = PlayerStats(p.name);
-          }
+          for (var match in matches) {
+            if (match.status != 'approved' && match.status != 'finished') continue;
 
-          for (var m in matches) {
-            if (m.status != 'approved') continue;
-            
-            final rName = m.redName.contains(':') ? m.redName.split(':').last.trim() : m.redName;
-            final wName = m.whiteName.contains(':') ? m.whiteName.split(':').last.trim() : m.whiteName;
-            
-            if (!statsMap.containsKey(rName)) statsMap[rName] = PlayerStats(rName);
-            if (!statsMap.containsKey(wName)) statsMap[wName] = PlayerStats(wName);
+            statsMap.putIfAbsent(match.redName, () => PlayerStats(match.redName));
+            statsMap.putIfAbsent(match.whiteName, () => PlayerStats(match.whiteName));
 
-            final rScore = (m.redScore as num).toInt();
-            final wScore = (m.whiteScore as num).toInt();
+            final redStats = statsMap[match.redName]!;
+            final whiteStats = statsMap[match.whiteName]!;
 
-            statsMap[rName]!.matches++;
-            statsMap[wName]!.matches++;
-            statsMap[rName]!.pointsScored += rScore;
-            statsMap[wName]!.pointsScored += wScore;
+            redStats.matches++;
+            whiteStats.matches++;
 
+            final rScore = (match.redScore as num).toInt();
+            final wScore = (match.whiteScore as num).toInt();
+
+            redStats.pointsScored += rScore;
+            whiteStats.pointsScored += wScore;
+
+            // ★ 勝ち点ロジックの適用
+            final r = match.rule;
             if (rScore > wScore) {
-              statsMap[rName]!.wins++;
-              statsMap[wName]!.losses++;
+              redStats.wins++;
+              whiteStats.losses++;
+              if (r != null && r.isLeague) {
+                redStats.matchPoints += r.winPoint;
+                whiteStats.matchPoints += r.lossPoint;
+              }
             } else if (wScore > rScore) {
-              statsMap[wName]!.wins++;
-              statsMap[rName]!.losses++;
+              whiteStats.wins++;
+              redStats.losses++;
+              if (r != null && r.isLeague) {
+                whiteStats.matchPoints += r.winPoint;
+                redStats.matchPoints += r.lossPoint;
+              }
             } else {
-              statsMap[rName]!.draws++;
-              statsMap[wName]!.draws++;
+              redStats.draws++;
+              whiteStats.draws++;
+              if (r != null && r.isLeague) {
+                redStats.matchPoints += r.drawPoint;
+                whiteStats.matchPoints += r.drawPoint;
+              }
             }
           }
 
           final sortedStats = statsMap.values.where((s) => s.matches > 0).toList();
           sortedStats.sort((a, b) {
+            // ★ 修正：最優先を「勝ち点」にする
+            if (b.matchPoints != a.matchPoints) return b.matchPoints.compareTo(a.matchPoints);
             if (b.wins != a.wins) return b.wins.compareTo(a.wins);
             if (a.losses != b.losses) return a.losses.compareTo(b.losses);
             return b.pointsScored.compareTo(a.pointsScored);
@@ -112,11 +126,39 @@ class StandingsScreen extends ConsumerWidget {
             return Center(child: Text('まだ承認済みの試合結果がありません', style: TextStyle(color: subTextColor)));
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: sortedStats.length,
-            itemBuilder: (context, index) {
-              final stat = sortedStats[index];
+          // ★ 修正：3チーム以上の完全同点に対応（勝ち点誤差対策込）
+          final tieGroups = <List<PlayerStats>>[];
+          if (sortedStats.length > 1) {
+            List<PlayerStats> currentTie = [sortedStats.first];
+            const double epsilon = 0.001; 
+
+            for (int i = 1; i < sortedStats.length; i++) {
+              final prev = sortedStats[i - 1];
+              final curr = sortedStats[i];
+              
+              bool isTie = (prev.matchPoints - curr.matchPoints).abs() < epsilon && 
+                           prev.wins == curr.wins && 
+                           prev.pointsScored == curr.pointsScored;
+
+              if (isTie) {
+                currentTie.add(curr);
+              } else {
+                if (currentTie.length > 1) tieGroups.add(List.from(currentTie));
+                currentTie = [curr];
+              }
+            }
+            if (currentTie.length > 1) tieGroups.add(currentTie);
+          }
+
+          return Column(
+            children: [
+              // 元々の順位表リスト
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: sortedStats.length,
+                  itemBuilder: (context, index) {
+                    final stat = sortedStats[index];
               final winRate = stat.matches > 0 ? (stat.wins / stat.matches) : 0.0;
               final rateStr = _formatWinRate(winRate);
 
@@ -160,6 +202,9 @@ class StandingsScreen extends ConsumerWidget {
                 ),
               );
             },
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

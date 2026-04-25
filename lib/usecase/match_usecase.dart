@@ -91,7 +91,7 @@ class MatchUseCase {
       final newNote = currentMatch.note.isEmpty ? '延長' : '${currentMatch.note}, 延長';
       
       // ★ Phase 7-1: 無制限なら0（カウントアップ用）、指定なら分数×60（カウントダウン用）
-      final enchoSeconds = rule.isEnchoUnlimited ? 0 : rule.enchoTimeMinutes * 60;
+      final enchoSeconds = rule.isEnchoUnlimited ? 0 : (rule.enchoTimeMinutes * 60).toInt();
 
       return currentMatch.copyWith(
         matchType: '延長戦',

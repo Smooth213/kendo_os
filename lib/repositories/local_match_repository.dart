@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/match_model.dart';
 import '../models/local/match_entity.dart';
 import '../models/score_event.dart';
+import 'dart:convert'; // ★ 追加: Ruleを文字列に圧縮・解凍するための道具
+import '../models/match_rule.dart'; // ★ 追加: MatchRuleの型を認識させるため
 
 // アプリ起動時に main.dart で初期化された Isar を受け取る Provider
 final isarProvider = Provider<Isar>((ref) {
@@ -142,6 +144,8 @@ class LocalMatchRepository {
       ..timerIsRunning = model.timerIsRunning
       ..note = model.note
       ..isKachinuki = model.isKachinuki
+      // ★ 追加：複雑なルール箱を文字列(JSON)に圧縮してローカルDBにねじ込む！
+      ..ruleJson = model.rule != null ? jsonEncode(model.rule!.toJson()) : null
       ..redRemaining = model.redRemaining
       ..whiteRemaining = model.whiteRemaining;
   }
@@ -200,6 +204,8 @@ class LocalMatchRepository {
       timerIsRunning: entity.timerIsRunning,
       note: entity.note,
       isKachinuki: entity.isKachinuki,
+      // ★ 追加：文字列(JSON)から元のルール箱に解凍して復元する！
+      rule: entity.ruleJson != null ? MatchRule.fromJson(jsonDecode(entity.ruleJson!) as Map<String, dynamic>) : null,
       redRemaining: entity.redRemaining,
       whiteRemaining: entity.whiteRemaining,
     );

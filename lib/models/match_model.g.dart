@@ -74,6 +74,9 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
   timerIsRunning: json['timerIsRunning'] as bool? ?? false,
   note: json['note'] as String? ?? '',
   isKachinuki: json['isKachinuki'] as bool? ?? false,
+  rule: json['rule'] == null
+      ? null
+      : MatchRule.fromJson(json['rule'] as Map<String, dynamic>),
   redRemaining:
       (json['redRemaining'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -127,6 +130,7 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'timerIsRunning': instance.timerIsRunning,
       'note': instance.note,
       'isKachinuki': instance.isKachinuki,
+      'rule': instance.rule?.toJson(),
       'redRemaining': instance.redRemaining,
       'whiteRemaining': instance.whiteRemaining,
     };

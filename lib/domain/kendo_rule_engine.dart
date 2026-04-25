@@ -291,4 +291,96 @@ class KendoRuleEngine {
 
     return GroupMatchStatus(isAllDone: isAllDone, isTie: isTie);
   }
+
+  // ★ リーグ戦順位算出ロジック：全剣連基準 ＆ カスタム勝ち点対応
+  static List<LeagueTeamStat> calculateLeagueStandings(List<MatchModel> matches, MatchRule rule) {
+    final Map<String, LeagueTeamStat> statsMap = {};
+    
+    // 1. 全参加チーム/選手を初期化
+    final Set<String> participants = {};
+    for (var m in matches) {
+      participants.add(m.redName.split(':').first.trim());
+      participants.add(m.whiteName.split(':').first.trim());
+    }
+    for (var p in participants) {
+      statsMap[p] = LeagueTeamStat(name: p);
+    }
+
+    // 2. 全試合を走査して集計（対戦カード単位）
+    final Map<String, List<MatchModel>> pairings = {};
+    for (var m in matches) {
+      final t1 = m.redName.split(':').first.trim();
+      final t2 = m.whiteName.split(':').first.trim();
+      final key = [t1, t2]..sort();
+      pairings.putIfAbsent(key.join(' vs '), () => []).add(m);
+    }
+
+    for (var entry in pairings.entries) {
+      final bouts = entry.value;
+      if (bouts.isEmpty || bouts.every((m) => m.status == 'waiting')) continue;
+
+      final t1 = bouts.first.redName.split(':').first.trim();
+      final t2 = bouts.first.whiteName.split(':').first.trim();
+      
+      int t1Wins = 0, t2Wins = 0, t1Pts = 0, t2Pts = 0;
+      for (var b in bouts) {
+        final bool isT1Red = b.redName.split(':').first.trim() == t1;
+        final int rS = (b.redScore as num).toInt();
+        final int wS = (b.whiteScore as num).toInt();
+        t1Pts += isT1Red ? rS : wS;
+        t2Pts += isT1Red ? wS : rS;
+        if (rS > wS) { isT1Red ? t1Wins++ : t2Wins++; }
+        else if (wS > rS) { isT1Red ? t2Wins++ : t1Wins++; }
+      }
+
+      final s1 = statsMap[t1]!;
+      final s2 = statsMap[t2]!;
+      s1.individualWinners += t1Wins;
+      s1.totalPointsScored += t1Pts;
+      s2.individualWinners += t2Wins;
+      s2.totalPointsScored += t2Pts;
+
+      // 勝ち点の判定
+      if (t1Wins > t2Wins || (t1Wins == t2Wins && t1Pts > t2Pts)) {
+        s1.matchWins++; s2.matchLosses++;
+        s1.customPoints += rule.winPoint; s2.customPoints += rule.lossPoint;
+      } else if (t2Wins > t1Wins || (t2Wins == t1Wins && t2Pts > t1Pts)) {
+        s2.matchWins++; s1.matchLosses++;
+        s2.customPoints += rule.winPoint; s1.customPoints += rule.lossPoint;
+      } else {
+        s1.matchDraws++; s2.matchDraws++;
+        s1.customPoints += rule.drawPoint; s2.customPoints += rule.drawPoint;
+      }
+    }
+
+    // 3. ソート（全剣連基準：勝数 ➔ 勝者数 ➔ 本数）
+    final sortedList = statsMap.values.toList();
+    sortedList.sort((a, b) {
+      if (rule.winPoint > 0 || rule.drawPoint > 0) {
+        if (b.customPoints != a.customPoints) return b.customPoints.compareTo(a.customPoints);
+      }
+      if (b.matchWins != a.matchWins) return b.matchWins.compareTo(a.matchWins);
+      if (b.individualWinners != a.individualWinners) return b.individualWinners.compareTo(a.individualWinners);
+      return b.totalPointsScored.compareTo(a.totalPointsScored);
+    });
+
+    // 4. 順位の付与
+    for (int i = 0; i < sortedList.length; i++) {
+      sortedList[i].rank = i + 1;
+    }
+    return sortedList;
+  }
+}
+
+// 順位統計用のデータクラス
+class LeagueTeamStat {
+  final String name;
+  int matchWins = 0;
+  int matchLosses = 0;
+  int matchDraws = 0;
+  int individualWinners = 0;
+  int totalPointsScored = 0;
+  double customPoints = 0.0;
+  int rank = 0;
+  LeagueTeamStat({required this.name});
 }

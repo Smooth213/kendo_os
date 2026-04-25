@@ -48,13 +48,15 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   final Map<int, String> _selectedPlayers = {};
   
   final TextEditingController _opponentTeamController = TextEditingController();
+  final FocusNode _opponentTeamFocusNode = FocusNode(); // ★ 追加：フォーカス状態を永続化
   final Map<int, String> _opponentPlayers = {};
   bool _isOwnTeamRed = true;
 
-  final List<TextEditingController> _leagueOpponentControllers = [
-    TextEditingController(),
-    TextEditingController(),
-  ];
+  // ★ リーグ戦拡張：参加者リストと追加用コントローラー
+  final List<String> _leagueParticipants = [];
+  final Map<String, List<String>> _leagueTeamOrders = {}; // ★ 追加：参加チームごとのオーダーを保持
+  final TextEditingController _addParticipantController = TextEditingController();
+  final FocusNode _addParticipantFocusNode = FocusNode(); // ★ 追加：フォーカス状態を永続化
 
   @override
   void initState() {
@@ -69,14 +71,18 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
         }
       }
     }
+    // ★ リーグ戦の場合、自チームを最初の参加者として登録
+    if (rule.isLeague) {
+      _leagueParticipants.add('自チーム'); // ★ 修正：名前ではなくキーワードで固定し、ペアリング生成時に中身を呼ぶ
+    }
   }
 
   @override
   void dispose() {
     _opponentTeamController.dispose();
-    for (var ctrl in _leagueOpponentControllers) {
-      ctrl.dispose();
-    }
+    _opponentTeamFocusNode.dispose(); // ★ 追加：メモリリーク防止
+    _addParticipantController.dispose();
+    _addParticipantFocusNode.dispose(); // ★ 追加：メモリリーク防止
     super.dispose();
   }
 
@@ -197,6 +203,116 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     });
   }
 
+  // ★ 追加：団体リーグ戦で参加チームのオーダー（先鋒〜大将）を入力するダイアログ
+  Future<List<String>?> _showLeagueOrderDialog(String teamName, List<String> positions) async {
+    List<TextEditingController> controllers = List.generate(positions.length, (i) => TextEditingController());
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return showDialog<List<String>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: Text('$teamName のオーダー', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.teal.shade300 : Colors.teal.shade800)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: positions.length,
+            itemBuilder: (context, i) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: TextField(
+                  controller: controllers[i],
+                  style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                  decoration: InputDecoration(
+                    labelText: positions[i],
+                    labelStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                    isDense: true,
+                    filled: true,
+                    fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            onPressed: () {
+              List<String> order = controllers.map((c) => TextSanitizer.clean(c.text)).toList();
+              Navigator.pop(ctx, order);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, elevation: 0),
+            child: const Text('決定して追加', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ★ 修正：個人リーグ戦で「所属」と「名前」をセットで入力するダイアログ（サジェスト付き）
+  Future<Map<String, String>?> _showIndividualLeagueEntryDialog(String initialName) async {
+    final affiController = TextEditingController();
+    final affiFocusNode = FocusNode(); // ★ 追加
+    final nameController = TextEditingController(text: initialName);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final history = ref.read(opponentTeamHistoryProvider); // ★ 履歴を読み込む
+
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: const Text('リーグ参加者の登録', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ★ 所属（チーム名）のサジェスト付き入力欄
+            _buildTeamAutocomplete(
+              controller: affiController,
+              focusNode: affiFocusNode, // ★ 追加
+              suggestions: history,
+              labelText: '所属（例：広島剣道会）',
+              hintText: '空欄でもOK',
+              fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+              borderColor: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
+              textColor: isDark ? Colors.white : Colors.black87,
+              subTextColor: Colors.grey,
+              isDark: isDark,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: '選手名（例：田中太郎）',
+                filled: true, fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+              ),
+              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, {
+              'affiliation': TextSanitizer.clean(affiController.text),
+              'name': TextSanitizer.clean(nameController.text),
+            }),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, elevation: 0),
+            child: const Text('追加', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    affiController.dispose(); // ★ 追加：メモリリーク防止
+    affiFocusNode.dispose(); // ★ 追加：メモリリーク防止
+    return result; // ★ 追加
+  }
+
   // ★ フェーズ3：没入型AppBar（戻るボタンの色をTealへ統一）
   Widget _buildImmersiveAppBar(BuildContext context) {
     return Container(
@@ -259,6 +375,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   Widget build(BuildContext context) {
     final playerListAsync = ref.watch(playerListProvider);
     final rule = ref.watch(matchRuleProvider);
+    // ★ 追加：lastSettings から試合形式の文字列(matchType)を取得する
+    final String matchType = ref.watch(lastUsedSettingsProvider)['matchType'] as String? ?? '';
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
@@ -307,32 +425,109 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('リーグ戦の対戦チームを入力', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal.shade700)),
+                          Text('1. リーグ参加者リストの作成', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal.shade800, fontSize: 16)),
+                          const SizedBox(height: 4),
+                          Text('大会パンフレットの番号順に並べ替えてください（長押しで移動）', style: TextStyle(fontSize: 11, color: subTextColor)),
+                          const SizedBox(height: 16),
+                          
+                          // 参加者追加フォーム
+                          _buildTeamAutocomplete(
+                            controller: _addParticipantController,
+                            focusNode: _addParticipantFocusNode, // ★ 追加
+                            suggestions: ref.watch(opponentTeamHistoryProvider),
+                            // ★ 修正：rule ではなく、取得した matchType 変数を使用
+                            labelText: matchType.contains('個人戦') ? '参加選手名を追加' : '参加チーム名を追加',
+                            hintText: '入力または履歴から選択',
+                            fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                            borderColor: borderColor,
+                            textColor: textColor,
+                            subTextColor: subTextColor,
+                            isDark: isDark,
+                          ),
                           const SizedBox(height: 8),
-                          ...List.generate(_leagueOpponentControllers.length, (i) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            // ★ 修正：リーグ戦の入力欄もサジェスト対応にする
-                            child: _buildTeamAutocomplete(
-                              controller: _leagueOpponentControllers[i],
-                              suggestions: ref.watch(opponentTeamHistoryProvider),
-                              labelText: 'リーグ相手 ${i + 1} (チーム名/選手名)',
-                              hintText: 'タップして登録済みリストから選択',
-                              fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.red.shade50,
-                              borderColor: borderColor,
-                              textColor: textColor,
-                              subTextColor: subTextColor, // または Colors.grey.shade600
-                              isDark: isDark,
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final input = TextSanitizer.clean(_addParticipantController.text);
+                                if (input.isEmpty && !matchType.contains('個人戦')) return;
+
+                                if (matchType.contains('個人戦')) {
+                                  // ★ 修正：個人戦は「所属」と「名前」を入力する専用ダイアログを表示
+                                  final result = await _showIndividualLeagueEntryDialog(input);
+                                  if (result != null) {
+                                    final fullName = result['affiliation']!.isNotEmpty 
+                                        ? '${result['affiliation']} : ${result['name']}' 
+                                        : result['name']!;
+                                    if (!_leagueParticipants.contains(fullName)) {
+                                      setState(() {
+                                        _leagueParticipants.add(fullName);
+                                        _leagueTeamOrders[fullName] = [result['name']!];
+                                        _addParticipantController.clear();
+                                      });
+                                    }
+                                  }
+                                } else {
+                                  // 団体戦：既存のロジック
+                                  if (input.isEmpty || _leagueParticipants.contains(input)) return;
+                                  final order = await _showLeagueOrderDialog(input, _positions);
+                                  if (order != null) {
+                                    setState(() {
+                                      _leagueParticipants.add(input);
+                                      _leagueTeamOrders[input] = order;
+                                      _addParticipantController.clear();
+                                    });
+                                  }
+                                }
+                              },
+                              icon: const Icon(Icons.person_add),
+                              label: const Text('リストに追加', style: TextStyle(fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white),
                             ),
-                          )),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton.icon(
-                              onPressed: () => setState(() => _leagueOpponentControllers.add(TextEditingController())),
-                              icon: const Icon(Icons.add),
-                              label: const Text('相手チームを追加'),
-                              style: TextButton.styleFrom(foregroundColor: Colors.teal.shade700),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // 並び替え可能なリスト
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: borderColor),
                             ),
-                          )
+                            child: ReorderableListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _leagueParticipants.length,
+                              onReorder: (oldIndex, newIndex) {
+                                setState(() {
+                                  if (oldIndex < newIndex) newIndex -= 1;
+                                  final item = _leagueParticipants.removeAt(oldIndex);
+                                  _leagueParticipants.insert(newIndex, item);
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                final name = _leagueParticipants[index];
+                                return ListTile(
+                                  key: ValueKey(name),
+                                  leading: CircleAvatar(
+                                    backgroundColor: name.contains('自チーム') || name == rule.teamName 
+                                      ? Colors.teal.shade100 : Colors.grey.shade200,
+                                    child: Text('${index + 1}', style: TextStyle(color: Colors.teal.shade900, fontWeight: FontWeight.bold)),
+                                  ),
+                                  title: Text(name, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+                                  trailing: const Icon(Icons.drag_handle, color: Colors.grey),
+                                  onLongPress: () {}, // ReorderableListViewのトリガー用
+                                  subtitle: (name.contains('自チーム') || name == rule.teamName) 
+                                    ? Text('（自チーム）', style: TextStyle(fontSize: 10, color: Colors.teal.shade700)) : null,
+                                  onTap: (name.contains('自チーム') || name == rule.teamName) ? null : () {
+                                    setState(() => _leagueParticipants.removeAt(index));
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          Text('2. 自チームのオーダーを確認', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal.shade800, fontSize: 16)),
                         ],
                       ),
                     )
@@ -422,6 +617,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     // ★ 修正：先ほど作ったヘルパー関数を使ってサジェスト（予測変換）対応にする
                                     _buildTeamAutocomplete(
                                       controller: _opponentTeamController,
+                                      focusNode: _opponentTeamFocusNode, // ★ 追加
                                       suggestions: ref.watch(opponentTeamHistoryProvider),
                                       labelText: '相手チーム名・所属名（任意）',
                                       hintText: 'タップして登録済みリストから選択',
@@ -498,7 +694,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           child: Column(
                             children: [
                               InkWell(
-                                onTap: () => _selectPlayer(index, masterPlayers),
+                                // ★ 真の解決：ダイアログ終了後に自動でフォーカスが戻ってサジェストが暴発する「ゴーストフォーカス」を完全に殺す
+                                onTap: () async {
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                  await _selectPlayer(index, masterPlayers);
+                                  if (!mounted) return;
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                },
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
@@ -527,13 +729,15 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   ),
                                 ),
                               ),
-                              Divider(height: 1, indent: 16, endIndent: 16, color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200),
-                              Container(
-                                decoration: BoxDecoration(color: isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade50, borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12))),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                child: TextFormField(
-                                  key: ValueKey(_opponentPlayers[index]), 
-                                  initialValue: _opponentPlayers[index],
+                              // ★ 修正：画像でご指摘いただいた通り、リーグ戦では相手の個別入力を非表示にしてスッキリさせる！
+                              if (!rule.isLeague) ...[
+                                Divider(height: 1, indent: 16, endIndent: 16, color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200),
+                                Container(
+                                  decoration: BoxDecoration(color: isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade50, borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12))),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  child: TextFormField(
+                                    key: ValueKey(_opponentPlayers[index]), 
+                                    initialValue: _opponentPlayers[index],
                                   onChanged: (val) => _opponentPlayers[index] = val,
                                   style: TextStyle(color: textColor),
                                   decoration: InputDecoration(
@@ -568,6 +772,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   ),
                                 ),
                               ),
+                              ], // ★ if (!rule.isLeague) を閉じる
                             ],
                           ),
                         );
@@ -601,14 +806,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (rule.isLeague) {
-                            bool hasOpponent = _leagueOpponentControllers.any((ctrl) => ctrl.text.trim().isNotEmpty);
-                            if (!hasOpponent) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('リーグ戦を行うには、少なくとも1つの相手チームを入力してください。')));
-                              return; 
-                            }
-                          }
-
+                          // ★ 修正：ここではチェックせず、後の pairings 生成直前のバリデーションに集約します
                           final bool? isStartNow = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -632,14 +830,15 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: CircularProgressIndicator()));
 
                           try {
-                            // ★ 追加：ルールの分数（int切り捨て）ではなく、設定に保存された正確な小数（double）を読み込む
-                            final lastSettings = ref.read(lastUsedSettingsProvider);
-                            final double exactMatchTime = (lastSettings['matchTime'] as num?)?.toDouble() ?? rule.matchTimeMinutes.toDouble();
-                            final int initialSeconds = (exactMatchTime * 60).toInt(); // 1.5 なら 90秒 になる！
-
+                            // ★ 修正：不要になった古い変数を綺麗にお掃除
                             String senpoMatchId = '';
                             double baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
                             List<MatchModel> matchesToSave = []; 
+                            
+                            // ★ 追加：リーグ戦であることを明示するタグを生成し、後で全試合のnoteに付与する
+                            final String saveNote = rule.isLeague ? '[リーグ戦] ${rule.note}'.trim() : rule.note;
+                            // ★ 追加：リーグ全体を1つのアコーディオンにまとめるための共通ID
+                            final String leagueGroupId = rule.isLeague ? const Uuid().v4() : '';
 
                             List<List<String>> pairings = [];
                             // ★ 修正：入力された相手チーム名をお掃除フィルターに通す！
@@ -648,15 +847,21 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             if (opTeamName.isEmpty) opTeamName = '対戦相手';
 
                             if (rule.isLeague) {
-                              List<String> leagueTeams = ['自チーム'];
-                              for (var ctrl in _leagueOpponentControllers) {
-                                // ★ リーグ戦の相手もお掃除フィルターを通す
-                                final cleanLeagueTeam = TextSanitizer.clean(ctrl.text);
-                                if (cleanLeagueTeam.isNotEmpty) leagueTeams.add(cleanLeagueTeam);
+                              if (_leagueParticipants.length < 2) {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('リーグ戦には少なくとも2つのチーム・選手が必要です')));
+                                Navigator.of(context, rootNavigator: true).pop();
+                                return;
                               }
-                              for (int i = 0; i < leagueTeams.length; i++) {
-                                for (int j = i + 1; j < leagueTeams.length; j++) {
-                                  pairings.add([leagueTeams[i], leagueTeams[j]]);
+                              
+                              // ★ 修正：並び替えた順序をルールに記憶させる
+                              ref.read(matchRuleProvider.notifier).updateRule(rule.copyWith(
+                                leagueOrder: _leagueParticipants,
+                              ));
+
+                              // ★ 修正：並び替えたリストに基づいて総当たりのペアを生成
+                              for (int i = 0; i < _leagueParticipants.length; i++) {
+                                for (int j = i + 1; j < _leagueParticipants.length; j++) {
+                                  pairings.add([_leagueParticipants[i], _leagueParticipants[j]]);
                                 }
                               }
                             } else {
@@ -670,7 +875,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             await Future.microtask(() {
                               for (int pIndex = 0; pIndex < pairings.length; pIndex++) {
                                 final pair = pairings[pIndex];
-                                final String teamGroupId = const Uuid().v4();
+                                // ★ 修正：リーグ戦なら共通IDを使い、通常なら個別のIDを発行
+                                final String teamGroupId = rule.isLeague ? leagueGroupId : const Uuid().v4();
 
                                 if (rule.isKachinuki) {
                                   List<String> redFull = [];
@@ -685,8 +891,16 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     String opFull = '$opTeamName : $opP';
                                     String rN, wN;
                                     if (rule.isLeague) {
-                                      rN = pair[0] == '自チーム' ? myFull : '${pair[0]} : 選手';
-                                      wN = pair[1] == '自チーム' ? myFull : '${pair[1]} : 選手';
+                                      // ★ 修正：入力されたオーダーを呼び出して完璧にセットする！
+                                      String rTeam = pair[0];
+                                      String wTeam = pair[1];
+                                      String rPlayer = (rTeam == '自チーム') ? myP : (_leagueTeamOrders[rTeam]?[i] ?? '選手');
+                                      if (rPlayer.isEmpty) rPlayer = '選手';
+                                      String wPlayer = (wTeam == '自チーム') ? myP : (_leagueTeamOrders[wTeam]?[i] ?? '選手');
+                                      if (wPlayer.isEmpty) wPlayer = '選手';
+                                      
+                                      rN = (rTeam == '自チーム') ? myFull : '$rTeam : $rPlayer';
+                                      wN = (wTeam == '自チーム') ? myFull : '$wTeam : $wPlayer';
                                     } else {
                                       rN = _isOwnTeamRed ? myFull : opFull;
                                       wN = _isOwnTeamRed ? opFull : myFull;
@@ -702,9 +916,18 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     id: matchId, tournamentId: widget.tournamentId, category: rule.category.isNotEmpty ? rule.category : null,
                                     groupName: teamGroupId, matchType: _positions[0], whiteName: whiteFull[0], redName: redFull[0],
                                     status: (isStartNow && pIndex == 0) ? 'in_progress' : 'waiting', refereeNames: [],
-                                    // ★ 修正：算出した正確な秒数(initialSeconds)をセットする！
-                                    matchTimeMinutes: exactMatchTime.toInt(), isRunningTime: rule.isRunningTime, remainingSeconds: initialSeconds,
-                                    order: baseOrder + (pIndex * 10), note: rule.note, isKachinuki: true,
+                                    
+                                    // ★ 全て rule からもらう
+                                    matchTimeMinutes: rule.matchTimeMinutes.toInt(), 
+                                    isRunningTime: rule.isRunningTime, 
+                                    remainingSeconds: (rule.matchTimeMinutes * 60).toInt(),
+                                    hasExtension: rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited, 
+                                    extensionTimeMinutes: rule.enchoTimeMinutes.toInt(), 
+                                    extensionCount: rule.enchoCount, 
+                                    hasHantei: rule.hasHantei, 
+                                    
+                                    order: baseOrder + (pIndex * 10), note: saveNote, isKachinuki: true,
+                                    rule: rule, 
                                     redRemaining: redFull.length > 1 ? redFull.sublist(1) : [], whiteRemaining: whiteFull.length > 1 ? whiteFull.sublist(1) : [],
                                   );
                                   matchesToSave.add(newMatch); 
@@ -722,8 +945,23 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     String opFull = '$opTeamName : $opP';
                                     String rName, wName;
                                     if (rule.isLeague) {
-                                      rName = pair[0] == '自チーム' ? myFull : '${pair[0]} : 選手';
-                                      wName = pair[1] == '自チーム' ? myFull : '${pair[1]} : 選手';
+                                      // ★ 修正：入力されたオーダーと「個人戦/団体戦」の違いを反映！
+                                      String rTeam = pair[0];
+                                      String wTeam = pair[1];
+                                      String rPlayer = (rTeam == '自チーム') ? myP : (_leagueTeamOrders[rTeam]?[i] ?? '選手');
+                                      if (rPlayer.isEmpty) rPlayer = '選手';
+                                      String wPlayer = (wTeam == '自チーム') ? myP : (_leagueTeamOrders[wTeam]?[i] ?? '選手');
+                                      if (wPlayer.isEmpty) wPlayer = '選手';
+                                      
+                                      // ★ 修正：画面上部で既に取得している matchType をそのまま利用する
+                                      if (matchType.contains('個人戦')) {
+                                        // ★ 修正：ダイアログの時点で既に「所属 : 名前」になっているので、そのまま使う！
+                                        rName = (rTeam == '自チーム') ? myFull : rTeam;
+                                        wName = (wTeam == '自チーム') ? myFull : wTeam;
+                                      } else {
+                                        rName = (rTeam == '自チーム') ? myFull : '$rTeam : $rPlayer';
+                                        wName = (wTeam == '自チーム') ? myFull : '$wTeam : $wPlayer';
+                                      }
                                     } else {
                                       rName = _isOwnTeamRed ? myFull : opFull;
                                       wName = _isOwnTeamRed ? opFull : myFull;
@@ -733,10 +971,21 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       id: matchId, tournamentId: widget.tournamentId, category: rule.category.isNotEmpty ? rule.category : null,
                                       groupName: teamGroupId, matchType: posName, redName: rName, whiteName: wName,
                                       status: (isStartNow && isFirstMatchOfAll) ? 'in_progress' : 'waiting', refereeNames: [],
-                                      // ★ 修正：算出した正確な秒数(initialSeconds)をセットする！
-                                      matchTimeMinutes: exactMatchTime.toInt(), isRunningTime: rule.isRunningTime, remainingSeconds: initialSeconds,
-                                      order: baseOrder + (pIndex * 10) + i, note: rule.note, 
+                                      
+                                      // ★ 修正：すべて完璧な状態の「rule」から直接もらう！
+                                      matchTimeMinutes: rule.matchTimeMinutes.toInt(), 
+                                      isRunningTime: rule.isRunningTime, 
+                                      remainingSeconds: (rule.matchTimeMinutes * 60).toInt(),
+                                      hasExtension: rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited || posName.contains('代表'),
+                                      extensionTimeMinutes: rule.enchoTimeMinutes.toInt(), 
+                                      extensionCount: rule.enchoCount, 
+                                      hasHantei: rule.hasHantei, 
+                                      
+                                      order: baseOrder + (pIndex * 10) + i, 
+                                      note: saveNote, 
+                                      rule: rule, // ★ これだけで全てが封印されます
                                     );
+                                    debugPrint('📦 [1. 生成センサー] MatchId: $matchId, Ruleがnullか?: ${newMatch.rule == null}'); // ★ デバッグ用センサー
                                     matchesToSave.add(newMatch); 
                                   }
                                 }
@@ -788,6 +1037,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   // ★ 追加：予測変換（サジェスト）と手入力を両立する、最強の入力フィールドビルダー
   Widget _buildTeamAutocomplete({
     required TextEditingController controller,
+    required FocusNode focusNode, // ★ 追加：親で管理しているFocusNodeを受け取る
     required List<String> suggestions,
     required String labelText,
     required String hintText,
@@ -799,11 +1049,16 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   }) {
     return RawAutocomplete<String>(
       textEditingController: controller,
-      focusNode: FocusNode(),
+      focusNode: focusNode, // ★ 修正：毎回の再生成をやめる（setState時の誤発火防止）
       // ユーザーが文字を打つたびに候補を絞り込む
       optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty) return suggestions; // 空なら全件表示
-        return suggestions.where((option) => option.contains(textEditingValue.text));
+        // ★ 真の解決：IME入力（日本語変換中）のゴースト状態を正確に捉えるため、textEditingValueを使用する
+        final text = textEditingValue.text;
+        
+        if (text.isEmpty) {
+          return suggestions;
+        }
+        return suggestions.where((option) => option.contains(text));
       },
       // 実際の入力欄のデザイン（今までと同じ見た目を維持しつつ、右端に▼をつける）
       fieldViewBuilder: (context, fieldController, focusNode, onFieldSubmitted) {
@@ -847,7 +1102,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   return ListTile(
                     title: Text(option, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
                     trailing: const Icon(Icons.add_circle_outline, color: Colors.teal, size: 18),
-                    onTap: () => onSelected(option), // 選んだら一瞬で入力完了！
+                    onTap: () {
+                      onSelected(option); // 選んだら入力完了
+                      FocusScope.of(context).unfocus(); // ★ 追加：フォーカスを外してサジェストとキーボードをスッと消す
+                    },
                   );
                 },
               ),

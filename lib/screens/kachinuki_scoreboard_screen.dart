@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart'; // ★ 追加: go_routerをインポートしてcontext拡張メソッドを有効化
+import 'package:flutter/services.dart'; // ★ 追加: シート表示時の心地よい振動用
 import '../models/match_model.dart';
 import '../models/score_event.dart';
 import '../providers/match_list_provider.dart';
@@ -33,11 +35,29 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20),
-            onPressed: () => Navigator.pop(context),
+            // ★ 真の解決: こちらも勝ち抜き戦のスコアボードで履歴消滅クラッシュを防ぐフェイルセーフを実装
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else if (teamMatches.isNotEmpty && teamMatches.first.tournamentId != null) {
+                context.go('/home/${teamMatches.first.tournamentId}');
+              } else {
+                context.go('/');
+              }
+            },
           ),
           title: Text('勝ち抜き戦 記録', style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
           backgroundColor: appBarColor,
           elevation: 0,
+          // ★ 追加：AppBarの右上にルール確認用のインフォメーションボタンを配置
+          actions: [
+            IconButton(
+              icon: Icon(Icons.info_outline, color: headerTextColor, size: 24),
+              tooltip: 'ルールを確認',
+              onPressed: () => _showRuleInfoSheet(context, teamMatches.first),
+            ),
+            const SizedBox(width: 8),
+          ],
           bottom: TabBar(
             labelColor: activeTabColor,
             unselectedLabelColor: isDark ? const Color(0xFF8E8E93) : Colors.grey,
@@ -66,6 +86,178 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
     var parts = clean.split(RegExp(r'\s+'));
     return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
+  }
+
+  // ★ 追加：すべてのレギュレーション情報を網羅した完璧なシート
+  void _showRuleInfoSheet(BuildContext context, MatchModel match) {
+    HapticFeedback.mediumImpact(); 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final rule = match.rule; 
+
+    // ★ 修正：備考欄の文字からも形式を推測する（古いデータ救済用）
+    final bool isLegacyLeague = match.note.contains('[リーグ戦]');
+    final bool isLeague = (rule?.isLeague ?? false) || isLegacyLeague;
+
+    final bool isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦') || (rule != null && rule.positions.length == 1 && (rule.positions.first == '選手' || rule.positions.first == '個人戦'));
+    
+    String formatText = isIndividual ? '個人戦' : '団体戦';
+    if (rule?.isRenseikai ?? false) {
+      formatText = '錬成会';
+    } else if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
+      formatText = '勝ち抜き戦';
+    } else if (isLeague) {
+      formatText = 'リーグ戦（総当たり）';
+    }
+
+    final double matchTime = rule?.matchTimeMinutes ?? match.matchTimeMinutes.toDouble();
+    final isRunningTime = rule?.isRunningTime ?? match.isRunningTime;
+    
+    String timeStr = matchTime == matchTime.toInt() ? '${matchTime.toInt()}分' : '${matchTime.toInt()}分${((matchTime % 1) * 60).toInt()}秒';
+    final String timeDesc = '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
+
+    final bool enchoUnlimited = rule?.isEnchoUnlimited ?? false;
+    final double enchoMins = rule?.enchoTimeMinutes ?? match.extensionTimeMinutes?.toDouble() ?? 0.0;
+    final int enchoCount = rule?.enchoCount ?? match.extensionCount ?? 1;
+    final bool enchoEnabled = match.hasExtension || enchoUnlimited || enchoMins > 0;
+    
+    String enchoDesc = 'なし';
+    if (enchoEnabled) {
+      if (enchoUnlimited) {
+        enchoDesc = 'あり (無制限)';
+      } else {
+        String extTimeStr = enchoMins == enchoMins.toInt() ? '${enchoMins.toInt()}分' : '${enchoMins.toInt()}分${((enchoMins % 1) * 60).toInt()}秒';
+        enchoDesc = 'あり ($extTimeStr・$enchoCount回)';
+      }
+    }
+    
+    final bool hanteiEnabled = rule?.hasHantei ?? match.hasHantei;
+
+    String daihyoDesc = 'なし';
+    if (rule != null) {
+      final bool hasRep = rule.hasRepresentativeMatch;
+      final bool isIppon = rule.isDaihyoIpponShobu;
+      daihyoDesc = hasRep ? (isIppon ? 'あり (一本勝負)' : 'あり (三本勝負)') : 'なし';
+    } else {
+      daihyoDesc = '不明（古いデータ）';
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10)))),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Icon(Icons.gavel_rounded, color: isDark ? Colors.teal.shade300 : Colors.teal.shade700, size: 22),
+                const SizedBox(width: 8),
+                Text('試合レギュレーション', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+              ],
+            ),
+            const Divider(height: 32),
+            
+            if (rule == null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.orange.shade300)),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text('この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。', style: TextStyle(color: Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold))),
+                  ],
+                ),
+              ),
+
+            _buildRuleRow('試合形式', formatText, isDark),
+            _buildRuleRow('試合時間', timeDesc, isDark),
+
+            if (rule?.isRenseikai ?? false) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('錬成会設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('進行方式', rule!.renseikaiType, isDark),
+              if (rule.renseikaiType == '時間制') _buildRuleRow('制限時間', '${rule.overallTimeMinutes} 分', isDark),
+            ] else ...[
+              _buildRuleRow('延長戦', enchoDesc, isDark),
+              _buildRuleRow('判定', hanteiEnabled ? 'あり' : 'なし', isDark),
+            ],
+
+            if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('勝ち抜き戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('無制限条件', rule?.kachinukiUnlimitedType ?? '大将対大将', isDark),
+              // ★ 修正：ポジション表示を勝ち抜き戦の枠組みの中に統合する
+              if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            // ★ 修正：予備判定(isLeague)を使って、古いデータでも確実に隠す
+            if (!isIndividual && !(rule?.isRenseikai ?? false) && !match.isKachinuki && !(rule?.isKachinuki ?? false) && !isLeague) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('団体戦・チーム設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('代表戦', daihyoDesc, isDark),
+              if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            if (!isIndividual && (rule?.isRenseikai ?? false) && rule != null && rule.positions.isNotEmpty) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('ポジション設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            if (rule != null && rule.isLeague) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('リーグ戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange))),
+              // ★ 修正：リーグ戦のポジション表示を、リーグ戦専用枠の中に美しく統合する
+              if (!isIndividual && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+              _buildRuleRow('勝ち点設定', '勝: ${rule.winPoint} / 分: ${rule.drawPoint} / 負: ${rule.lossPoint}', isDark),
+              _buildRuleRow('同点時代表戦', rule.hasLeagueDaihyo ? 'あり' : 'なし', isDark),
+            ],
+
+            if (match.note.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _buildRuleRow('備考・メモ', match.note, isDark),
+            ],
+              
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                  foregroundColor: isDark ? Colors.white : Colors.black87,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8), 
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRuleRow(String label, String value, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 100, child: Text(label, style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, fontSize: 13))),
+          Expanded(child: Text(value, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 14))),
+        ],
+      ),
+    );
   }
 
   // =========================================================================

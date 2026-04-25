@@ -5,6 +5,7 @@ import '../models/match_model.dart';
 import '../models/score_event.dart';
 import '../providers/match_command_provider.dart';
 import '../providers/match_list_provider.dart';
+import '../providers/match_rule_provider.dart'; // ★ 追加：レギュレーション確認用
 
 class TeamPointDisplay {
   final String mark;
@@ -13,15 +14,27 @@ class TeamPointDisplay {
 }
 
 class TeamScoreboardScreen extends ConsumerWidget {
-  final String groupName; 
-  const TeamScoreboardScreen({super.key, required this.groupName});
+  final String? groupName; 
+  final List<MatchModel>? matches; // ★ 追加：特定の試合リストを直接受け取れるようにする
+
+  const TeamScoreboardScreen({super.key, this.groupName, this.matches});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ Step 3-2: watch最適化。リスト全体ではなく、このグループの試合が変化した時だけ再描画する
-    final teamMatches = ref.watch(matchListProvider.select((list) => 
-      list.where((m) => m.groupName == groupName).toList()
-    ));
+    // ★ 修正：matches が直接渡されている場合はそれを使用し、なければ groupName で監視する
+    List<MatchModel> teamMatches = matches ?? [];
+    
+    if (matches == null && groupName != null) {
+      teamMatches = ref.watch(matchListProvider.select((list) => 
+        list.where((m) => m.groupName == groupName).toList()
+      ));
+    }
+    
+    // ★ 修正：今設定中のルールではなく、その試合自体が持っている「保存されたルール」を最優先で使う
+    final rule = (teamMatches.isNotEmpty && teamMatches.first.rule != null) 
+        ? teamMatches.first.rule! 
+        : ref.watch(matchRuleProvider);
+    
     teamMatches.sort((a, b) => a.order.compareTo(b.order));
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -31,7 +44,25 @@ class TeamScoreboardScreen extends ConsumerWidget {
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
 
     if (teamMatches.isEmpty) {
-      return Scaffold(backgroundColor: bgColor, body: Center(child: Text('データなし', style: TextStyle(color: isDark ? Colors.white : Colors.black))));
+      return Scaffold(
+        backgroundColor: bgColor,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
+          ),
+          title: Text('スコアボード', style: TextStyle(fontWeight: FontWeight.bold, color: headerColor, fontSize: 16)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Center(child: Text('データなし', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
+      );
     }
 
     final redTeam = _cleanName(teamMatches.first.redName, true);
@@ -63,13 +94,31 @@ class TeamScoreboardScreen extends ConsumerWidget {
     }
 
     bool isTie = allFinished && !hasDaihyo && (rW == wW) && (rP == wP);
+    // ★ 修正：古いデータでも「[リーグ戦]」という文字があればリーグ戦として扱い、代表戦ボタンを隠す
+    final bool isLegacyLeague = teamMatches.isNotEmpty && teamMatches.first.note.contains('[リーグ戦]');
+    final bool isLeague = rule.isLeague || isLegacyLeague;
+    
+    // リーグ戦なら hasLeagueDaihyo を、そうでなければ通常の代表戦フラグを見る
+    // ただし、古いリーグ戦データ（ruleがnull）の場合は、安全のため「なし」とみなす
+    bool isDaihyoAllowed = isLeague 
+        ? (rule.isLeague ? rule.hasLeagueDaihyo : false) 
+        : rule.hasRepresentativeMatch;
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
-          onPressed: () => Navigator.pop(context),
+          // ★ 真の解決: 履歴が消えている場合に備え、安全にpopまたはホームへ戻るフェイルセーフを実装
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else if (teamMatches.isNotEmpty && teamMatches.first.tournamentId != null) {
+              context.go('/home/${teamMatches.first.tournamentId}');
+            } else {
+              context.go('/');
+            }
+          },
         ),
         title: Text('団体戦 スコアボード', style: TextStyle(fontWeight: FontWeight.bold, color: headerColor, fontSize: 16)),
         backgroundColor: Colors.transparent,
@@ -143,7 +192,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
         ),
       ),
       // ★ 修正：他の画面と同じように、Scaffoldの機能を使って「画面の最下部（ボトム）」に完全に固定する
-      bottomNavigationBar: isTie ? SafeArea(
+      // ★ 修正：先ほど作った正確なフラグ（isDaihyoAllowed）を参照して表示を制御する
+      bottomNavigationBar: (isTie && isDaihyoAllowed) ? SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16), // 他の画面のボタンと同じ余白
           child: SizedBox(
@@ -301,7 +351,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  // ★ 修正：大丸をさらに拡大（52→62）し、文字との干渉を完全に排除
+  // 修正後 (TableCellを削除し、中のコンテンツだけを返すように変更)
   Widget _buildMatchScoreBox(List<TeamPointDisplay> pts, bool isWinner, bool isDraw, bool isRed, bool isDark) {
     final color = isRed 
         ? (isDark ? Colors.red.shade300 : Colors.red.shade700) 
@@ -309,57 +359,58 @@ class TeamScoreboardScreen extends ConsumerWidget {
     
     final isFusen = pts.any((p) => p.mark == '◯');
 
-    return TableCell(
-      verticalAlignment: TableCellVerticalAlignment.middle,
-      child: SizedBox(
-        height: 84, // 大丸拡大に合わせて高さを72→84へ
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            // ★ 修正：大丸をさらに拡大し、境界線を少し太くして視認性をアップ
-            if (isWinner)
-              Container(
-                width: 62, height: 62, // 52→62
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle, 
-                  border: Border.all(color: color.withValues(alpha: 0.5), width: 2.4)
-                ),
-              ),
-            
-            // 技マークの表示エリアも少し広げて配置のバランスを取る
-            SizedBox(
-              width: 48, height: 48,
-              child: Stack(
-                children: [
-                  if (isFusen) ...[
-                    Positioned(top: 0, left: 0, child: _ptMark(TeamPointDisplay('◯', false), color, isDark)),
-                    Positioned(bottom: 0, right: 0, child: _ptMark(TeamPointDisplay('◯', false), color, isDark)),
-                  ] else ...[
-                    // 斜め配置の隅に少し余裕(2px)を持たせて、大丸との接触を回避
-                    if (pts.isNotEmpty) Positioned(top: 2, left: 2, child: _ptMark(pts[0], color, isDark)),
-                    if (pts.length > 1) Positioned(bottom: 2, right: 2, child: _ptMark(pts[1], color, isDark)),
-                  ],
-                ],
+    return SizedBox( // TableCellではなくSizedBoxを返す
+      height: 84,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          // ★ 修正：大丸をさらに拡大し、境界線を少し太くして視認性をアップ
+          if (isWinner)
+            Container(
+              width: 62, height: 62, // 52→62
+              decoration: BoxDecoration(
+                shape: BoxShape.circle, 
+                border: Border.all(color: color.withValues(alpha: 0.5), width: 2.4)
               ),
             ),
+          
+          // 技マークの表示エリアも少し広げて配置のバランスを取る
+          SizedBox(
+            width: 48, height: 48,
+            child: Stack(
+              children: [
+                if (isFusen) ...[
+                  Positioned(top: 0, left: 0, child: _ptMark(TeamPointDisplay('◯', false), color, isDark)),
+                  Positioned(bottom: 0, right: 0, child: _ptMark(TeamPointDisplay('◯', false), color, isDark)),
+                ] else ...[
+                  // 斜め配置の隅に少し余裕(2px)を持たせて、大丸との接触を回避
+                  if (pts.isNotEmpty) Positioned(top: 2, left: 2, child: _ptMark(pts[0], color, isDark)),
+                  if (pts.length > 1) Positioned(bottom: 2, right: 2, child: _ptMark(pts[1], color, isDark)),
+                ],
+              ],
+            ),
+          ),
 
-            if (isRed && isDraw)
-              Positioned(
-                right: -14,
-                child: Text('✕', style: TextStyle(fontSize: 28, color: isDark ? Colors.red.shade900.withValues(alpha: 0.6) : Colors.red.shade300, fontWeight: FontWeight.w300)),
-              ),
-          ],
-        ),
+          if (isRed && isDraw)
+            Positioned(
+              right: -14,
+              child: Text('✕', style: TextStyle(fontSize: 28, color: isDark ? Colors.red.shade900.withValues(alpha: 0.6) : Colors.red.shade300, fontWeight: FontWeight.w300)),
+            ),
+        ],
       ),
     );
   }
 
+  // 修正後
   Widget _clickableCell(BuildContext ctx, MatchModel m, Widget child) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => ctx.push('/match/${m.id}'),
-      child: child,
+    return TableCell(
+      verticalAlignment: TableCellVerticalAlignment.middle,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => ctx.push('/match/${m.id}'),
+        child: child,
+      ),
     );
   }
 

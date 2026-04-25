@@ -42,6 +42,11 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
   final _overallTimeController = TextEditingController(text: '30'); 
   late bool _isDaihyoIpponShobu; 
 
+  // ★ リーグ戦拡張：勝ち点入力用のコントローラー
+  final _winPointController = TextEditingController(text: '0');
+  final _lossPointController = TextEditingController(text: '0');
+  final _drawPointController = TextEditingController(text: '0');
+
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
@@ -111,6 +116,11 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
     _hasLeagueDaihyo = lastSettings['hasLeagueDaihyo'] ?? false;
     _renseikaiType = lastSettings['renseikaiType'] ?? '一試合制';
     _isDaihyoIpponShobu = lastSettings['isDaihyoIpponShobu'] ?? true; 
+
+    // ★ 勝ち点の初期値を復元
+    _winPointController.text = (lastSettings['winPoint'] ?? 0).toString();
+    _lossPointController.text = (lastSettings['lossPoint'] ?? 0).toString();
+    _drawPointController.text = (lastSettings['drawPoint'] ?? 0).toString();
   }
   
   final _customTeamSizeController = TextEditingController(text: '9');
@@ -134,6 +144,9 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
     _customExtCountController.dispose();
     _customExtTimeController.dispose();
     _overallTimeController.dispose(); 
+    _winPointController.dispose();
+    _lossPointController.dispose();
+    _drawPointController.dispose();
     _pageController.dispose(); 
     super.dispose();
   }
@@ -978,7 +991,27 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
             } else if (isLeague) {
               return _buildDynamicSectionBox(
                 title: 'リーグ戦 特別ルール', icon: Icons.table_view, color: Colors.teal.shade700,
-                child: SwitchListTile(title: const Text('代表戦あり'), subtitle: const Text('リーグ戦において同点の場合に代表戦を行うか'), value: _hasLeagueDaihyo, activeThumbColor: Colors.teal.shade600, onChanged: (v) => setState(() => _hasLeagueDaihyo = v), contentPadding: EdgeInsets.zero),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SwitchListTile(title: const Text('代表戦あり'), subtitle: const Text('リーグ戦において同点の場合に代表戦を行うか'), value: _hasLeagueDaihyo, activeThumbColor: Colors.teal.shade600, onChanged: (v) => setState(() => _hasLeagueDaihyo = v), contentPadding: EdgeInsets.zero),
+                    const Divider(),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Text('勝ち点の設定（0の場合は全剣連基準で判定）', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(child: _buildPointField(_winPointController, '勝ち', Colors.red.shade600)),
+                        const SizedBox(width: 8),
+                        Expanded(child: _buildPointField(_lossPointController, '負け', Colors.blueGrey)),
+                        const SizedBox(width: 8),
+                        Expanded(child: _buildPointField(_drawPointController, '引分', Colors.orange.shade700)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               );
             }
             return const SizedBox.shrink();
@@ -1086,12 +1119,18 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
                   }
 
                   final generatedPositions = _generatePositions(teamSize);
-                  double finalTime = _matchTime == -1.0 ? (double.tryParse(_customMatchTimeController.text) ?? 3.0) : _matchTime;
+                  
+                  // ★ 修正：確実に .toDouble() にして抽出
+                  final double finalTime = (_matchTime == -1.0 ? (double.tryParse(_customMatchTimeController.text) ?? 3.0) : _matchTime).toDouble();
+                  final double finalExtTime = (_extTime == -1.0 ? (double.tryParse(_customExtTimeController.text) ?? 3.0) : _extTime).toDouble();
+                  final int finalExtCount = _extCount == -1 ? (int.tryParse(_customExtCountController.text) ?? 1) : _extCount;
 
-                  // ★ 修正：錬成会以外のときは強制的にランニング計測をOFFにする（隠れランニング計測バグの完全防止）
                   bool finalIsRunningTime = _isRenseikai ? _isRunningTime : false;
 
-                  // ★ 修正：延長回数と延長時間も確実に保存するようにします
+                  final double winPt = double.tryParse(_winPointController.text) ?? 0;
+                  final double lossPt = double.tryParse(_lossPointController.text) ?? 0;
+                  final double drawPt = double.tryParse(_drawPointController.text) ?? 0;
+
                   ref.read(lastUsedSettingsProvider.notifier).state = {
                     'matchType': _matchType, 
                     'category': _category, 
@@ -1099,13 +1138,16 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
                     'isRunningTime': finalIsRunningTime,
                     'hasExtension': _hasExtension, 
                     'hasHantei': _hasHantei, 
-                    'extensionCount': _extCount == -1 ? (int.tryParse(_customExtCountController.text) ?? 1) : _extCount,
-                    'extensionTimeMinutes': _extTime == -1.0 ? (double.tryParse(_customExtTimeController.text) ?? 3.0) : _extTime,
+                    'extensionCount': finalExtCount,
+                    'extensionTimeMinutes': finalExtTime,
                     'isRenseikai': _isRenseikai, 
                     'kachinukiUnlimitedType': _kachinukiUnlimitedType, 
                     'hasLeagueDaihyo': _hasLeagueDaihyo, 
                     'renseikaiType': _renseikaiType,
                     'isDaihyoIpponShobu': _isDaihyoIpponShobu, 
+                    'winPoint': winPt,
+                    'lossPoint': lossPt,
+                    'drawPoint': drawPt,
                   };
 
                   List<String> selectedBaseOrder = [];
@@ -1122,12 +1164,19 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
                   }
 
                   ref.read(matchRuleProvider.notifier).updateRule(MatchRule(
-                    positions: generatedPositions, matchTimeMinutes: finalTime.toInt(), isRunningTime: finalIsRunningTime,
+                    positions: generatedPositions, matchTimeMinutes: finalTime, isRunningTime: finalIsRunningTime,
                     isLeague: isLeague, category: _category, note: _noteController.text, isRenseikai: _isRenseikai, 
                     baseOrder: selectedBaseOrder, teamName: teamNamePrefix, isKachinuki: isKachinuki, 
                     kachinukiUnlimitedType: _kachinukiUnlimitedType, hasLeagueDaihyo: _hasLeagueDaihyo, 
                     renseikaiType: _renseikaiType, overallTimeMinutes: int.tryParse(_overallTimeController.text) ?? 30,
                     isDaihyoIpponShobu: _isDaihyoIpponShobu,
+                    isEnchoUnlimited: _hasExtension && (finalExtTime == -2.0 || finalExtCount == -2),
+                    enchoTimeMinutes: _hasExtension ? (finalExtTime == -2.0 ? 0.0 : finalExtTime) : 0.0,
+                    enchoCount: _hasExtension ? (finalExtCount == -2 ? 99 : finalExtCount) : 0,
+                    hasHantei: _hasHantei,
+                    winPoint: winPt,
+                    lossPoint: lossPt,
+                    drawPoint: drawPt,
                   ));
 
                   context.push('/order-setup/${widget.tournamentId}');
@@ -1154,6 +1203,29 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
         title, 
         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.teal.shade300 : Colors.teal.shade800)
       )
+    );
+  }
+
+  // ★ 勝ち点入力用のスリムなTextField
+  Widget _buildPointField(TextEditingController controller, String label, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [_NumericInputFormatter()],
+      textAlign: TextAlign.center,
+      style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: color)),
+        filled: true,
+        fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      ),
     );
   }
 }
