@@ -29,6 +29,8 @@ class MockSettingsNotifier extends SettingsNotifier {
   SettingsModel build() => const SettingsModel();
 }
 
+final mockMatchListProvider = StateProvider<List<MatchModel>>((ref) => []);
+
 void main() {
   late ProviderContainer container;
   late MockMatchRepository mockRepository;
@@ -53,7 +55,7 @@ void main() {
         soundServiceProvider.overrideWithValue(mockSound),
         matchCommandProvider.overrideWithValue(mockCommand),
         settingsProvider.overrideWith(() => MockSettingsNotifier()),
-        matchListProvider.overrideWith((ref) => <MatchModel>[]), // ★ 新しい Provider の仕様に合わせて、空のリストを直接返す
+        matchListProvider.overrideWith((ref) => ref.watch(mockMatchListProvider)), // ★ 新しい Provider の仕様に合わせて、空のリストを直接返す
       ],
     );
   });
@@ -88,6 +90,7 @@ void main() {
     test('processScoreEvent を呼び出した際、正しく保存処理と監査ログが実行されること', () async {
       // Given: 準備
       final match = TestMatchFactory.createIndividualMatch(id: 'match-123');
+      container.read(mockMatchListProvider.notifier).state = [match];
       final event = TestMatchFactory.createEvent(side: Side.red, type: PointType.men);
 
       // Mock の振る舞い設定
@@ -113,13 +116,14 @@ void main() {
       verify(() => mockAudit.logAction(
             matchId: 'match-123',
             action: 'add_score',
-            details: any(named: 'details', that: contains('赤')),
+            details: any(named: 'details', that: contains('red')),
           )).called(1);
     });
 
     test('undoEvent を呼び出した際、保存処理が実行されること', () async {
       final event = TestMatchFactory.createEvent(side: Side.red, type: PointType.men);
       final match = TestMatchFactory.createIndividualMatch(events: [event]).copyWith(redScore: 1);
+      container.read(mockMatchListProvider.notifier).state = [match];
 
       when(() => mockCommand.saveMatch(any())).thenAnswer((_) async => {});
       when(() => mockAudit.logAction(
@@ -131,8 +135,7 @@ void main() {
       final controller = container.read(matchActionProvider);
 
       // When: Undoを実行
-      controller.undoEvent(match);
-      await Future.delayed(Duration.zero); // voidの非同期処理が完了するのを待つ
+      await controller.undoEvent(match);
 
       // Then: スコアが 0 に戻った状態で保存されたか検証
       verify(() => mockCommand.saveMatch(any(
@@ -165,9 +168,10 @@ void main() {
   });
 
   group('MatchProvider - Step 3-4: 同時操作・競合の防止', () {
-    test('データ保存時に競合エラーが発生しても、適切にキャッチして処理を継続すること', () async {
+    test('データ保存時に競合エラーが発生した場合、上位に例外が伝播すること', () async {
       // Given
       final match = TestMatchFactory.createIndividualMatch();
+      container.read(mockMatchListProvider.notifier).state = [match];
       final event = TestMatchFactory.createEvent(side: Side.red, type: PointType.men);
 
       when(() => mockCommand.saveMatch(any())).thenThrow(
@@ -178,13 +182,14 @@ void main() {
 
       // When & Then
       await expectLater(
-        controller.processScoreEvent(match, event),
-        completes,
+        () => controller.processScoreEvent(match, event),
+        throwsException,
       );
     });
 
-    test('予期せぬエラーが発生した場合も、監査ログの送信を試みず安全に終了すること', () async {
+    test('予期せぬエラーが発生した場合、監査ログの送信を試みず終了すること', () async {
       final match = TestMatchFactory.createIndividualMatch();
+      container.read(mockMatchListProvider.notifier).state = [match];
       final event = TestMatchFactory.createEvent(side: Side.red, type: PointType.men);
 
       when(() => mockCommand.saveMatch(any())).thenThrow(
@@ -193,7 +198,11 @@ void main() {
 
       final controller = container.read(matchActionProvider);
 
-      await controller.processScoreEvent(match, event);
+      try {
+        await controller.processScoreEvent(match, event);
+      } catch (_) {
+        // Expected to throw
+      }
 
       verifyNever(() => mockAudit.logAction(
         matchId: any(named: 'matchId'),

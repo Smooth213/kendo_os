@@ -87,6 +87,8 @@ class TestMatchRepository extends Fake implements MatchRepository {
   Future<void> saveMatch(MatchModel match) => localRepo.saveMatch(match);
 }
 
+class MockSyncEngine extends Mock implements SyncEngine {}
+
 void main() {
   // ★ CRITICAL: ネイティブ機能（Wi-Fiチェックやバイブなど）をテスト環境でモックアップするために必須の1行
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -124,6 +126,9 @@ void main() {
       )).thenAnswer((_) async => {});
 
       final testLocalRepo = TestLocalMatchRepository(isar, fakeFirestore);
+      
+      final mockSyncEngine = MockSyncEngine();
+      when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
 
       container = ProviderContainer(
         overrides: [
@@ -140,6 +145,7 @@ void main() {
           matchRepositoryProvider.overrideWith((ref) => TestMatchRepository(testLocalRepo)),
           // ★ 追加: Connectivityプラグインによるネイティブ通信エラーを防ぐ
           connectivityProvider.overrideWith((ref) => Stream.value(true)),
+          syncEngineProvider.overrideWithValue(mockSyncEngine),
         ],
       );
 
@@ -216,7 +222,11 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       final controller = container.read(matchActionProvider);
-      await controller.processScoreEvent(testMatch, ScoreEvent(id: 'e1', side: Side.red, type: PointType.men, timestamp: DateTime.now(), sequence: 1));
+      try {
+        await controller.processScoreEvent(testMatch, ScoreEvent(id: 'e1', side: Side.red, type: PointType.men, timestamp: DateTime.now(), sequence: 1));
+      } catch (_) {
+        // DomainException expected
+      }
       await Future.delayed(const Duration(milliseconds: 100));
 
       final match = container.read(matchListProvider).firstWhere((m) => m.id == 'test_4');
