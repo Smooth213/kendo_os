@@ -1,6 +1,6 @@
 
 import 'package:isar_community/isar.dart'; // ★ パッケージ名は isar_community ですが、ファイル名は isar.dart です
-import '../score_event.dart';
+import '../../domain/match/score_event.dart';
 
 part 'match_entity.g.dart';
 

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/player_model.dart';
 import '../repositories/player_repository.dart';
-import '../providers/permission_provider.dart';
+import '../presentation/provider/permission_provider.dart';
 // ★ Phase 2: JSONエクスポートに必要なパッケージを追加
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import '../providers/match_list_provider.dart';
+import '../presentation/provider/match_list_provider.dart';
 import '../utils/text_sanitizer.dart';
 
 // 選手一覧のProvider

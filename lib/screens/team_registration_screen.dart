@@ -5,7 +5,7 @@ import '../models/team_model.dart';
 import '../repositories/team_repository.dart';
 import '../models/player_model.dart';
 import '../repositories/player_repository.dart';
-import '../providers/team_name_history_provider.dart'; // ★ 追加：履歴プロバイダ
+import '../presentation/provider/team_name_history_provider.dart'; // ★ 追加：履歴プロバイダ
 import '../utils/text_sanitizer.dart'; // ★ お掃除フィルターを追加
 
 // ★ 安定したProvider定義

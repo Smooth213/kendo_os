@@ -1,7 +1,8 @@
 import '../models/match_model.dart';
-import '../models/score_event.dart';
-import '../models/match_rule.dart';
+import 'match/score_event.dart';
+import 'match/match_rule.dart';
 import 'strategy/match_strategy.dart';
+import 'match/match_context.dart'; // ★ ⑥ Contextの純化: 分離したファイルをインポート
 
 // ★ Phase 4: ルール計算の結果をまとめて返すためのデータ構造
 class MatchAnalysis {
@@ -31,27 +32,7 @@ class ValidationResult {
   ValidationResult(this.isValid, [this.reason]);
 }
 
-enum MatchResultStatus { inProgress, redWin, whiteWin, draw }
-
-class MatchContext {
-  final int redIppon;
-  final int whiteIppon;
-  final int redHansoku;
-  final int whiteHansoku;
-  final bool isTimeUp;
-  final int targetIppon;
-  final bool hasHantei; // ★ Phase 7-1: 判定ありフラグを追加
-
-  MatchContext({
-    required this.redIppon,
-    required this.whiteIppon,
-    required this.redHansoku,
-    required this.whiteHansoku,
-    required this.isTimeUp,
-    required this.targetIppon,
-    required this.hasHantei,
-  });
-}
+// ★ MatchResultStatus と MatchContext は lib/domain/match/match_context.dart へ独立・純化しました
 
 /// ==========================================
 /// ★ 剣道ルールエンジンの完成形 (SSOT)

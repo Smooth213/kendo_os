@@ -1,29 +1,18 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'json_converters.dart'; 
-import 'score_event.dart';
-import 'match_rule.dart';
+import '../domain/match/score_event.dart';
+import '../domain/match/match_rule.dart';
+import '../domain/match/match_aggregate.dart'; // ★ 新しい構造のインポート
+import '../domain/match/match_meta.dart';      // ★ 新しい構造のインポート
 
 part 'match_model.freezed.dart';
 part 'match_model.g.dart';
 
-// ★ 修正: 余計な @JsonSerializable を削除（Freezedが自動で完璧に処理します）
-@freezed
-abstract class MatchSnapshot with _$MatchSnapshot {
-  const factory MatchSnapshot({
-    required String id,
-    @TimestampConverter() required DateTime createdAt,
-    required String reason,
-    @Default([]) List<ScoreEvent> events,
-  }) = _MatchSnapshot;
-
-  factory MatchSnapshot.fromJson(Map<String, dynamic> json) => _$MatchSnapshotFromJson(json);
-}
-
-// ★ 修正: 余計な @JsonSerializable を削除
 @freezed
 abstract class MatchModel with _$MatchModel {
   const MatchModel._(); 
 
+  // ★ リカバリー: 既存のコードが壊れないように、コンストラクタは一旦元の状態を維持します。
   const factory MatchModel({
     required String id,
     required String matchType,
@@ -59,14 +48,42 @@ abstract class MatchModel with _$MatchModel {
     @Default(false) bool timerIsRunning,
     @Default('') String note,
     @Default(false) bool isKachinuki,
-    
-    // ★ ルールの保管箱
     MatchRule? rule, 
-    
-    // ★ エラーの元凶だった箇所の修正（必須の @Default を付与）
     @Default([]) List<String> redRemaining,
     @Default([]) List<String> whiteRemaining,
   }) = _MatchModel;
 
   factory MatchModel.fromJson(Map<String, dynamic> json) => _$MatchModelFromJson(json);
+
+  // ==========================================
+  // ★ 真の安全な移行（Strangler Figパターン）
+  // 既存のプロパティを壊さず、ここから新しい Aggregate と Meta を「生成」して
+  // UseCase などのロジック層へ渡せるようにします。
+  // ==========================================
+  
+  MatchAggregate get toAggregate => MatchAggregate(
+    id: id,
+    rule: rule ?? const MatchRule(), 
+    events: events,
+    snapshots: snapshots,
+    status: status,
+    redScore: redScore,
+    whiteScore: whiteScore,
+    remainingSeconds: remainingSeconds,
+    timerIsRunning: timerIsRunning,
+  );
+
+  MatchMeta get toMeta => MatchMeta(
+    matchType: matchType,
+    redName: redName,
+    whiteName: whiteName,
+    note: note,
+    tournamentId: tournamentId,
+    category: category,
+    groupName: groupName,
+    matchOrder: matchOrder,
+    refereeNames: refereeNames,
+    countForStandings: countForStandings,
+    isAutoAssigned: isAutoAssigned,
+  );
 }

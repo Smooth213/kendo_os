@@ -1,5 +1,5 @@
 import '../../models/match_model.dart';
-import '../../models/match_rule.dart';
+import '../match/match_rule.dart';
 import '../kendo_rule_engine.dart';
 
 // グループ（チーム戦・勝ち抜き戦）全体が終了したかどうかの結果をまとめるクラス

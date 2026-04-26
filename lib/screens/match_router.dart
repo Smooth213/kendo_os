@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'match_screen.dart'; 
 import 'viewer_match_screen.dart'; 
-import '../providers/permission_provider.dart';
+import '../presentation/provider/permission_provider.dart';
 
 class MatchRouter extends ConsumerWidget {
   final String matchId;

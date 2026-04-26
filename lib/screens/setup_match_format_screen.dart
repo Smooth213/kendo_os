@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // ★ 追加：全角半角の自動変換に必要
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/last_used_settings_provider.dart';
-import '../providers/match_rule_provider.dart'; 
-import '../models/match_rule.dart'; // ★ MatchRuleモデルを読み込む
+import '../presentation/provider/last_used_settings_provider.dart';
+import '../presentation/provider/match_rule_provider.dart'; 
+import '../domain/match/match_rule.dart'; // ★ MatchRuleモデルを読み込む
 import '../repositories/team_repository.dart'; 
 import '../models/team_model.dart';
 import '../models/player_model.dart';

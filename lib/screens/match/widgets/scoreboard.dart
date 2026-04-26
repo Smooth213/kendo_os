@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/match_model.dart';
-import '../../../../models/score_event.dart';
+import '../../../../domain/match/score_event.dart';
 import '../../../../domain/kendo_rule_engine.dart';
-import '../../../../providers/match_provider.dart';
-import '../../../../usecase/match_usecase.dart'; // ★ 追加: UseCaseの参照
-import '../../../../providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
+import '../../../presentation/provider/match_provider.dart';
+import '../../../application/usecase/match_usecase.dart'; // ★ 追加: UseCaseの参照
+import '../../../presentation/provider/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
 
 class MatchScoreboard extends ConsumerWidget {
   final MatchModel match;

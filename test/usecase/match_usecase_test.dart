@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/kendo_rule_engine.dart';
-import 'package:kendo_os/usecase/match_usecase.dart';
-import 'package:kendo_os/models/score_event.dart';
+// ★ 修正: 移動したScoreEventとMatchRuleの絶対パス（住所）を追加
+import 'package:kendo_os/domain/match/score_event.dart';
+import 'package:kendo_os/application/usecase/match_usecase.dart';
 import '../helpers/test_match_factory.dart';
 
 void main() {

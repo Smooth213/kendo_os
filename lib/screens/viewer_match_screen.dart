@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/match_list_provider.dart';
+import '../presentation/provider/match_list_provider.dart';
 import 'match/widgets/scoreboard.dart';
 import 'match/widgets/match_header.dart';
 import 'match/widgets/timer_widget.dart';

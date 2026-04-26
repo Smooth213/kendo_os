@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/permission_provider.dart';
+import '../presentation/provider/permission_provider.dart';
 
 // ★ シンプルなConsumerWidgetに戻りました（波紋アニメーションはFlutter標準に任せます）
 class StartScreen extends ConsumerWidget {

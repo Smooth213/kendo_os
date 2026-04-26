@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/match_model.dart';
 import '../models/organization.dart';
-import '../providers/match_command_provider.dart';
-import '../providers/match_generator_provider.dart';
+import '../presentation/provider/match_command_provider.dart';
+import '../presentation/provider/match_generator_provider.dart';
 import '../repositories/organization_repository.dart';
 
 class NewMatchScreen extends ConsumerStatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/providers/match_rule_provider.dart'; 
-import 'package:kendo_os/models/match_rule.dart'; // ★ モデルを読み込む
+import 'package:kendo_os/presentation/provider/match_rule_provider.dart'; 
+import 'package:kendo_os/domain/match/match_rule.dart'; // ★ モデルを読み込む
 
 void main() {
   group('MatchRuleProvider Tests', () {

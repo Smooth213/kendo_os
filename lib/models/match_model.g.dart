@@ -6,26 +6,6 @@ part of 'match_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_MatchSnapshot _$MatchSnapshotFromJson(Map<String, dynamic> json) =>
-    _MatchSnapshot(
-      id: json['id'] as String,
-      createdAt: const TimestampConverter().fromJson(json['createdAt']),
-      reason: json['reason'] as String,
-      events:
-          (json['events'] as List<dynamic>?)
-              ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-    );
-
-Map<String, dynamic> _$MatchSnapshotToJson(_MatchSnapshot instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'createdAt': const TimestampConverter().toJson(instance.createdAt),
-      'reason': instance.reason,
-      'events': instance.events.map((e) => e.toJson()).toList(),
-    };
-
 _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
   id: json['id'] as String,
   matchType: json['matchType'] as String,

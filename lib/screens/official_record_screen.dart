@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart'; 
 import '../models/match_model.dart';
-import '../models/score_event.dart';
-import '../providers/match_list_provider.dart';
-import '../services/pdf_service.dart'; 
+import '../domain/match/score_event.dart';
+import '../presentation/provider/match_list_provider.dart';
+import '../application/service/pdf_service.dart'; 
 // ★ 追加：先ほど作成した勝ち抜き戦の最強描画エンジンを呼び出す
 import 'kachinuki_scoreboard_screen.dart'; 
 import 'home_screen.dart'; // ★ 修正：プロバイダーが確実に存在する home_screen を直接読み込む
 // ★ Phase 7: 権限プロバイダのインポート
-import '../providers/permission_provider.dart';
+import '../presentation/provider/permission_provider.dart';
 import '../domain/kendo_rule_engine.dart';
-import '../providers/match_rule_provider.dart';
+import '../presentation/provider/match_rule_provider.dart';
 
 class OfficialPointDisplay {
   final String mark;

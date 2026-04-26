@@ -8,13 +8,13 @@ import 'package:flutter/services.dart'; // ★ Phase 6: バイブレーション
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import '../models/match_model.dart';
-import '../models/score_event.dart';
-import '../providers/match_list_provider.dart';
-import '../providers/match_provider.dart';
-import '../providers/match_rule_provider.dart'; 
-import '../providers/match_command_provider.dart'; // ★ 追加: 書き込み専門家
-import '../providers/match_timer_provider.dart';   // ★ 追加: 時計専門家
-import '../providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateパターンの導入
+import '../domain/match/score_event.dart';
+import '../presentation/provider/match_list_provider.dart';
+import '../presentation/provider/match_provider.dart';
+import '../presentation/provider/match_rule_provider.dart'; 
+import '../presentation/provider/match_command_provider.dart'; // ★ 追加: 書き込み専門家
+import '../presentation/provider/match_timer_provider.dart';   // ★ 追加: 時計専門家
+import '../presentation/provider/match_view_state_provider.dart'; // ★ Phase 3: ViewStateパターンの導入
 // ★ 追加：マスタとチーム情報を参照するためのインポート
 import '../models/player_model.dart';
 import '../repositories/player_repository.dart';
@@ -22,7 +22,7 @@ import '../models/team_model.dart';
 import '../repositories/team_repository.dart';
 // ★ Phase 3: 分割した専用Widgetをインポート
 import '../domain/strategy/match_strategy.dart'; // ★ Phase 5: 戦略ファクトリの読み込み
-import '../services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
+import '../application/service/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
 
 // ★ Phase 3: 分割したWidget群
 import 'match/widgets/timer_widget.dart';
@@ -30,8 +30,8 @@ import 'match/widgets/action_buttons.dart';
 import 'match/widgets/scoreboard.dart';
 
 // ★ 追加：システム設定プロバイダの読み込み
-import '../providers/settings_provider.dart';
-import '../providers/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
+import '../presentation/provider/settings_provider.dart';
+import '../presentation/provider/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();

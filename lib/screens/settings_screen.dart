@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import '../providers/settings_provider.dart';
-import '../providers/role_provider.dart';
+import '../presentation/provider/settings_provider.dart';
+import '../presentation/provider/role_provider.dart';
 import 'package:go_router/go_router.dart'; // ★ Phase 5: 画面遷移用に追加
 
 class SettingsScreen extends ConsumerStatefulWidget {

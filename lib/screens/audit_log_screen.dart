@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../providers/audit_provider.dart';
+import '../presentation/provider/audit_provider.dart';
 
 // ★ Phase 5: Firestoreから監査ログをリアルタイム取得するProvider
 final auditLogsProvider = StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {

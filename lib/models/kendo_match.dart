@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'event_settings.dart';
-import 'score_event.dart';
+import '../domain/match/score_event.dart';
 
 part 'kendo_match.freezed.dart';
 part 'kendo_match.g.dart';

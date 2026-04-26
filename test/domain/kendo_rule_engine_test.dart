@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/kendo_rule_engine.dart';
-import 'package:kendo_os/models/score_event.dart';
+import 'package:kendo_os/domain/match/match_context.dart';
+import 'package:kendo_os/domain/match/score_event.dart';
 import '../helpers/test_match_factory.dart';
 
 void main() {

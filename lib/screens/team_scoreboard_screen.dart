@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../models/match_model.dart';
-import '../models/score_event.dart';
-import '../providers/match_command_provider.dart';
-import '../providers/match_list_provider.dart';
-import '../providers/match_rule_provider.dart'; // ★ 追加：レギュレーション確認用
+import '../domain/match/score_event.dart';
+import '../presentation/provider/match_command_provider.dart';
+import '../presentation/provider/match_list_provider.dart';
+import '../presentation/provider/match_rule_provider.dart'; // ★ 追加：レギュレーション確認用
 
 class TeamPointDisplay {
   final String mark;

@@ -7,7 +7,7 @@ import '../models/stroke_model.dart';
 import '../models/local_stroke_model.dart';
 import '../repositories/stroke_repository.dart';
 import '../repositories/local_stroke_repository.dart';
-import '../providers/role_provider.dart';
+import '../presentation/provider/role_provider.dart';
 
 class ProgramViewerScreen extends ConsumerStatefulWidget {
   final List<ProgramModel> programs;

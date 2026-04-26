@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/match_model.dart';
-import '../../../../providers/match_timer_provider.dart';
+import '../../../presentation/provider/match_timer_provider.dart';
 
 class TimerWidget extends ConsumerWidget {
   final MatchModel match;

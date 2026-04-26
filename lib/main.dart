@@ -27,16 +27,16 @@ import 'screens/team_scoreboard_screen.dart';
 import 'screens/kachinuki_scoreboard_screen.dart'; // ★ Phase 6: 勝ち抜き戦のルーティング用に追加
 import 'screens/login_screen.dart'; 
 import 'screens/settings_screen.dart'; 
-import 'providers/auth_provider.dart';
+import 'presentation/provider/auth_provider.dart';
 import 'screens/audit_log_screen.dart'; // ★ Phase 5: 監査ログ画面を追加
-import 'providers/settings_provider.dart'; 
-import 'providers/sync_provider.dart'; 
+import 'presentation/provider/settings_provider.dart'; 
+import 'presentation/provider/sync_provider.dart'; 
 import 'models/local/match_entity.dart';
 import 'repositories/local_match_repository.dart';
 import 'widgets/sync_status_bar.dart'; 
 import 'models/local_stroke_model.dart'; // ★ これを追加
 
-import 'providers/role_provider.dart';
+import 'presentation/provider/role_provider.dart';
 
 // ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();

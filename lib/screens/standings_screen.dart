@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/match_list_provider.dart';
+import '../presentation/provider/match_list_provider.dart';
 import '../repositories/player_repository.dart';
 import '../models/player_model.dart';
 

@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../models/player_model.dart';
 import '../models/match_model.dart';
-import '../providers/match_command_provider.dart';
+import '../presentation/provider/match_command_provider.dart';
 import '../repositories/player_repository.dart';
 import 'package:uuid/uuid.dart';
-import '../providers/match_rule_provider.dart';
-import '../providers/last_used_settings_provider.dart'; // ★ 追加：正確な小数の時間を取得するため
+import '../presentation/provider/match_rule_provider.dart';
+import '../presentation/provider/last_used_settings_provider.dart'; // ★ 追加：正確な小数の時間を取得するため
 import '../utils/text_sanitizer.dart'; // ★ 追加：お掃除フィルター
-import '../providers/match_list_provider.dart'; // ★ 追加：試合履歴の取得に必要
+import '../presentation/provider/match_list_provider.dart'; // ★ 追加：試合履歴の取得に必要
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();

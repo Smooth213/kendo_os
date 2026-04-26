@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart'; // ★ 追加: go_routerをインポートしてcontext拡張メソッドを有効化
 import 'package:flutter/services.dart'; // ★ 追加: シート表示時の心地よい振動用
 import '../models/match_model.dart';
-import '../models/score_event.dart';
-import '../providers/match_list_provider.dart';
+import '../domain/match/score_event.dart';
+import '../presentation/provider/match_list_provider.dart';
 // ★ Phase 1-3: UIロジック削除のため、ドメイン層のエンジンとプロバイダをインポート
 import '../domain/kendo_rule_engine.dart';
-import '../providers/match_provider.dart';
+import '../presentation/provider/match_provider.dart';
 
 // ★ 【The Ultimate State】デジタルとアナログの完全融合（タブ切替）
 class KachinukiScoreboardScreen extends ConsumerWidget {

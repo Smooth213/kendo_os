@@ -3,10 +3,11 @@ import 'package:isar_community/isar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/match_model.dart';
 import '../models/local/match_entity.dart';
-import '../models/score_event.dart';
+import '../domain/match/score_event.dart';
 import 'dart:convert'; // ★ 追加: Ruleを文字列に圧縮・解凍するための道具
-import '../models/match_rule.dart'; // ★ 追加: MatchRuleの型を認識させるため
-import '../providers/match_command_provider.dart'; // ★ 追加: MatchCommandModel等の型を認識させるため
+import '../domain/match/match_rule.dart'; // ★ 追加: MatchRuleの型を認識させるため
+import '../presentation/provider/match_command_provider.dart'; // ★ 追加: MatchCommandModel等の型を認識させるため
+import '../domain/match/match_aggregate.dart'; // ★ 追加
 
 // アプリ起動時に main.dart で初期化された Isar を受け取る Provider
 final isarProvider = Provider<Isar>((ref) {

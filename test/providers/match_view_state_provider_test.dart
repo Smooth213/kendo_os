@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/models/score_event.dart';
+import 'package:kendo_os/domain/match/score_event.dart';
 import 'package:kendo_os/models/match_model.dart';
-import 'package:kendo_os/providers/match_list_provider.dart';
-import 'package:kendo_os/providers/match_view_state_provider.dart';
-import 'package:kendo_os/providers/sync_provider.dart';
-import 'package:kendo_os/providers/match_command_provider.dart';
-import 'package:kendo_os/providers/settings_provider.dart';
+import 'package:kendo_os/presentation/provider/match_list_provider.dart';
+import 'package:kendo_os/presentation/provider/match_view_state_provider.dart';
+import 'package:kendo_os/presentation/provider/sync_provider.dart';
+import 'package:kendo_os/presentation/provider/match_command_provider.dart';
+import 'package:kendo_os/presentation/provider/settings_provider.dart';
 import 'package:kendo_os/models/settings_model.dart';
 
 // 設定プロバイダのモック
@@ -34,7 +34,7 @@ void main() {
           isMatchCommandProcessingProvider.overrideWith((ref) => false),
           
           // 4. 設定（ロック状態など）をデフォルト値で上書き
-          settingsProvider.overrideWith(() => MockSettingsNotifier(const SettingsModel(isLocked: false))),
+          settingsProvider.overrideWith(() => MockSettingsNotifier(SettingsModel(isLocked: false))),
           
           // 5. Firebase依存を回避するため、テスト用のユーザーIDを固定
           matchViewStateUserIdProvider.overrideWith((ref) => 'test_user'),
@@ -135,7 +135,7 @@ void main() {
           syncStatusProvider.overrideWith((ref) => ref.watch(mockSyncStatus)),
           // 必須の依存関係をモック
           isMatchCommandProcessingProvider.overrideWith((ref) => false),
-          settingsProvider.overrideWith(() => MockSettingsNotifier(const SettingsModel(isLocked: false))),
+          settingsProvider.overrideWith(() => MockSettingsNotifier(SettingsModel(isLocked: false))),
           matchViewStateUserIdProvider.overrideWith((ref) => 'test_user'),
         ],
       );
@@ -160,7 +160,7 @@ void main() {
           syncStatusProvider.overrideWith((ref) => SyncStatus.pending),
           // 必須の依存関係をモック
           isMatchCommandProcessingProvider.overrideWith((ref) => false),
-          settingsProvider.overrideWith(() => MockSettingsNotifier(const SettingsModel(isLocked: false))),
+          settingsProvider.overrideWith(() => MockSettingsNotifier(SettingsModel(isLocked: false))),
           matchViewStateUserIdProvider.overrideWith((ref) => 'test_user'),
         ],
       );
@@ -206,7 +206,7 @@ void main() {
           // groupMatchStatusProvider は override せず、実際のロジックに計算させる
           syncStatusProvider.overrideWith((ref) => SyncStatus.synced),
           isMatchCommandProcessingProvider.overrideWith((ref) => false),
-          settingsProvider.overrideWith(() => MockSettingsNotifier(const SettingsModel(isLocked: false))),
+          settingsProvider.overrideWith(() => MockSettingsNotifier(SettingsModel(isLocked: false))),
           matchViewStateUserIdProvider.overrideWith((ref) => 'test_user'),
         ],
       );

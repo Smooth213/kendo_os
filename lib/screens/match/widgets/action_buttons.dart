@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart'; 
 import 'package:uuid/uuid.dart';
-import '../../../../models/score_event.dart';
-import '../../../../providers/match_command_provider.dart';
+import '../../../../domain/match/score_event.dart';
+import '../../../presentation/provider/match_command_provider.dart';
 
 class ScoreActionPanel extends ConsumerWidget {
   final String matchId;

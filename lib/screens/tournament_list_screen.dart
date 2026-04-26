@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../repositories/tournament_repository.dart';
 import '../models/tournament_model.dart';
-import '../providers/sync_provider.dart'; // ★ Phase 6: 手動同期用Providerのインポート
+import '../presentation/provider/sync_provider.dart'; // ★ Phase 6: 手動同期用Providerのインポート
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);

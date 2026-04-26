@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:kendo_os/providers/match_provider.dart';
+import 'package:kendo_os/presentation/provider/match_provider.dart';
 import 'package:kendo_os/models/match_model.dart';
 import 'package:kendo_os/repositories/match_repository.dart';
-import 'package:kendo_os/providers/audit_provider.dart';
-import 'package:kendo_os/services/sound_service.dart';
-import 'package:kendo_os/providers/match_command_provider.dart';
-import 'package:kendo_os/providers/match_list_provider.dart';
-import 'package:kendo_os/providers/settings_provider.dart';
+import 'package:kendo_os/presentation/provider/audit_provider.dart';
+import 'package:kendo_os/application/service/sound_service.dart';
+import 'package:kendo_os/presentation/provider/match_command_provider.dart';
+import 'package:kendo_os/presentation/provider/match_list_provider.dart';
+import 'package:kendo_os/presentation/provider/settings_provider.dart';
 import 'package:kendo_os/models/settings_model.dart';
-import 'package:kendo_os/models/score_event.dart';
+import 'package:kendo_os/domain/match/score_event.dart';
 import '../helpers/test_match_factory.dart';
 
 /// 依存サービスの Mock 作成

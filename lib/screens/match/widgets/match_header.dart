@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../models/match_model.dart';
-import '../../../../providers/match_rule_provider.dart';
-import '../../../../providers/match_timer_provider.dart';
+import '../../../presentation/provider/match_rule_provider.dart';
+import '../../../presentation/provider/match_timer_provider.dart';
 
 class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
   final MatchModel match;

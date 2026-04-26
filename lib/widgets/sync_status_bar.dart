@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/role_provider.dart';
-import '../providers/sync_provider.dart';
+import '../presentation/provider/role_provider.dart';
+import '../presentation/provider/sync_provider.dart';
 
 // ★ 追加: バーを「確認モード」に変形させるためのローカルスイッチ
 final syncConfirmVisibleProvider = StateProvider<bool>((ref) => false);

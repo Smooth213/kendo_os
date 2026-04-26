@@ -1,6 +1,6 @@
 import 'package:kendo_os/models/match_model.dart';
-import 'package:kendo_os/models/match_rule.dart';
-import 'package:kendo_os/models/score_event.dart';
+import 'package:kendo_os/domain/match/match_rule.dart';
+import 'package:kendo_os/domain/match/score_event.dart';
 import 'package:uuid/uuid.dart';
 
 /// ★ Step 0-3: テスト用の MatchModel や ScoreEvent を爆速で生成する工場

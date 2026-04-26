@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/kendo_rule_engine.dart';
+import 'package:kendo_os/domain/match/match_context.dart';
 import 'package:kendo_os/models/match_model.dart';
-import 'package:kendo_os/models/match_rule.dart';
-import 'package:kendo_os/models/score_event.dart';
+import 'package:kendo_os/domain/match/match_rule.dart';
+import 'package:kendo_os/domain/match/score_event.dart';
 
 void main() {
   late KendoRuleEngine engine;

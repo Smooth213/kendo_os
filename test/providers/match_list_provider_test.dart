@@ -2,25 +2,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:kendo_os/providers/match_list_provider.dart';
+import 'package:kendo_os/presentation/provider/match_list_provider.dart';
 import 'package:kendo_os/models/match_model.dart';
-import 'package:kendo_os/models/score_event.dart';
+import 'package:kendo_os/domain/match/score_event.dart';
 import 'package:kendo_os/models/settings_model.dart';
-import 'package:kendo_os/models/match_rule.dart';
-import 'package:kendo_os/providers/match_command_provider.dart';
-import 'package:kendo_os/providers/match_timer_provider.dart';
+import 'package:kendo_os/domain/match/match_rule.dart';
+import 'package:kendo_os/presentation/provider/match_command_provider.dart';
+import 'package:kendo_os/presentation/provider/match_timer_provider.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kendo_os/repositories/local_match_repository.dart';
 import 'package:kendo_os/models/local/match_entity.dart'; // ★ スキーマ（設計図）を読み込む
-import 'package:kendo_os/providers/match_provider.dart';
-import 'package:kendo_os/providers/audit_provider.dart';
-import 'package:kendo_os/providers/settings_provider.dart';
-import 'package:kendo_os/providers/match_rule_provider.dart';
-import 'package:kendo_os/services/sound_service.dart';
+import 'package:kendo_os/presentation/provider/match_provider.dart';
+import 'package:kendo_os/presentation/provider/audit_provider.dart';
+import 'package:kendo_os/presentation/provider/settings_provider.dart';
+import 'package:kendo_os/presentation/provider/match_rule_provider.dart';
+import 'package:kendo_os/application/service/sound_service.dart';
 import 'package:kendo_os/repositories/match_repository.dart'; // ★ MatchRepositoryの型を読み込む
 import 'dart:async'; // ★ StreamController用
 import 'dart:io'; // ★ 一時ディレクトリ取得のために追加
-import 'package:kendo_os/providers/sync_provider.dart'; // ★ connectivityProviderをモックするために追加
+import 'package:kendo_os/presentation/provider/sync_provider.dart'; // ★ connectivityProviderをモックするために追加
 
 class MockAuditService extends Mock implements AuditService {}
 class MockSoundService extends Mock implements SoundService {}
@@ -137,7 +137,7 @@ void main() {
           auditProvider.overrideWithValue(mockAudit),
           soundServiceProvider.overrideWithValue(MockSoundService()),
           // ★ 不足していたオーバーライドを追加
-          settingsProvider.overrideWith(() => MockSettingsNotifier(const SettingsModel(confirmBehavior: 'manual'))),
+          settingsProvider.overrideWith(() => MockSettingsNotifier(SettingsModel(confirmBehavior: 'manual'))),
           matchRuleProvider.overrideWith(() => MockMatchRuleNotifier()),
           // ★ 書き込み先（LocalRepo）も拡張版に差し替える
           localMatchRepositoryProvider.overrideWithValue(testLocalRepo),

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart'; // ★ 追加: 触覚フィードバック(ブルッとする振動)用
 import '../models/match_model.dart';
-import '../providers/match_list_provider.dart';
-import '../providers/match_command_provider.dart';
+import '../presentation/provider/match_list_provider.dart';
+import '../presentation/provider/match_command_provider.dart';
 import 'standings_screen.dart';
 import 'official_record_screen.dart';
 import 'team_scoreboard_screen.dart'; 
@@ -14,9 +14,9 @@ import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../repositories/player_repository.dart';
-import '../providers/permission_provider.dart';
+import '../presentation/provider/permission_provider.dart';
 import '../domain/kendo_rule_engine.dart';
-import '../providers/match_rule_provider.dart';
+import '../presentation/provider/match_rule_provider.dart';
 
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
   final repo = ref.watch(tournamentRepositoryProvider);
