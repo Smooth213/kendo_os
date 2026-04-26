@@ -20,6 +20,7 @@ import 'package:kendo_os/services/sound_service.dart';
 import 'package:kendo_os/repositories/match_repository.dart'; // ★ MatchRepositoryの型を読み込む
 import 'dart:async'; // ★ StreamController用
 import 'dart:io'; // ★ 一時ディレクトリ取得のために追加
+import 'package:kendo_os/providers/sync_provider.dart'; // ★ connectivityProviderをモックするために追加
 
 class MockAuditService extends Mock implements AuditService {}
 class MockSoundService extends Mock implements SoundService {}
@@ -87,6 +88,9 @@ class TestMatchRepository extends Fake implements MatchRepository {
 }
 
 void main() {
+  // ★ CRITICAL: ネイティブ機能（Wi-Fiチェックやバイブなど）をテスト環境でモックアップするために必須の1行
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('MatchListProvider (Score Logic) Tests', () {
     late FakeFirebaseFirestore fakeFirestore;
     late Isar isar;
@@ -134,6 +138,8 @@ void main() {
           localMatchRepositoryProvider.overrideWithValue(testLocalRepo),
           // ★ 読み込み側(MatchRepository)もIsarに向けるように強制バイパス
           matchRepositoryProvider.overrideWith((ref) => TestMatchRepository(testLocalRepo)),
+          // ★ 追加: Connectivityプラグインによるネイティブ通信エラーを防ぐ
+          connectivityProvider.overrideWith((ref) => Stream.value(true)),
         ],
       );
 

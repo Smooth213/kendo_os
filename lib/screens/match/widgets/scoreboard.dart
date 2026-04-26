@@ -5,6 +5,7 @@ import '../../../../models/score_event.dart';
 import '../../../../domain/kendo_rule_engine.dart';
 import '../../../../providers/match_provider.dart';
 import '../../../../usecase/match_usecase.dart'; // ★ 追加: UseCaseの参照
+import '../../../../providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
 
 class MatchScoreboard extends ConsumerWidget {
   final MatchModel match;
@@ -20,9 +21,11 @@ class MatchScoreboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ Phase 4: エンジンから表示用データを直接取得する
     final engine = ref.watch(kendoRuleEngineProvider);
     final ptsMap = MatchUseCase.calculatePointDisplays(match, engine);
+    
+    // ★ 修正: ViewStateからすべての計算済み状態を取得
+    final viewState = ref.watch(matchViewStateProvider(match.id));
     final isDone = match.status == 'finished' || match.status == 'approved';
 
     return Stack(
@@ -30,23 +33,21 @@ class MatchScoreboard extends ConsumerWidget {
       children: [
         Row(
           children: [
-            _buildScoreColumn(context, Side.red, match, ptsMap),
-            _buildScoreColumn(context, Side.white, match, ptsMap),
+            _buildScoreColumn(context, Side.red, match, ptsMap, viewState),
+            _buildScoreColumn(context, Side.white, match, ptsMap, viewState),
           ],
         ),
-        if (isDone) _buildResultOverlay(context, ptsMap),
+        if (isDone) _buildResultOverlay(context, viewState),
       ],
     );
   }
 
-  // ★ 修正：引数 side を Side 型へ
-  Widget _buildScoreColumn(BuildContext context, Side side, MatchModel match, Map<Side, List<PointDisplay>> allPts) {
+  Widget _buildScoreColumn(BuildContext context, Side side, MatchModel match, Map<Side, List<PointDisplay>> allPts, MatchViewState viewState) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final pts = allPts[side] ?? []; // ★ Side型でMapへアクセス
+    final pts = allPts[side] ?? []; 
     
-    final rScore = (match.redScore as num).toInt();
-    final wScore = (match.whiteScore as num).toInt();
-    final isWinner = (side == Side.red && rScore > wScore) || (side == Side.white && wScore > rScore);
+    // ★ 修正: 計算を削除し ViewState に依存
+    final isWinner = viewState.winner == side.name;
     final isFinished = match.status == 'approved' || match.status == 'finished';
 
     final nameColor = side == Side.red 
@@ -54,12 +55,11 @@ class MatchScoreboard extends ConsumerWidget {
         : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade800);
 
     return Expanded(
-      child: FittedBox( // ★ Phase 8-1: 横画面で縦幅が足りない場合、自動で縮小させてエラーを防ぐ
+      child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start, 
           children: [
-            // ★ Phase 8-4: 試合終了時は勝敗バッジ(Overlay)を表示するため、名前を下に避ける
             SizedBox(height: isFinished ? 72 : 24),
             GestureDetector(
               onTap: () => onNameTap(side.name),
@@ -71,8 +71,7 @@ class MatchScoreboard extends ConsumerWidget {
                   color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: // ★ Step 6-2: 長い名前（特に外部選手や道場名付き）でも枠をはみ出さない動的スケーリング
-                    FittedBox(
+                child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     _cleanName(side == Side.red ? match.redName : match.whiteName),
@@ -110,11 +109,11 @@ class MatchScoreboard extends ConsumerWidget {
                     child: Stack(
                       children: [
                         if (pts.isNotEmpty)
-                          Positioned(top: 0, left: 0, child: _buildPointMark(pts[0], nameColor, isDark)),
+                          Positioned(top: 0, left: 0, child: _buildPoint(context, pts[0], isDark, nameColor)),
                         if (pts.length > 1)
-                          Positioned(bottom: 0, right: 0, child: _buildPointMark(pts[1], nameColor, isDark)),
+                          Positioned(bottom: 0, right: 0, child: _buildPoint(context, pts[1], isDark, nameColor)),
                         if (pts.length > 2)
-                          Positioned(top: 25, left: 25, child: _buildPointMark(pts[2], nameColor, isDark)),
+                          Positioned(top: 25, left: 25, child: _buildPoint(context, pts[2], isDark, nameColor)),
                       ],
                     ),
                   ),
@@ -143,36 +142,56 @@ class MatchScoreboard extends ConsumerWidget {
     return name.split(':').last.replaceAll(')', '').trim();
   }
 
-  Widget _buildPointMark(PointDisplay pd, Color color, bool isDark) {
-    final double fs = pd.mark.length > 1 ? 16 : (pd.isFirstMatchPoint ? 28 : 38);
+  Widget _buildPoint(BuildContext context, PointDisplay pd, bool isDark, Color color) {
+    const double fs = 26; 
+    Widget pointWidget;
 
     if (pd.isFirstMatchPoint) {
-      return Container(
-        width: 50, height: 50,
+      pointWidget = Container(
+        width: 42, height: 42,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           shape: BoxShape.circle, 
-          border: Border.all(color: color.withValues(alpha: isDark ? 0.5 : 1.0), width: 3)
+          border: Border.all(color: color.withValues(alpha: isDark ? 0.6 : 1.0), width: 2.5)
         ),
-        child: Text(pd.mark, style: TextStyle(fontSize: fs, fontWeight: FontWeight.bold, color: color)),
+        child: Text(pd.mark, style: TextStyle(fontSize: fs, fontWeight: FontWeight.bold, color: color, height: 1.0)),
+      );
+    } else {
+      pointWidget = SizedBox(
+        width: 42, height: 42,
+        child: Center(
+          child: Text(pd.mark, style: TextStyle(fontSize: fs, fontWeight: FontWeight.w900, color: color, height: 1.0)),
+        ),
       );
     }
-    return SizedBox(
-      width: 50, height: 50,
-      child: Center(
-        child: Text(pd.mark, style: TextStyle(fontSize: fs, fontWeight: FontWeight.w900, color: color)),
-      ),
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.1, end: 1.0),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.elasticOut,
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: scale,
+          child: Opacity(
+            opacity: scale.clamp(0.0, 1.0),
+            child: child,
+          ),
+        );
+      },
+      child: pointWidget,
     );
   }
 
-  // ★ 修正：Mapのキー型を変更
-  Widget _buildResultOverlay(BuildContext context, Map<Side, List<PointDisplay>> ptsMap) {
-    final r = ptsMap[Side.red]!.length;
-    final w = ptsMap[Side.white]!.length;
+  Widget _buildResultOverlay(BuildContext context, MatchViewState viewState) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // ★ 修正: r > w などの計算を完全削除し、ViewStateの文字列に変換するだけ
+    String resultText = '引き分け';
+    if (viewState.winner == 'red') resultText = '赤 の勝ち';
+    if (viewState.winner == 'white') resultText = '白 の勝ち';
+
     return Positioned(
-      top: 16, // ★ 少し上に配置して名前との距離を確保
+      top: 16,
       child: Container(
         height: 44,
         alignment: Alignment.center,
@@ -184,7 +203,7 @@ class MatchScoreboard extends ConsumerWidget {
           boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 8)],
         ),
         child: Text(
-          r > w ? '赤 の勝ち' : (w > r ? '白 の勝ち' : '引き分け'),
+          resultText,
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.1),
         ),
       ),

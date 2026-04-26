@@ -6,6 +6,7 @@ import '../models/local/match_entity.dart';
 import '../models/score_event.dart';
 import 'dart:convert'; // ★ 追加: Ruleを文字列に圧縮・解凍するための道具
 import '../models/match_rule.dart'; // ★ 追加: MatchRuleの型を認識させるため
+import '../providers/match_command_provider.dart'; // ★ 追加: MatchCommandModel等の型を認識させるため
 
 // アプリ起動時に main.dart で初期化された Isar を受け取る Provider
 final isarProvider = Provider<Isar>((ref) {
@@ -33,6 +34,13 @@ class LocalMatchRepository {
       if (entities.isEmpty) return null;
       return _toModel(entities.first);
     });
+  }
+
+  // ★ 追加: DBから直接最新の試合データを1件取得（RiverpodのStream遅延を回避するため）
+  Future<MatchModel?> getMatch(String matchId) async {
+    final entity = await _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).findFirst();
+    if (entity == null) return null;
+    return _toModel(entity);
   }
 
   // 3. 試合をローカルに保存（ここが単一真実への書き込み）
@@ -106,6 +114,7 @@ class LocalMatchRepository {
         ..timestamp = e.timestamp
         ..userId = e.userId
         ..sequence = e.sequence
+        ..isCanceled = e.isCanceled
       ).toList()
       // ★ Phase 1: スナップショットのエンティティ変換を追加（Isarへの保存）
       ..snapshots = model.snapshots.map((s) => MatchSnapshotEntity()
@@ -119,6 +128,7 @@ class LocalMatchRepository {
           ..timestamp = e.timestamp
           ..userId = e.userId
           ..sequence = e.sequence
+          ..isCanceled = e.isCanceled
         ).toList()
       ).toList()
       ..isDirty = model.isDirty
@@ -166,6 +176,7 @@ class LocalMatchRepository {
         timestamp: e.timestamp ?? DateTime.now(),
         userId: e.userId,
         sequence: e.sequence,
+        isCanceled: e.isCanceled,
       )).toList(),
       // ★ Phase 1: スナップショットのモデル変換を追加（Isarからの読み込み）
       snapshots: entity.snapshots.map((s) => MatchSnapshot(
@@ -179,6 +190,7 @@ class LocalMatchRepository {
           timestamp: e.timestamp ?? DateTime.now(),
           userId: e.userId,
           sequence: e.sequence,
+          isCanceled: e.isCanceled,
         )).toList(),
       )).toList(),
       isDirty: entity.isDirty,
@@ -209,5 +221,44 @@ class LocalMatchRepository {
       redRemaining: entity.redRemaining,
       whiteRemaining: entity.whiteRemaining,
     );
+  }
+
+  // ============================================================================
+  // ★ Phase 2: コマンド永続化（Queue of SSOT）
+  // ============================================================================
+
+  Future<void> savePendingCommand(MatchCommandModel cmd) async {
+    final entity = MatchCommandEntity()
+      ..id = cmd.id
+      ..type = cmd.type.name
+      ..payloadJson = jsonEncode(cmd.payload)
+      ..createdAt = cmd.createdAt
+      ..status = cmd.status.name;
+
+    await _isar.writeTxn(() async {
+      await _isar.matchCommandEntitys.put(entity);
+    });
+  }
+
+  Future<void> deleteCommand(String id) async {
+    await _isar.writeTxn(() async {
+      await _isar.matchCommandEntitys.filter().idEqualTo(id).deleteAll();
+    });
+  }
+
+  Future<List<MatchCommandModel>> getPendingCommands() async {
+    final entities = await _isar.matchCommandEntitys
+        .filter()
+        .statusEqualTo(CommandStatus.pending.name)
+        .sortByCreatedAt()
+        .findAll();
+
+    return entities.map((e) => MatchCommandModel(
+      id: e.id,
+      type: CommandType.values.byName(e.type),
+      payload: jsonDecode(e.payloadJson),
+      createdAt: e.createdAt,
+      status: CommandStatus.values.byName(e.status),
+    )).toList();
   }
 }

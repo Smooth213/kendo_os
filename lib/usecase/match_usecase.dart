@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../models/match_model.dart';
 import '../models/score_event.dart';
 import '../models/match_rule.dart';
@@ -53,12 +55,30 @@ class MatchUseCase {
     final updatedEvents = List<ScoreEvent>.from(currentMatch.events);
     
     // ★ リストの後ろから「まだキャンセルされていない実際のスコア」を探す
-    final lastValidIndex = updatedEvents.lastIndexWhere((e) => !e.isCanceled && e.type != PointType.undo);
+    debugPrint('🔙 [usecase] Looking for undo target from ${updatedEvents.length} events');
+    for (int i = updatedEvents.length - 1; i >= 0; i--) {
+      debugPrint('🔙 [usecase] Event[$i]: type=${updatedEvents[i].type}, isCanceled=${updatedEvents[i].isCanceled}');
+    }
+    
+    final lastValidIndex = updatedEvents.lastIndexWhere((e) => !e.isCanceled && e.type != PointType.undo && e.type != PointType.restore);
+    
+    debugPrint('🔙 [usecase] lastValidIndex=$lastValidIndex');
     
     // 取り消せるイベントがなければ何もしない
-    if (lastValidIndex == -1) return currentMatch; 
+    if (lastValidIndex == -1) {
+      // ★ 追加: 取り消せる対象がない場合でも、イベント履歴から真実を再計算して整合性を保証する（魔法の修復）
+      debugPrint('🔙 [usecase] No event to undo, rebuilding from history');
+      final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
+      return currentMatch.copyWith(
+        redScore: analysis.context.redIppon,
+        whiteScore: analysis.context.whiteIppon,
+        isDirty: true,
+        lastUpdatedAt: DateTime.now(),
+      );
+    }
 
     // ★ 物理削除やダミーイベントの追加ではなく、対象イベントのフラグだけを更新（論理削除）
+    debugPrint('🔙 [usecase] Marking event[$lastValidIndex] (${updatedEvents[lastValidIndex].type}) as canceled');
     updatedEvents[lastValidIndex] = updatedEvents[lastValidIndex].copyWith(isCanceled: true);
 
     // 更新された歴史（キャンセル済みを無視するエンジン）で再解析

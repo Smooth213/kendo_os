@@ -54,13 +54,21 @@ void main() async {
   // ★ Phase 1-4: Isar（ローカルDB）の起動
   // 端末内の安全な保存場所を取得し、そこにデータベースファイルを作成・展開します
   final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open(
-    [
-      MatchEntitySchema,
-      LocalStrokeModelSchema, // ★ これを配列の中に追加する！
-    ], // Step 1-2 で自動生成されたテーブル設計図
-    directory: dir.path,
-  );
+  late Isar isar;
+  try {
+    isar = await Isar.open(
+      [
+        MatchEntitySchema,
+        MatchCommandEntitySchema, // ★ エラーの原因: キュー保存用のスキーマを追加
+        LocalStrokeModelSchema, // ★ これを追加する！
+      ], // Step 1-2 で自動生成されたテーブル設計図
+      directory: dir.path,
+    );
+  } catch (e, stackTrace) {
+    debugPrint('🔥 [Isar Init Error] Isarの起動時にエラーが発生しました: $e');
+    debugPrint('🔥 [Isar Init StackTrace]\n$stackTrace');
+    rethrow;
+  }
 
   // ★ 1. 描画やUI関連のエラーをキャッチしてフリーズを防ぐ
   FlutterError.onError = (FlutterErrorDetails details) {

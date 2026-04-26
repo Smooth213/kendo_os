@@ -61,6 +61,7 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^28.1.38 # ★ Phase 9: 最強のPDFレンダリング＆検索エンジン
   flutter_image_compress: ^2.3.0 # ★ Phase 9: 画像の自動圧縮（容量節約）
   path: ^1.9.0
+  audioplayers: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +94,8 @@ flutter:
 
   assets:
     - assets/kendo_icon.png
+    # ★ Phase 4: 音源フォルダの読み込み設定をここに追加
+    - assets/sounds/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

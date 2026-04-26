@@ -18,6 +18,7 @@ class ScoreEventEntity {
   DateTime? timestamp;
   String? userId;
   int sequence = 0;
+  bool isCanceled = false; // ★ Phase 4: 非破壊Undo用のフラグを追加
 }
 
 // ★ Phase 1: 復元用のスナップショット（特定の時点のイベント履歴を丸ごと保存）
@@ -84,4 +85,19 @@ class MatchEntity {
   String? ruleJson; // ★ 追加：圧縮したMatchRuleを保存しておくための新しい引き出し
   List<String> redRemaining = [];
   List<String> whiteRemaining = [];
+}
+
+// ★ Phase 2: コマンド永続化用テーブル
+// アプリがクラッシュしても、キューに残っていた「未処理の操作」をここから復元します
+@collection
+class MatchCommandEntity {
+  Id isarId = Isar.autoIncrement;
+
+  @Index(unique: true)
+  late String id; // UUID
+
+  late String type; // CommandType.name
+  late String payloadJson; // MapをJSON化
+  late DateTime createdAt;
+  late String status; // CommandStatus.name
 }

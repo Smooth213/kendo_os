@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/match_model.dart';
@@ -57,9 +58,24 @@ class MatchActionController {
       final settings = ref.read(settingsProvider); // ★ Step 7-1: 設定を読み込む
       final updatedMatch = _useCase.addScore(currentMatch, event, rule);
       
+      // ★ デバッグ用: 現在のサウンド設定がどうなっているか出力
+      debugPrint('🔊 [Sound Check] settings.sound is: ${settings.sound}');
+
       // ★ Step 7-2: 陣営に応じた音のフィードバックを実行
+      // ★ 修正: 設定がオンの時だけ鳴るように元に戻す
       if (settings.sound) {
-        ref.read(soundServiceProvider).playScoreSound(event.side == Side.red);
+        if (event.type == PointType.hansoku) {
+          ref.read(soundServiceProvider).playHansokuSound();
+        } else {
+          ref.read(soundServiceProvider).playScoreSound(event.side == Side.red);
+        }
+      }
+
+      // ★ 追加: 2本先取などで試合が「終了」になった瞬間に終了音（ファンファーレ）を鳴らす
+      if (updatedMatch.status == 'finished' && currentMatch.status != 'finished') {
+        if (settings.sound) {
+          ref.read(soundServiceProvider).playFinishFanfare();
+        }
       }
 
       // ★ Step 7-1: フルオート・モード（自動確定）の判定
@@ -97,12 +113,28 @@ class MatchActionController {
 
   Future<void> undoEvent(MatchModel currentMatch) async {
     try {
+      debugPrint('🔙 [UndoEvent] Starting undo for match: ${currentMatch.id}');
       final rule = ref.read(matchRuleProvider);
       final updatedMatch = _useCase.undoLastEvent(currentMatch, rule);
+      debugPrint('🔙 [UndoEvent] redScore: ${currentMatch.redScore} -> ${updatedMatch.redScore}');
+      debugPrint('🔙 [UndoEvent] whiteScore: ${currentMatch.whiteScore} -> ${updatedMatch.whiteScore}'); // ★ デバッグ改善
+      debugPrint('🔙 [UndoEvent] Events count: ${currentMatch.events.length} -> ${updatedMatch.events.length}');
       await _safeSave(updatedMatch);
       await _audit.logAction(matchId: currentMatch.id, action: 'undo', details: '直前の操作を取り消し');
+      
+      // ★ 取り消し時の音フィードバック
+      if (ref.read(settingsProvider).sound) {
+        ref.read(soundServiceProvider).playUndoSound();
+      }
+      
+      // ★ UI側のデータを強制的にリフレッシュして、新しい Firestore データを取得させる
+      // これにより、複数連続のUndo操作でも常に最新のデータを使用できる
+      await Future.delayed(const Duration(milliseconds: 100));
+      ref.invalidate(matchListProvider);
+      
+      debugPrint('🔙 [UndoEvent] Success!');
     } catch (e) {
-      debugPrint('Undoエラー: $e');
+      debugPrint('❌ Undoエラー: $e');
     }
   }
 
@@ -144,6 +176,10 @@ class MatchActionController {
   void finishMatch(MatchModel currentMatch) async {
     final updatedMatch = currentMatch.copyWith(status: 'finished', timerIsRunning: false);
     await _safeSave(updatedMatch).catchError((e) => debugPrint('保存エラー: $e'));
+
+    if (ref.read(settingsProvider).sound) {
+      ref.read(soundServiceProvider).playFinishFanfare();
+    }
 
     // 試合終了（仮）の時点では名前の流し込みは行わず、確定（approve）を待ちます
     await _audit.logAction(matchId: currentMatch.id, action: 'finish_match', details: '試合終了');

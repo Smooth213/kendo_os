@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:uuid/uuid.dart'; 
 import 'package:flutter/services.dart'; // ★ Phase 6: バイブレーション用
+import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
 import '../models/match_model.dart';
 import '../models/score_event.dart';
 import '../providers/match_list_provider.dart';
@@ -12,7 +14,7 @@ import '../providers/match_provider.dart';
 import '../providers/match_rule_provider.dart'; 
 import '../providers/match_command_provider.dart'; // ★ 追加: 書き込み専門家
 import '../providers/match_timer_provider.dart';   // ★ 追加: 時計専門家
-import '../providers/match_status_provider.dart'; // ★ 追加
+import '../providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateパターンの導入
 // ★ 追加：マスタとチーム情報を参照するためのインポート
 import '../models/player_model.dart';
 import '../repositories/player_repository.dart';
@@ -20,17 +22,16 @@ import '../models/team_model.dart';
 import '../repositories/team_repository.dart';
 // ★ Phase 3: 分割した専用Widgetをインポート
 import '../domain/strategy/match_strategy.dart'; // ★ Phase 5: 戦略ファクトリの読み込み
+import '../services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
 
 // ★ Phase 3: 分割したWidget群
 import 'match/widgets/timer_widget.dart';
 import 'match/widgets/action_buttons.dart';
 import 'match/widgets/scoreboard.dart';
-import 'match/widgets/match_header.dart';
 
 // ★ 追加：システム設定プロバイダの読み込み
 import '../providers/settings_provider.dart';
 import '../providers/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
-import '../providers/share_provider.dart'; // ★ Phase 3: 観戦共有用に追加
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -61,6 +62,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     // タイマーが動いている場合のみ、バックグラウンドの時計（MatchTimerProvider）を動かす指示を出す
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.matchId.isNotEmpty) {
+        // ★ 追加: 試合画面を開いた瞬間にSoundServiceを強制的に初期化し、音源の事前ロードを開始させる
+        ref.read(soundServiceProvider);
+
         ref.read(matchCommandProvider).claimScorer(widget.matchId, _myUserId!);
         
         final match = ref.read(matchListProvider).where((m) => m.id == widget.matchId).firstOrNull;
@@ -227,116 +231,109 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   @override
   Widget build(BuildContext context) {
     final matchId = widget.matchId;
-    // ★ Step 3-2 & Phase 2: watch最適化とnull安全の最終形態
-    final match = ref.watch(matchListProvider.select((list) => 
-      list.where((m) => m.id == matchId).firstOrNull
-    ));
-
+    // ★ Step 6: パフォーマンス最適化。必要なプロパティだけを個別に watch する (select構文)
+    final match = ref.watch(matchListProvider.select((list) => list.where((m) => m.id == matchId).firstOrNull));
     if (match == null) return const Scaffold(body: Center(child: Text('データなし')));
 
-    // ★ Step 3-2: この試合と同じグループのデータだけを監視（星取表の更新チェック用）
+    // 各種判定フラグを ViewState から取得
+    final vs = ref.watch(matchViewStateProvider(matchId)); 
+    final isViewOnly = vs.isViewOnly;
+    final isInputLocked = vs.isInputLocked;
+    final isApproved = match.status == 'approved';
+    final isAllDone = vs.isAllDone; // ★ 復活: ViewStateから取得
+    final isTie = vs.isTie;       // ★ 復活: ViewStateから取得
+
+    // リスト表示や遷移に必要な「チーム内試合リスト」だけは watch を維持
     final teamMatches = ref.watch(matchListProvider.select((list) => 
       list.where((m) => m.groupName == match.groupName).toList()
     ));
-
-    ref.listen<MatchModel?>(
-      matchListProvider.select((list) => list.where((m) => m.id == matchId).firstOrNull),
-      (previous, next) {
-        if (next != null) {
-          _checkFusenOrFinish(next);
-        }
-      },
-    );
-
-    final rule = ref.watch(matchRuleProvider); 
-
+    
+    // ネットワークやルールの監視
+    final rule = ref.watch(matchRuleProvider);
+    ref.listen<MatchModel?>(matchListProvider.select((list) => list.where((m) => m.id == matchId).firstOrNull), (p, next) => next != null ? _checkFusenOrFinish(next) : null);
+    
+    // 錬成会マスタータイマーの初期化（一度だけ実行）
     if (rule.isRenseikai && rule.renseikaiType == '時間制' && match.groupName != null) {
-      final masterTime = ref.read(renseikaiMasterTimerProvider(match.groupName!));
-      if (masterTime == -1) {
-        Future.microtask(() => ref.read(renseikaiMasterTimerProvider(match.groupName!).notifier).state = rule.overallTimeMinutes * 60);
-      }
+      final mt = ref.read(renseikaiMasterTimerProvider(match.groupName!));
+      if (mt == -1) Future.microtask(() => ref.read(renseikaiMasterTimerProvider(match.groupName!).notifier).state = rule.overallTimeMinutes * 60);
     }
-
-    bool rMiss = match.redName.contains('欠員');
-    bool wMiss = match.whiteName.contains('欠員');
-
-    final isApproved = match.status == 'approved';
-    final settings = ref.watch(settingsProvider); // 設定を読み込む
-
-    // ★ Phase 5: 記録員画面につき、ReadOnly判定を削除（ルーター側で保証済み）
-    final now = DateTime.now();
-    final isLockExpired = match.lockExpiresAt != null && match.lockExpiresAt!.isBefore(now);
-    
-    // 他の記録員が「有効なロック」を持っているかどうかの競合チェックのみを行う
-    final hasLockConflict = match.scorerId != null && match.scorerId != _myUserId && !isLockExpired;
-    
-    // この画面では isViewOnly は「他端末との競合」時のみ true となる
-    final isViewOnly = hasLockConflict;
-
-    // ★ Step 4-3: ドメインエラーを監視し、発生したらSnackBarで通知する
-    ref.listen<String?>(matchCommandErrorProvider, (previous, next) {
-      if (next != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next, style: const TextStyle(fontWeight: FontWeight.bold)),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        // 通知したらクリア
-        ref.read(matchCommandErrorProvider.notifier).state = null;
-      }
-    });
-
-    // ★ Step 3-6 最適化: 
-    // MatchScreen自体で isProcessing を watch すると保存のたびに画面全体がガクつくため、
-    // ここでは watch せず、必要な子 Widget 内で個別に監視する。
-    final isInputLocked = isViewOnly || 
-                         (match.status == 'finished' && settings.isLocked) || 
-                         (isApproved && settings.isLocked) || 
-                         rMiss || wMiss;
-
-    // ★ Step 3-5: 重い集計計算を build 外（Provider）へ完全移管
-    // キャッシュされた計算結果を受け取るだけなので、build速度が劇的に向上します
-    final groupStatus = ref.watch(groupMatchStatusProvider(matchId));
-    final isAllDone = groupStatus.isAllDone;
-    final isTie = groupStatus.isTie;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return PopScope(
-      canPop: true, 
-      onPopInvokedWithResult: (didPop, result) {},
-      child: Scaffold(
-        // iOS Native: 真の黒
-        backgroundColor: isDark ? Colors.black : Colors.white, 
-        appBar: MatchHeader(
-          match: match,
-          isInputLocked: isInputLocked,
-          isAllDone: isAllDone,
-          isTie: isTie,
-        ),
-        body: Stack(
+    // ★ Phase 3 修正版: ナビゲーションの復旧と、競合しないスワイプUndoの完成
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.white, 
+      appBar: AppBar(
+        centerTitle: true,
+        // ★ 変更: 背景色を下部の「終了ボタン」と全く同じインディゴに設定
+        backgroundColor: Colors.indigo.shade600,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // ★ Phase 8-1: 全体を LayoutBuilder で包み、iPad 向けに 2カラム構造化
-            LayoutBuilder(
+            Text(
+              (match.category != null && match.category!.isNotEmpty)
+                  ? '${match.category} - ${match.matchType}'
+                  : match.matchType,
+              // ★ 変更: タイトルを白抜き
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              '${match.redName} vs ${match.whiteName}',
+              // ★ 変更: サブタイトルは少し透過した白
+              style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            // ★ 変更: 歯車アイコンも白
+            icon: const Icon(Icons.settings_outlined, color: Colors.white),
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+          // ★ ポイント：PopScopeを消去し、画面全体をGestureDetectorで包む
+          GestureDetector(
+            behavior: HitTestBehavior.translucent, // ボタン以外のタップも透過して検知
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 500) {
+                // ★ 修正: 直書きのループと複雑なif文を完全削除。ViewStateにすべて委ねる
+                if (ref.read(matchViewStateProvider(match.id)).canUndo) {
+                  HapticFeedback.mediumImpact();
+                  ref.read(matchCommandQueueProvider).enqueue(
+                    MatchCommandModel(
+                      id: const Uuid().v4(),
+                      type: CommandType.undoLastEvent,
+                      payload: {'matchId': match.id},
+                      createdAt: DateTime.now(),
+                    ),
+                  );
+                }
+              }
+            },
+            child: LayoutBuilder(
               builder: (context, constraints) {
-                // ★ 修正: iPadでも「縦向き」の時は通常のレイアウトにするため、Landscape（横向き）判定を追加
                 final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
                 final isTabletLandscape = isLandscape && constraints.maxWidth > 600;
 
-                // 競合警告バナー（記録員画面専用）
                 final viewOnlyBanner = (isViewOnly && !isApproved) 
                   ? Container(
                       width: double.infinity,
-                      color: Colors.red.shade900.withValues(alpha: 0.9), // より警告色の強い赤へ
+                      color: Colors.red.shade900.withValues(alpha: 0.9), 
                       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       child: Row(
                         children: [
                           const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 18),
                           const SizedBox(width: 12),
                           const Expanded(child: Text('他の記録員が入力中です', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
-                          // 記録員画面には必ず canLockMatch 権限があるため、強制ボタンを表示
                           TextButton(
                             onPressed: () async {
                               final confirmed = await _showConfirmDialog('入力権限の奪取', '他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？');
@@ -352,62 +349,94 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     )
                   : const SizedBox.shrink();
 
-                // 共通パーツ
-                final timerPart = TimerWidget(match: match, isInputLocked: isInputLocked);
-                
-                final groupButtonPart = Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 8, // 横の隙間
-                    runSpacing: 8, // はみ出して次の行に行った時の縦の隙間
-                    children: [
-                      if (match.groupName != null)
-                        SizedBox(
-                          height: 36,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              if (match.isKachinuki) {
-                                context.push('/kachinuki-scoreboard/${match.groupName}');
-                              } else {
-                                context.push('/team-scoreboard/${match.groupName}');
-                              }
-                            },
-                            icon: Icon(match.isKachinuki ? Icons.timeline : Icons.table_chart_outlined, size: 18, color: isDark ? Colors.indigoAccent.shade100 : Colors.indigo.shade400),
-                            // ★ 変更：「星取り表を確認」を「スコアを確認」に変更
-                            label: Text(match.isKachinuki ? 'タイムラインを確認' : 'スコアを確認', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.indigo.shade700)),
-                            style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.indigo.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                // ★ 修正: ViewStateを読み込み、UIから計算ロジック（for文やif文）を完全排除
+                final viewState = ref.watch(matchViewStateProvider(match.id));
+
+                // 共通Undoエリア
+                final undoArea = viewState.canUndo
+                    ? GestureDetector(
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          ref.read(matchCommandQueueProvider).enqueue(
+                            MatchCommandModel(
+                              id: const Uuid().v4(),
+                              type: CommandType.undoLastEvent,
+                              payload: {'matchId': match.id},
+                              createdAt: DateTime.now(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.undo, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, size: 24),
+                              const SizedBox(width: 8),
+                              Text('スワイプまたはタップで取消 ( ${viewState.lastEventText} )', 
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)
+                              ),
+                            ],
                           ),
                         ),
-                      // ★ Phase 1: 復元ボタンの追加
-                      SizedBox(
-                        height: 36,
-                        child: OutlinedButton.icon(
-                          onPressed: isInputLocked ? null : () => _showSnapshotDialog(context, ref, match),
-                          icon: Icon(Icons.history, size: 18, color: isDark ? Colors.orangeAccent : Colors.orange.shade800),
-                          label: Text('履歴から復元', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.orangeAccent : Colors.orange.shade800)),
-                          style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? Colors.orangeAccent.withValues(alpha: 0.5) : Colors.orange.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        ),
+                      )
+                    : const SizedBox(height: 40);
+
+                final timerPart = TimerWidget(match: match, isInputLocked: isInputLocked);
+                
+                // ★ 修正: ボタンの並び順を「URL共有・復元 / スコア・ルール」に変更
+                final groupButtonPart = Padding(
+                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                  child: Column(
+                    children: [
+                      // 1段目: 観戦URLを共有 | 履歴から復元
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                final shareText = '${match.redName} vs ${match.whiteName} の試合状況:\nhttps://kendo-os.web.app/match/${match.id}';
+                                SharePlus.instance.share(ShareParams(text: shareText));
+                              },
+                              icon: const Icon(Icons.ios_share, size: 16),
+                              label: const Text('観戦URLを共有', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: isInputLocked ? null : () => _showSnapshotDialog(context, ref, match),
+                              icon: const Icon(Icons.history, size: 16),
+                              label: const Text('履歴から復元', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                            ),
+                          ),
+                        ],
                       ),
-                      // ★ Phase 3: 観戦共有ボタンの追加
-                      SizedBox(
-                        height: 36,
-                        child: OutlinedButton.icon(
-                          onPressed: () => ref.read(shareProvider).shareMatch(match),
-                          icon: Icon(Icons.ios_share, size: 18, color: isDark ? Colors.blueAccent : Colors.blue.shade700),
-                          label: Text('観戦URLを共有', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.blueAccent : Colors.blue.shade700)),
-                          style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? Colors.blueAccent.withValues(alpha: 0.5) : Colors.blue.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        ),
-                      ),
-                      // ★ 追加: ルール確認ボタン
-                      SizedBox(
-                        height: 36,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _showRuleInfoSheet(context, match), // ★ 修正：ref を削除
-                          icon: Icon(Icons.info_outline, size: 18, color: isDark ? Colors.tealAccent : Colors.teal.shade700),
-                          label: Text('ルールを確認', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.tealAccent : Colors.teal.shade700)),
-                          style: OutlinedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, side: BorderSide(color: isDark ? Colors.tealAccent.withValues(alpha: 0.5) : Colors.teal.shade200), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        ),
+                      const SizedBox(height: 8),
+                      // 2段目: スコアを確認 | ルールを確認
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => match.isKachinuki ? context.push('/kachinuki-scoreboard/${match.groupName}') : context.push('/team-scoreboard/${match.groupName}'),
+                              icon: Icon(match.isKachinuki ? Icons.timeline : Icons.table_chart_outlined, size: 16),
+                              label: const Text('スコアを確認', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _showRuleInfoSheet(context, match), 
+                              icon: const Icon(Icons.info_outline, size: 16),
+                              label: const Text('ルールを確認', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -428,7 +457,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       final whitePanel = ScoreActionPanel(matchId: match.id, side: Side.white, color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100, textColor: isDark ? Colors.white : Colors.black87, isLocked: isInputLocked);
                       final divider = VerticalDivider(width: 1, color: isDark ? Colors.white10 : Colors.black12);
                       return Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch, // ★ Phase 8-2: ボタン群を縦いっぱいに引き伸ばす魔法
+                        crossAxisAlignment: CrossAxisAlignment.stretch, 
                         children: settings.leftHanded ? [whitePanel, divider, redPanel] : [redPanel, divider, whitePanel]
                       );
                     }
@@ -516,13 +545,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
                           if (!context.mounted) return;
                           
-                          // ★ 真の解決：対戦カードが継続中（先鋒→次鋒など）か、終了した（大将・個人戦など）かを判定
                           bool isCardOngoing = false;
                           MatchModel? autoNextMatch;
                           MatchModel? nextCardMatch;
 
                           if (nextMatchId != null) {
-                            isCardOngoing = true; // 勝ち抜き戦の継続
+                            isCardOngoing = true; 
                           } else {
                             final matches = ref.read(matchListProvider);
                             final groupNextMatches = matches.where((m) => m.groupName == match.groupName && m.order > match.order && m.status != 'approved' && m.status != 'finished').toList();
@@ -535,36 +563,29 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               final nextRedTeam = nextM.redName.contains(':') ? nextM.redName.split(':').first.trim() : nextM.redName;
                               final nextWhiteTeam = nextM.whiteName.contains(':') ? nextM.whiteName.split(':').first.trim() : nextM.whiteName;
 
-                              // ★ 修正：大将戦、代表戦、個人戦の場合は、チーム名が同じでも「対戦カード終了」として強制的に足を止める
                               bool isCardEndingPosition = match.matchType == '大将' || match.matchType == '代表戦' || match.matchType == '個人戦' || match.matchType == '選手';
 
-                              // 団体戦のオーダーの途中かどうか（チーム名が同じかつ、終了ポジションでなければ継続中）
                               if (currentRedTeam == nextRedTeam && currentWhiteTeam == nextWhiteTeam && !isCardEndingPosition && !match.isKachinuki) {
                                 isCardOngoing = true;
                                 autoNextMatch = nextM;
                               } else {
-                                nextCardMatch = nextM; // 次の対戦カード（リーグ戦の次の試合など）
+                                nextCardMatch = nextM; 
                               }
                             }
                           }
 
                           if (isCardOngoing) {
-                            // 団体戦の途中なので自動遷移
                             if (nextMatchId != null) {
                               context.go('/match/$nextMatchId');
                             } else {
                               context.go('/match/${autoNextMatch!.id}');
                             }
                           } else {
-                            // 対戦カードが終了した（大将が終わった、または個人戦が終わった）
-                            // ★ 修正：リーグ戦かどうかを判定し、代表戦フラグを正しく参照する
                             bool hasDaihyo = rule.isLeague ? rule.hasLeagueDaihyo : rule.hasRepresentativeMatch;
 
                             if (isTie && match.groupName != null && match.matchType != '代表戦' && hasDaihyo) {
-                              // 代表戦を促すため、強制的にスコアボードへ
                               context.push('/team-scoreboard/${match.groupName}');
                             } else {
-                              // 代表戦がない設定（リーグ戦で同点時代表戦なし等）なら、同点でもそのまま終了ダイアログを表示
                               _showMatchFinishedDialog(context, match, nextCardMatch);
                             }
                           }
@@ -638,9 +659,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             if (!confirmed) return;
                           }
                           
-                          await ref.read(matchCommandProvider).saveMatch(match.copyWith(
-                            status: 'finished', remainingSeconds: 0, timerIsRunning: false,
-                          ));
+                          // ★ 修正: 直接保存するのではなく、音が鳴る finishMatch を呼び出す
+                          ref.read(matchActionProvider).finishMatch(match);
                         };
 
                         return Consumer(
@@ -667,7 +687,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 );
 
                 if (isTabletLandscape) {
-                  // ★ iPad（横画面のみ）: 左右2カラム構造
                   return Column(
                     children: [
                       viewOnlyBanner,
@@ -675,7 +694,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // 左：情報エリア（タイマー、星取表ボタン、スコア）
                             Expanded(
                               flex: 5,
                               child: Column(
@@ -687,13 +705,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               ),
                             ),
                             VerticalDivider(width: 1, thickness: 1, color: isDark ? Colors.white10 : Colors.black12),
-                            // 右：操作エリア（打突パネル、確定ボタン）
                             Expanded(
                               flex: 6,
                               child: Column(
                                 children: [
-                                  // ★ Expandedの二重ネストを解消し、必要なここで適用
                                   Expanded(child: actionPanelPart),
+                                  undoArea,
                                   bottomButtonPart,
                                 ],
                               ),
@@ -704,60 +721,62 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     ],
                   );
                 } else {
-                // ★ スマホ・iPad縦向き: 従来の縦積み
                   return Column(
                     children: [
                       viewOnlyBanner,
                       timerPart,
                       groupButtonPart,
                       Expanded(flex: 5, child: scoreboardPart),
-                    // ★ Phase 8-2: iPadの縦画面では actionPanelPart が小さくなりすぎないよう flex または固定高を考慮
-                    Expanded(flex: 4, child: actionPanelPart), 
+                      Expanded(flex: 6, child: actionPanelPart), 
+                      undoArea,
                       bottomButtonPart,
                     ],
                   );
                 }
               },
             ),
-            // ★ 透かし表示（未定、または生成時のデフォルト「代表選手」のままの場合にロック）
-            if (match.matchType == '代表戦' && (match.redName.contains('未定') || match.whiteName.contains('未定') || match.redName.contains('代表選手') || match.whiteName.contains('代表選手')))
-              Container(
-                color: Colors.black.withValues(alpha: 0.8),
-                width: double.infinity,
-                height: double.infinity,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.person_add, color: Colors.white, size: 80),
-                      const SizedBox(height: 24),
-                      const Text(
-                        '代表戦の選手が未設定です',
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 32),
-                      SizedBox(
-                        width: 250,
-                        height: 60,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo.shade600,
-                            foregroundColor: Colors.white,
-                            elevation: 8,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                          ),
-                          onPressed: () => _showDaihyoSelectDialog(match),
-                          child: const Text('代表者を選択する', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ),
+          
+          if (match.matchType == '代表戦' && (match.redName.contains('未定') || match.whiteName.contains('未定') || match.redName.contains('代表選手') || match.whiteName.contains('代表選手')))
+            Container(
+              color: Colors.black.withValues(alpha: 0.8),
+              width: double.infinity,
+              height: double.infinity,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.person_add, color: Colors.white, size: 80),
+                    const SizedBox(height: 24),
+                    const Text(
+                      '代表戦の選手が未設定です',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: 250,
+                      height: 60,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo.shade600,
+                          foregroundColor: Colors.white,
+                          elevation: 8,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                         ),
+                        onPressed: () => _showDaihyoSelectDialog(match),
+                        child: const Text('代表者を選択する', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-          ],
-        ),
-      ), 
-    ); 
+            ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
 
@@ -1184,69 +1203,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     ));
   }
 
-  // =========================================================================
-  // ★ Phase 1: タイムマシン（スナップショットからの復元UI）
-  // =========================================================================
-  void _showSnapshotDialog(BuildContext context, WidgetRef ref, MatchModel match) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    // 最新のバックアップが一番上に来るように反転
-    final snapshots = match.snapshots.reversed.toList(); 
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        height: MediaQuery.of(ctx).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.only(top: 16),
-        child: Column(
-          children: [
-            Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10))),
-            const SizedBox(height: 16),
-            const Text('タイムマシン（エラー復旧）', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text('過去の特定の時点にスコアや時間を安全に巻き戻します。\n（復元した事実も記録されるためデータは壊れません）', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-            ),
-            Expanded(
-              child: snapshots.isEmpty
-                  ? Center(child: Text('バックアップ履歴がありません', style: TextStyle(color: Colors.grey.shade500)))
-                  : ListView.builder(
-                      itemCount: snapshots.length,
-                      itemBuilder: (context, index) {
-                        final snap = snapshots[index];
-                        final timeStr = '${snap.createdAt.hour}:${snap.createdAt.minute.toString().padLeft(2, '0')}:${snap.createdAt.second.toString().padLeft(2, '0')}';
-                        
-                        return ListTile(
-                          leading: const CircleAvatar(backgroundColor: Colors.orange, child: Icon(Icons.restore, color: Colors.white)),
-                          title: Text(snap.reason, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
-                          subtitle: Text('$timeStr に自動保存', style: TextStyle(color: isDark ? Colors.grey.shade500 : Colors.grey)),
-                          trailing: ElevatedButton(
-                            onPressed: () async {
-                              final confirm = await _showConfirmDialog('この時点に復元しますか？', 'スコアと時間が「${snap.reason}」の時点に戻ります。');
-                              if (confirm) {
-                                await ref.read(matchCommandProvider).restoreFromSnapshot(match.id, snap);
-                                if (ctx.mounted) Navigator.pop(ctx);
-                                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ 復元が完了しました')));
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white, elevation: 0),
-                            child: const Text('復元', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ★ 追加：試合終了時のナビゲーションダイアログ
   void _showMatchFinishedDialog(BuildContext context, MatchModel match, MatchModel? nextCardMatch) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1311,20 +1267,16 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     );
   }
 
-  // ★ 修正：すべてのレギュレーション情報を網羅した完璧なシート
   void _showRuleInfoSheet(BuildContext context, MatchModel match) {
     HapticFeedback.mediumImpact(); 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    // 1. その試合が持っている「封印されたルール」を最優先で見る
     final rule = match.rule; 
 
-    // ★ 修正：備考欄の文字からも形式を推測する（古いデータ救済用）
     final bool isLegacyLeague = match.note.contains('[リーグ戦]');
     final bool isLeague = (rule?.isLeague ?? false) || isLegacyLeague;
 
-    // 2. 形式の判定（matchTypeやポジション数から、個人戦を絶対に漏らさない判定）
-    final bool isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦') || (rule != null && rule.positions.length == 1 && (rule.positions.first == '選手' || rule.positions.first == '個人戦'));
+    final bool isIndividual = !match.isKachinuki && (match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦') || (rule != null && rule.positions.length == 1 && (rule.positions.first == '選手' || rule.positions.first == '個人戦')));
     
     String formatText = isIndividual ? '個人戦' : '団体戦';
     if (rule?.isRenseikai ?? false) {
@@ -1335,17 +1287,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       formatText = 'リーグ戦（総当たり）';
     }
 
-    // 3. 各種ルールの取得
-    
-    // 試合時間
     final double matchTime = rule?.matchTimeMinutes ?? match.matchTimeMinutes.toDouble();
     final isRunningTime = rule?.isRunningTime ?? match.isRunningTime;
     
-    // ★ 修正：1.5 を「1分30秒」に綺麗にフォーマットする
     String timeStr = matchTime == matchTime.toInt() ? '${matchTime.toInt()}分' : '${matchTime.toInt()}分${((matchTime % 1) * 60).toInt()}秒';
     final String timeDesc = '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
 
-    // 延長
     final bool enchoUnlimited = rule?.isEnchoUnlimited ?? false;
     final double enchoMins = rule?.enchoTimeMinutes ?? match.extensionTimeMinutes?.toDouble() ?? 0.0;
     final int enchoCount = rule?.enchoCount ?? match.extensionCount ?? 1;
@@ -1356,7 +1303,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       if (enchoUnlimited) {
         enchoDesc = 'あり (無制限)';
       } else {
-        // ★ 修正：「1.5分・2回」を「1分30秒・2回」として表示する
         String extTimeStr = enchoMins == enchoMins.toInt() ? '${enchoMins.toInt()}分' : '${enchoMins.toInt()}分${((enchoMins % 1) * 60).toInt()}秒';
         enchoDesc = 'あり ($extTimeStr・$enchoCount回)';
       }
@@ -1427,11 +1373,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
               const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('勝ち抜き戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
               _buildRuleRow('無制限条件', rule?.kachinukiUnlimitedType ?? '大将対大将', isDark),
-              // ★ 修正：ポジション表示を勝ち抜き戦の枠組みの中に統合する
               if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
             ],
 
-            // ★ 修正：予備判定(isLeague)を使って、古いデータでも確実に隠す
             if (!isIndividual && !(rule?.isRenseikai ?? false) && !match.isKachinuki && !(rule?.isKachinuki ?? false) && !isLeague) ...[
               const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('団体戦・チーム設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
               _buildRuleRow('代表戦', daihyoDesc, isDark),
@@ -1445,7 +1389,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
             if (rule != null && rule.isLeague) ...[
               const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('リーグ戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange))),
-              // ★ 修正：リーグ戦のポジション表示を、リーグ戦専用枠の中に美しく統合する
               if (!isIndividual && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
               _buildRuleRow('勝ち点設定', '勝: ${rule.winPoint} / 分: ${rule.drawPoint} / 負: ${rule.lossPoint}', isDark),
               _buildRuleRow('同点時代表戦', rule.hasLeagueDaihyo ? 'あり' : 'なし', isDark),
@@ -1486,6 +1429,46 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         children: [
           SizedBox(width: 100, child: Text(label, style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, fontSize: 13))),
           Expanded(child: Text(value, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 14))),
+        ],
+      ),
+    );
+  }
+
+  void _showSnapshotDialog(BuildContext context, WidgetRef ref, MatchModel match) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: const Text('履歴から復元', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: match.snapshots.isEmpty
+              ? const Text('復元可能な履歴がありません')
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: match.snapshots.length,
+                  itemBuilder: (context, index) {
+                    final snapshot = match.snapshots[match.snapshots.length - 1 - index];
+                    return ListTile(
+                      title: Text(snapshot.reason),
+                      subtitle: Text(DateFormat('yyyy/MM/dd HH:mm').format(snapshot.createdAt)),
+                      onTap: () async {
+                        final confirm = await _showConfirmDialog('復元の確認', 'この時点のデータに復元しますか？');
+                        if (confirm) {
+                          await ref.read(matchCommandProvider).restoreFromSnapshot(match.id, snapshot);
+                          if (ctx.mounted) Navigator.pop(ctx);
+                        }
+                      },
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
+          ),
         ],
       ),
     );

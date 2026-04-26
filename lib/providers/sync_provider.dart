@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../repositories/local_match_repository.dart';
 import 'match_list_provider.dart'; 
-import '../main.dart'; 
 
 // ★ Phase 2: 自動バックアップ用のパッケージを追加
 import 'dart:convert';
@@ -12,33 +11,24 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 // ★ Step 4-1: ネットワーク接続状態をリアルタイムで監視するProvider
-final connectivityProvider = StreamProvider<bool>((ref) {
-  final controller = StreamController<bool>();
-  
-  final subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
-    final isOnline = results.any((result) => 
+// ★ 修正: async* と yield を使った、取りこぼしのない最もシンプルで堅牢な監視ロジック
+final connectivityProvider = StreamProvider<bool>((ref) async* {
+  // 1. アプリ起動時の状態をチェックして即座に返す
+  final initialResults = await Connectivity().checkConnectivity();
+  yield initialResults.any((result) => 
+    result == ConnectivityResult.mobile || 
+    result == ConnectivityResult.wifi || 
+    result == ConnectivityResult.ethernet
+  );
+
+  // 2. 以降は、スマホの通信状態が変わるたびに自動で新しい状態を流し続ける
+  await for (final results in Connectivity().onConnectivityChanged) {
+    yield results.any((result) => 
       result == ConnectivityResult.mobile || 
       result == ConnectivityResult.wifi || 
       result == ConnectivityResult.ethernet
     );
-    controller.add(isOnline);
-  });
-
-  Connectivity().checkConnectivity().then((results) {
-    final isOnline = results.any((result) => 
-      result == ConnectivityResult.mobile || 
-      result == ConnectivityResult.wifi || 
-      result == ConnectivityResult.ethernet
-    );
-    controller.add(isOnline);
-  });
-
-  ref.onDispose(() {
-    subscription.cancel();
-    controller.close();
-  });
-
-  return controller.stream;
+  }
 });
 
 final isOnlineProvider = Provider<bool>((ref) {
@@ -53,6 +43,7 @@ final isSyncingStateProvider = StateProvider<bool>((ref) => false);
 class SyncEngine {
   final Ref ref;
   bool _isSyncing = false;
+  bool _needsSyncAgain = false; // ★ 追加：同期中に書き込みがあった場合の「おかわり」フラグ
 
   SyncEngine(this.ref) {
     // ネットワーク状態を監視し、オンラインになったら自動で同期を開始する
@@ -113,91 +104,69 @@ class SyncEngine {
   }
 
   Future<void> syncNow() async {
-    if (_isSyncing) return; // 既に同期中なら重複実行を防ぐ
-    _isSyncing = true;
-    
-    // ★ Phase 8-1: UIに「同期中」状態を通知
-    ref.read(isSyncingStateProvider.notifier).state = true;
+    if (_isSyncing) {
+      _needsSyncAgain = true; // 今やってるから、終わったらもう一度やってね、とメモする
+      return;
+    }
+    _isProcessing();
 
     try {
       final localRepo = ref.read(localMatchRepositoryProvider);
       final firestore = ref.read(firestoreProvider);
 
-      // 1. 同期キュー（未送信データ）を取得
+      // 1. 未送信データを取得
       final pendingMatches = await localRepo.getPendingMatches();
+      if (pendingMatches.isEmpty) return;
 
-      if (pendingMatches.isEmpty) {
-        _isSyncing = false;
-        return;
-      }
+      debugPrint('🔄 [Sync Engine] ${pendingMatches.length}件を同期開始...');
 
-      debugPrint('🔄 [Sync Engine] ネットワーク復帰を検知。${pendingMatches.length}件のデータをFirestoreへ送信します...');
-
-      // 2. 楽観的ロックによる競合チェックと一括送信
-      final batch = firestore.batch();
-      List<String> failedMatchIds = []; // 競合で弾かれた試合IDのリスト
-
+      // 2. 1件ずつ慎重に、かつ高速に同期
       for (final match in pendingMatches) {
         final docRef = firestore.collection('matches').doc(match.id);
         
-        // ★ 楽観的ロック：Firestore側の現在のバージョンを確認
+        // サーバー側の最新状態を確認（楽観的ロック）
         final snapshot = await docRef.get();
+        int targetVersion = match.version;
+
         if (snapshot.exists) {
           final remoteVersion = (snapshot.data()!['version'] as num?)?.toInt() ?? 1;
-          
-          // 自分が持っているバージョンが、クラウドより古ければ競合発生！
+          // 競合チェック：自分の持っているデータが古ければスキップ（後のPhaseで解決UIを出す）
           if (match.version < remoteVersion) {
-            debugPrint('⚠️ [Sync Engine] 競合検知！試合ID: ${match.id} (Local: ${match.version}, Remote: $remoteVersion)');
-            failedMatchIds.add(match.id);
-            continue; // この試合は送信せずスキップ
+            debugPrint('⚠️ [Sync Engine] 競合検知 ID:${match.id}');
+            continue; 
           }
+          targetVersion = remoteVersion + 1; // サーバーの続きから
+        } else {
+          targetVersion = 1; // 新規
         }
 
-        // 競合がなければ、バージョンを+1して送信準備
-        final uploadData = match.copyWith(
-          isDirty: false,
-          version: snapshot.exists ? (snapshot.data()!['version'] as num?)?.toInt() ?? 1 : match.version + 1, // ★ バージョン更新
-        ).toJson();
-        batch.set(docRef, uploadData);
+        final uploadData = match.copyWith(isDirty: false, version: targetVersion).toJson();
+        await docRef.set(uploadData);
+        
+        // ★ 重要：ローカル側も「同期済み」かつ「最新バージョン」に更新する
+        await localRepo.markAsSynced(match.id);
       }
-      
-      // 競合しなかったものだけをFirestoreに一括送信
-      await batch.commit();
-
-      // 3. 送信が成功した試合だけ、ローカルDBのフラグを下ろす
-      for (final match in pendingMatches) {
-        if (!failedMatchIds.contains(match.id)) {
-           await localRepo.markAsSynced(match.id);
-        }
-      }
-
-      // ★ Step 5-2: UIへのフィードバック（通知）
-      if (failedMatchIds.isNotEmpty) {
-        rootScaffoldMessengerKey.currentState?.showSnackBar(
-          const SnackBar(
-            content: Text('⚠️ 他の端末で更新されたデータがあります。最新の状態を確認してください。'),
-            backgroundColor: Colors.orange,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else if (pendingMatches.isNotEmpty) {
-        rootScaffoldMessengerKey.currentState?.showSnackBar(
-          const SnackBar(
-            content: Text('✅ オフライン中のデータをクラウドに同期しました'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-
-      debugPrint('✅ [Sync Engine] 同期完了: すべてのデータがクラウドに保存されました。');
     } catch (e) {
-      debugPrint('🔥 [Sync Engine] 同期エラー: $e');
+      debugPrint('🔥 [Sync Engine] 同期失敗: $e');
     } finally {
-      _isSyncing = false;
-      // ★ Phase 8-1: 同期終了（またはスキップ）をUIに通知
-      ref.read(isSyncingStateProvider.notifier).state = false;
+      _isDone();
+      
+      // ★ 改善：同期中に新たなデータ入力があった場合、即座に「おかわり」同期を開始
+      if (_needsSyncAgain) {
+        _needsSyncAgain = false;
+        syncNow();
+      }
     }
+  }
+
+  void _isProcessing() {
+    _isSyncing = true;
+    ref.read(isSyncingStateProvider.notifier).state = true;
+  }
+
+  void _isDone() {
+    _isSyncing = false;
+    ref.read(isSyncingStateProvider.notifier).state = false;
   }
 
   // ★ Phase 8-1.5: 競合の強制解決（サーバーデータを優先し、未送信状態をクリア）
@@ -226,4 +195,20 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
 // ★ Phase 6: UIのステータスバーに表示するための「未送信データ件数」Provider
 final pendingMatchesCountProvider = StreamProvider<int>((ref) {
   return ref.watch(localMatchRepositoryProvider).watchPendingMatchesCount();
+});
+
+// ============================================================================
+// ★ Phase 4: 同期ステータス表示用のロジック
+// ============================================================================
+
+enum SyncStatus { synced, syncing, pending }
+
+final syncStatusProvider = Provider<SyncStatus>((ref) {
+  final isSyncing = ref.watch(isSyncingStateProvider);
+  // ローカルDBに1つでも isDirty (未送信) があるか監視
+  final hasDirty = ref.watch(matchListProvider).any((m) => m.isDirty);
+
+  if (isSyncing) return SyncStatus.syncing;
+  if (hasDirty) return SyncStatus.pending;
+  return SyncStatus.synced;
 });

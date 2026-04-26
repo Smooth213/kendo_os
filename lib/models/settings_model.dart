@@ -16,6 +16,7 @@ abstract class SettingsModel with _$SettingsModel {
     @Default(true) bool haptic,              
     @Default(true) bool strikeVib,           
     @Default(false) bool sound, // ★ 錬成会モードに合わせて初期値はオフ
+    @Default(true) bool ignoreMannerMode, // ★ 追加：マナーモード時も強制的に音を鳴らす（初期値ON）
     
     // 【システム・表示】
     @Default(true) bool sleepPrevent,        // スリープ(画面消灯)防止

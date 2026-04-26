@@ -1,28 +1,47 @@
-import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/settings_provider.dart';
 
-// ★ Step 7-2: 現場の「音」を司るサービス
-// 低遅延での再生を目的とし、赤と白で音色を明確に分けます
-final soundServiceProvider = Provider((ref) => SoundService());
+// ★ Phase 4: 本格的な遅延ゼロ・オーディオエンジン（強制出力対応版）
+final soundServiceProvider = Provider((ref) {
+  final service = SoundService();
+  // 初期化時に、現在の「マナーモード突破設定」を読み込んでエンジンに適用する
+  service.configureAudio(ref.read(settingsProvider).ignoreMannerMode);
+  return service;
+});
 
 class SoundService {
-  // 実際の開発では assets に sound_red.mp3, sound_white.mp3 等を用意します
-  // ここではシステム音を代用したロジックを示します
-  
+  // 外部（SettingsNotifier）からマナーモード設定の変更を受け取るメソッド
+  Future<void> configureAudio(bool ignoreMannerMode) async {
+    // respectSilence: !ignoreMannerMode とすることで、
+    // 「無視する(true)」なら「沈黙を尊重しない(false)」になります
+    await AudioPlayer.global.setAudioContext(AudioContextConfig(
+      respectSilence: !ignoreMannerMode, 
+      stayAwake: true,       
+    ).build());
+  }
+
   Future<void> playScoreSound(bool isRed) async {
-    if (isRed) {
-      // 赤：高く鋭い音（注意喚起）
-      await SystemSound.play(SystemSoundType.click); 
-    } else {
-      // 白：落ち着いた音
-      await SystemSound.play(SystemSoundType.click); 
-    }
+    final player = AudioPlayer();
+    await player.setVolume(1.0); // 最大音量
+    await player.play(AssetSource(isRed ? 'sounds/red_score.mp3' : 'sounds/white_score.mp3'));
+  }
+
+  Future<void> playHansokuSound() async {
+    final player = AudioPlayer();
+    await player.setVolume(1.0);
+    await player.play(AssetSource('sounds/hansoku.mp3'));
+  }
+
+  Future<void> playUndoSound() async {
+    final player = AudioPlayer();
+    await player.setVolume(1.0);
+    await player.play(AssetSource('sounds/undo.mp3'));
   }
 
   Future<void> playFinishFanfare() async {
-    // 試合終了：特別な連続音
-    await SystemSound.play(SystemSoundType.click);
-    await Future.delayed(const Duration(milliseconds: 100));
-    await SystemSound.play(SystemSoundType.click);
+    final player = AudioPlayer();
+    await player.setVolume(1.0);
+    await player.play(AssetSource('sounds/match_end.mp3'));
   }
 }

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/settings_model.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import '../services/sound_service.dart'; // ★ 追加：設定変更時に音響エンジンを更新するため
 
 // SharedPreferencesのインスタンスを非同期で提供するProvider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -42,6 +43,9 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     
     // スリープ防止設定が変更されたら即座に適用
     _applyWakelock(newSettings.sleepPrevent);
+    
+    // ★ 追加：マナーモード設定が変更されたら、即座にオーディオエンジンを書き換える
+    ref.read(soundServiceProvider).configureAudio(newSettings.ignoreMannerMode);
   }
 
   // 特定の項目だけを更新するヘルパーメソッド
@@ -52,6 +56,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     bool? haptic,
     bool? strikeVib,
     bool? sound,
+    bool? ignoreMannerMode, // ★ 追加
     bool? sleepPrevent,
     bool? leftHanded,
     bool? showConfirmDialog, // ★ 追加
@@ -65,6 +70,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       haptic: haptic ?? state.haptic,
       strikeVib: strikeVib ?? state.strikeVib,
       sound: sound ?? state.sound,
+      ignoreMannerMode: ignoreMannerMode ?? state.ignoreMannerMode, // ★ 追加
       sleepPrevent: sleepPrevent ?? state.sleepPrevent,
       leftHanded: leftHanded ?? state.leftHanded,
       showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog, // ★ 追加
@@ -80,7 +86,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       // 🏆 公式大会モード：絶対にミスが許されないためダイアログはON
       updateSettings(const SettingsModel(
         confirmBehavior: 'long', isLocked: true, showConfirmDialog: true, 
-        haptic: true, strikeVib: true, sound: true, 
+        haptic: true, strikeVib: true, sound: true, ignoreMannerMode: true, // ★ 追加
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
         securityLevel: 2, // 🏆 公式はデフォルトで「標準」ガード
       ));
@@ -88,7 +94,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       // 🤺 試合・錬成会モード（アプリのデフォルト）：テンポ重視
       updateSettings(const SettingsModel(
         confirmBehavior: 'double', isLocked: false, showConfirmDialog: false, 
-        haptic: true, strikeVib: true, sound: false, 
+        haptic: true, strikeVib: true, sound: false, ignoreMannerMode: true, // ★ 追加
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
         securityLevel: 1,
       ));
@@ -96,7 +102,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       // 🏠 練習・道場モード：極限までテンポと静かさを重視
       updateSettings(const SettingsModel(
         confirmBehavior: 'single', isLocked: false, showConfirmDialog: false, 
-        haptic: false, strikeVib: false, sound: false, 
+        haptic: false, strikeVib: false, sound: false, ignoreMannerMode: false, // ★ 追加
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
         securityLevel: 1,
       ));

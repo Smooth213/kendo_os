@@ -102,11 +102,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Text('フィードバック', style: TextStyle(color: dynamicTextColor, fontSize: 13, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 _buildSettingsBlock([
-                  _buildSwitchTile('触覚フィードバック (システム)', settings.haptic, (val) => notifier.updateField(haptic: val)),
+                  _buildSwitchTile('システム操作の振動 (バイブ)', settings.haptic, (val) => notifier.updateField(haptic: val)),
                   _buildDivider(),
-                  _buildSwitchTile('打突時の振動 (コッ)', settings.strikeVib, (val) => notifier.updateField(strikeVib: val)),
+                  _buildSwitchTile('打突入力時の振動 (バイブ)', settings.strikeVib, (val) => notifier.updateField(strikeVib: val)),
                   _buildDivider(),
-                  _buildSwitchTile('操作サウンド (ピッ)', settings.sound, (val) => notifier.updateField(sound: val)),
+                  _buildSwitchTile('操作サウンド (音)', settings.sound, (val) => notifier.updateField(sound: val)),
+                  
+                  // ★ 音がONの時だけ「マナーモード突破」の設定を表示する
+                  if (settings.sound) ...[
+                    _buildDivider(),
+                    _buildSwitchTile('マナーモード時も強制的に音を鳴らす', settings.ignoreMannerMode, (val) => notifier.updateField(ignoreMannerMode: val)),
+                  ],
                 ]),
                 const SizedBox(height: 24),
 

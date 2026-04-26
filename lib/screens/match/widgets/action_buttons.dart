@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart'; 
+import 'package:uuid/uuid.dart';
 import '../../../../models/score_event.dart';
 import '../../../../providers/match_command_provider.dart';
-// ★ 追加：設定を読み込むためのプロバイダ
-import '../../../../providers/settings_provider.dart';
-import '../../../../models/settings_model.dart';
 
 class ScoreActionPanel extends ConsumerWidget {
   final String matchId;
@@ -29,9 +27,6 @@ class ScoreActionPanel extends ConsumerWidget {
     final isProcessing = ref.watch(isMatchCommandProcessingProvider);
     // 元々のロック条件に「処理中」を加える
     final effectiveLocked = isLocked || isProcessing;
-    
-    // ★ 追加：システム設定を監視
-    final settings = ref.watch(settingsProvider);
 
     return Expanded(
       child: Padding(
@@ -44,9 +39,9 @@ class ScoreActionPanel extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildBtn(context, ref, 'メ', color, PointType.men, settings, effectiveLocked),
+                  _buildScoreBtn(context, ref, effectiveLocked, 'メ', 'メ', PointType.men),
                   const SizedBox(width: 6), // ★ ボタン同士の横の隙間も少し締める
-                  _buildBtn(context, ref, 'コ', color, PointType.kote, settings, effectiveLocked),
+                  _buildScoreBtn(context, ref, effectiveLocked, 'コ', 'コ', PointType.kote),
                 ],
               ),
             ),
@@ -55,9 +50,9 @@ class ScoreActionPanel extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildBtn(context, ref, 'ド', color, PointType.doIdo, settings, effectiveLocked),
+                  _buildScoreBtn(context, ref, effectiveLocked, 'ド', 'ド', PointType.doIdo),
                   const SizedBox(width: 6),
-                  _buildBtn(context, ref, 'ツ', color, PointType.tsuki, settings, effectiveLocked),
+                  _buildScoreBtn(context, ref, effectiveLocked, 'ツ', 'ツ', PointType.tsuki),
                 ],
               ),
             ),
@@ -67,9 +62,7 @@ class ScoreActionPanel extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildBtn(context, ref, '反', color, PointType.hansoku, settings, effectiveLocked),
-                  const SizedBox(width: 6),
-                  _buildUndoBtn(context, ref, settings, effectiveLocked),
+                  _buildFoulBtn(context, ref, effectiveLocked, '反', PointType.hansoku),
                 ],
               ),
             ),
@@ -79,142 +72,206 @@ class ScoreActionPanel extends ConsumerWidget {
     );
   }
 
-  // ★ 修正: isLocked ではなく effectiveLocked を受け取る
-  Widget _buildBtn(BuildContext context, WidgetRef ref, String label, Color btnColor, PointType type, SettingsModel settings, bool effectiveLocked) {
-    final isHansoku = type == PointType.hansoku;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // ★ Phase 8-2: iPad（横幅が広いデバイス）かどうかを判定
-    final isTablet = MediaQuery.of(context).size.width > 600;
-    
-    Color effectiveBtnColor;
-    Color effectiveLabelColor;
-    BorderSide borderSide;
-
-    // ★ 修正：「反則」ボタン専用のカラーリングロジック
-    if (isHansoku) {
-      if (side == Side.red) {
-        effectiveBtnColor = isDark ? Colors.grey.shade700 : Colors.grey.shade500;
-        effectiveLabelColor = Colors.white;
-        borderSide = BorderSide.none;
-      } else {
-        effectiveBtnColor = isDark ? Colors.grey.shade600 : Colors.grey.shade300;
-        effectiveLabelColor = isDark ? Colors.white : Colors.black87;
-        borderSide = BorderSide.none; // 反則ボタンはグレーで十分目立つため、白側でも枠線を消して統一感を出します
-      }
-    } else {
-      // 通常の打突ボタン（メ・コ・ド・ツ）
-      effectiveBtnColor = (side == Side.white && isDark) ? const Color(0xFF1C1C1E) : btnColor;
-      effectiveLabelColor = (side == Side.white && isDark) ? Colors.white : (textColor ?? Colors.white);
-      borderSide = side == Side.white 
-          ? BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 2) 
-          : BorderSide.none;
-    }
-
-    if (effectiveLocked) {
-      effectiveBtnColor = isDark ? Colors.white10 : Colors.grey.shade200;
-      effectiveLabelColor = isDark ? Colors.white24 : Colors.grey.shade400;
-      borderSide = BorderSide.none;
-    }
-
+  Widget _buildScoreBtn(BuildContext context, WidgetRef ref, bool effectiveLocked, String label, String mark, PointType type) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(4.0), // ボタン同士の間隔を少し広げて誤タップ防止
-        child: ElevatedButton(
-          onPressed: effectiveLocked
-              ? null
-              : () {
-                if (settings.strikeVib) {
-                  // ★ Step 7-2: 陣営（Side）によっても振動に微細な変化を加え、
-                  // 部位（強弱）× 陣営（リズム）で「今どちらに何を打ったか」を直感させる
-                  if (side == Side.red) {
-                    // 赤：標準的な単発の衝撃
-                    _triggerHaptic(type);
-                  } else {
-                    // 白：極短の2連撃（または異なるリズム）で差別化
-                    _triggerHaptic(type);
-                    Future.delayed(const Duration(milliseconds: 50), () => _triggerHaptic(type));
-                  }
-                }
-                ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
-              },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: effectiveBtnColor, 
-            foregroundColor: effectiveLabelColor, 
-            elevation: effectiveLocked ? 0 : 4,
-            padding: EdgeInsets.zero, 
-            minimumSize: Size.zero, 
-            // ★ 追加：Flutter標準の「見えないタップ確保領域」を完全に無効化する魔法のコード
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap, 
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(isTablet ? 16 : 10), // iPadではより丸みを持たせて高級感を
-              side: borderSide,
-            ),
-          ),
-          child: Text(
-            label, 
-            style: TextStyle(
-              // ★ iPadなら文字サイズを 40、スマホなら 24 に動的変更
-              fontSize: isTablet ? 40 : 24, 
-              fontWeight: FontWeight.w900
-            )
-          ),
+        padding: const EdgeInsets.all(4.0),
+        child: HoldConfirmButton(
+          label: label,
+          color: color,
+          textColor: textColor ?? Colors.white,
+          disabled: effectiveLocked,
+          onConfirm: () {
+            // ★ 修正：直接実行せず、コマンドとしてキューに投げ込む
+            // UI側は待機(await)せず、即座に次の入力が可能な状態に戻ります
+            ref.read(matchCommandQueueProvider).enqueue(
+              MatchCommandModel(
+                id: const Uuid().v4(),
+                type: CommandType.addScore,
+                payload: {
+                  'matchId': matchId,
+                  'side': side.name,
+                  'type': type.name,
+                },
+                createdAt: DateTime.now(),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  void _triggerHaptic(PointType type) {
-    switch (type) {
-      case PointType.men:
-        HapticFeedback.heavyImpact(); // 頭部への重い衝撃
-        break;
-      case PointType.kote:
-        HapticFeedback.mediumImpact(); // 手首への鋭い衝撃
-        break;
-      case PointType.doIdo:
-        HapticFeedback.lightImpact(); // 胴への乾いた衝撃
-        break;
-      case PointType.tsuki:
-      case PointType.hansoku:
-        HapticFeedback.vibrate(); // 突き、警告（鋭い振動）
-        break;
-      default:
-        HapticFeedback.selectionClick();
-    }
-  }
-
-  // ★ Phase 4: 左手・右手どちらの親指からでも即座に押せる、直感的なUndoボタン
-  Widget _buildUndoBtn(BuildContext context, WidgetRef ref, SettingsModel settings, bool effectiveLocked) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isTablet = MediaQuery.of(context).size.width > 600;
-    
-    // 他のボタンの邪魔をしないよう、落ち着いたグレーの配色
-    final btnColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
-    final labelColor = isDark ? Colors.white70 : Colors.black87;
-
+  Widget _buildFoulBtn(BuildContext context, WidgetRef ref, bool effectiveLocked, String label, PointType type) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(4.0),
-        child: ElevatedButton.icon(
-          onPressed: effectiveLocked
-              ? null
-              : () {
-                  // ミスを「取り消した」という安堵感を与える中程度の振動
-                  if (settings.haptic) HapticFeedback.mediumImpact();
-                  ref.read(matchCommandProvider).undoLastEvent(matchId);
+        child: HoldConfirmButton(
+          label: label,
+          color: Colors.amber.shade600,
+          textColor: Colors.black87,
+          disabled: effectiveLocked,
+          isFoul: true,
+          onConfirm: () {
+            // ★ 修正：直接実行せず、コマンドとしてキューに投げ込む
+            // UI側は待機(await)せず、即座に次の入力が可能な状態に戻ります
+            ref.read(matchCommandQueueProvider).enqueue(
+              MatchCommandModel(
+                id: const Uuid().v4(),
+                type: CommandType.addScore,
+                payload: {
+                  'matchId': matchId,
+                  'side': side.name,
+                  'type': type.name,
                 },
-          icon: Icon(Icons.undo, size: isTablet ? 32 : 20, color: labelColor),
-          label: Text('取消', style: TextStyle(fontSize: isTablet ? 28 : 18, fontWeight: FontWeight.bold, color: labelColor)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: btnColor,
-            foregroundColor: labelColor,
-            elevation: effectiveLocked ? 0 : 2,
-            padding: EdgeInsets.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(isTablet ? 16 : 10),
+                createdAt: DateTime.now(),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ★ Phase 2: 長押し確定UI（究極の誤操作防止ボタン）
+class HoldConfirmButton extends StatefulWidget {
+  final String label;
+  final Color color;
+  final Color textColor;
+  final bool disabled;
+  final bool isFoul;
+  final VoidCallback onConfirm;
+
+  const HoldConfirmButton({
+    super.key,
+    required this.label,
+    required this.color,
+    required this.textColor,
+    required this.disabled,
+    this.isFoul = false,
+    required this.onConfirm,
+  });
+
+  @override
+  State<HoldConfirmButton> createState() => _HoldConfirmButtonState();
+}
+
+class _HoldConfirmButtonState extends State<HoldConfirmButton> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  bool _isHolding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 0.4秒で確定（現場の体感として最も「待たされず、誤爆しない」絶妙な時間）
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _controller.addListener(() => setState(() {}));
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        HapticFeedback.heavyImpact(); // 確定時の強い振動
+        widget.onConfirm();
+        _controller.reset();
+        setState(() => _isHolding = false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _startHold() {
+    if (widget.disabled) return;
+    HapticFeedback.lightImpact(); // 触れた瞬間の軽い振動（プレビュー）
+    setState(() => _isHolding = true);
+    _controller.forward();
+  }
+
+  void _cancelHold() {
+    if (widget.disabled) return;
+    _controller.reverse(); // 離すと滑らかに戻る（キャンセル）
+    setState(() => _isHolding = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 押し込むと少しだけ縮む（押している感覚を物理的に表現）
+    final scale = 1.0 - (_controller.value * 0.05);
+    final isTablet = MediaQuery.of(context).size.width > 600;
+    
+    // プレビュー状態（薄く光る）の表現
+    final buttonColor = widget.disabled 
+        ? Colors.grey.withValues(alpha: 0.3) 
+        : (_isHolding ? widget.color.withValues(alpha: 0.85) : widget.color);
+
+    return GestureDetector(
+      onTapDown: (_) => _startHold(),
+      onTapUp: (_) => _cancelHold(),
+      onTapCancel: () => _cancelHold(),
+      child: Transform.scale(
+        scale: scale,
+        child: Container(
+          decoration: BoxDecoration(
+            color: buttonColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: widget.disabled || _isHolding ? [] : [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 4))
+            ],
+            border: Border.all(
+              color: _isHolding ? widget.textColor.withValues(alpha: 0.5) : Colors.transparent,
+              width: 2,
             ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // リング進行アニメーション
+              // ★ 修正③: 長押し中のゲージを真円にする
+              if (_isHolding || _controller.value > 0)
+                Positioned.fill(
+                  child: Center(
+                    child: AspectRatio(
+                      aspectRatio: 1.0, // 強制的に正円の比率を維持
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: CircularProgressIndicator(
+                          value: _controller.value,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            (widget.isFoul 
+                                ? (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade500 : Colors.grey.shade600) 
+                                : widget.textColor).withValues(alpha: 0.7)
+                          ),
+                          strokeWidth: 4, // 視認性を損なわない程度に少しスマートに
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // ボタンの巨大ラベル表示
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // ★ 修正：⚠️アイコンを削除し、表示を「反則」、色をグレーに強制
+                  Text(
+                    widget.isFoul ? '反則' : widget.label,
+                    style: TextStyle(
+                      // ★ 修正：「反則」の2文字が枠からハミ出さずに美しく収まるようにフォントサイズを縮小
+                      fontSize: widget.isFoul ? (isTablet ? 24 : 20) : (isTablet ? 36 : 30), 
+                      fontWeight: FontWeight.w900,
+                      color: widget.disabled 
+                          ? Colors.grey 
+                          : (widget.isFoul 
+                              ? (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600) 
+                              : widget.textColor),
+                      letterSpacing: widget.isFoul ? 0.0 : 2.0, // 文字間隔も詰める
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

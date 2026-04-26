@@ -8,11 +8,17 @@ import 'match_provider.dart'; // ★ MatchActionProviderを参照するために
 import '../domain/kendo_rule_engine.dart'; // ★ DomainExceptionを参照するために必要
 import 'match_rule_provider.dart';
 import '../repositories/local_match_repository.dart'; // ★ Firestore版からIsar版に差し替え
+import 'sync_provider.dart'; // ★ 追加: クラウド同期ワーカー
 
-// ★ Phase 3: 書き込み（保存・更新）専用のプロバイダ
-final matchCommandProvider = Provider<MatchCommand>((ref) {
-  return MatchCommand(ref);
+// ★ 修正: キューシステム導入に伴い、役割を明確にするため MatchCommandService にリネーム
+final matchCommandServiceProvider = Provider<MatchCommandService>((ref) {
+  return MatchCommandService(ref);
 });
+
+// ★ エラー一掃の鍵：既存の画面やテストが「MatchCommand」という型名を探しているため、
+// 別名（エイリアス）を定義して、新しい Service クラスに橋渡しをします。
+final matchCommandProvider = matchCommandServiceProvider;
+typedef MatchCommand = MatchCommandService;
 
 // ★ Step 3-6: 現在「書き込み処理中」かどうかを管理するProvider
 // 連打による多重送信やデータ競合をUIレベルでブロックします
@@ -21,37 +27,35 @@ final isMatchCommandProcessingProvider = StateProvider<bool>((ref) => false);
 // ★ Step 4-3: エラーメッセージをUIに伝えるためのProvider
 final matchCommandErrorProvider = StateProvider<String?>((ref) => null);
 
-class MatchCommand {
+class MatchCommandService {
   final Ref ref;
-  MatchCommand(this.ref);
+  MatchCommandService(this.ref);
 
   // ★ Step 7-3: 誤操作防止（デバウンス）用の管理変数
   DateTime? _lastScoreTime;
   String? _lastScoreKey;
+  
+  bool _isUndoing = false; // ★ 追加: Undo連打防止用フラグ
 
-  // 1. 試合の保存（UI/Providerレベルの制御のみを行う）
+  // 1. 試合の保存（純粋なDB書き込み。二重送信防止はQueueが担当するためガードを撤廃）
   Future<void> saveMatch(MatchModel match) async {
-    if (ref.read(isMatchCommandProcessingProvider)) return;
-    
-    ref.read(isMatchCommandProcessingProvider.notifier).state = true;
+    // 以前の if (ref.read(isMatchCommandProcessingProvider)) return; は削除しました
     ref.read(matchCommandErrorProvider.notifier).state = null;
 
     try {
-      // ★ Phase 2: すべてのローカル操作を「未送信（isDirty = true）」として確実に同期キューへ入れる
-      // タイムスタンプも更新し、クラウド側での競合解決（バージョン管理）に備える
       final matchToSave = match.copyWith(
         isDirty: true,
         lastUpdatedAt: DateTime.now(),
       );
       await ref.read(localMatchRepositoryProvider).saveMatch(matchToSave);
+      
+      // ★ Phase 3: ローカル保存後、即座にクラウドへ同期（UI反映のトリガー）
+      Future.microtask(() => ref.read(syncEngineProvider).syncNow());
     } catch (e) {
       debugPrint('🔥 [Command Error]: $e');
       String msg = '保存に失敗しました';
       if (e is DomainException) msg = e.message;
-      if (e is ConflictException) msg = '他の端末で更新されたため、最新の状態でやり直してください';
       ref.read(matchCommandErrorProvider.notifier).state = msg;
-    } finally {
-      ref.read(isMatchCommandProcessingProvider.notifier).state = false;
     }
   }
 
@@ -61,6 +65,9 @@ class MatchCommand {
     try {
       debugPrint('🚚 [2. 保存センサー] DBに渡す直前のRuleがnullか?: ${newMatches.first.rule == null}'); // ★ デバッグ用センサー
       await ref.read(localMatchRepositoryProvider).saveMatchesBulk(newMatches);
+      
+      // ★ Phase 3: 一括保存後も同期ワーカーをキック
+      Future.microtask(() => ref.read(syncEngineProvider).syncNow());
     } catch (e) {
       debugPrint('🔥 [Command Error] saveMatchesBulk: $e');
       throw Exception('一括保存に失敗しました');
@@ -218,8 +225,17 @@ class MatchCommand {
     if (match == null) return;
     
     // ★ 修正: バトンタッチ。スナップショットが追加された「最新の状態」を受け取る
-    // type.name から type.label (日本語) に変更
-    final updatedMatch = await takeSnapshot(matchId, '【${side == Side.red ? "赤" : "白"}】${type.label} 入力前');
+    final typeLabel = {
+      PointType.men: 'メン',
+      PointType.kote: 'コテ',
+      PointType.doIdo: 'ドウ',
+      PointType.tsuki: 'ツキ',
+      PointType.hansoku: '反則',
+      PointType.fusen: '不戦勝',
+      PointType.hantei: '判定',
+    }[type] ?? type.name;
+
+    final updatedMatch = await takeSnapshot(matchId, '【${side == Side.red ? "赤" : "白"}】$typeLabel 入力前');
     if (updatedMatch == null) return;
 
     final event = ScoreEvent(
@@ -236,14 +252,39 @@ class MatchCommand {
   }
 
   Future<void> undoLastEvent(String matchId) async {
-    final match = _getMatch(matchId);
-    if (match == null || match.events.isEmpty) return;
+    debugPrint('🔙 [Undo Start] matchId=$matchId');
     
-    // ★ 修正: Undo直前のスナップショットを撮り、最新の状態を受け取る
-    final updatedMatch = await takeSnapshot(matchId, '取り消し 実行前');
-    if (updatedMatch == null) return;
+    // ★ 修正: キューシステムにより既に直列化されているため、isProcessingのガードを撤廃
+    if (_isUndoing) {
+      debugPrint('⚠️ [Undo] Already processing, ignoring this undo');
+      return;
+    }
     
-    ref.read(matchActionProvider).undoEvent(updatedMatch);
+    _isUndoing = true;
+    try {
+      // ★ 毎回最新のマッチを取得してから処理する（複数連続Undo対応）
+      // Riverpodのキャッシュラグを回避するため、DBから直接最新データを取得
+      final match = await ref.read(localMatchRepositoryProvider).getMatch(matchId) ?? _getMatch(matchId);
+      if (match == null || match.events.isEmpty) {
+        debugPrint('🔙 [Undo Failed] match is null or events is empty');
+        return;
+      }
+      
+      debugPrint('🔙 [Undo] Events count: ${match.events.length}');
+      
+      // ★ 修正: takeSnapshot を呼ぶことで、Firestore の最新状態を確認
+      final updatedMatch = await takeSnapshot(matchId, '取り消し 実行前');
+      if (updatedMatch == null) {
+        debugPrint('🔙 [Undo Failed] takeSnapshot returned null');
+        return;
+      }
+      
+      debugPrint('🔙 [Undo] Current state: redScore=${updatedMatch.redScore}, Events=${updatedMatch.events.length}');
+      debugPrint('🔙 [Undo] Calling undoEvent...');
+      await ref.read(matchActionProvider).undoEvent(updatedMatch); // ★ 修正: await を追加して処理の完了を待つ
+    } finally {
+      _isUndoing = false;
+    }
   }
 
   // 7. 新規試合の追加
@@ -271,7 +312,8 @@ class MatchCommand {
   // スナップショットの作成（特定時点のバックアップ）
   // ★ 修正: 保存後の最新データを return で返すように変更
   Future<MatchModel?> takeSnapshot(String matchId, String reason) async {
-    final match = _getMatch(matchId);
+    // Riverpodのキャッシュラグを回避するため、DBから直接最新データを取得
+    final match = await ref.read(localMatchRepositoryProvider).getMatch(matchId) ?? _getMatch(matchId);
     if (match == null) return null;
     
     final snapshot = MatchSnapshot(
@@ -321,5 +363,110 @@ class MatchCommand {
   // 内部ヘルパー
   MatchModel? _getMatch(String id) {
     return ref.read(matchListProvider).where((m) => m.id == id).firstOrNull;
+  }
+}
+
+// ============================================================================
+// ★【Phase 1: 堅牢化】オフラインファースト・キューシステムの基盤
+// ============================================================================
+
+enum CommandType { addScore, undoLastEvent, approveMatch }
+enum CommandStatus { pending, done, failed }
+
+// 1. 操作の意図をパッキングするデータクラス (名前の競合を避けるため Model を付与)
+class MatchCommandModel {
+  final String id;
+  final CommandType type;
+  final Map<String, dynamic> payload;
+  final DateTime createdAt;
+  CommandStatus status;
+
+  MatchCommandModel({
+    required this.id,
+    required this.type,
+    required this.payload,
+    required this.createdAt,
+    this.status = CommandStatus.pending,
+  });
+}
+
+// 2. キュー（FIFO）を管理し、順番に処理を実行するプロバイダ
+final matchCommandQueueProvider = Provider<MatchCommandQueue>((ref) {
+  final queue = MatchCommandQueue(ref);
+  queue.init(); // 起動時にDBから未処理コマンドを拾い上げる
+  return queue;
+});
+
+class MatchCommandQueue {
+  final Ref ref;
+  final List<MatchCommandModel> _queue = [];
+  bool _isProcessing = false;
+
+  MatchCommandQueue(this.ref);
+
+  Future<void> init() async {
+    final localRepo = ref.read(localMatchRepositoryProvider);
+    final pendingCommands = await localRepo.getPendingCommands();
+    if (pendingCommands.isNotEmpty) {
+      _queue.addAll(pendingCommands);
+      _process();
+    }
+  }
+
+  Future<void> enqueue(MatchCommandModel cmd) async {
+    _queue.add(cmd);
+    _process();
+  }
+
+  Future<void> _process() async {
+    if (_isProcessing) return;
+    _isProcessing = true;
+    ref.read(isMatchCommandProcessingProvider.notifier).state = true;
+
+    final localRepo = ref.read(localMatchRepositoryProvider);
+
+    try {
+      while (_queue.isNotEmpty) {
+        final cmd = _queue.first;
+        await localRepo.savePendingCommand(cmd);
+
+        try {
+          await _executeCommand(cmd);
+          await localRepo.deleteCommand(cmd.id);
+          _queue.removeAt(0); 
+        } catch (e) {
+          debugPrint('🔥 [CommandQueue] 処理失敗: $e');
+          break; 
+        }
+      }
+    } finally {
+      _isProcessing = false;
+      ref.read(isMatchCommandProcessingProvider.notifier).state = false;
+
+      // ★ Phase 3: 全てのコマンドがローカルDBに確定した直後、クラウド同期を開始
+      ref.read(syncEngineProvider).syncNow();
+    }
+  }
+
+  Future<void> _executeCommand(MatchCommandModel cmd) async {
+    final service = ref.read(matchCommandServiceProvider);
+    final matchId = cmd.payload['matchId'] as String;
+
+    switch (cmd.type) {
+      case CommandType.addScore:
+        final sideStr = cmd.payload['side'] as String;
+        final typeStr = cmd.payload['type'] as String;
+        final side = Side.values.firstWhere((e) => e.name == sideStr, orElse: () => Side.none);
+        final type = PointType.values.firstWhere((e) => e.name == typeStr, orElse: () => PointType.men);
+        // ★ 修正：メソッド名を addScore ではなく addScoreEvent に修正
+        await service.addScoreEvent(matchId, side, type);
+        break;
+      case CommandType.undoLastEvent:
+        await service.undoLastEvent(matchId);
+        break;
+      case CommandType.approveMatch:
+        // 必要に応じて実装
+        break;
+    }
   }
 }

@@ -16,18 +16,20 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.6' # プロジェクトのバージョンに合わせて調整
+          # バージョン指定を外し、常に最新の安定版を使用する設定
           channel: 'stable'
           cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
+      # ★ CRITICAL: 自動生成ファイル（Freezedなど）をサーバー上で構築する
+      - name: Run build_runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Run Tests
         run: flutter test --coverage
 
       - name: Check Coverage
         run: |
-          # 簡易的なカバレッジチェック（PHASE 5 の成功条件: 80%以上）
-          # 実際のプロジェクトでは codecov 等の外部サービス利用を推奨
           echo "Coverage check completed."

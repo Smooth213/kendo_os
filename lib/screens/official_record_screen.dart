@@ -731,13 +731,13 @@ class OfficialRecordScreen extends ConsumerWidget {
         child: Table(
           border: TableBorder.all(color: borderColor, width: 1),
           columnWidths: {
-            0: const FixedColumnWidth(100), // チーム名
-            for (int i = 1; i <= teamList.length; i++) i: const FixedColumnWidth(65), // 各対戦
-            teamList.length + 1: const FixedColumnWidth(45), // 勝数
-            teamList.length + 2: const FixedColumnWidth(45), // 勝者
-            teamList.length + 3: const FixedColumnWidth(45), // 本数
-            if (hasMatchPoints) teamList.length + 4: const FixedColumnWidth(45), // 勝ち点
-            teamList.length + (hasMatchPoints ? 5 : 4): const FixedColumnWidth(45), // 順位
+            0: const FixedColumnWidth(100), 
+            for (int i = 1; i <= teamList.length; i++) i: const FixedColumnWidth(65), 
+            teamList.length + 1: const FixedColumnWidth(45), 
+            teamList.length + 2: const FixedColumnWidth(45), 
+            teamList.length + 3: const FixedColumnWidth(45), 
+            if (hasMatchPoints) teamList.length + 4: const FixedColumnWidth(45), 
+            teamList.length + (hasMatchPoints ? 5 : 4): const FixedColumnWidth(45), 
           },
           children: [
             TableRow(
@@ -791,7 +791,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                     
                     final textColor = isDark ? Colors.white : Colors.black87;
 
-                    // ★ 修正：内部余白（Padding）を確保し、フワッと浮かび上がる極上のポップアップ
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
@@ -806,16 +805,14 @@ class OfficialRecordScreen extends ConsumerWidget {
                               child: Dialog(
                                 backgroundColor: Colors.transparent,
                                 elevation: 0,
-                                insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40), // 画面端との余白
+                                insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                                 child: Container(
                                   constraints: const BoxConstraints(maxWidth: 550),
-                                  // ★ ここで「ポップアップの枠」としての外装を定義
                                   decoration: BoxDecoration(
                                     color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                                     borderRadius: BorderRadius.circular(20),
                                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
                                   ),
-                                  // ★ 修正ポイント：内部に十分な余白（Padding）を設ける
                                   padding: const EdgeInsets.all(20), 
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
@@ -844,7 +841,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                             );
                           },
                           transitionBuilder: (ctx, anim1, anim2, child) {
-                            // フワッと浮かび上がる滑らかなスケールアニメーション
                             return FadeTransition(
                               opacity: anim1,
                               child: ScaleTransition(
