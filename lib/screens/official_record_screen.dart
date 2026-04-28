@@ -188,7 +188,9 @@ class OfficialRecordScreen extends ConsumerWidget {
                         int maxRem = redRem > whiteRem ? redRem : whiteRem;
                         int totalCols = matches.length + maxRem;
 
-                        final canvasWidth = 60.0 + (totalCols * 60.0);
+                        // ★ 修正：画面幅以上の試合数がある場合に広がるよう余裕を持たせる
+                        final canvasWidth = 60.0 + (totalCols * 60.0) + 120.0;
+                        
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                           elevation: 0,
@@ -203,22 +205,21 @@ class OfficialRecordScreen extends ConsumerWidget {
                                 width: double.infinity,
                                 child: Text(titleText, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.indigo.shade100 : Colors.indigo.shade900)),
                               ),
-                              SizedBox(
-                                height: 520,
-                                width: double.infinity,
-                                child: InteractiveViewer(
-                                  constrained: false,
-                                  boundaryMargin: const EdgeInsets.all(40), 
-                                  minScale: 0.2, maxScale: 3.0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    color: isDark ? Colors.black : Colors.white,
-                                    width: canvasWidth < 600 ? 600 : canvasWidth,
-                                    height: 480,
-                                    child: CustomPaint(
-                                      painter: KachinukiBracketPainter(matches: matches, isDark: isDark, ref: ref),
-                                      size: Size.infinite,
+                              // ★ 修正：InteractiveViewer を廃止し、確実に横に滑る SingleChildScrollView に変更
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  color: isDark ? Colors.black : Colors.white,
+                                  width: canvasWidth < MediaQuery.of(context).size.width ? MediaQuery.of(context).size.width : canvasWidth,
+                                  height: 520, // 描画高さに固定
+                                  child: CustomPaint(
+                                    painter: KachinukiBracketPainter(
+                                      matches: matches,
+                                      isDark: isDark,
+                                      ref: ref, // ★ 最新のPainterに合わせて引数を修正
                                     ),
+                                    size: Size.infinite,
                                   ),
                                 ),
                               ),
@@ -385,14 +386,19 @@ class OfficialRecordScreen extends ConsumerWidget {
       }
     }
 
+    // ★ 追加：簡易入力されたデータかどうかの判定フラグ
+    final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4), 
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
       clipBehavior: Clip.antiAlias,
-      child: Column(
+      child: Stack(
         children: [
+          Column(
+            children: [
           Container(
             padding: const EdgeInsets.all(12), color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100, width: double.infinity,
             // ★ 修正：綺麗にした cleanNote を使う
@@ -428,7 +434,8 @@ class OfficialRecordScreen extends ConsumerWidget {
               ]),
               TableRow(children: [
                 const SizedBox.shrink(),
-                ...matches.map((m) => _scoreCell(m, isDark)),
+                    // ★ 修正：簡易入力の場合は _scoreCell に isSummary を渡す
+                    ...matches.map((m) => _scoreCell(m, isDark, isSummary)),
                 _teamResultCell(teamWinner, isDark, allFinished), // ★ allFinishedを渡す
               ]),
               TableRow(children: [
@@ -442,6 +449,33 @@ class OfficialRecordScreen extends ConsumerWidget {
               ]),
             ],
           ),
+        ],
+      ),
+          
+          // ★ 追加：簡易入力の場合は、スコアエリアを覆い隠してメッセージを表示
+          if (isSummary)
+            Positioned.fill(
+              top: 40, // チーム名のヘッダー部分だけは暗くしないように避ける
+              child: Container(
+                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.6),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.black87 : Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
+                    ),
+                    child: Text(
+                      '※簡易入力された結果です\n（詳細スコアはありません）',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -538,7 +572,12 @@ class OfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  Widget _scoreCell(MatchModel m, bool isDark) {
+  // ★ 修正：isSummary 引数を追加し、trueなら完全な空白を返す
+  Widget _scoreCell(MatchModel m, bool isDark, bool isSummary) {
+    if (isSummary) {
+      return Container(height: 70, color: Colors.transparent);
+    }
+
     final isDone = m.status == 'finished' || m.status == 'approved';
     final isDraw = isDone && (m.redScore == m.whiteScore);
     final rScore = (m.redScore as num).toInt();
@@ -552,6 +591,7 @@ class OfficialRecordScreen extends ConsumerWidget {
 
     for (var e in m.events) {
       if (e.type == PointType.undo) continue;
+      if (e.isCanceled) continue; // ★ 追加: Undo（キャンセル）されたイベントを除外する
       if (e.type == PointType.hansoku) {
         if (e.side == Side.red) { // ★ Enum比較
           redHansoku++;
@@ -577,8 +617,8 @@ class OfficialRecordScreen extends ConsumerWidget {
           if (isDraw) Center(child: Text('✕', style: TextStyle(fontSize: 44, color: isDark ? Colors.red.shade900.withValues(alpha: 0.6) : Colors.red.shade300, fontWeight: FontWeight.w300))),
           Column(
             children: [
-              Expanded(child: _buildPointBox(redPts, rScore > wScore, true, isDark)),
-              Expanded(child: _buildPointBox(whitePts, wScore > rScore, false, isDark)),
+              Expanded(child: _buildPointBox(redPts, isDone && rScore > wScore, true, isDark)),
+              Expanded(child: _buildPointBox(whitePts, isDone && wScore > rScore, false, isDark)),
             ],
           ),
         ],
@@ -973,6 +1013,7 @@ Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
 List<String> _extractTechs(List<dynamic> logs, bool isRed, int count) {
   List<String> res = [];
   for (var log in logs) {
+    if (log is ScoreEvent && log.isCanceled) continue; // ★ 追加: Undoされたイベントを除外する
     String s = log.toString();
     bool isRedPoint = s.contains('red') || s.contains('赤');
     if (isRed == isRedPoint) {

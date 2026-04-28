@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'settings_provider.dart'; // sharedPreferencesProvider を使うため
+import '../../repositories/player_repository.dart'; // ★ 追加: repositoryへアクセスするため
 
 class TeamNameHistoryNotifier extends Notifier<List<String>> {
   static const _key = 'kendo_team_name_history';
@@ -35,6 +36,24 @@ class TeamNameHistoryNotifier extends Notifier<List<String>> {
       currentList.removeLast();
     }
     
+    state = currentList;
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setString(_key, jsonEncode(currentList));
+  }
+
+  // ★ Phase 7: UIからの「追加」指示を受け取る窓口
+  Future<void> addName(String name, String orgName) async {
+    await ref.read(playerRepositoryProvider).addCustomTeamName(name, organization: orgName);
+    // ★ 修正：画面のリストに即時反映させるため、ローカルのstateも更新する
+    await addHistory(name);
+  }
+
+  // ★ Phase 7: UIからの「削除」指示を受け取る窓口
+  Future<void> deleteName(String name, String orgName) async {
+    await ref.read(playerRepositoryProvider).deleteCustomTeamName(name, organization: orgName);
+    // ★ 修正：画面のリストに即時反映させるため、ローカルのstateからも削除する
+    final currentList = List<String>.from(state);
+    currentList.remove(name);
     state = currentList;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_key, jsonEncode(currentList));

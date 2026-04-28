@@ -15,6 +15,10 @@ import '../presentation/provider/match_rule_provider.dart';
 import '../presentation/provider/match_command_provider.dart'; // ★ 追加: 書き込み専門家
 import '../presentation/provider/match_timer_provider.dart';   // ★ 追加: 時計専門家
 import '../presentation/provider/match_view_state_provider.dart'; // ★ Phase 3: ViewStateパターンの導入
+// ★ 追加: 通知司令塔
+import '../presentation/provider/ui_message_provider.dart';
+// ★ Phase 7: UIのロジック委譲先
+import '../application/service/match_application_service.dart';
 // ★ 追加：マスタとチーム情報を参照するためのインポート
 import '../models/player_model.dart';
 import '../repositories/player_repository.dart';
@@ -32,6 +36,7 @@ import 'match/widgets/scoreboard.dart';
 // ★ 追加：システム設定プロバイダの読み込み
 import '../presentation/provider/settings_provider.dart';
 import '../presentation/provider/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
+import '../presentation/provider/permission_provider.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -51,7 +56,6 @@ class MatchScreen extends ConsumerStatefulWidget {
 class _MatchScreenState extends ConsumerState<MatchScreen> {
   String? _myUserId;
   Timer? _ticker; 
-  bool _isProcessingFusen = false; 
 
   @override
   void initState() {
@@ -90,63 +94,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     super.dispose();
   }
 
+  // ★ Phase 7: ロジックを裏側(MatchApplicationService)に移動したため、
+  // UI側は「変更があったらシステムの自動処理をキックする」だけの1行になります。
   void _checkFusenOrFinish(MatchModel next) {
-    if (next.id.isEmpty) return;
-    if (next.id.isEmpty) {
-      return;
-    }
-    if ((next.status == 'waiting' || next.status == 'in_progress') && !_isProcessingFusen) {
-      bool rMiss = next.redName.contains('欠員');
-      bool wMiss = next.whiteName.contains('欠員');
-      bool hasFusen = next.events.any((e) => e.type == PointType.fusen);
-
-      if (rMiss || wMiss) {
-        _isProcessingFusen = true; 
-        Future.microtask(() async {
-          if (!mounted) return;
-          if (!mounted) {
-            return;
-          }
-          final command = ref.read(matchCommandProvider); // ★ 修正
-          if (rMiss && wMiss) {
-          } else if (rMiss && !wMiss && !hasFusen) {
-            await command.addScoreEvent(next.id, Side.white, PointType.fusen);
-            await command.addScoreEvent(next.id, Side.white, PointType.fusen); 
-          } else if (wMiss && !rMiss && !hasFusen) {
-            await command.addScoreEvent(next.id, Side.red, PointType.fusen);
-            await command.addScoreEvent(next.id, Side.red, PointType.fusen); 
-          }
-          final freshMatches = ref.read(matchListProvider);
-          // ★ Phase 2: firstWhere廃止
-          final freshMatch = freshMatches.where((m) => m.id == next.id).firstOrNull ?? next;
-          if (freshMatch.status != 'finished' && freshMatch.status != 'approved') {
-            await command.saveMatch(freshMatch.copyWith(status: 'finished', remainingSeconds: 0));
-          }
-          // ★ Step 3-4: setState を廃止。
-          // _isProcessingFusen は見た目に影響しない「実行中フラグ」なので、
-          // setState による Widget 全体の再構築は不要。
-          _isProcessingFusen = false;
-        });
-      } else {
-        final rule = ref.read(matchRuleProvider);
-        
-        // ★ Phase 5: 長々とした1本勝負判定のif文を、Strategyパターンで一撃解決！
-        final strategy = MatchStrategyFactory.getStrategy(next);
-        int requiredPoints = strategy.getTargetIppon(next, rule);
-
-        // ★ Step 7-1: 自動判定による終了時も、設定に応じて確定まで自動で行う
-        if (next.redScore >= requiredPoints || next.whiteScore >= requiredPoints) {
-          Future.microtask(() async {
-            final settings = ref.read(settingsProvider);
-            if (settings.confirmBehavior == 'single') {
-              await ref.read(matchActionProvider).approveMatch(next);
-            } else {
-              await ref.read(matchCommandProvider).saveMatch(next.copyWith(status: 'finished'));
-            }
-          });
-        }
-      }
-    }
+    // 処理はすべて MatchApplicationService._finalizeIfNeeded が裏で実行します
   }
 
   // ★ 追加：同点時の「判定ダイアログ」
@@ -230,35 +181,49 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final matchId = widget.matchId;
-    // ★ Step 6: パフォーマンス最適化。必要なプロパティだけを個別に watch する (select構文)
-    final match = ref.watch(matchListProvider.select((list) => list.where((m) => m.id == matchId).firstOrNull));
-    if (match == null) return const Scaffold(body: Center(child: Text('データなし')));
+    final permissions = ref.watch(permissionProvider);
+    final rule = ref.watch(matchRuleProvider);
 
-    // 各種判定フラグを ViewState から取得
-    final vs = ref.watch(matchViewStateProvider(matchId)); 
-    final isViewOnly = vs.isViewOnly;
-    final isInputLocked = vs.isInputLocked;
-    final isApproved = match.status == 'approved';
-    final isAllDone = vs.isAllDone; // ★ 復活: ViewStateから取得
-    final isTie = vs.isTie;       // ★ 復活: ViewStateから取得
-
-    // リスト表示や遷移に必要な「チーム内試合リスト」だけは watch を維持
-    final teamMatches = ref.watch(matchListProvider.select((list) => 
-      list.where((m) => m.groupName == match.groupName).toList()
+    // ★ 修正: 消してしまった match 本体と teamMatches を復旧
+    // （タイマー秒数の更新は分離されているため、これを監視しても毎秒リビルドはされません）
+    final match = ref.watch(matchListProvider.select((list) => 
+      list.where((m) => m.id == widget.matchId).firstOrNull
     ));
     
-    // ネットワークやルールの監視
-    final rule = ref.watch(matchRuleProvider);
-    ref.listen<MatchModel?>(matchListProvider.select((list) => list.where((m) => m.id == matchId).firstOrNull), (p, next) => next != null ? _checkFusenOrFinish(next) : null);
-    
-    // 錬成会マスタータイマーの初期化（一度だけ実行）
-    if (rule.isRenseikai && rule.renseikaiType == '時間制' && match.groupName != null) {
-      final mt = ref.read(renseikaiMasterTimerProvider(match.groupName!));
-      if (mt == -1) Future.microtask(() => ref.read(renseikaiMasterTimerProvider(match.groupName!).notifier).state = rule.overallTimeMinutes * 60);
+    if (match == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final teamMatches = ref.watch(matchListProvider.select((list) => 
+      match.groupName != null ? list.where((m) => m.groupName == match.groupName).toList() : <MatchModel>[]
+    ));
+
+    final isViewOnly = permissions.isReadOnly;
+    final isInputLocked = isViewOnly || match.status == 'finished' || match.status == 'approved';
+
+    final vs = ref.watch(matchViewStateProvider(widget.matchId));
+    final isAllDone = vs.isAllDone;
+    final isTie = vs.isTie;
+    final isApproved = match.status == 'approved';
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // ★ Phase 7 - Step 3: エラー通知の監視（リスナー）
+    ref.listen<UiMessage?>(uiMessageProvider, (previous, next) {
+      if (next != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            backgroundColor: next.isError ? Colors.red.shade800 : Colors.green.shade800,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(label: 'OK', textColor: Colors.white, onPressed: () {}),
+          ),
+        );
+      }
+    });
 
     // ★ Phase 3 修正版: ナビゲーションの復旧と、競合しないスワイプUndoの完成
     return Scaffold(
@@ -305,8 +270,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             behavior: HitTestBehavior.translucent, // ボタン以外のタップも透過して検知
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 500) {
-                // ★ 修正: 直書きのループと複雑なif文を完全削除。ViewStateにすべて委ねる
-                if (ref.read(matchViewStateProvider(match.id)).canUndo) {
+                // ★ 修正: キャンセル済みのイベントを除外して判定
+                if (match.events.any((e) => !e.isCanceled && e.type != PointType.undo)) {
                   HapticFeedback.mediumImpact();
                   ref.read(matchCommandQueueProvider).enqueue(
                     MatchCommandModel(
@@ -349,11 +314,29 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     )
                   : const SizedBox.shrink();
 
-                // ★ 修正: ViewStateを読み込み、UIから計算ロジック（for文やif文）を完全排除
-                final viewState = ref.watch(matchViewStateProvider(match.id));
+                // ★ 修正: キャンセル（Undo）されていない有効なイベントのみを対象にする
+                final validEvents = match.events.where((e) => !e.isCanceled && e.type != PointType.undo).toList();
+                final canUndoReal = validEvents.isNotEmpty;
+                String lastEventText = '最新の操作';
+                if (canUndoReal) {
+                  final lastE = validEvents.last;
+                  final sideStr = lastE.side == Side.red ? '赤' : (lastE.side == Side.white ? '白' : '');
+                  String typeStr = '';
+                  switch (lastE.type) {
+                    case PointType.men: typeStr = 'メン'; break;
+                    case PointType.kote: typeStr = 'コテ'; break;
+                    case PointType.doIdo: typeStr = 'ドウ'; break;
+                    case PointType.tsuki: typeStr = 'ツキ'; break;
+                    case PointType.hansoku: typeStr = '反則(▲)'; break;
+                    case PointType.fusen: typeStr = '不戦勝'; break;
+                    case PointType.hantei: typeStr = '判定'; break;
+                    default: typeStr = 'ポイント'; break;
+                  }
+                  lastEventText = sideStr.isNotEmpty ? '$sideStr $typeStr' : typeStr;
+                }
 
                 // 共通Undoエリア
-                final undoArea = viewState.canUndo
+                final undoArea = canUndoReal
                     ? GestureDetector(
                         onTap: () {
                           HapticFeedback.mediumImpact();
@@ -374,7 +357,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             children: [
                               Icon(Icons.undo, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, size: 24),
                               const SizedBox(width: 8),
-                              Text('スワイプまたはタップで取消 ( ${viewState.lastEventText} )', 
+                              Text('スワイプまたはタップで取消 ( $lastEventText )', 
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)
                               ),
                             ],
@@ -383,7 +366,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       )
                     : const SizedBox(height: 40);
 
-                final timerPart = TimerWidget(match: match, isInputLocked: isInputLocked);
+                final timerPart = TimerWidget(matchId: match.id, isInputLocked: isInputLocked);
                 
                 // ★ 修正: ボタンの並び順を「URL共有・復元 / スコア・ルール」に変更
                 final groupButtonPart = Padding(
@@ -407,7 +390,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: isInputLocked ? null : () => _showSnapshotDialog(context, ref, match),
+                              // ★ 修正: 試合確定済み（approved）でも復元できるようにロックを解除
+                              onPressed: isViewOnly ? null : () => _showSnapshotDialog(context, ref, match),
                               icon: const Icon(Icons.history, size: 16),
                               label: const Text('履歴から復元', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                               style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
@@ -443,7 +427,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 );
 
                 final scoreboardPart = MatchScoreboard(
-                  match: match, myUserId: _myUserId,
+                  matchId: match.id, myUserId: _myUserId,
                   onNameTap: (side) => _showNameEditBottomSheet(match, side),
                 );
 
@@ -488,105 +472,38 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             if (!confirmed) return;
                           }
 
-                          await ref.read(matchActionProvider).approveMatch(match);
-                          String? nextMatchId;
-
-                          if (match.isKachinuki) {
-                            final rPts = match.redScore;
-                            final wPts = match.whiteScore;
-                            List<String> nextRedRem = List.from(match.redRemaining);
-                            List<String> nextWhiteRem = List.from(match.whiteRemaining);
-                            String nextRedName = match.redName;
-                            String nextWhiteName = match.whiteName;
-                            bool isMatchOver = false;
-                            bool isEncho = false; 
-
-                            if (rPts == wPts) { 
-                              if (nextRedRem.isEmpty && nextWhiteRem.isEmpty) {
-                                if (rule.kachinukiUnlimitedType == '大将引き分け延長' && match.matchType != '大将延長戦') {
-                                  isMatchOver = false;
-                                  isEncho = true;
-                                } else {
-                                  isMatchOver = true;
-                                }
-                              } else if (nextRedRem.isEmpty || nextWhiteRem.isEmpty) {
-                                isMatchOver = true;
-                              } else {
-                                nextRedName = nextRedRem.removeAt(0);
-                                nextWhiteName = nextWhiteRem.removeAt(0);
-                              }
-                            } else if (rPts > wPts) { 
-                              if (nextWhiteRem.isEmpty) {
-                                isMatchOver = true; 
-                              } else {
-                                nextWhiteName = nextWhiteRem.removeAt(0);
-                              }
-                            } else { 
-                              if (nextRedRem.isEmpty) {
-                                isMatchOver = true;
-                              } else {
-                                nextRedName = nextRedRem.removeAt(0);
-                              }
-                            }
-
-                            if (!isMatchOver) {
-                              nextMatchId = const Uuid().v4();
-                              final nextMatch = MatchModel(
-                                id: nextMatchId, tournamentId: match.tournamentId, category: match.category, groupName: match.groupName,
-                                matchType: isEncho ? '大将延長戦' : '勝ち抜き戦', redName: nextRedName, whiteName: nextWhiteName,
-                                status: 'waiting', matchTimeMinutes: match.matchTimeMinutes, isRunningTime: match.isRunningTime,
-                                remainingSeconds: match.matchTimeMinutes * 60, order: match.order + 0.1, 
-                                note: isEncho ? '延長戦（1本勝負）' : match.note, isKachinuki: true,
-                                redRemaining: nextRedRem, whiteRemaining: nextWhiteRem,
-                              );
-                              await ref.read(matchCommandProvider).saveMatch(nextMatch);
-                            }
-                          }
+                          // ★ Phase 7: UIからは「確定してね」と頼むだけ。
+                          // 勝ち抜き戦の次試合生成などは、すべて裏側で自動的に行われます。
+                          await ref.read(matchApplicationServiceProvider).approveMatch(match.id);
 
                           if (!context.mounted) return;
                           
-                          bool isCardOngoing = false;
-                          MatchModel? autoNextMatch;
-                          MatchModel? nextCardMatch;
+                          // 画面遷移ロジック（UIの管轄なので残します）
+                          final matches = ref.read(matchListProvider);
+                          final groupNextMatches = matches.where((m) => m.groupName == match.groupName && m.order > match.order && m.status != 'approved' && m.status != 'finished').toList();
+                          groupNextMatches.sort((a, b) => a.order.compareTo(b.order));
+                          
+                          if (groupNextMatches.isNotEmpty) {
+                            // 同じカードの続き（大将の次など）か、別カードへの移行かを判定
+                            final nextM = groupNextMatches.first;
+                            final currentRedTeam = match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName;
+                            final currentWhiteTeam = match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName;
+                            final nextRedTeam = nextM.redName.contains(':') ? nextM.redName.split(':').first.trim() : nextM.redName;
+                            final nextWhiteTeam = nextM.whiteName.contains(':') ? nextM.whiteName.split(':').first.trim() : nextM.whiteName;
 
-                          if (nextMatchId != null) {
-                            isCardOngoing = true; 
-                          } else {
-                            final matches = ref.read(matchListProvider);
-                            final groupNextMatches = matches.where((m) => m.groupName == match.groupName && m.order > match.order && m.status != 'approved' && m.status != 'finished').toList();
-                            groupNextMatches.sort((a, b) => a.order.compareTo(b.order));
-                            
-                            if (groupNextMatches.isNotEmpty) {
-                              final nextM = groupNextMatches.first;
-                              final currentRedTeam = match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName;
-                              final currentWhiteTeam = match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName;
-                              final nextRedTeam = nextM.redName.contains(':') ? nextM.redName.split(':').first.trim() : nextM.redName;
-                              final nextWhiteTeam = nextM.whiteName.contains(':') ? nextM.whiteName.split(':').first.trim() : nextM.whiteName;
+                            bool isCardEndingPosition = match.matchType == '大将' || match.matchType == '代表戦' || match.matchType == '個人戦' || match.matchType == '選手';
 
-                              bool isCardEndingPosition = match.matchType == '大将' || match.matchType == '代表戦' || match.matchType == '個人戦' || match.matchType == '選手';
-
-                              if (currentRedTeam == nextRedTeam && currentWhiteTeam == nextWhiteTeam && !isCardEndingPosition && !match.isKachinuki) {
-                                isCardOngoing = true;
-                                autoNextMatch = nextM;
-                              } else {
-                                nextCardMatch = nextM; 
-                              }
-                            }
-                          }
-
-                          if (isCardOngoing) {
-                            if (nextMatchId != null) {
-                              context.go('/match/$nextMatchId');
+                            if (currentRedTeam == nextRedTeam && currentWhiteTeam == nextWhiteTeam && !isCardEndingPosition && !match.isKachinuki) {
+                              context.go('/match/${nextM.id}');
                             } else {
-                              context.go('/match/${autoNextMatch!.id}');
+                              _showMatchFinishedDialog(context, match, nextM);
                             }
                           } else {
                             bool hasDaihyo = rule.isLeague ? rule.hasLeagueDaihyo : rule.hasRepresentativeMatch;
-
                             if (isTie && match.groupName != null && match.matchType != '代表戦' && hasDaihyo) {
                               context.push('/team-scoreboard/${match.groupName}');
                             } else {
-                              _showMatchFinishedDialog(context, match, nextCardMatch);
+                              _showMatchFinishedDialog(context, match, null);
                             }
                           }
                         };
@@ -1436,27 +1353,62 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   void _showSnapshotDialog(BuildContext context, WidgetRef ref, MatchModel match) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // ★ 修正: 古い snapshots ではなく、新しい events (有効な操作履歴) を使用する
+    final validEvents = match.events.where((e) => !e.isCanceled && e.type != PointType.undo).toList();
+    
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        title: const Text('履歴から復元', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('操作履歴と取り消し', style: TextStyle(fontWeight: FontWeight.bold)),
         content: SizedBox(
           width: double.maxFinite,
-          child: match.snapshots.isEmpty
-              ? const Text('復元可能な履歴がありません')
+          child: validEvents.isEmpty
+              ? const Text('取り消し可能な操作履歴がありません')
               : ListView.builder(
                   shrinkWrap: true,
-                  itemCount: match.snapshots.length,
+                  itemCount: validEvents.length,
                   itemBuilder: (context, index) {
-                    final snapshot = match.snapshots[match.snapshots.length - 1 - index];
+                    // 新しい順（最新が一番上）に表示
+                    final eventIndex = validEvents.length - 1 - index;
+                    final event = validEvents[eventIndex];
+                    
+                    final sideStr = event.side == Side.red ? '赤' : (event.side == Side.white ? '白' : '');
+                    String typeStr = '';
+                    switch (event.type) {
+                      case PointType.men: typeStr = 'メン'; break;
+                      case PointType.kote: typeStr = 'コテ'; break;
+                      case PointType.doIdo: typeStr = 'ドウ'; break;
+                      case PointType.tsuki: typeStr = 'ツキ'; break;
+                      case PointType.hansoku: typeStr = '反則(▲)'; break;
+                      case PointType.fusen: typeStr = '不戦勝'; break;
+                      case PointType.hantei: typeStr = '判定'; break;
+                      default: typeStr = 'ポイント'; break;
+                    }
+                    final titleText = sideStr.isNotEmpty ? '$sideStr $typeStr' : typeStr;
+                    
+                    // タップ対象のイベントが、最新から数えて何個前か（= 取り消す数）
+                    final undoCount = index + 1;
+
                     return ListTile(
-                      title: Text(snapshot.reason),
-                      subtitle: Text(DateFormat('yyyy/MM/dd HH:mm').format(snapshot.createdAt)),
+                      leading: Icon(Icons.history, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                      title: Text(titleText, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(DateFormat('HH:mm:ss').format(event.timestamp)),
+                      trailing: Text('$undoCount手前まで戻る', style: const TextStyle(fontSize: 12, color: Colors.blue)),
                       onTap: () async {
-                        final confirm = await _showConfirmDialog('復元の確認', 'この時点のデータに復元しますか？');
+                        final confirm = await _showConfirmDialog('取り消しの確認', 'この操作を含め、最新の $undoCount 件の操作を取り消しますか？');
                         if (confirm) {
-                          await ref.read(matchCommandProvider).restoreFromSnapshot(match.id, snapshot);
+                          for (int i = 0; i < undoCount; i++) {
+                            ref.read(matchCommandQueueProvider).enqueue(
+                              MatchCommandModel(
+                                id: const Uuid().v4(),
+                                type: CommandType.undoLastEvent,
+                                payload: {'matchId': match.id},
+                                createdAt: DateTime.now(),
+                              ),
+                            );
+                          }
                           if (ctx.mounted) Navigator.pop(ctx);
                         }
                       },

@@ -6,6 +6,8 @@ import '../domain/match/score_event.dart';
 import '../presentation/provider/match_command_provider.dart';
 import '../presentation/provider/match_list_provider.dart';
 import '../presentation/provider/match_rule_provider.dart'; // ★ 追加：レギュレーション確認用
+import '../domain/match/team_match_calculator.dart'; // ★ Phase 7: 計算機の結線
+import 'kachinuki_scoreboard_screen.dart'; // ★ 追加：勝ち抜き画面への誘導用
 
 class TeamPointDisplay {
   final String mark;
@@ -30,9 +32,17 @@ class TeamScoreboardScreen extends ConsumerWidget {
       ));
     }
     
+    if (teamMatches.isEmpty) return const Scaffold(body: Center(child: Text('データがありません')));
+
+    // ★ 解決の鍵：ここで「勝ち抜き戦」なら、私たちが作った専用画面をそのまま返す！
+    final firstMatch = teamMatches.first;
+    if (firstMatch.isKachinuki || (firstMatch.rule?.isKachinuki ?? false)) {
+      return KachinukiScoreboardScreen(groupName: firstMatch.groupName ?? '');
+    }
+
     // ★ 修正：今設定中のルールではなく、その試合自体が持っている「保存されたルール」を最優先で使う
-    final rule = (teamMatches.isNotEmpty && teamMatches.first.rule != null) 
-        ? teamMatches.first.rule! 
+    final rule = (teamMatches.isNotEmpty && teamMatches.first.rule != null)
+        ? teamMatches.first.rule!
         : ref.watch(matchRuleProvider);
     
     teamMatches.sort((a, b) => a.order.compareTo(b.order));
@@ -71,35 +81,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
     // ★ Phase 8: 試合詳細（メモ）を取得
     final matchNote = teamMatches.first.note;
 
-    int rW = 0, wW = 0, rP = 0, wP = 0;
-    bool allFinished = true;
-    bool hasDaihyo = false;
-
-    for (var m in teamMatches) {
-      if (m.matchType == '代表戦') {
-        hasDaihyo = true;
-      }
-      if (m.status != 'approved' && m.status != 'finished') {
-        allFinished = false;
-      }
-      if (m.status == 'approved' || m.status == 'finished') {
-        rP += (m.redScore as num).toInt();
-        wP += (m.whiteScore as num).toInt();
-        if ((m.redScore as num) > (m.whiteScore as num)) {
-          rW++;
-        } else if ((m.whiteScore as num) > (m.redScore as num)) {
-          wW++;
-        }
-      }
-    }
-
-    bool isTie = allFinished && !hasDaihyo && (rW == wW) && (rP == wP);
+    // ★ Phase 7: UI内での計算を完全排除し、ドメインの計算機に委ねる
+    final result = TeamMatchCalculator.calculate(teamMatches);
     // ★ 修正：古いデータでも「[リーグ戦]」という文字があればリーグ戦として扱い、代表戦ボタンを隠す
     final bool isLegacyLeague = teamMatches.isNotEmpty && teamMatches.first.note.contains('[リーグ戦]');
     final bool isLeague = rule.isLeague || isLegacyLeague;
     
-    // リーグ戦なら hasLeagueDaihyo を、そうでなければ通常の代表戦フラグを見る
-    // ただし、古いリーグ戦データ（ruleがnull）の場合は、安全のため「なし」とみなす
     bool isDaihyoAllowed = isLeague 
         ? (rule.isLeague ? rule.hasLeagueDaihyo : false) 
         : rule.hasRepresentativeMatch;
@@ -109,7 +96,6 @@ class TeamScoreboardScreen extends ConsumerWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
-          // ★ 真の解決: 履歴が消えている場合に備え、安全にpopまたはホームへ戻るフェイルセーフを実装
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -124,11 +110,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      // ★ 修正：星取表のみをスクロール領域にする（ボタンはここに入れない！）
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // ★ Phase 8: 試合詳細（1回戦 第3試合など）を強調表示
             if (matchNote.isNotEmpty)
               Container(
                 width: double.infinity,
@@ -141,7 +125,6 @@ class TeamScoreboardScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    // ★ 修正：誤認防止のためアイコンと余白を削除
                     Expanded(
                       child: Text(
                         matchNote,
@@ -175,14 +158,13 @@ class TeamScoreboardScreen extends ConsumerWidget {
                     },
                     children: [
                       _buildHeaderRow(redTeam, whiteTeam, isDark),
-                      // ★ 修正：チーム内の名字の被りを自動判定するためにリストを渡す
                       ...teamMatches.map((m) => _buildMatchRow(
                         m, context, isDark, 
                         teamMatches.map((x) => _parseName(x.redName)['last']!).where((s) => s.isNotEmpty).toList(),
                         teamMatches.map((x) => _parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).toList()
                       )),
-                      // ★ Phase 8-4: 試合がすべて終わるまで勝敗を隠すため allFinished を渡す
-                      _buildTotalRow(rW, rP, wW, wP, isDark, allFinished, daihyo: hasDaihyo ? teamMatches.firstWhere((m) => m.matchType == '代表戦') : null),
+                      // ★ Phase 7: 計算結果オブジェクトをそのまま渡す
+                      _buildTotalRow(result, isDark),
                     ],
                   ),
                 ),
@@ -191,9 +173,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
           ],
         ),
       ),
-      // ★ 修正：他の画面と同じように、Scaffoldの機能を使って「画面の最下部（ボトム）」に完全に固定する
-      // ★ 修正：先ほど作った正確なフラグ（isDaihyoAllowed）を参照して表示を制御する
-      bottomNavigationBar: (isTie && isDaihyoAllowed) ? SafeArea(
+      bottomNavigationBar: (result.isTie && isDaihyoAllowed) ? SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16), // 他の画面のボタンと同じ余白
           child: SizedBox(
@@ -344,8 +324,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
       children: [
         _clickableCell(ctx, m, _cell(m.matchType, fs: 12, fontWeight: FontWeight.bold, color: matchTypeColor)),
         _clickableCell(ctx, m, _buildNameCell(m.redName, isDark, redLastNames)), // ★ 修正
-        _clickableCell(ctx, m, _buildMatchScoreBox(rPts, rS > wS, isDraw, true, isDark)),
-        _clickableCell(ctx, m, _buildMatchScoreBox(wPts, wS > rS, false, false, isDark)),
+        _clickableCell(ctx, m, _buildMatchScoreBox(rPts, isDone && rS > wS, isDraw, true, isDark)),
+        _clickableCell(ctx, m, _buildMatchScoreBox(wPts, isDone && wS > rS, false, false, isDark)),
         _clickableCell(ctx, m, _buildNameCell(m.whiteName, isDark, whiteLastNames)), // ★ 修正
       ],
     );
@@ -437,55 +417,34 @@ class TeamScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  // ★ 修正：合計欄の数値・勝敗判定もさらにサイズアップ
-  TableRow _buildTotalRow(int rW, int rP, int wW, int wP, bool isDark, bool allFinished, {MatchModel? daihyo}) {
+  // ★ Phase 7: UI内での勝敗計算を削除し、引数を Result オブジェクトに統一
+  TableRow _buildTotalRow(TeamMatchResult result, bool isDark) {
     final bg = isDark ? const Color(0xFF3A2E12) : Colors.amber.shade50; 
     final textColor = isDark ? Colors.white : Colors.black87;
-    
-    String teamWinner = 'draw';
-    if (rW > wW) {
-      teamWinner = 'red';
-    } else if (wW > rW) {
-      teamWinner = 'white';
-    } else if (rP > wP) {
-      teamWinner = 'red';
-    } else if (wP > rP) {
-      teamWinner = 'white';
-    } else if (daihyo != null) {
-      final rs = (daihyo.redScore as num).toInt();
-      final ws = (daihyo.whiteScore as num).toInt();
-      if (rs > ws) {
-        teamWinner = 'red';
-      } else if (ws > rs) {
-        teamWinner = 'white';
-      }
-    }
-
-    final isTeamTie = (teamWinner == 'draw');
+    final isTeamTie = (result.teamWinner == 'draw');
 
     return TableRow(
       decoration: BoxDecoration(color: bg), 
       children: [
         const SizedBox.shrink(),
-        _cell('$rW / $rP', isH: true, color: isDark ? Colors.red.shade400 : Colors.red.shade700, fs: 18), // 15→18
+        _cell('${result.redWins} / ${result.redPoints}', isH: true, color: isDark ? Colors.red.shade400 : Colors.red.shade700, fs: 18), 
         
         TableCell(
           verticalAlignment: TableCellVerticalAlignment.middle,
           child: SizedBox(
-            height: 64, // 56→64
+            height: 64,
             child: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
-                // ★ Phase 8-4: すべての試合が終わるまで勝敗テキストを隠す
-                if (allFinished) ...[
+                if (result.allFinished) ...[
                   if (isTeamTie)
                     Positioned(
                       right: -36, 
                       child: Text('引き分け', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.amber.shade200 : Colors.amber.shade900)), 
                     )
                   else
-                    _cell(teamWinner == 'red' ? '勝' : '負', isH: true, color: teamWinner == 'red' ? Colors.red : textColor, fs: 20),
+                    _cell(result.teamWinner == 'red' ? '勝' : '負', isH: true, color: result.teamWinner == 'red' ? Colors.red : textColor, fs: 20),
                 ]
               ],
             ),
@@ -497,13 +456,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
           child: SizedBox(
             height: 64,
             child: Center(
-              // ★ Phase 8-4: すべての試合が終わるまで勝敗テキストを隠す
-              child: (allFinished && !isTeamTie) ? _cell(teamWinner == 'white' ? '勝' : '負', isH: true, color: teamWinner == 'white' ? Colors.red : textColor, fs: 20) : const SizedBox.shrink(),
+              child: (result.allFinished && !isTeamTie) ? _cell(result.teamWinner == 'white' ? '勝' : '負', isH: true, color: result.teamWinner == 'white' ? Colors.red : textColor, fs: 20) : const SizedBox.shrink(),
             ),
           ),
         ),
         
-        _cell('$wW / $wP', isH: true, color: isDark ? Colors.grey.shade400 : Colors.blueGrey.shade800, fs: 18), 
+        _cell('${result.whiteWins} / ${result.whitePoints}', isH: true, color: isDark ? Colors.grey.shade400 : Colors.blueGrey.shade800, fs: 18), 
       ],
     );
   }
@@ -519,6 +477,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
       if (e.type == PointType.undo) {
         continue;
       }
+      if (e.isCanceled) continue; // ★ 追加: Undo（キャンセル）されたイベントを除外する
       
       if (e.type == PointType.hansoku) {
         if (e.side == Side.red) { // ★ Enum比較

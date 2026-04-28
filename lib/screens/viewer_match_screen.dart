@@ -22,10 +22,8 @@ class ViewerMatchScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white, 
       appBar: MatchHeader(
-        match: match,
+        matchId: matchId,
         isInputLocked: true, // 閲覧なので常にロック
-        isAllDone: false,
-        isTie: false,
       ),
       body: Column(
         children: [
@@ -43,10 +41,10 @@ class ViewerMatchScreen extends ConsumerWidget {
               ],
             ),
           ),
-          TimerWidget(match: match, isInputLocked: true),
+          TimerWidget(matchId: matchId, isInputLocked: true),
           Expanded(
             child: MatchScoreboard(
-              match: match, 
+              matchId: matchId, 
               myUserId: 'viewer', // 閲覧用ダミー
               onNameTap: (side) {}, // タップしても何もしない（編集不可）
             ),

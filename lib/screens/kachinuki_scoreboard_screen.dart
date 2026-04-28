@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart'; // ★ 追加: go_routerをインポートしてcontext拡張メソッドを有効化
-import 'package:flutter/services.dart'; // ★ 追加: シート表示時の心地よい振動用
+import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
+import 'dart:math' as math;
+
 import '../models/match_model.dart';
 import '../domain/match/score_event.dart';
 import '../presentation/provider/match_list_provider.dart';
-// ★ Phase 1-3: UIロジック削除のため、ドメイン層のエンジンとプロバイダをインポート
 import '../domain/kendo_rule_engine.dart';
 import '../presentation/provider/match_provider.dart';
 
-// ★ 【The Ultimate State】デジタルとアナログの完全融合（タブ切替）
 class KachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;
   const KachinukiScoreboardScreen({super.key, required this.groupName});
@@ -35,7 +35,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20),
-            // ★ 真の解決: こちらも勝ち抜き戦のスコアボードで履歴消滅クラッシュを防ぐフェイルセーフを実装
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -49,7 +48,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           title: Text('勝ち抜き戦 記録', style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
           backgroundColor: appBarColor,
           elevation: 0,
-          // ★ 追加：AppBarの右上にルール確認用のインフォメーションボタンを配置
           actions: [
             IconButton(
               icon: Icon(Icons.info_outline, color: headerTextColor, size: 24),
@@ -80,7 +78,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  // ★ 追加：名前分割ヘルパー
   Map<String, String> _parseName(String raw) {
     if (raw.contains('欠員')) return {'last': '', 'first': ''};
     String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
@@ -88,58 +85,19 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
   }
 
-  // ★ 追加：すべてのレギュレーション情報を網羅した完璧なシート
   void _showRuleInfoSheet(BuildContext context, MatchModel match) {
     HapticFeedback.mediumImpact(); 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     final rule = match.rule; 
-
-    // ★ 修正：備考欄の文字からも形式を推測する（古いデータ救済用）
     final bool isLegacyLeague = match.note.contains('[リーグ戦]');
     final bool isLeague = (rule?.isLeague ?? false) || isLegacyLeague;
-
-    final bool isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦') || (rule != null && rule.positions.length == 1 && (rule.positions.first == '選手' || rule.positions.first == '個人戦'));
+    final bool isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦');
     
     String formatText = isIndividual ? '個人戦' : '団体戦';
-    if (rule?.isRenseikai ?? false) {
-      formatText = '錬成会';
-    } else if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
+    if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
       formatText = '勝ち抜き戦';
     } else if (isLeague) {
-      formatText = 'リーグ戦（総当たり）';
-    }
-
-    final double matchTime = rule?.matchTimeMinutes ?? match.matchTimeMinutes.toDouble();
-    final isRunningTime = rule?.isRunningTime ?? match.isRunningTime;
-    
-    String timeStr = matchTime == matchTime.toInt() ? '${matchTime.toInt()}分' : '${matchTime.toInt()}分${((matchTime % 1) * 60).toInt()}秒';
-    final String timeDesc = '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
-
-    final bool enchoUnlimited = rule?.isEnchoUnlimited ?? false;
-    final double enchoMins = rule?.enchoTimeMinutes ?? match.extensionTimeMinutes?.toDouble() ?? 0.0;
-    final int enchoCount = rule?.enchoCount ?? match.extensionCount ?? 1;
-    final bool enchoEnabled = match.hasExtension || enchoUnlimited || enchoMins > 0;
-    
-    String enchoDesc = 'なし';
-    if (enchoEnabled) {
-      if (enchoUnlimited) {
-        enchoDesc = 'あり (無制限)';
-      } else {
-        String extTimeStr = enchoMins == enchoMins.toInt() ? '${enchoMins.toInt()}分' : '${enchoMins.toInt()}分${((enchoMins % 1) * 60).toInt()}秒';
-        enchoDesc = 'あり ($extTimeStr・$enchoCount回)';
-      }
-    }
-    
-    final bool hanteiEnabled = rule?.hasHantei ?? match.hasHantei;
-
-    String daihyoDesc = 'なし';
-    if (rule != null) {
-      final bool hasRep = rule.hasRepresentativeMatch;
-      final bool isIppon = rule.isDaihyoIpponShobu;
-      daihyoDesc = hasRep ? (isIppon ? 'あり (一本勝負)' : 'あり (三本勝負)') : 'なし';
-    } else {
-      daihyoDesc = '不明（古いデータ）';
+      formatText = 'リーグ戦';
     }
 
     showModalBottomSheet(
@@ -158,86 +116,13 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           children: [
             Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10)))),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                Icon(Icons.gavel_rounded, color: isDark ? Colors.teal.shade300 : Colors.teal.shade700, size: 22),
-                const SizedBox(width: 8),
-                Text('試合レギュレーション', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
-              ],
-            ),
-            const Divider(height: 32),
-            
-            if (rule == null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.orange.shade300)),
-                child: Row(
-                  children: [
-                    Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text('この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。', style: TextStyle(color: Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold))),
-                  ],
-                ),
-              ),
-
             _buildRuleRow('試合形式', formatText, isDark),
-            _buildRuleRow('試合時間', timeDesc, isDark),
-
-            if (rule?.isRenseikai ?? false) ...[
-              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('錬成会設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
-              _buildRuleRow('進行方式', rule!.renseikaiType, isDark),
-              if (rule.renseikaiType == '時間制') _buildRuleRow('制限時間', '${rule.overallTimeMinutes} 分', isDark),
-            ] else ...[
-              _buildRuleRow('延長戦', enchoDesc, isDark),
-              _buildRuleRow('判定', hanteiEnabled ? 'あり' : 'なし', isDark),
-            ],
-
-            if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
-              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('勝ち抜き戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
-              _buildRuleRow('無制限条件', rule?.kachinukiUnlimitedType ?? '大将対大将', isDark),
-              // ★ 修正：ポジション表示を勝ち抜き戦の枠組みの中に統合する
-              if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
-            ],
-
-            // ★ 修正：予備判定(isLeague)を使って、古いデータでも確実に隠す
-            if (!isIndividual && !(rule?.isRenseikai ?? false) && !match.isKachinuki && !(rule?.isKachinuki ?? false) && !isLeague) ...[
-              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('団体戦・チーム設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
-              _buildRuleRow('代表戦', daihyoDesc, isDark),
-              if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
-            ],
-
-            if (!isIndividual && (rule?.isRenseikai ?? false) && rule != null && rule.positions.isNotEmpty) ...[
-              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('ポジション設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
-              _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
-            ],
-
-            if (rule != null && rule.isLeague) ...[
-              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('リーグ戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange))),
-              // ★ 修正：リーグ戦のポジション表示を、リーグ戦専用枠の中に美しく統合する
-              if (!isIndividual && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
-              _buildRuleRow('勝ち点設定', '勝: ${rule.winPoint} / 分: ${rule.drawPoint} / 負: ${rule.lossPoint}', isDark),
-              _buildRuleRow('同点時代表戦', rule.hasLeagueDaihyo ? 'あり' : 'なし', isDark),
-            ],
-
-            if (match.note.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _buildRuleRow('備考・メモ', match.note, isDark),
-            ],
-              
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(ctx),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-                  foregroundColor: isDark ? Colors.white : Colors.black87,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('閉じる'),
               ),
             ),
             SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8), 
@@ -261,14 +146,13 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
   }
 
   // =========================================================================
-  // タブ1: スマホ用タイムライン（第1案＋バッジ）
+  // タブ1: スマホ用タイムライン（残機表示・連勝バッジ付きリッチ版）
   // =========================================================================
   Widget _buildTimelineTab(BuildContext context, WidgetRef ref, List<MatchModel> teamMatches, bool isDark) {
     final latestMatch = teamMatches.last;
     final rTeam = latestMatch.redName.contains(':') ? latestMatch.redName.split(':').first.trim() : '赤チーム';
     final wTeam = latestMatch.whiteName.contains(':') ? latestMatch.whiteName.split(':').first.trim() : '白チーム';
 
-    // ★ 同姓判定のための全選手リスト（残機も含む）
     final List<String> rAllRaw = teamMatches.map((m) => m.redName).toList()..addAll(latestMatch.redRemaining);
     final List<String> wAllRaw = teamMatches.map((m) => m.whiteName).toList()..addAll(latestMatch.whiteRemaining);
     final redLastNames = rAllRaw.map((n) => _parseName(n)['last']!).where((s) => s.isNotEmpty).toList();
@@ -288,7 +172,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
 
       bool isDone = m.status == 'finished' || m.status == 'approved';
       if (isDone) {
-        // ★ Phase 1-3: UIからビジネスロジックを削除し、ドメインエンジンを呼び出す
         final analysis = ref.read(kendoRuleEngineProvider).analyzeHistory(m.events, m, null);
         int rPts = analysis.context.redIppon;
         int wPts = analysis.context.whiteIppon;
@@ -308,7 +191,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     int whiteAlive = latestMatch.whiteRemaining.length + 1;
     
     if (latestMatch.status == 'finished' || latestMatch.status == 'approved') {
-      // ★ Phase 1-3: UIからビジネスロジックを削除し、ドメインエンジンを呼び出す
       final analysis = ref.read(kendoRuleEngineProvider).analyzeHistory(latestMatch.events, latestMatch, null);
       int rPts = analysis.context.redIppon;
       int wPts = analysis.context.whiteIppon;
@@ -373,7 +255,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: uiStates.length,
-            // ★ Phase 1-3: refを渡す
             itemBuilder: (context, index) => _buildCenterBattleCard(ref, uiStates[index], index + 1, isDark, redLastNames, whiteLastNames),
           ),
         ),
@@ -387,7 +268,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     final int rStreak = uiState['rStreak'], wStreak = uiState['wStreak'];
     final String rNameRaw = uiState['rName'], wNameRaw = uiState['wName'];
 
-    // ★ Phase 1-3: UIからビジネスロジックを削除し、ドメインエンジンを呼び出す
     final analysis = ref.read(kendoRuleEngineProvider).analyzeHistory(match.events, match, null);
     int rPts = analysis.context.redIppon;
     int wPts = analysis.context.whiteIppon;
@@ -395,7 +275,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     bool isDraw = isDone && rPts == wPts, rWin = isDone && rPts > wPts, wWin = isDone && wPts > rPts;
     bool rIsStreaking = !isDone && rStreak > 0, wIsStreaking = !isDone && wStreak > 0;
 
-    // ★ 修正：タイムライン用の名前描画ヘルパー
     Widget buildTimelineName(String raw, List<String> teamLastNames, bool isWin, bool isFaded, Color winColor) {
       if (raw.contains('欠員')) return Text('(欠員)', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade500));
       
@@ -435,7 +314,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                   decoration: BoxDecoration(color: rWin ? (isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50) : (isDark ? const Color(0xFF1C1C1E) : Colors.white), borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)), border: Border.all(color: rWin ? (isDark ? Colors.red.shade900 : Colors.red.shade200) : (isDark ? const Color(0xFF38383A) : Colors.grey.shade200))),
                   child: Column(
                     children: [
-                      buildTimelineName(rNameRaw, rLasts, rWin, isDraw || wWin, isDark ? Colors.red.shade400 : Colors.red.shade700), // ★ 修正
+                      buildTimelineName(rNameRaw, rLasts, rWin, isDraw || wWin, isDark ? Colors.red.shade400 : Colors.red.shade700),
                       if (rWin && rStreak >= 2) ...[const SizedBox(height: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: isDark ? Colors.amber.shade900.withValues(alpha: 0.3) : Colors.amber.shade100, borderRadius: BorderRadius.circular(8)), child: Text('🔥 $rStreak人抜き', style: TextStyle(color: isDark ? Colors.amber.shade400 : Colors.amber.shade900, fontSize: 10, fontWeight: FontWeight.bold)))]
                       else if (rIsStreaking) ...[const SizedBox(height: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: isDark ? Colors.amber.shade900.withValues(alpha: 0.1) : Colors.amber.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: isDark ? Colors.amber.shade900 : Colors.amber.shade200)), child: Text('🔥 $rStreak人抜き中', style: TextStyle(color: isDark ? Colors.amber.shade500 : Colors.amber.shade800, fontSize: 10, fontWeight: FontWeight.bold)))]
                     ],
@@ -445,7 +324,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               Container(
                 width: 90, padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(color: isDone ? (isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100) : (isDark ? Colors.teal.shade900.withValues(alpha: 0.15) : Colors.teal.shade50), border: Border.symmetric(horizontal: BorderSide(color: isDone ? (isDark ? const Color(0xFF38383A) : Colors.grey.shade200) : (isDark ? Colors.teal.shade900 : Colors.teal.shade200)))),
-                child: isDone // ★ Phase 1-3: analysis.displays を使用
+                child: isDone
                   ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [_buildScoreMarks(analysis.displays[Side.red]!, isDark ? Colors.red.shade400 : Colors.red.shade700, isDraw || wWin, isDark), Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text('-', style: TextStyle(color: isDark ? Colors.grey.shade600 : Colors.grey, fontWeight: FontWeight.bold))), _buildScoreMarks(analysis.displays[Side.white]!, isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade800, isDraw || rWin, isDark)])
                   : Center(child: Text('VS', style: TextStyle(fontWeight: FontWeight.w900, color: isDark ? Colors.teal.shade400 : Colors.teal))),
               ),
@@ -455,7 +334,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                   decoration: BoxDecoration(color: wWin ? (isDark ? Colors.blueGrey.shade900.withValues(alpha: 0.2) : Colors.blueGrey.shade50) : (isDark ? const Color(0xFF1C1C1E) : Colors.white), borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)), border: Border.all(color: wWin ? (isDark ? Colors.blueGrey.shade800 : Colors.blueGrey.shade200) : (isDark ? const Color(0xFF38383A) : Colors.grey.shade200))),
                   child: Column(
                     children: [
-                      buildTimelineName(wNameRaw, wLasts, wWin, isDraw || rWin, isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade800), // ★ 修正
+                      buildTimelineName(wNameRaw, wLasts, wWin, isDraw || rWin, isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade800),
                       if (wWin && wStreak >= 2) ...[const SizedBox(height: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: isDark ? Colors.amber.shade900.withValues(alpha: 0.3) : Colors.amber.shade100, borderRadius: BorderRadius.circular(8)), child: Text('🔥 $wStreak人抜き', style: TextStyle(color: isDark ? Colors.amber.shade400 : Colors.amber.shade900, fontSize: 10, fontWeight: FontWeight.bold)))]
                       else if (wIsStreaking) ...[const SizedBox(height: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: isDark ? Colors.amber.shade900.withValues(alpha: 0.1) : Colors.amber.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: isDark ? Colors.amber.shade900 : Colors.amber.shade200)), child: Text('🔥 $wStreak人抜き中', style: TextStyle(color: isDark ? Colors.amber.shade500 : Colors.amber.shade800, fontSize: 10, fontWeight: FontWeight.bold)))]
                     ],
@@ -470,7 +349,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  // ★ Phase 1-3: UI固有の _PointData ではなく、ドメイン層の PointDisplay を使う
   Widget _buildScoreMarks(List<PointDisplay> pts, Color color, bool isFaded, bool isDark) {
     if (pts.isEmpty) return const SizedBox(width: 20);
     return Row(
@@ -486,33 +364,39 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
   }
 
   // =========================================================================
-  // タブ2: アナログ印刷用（真・放射状・縦線撤廃版）
+  // タブ2: 大会公式 記録表（横スクロール対応）
   // =========================================================================
   Widget _buildTraditionalPrintTab(BuildContext context, WidgetRef ref, List<MatchModel> teamMatches, bool isDark) {
-    const double colWidth = 60.0;
-    const double leftMargin = 60.0; 
-    
-    int redRem = teamMatches.last.redRemaining.length;
-    int whiteRem = teamMatches.last.whiteRemaining.length;
-    int maxRem = redRem > whiteRem ? redRem : whiteRem;
-    int totalCols = teamMatches.length + maxRem;
+    final int maxCols = teamMatches.length + math.max(teamMatches.last.redRemaining.length, teamMatches.last.whiteRemaining.length);
+    final double estimatedWidth = 60.0 + (maxCols * 60.0) + 120.0; 
 
-    final canvasWidth = leftMargin + (totalCols * colWidth);
-
-    return InteractiveViewer(
-      constrained: false,
-      boundaryMargin: const EdgeInsets.all(40),
-      minScale: 0.2,
-      maxScale: 3.0,
-      child: Container(
-        margin: const EdgeInsets.all(24),
-        color: isDark ? Colors.black : Colors.white, 
-        width: canvasWidth < 600 ? 600 : canvasWidth, 
-        height: 500, 
-        child: CustomPaint(
-          // ★ Phase 1-3: refを渡してエンジンを使えるようにする
-          painter: KachinukiBracketPainter(matches: teamMatches, isDark: isDark, ref: ref), 
-          size: Size.infinite,
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: InteractiveViewer(
+          constrained: false, 
+          minScale: 0.5,
+          maxScale: 3.0,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: SizedBox(
+              width: estimatedWidth < MediaQuery.of(context).size.width ? MediaQuery.of(context).size.width : estimatedWidth,
+              height: 550, 
+              child: CustomPaint(
+                painter: KachinukiBracketPainter(
+                  matches: teamMatches,
+                  isDark: isDark,
+                  ref: ref, 
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -520,7 +404,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
 }
 
 // =========================================================================
-// ★ 究極の伝統的スコア描画エンジン（縦線撤廃・完全センター放射・極小✕対応・同姓対応）
+// ★ 究極の伝統的スコア描画エンジン（デザイン改修・スクロール対応版）
 // =========================================================================
 class PlayerSpan {
   final String rawName;
@@ -534,10 +418,9 @@ class PlayerSpan {
 class KachinukiBracketPainter extends CustomPainter {
   final List<MatchModel> matches;
   final bool isDark; 
-  final WidgetRef ref; // ★ Phase 1-3: エンジンを使うためにrefを受け取る
+  final WidgetRef ref; 
   KachinukiBracketPainter({required this.matches, this.isDark = false, required this.ref});
 
-  // ★ このメソッドは _drawVerticalText 内で使われているため残す
   Map<String, String> _parse(String raw) {
     if (raw.contains('欠員')) return {'last': '', 'first': ''};
     String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
@@ -549,9 +432,20 @@ class KachinukiBracketPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (matches.isEmpty) return;
 
-    final lineColor = isDark ? Colors.white : Colors.black; 
-    final thickLinePaint = Paint()..color = lineColor..strokeWidth = 2.5;
-    final thinLinePaint = Paint()..color = lineColor..strokeWidth = 1.0;
+    // --- 🎨 カラーパレット定義 ---
+    final Color redWinColor = isDark ? Colors.red.shade400 : Colors.red.shade700;
+    final Color whiteWinColor = isDark ? Colors.indigo.shade300 : Colors.indigo.shade800;
+    final Color centerLineColor = isDark ? Colors.indigo.shade400 : Colors.indigo.shade900;
+    final Color baseLineColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
+    // ★ 修正2：引き分けの対戦線を濃いグレーに
+    final Color drawLineColor = isDark ? Colors.grey.shade500 : Colors.grey.shade500; 
+    final Color drawCrossColor = isDark ? Colors.amber.shade300 : Colors.amber.shade700;
+
+    final redBgPaint = Paint()..color = isDark ? Colors.red.withValues(alpha: 0.08) : Colors.red.withValues(alpha: 0.03);
+    final whiteBgPaint = Paint()..color = isDark ? Colors.indigo.withValues(alpha: 0.12) : Colors.indigo.withValues(alpha: 0.03);
+
+    final thickLinePaint = Paint()..color = centerLineColor..strokeWidth = 2.5;
+    final thinLinePaint = Paint()..color = baseLineColor..strokeWidth = 1.0;
     
     final double dx = 60.0;       
     final double startX = 60.0;   
@@ -560,10 +454,13 @@ class KachinukiBracketPainter extends CustomPainter {
     final double y2 = 350.0;      
     final double y3 = 500.0;      
 
+    // 背景の塗り分け
+    canvas.drawRect(Rect.fromLTRB(0, y0, size.width, (y1 + y2) / 2), redBgPaint);
+    canvas.drawRect(Rect.fromLTRB(0, (y1 + y2) / 2, size.width, y3), whiteBgPaint);
+
     final String rTeam = matches.first.redName.contains(':') ? matches.first.redName.split(':').first.trim() : '赤チーム';
     final String wTeam = matches.first.whiteName.contains(':') ? matches.first.whiteName.split(':').first.trim() : '白チーム';
 
-    // ★ 同姓判定のための全名抽出
     List<String> rAllRaw = matches.map((m) => m.redName).toList()..addAll(matches.last.redRemaining);
     List<String> wAllRaw = matches.map((m) => m.whiteName).toList()..addAll(matches.last.whiteRemaining);
     List<String> rLasts = rAllRaw.map((n) => _parse(n)['last']!).where((s) => s.isNotEmpty).toList();
@@ -573,27 +470,20 @@ class KachinukiBracketPainter extends CustomPainter {
     List<PlayerSpan> whiteSpans = [];
     String currentRed = "", currentWhite = "";
 
-    // 試合に出た選手のスパン計算
     for (int i = 0; i < matches.length; i++) {
       final rRaw = matches[i].redName;
       final wRaw = matches[i].whiteName;
-
       final rP = _parse(rRaw);
       final rShow = rLasts.where((n) => n == rP['last']).length > 1 && rP['first']!.isNotEmpty;
-      if (rRaw != currentRed) { 
-        redSpans.add(PlayerSpan(rRaw, rP['last']!, rShow ? rP['first']!.substring(0, 1) : '', i, i)); 
-        currentRed = rRaw; 
-      } else { redSpans.last.endIndex = i; }
+      if (rRaw != currentRed) { redSpans.add(PlayerSpan(rRaw, rP['last']!, rShow ? rP['first']!.substring(0, 1) : '', i, i)); currentRed = rRaw; } 
+      else { redSpans.last.endIndex = i; }
 
       final wP = _parse(wRaw);
       final wShow = wLasts.where((n) => n == wP['last']).length > 1 && wP['first']!.isNotEmpty;
-      if (wRaw != currentWhite) { 
-        whiteSpans.add(PlayerSpan(wRaw, wP['last']!, wShow ? wP['first']!.substring(0, 1) : '', i, i)); 
-        currentWhite = wRaw; 
-      } else { whiteSpans.last.endIndex = i; }
+      if (wRaw != currentWhite) { whiteSpans.add(PlayerSpan(wRaw, wP['last']!, wShow ? wP['first']!.substring(0, 1) : '', i, i)); currentWhite = wRaw; } 
+      else { whiteSpans.last.endIndex = i; }
     }
 
-    // 出場待ち選手のスパン追加
     int currentRedIdx = matches.length;
     for (String name in matches.last.redRemaining) {
       final p = _parse(name);
@@ -619,11 +509,13 @@ class KachinukiBracketPainter extends CustomPainter {
     canvas.drawLine(Offset(0, y2), Offset(totalWidth, y2), thickLinePaint);
     canvas.drawLine(Offset(startX, y0), Offset(startX, y3), thickLinePaint); 
 
-    // 左端にチーム名を縦書き
-    _drawVerticalText(canvas, null, rTeam, Offset(startX / 2, (y0 + y1) / 2), true);
-    _drawVerticalText(canvas, null, wTeam, Offset(startX / 2, (y2 + y3) / 2), true);
+    // ★ 修正1：中央の横線（最も重要な仕切り）の削除
+    // canvas.drawLine(Offset(startX, (y1 + y2) / 2), Offset(totalWidth, (y1 + y2) / 2), thickLinePaint);
 
-    // 赤チームの選手名枠
+    // ★ 修正4：赤チームのチーム名を赤色にする（引数に customColor を追加）
+    _drawVerticalText(canvas, null, rTeam, Offset(startX / 2, (y0 + y1) / 2), true, customColor: redWinColor);
+    _drawVerticalText(canvas, null, wTeam, Offset(startX / 2, (y2 + y3) / 2), true); // 白チームはそのまま
+
     for (var span in redSpans) {
       double left = startX + (span.startIndex * dx);
       double right = startX + ((span.endIndex + 1) * dx);
@@ -631,7 +523,6 @@ class KachinukiBracketPainter extends CustomPainter {
       _drawVerticalText(canvas, span, '', Offset((left + right) / 2, (y0 + y1) / 2), false);
     }
 
-    // 白チームの選手名枠
     for (var span in whiteSpans) {
       double left = startX + (span.startIndex * dx);
       double right = startX + ((span.endIndex + 1) * dx);
@@ -639,77 +530,78 @@ class KachinukiBracketPainter extends CustomPainter {
       _drawVerticalText(canvas, span, '', Offset((left + right) / 2, (y2 + y3) / 2), false);
     }
 
-    // 中央の試合エリアの描画
+    // 試合対戦線の描画
     for (int i = 0; i < matches.length; i++) {
       var match = matches[i];
-      double leftX = startX + (i * dx);
-      bool isDone = match.status == 'finished' || match.status == 'approved';
-      if (!isDone) continue;
-
+      if (match.status != 'finished' && match.status != 'approved') continue;
       var rSpan = redSpans.firstWhere((s) => i >= s.startIndex && i <= s.endIndex);
       var wSpan = whiteSpans.firstWhere((s) => i >= s.startIndex && i <= s.endIndex);
-      
       Offset redTopVertex = Offset(startX + (rSpan.startIndex + rSpan.endIndex + 1) * dx / 2, y1);
       Offset whiteBottomVertex = Offset(startX + (wSpan.startIndex + wSpan.endIndex + 1) * dx / 2, y2);
 
-      // ★ Phase 1-3: UIからビジネスロジックを削除し、ドメインエンジンを呼び出す
       final analysis = ref.read(kendoRuleEngineProvider).analyzeHistory(match.events, match, null);
-      int rPts = analysis.context.redIppon;
-      int wPts = analysis.context.whiteIppon;
+      
+      Color currentWinColor = baseLineColor;
+      double strokeW = 1.0;
+      
+      if (analysis.context.redIppon > analysis.context.whiteIppon) {
+        currentWinColor = redWinColor;
+        strokeW = 2.0;
+      } else if (analysis.context.whiteIppon > analysis.context.redIppon) {
+        currentWinColor = whiteWinColor;
+        strokeW = 2.0;
+      } else {
+        // ★ 修正2：引き分けの時は濃いグレーの線にする
+        currentWinColor = drawLineColor;
+        strokeW = 1.5;
+      }
 
-      canvas.drawLine(redTopVertex, whiteBottomVertex, thinLinePaint);
+      canvas.drawLine(redTopVertex, whiteBottomVertex, Paint()..color = currentWinColor..strokeWidth = strokeW);
 
-      if (rPts == wPts) {
-        Offset midPoint = Offset((redTopVertex.dx + whiteBottomVertex.dx) / 2, (redTopVertex.dy + whiteBottomVertex.dy) / 2);
-        _drawSmallCross(canvas, midPoint, thickLinePaint);
-      } else if (rPts > wPts) { // ★ Phase 1-3: analysis.displays を使用
-        _drawScoreMarksVertical(canvas, analysis.displays[Side.red]!, Offset(leftX + dx / 2, y1 + 15), true);
-      } else { // ★ Phase 1-3: analysis.displays を使用
-        _drawScoreMarksVertical(canvas, analysis.displays[Side.white]!, Offset(leftX + dx / 2, y2 - 15), false);
+      if (analysis.context.redIppon == analysis.context.whiteIppon) {
+        // ★ 修正3：引き分けの✕の太さを太く（strokeWidth: 3.0）
+        _drawSmallCross(canvas, Offset((redTopVertex.dx + whiteBottomVertex.dx) / 2, (redTopVertex.dy + whiteBottomVertex.dy) / 2), Paint()..color = drawCrossColor..strokeWidth = 3.0);
+      } else if (analysis.context.redIppon > analysis.context.whiteIppon) {
+        _drawScoreMarksVertical(canvas, analysis.displays[Side.red]!, Offset(startX + (i * dx) + dx / 2, y1 + 15), true);
+      } else {
+        _drawScoreMarksVertical(canvas, analysis.displays[Side.white]!, Offset(startX + (i * dx) + dx / 2, y2 - 15), false);
       }
     }
   }
 
-  // ★ 修正：同姓の1文字目を右下に添える完璧な縦書き描画ヘルパー
-  void _drawVerticalText(Canvas canvas, PlayerSpan? span, String teamName, Offset center, bool isTeamName) {
+  // ★ 修正4：引数に customColor を追加
+  void _drawVerticalText(Canvas canvas, PlayerSpan? span, String teamName, Offset center, bool isTeamName, {Color? customColor}) {
     double availableHeight = 130.0; 
     double charHeight = 22.0;
     double fontSize = isTeamName ? 18.0 : 16.0;
-    final textColor = isDark ? Colors.white : Colors.black; 
-
-    // アプリ上の表示なので欠員はグレーで表示
+    
+    // customColor があればそれを使用、なければデフォルトの色
+    final Color textColor = customColor ?? (isDark ? Colors.white : Colors.black87); 
+    
     if (!isTeamName && span != null && span.rawName.contains('欠員')) {
       final tp = TextPainter(text: TextSpan(text: '(欠員)', style: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.bold)), textDirection: TextDirection.ltr)..layout();
       tp.paint(canvas, Offset(center.dx - (tp.width / 2), center.dy - (tp.height / 2)));
       return;
     }
-
+    
     String text = isTeamName ? teamName : span!.lastName;
     final chars = text.split('');
+    if (chars.length * charHeight > availableHeight) { charHeight = availableHeight / chars.length; fontSize = charHeight * 0.8; }
     
-    if (chars.length * charHeight > availableHeight) {
-      charHeight = availableHeight / chars.length;
-      fontSize = charHeight * 0.8;
-    }
-
-    final textStyle = TextStyle(color: textColor, fontSize: fontSize, fontWeight: isTeamName ? FontWeight.bold : FontWeight.normal);
+    final textStyle = TextStyle(
+      color: textColor, 
+      fontSize: fontSize, 
+      fontWeight: isTeamName ? FontWeight.w900 : FontWeight.bold,
+      fontFamily: 'Noto Sans JP',
+    );
+    
     double y = center.dy - ((chars.length * charHeight) / 2) + (charHeight / 2);
-
     for (var char in chars) {
-      if (char == 'ー' || char == '-') {
-        final double lineLen = fontSize * 0.7;
-        canvas.drawLine(Offset(center.dx, y - lineLen / 2), Offset(center.dx, y + lineLen / 2), Paint()..color = textColor..strokeWidth = 1.5);
-      } else if (char == '(' || char == ')' || char == '（' || char == '）') {
-        final tp = TextPainter(text: TextSpan(text: char, style: textStyle.copyWith(fontSize: fontSize * 0.8)), textDirection: TextDirection.ltr)..layout();
-        tp.paint(canvas, Offset(center.dx - (tp.width / 2), y - 4));
-      } else {
-        final tp = TextPainter(text: TextSpan(text: char, style: textStyle), textDirection: TextDirection.ltr)..layout();
-        tp.paint(canvas, Offset(center.dx - (tp.width / 2), y - (tp.height / 2)));
-      }
+      final tp = TextPainter(text: TextSpan(text: char, style: textStyle), textDirection: TextDirection.ltr)..layout();
+      tp.paint(canvas, Offset(center.dx - (tp.width / 2), y - (tp.height / 2)));
       y += charHeight;
     }
-
-    // ★ 名前（1文字目）を右下に配置
+    
     if (!isTeamName && span != null && span.initial.isNotEmpty) {
       final tp = TextPainter(text: TextSpan(text: span.initial, style: textStyle.copyWith(fontSize: fontSize * 0.65, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)), textDirection: TextDirection.ltr)..layout();
       tp.paint(canvas, Offset(center.dx + (fontSize * 0.2), y - (charHeight * 0.8)));
@@ -722,19 +614,19 @@ class KachinukiBracketPainter extends CustomPainter {
     canvas.drawLine(Offset(center.dx + size, center.dy - size), Offset(center.dx - size, center.dy + size), paint);
   }
 
-  // ★ Phase 1-3: UI固有の _PointData ではなく、ドメイン層の PointDisplay を使う
   void _drawScoreMarksVertical(Canvas canvas, List<PointDisplay> pts, Offset baseAnchor, bool isRed) {
     double y = isRed ? baseAnchor.dy : baseAnchor.dy - (pts.length * 24.0);
-    final textColor = isDark ? Colors.white : Colors.black; 
-    final textStyle = TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.bold);
-    final circlePaint = Paint()..color = textColor..style = PaintingStyle.stroke..strokeWidth = 1.2;
-
+    // 技の色を統一（Red700 / Indigo800）
+    final Color color = isRed ? (isDark ? Colors.red.shade400 : Colors.red.shade700) : (isDark ? Colors.indigo.shade300 : Colors.indigo.shade800);
+    
+    final textStyle = TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.w900);
+    final circlePaint = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 1.5;
+    
     for (var p in pts) {
       final tp = TextPainter(text: TextSpan(text: p.mark, style: textStyle), textDirection: TextDirection.ltr)..layout();
       tp.paint(canvas, Offset(baseAnchor.dx - (tp.width / 2), y));
-
       if (p.isFirstMatchPoint && p.mark != '◯') {
-        canvas.drawCircle(Offset(baseAnchor.dx, y + (tp.height / 2)), 11.0, circlePaint);
+        canvas.drawCircle(Offset(baseAnchor.dx, y + (tp.height / 2)), 11.5, circlePaint);
       }
       y += 24.0;
     }

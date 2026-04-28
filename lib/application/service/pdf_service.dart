@@ -88,7 +88,8 @@ class PdfService {
                 contentWidgets.add(pw.SizedBox(height: 10));
                 
                 final matchups = _groupByMatchup(normalMatches);
-                final matchupLists = matchups.values.toList();
+                // ★ 修正：簡易入力（SUMMARY）された対戦カードは詳細出力から除外して紙面をスッキリさせる
+                final matchupLists = matchups.values.where((ms) => !ms.any((m) => m.note.contains('[SUMMARY]'))).toList();
                 
                 for (int j = 0; j < matchupLists.length; j += 2) {
                   final table1 = _buildPdfScoreTable('matchup', matchupLists[j], ttf, ttfBold);
@@ -130,6 +131,11 @@ class PdfService {
               contentWidgets.add(pw.SizedBox(height: 16));
 
             } else {
+              // ★ 修正：通常の団体戦でも、簡易入力されたものは詳細出力をスキップする
+              if (matches.any((m) => m.note.contains('[SUMMARY]'))) {
+                continue;
+              }
+              
               final table1 = _buildPdfScoreTable(group['groupName'], matches, ttf, ttfBold);
               pw.Widget table2 = pw.SizedBox();
               
@@ -653,6 +659,7 @@ class PdfService {
       if (e.type == PointType.undo) {
         continue;
       }
+      if (e.isCanceled) continue; // ★ 追加: Undo（キャンセル）されたイベントを除外する
       if (e.type == PointType.hansoku) {
         if (e.side == Side.red) {
           rH++;
@@ -688,8 +695,8 @@ class PdfService {
           if (isDraw) pw.Center(child: pw.Text('×', style: pw.TextStyle(fontSize: 32, color: PdfColors.red300, font: fontBold))),
           pw.Column(
             children: [
-              pw.Expanded(child: _pdfPointBox(redPts, rScore > wScore, true, fontBold)),
-              pw.Expanded(child: _pdfPointBox(whitePts, wScore > rScore, false, fontBold)),
+              pw.Expanded(child: _pdfPointBox(redPts, isDone && rScore > wScore, true, fontBold)),
+              pw.Expanded(child: _pdfPointBox(whitePts, isDone && wScore > rScore, false, fontBold)),
             ],
           ),
         ],
@@ -787,6 +794,7 @@ class PdfService {
       if (e.type == PointType.undo) {
         continue;
       }
+      if (e.isCanceled) continue; // ★ 追加: Undo（キャンセル）されたイベントを除外する
       String mark = '';
       Side side = e.side;
       if (e.type == PointType.hansoku) {
@@ -1048,6 +1056,7 @@ class PdfService {
     int hCount = 0;
     for (var e in events) {
       if (e.type == PointType.undo) continue;
+      if (e.isCanceled) continue; // ★ 追加: Undo（キャンセル）されたイベントを除外する
       if (e.type == PointType.hansoku) {
         if (e.side == Side.red) {
           hCount++;

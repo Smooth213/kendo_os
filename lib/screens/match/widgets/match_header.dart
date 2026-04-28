@@ -1,141 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../models/match_model.dart';
-import '../../../presentation/provider/match_rule_provider.dart';
 import '../../../presentation/provider/match_timer_provider.dart';
+import '../../../presentation/provider/match_list_provider.dart'; 
 
 class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
-  final MatchModel match;
+  final String matchId; // ★ IDのみに変更
   final bool isInputLocked;
-  final bool isAllDone;
-  final bool isTie;
 
   const MatchHeader({
     super.key,
-    required this.match,
+    required this.matchId,
     required this.isInputLocked,
-    required this.isAllDone,
-    required this.isTie,
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(150); // AppBar + Status + MasterTimerの高さ
+  Size get preferredSize => const Size.fromHeight(150);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rule = ref.watch(matchRuleProvider);
-    final isApproved = match.status == 'approved';
-    final headerColor = Colors.indigo.shade900;
+    // ★ 試合の特定ステータスだけをピンポイント監視
+    final matchStatus = ref.watch(matchListProvider.select((list) => 
+      list.where((m) => m.id == matchId).firstOrNull?.status ?? 'waiting'
+    ));
+    final isApproved = matchStatus == 'approved';
+    
+    // 大会全体の状況判断も、ヘッダー自身が行う
+    final isAllDone = ref.watch(matchListProvider.select((list) {
+      final match = list.where((m) => m.id == matchId).firstOrNull;
+      if (match == null || match.groupName == null) return false;
+      return list.where((m) => m.groupName == match.groupName).every((m) => m.status == 'finished' || m.status == 'approved');
+    }));
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headerColor = Colors.indigo.shade900;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ★ ステータスバーへのめり込みを防ぐため、AppBarを自前のセーフエリア付きContainerに置き換え
         Container(
           color: isDark ? const Color(0xFF1C1C1E) : headerColor,
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, // ここで時計やバッテリーのスペースを確実に確保
-            bottom: 4,
-            left: 8,
-            right: 16,
-          ),
-          child: Row(
+          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: 8),
+          child: Column(
             children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                onPressed: () => context.go('/home/${match.tournamentId}'),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                    onPressed: () => context.pop(),
+                  ),
+                  Expanded(
+                    child: Consumer(builder: (context, ref, _) {
+                      // 名前だけを監視
+                      final names = ref.watch(matchListProvider.select((list) {
+                        final m = list.where((m) => m.id == matchId).firstOrNull;
+                        return '${m?.redName ?? ""} vs ${m?.whiteName ?? ""}';
+                      }));
+                      return Text(names, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16));
+                    }),
+                  ),
+                  const SizedBox(width: 48),
+                ],
               ),
-              Expanded(
+              // ステータスバッジ
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isApproved ? Colors.green.shade700 : (isAllDone ? Colors.orange.shade700 : Colors.white24),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Text(
-                  (match.category ?? '').isNotEmpty ? '${match.category} - ${match.matchType}' : match.matchType,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  isApproved ? '記録確定済み' : (isAllDone ? '全試合終了' : '試合進行中'),
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
-              if (isApproved)
-                const Padding(
-                  padding: EdgeInsets.only(right: 8.0),
-                  child: Text('確定済', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 13)),
-                )
-              else
-                const SizedBox(width: 48), // ★ Phase 4: Undoボタンを下部に移したため削除。タイトルを中央に保つための見えない余白。
-              // ★ Phase 7: 大会ホームに集約したため、個別試合のQRボタンは削除
             ],
           ),
         ),
-        // 大会サブタイトル（団体戦名など）が必要な場合のみ表示
-        if (match.groupName != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Text(match.groupName!, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
-          ),
-        
-        if (rule.isRenseikai && rule.renseikaiType == '時間制' && match.groupName != null)
-          _buildMasterTimerDisplay(context, ref, match.groupName!),
+        // マスタータイマー表示
+        _MasterTimerBanner(matchId: matchId),
       ],
     );
   }
+}
 
-  Widget _buildMasterTimerDisplay(BuildContext context, WidgetRef ref, String groupName) {
-    final masterTime = ref.watch(renseikaiMasterTimerProvider(groupName));
-    final isRunning = ref.watch(isMasterTimerRunningProvider(groupName));
-    final isTimeUp = masterTime == 0;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    if (!isRunning && !isTimeUp) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: ElevatedButton.icon(
-          onPressed: () => ref.read(isMasterTimerRunningProvider(groupName).notifier).state = true,
-          icon: const Icon(Icons.play_arrow),
-          label: const Text('錬成会（全体時間）を開始'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.teal.shade700,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          ),
-        ),
-      );
-    }
-
-    final bgColor = isTimeUp 
-        ? (isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50)
-        : (isDark ? Colors.indigo.shade900.withValues(alpha: 0.3) : Colors.indigo.shade50);
-    final borderColor = isTimeUp 
-        ? (isDark ? Colors.red.shade400 : Colors.red.shade300)
-        : (isDark ? Colors.indigo.shade400 : Colors.indigo.shade200);
-    final textColor = isTimeUp
-        ? (isDark ? Colors.red.shade100 : Colors.red.shade800)
-        : (isDark ? Colors.indigo.shade100 : Colors.indigo.shade800);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(isTimeUp ? Icons.timer_off : Icons.timer, color: isTimeUp ? Colors.red : (isDark ? Colors.indigo.shade200 : Colors.indigo), size: 16),
-          const SizedBox(width: 8),
-          Text(
-            isTimeUp ? '錬成会 終了時間！' : '全体の残り時間: ${_formatTime(masterTime > 0 ? masterTime : 0)}',
-            style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-          ),
-        ],
-      ),
-    );
-  }
+class _MasterTimerBanner extends ConsumerWidget {
+  final String matchId;
+  const _MasterTimerBanner({required this.matchId});
 
   String _formatTime(int seconds) {
     final m = (seconds / 60).floor();
     final s = seconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 試合データから groupName を取得
+    final groupName = ref.watch(matchListProvider.select((list) => 
+      list.where((m) => m.id == matchId).firstOrNull?.groupName
+    ));
+    
+    if (groupName == null || groupName.isEmpty) return const SizedBox.shrink();
+
+    // ★ 修正: 正しいプロバイダから秒数を取得する
+    final masterTime = ref.watch(renseikaiMasterTimerProvider(groupName));
+    final isTimeUp = masterTime == 0;
+    final displayTime = _formatTime(masterTime > 0 ? masterTime : 0);
+    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bgColor = isTimeUp 
+        ? (isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50)
+        : (isDark ? Colors.indigo.shade900.withValues(alpha: 0.3) : Colors.indigo.shade50);
+
+    return Container(
+      width: double.infinity,
+      color: bgColor,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Center(
+        child: Text(
+          isTimeUp ? '錬成会 終了時間！' : '全体の残り時間: $displayTime',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isTimeUp ? Colors.red : (isDark ? Colors.indigo.shade200 : Colors.indigo)),
+        ),
+      ),
+    );
   }
 }

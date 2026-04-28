@@ -31,6 +31,9 @@ abstract class MatchRule with _$MatchRule {
     @Default(0.0) double winPoint,
     @Default(0.0) double lossPoint,
     @Default(0.0) double drawPoint,
+    // ★ Phase 6: RuleConfig（差し替え可能なルールの核）
+    @Default(2) int ipponLimit,     // 何本取ったら勝ちか（通常2本、サドンデスは1本）
+    @Default(2) int hansokuLimit,   // 反則何回で相手に1本入るか（通常2回）
   }) = _MatchRule;
 
   factory MatchRule.fromJson(Map<String, dynamic> json) => _$MatchRuleFromJson(json);

@@ -17,6 +17,27 @@ class MatchRuleNotifier extends Notifier<MatchRule> {
   void updateBaseOrder(List<String> newOrder) {
     state = state.copyWith(baseOrder: newOrder);
   }
+
+  // ★ Phase 6: UIから個別のルールを即座に変更するための処理
+  void updateField({
+    int? ipponLimit,
+    int? hansokuLimit,
+    bool? isEnchoUnlimited,
+    int? enchoCount,
+    bool? hasHantei,
+    double? matchTimeMinutes,
+    double? enchoTimeMinutes,
+  }) {
+    state = state.copyWith(
+      ipponLimit: ipponLimit ?? state.ipponLimit,
+      hansokuLimit: hansokuLimit ?? state.hansokuLimit,
+      isEnchoUnlimited: isEnchoUnlimited ?? state.isEnchoUnlimited,
+      enchoCount: enchoCount ?? state.enchoCount,
+      hasHantei: hasHantei ?? state.hasHantei,
+      matchTimeMinutes: matchTimeMinutes ?? state.matchTimeMinutes,
+      enchoTimeMinutes: enchoTimeMinutes ?? state.enchoTimeMinutes,
+    );
+  }
 }
 
 // 2. アプリのどこからでもこの金庫にアクセスできる合鍵（Provider）

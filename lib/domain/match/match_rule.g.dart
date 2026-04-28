@@ -39,6 +39,8 @@ _MatchRule _$MatchRuleFromJson(Map<String, dynamic> json) => _MatchRule(
   winPoint: (json['winPoint'] as num?)?.toDouble() ?? 0.0,
   lossPoint: (json['lossPoint'] as num?)?.toDouble() ?? 0.0,
   drawPoint: (json['drawPoint'] as num?)?.toDouble() ?? 0.0,
+  ipponLimit: (json['ipponLimit'] as num?)?.toInt() ?? 2,
+  hansokuLimit: (json['hansokuLimit'] as num?)?.toInt() ?? 2,
 );
 
 Map<String, dynamic> _$MatchRuleToJson(_MatchRule instance) =>
@@ -67,4 +69,6 @@ Map<String, dynamic> _$MatchRuleToJson(_MatchRule instance) =>
       'winPoint': instance.winPoint,
       'lossPoint': instance.lossPoint,
       'drawPoint': instance.drawPoint,
+      'ipponLimit': instance.ipponLimit,
+      'hansokuLimit': instance.hansokuLimit,
     };

@@ -54,81 +54,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ==========================================
                 // 1. プリセット（一括設定）セクション
                 // ==========================================
-                Text('用途に合わせて一括セット', style: TextStyle(color: dynamicTextColor, fontSize: 13, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
+                _buildSectionHeader(context, '用途に合わせて一括セット'),
                 Row(
                   children: [
                     _buildPresetCard('公式大会', 'official', Icons.emoji_events, settings.confirmBehavior == 'long' && settings.isLocked, notifier),
                     const SizedBox(width: 8),
-                    // ★ アイコンの代わりにカスタム画像パスを渡すため、Icons.sports_martial_arts を null にし、カスタム画像を有効にする
                     _buildPresetCard('大会・錬成会', 'renseikai', null, settings.confirmBehavior == 'double' && !settings.sound, notifier, customAsset: 'assets/kendo_icon.png'),
                     const SizedBox(width: 8),
                     _buildPresetCard('練習・道場', 'practice', Icons.home, settings.confirmBehavior == 'single' && !settings.haptic, notifier),
                   ],
                 ),
-                const SizedBox(height: 32),
-
-                // ==========================================
-                // 2. 操作・安全設定セクション
-                // ==========================================
-                Text('操作・安全設定', style: TextStyle(color: dynamicTextColor, fontSize: 13, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                _buildSettingsBlock([
-                  _buildListTile(
-                    title: '確定ボタンの挙動',
-                    trailing: DropdownButton<String>(
-                      value: settings.confirmBehavior,
-                      underline: const SizedBox(),
-                      icon: Icon(Icons.arrow_drop_down, color: dynamicTextColor),
-                      style: TextStyle(color: dynamicTextColor, fontWeight: FontWeight.bold, fontSize: 14),
-                      items: const [
-                        DropdownMenuItem(value: 'single', child: Text('通常タップ')),
-                        DropdownMenuItem(value: 'double', child: Text('ダブルタップ')),
-                        DropdownMenuItem(value: 'long', child: Text('長押し (推奨)')),
-                      ],
-                      onChanged: (val) => notifier.updateField(confirmBehavior: val),
-                    ),
-                  ),
-                  _buildDivider(),
-                  _buildSwitchTile('最終確定時の確認ダイアログ', settings.showConfirmDialog, (val) => notifier.updateField(showConfirmDialog: val)), // ★ 追加
-                  _buildDivider(),
-                  _buildSwitchTile('記録確定後の修正ロック', settings.isLocked, (val) => notifier.updateField(isLocked: val)),
-                ]),
                 const SizedBox(height: 24),
 
                 // ==========================================
-                // 3. フィードバックセクション
+                // 2. 表示と画面
                 // ==========================================
-                Text('フィードバック', style: TextStyle(color: dynamicTextColor, fontSize: 13, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                _buildSettingsBlock([
-                  _buildSwitchTile('システム操作の振動 (バイブ)', settings.haptic, (val) => notifier.updateField(haptic: val)),
-                  _buildDivider(),
-                  _buildSwitchTile('打突入力時の振動 (バイブ)', settings.strikeVib, (val) => notifier.updateField(strikeVib: val)),
-                  _buildDivider(),
-                  _buildSwitchTile('操作サウンド (音)', settings.sound, (val) => notifier.updateField(sound: val)),
-                  
-                  // ★ 音がONの時だけ「マナーモード突破」の設定を表示する
-                  if (settings.sound) ...[
-                    _buildDivider(),
-                    _buildSwitchTile('マナーモード時も強制的に音を鳴らす', settings.ignoreMannerMode, (val) => notifier.updateField(ignoreMannerMode: val)),
-                  ],
-                ]),
-                const SizedBox(height: 24),
-
-                // ==========================================
-                // 4. システム・表示セクション
-                // ==========================================
-                Text('システム・表示', style: TextStyle(color: dynamicTextColor, fontSize: 13, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                _buildSettingsBlock([
-                  _buildSwitchTile('スリープ(画面消灯)防止', settings.sleepPrevent, (val) => notifier.updateField(sleepPrevent: val)),
-                  _buildDivider(),
-                  _buildSwitchTile('左利きモード (赤白ボタン反転)', settings.leftHanded, (val) => notifier.updateField(leftHanded: val)),
-                  _buildDivider(),
-                  // ★ ダークモード設定の追加
-                  _buildListTile(
+                _buildSectionHeader(context, '表示と画面'),
+                _buildSettingsBlock(context, [
+                  _buildListTile(context,
                     title: 'ダークモード対応',
+                    icon: Icons.dark_mode, iconBgColor: Colors.blue,
                     trailing: DropdownButton<String>(
                       value: settings.themeMode,
                       underline: const SizedBox(),
@@ -141,54 +86,117 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         DropdownMenuItem(value: 'dark', child: Text('常にダーク')),
                       ],
                       onChanged: (val) {
-                        if (val != null) {
-                          // ★ 正しいメソッド名と引数で呼び出し
-                          ref.read(settingsProvider.notifier).updateField(themeMode: val);
-                        }
+                        if (val != null) ref.read(settingsProvider.notifier).updateField(themeMode: val);
                       },
                     ),
                   ),
-                  _buildDivider(),
-              // ==========================================
-              // 5. セキュリティ・権限セクション (Phase 8)
-              // ==========================================
-              _buildListTile(
-                title: 'セキュリティレベル',
-                trailing: DropdownButton<int>(
-                  value: settings.securityLevel,
-                  underline: const SizedBox(),
-                  items: const [
-                    DropdownMenuItem(value: 1, child: Text('Lv.1 自由')),
-                    DropdownMenuItem(value: 2, child: Text('Lv.2 標準')),
-                    DropdownMenuItem(value: 3, child: Text('Lv.3 厳格')),
-                  ],
-                  onChanged: (val) => _handleSecurityChange(context, ref, val!),
-                ),
-              ),
-              _buildDivider(),
-                  ListTile(
-                    title: const Text('端末の役割設定'),
-                    subtitle: Text('現在の設定: ${ref.watch(persistentRoleProvider).label}'),
-                    trailing: const Icon(Icons.person_search),
-                onTap: () => _handleRoleSwitch(context, ref),
+                  _buildSwitchTile(context, 'スリープ(画面消灯)防止', settings.sleepPrevent, (val) => notifier.updateField(sleepPrevent: val),
+                    icon: Icons.lightbulb, iconBgColor: Colors.orange,
                   ),
                 ]),
+                _buildSectionFooter(context, 'ダークモードは端末本体の設定に連動させることもできます。スリープ防止をオンにすると、長時間の試合記録中に画面が暗くなるのを防ぎます。'),
+                const SizedBox(height: 24),
+
+                // ==========================================
+                // 3. 試合の操作・UI
+                // ==========================================
+                _buildSectionHeader(context, '試合の操作・UI'),
+                _buildSettingsBlock(context, [
+                  _buildSwitchTile(context, '左利きモード (赤白ボタン反転)', settings.leftHanded, (val) => notifier.updateField(leftHanded: val),
+                    icon: Icons.pan_tool, iconBgColor: Colors.indigo,
+                  ),
+                  _buildListTile(context,
+                    title: '確定ボタンの挙動',
+                    icon: Icons.touch_app, iconBgColor: Colors.teal,
+                    trailing: DropdownButton<String>(
+                      value: settings.confirmBehavior,
+                      underline: const SizedBox(),
+                      borderRadius: BorderRadius.circular(12),
+                      icon: Icon(Icons.arrow_drop_down, color: dynamicTextColor),
+                      style: TextStyle(color: dynamicTextColor, fontWeight: FontWeight.bold, fontSize: 14),
+                      items: const [
+                        DropdownMenuItem(value: 'single', child: Text('通常タップ')),
+                        DropdownMenuItem(value: 'double', child: Text('ダブルタップ')),
+                        DropdownMenuItem(value: 'long', child: Text('長押し (推奨)')),
+                      ],
+                      onChanged: (val) => notifier.updateField(confirmBehavior: val),
+                    ),
+                  ),
+                  _buildSwitchTile(context, '最終確定時の確認ダイアログ', settings.showConfirmDialog, (val) => notifier.updateField(showConfirmDialog: val),
+                    icon: Icons.domain_verification, iconBgColor: Colors.green,
+                  ),
+                  _buildSwitchTile(context, '記録確定後の修正ロック', settings.isLocked, (val) => notifier.updateField(isLocked: val),
+                    icon: Icons.lock, iconBgColor: Colors.redAccent,
+                  ),
+                ]),
+                _buildSectionFooter(context, '左利きモードにすると赤白の入力ボタンが反転します。確定ボタンを長押しやダブルタップにすることで誤操作を防ぎます。記録をロックすると後からスコアを修正できなくなります。'),
+                const SizedBox(height: 24),
+
+                // ==========================================
+                // 4. 音と振動・フィードバック
+                // ==========================================
+                _buildSectionHeader(context, '音と振動・フィードバック'),
+                _buildSettingsBlock(context, [
+                  _buildSwitchTile(context, '操作サウンド (音)', settings.sound, (val) => notifier.updateField(sound: val),
+                    icon: Icons.volume_up, iconBgColor: Colors.pinkAccent,
+                  ),
+                  if (settings.sound)
+                    _buildSwitchTile(context, 'マナーモード時も強制的に鳴らす', settings.ignoreMannerMode, (val) => notifier.updateField(ignoreMannerMode: val),
+                      icon: Icons.volume_off, iconBgColor: Colors.pink,
+                    ),
+                  _buildSwitchTile(context, 'システム操作の振動 (バイブ)', settings.haptic, (val) => notifier.updateField(haptic: val),
+                    icon: Icons.vibration, iconBgColor: Colors.purpleAccent,
+                  ),
+                  _buildSwitchTile(context, '打突入力時の振動 (バイブ)', settings.strikeVib, (val) => notifier.updateField(strikeVib: val),
+                    icon: Icons.sports_martial_arts, iconBgColor: Colors.deepPurple,
+                  ),
+                ]),
+                _buildSectionFooter(context, 'ポイント入力時や試合終了時に音や振動で知らせます。マナーモード時も強制的に音を鳴らす設定は、大会本部のiPad等で周りに音を響かせたい場合に便利です。'),
+                const SizedBox(height: 24),
+
+                // ==========================================
+                // 5. セキュリティ・権限セクション
+                // ==========================================
+                _buildSectionHeader(context, 'セキュリティ・権限管理'),
+                _buildSettingsBlock(context, [
+                  _buildListTile(context,
+                    title: 'セキュリティレベル',
+                    icon: Icons.security, iconBgColor: Colors.blueGrey,
+                    trailing: DropdownButton<int>(
+                      value: settings.securityLevel,
+                      underline: const SizedBox(),
+                      borderRadius: BorderRadius.circular(12),
+                      items: const [
+                        DropdownMenuItem(value: 1, child: Text('Lv.1 自由')),
+                        DropdownMenuItem(value: 2, child: Text('Lv.2 標準')),
+                        DropdownMenuItem(value: 3, child: Text('Lv.3 厳格')),
+                      ],
+                      onChanged: (val) => _handleSecurityChange(context, ref, val!),
+                    ),
+                  ),
+                  _buildListTile(context,
+                    title: '端末の役割設定',
+                    subtitle: '現在の設定: ${ref.watch(persistentRoleProvider).label}',
+                    icon: Icons.person, iconBgColor: Colors.blueGrey,
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                    onTap: () => _handleRoleSwitch(context, ref),
+                  ),
+                ]),
+                _buildSectionFooter(context, 'パスコードを設定することで、一般ユーザーによる設定の変更を制限できます。'),
                 
-                // ★ Phase 5: 監査ログ（非表示ログの緊急可視化）への入り口を追加
-                // 管理者権限を持っている場合のみ表示される秘密のメニュー
                 if (ref.watch(persistentRoleProvider) == Role.admin) ...[
                   const SizedBox(height: 24),
-                  Text('トラブルシューティング (管理者専用)', style: TextStyle(color: dynamicTextColor, fontSize: 13, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  _buildSettingsBlock([
-                    ListTile(
-                      leading: Icon(Icons.policy, color: isDark ? Colors.orange.shade300 : Colors.orange.shade700),
-                      title: Text('システム監査ログ', style: TextStyle(color: dynamicTextColor, fontWeight: FontWeight.bold)),
-                      subtitle: const Text('誰が・いつ・何を変更したかを追跡します', style: TextStyle(fontSize: 12)),
+                  _buildSectionHeader(context, '管理者メニュー'),
+                  _buildSettingsBlock(context, [
+                    _buildListTile(context,
+                      title: 'システム監査ログ',
+                      subtitle: '誰が・いつ・何を変更したかを追跡します',
+                      icon: Icons.policy, iconBgColor: Colors.grey,
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
                       onTap: () => context.push('/audit-log'),
                     ),
                   ]),
+                  _buildSectionFooter(context, 'システムの詳細な操作履歴（監査ログ）を確認できます。'),
                 ],
               ],
             ),
@@ -259,7 +267,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // --- UI構築用ヘルパーメソッド ---
 
-  // ★ customAsset 引数を追加し、IconDataがnullの場合は画像を読み込むように拡張
   Widget _buildPresetCard(String title, String presetKey, IconData? icon, bool isActive, SettingsNotifier notifier, {String? customAsset}) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color dynamicTextColor = isDark ? Colors.white : textIndigo;
@@ -283,15 +290,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           child: Column(
             children: [
-              // ★ customAsset が指定されていれば画像を、そうでなければ標準アイコンを描画
               if (customAsset != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 1.0), // 上下のバランス調整
+                  padding: const EdgeInsets.symmetric(vertical: 1.0),
                   child: Image.asset(
                     customAsset,
-                    width: 34, // ★ 28から34へ拡大し、他2つのアイコンとボリューム感を合わせる
+                    width: 34,
                     height: 34,
-                    // 選択状態に応じて色を変える（薄いグレーか、深いインディゴか）
                     color: isActive ? dynamicTextColor : Colors.grey.shade400,
                   ),
                 )
@@ -302,7 +307,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text(
                 title, 
                 style: TextStyle(color: isActive ? dynamicTextColor : Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.bold),
-                maxLines: 1, // 文字が溢れないように1行に制限
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -312,46 +317,98 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildSettingsBlock(List<Widget> children) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, bottom: 8, top: 12),
+      child: Text(
+        title.toUpperCase(), 
+        style: TextStyle(
+          color: isDark ? Colors.grey.shade500 : Colors.grey.shade600, 
+          fontSize: 13, 
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsBlock(BuildContext context, List<Widget> children) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color dynamicCardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+
+    final List<Widget> spacedChildren = [];
+    for (int i = 0; i < children.length; i++) {
+      spacedChildren.add(children[i]);
+      if (i < children.length - 1) {
+        spacedChildren.add(_buildDivider(context));
+      }
+    }
 
     return Container(
       decoration: BoxDecoration(
         color: dynamicCardColor,
-        borderRadius: BorderRadius.circular(12), // iOS標準の角丸
-        // iOS Native はカードに影をつけない
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(children: children),
+      child: Column(children: spacedChildren),
     );
   }
 
-  Widget _buildListTile({required String title, required Widget trailing}) {
+  Widget _buildSectionFooter(BuildContext context, String text) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color dynamicTextColor = isDark ? Colors.white : Colors.black; // textIndigo廃止
-
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: TextStyle(color: dynamicTextColor, fontSize: 16, fontWeight: FontWeight.w500)), // iOS風に少しフォント調整
-          trailing,
-        ],
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
+          fontSize: 12,
+          height: 1.4,
+        ),
       ),
     );
   }
 
-  Widget _buildSwitchTile(String title, bool value, Function(bool) onChanged) {
+  Widget _buildListTile(BuildContext context, {
+    required String title,
+    required Widget trailing,
+    required IconData icon,
+    required Color iconBgColor,
+    VoidCallback? onTap,
+    String? subtitle,
+  }) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color dynamicTextColor = isDark ? Colors.white : Colors.black;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(color: iconBgColor, borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+      title: Text(title, style: TextStyle(color: dynamicTextColor, fontSize: 15, fontWeight: FontWeight.w500)),
+      subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
+      trailing: trailing,
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildSwitchTile(BuildContext context, String title, bool value, Function(bool) onChanged, {
+    required IconData icon,
+    required Color iconBgColor,
+  }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return _buildListTile(
+      context,
       title: title,
+      icon: icon, iconBgColor: iconBgColor,
       trailing: Switch(
         value: value,
         activeThumbColor: Colors.white, 
-        activeTrackColor: accentPink, 
-        inactiveThumbColor: Colors.grey.shade400,
-        inactiveTrackColor: isDark ? const Color(0xFF38383A) : Colors.grey.shade200, // iOS風の非アクティブ色
+        activeTrackColor: Colors.green, // iOS風の緑
+        inactiveThumbColor: Colors.white,
+        inactiveTrackColor: isDark ? const Color(0xFF38383A) : const Color(0xFFE9E9EA),
         onChanged: (val) {
           if (value != val) HapticFeedback.lightImpact();
           onChanged(val);
@@ -360,10 +417,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    // iOS標準の区切り線の色と細さ
-    return Divider(height: 1, thickness: 0.5, color: isDark ? const Color(0xFF38383A) : const Color(0xFFC6C6C8), indent: 16, endIndent: 0);
+    return Divider(height: 1, thickness: 0.5, color: isDark ? const Color(0xFF38383A) : const Color(0xFFC6C6C8), indent: 56, endIndent: 0);
   }
 
   // ★ Phase 8: 英数混在8文字以上のバリデーション

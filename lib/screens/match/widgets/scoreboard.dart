@@ -6,27 +6,32 @@ import '../../../../domain/kendo_rule_engine.dart';
 import '../../../presentation/provider/match_provider.dart';
 import '../../../application/usecase/match_usecase.dart'; // ★ 追加: UseCaseの参照
 import '../../../presentation/provider/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
+import '../../../presentation/provider/match_list_provider.dart'; // ★ 追加: matchListProvider
 
 class MatchScoreboard extends ConsumerWidget {
-  final MatchModel match;
+  final String matchId;
   final String? myUserId;
   final Function(String side) onNameTap;
 
   const MatchScoreboard({
     super.key,
-    required this.match,
+    required this.matchId,
     required this.myUserId,
     required this.onNameTap,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final match = ref.watch(matchListProvider.select((list) => 
+      list.where((m) => m.id == matchId).firstOrNull
+    ));
+    if (match == null) return const SizedBox.shrink();
+
     final engine = ref.watch(kendoRuleEngineProvider);
     final ptsMap = MatchUseCase.calculatePointDisplays(match, engine);
     
     // ★ 修正: ViewStateからすべての計算済み状態を取得
-    final viewState = ref.watch(matchViewStateProvider(match.id));
-    final isDone = match.status == 'finished' || match.status == 'approved';
+    final viewState = ref.watch(matchViewStateProvider(matchId));
 
     return Stack(
       alignment: Alignment.topCenter,
@@ -37,7 +42,7 @@ class MatchScoreboard extends ConsumerWidget {
             _buildScoreColumn(context, Side.white, match, ptsMap, viewState),
           ],
         ),
-        if (isDone) _buildResultOverlay(context, viewState),
+        if (viewState.winner != null) _buildResultOverlay(context, viewState),
       ],
     );
   }
@@ -126,7 +131,8 @@ class MatchScoreboard extends ConsumerWidget {
             SizedBox(
               height: 36, 
               child: Text(
-                List.filled(match.events.where((e) => e.side == side && e.type == PointType.hansoku).length, '▲').join(''),
+                // ★ 修正: Undo（キャンセル）された反則イベントを除外してカウントする
+                List.filled(match.events.where((e) => !e.isCanceled && e.side == side && e.type == PointType.hansoku).length, '▲').join(''),
                 style: const TextStyle(fontSize: 24, color: Colors.amber),
               ),
             ),

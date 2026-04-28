@@ -37,6 +37,13 @@ class StandingsScreen extends ConsumerWidget {
     return '$wari割$bu分$rin厘';
   }
 
+  // ★ 追加：所属名などを取り除き、純粋な「選手名」だけを抽出するヘルパー
+  String _extractPlayerName(String rawName) {
+    if (rawName.contains('欠員') || rawName.contains('未定')) return '';
+    String clean = rawName.contains(':') ? rawName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : rawName.trim();
+    return clean;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // ★ Step 3-2: selectを使い、計算に必要なこの大会の試合データのみを監視
@@ -68,47 +75,53 @@ class StandingsScreen extends ConsumerWidget {
       ),
       body: playerListAsync.when(
         data: (players) {
+          // ★ 追加：自チーム（選手マスタ）に登録されている選手名のリストを作成
+          final masterPlayerNames = players.map((p) => p.name).toSet();
+          
           final statsMap = <String, PlayerStats>{};
           for (var match in matches) {
             if (match.status != 'approved' && match.status != 'finished') continue;
 
-            statsMap.putIfAbsent(match.redName, () => PlayerStats(match.redName));
-            statsMap.putIfAbsent(match.whiteName, () => PlayerStats(match.whiteName));
-
-            final redStats = statsMap[match.redName]!;
-            final whiteStats = statsMap[match.whiteName]!;
-
-            redStats.matches++;
-            whiteStats.matches++;
-
             final rScore = (match.redScore as num).toInt();
             final wScore = (match.whiteScore as num).toInt();
-
-            redStats.pointsScored += rScore;
-            whiteStats.pointsScored += wScore;
-
-            // ★ 勝ち点ロジックの適用
             final r = match.rule;
-            if (rScore > wScore) {
-              redStats.wins++;
-              whiteStats.losses++;
-              if (r != null && r.isLeague) {
-                redStats.matchPoints += r.winPoint;
-                whiteStats.matchPoints += r.lossPoint;
+
+            final rNameClean = _extractPlayerName(match.redName);
+            final wNameClean = _extractPlayerName(match.whiteName);
+
+            // ★ 赤側の集計（マスタに登録されている場合のみ）
+            if (rNameClean.isNotEmpty && masterPlayerNames.contains(rNameClean)) {
+              statsMap.putIfAbsent(rNameClean, () => PlayerStats(rNameClean));
+              final stats = statsMap[rNameClean]!;
+              stats.matches++;
+              stats.pointsScored += rScore;
+              if (rScore > wScore) {
+                stats.wins++;
+                if (r != null && r.isLeague) stats.matchPoints += r.winPoint;
+              } else if (wScore > rScore) {
+                stats.losses++;
+                if (r != null && r.isLeague) stats.matchPoints += r.lossPoint;
+              } else {
+                stats.draws++;
+                if (r != null && r.isLeague) stats.matchPoints += r.drawPoint;
               }
-            } else if (wScore > rScore) {
-              whiteStats.wins++;
-              redStats.losses++;
-              if (r != null && r.isLeague) {
-                whiteStats.matchPoints += r.winPoint;
-                redStats.matchPoints += r.lossPoint;
-              }
-            } else {
-              redStats.draws++;
-              whiteStats.draws++;
-              if (r != null && r.isLeague) {
-                redStats.matchPoints += r.drawPoint;
-                whiteStats.matchPoints += r.drawPoint;
+            }
+
+            // ★ 白側の集計（マスタに登録されている場合のみ）
+            if (wNameClean.isNotEmpty && masterPlayerNames.contains(wNameClean)) {
+              statsMap.putIfAbsent(wNameClean, () => PlayerStats(wNameClean));
+              final stats = statsMap[wNameClean]!;
+              stats.matches++;
+              stats.pointsScored += wScore;
+              if (wScore > rScore) {
+                stats.wins++;
+                if (r != null && r.isLeague) stats.matchPoints += r.winPoint;
+              } else if (rScore > wScore) {
+                stats.losses++;
+                if (r != null && r.isLeague) stats.matchPoints += r.lossPoint;
+              } else {
+                stats.draws++;
+                if (r != null && r.isLeague) stats.matchPoints += r.drawPoint;
               }
             }
           }

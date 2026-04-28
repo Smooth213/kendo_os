@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/match_model.dart';
 import '../../../presentation/provider/match_timer_provider.dart';
+import '../../../presentation/provider/match_list_provider.dart'; // ★ 追加: matchListProvider
 
 class TimerWidget extends ConsumerWidget {
-  final MatchModel match;
+  final String matchId;
   final bool isInputLocked;
 
   const TimerWidget({
     super.key,
-    required this.match,
+    required this.matchId,
     required this.isInputLocked,
   });
 
@@ -69,7 +70,7 @@ class TimerWidget extends ConsumerWidget {
         ElevatedButton(
           onPressed: () {
             // ★ 修正: matchTimerProvider を使用
-            ref.read(matchTimerProvider).updateRemainingSeconds(match.id, (m * 60) + s);
+            ref.read(matchTimerProvider).updateRemainingSeconds(matchId, (m * 60) + s);
             Navigator.pop(ctx);
           },
           style: ElevatedButton.styleFrom(backgroundColor: isDark ? Colors.indigo.shade600 : Colors.indigo, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -81,7 +82,10 @@ class TimerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFinished = match.status == 'finished' || match.status == 'approved';
+    final isFinished = ref.watch(matchListProvider.select((list) {
+      final m = list.where((m) => m.id == matchId).firstOrNull;
+      return m?.status == 'finished' || m?.status == 'approved';
+    }));
 
     if (isFinished) return const SizedBox.shrink();
     
@@ -94,41 +98,47 @@ class TimerWidget extends ConsumerWidget {
 
   // ★ タイマーの中身をヘルパー関数として分離
   Widget _buildTimerContent(BuildContext context, WidgetRef ref) {
+    final isRunning = ref.watch(matchListProvider.select((list) => 
+      list.where((m) => m.id == matchId).firstOrNull?.timerIsRunning ?? false
+    ));
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final timerBgColor = match.timerIsRunning 
+    final timerBgColor = isRunning 
         ? (isDark ? Colors.red.shade900.withValues(alpha: 0.4) : Colors.red.shade50)
         : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
-    final timerBorderColor = match.timerIsRunning 
+    final timerBorderColor = isRunning 
         ? (isDark ? Colors.red.shade400 : Colors.red.shade500)
         : (isDark ? const Color(0xFF38383A) : Colors.indigo.shade200);
-    final timerTextColor = match.timerIsRunning 
+    final timerTextColor = isRunning 
         ? (isDark ? Colors.red.shade300 : Colors.red.shade900) 
         : (isDark ? Colors.white : Colors.black87);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque, // ★ 修正：透明な余白部分のタップ漏れを完全に防ぐ魔法のコード
       // ★ 修正: matchTimerProvider を使用
-      onTap: isInputLocked ? null : () => ref.read(matchTimerProvider).toggleTimer(match.id),
-      onLongPress: isInputLocked ? null : () => _showTimerEditDialog(context, ref, match),
+      onTap: isInputLocked ? null : () => ref.read(matchTimerProvider).toggleTimer(matchId),
+      onLongPress: isInputLocked ? null : () {
+        final match = ref.read(matchListProvider).firstWhere((m) => m.id == matchId);
+        _showTimerEditDialog(context, ref, match);
+      },
       child: Container(
         // ★ 修正：内部の余白を適切に設定し、引き伸ばしを防止
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
         decoration: BoxDecoration(
           color: timerBgColor,
           borderRadius: BorderRadius.circular(32), // ★ 縦幅がスリムになるため、角丸も美しく微調整
-          border: Border.all(color: timerBorderColor, width: match.timerIsRunning ? 4 : 1),
+          border: Border.all(color: timerBorderColor, width: isRunning ? 4 : 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(match.timerIsRunning ? Icons.pause_circle : Icons.play_circle, color: match.timerIsRunning ? (isDark ? Colors.red.shade400 : Colors.red.shade600) : (isDark ? Colors.indigo.shade300 : Colors.indigo.shade500), size: 32),
+            Icon(isRunning ? Icons.pause_circle : Icons.play_circle, color: isRunning ? (isDark ? Colors.red.shade400 : Colors.red.shade600) : (isDark ? Colors.indigo.shade300 : Colors.indigo.shade500), size: 32),
             const SizedBox(width: 12),
             // ★ Step 3-3: Firestoreの match.remainingSeconds ではなく、
             // 1秒ごとに更新される liveRemainingSecondsProvider を watch する。
             // これにより、この Text Widget だけが1秒ごとに更新されるようになる。
             Consumer(
               builder: (context, ref, child) {
-                final seconds = ref.watch(liveRemainingSecondsProvider(match.id));
+                final seconds = ref.watch(liveRemainingSecondsProvider(matchId));
                 return Text(
                   _formatTime(seconds), 
                   style: TextStyle(

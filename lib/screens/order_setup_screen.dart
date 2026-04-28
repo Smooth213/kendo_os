@@ -272,7 +272,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             // ★ 所属（チーム名）のサジェスト付き入力欄
             _buildTeamAutocomplete(
               controller: affiController,
-              focusNode: affiFocusNode, // ★ 追加
+              focusNode: affiFocusNode,
               suggestions: history,
               labelText: '所属（例：広島剣道会）',
               hintText: '空欄でもOK',
@@ -433,9 +433,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           // 参加者追加フォーム
                           _buildTeamAutocomplete(
                             controller: _addParticipantController,
-                            focusNode: _addParticipantFocusNode, // ★ 追加
+                            focusNode: _addParticipantFocusNode,
                             suggestions: ref.watch(opponentTeamHistoryProvider),
-                            // ★ 修正：rule ではなく、取得した matchType 変数を使用
                             labelText: matchType.contains('個人戦') ? '参加選手名を追加' : '参加チーム名を追加',
                             hintText: '入力または履歴から選択',
                             fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -449,6 +448,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             width: double.infinity,
                             child: ElevatedButton.icon(
                               onPressed: () async {
+                                _addParticipantFocusNode.unfocus();
+                                FocusScope.of(context).unfocus();
                                 final input = TextSanitizer.clean(_addParticipantController.text);
                                 if (input.isEmpty && !matchType.contains('個人戦')) return;
 
@@ -463,8 +464,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       setState(() {
                                         _leagueParticipants.add(fullName);
                                         _leagueTeamOrders[fullName] = [result['name']!];
-                                        _addParticipantController.clear();
                                       });
+                                      if (!context.mounted) return;
+                                      _addParticipantFocusNode.unfocus();
+                                      FocusScope.of(context).unfocus();
+                                      _addParticipantController.clear();
                                     }
                                   }
                                 } else {
@@ -475,8 +479,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     setState(() {
                                       _leagueParticipants.add(input);
                                       _leagueTeamOrders[input] = order;
-                                      _addParticipantController.clear();
                                     });
+                                    if (!context.mounted) return;
+                                    _addParticipantFocusNode.unfocus();
+                                    FocusScope.of(context).unfocus();
+                                    _addParticipantController.clear();
                                   }
                                 }
                               },
@@ -617,7 +624,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     // ★ 修正：先ほど作ったヘルパー関数を使ってサジェスト（予測変換）対応にする
                                     _buildTeamAutocomplete(
                                       controller: _opponentTeamController,
-                                      focusNode: _opponentTeamFocusNode, // ★ 追加
+                                      focusNode: _opponentTeamFocusNode,
                                       suggestions: ref.watch(opponentTeamHistoryProvider),
                                       labelText: '相手チーム名・所属名（任意）',
                                       hintText: 'タップして登録済みリストから選択',
@@ -1037,7 +1044,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   // ★ 追加：予測変換（サジェスト）と手入力を両立する、最強の入力フィールドビルダー
   Widget _buildTeamAutocomplete({
     required TextEditingController controller,
-    required FocusNode focusNode, // ★ 追加：親で管理しているFocusNodeを受け取る
+    required FocusNode focusNode,
     required List<String> suggestions,
     required String labelText,
     required String hintText,
@@ -1049,22 +1056,32 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   }) {
     return RawAutocomplete<String>(
       textEditingController: controller,
-      focusNode: focusNode, // ★ 修正：毎回の再生成をやめる（setState時の誤発火防止）
-      // ユーザーが文字を打つたびに候補を絞り込む
+      focusNode: focusNode,
       optionsBuilder: (TextEditingValue textEditingValue) {
-        // ★ 真の解決：IME入力（日本語変換中）のゴースト状態を正確に捉えるため、textEditingValueを使用する
-        final text = textEditingValue.text;
-        
-        if (text.isEmpty) {
+        if (!focusNode.hasFocus) {
+          return const Iterable<String>.empty();
+        }
+        if (textEditingValue.text.isEmpty) {
           return suggestions;
         }
-        return suggestions.where((option) => option.contains(text));
+        return const Iterable<String>.empty();
       },
-      // 実際の入力欄のデザイン（今までと同じ見た目を維持しつつ、右端に▼をつける）
-      fieldViewBuilder: (context, fieldController, focusNode, onFieldSubmitted) {
+      fieldViewBuilder: (context, fieldController, textFieldFocusNode, onFieldSubmitted) {
         return TextField(
           controller: fieldController,
-          focusNode: focusNode,
+          focusNode: textFieldFocusNode,
+          onTap: () {
+            if (fieldController.text.isEmpty) {
+              // ★ 修正: 1回目のタップ時にフォーカスが確実に当たるのを待つため、フレーム描画後に実行する
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                final currentVal = fieldController.value;
+                fieldController.value = const TextEditingValue(text: ' ');
+                fieldController.value = currentVal;
+              });
+            }
+          },
+          onChanged: (text) {
+          },
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             labelText: labelText,

@@ -19,7 +19,9 @@ mixin _$MatchRule {
  bool get isRunningTime; bool get isLeague; String get category; String get note; bool get isRenseikai; List<String> get baseOrder; String get teamName; bool get isKachinuki; String get kachinukiUnlimitedType; bool get hasLeagueDaihyo; String get renseikaiType; int get overallTimeMinutes; bool get isDaihyoIpponShobu; bool get hasRepresentativeMatch; bool get isEnchoUnlimited;// ★ 修正：デフォルトを「無制限ではない（回数指定）」に変更
  double get enchoTimeMinutes;// ★ 修正：小数を許容する
  int get enchoCount;// ★ 追加：延長回数を記憶する引き出し
- bool get hasHantei; List<String> get leagueOrder; double get winPoint; double get lossPoint; double get drawPoint;
+ bool get hasHantei; List<String> get leagueOrder; double get winPoint; double get lossPoint; double get drawPoint;// ★ Phase 6: RuleConfig（差し替え可能なルールの核）
+ int get ipponLimit;// 何本取ったら勝ちか（通常2本、サドンデスは1本）
+ int get hansokuLimit;
 /// Create a copy of MatchRule
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -32,16 +34,16 @@ $MatchRuleCopyWith<MatchRule> get copyWith => _$MatchRuleCopyWithImpl<MatchRule>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchRule&&const DeepCollectionEquality().equals(other.positions, positions)&&(identical(other.matchTimeMinutes, matchTimeMinutes) || other.matchTimeMinutes == matchTimeMinutes)&&(identical(other.isRunningTime, isRunningTime) || other.isRunningTime == isRunningTime)&&(identical(other.isLeague, isLeague) || other.isLeague == isLeague)&&(identical(other.category, category) || other.category == category)&&(identical(other.note, note) || other.note == note)&&(identical(other.isRenseikai, isRenseikai) || other.isRenseikai == isRenseikai)&&const DeepCollectionEquality().equals(other.baseOrder, baseOrder)&&(identical(other.teamName, teamName) || other.teamName == teamName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.kachinukiUnlimitedType, kachinukiUnlimitedType) || other.kachinukiUnlimitedType == kachinukiUnlimitedType)&&(identical(other.hasLeagueDaihyo, hasLeagueDaihyo) || other.hasLeagueDaihyo == hasLeagueDaihyo)&&(identical(other.renseikaiType, renseikaiType) || other.renseikaiType == renseikaiType)&&(identical(other.overallTimeMinutes, overallTimeMinutes) || other.overallTimeMinutes == overallTimeMinutes)&&(identical(other.isDaihyoIpponShobu, isDaihyoIpponShobu) || other.isDaihyoIpponShobu == isDaihyoIpponShobu)&&(identical(other.hasRepresentativeMatch, hasRepresentativeMatch) || other.hasRepresentativeMatch == hasRepresentativeMatch)&&(identical(other.isEnchoUnlimited, isEnchoUnlimited) || other.isEnchoUnlimited == isEnchoUnlimited)&&(identical(other.enchoTimeMinutes, enchoTimeMinutes) || other.enchoTimeMinutes == enchoTimeMinutes)&&(identical(other.enchoCount, enchoCount) || other.enchoCount == enchoCount)&&(identical(other.hasHantei, hasHantei) || other.hasHantei == hasHantei)&&const DeepCollectionEquality().equals(other.leagueOrder, leagueOrder)&&(identical(other.winPoint, winPoint) || other.winPoint == winPoint)&&(identical(other.lossPoint, lossPoint) || other.lossPoint == lossPoint)&&(identical(other.drawPoint, drawPoint) || other.drawPoint == drawPoint));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchRule&&const DeepCollectionEquality().equals(other.positions, positions)&&(identical(other.matchTimeMinutes, matchTimeMinutes) || other.matchTimeMinutes == matchTimeMinutes)&&(identical(other.isRunningTime, isRunningTime) || other.isRunningTime == isRunningTime)&&(identical(other.isLeague, isLeague) || other.isLeague == isLeague)&&(identical(other.category, category) || other.category == category)&&(identical(other.note, note) || other.note == note)&&(identical(other.isRenseikai, isRenseikai) || other.isRenseikai == isRenseikai)&&const DeepCollectionEquality().equals(other.baseOrder, baseOrder)&&(identical(other.teamName, teamName) || other.teamName == teamName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.kachinukiUnlimitedType, kachinukiUnlimitedType) || other.kachinukiUnlimitedType == kachinukiUnlimitedType)&&(identical(other.hasLeagueDaihyo, hasLeagueDaihyo) || other.hasLeagueDaihyo == hasLeagueDaihyo)&&(identical(other.renseikaiType, renseikaiType) || other.renseikaiType == renseikaiType)&&(identical(other.overallTimeMinutes, overallTimeMinutes) || other.overallTimeMinutes == overallTimeMinutes)&&(identical(other.isDaihyoIpponShobu, isDaihyoIpponShobu) || other.isDaihyoIpponShobu == isDaihyoIpponShobu)&&(identical(other.hasRepresentativeMatch, hasRepresentativeMatch) || other.hasRepresentativeMatch == hasRepresentativeMatch)&&(identical(other.isEnchoUnlimited, isEnchoUnlimited) || other.isEnchoUnlimited == isEnchoUnlimited)&&(identical(other.enchoTimeMinutes, enchoTimeMinutes) || other.enchoTimeMinutes == enchoTimeMinutes)&&(identical(other.enchoCount, enchoCount) || other.enchoCount == enchoCount)&&(identical(other.hasHantei, hasHantei) || other.hasHantei == hasHantei)&&const DeepCollectionEquality().equals(other.leagueOrder, leagueOrder)&&(identical(other.winPoint, winPoint) || other.winPoint == winPoint)&&(identical(other.lossPoint, lossPoint) || other.lossPoint == lossPoint)&&(identical(other.drawPoint, drawPoint) || other.drawPoint == drawPoint)&&(identical(other.ipponLimit, ipponLimit) || other.ipponLimit == ipponLimit)&&(identical(other.hansokuLimit, hansokuLimit) || other.hansokuLimit == hansokuLimit));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(positions),matchTimeMinutes,isRunningTime,isLeague,category,note,isRenseikai,const DeepCollectionEquality().hash(baseOrder),teamName,isKachinuki,kachinukiUnlimitedType,hasLeagueDaihyo,renseikaiType,overallTimeMinutes,isDaihyoIpponShobu,hasRepresentativeMatch,isEnchoUnlimited,enchoTimeMinutes,enchoCount,hasHantei,const DeepCollectionEquality().hash(leagueOrder),winPoint,lossPoint,drawPoint]);
+int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(positions),matchTimeMinutes,isRunningTime,isLeague,category,note,isRenseikai,const DeepCollectionEquality().hash(baseOrder),teamName,isKachinuki,kachinukiUnlimitedType,hasLeagueDaihyo,renseikaiType,overallTimeMinutes,isDaihyoIpponShobu,hasRepresentativeMatch,isEnchoUnlimited,enchoTimeMinutes,enchoCount,hasHantei,const DeepCollectionEquality().hash(leagueOrder),winPoint,lossPoint,drawPoint,ipponLimit,hansokuLimit]);
 
 @override
 String toString() {
-  return 'MatchRule(positions: $positions, matchTimeMinutes: $matchTimeMinutes, isRunningTime: $isRunningTime, isLeague: $isLeague, category: $category, note: $note, isRenseikai: $isRenseikai, baseOrder: $baseOrder, teamName: $teamName, isKachinuki: $isKachinuki, kachinukiUnlimitedType: $kachinukiUnlimitedType, hasLeagueDaihyo: $hasLeagueDaihyo, renseikaiType: $renseikaiType, overallTimeMinutes: $overallTimeMinutes, isDaihyoIpponShobu: $isDaihyoIpponShobu, hasRepresentativeMatch: $hasRepresentativeMatch, isEnchoUnlimited: $isEnchoUnlimited, enchoTimeMinutes: $enchoTimeMinutes, enchoCount: $enchoCount, hasHantei: $hasHantei, leagueOrder: $leagueOrder, winPoint: $winPoint, lossPoint: $lossPoint, drawPoint: $drawPoint)';
+  return 'MatchRule(positions: $positions, matchTimeMinutes: $matchTimeMinutes, isRunningTime: $isRunningTime, isLeague: $isLeague, category: $category, note: $note, isRenseikai: $isRenseikai, baseOrder: $baseOrder, teamName: $teamName, isKachinuki: $isKachinuki, kachinukiUnlimitedType: $kachinukiUnlimitedType, hasLeagueDaihyo: $hasLeagueDaihyo, renseikaiType: $renseikaiType, overallTimeMinutes: $overallTimeMinutes, isDaihyoIpponShobu: $isDaihyoIpponShobu, hasRepresentativeMatch: $hasRepresentativeMatch, isEnchoUnlimited: $isEnchoUnlimited, enchoTimeMinutes: $enchoTimeMinutes, enchoCount: $enchoCount, hasHantei: $hasHantei, leagueOrder: $leagueOrder, winPoint: $winPoint, lossPoint: $lossPoint, drawPoint: $drawPoint, ipponLimit: $ipponLimit, hansokuLimit: $hansokuLimit)';
 }
 
 
@@ -52,7 +54,7 @@ abstract mixin class $MatchRuleCopyWith<$Res>  {
   factory $MatchRuleCopyWith(MatchRule value, $Res Function(MatchRule) _then) = _$MatchRuleCopyWithImpl;
 @useResult
 $Res call({
- List<String> positions, double matchTimeMinutes, bool isRunningTime, bool isLeague, String category, String note, bool isRenseikai, List<String> baseOrder, String teamName, bool isKachinuki, String kachinukiUnlimitedType, bool hasLeagueDaihyo, String renseikaiType, int overallTimeMinutes, bool isDaihyoIpponShobu, bool hasRepresentativeMatch, bool isEnchoUnlimited, double enchoTimeMinutes, int enchoCount, bool hasHantei, List<String> leagueOrder, double winPoint, double lossPoint, double drawPoint
+ List<String> positions, double matchTimeMinutes, bool isRunningTime, bool isLeague, String category, String note, bool isRenseikai, List<String> baseOrder, String teamName, bool isKachinuki, String kachinukiUnlimitedType, bool hasLeagueDaihyo, String renseikaiType, int overallTimeMinutes, bool isDaihyoIpponShobu, bool hasRepresentativeMatch, bool isEnchoUnlimited, double enchoTimeMinutes, int enchoCount, bool hasHantei, List<String> leagueOrder, double winPoint, double lossPoint, double drawPoint, int ipponLimit, int hansokuLimit
 });
 
 
@@ -69,7 +71,7 @@ class _$MatchRuleCopyWithImpl<$Res>
 
 /// Create a copy of MatchRule
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? positions = null,Object? matchTimeMinutes = null,Object? isRunningTime = null,Object? isLeague = null,Object? category = null,Object? note = null,Object? isRenseikai = null,Object? baseOrder = null,Object? teamName = null,Object? isKachinuki = null,Object? kachinukiUnlimitedType = null,Object? hasLeagueDaihyo = null,Object? renseikaiType = null,Object? overallTimeMinutes = null,Object? isDaihyoIpponShobu = null,Object? hasRepresentativeMatch = null,Object? isEnchoUnlimited = null,Object? enchoTimeMinutes = null,Object? enchoCount = null,Object? hasHantei = null,Object? leagueOrder = null,Object? winPoint = null,Object? lossPoint = null,Object? drawPoint = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? positions = null,Object? matchTimeMinutes = null,Object? isRunningTime = null,Object? isLeague = null,Object? category = null,Object? note = null,Object? isRenseikai = null,Object? baseOrder = null,Object? teamName = null,Object? isKachinuki = null,Object? kachinukiUnlimitedType = null,Object? hasLeagueDaihyo = null,Object? renseikaiType = null,Object? overallTimeMinutes = null,Object? isDaihyoIpponShobu = null,Object? hasRepresentativeMatch = null,Object? isEnchoUnlimited = null,Object? enchoTimeMinutes = null,Object? enchoCount = null,Object? hasHantei = null,Object? leagueOrder = null,Object? winPoint = null,Object? lossPoint = null,Object? drawPoint = null,Object? ipponLimit = null,Object? hansokuLimit = null,}) {
   return _then(_self.copyWith(
 positions: null == positions ? _self.positions : positions // ignore: cast_nullable_to_non_nullable
 as List<String>,matchTimeMinutes: null == matchTimeMinutes ? _self.matchTimeMinutes : matchTimeMinutes // ignore: cast_nullable_to_non_nullable
@@ -95,7 +97,9 @@ as bool,leagueOrder: null == leagueOrder ? _self.leagueOrder : leagueOrder // ig
 as List<String>,winPoint: null == winPoint ? _self.winPoint : winPoint // ignore: cast_nullable_to_non_nullable
 as double,lossPoint: null == lossPoint ? _self.lossPoint : lossPoint // ignore: cast_nullable_to_non_nullable
 as double,drawPoint: null == drawPoint ? _self.drawPoint : drawPoint // ignore: cast_nullable_to_non_nullable
-as double,
+as double,ipponLimit: null == ipponLimit ? _self.ipponLimit : ipponLimit // ignore: cast_nullable_to_non_nullable
+as int,hansokuLimit: null == hansokuLimit ? _self.hansokuLimit : hansokuLimit // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -180,10 +184,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> positions,  double matchTimeMinutes,  bool isRunningTime,  bool isLeague,  String category,  String note,  bool isRenseikai,  List<String> baseOrder,  String teamName,  bool isKachinuki,  String kachinukiUnlimitedType,  bool hasLeagueDaihyo,  String renseikaiType,  int overallTimeMinutes,  bool isDaihyoIpponShobu,  bool hasRepresentativeMatch,  bool isEnchoUnlimited,  double enchoTimeMinutes,  int enchoCount,  bool hasHantei,  List<String> leagueOrder,  double winPoint,  double lossPoint,  double drawPoint)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> positions,  double matchTimeMinutes,  bool isRunningTime,  bool isLeague,  String category,  String note,  bool isRenseikai,  List<String> baseOrder,  String teamName,  bool isKachinuki,  String kachinukiUnlimitedType,  bool hasLeagueDaihyo,  String renseikaiType,  int overallTimeMinutes,  bool isDaihyoIpponShobu,  bool hasRepresentativeMatch,  bool isEnchoUnlimited,  double enchoTimeMinutes,  int enchoCount,  bool hasHantei,  List<String> leagueOrder,  double winPoint,  double lossPoint,  double drawPoint,  int ipponLimit,  int hansokuLimit)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MatchRule() when $default != null:
-return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that.isLeague,_that.category,_that.note,_that.isRenseikai,_that.baseOrder,_that.teamName,_that.isKachinuki,_that.kachinukiUnlimitedType,_that.hasLeagueDaihyo,_that.renseikaiType,_that.overallTimeMinutes,_that.isDaihyoIpponShobu,_that.hasRepresentativeMatch,_that.isEnchoUnlimited,_that.enchoTimeMinutes,_that.enchoCount,_that.hasHantei,_that.leagueOrder,_that.winPoint,_that.lossPoint,_that.drawPoint);case _:
+return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that.isLeague,_that.category,_that.note,_that.isRenseikai,_that.baseOrder,_that.teamName,_that.isKachinuki,_that.kachinukiUnlimitedType,_that.hasLeagueDaihyo,_that.renseikaiType,_that.overallTimeMinutes,_that.isDaihyoIpponShobu,_that.hasRepresentativeMatch,_that.isEnchoUnlimited,_that.enchoTimeMinutes,_that.enchoCount,_that.hasHantei,_that.leagueOrder,_that.winPoint,_that.lossPoint,_that.drawPoint,_that.ipponLimit,_that.hansokuLimit);case _:
   return orElse();
 
 }
@@ -201,10 +205,10 @@ return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> positions,  double matchTimeMinutes,  bool isRunningTime,  bool isLeague,  String category,  String note,  bool isRenseikai,  List<String> baseOrder,  String teamName,  bool isKachinuki,  String kachinukiUnlimitedType,  bool hasLeagueDaihyo,  String renseikaiType,  int overallTimeMinutes,  bool isDaihyoIpponShobu,  bool hasRepresentativeMatch,  bool isEnchoUnlimited,  double enchoTimeMinutes,  int enchoCount,  bool hasHantei,  List<String> leagueOrder,  double winPoint,  double lossPoint,  double drawPoint)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> positions,  double matchTimeMinutes,  bool isRunningTime,  bool isLeague,  String category,  String note,  bool isRenseikai,  List<String> baseOrder,  String teamName,  bool isKachinuki,  String kachinukiUnlimitedType,  bool hasLeagueDaihyo,  String renseikaiType,  int overallTimeMinutes,  bool isDaihyoIpponShobu,  bool hasRepresentativeMatch,  bool isEnchoUnlimited,  double enchoTimeMinutes,  int enchoCount,  bool hasHantei,  List<String> leagueOrder,  double winPoint,  double lossPoint,  double drawPoint,  int ipponLimit,  int hansokuLimit)  $default,) {final _that = this;
 switch (_that) {
 case _MatchRule():
-return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that.isLeague,_that.category,_that.note,_that.isRenseikai,_that.baseOrder,_that.teamName,_that.isKachinuki,_that.kachinukiUnlimitedType,_that.hasLeagueDaihyo,_that.renseikaiType,_that.overallTimeMinutes,_that.isDaihyoIpponShobu,_that.hasRepresentativeMatch,_that.isEnchoUnlimited,_that.enchoTimeMinutes,_that.enchoCount,_that.hasHantei,_that.leagueOrder,_that.winPoint,_that.lossPoint,_that.drawPoint);case _:
+return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that.isLeague,_that.category,_that.note,_that.isRenseikai,_that.baseOrder,_that.teamName,_that.isKachinuki,_that.kachinukiUnlimitedType,_that.hasLeagueDaihyo,_that.renseikaiType,_that.overallTimeMinutes,_that.isDaihyoIpponShobu,_that.hasRepresentativeMatch,_that.isEnchoUnlimited,_that.enchoTimeMinutes,_that.enchoCount,_that.hasHantei,_that.leagueOrder,_that.winPoint,_that.lossPoint,_that.drawPoint,_that.ipponLimit,_that.hansokuLimit);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -221,10 +225,10 @@ return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> positions,  double matchTimeMinutes,  bool isRunningTime,  bool isLeague,  String category,  String note,  bool isRenseikai,  List<String> baseOrder,  String teamName,  bool isKachinuki,  String kachinukiUnlimitedType,  bool hasLeagueDaihyo,  String renseikaiType,  int overallTimeMinutes,  bool isDaihyoIpponShobu,  bool hasRepresentativeMatch,  bool isEnchoUnlimited,  double enchoTimeMinutes,  int enchoCount,  bool hasHantei,  List<String> leagueOrder,  double winPoint,  double lossPoint,  double drawPoint)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> positions,  double matchTimeMinutes,  bool isRunningTime,  bool isLeague,  String category,  String note,  bool isRenseikai,  List<String> baseOrder,  String teamName,  bool isKachinuki,  String kachinukiUnlimitedType,  bool hasLeagueDaihyo,  String renseikaiType,  int overallTimeMinutes,  bool isDaihyoIpponShobu,  bool hasRepresentativeMatch,  bool isEnchoUnlimited,  double enchoTimeMinutes,  int enchoCount,  bool hasHantei,  List<String> leagueOrder,  double winPoint,  double lossPoint,  double drawPoint,  int ipponLimit,  int hansokuLimit)?  $default,) {final _that = this;
 switch (_that) {
 case _MatchRule() when $default != null:
-return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that.isLeague,_that.category,_that.note,_that.isRenseikai,_that.baseOrder,_that.teamName,_that.isKachinuki,_that.kachinukiUnlimitedType,_that.hasLeagueDaihyo,_that.renseikaiType,_that.overallTimeMinutes,_that.isDaihyoIpponShobu,_that.hasRepresentativeMatch,_that.isEnchoUnlimited,_that.enchoTimeMinutes,_that.enchoCount,_that.hasHantei,_that.leagueOrder,_that.winPoint,_that.lossPoint,_that.drawPoint);case _:
+return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that.isLeague,_that.category,_that.note,_that.isRenseikai,_that.baseOrder,_that.teamName,_that.isKachinuki,_that.kachinukiUnlimitedType,_that.hasLeagueDaihyo,_that.renseikaiType,_that.overallTimeMinutes,_that.isDaihyoIpponShobu,_that.hasRepresentativeMatch,_that.isEnchoUnlimited,_that.enchoTimeMinutes,_that.enchoCount,_that.hasHantei,_that.leagueOrder,_that.winPoint,_that.lossPoint,_that.drawPoint,_that.ipponLimit,_that.hansokuLimit);case _:
   return null;
 
 }
@@ -236,7 +240,7 @@ return $default(_that.positions,_that.matchTimeMinutes,_that.isRunningTime,_that
 @JsonSerializable()
 
 class _MatchRule implements MatchRule {
-  const _MatchRule({final  List<String> positions = const ['選手'], this.matchTimeMinutes = 3.0, this.isRunningTime = false, this.isLeague = false, this.category = '', this.note = '', this.isRenseikai = false, final  List<String> baseOrder = const [], this.teamName = '', this.isKachinuki = false, this.kachinukiUnlimitedType = '大将対大将', this.hasLeagueDaihyo = false, this.renseikaiType = '一試合制', this.overallTimeMinutes = 30, this.isDaihyoIpponShobu = true, this.hasRepresentativeMatch = true, this.isEnchoUnlimited = false, this.enchoTimeMinutes = 3.0, this.enchoCount = 1, this.hasHantei = false, final  List<String> leagueOrder = const [], this.winPoint = 0.0, this.lossPoint = 0.0, this.drawPoint = 0.0}): _positions = positions,_baseOrder = baseOrder,_leagueOrder = leagueOrder;
+  const _MatchRule({final  List<String> positions = const ['選手'], this.matchTimeMinutes = 3.0, this.isRunningTime = false, this.isLeague = false, this.category = '', this.note = '', this.isRenseikai = false, final  List<String> baseOrder = const [], this.teamName = '', this.isKachinuki = false, this.kachinukiUnlimitedType = '大将対大将', this.hasLeagueDaihyo = false, this.renseikaiType = '一試合制', this.overallTimeMinutes = 30, this.isDaihyoIpponShobu = true, this.hasRepresentativeMatch = true, this.isEnchoUnlimited = false, this.enchoTimeMinutes = 3.0, this.enchoCount = 1, this.hasHantei = false, final  List<String> leagueOrder = const [], this.winPoint = 0.0, this.lossPoint = 0.0, this.drawPoint = 0.0, this.ipponLimit = 2, this.hansokuLimit = 2}): _positions = positions,_baseOrder = baseOrder,_leagueOrder = leagueOrder;
   factory _MatchRule.fromJson(Map<String, dynamic> json) => _$MatchRuleFromJson(json);
 
  final  List<String> _positions;
@@ -285,6 +289,10 @@ class _MatchRule implements MatchRule {
 @override@JsonKey() final  double winPoint;
 @override@JsonKey() final  double lossPoint;
 @override@JsonKey() final  double drawPoint;
+// ★ Phase 6: RuleConfig（差し替え可能なルールの核）
+@override@JsonKey() final  int ipponLimit;
+// 何本取ったら勝ちか（通常2本、サドンデスは1本）
+@override@JsonKey() final  int hansokuLimit;
 
 /// Create a copy of MatchRule
 /// with the given fields replaced by the non-null parameter values.
@@ -299,16 +307,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchRule&&const DeepCollectionEquality().equals(other._positions, _positions)&&(identical(other.matchTimeMinutes, matchTimeMinutes) || other.matchTimeMinutes == matchTimeMinutes)&&(identical(other.isRunningTime, isRunningTime) || other.isRunningTime == isRunningTime)&&(identical(other.isLeague, isLeague) || other.isLeague == isLeague)&&(identical(other.category, category) || other.category == category)&&(identical(other.note, note) || other.note == note)&&(identical(other.isRenseikai, isRenseikai) || other.isRenseikai == isRenseikai)&&const DeepCollectionEquality().equals(other._baseOrder, _baseOrder)&&(identical(other.teamName, teamName) || other.teamName == teamName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.kachinukiUnlimitedType, kachinukiUnlimitedType) || other.kachinukiUnlimitedType == kachinukiUnlimitedType)&&(identical(other.hasLeagueDaihyo, hasLeagueDaihyo) || other.hasLeagueDaihyo == hasLeagueDaihyo)&&(identical(other.renseikaiType, renseikaiType) || other.renseikaiType == renseikaiType)&&(identical(other.overallTimeMinutes, overallTimeMinutes) || other.overallTimeMinutes == overallTimeMinutes)&&(identical(other.isDaihyoIpponShobu, isDaihyoIpponShobu) || other.isDaihyoIpponShobu == isDaihyoIpponShobu)&&(identical(other.hasRepresentativeMatch, hasRepresentativeMatch) || other.hasRepresentativeMatch == hasRepresentativeMatch)&&(identical(other.isEnchoUnlimited, isEnchoUnlimited) || other.isEnchoUnlimited == isEnchoUnlimited)&&(identical(other.enchoTimeMinutes, enchoTimeMinutes) || other.enchoTimeMinutes == enchoTimeMinutes)&&(identical(other.enchoCount, enchoCount) || other.enchoCount == enchoCount)&&(identical(other.hasHantei, hasHantei) || other.hasHantei == hasHantei)&&const DeepCollectionEquality().equals(other._leagueOrder, _leagueOrder)&&(identical(other.winPoint, winPoint) || other.winPoint == winPoint)&&(identical(other.lossPoint, lossPoint) || other.lossPoint == lossPoint)&&(identical(other.drawPoint, drawPoint) || other.drawPoint == drawPoint));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchRule&&const DeepCollectionEquality().equals(other._positions, _positions)&&(identical(other.matchTimeMinutes, matchTimeMinutes) || other.matchTimeMinutes == matchTimeMinutes)&&(identical(other.isRunningTime, isRunningTime) || other.isRunningTime == isRunningTime)&&(identical(other.isLeague, isLeague) || other.isLeague == isLeague)&&(identical(other.category, category) || other.category == category)&&(identical(other.note, note) || other.note == note)&&(identical(other.isRenseikai, isRenseikai) || other.isRenseikai == isRenseikai)&&const DeepCollectionEquality().equals(other._baseOrder, _baseOrder)&&(identical(other.teamName, teamName) || other.teamName == teamName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.kachinukiUnlimitedType, kachinukiUnlimitedType) || other.kachinukiUnlimitedType == kachinukiUnlimitedType)&&(identical(other.hasLeagueDaihyo, hasLeagueDaihyo) || other.hasLeagueDaihyo == hasLeagueDaihyo)&&(identical(other.renseikaiType, renseikaiType) || other.renseikaiType == renseikaiType)&&(identical(other.overallTimeMinutes, overallTimeMinutes) || other.overallTimeMinutes == overallTimeMinutes)&&(identical(other.isDaihyoIpponShobu, isDaihyoIpponShobu) || other.isDaihyoIpponShobu == isDaihyoIpponShobu)&&(identical(other.hasRepresentativeMatch, hasRepresentativeMatch) || other.hasRepresentativeMatch == hasRepresentativeMatch)&&(identical(other.isEnchoUnlimited, isEnchoUnlimited) || other.isEnchoUnlimited == isEnchoUnlimited)&&(identical(other.enchoTimeMinutes, enchoTimeMinutes) || other.enchoTimeMinutes == enchoTimeMinutes)&&(identical(other.enchoCount, enchoCount) || other.enchoCount == enchoCount)&&(identical(other.hasHantei, hasHantei) || other.hasHantei == hasHantei)&&const DeepCollectionEquality().equals(other._leagueOrder, _leagueOrder)&&(identical(other.winPoint, winPoint) || other.winPoint == winPoint)&&(identical(other.lossPoint, lossPoint) || other.lossPoint == lossPoint)&&(identical(other.drawPoint, drawPoint) || other.drawPoint == drawPoint)&&(identical(other.ipponLimit, ipponLimit) || other.ipponLimit == ipponLimit)&&(identical(other.hansokuLimit, hansokuLimit) || other.hansokuLimit == hansokuLimit));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(_positions),matchTimeMinutes,isRunningTime,isLeague,category,note,isRenseikai,const DeepCollectionEquality().hash(_baseOrder),teamName,isKachinuki,kachinukiUnlimitedType,hasLeagueDaihyo,renseikaiType,overallTimeMinutes,isDaihyoIpponShobu,hasRepresentativeMatch,isEnchoUnlimited,enchoTimeMinutes,enchoCount,hasHantei,const DeepCollectionEquality().hash(_leagueOrder),winPoint,lossPoint,drawPoint]);
+int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(_positions),matchTimeMinutes,isRunningTime,isLeague,category,note,isRenseikai,const DeepCollectionEquality().hash(_baseOrder),teamName,isKachinuki,kachinukiUnlimitedType,hasLeagueDaihyo,renseikaiType,overallTimeMinutes,isDaihyoIpponShobu,hasRepresentativeMatch,isEnchoUnlimited,enchoTimeMinutes,enchoCount,hasHantei,const DeepCollectionEquality().hash(_leagueOrder),winPoint,lossPoint,drawPoint,ipponLimit,hansokuLimit]);
 
 @override
 String toString() {
-  return 'MatchRule(positions: $positions, matchTimeMinutes: $matchTimeMinutes, isRunningTime: $isRunningTime, isLeague: $isLeague, category: $category, note: $note, isRenseikai: $isRenseikai, baseOrder: $baseOrder, teamName: $teamName, isKachinuki: $isKachinuki, kachinukiUnlimitedType: $kachinukiUnlimitedType, hasLeagueDaihyo: $hasLeagueDaihyo, renseikaiType: $renseikaiType, overallTimeMinutes: $overallTimeMinutes, isDaihyoIpponShobu: $isDaihyoIpponShobu, hasRepresentativeMatch: $hasRepresentativeMatch, isEnchoUnlimited: $isEnchoUnlimited, enchoTimeMinutes: $enchoTimeMinutes, enchoCount: $enchoCount, hasHantei: $hasHantei, leagueOrder: $leagueOrder, winPoint: $winPoint, lossPoint: $lossPoint, drawPoint: $drawPoint)';
+  return 'MatchRule(positions: $positions, matchTimeMinutes: $matchTimeMinutes, isRunningTime: $isRunningTime, isLeague: $isLeague, category: $category, note: $note, isRenseikai: $isRenseikai, baseOrder: $baseOrder, teamName: $teamName, isKachinuki: $isKachinuki, kachinukiUnlimitedType: $kachinukiUnlimitedType, hasLeagueDaihyo: $hasLeagueDaihyo, renseikaiType: $renseikaiType, overallTimeMinutes: $overallTimeMinutes, isDaihyoIpponShobu: $isDaihyoIpponShobu, hasRepresentativeMatch: $hasRepresentativeMatch, isEnchoUnlimited: $isEnchoUnlimited, enchoTimeMinutes: $enchoTimeMinutes, enchoCount: $enchoCount, hasHantei: $hasHantei, leagueOrder: $leagueOrder, winPoint: $winPoint, lossPoint: $lossPoint, drawPoint: $drawPoint, ipponLimit: $ipponLimit, hansokuLimit: $hansokuLimit)';
 }
 
 
@@ -319,7 +327,7 @@ abstract mixin class _$MatchRuleCopyWith<$Res> implements $MatchRuleCopyWith<$Re
   factory _$MatchRuleCopyWith(_MatchRule value, $Res Function(_MatchRule) _then) = __$MatchRuleCopyWithImpl;
 @override @useResult
 $Res call({
- List<String> positions, double matchTimeMinutes, bool isRunningTime, bool isLeague, String category, String note, bool isRenseikai, List<String> baseOrder, String teamName, bool isKachinuki, String kachinukiUnlimitedType, bool hasLeagueDaihyo, String renseikaiType, int overallTimeMinutes, bool isDaihyoIpponShobu, bool hasRepresentativeMatch, bool isEnchoUnlimited, double enchoTimeMinutes, int enchoCount, bool hasHantei, List<String> leagueOrder, double winPoint, double lossPoint, double drawPoint
+ List<String> positions, double matchTimeMinutes, bool isRunningTime, bool isLeague, String category, String note, bool isRenseikai, List<String> baseOrder, String teamName, bool isKachinuki, String kachinukiUnlimitedType, bool hasLeagueDaihyo, String renseikaiType, int overallTimeMinutes, bool isDaihyoIpponShobu, bool hasRepresentativeMatch, bool isEnchoUnlimited, double enchoTimeMinutes, int enchoCount, bool hasHantei, List<String> leagueOrder, double winPoint, double lossPoint, double drawPoint, int ipponLimit, int hansokuLimit
 });
 
 
@@ -336,7 +344,7 @@ class __$MatchRuleCopyWithImpl<$Res>
 
 /// Create a copy of MatchRule
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? positions = null,Object? matchTimeMinutes = null,Object? isRunningTime = null,Object? isLeague = null,Object? category = null,Object? note = null,Object? isRenseikai = null,Object? baseOrder = null,Object? teamName = null,Object? isKachinuki = null,Object? kachinukiUnlimitedType = null,Object? hasLeagueDaihyo = null,Object? renseikaiType = null,Object? overallTimeMinutes = null,Object? isDaihyoIpponShobu = null,Object? hasRepresentativeMatch = null,Object? isEnchoUnlimited = null,Object? enchoTimeMinutes = null,Object? enchoCount = null,Object? hasHantei = null,Object? leagueOrder = null,Object? winPoint = null,Object? lossPoint = null,Object? drawPoint = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? positions = null,Object? matchTimeMinutes = null,Object? isRunningTime = null,Object? isLeague = null,Object? category = null,Object? note = null,Object? isRenseikai = null,Object? baseOrder = null,Object? teamName = null,Object? isKachinuki = null,Object? kachinukiUnlimitedType = null,Object? hasLeagueDaihyo = null,Object? renseikaiType = null,Object? overallTimeMinutes = null,Object? isDaihyoIpponShobu = null,Object? hasRepresentativeMatch = null,Object? isEnchoUnlimited = null,Object? enchoTimeMinutes = null,Object? enchoCount = null,Object? hasHantei = null,Object? leagueOrder = null,Object? winPoint = null,Object? lossPoint = null,Object? drawPoint = null,Object? ipponLimit = null,Object? hansokuLimit = null,}) {
   return _then(_MatchRule(
 positions: null == positions ? _self._positions : positions // ignore: cast_nullable_to_non_nullable
 as List<String>,matchTimeMinutes: null == matchTimeMinutes ? _self.matchTimeMinutes : matchTimeMinutes // ignore: cast_nullable_to_non_nullable
@@ -362,7 +370,9 @@ as bool,leagueOrder: null == leagueOrder ? _self._leagueOrder : leagueOrder // i
 as List<String>,winPoint: null == winPoint ? _self.winPoint : winPoint // ignore: cast_nullable_to_non_nullable
 as double,lossPoint: null == lossPoint ? _self.lossPoint : lossPoint // ignore: cast_nullable_to_non_nullable
 as double,drawPoint: null == drawPoint ? _self.drawPoint : drawPoint // ignore: cast_nullable_to_non_nullable
-as double,
+as double,ipponLimit: null == ipponLimit ? _self.ipponLimit : ipponLimit // ignore: cast_nullable_to_non_nullable
+as int,hansokuLimit: null == hansokuLimit ? _self.hansokuLimit : hansokuLimit // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
