@@ -101,7 +101,7 @@ class StartScreen extends ConsumerWidget {
                     const Text('Kendo Sync', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.0)),
                     // ★ 設定アイコンはここに配置
                     IconButton(
-                      icon: const Icon(Icons.settings, color: Colors.white70),
+                      icon: const Icon(Icons.settings_outlined, color: Colors.white70),
                       onPressed: () {
                         context.push('/settings');
                       },
@@ -110,6 +110,23 @@ class StartScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text('大会の作成・管理をここから始めましょう', style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.9), fontWeight: FontWeight.w500)),
+                // ★ 追加：部内戦・申し合わせへの特急ガラスボタン（ホーム画面を経由）
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push('/bunaiksen-home'),
+                    icon: const Icon(Icons.local_fire_department, color: Colors.white),
+                    label: const Text('部内戦をはじめる', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: Colors.white, width: 1.5),
+                      backgroundColor: Colors.white.withValues(alpha: 0.15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -130,7 +147,7 @@ class StartScreen extends ConsumerWidget {
                             if (permissions.canManageTournament) ...[
                               Expanded(
                                 // ★ 直感UX改修：オレンジから「Emerald Green (Teal)」へ変更し、ウィザードへの入り口を色彩でリンクさせる
-                                child: _buildActionCard(context, icon: Icons.add_circle, title: '新しい大会\nを作る', subtitle: '新規トーナメント', color: Colors.teal.shade600, onTap: () => context.push('/create-tournament')),
+                                child: _buildActionCard(context, icon: Icons.add_circle, title: '新しい大会\nを作る', subtitle: '大会・錬成会', color: Colors.teal.shade600, onTap: () => context.push('/create-tournament')),
                               ),
                               const SizedBox(width: 16),
                             ],
@@ -154,35 +171,33 @@ class StartScreen extends ConsumerWidget {
                       ]),
                     ),
                   ),
-                  // ★ 残った下半分の「巨大な余白」を埋め尽くし、一番下にフッターを固定する魔法のウィジェット
+                  // ★ 修正：LayoutBuilderの複雑な計算を廃止し、確実に描画される安全な固定サイズ＋フレックス余白を採用
                   SliverFillRemaining(
                     hasScrollBody: false,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        const Spacer(), // 上部のカードとの間を可能な限り押し広げる
-                        
-                        // ★ 直感UX改修：タコ化問題を完全解決！
-                        // サイズを大きくして「面」のディテール（面金）を視認可能にしつつ、
-                        // 透明度を下げて背景に溶け込む「高級なウォーターマーク（透かし）」へと昇華！
-                        Image.asset(
-                          'assets/kendo_icon.png', 
-                          width: 120,  // ★ 48 -> 120 へ思い切って拡大（面金が見えるサイズ）
-                          height: 120, 
-                          color: Colors.grey.shade400.withValues(alpha: 0.25), // ★ 透明度をかけて上品に背景へ沈ませる
-                        ),
-                        const SizedBox(height: 16), // アイコンとテキストの余白を少し広げる
-                        Text(
-                          'Kendo Sync v1.0.0', 
-                          style: TextStyle(
-                            color: Colors.grey.shade400, 
-                            fontSize: 12, 
-                            fontWeight: FontWeight.bold, 
-                            letterSpacing: 1.5 // ★ 文字間隔を開けてよりスタイリッシュに
-                          )
-                        ),
-                        const SizedBox(height: 40), // 画面一番下からの美しい余白
-                      ],
+                    fillOverscroll: true,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 32, bottom: 48), // Transformのズレを吸収するために下部余白を厚めにする
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/kendo_icon.png', 
+                            width: 72,
+                            height: 72, 
+                            color: Colors.grey.shade400.withValues(alpha: 0.2), 
+                          ),
+                          const SizedBox(height: 12), 
+                          Text(
+                            'Kendo Sync v1.0.0', 
+                            style: TextStyle(
+                              color: Colors.grey.shade400, 
+                              fontSize: 12, 
+                              fontWeight: FontWeight.bold, 
+                              letterSpacing: 1.5 
+                            )
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

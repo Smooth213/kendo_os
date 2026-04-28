@@ -182,7 +182,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () => _handleRoleSwitch(context, ref),
                   ),
                 ]),
-                _buildSectionFooter(context, 'パスコードを設定することで、一般ユーザーによる設定の変更を制限できます。'),
+                _buildSectionFooter(context, 
+                  'パスコードを設定することで、一般ユーザーによる設定の変更を制限できます。\n\n'
+                  '・Lv.1 (自由): パスコードなしで誰でも端末の役割を変更できます。\n'
+                  '・Lv.2 (標準): 「記録係」から「管理者」に変更する際にパスコードを要求します。\n'
+                  '・Lv.3 (厳格): アプリの重要な設定を変更する際など、より厳格にパスコードを要求します。'
+                ),
                 
                 if (ref.watch(persistentRoleProvider) == Role.admin) ...[
                   const SizedBox(height: 24),
@@ -520,27 +525,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showRolePicker(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.admin_panel_settings, color: Colors.indigo),
-            title: const Text('管理者（すべて）'),
-            onTap: () {
-              // ★ persistentRoleProvider を更新して永続化させる
-              ref.read(persistentRoleProvider.notifier).state = Role.admin;
-              Navigator.pop(ctx);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.edit_note, color: Colors.teal),
-            title: const Text('記録係（入力）'),
-            onTap: () {
-              ref.read(persistentRoleProvider.notifier).state = Role.scorer;
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.admin_panel_settings, color: Colors.indigo),
+              title: const Text('管理者（すべて）'),
+              onTap: () {
+                // ★ persistentRoleProvider を更新して永続化させる
+                ref.read(persistentRoleProvider.notifier).state = Role.admin;
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_note, color: Colors.teal),
+              title: const Text('記録係（入力）'),
+              onTap: () {
+                ref.read(persistentRoleProvider.notifier).state = Role.scorer;
+                Navigator.pop(ctx);
+              },
+            ),
+            const SizedBox(height: 16), // 下部に余白を追加
+          ],
+        ),
       ),
     );
   }

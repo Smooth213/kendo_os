@@ -37,6 +37,8 @@ import 'match/widgets/scoreboard.dart';
 import '../presentation/provider/settings_provider.dart';
 import '../presentation/provider/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
 import '../presentation/provider/permission_provider.dart';
+import '../presentation/provider/bunaiksen_infinite_engine_provider.dart'; // ★ 追加: 無限勝ち抜きエンジン
+import '../presentation/provider/bunaiksen_provider.dart'; // ★ 追加: 無限勝ち抜き状態
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -517,7 +519,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             onLongPress: settings.confirmBehavior == 'long' ? confirmAction : null,
                             icon: Icon((isTie && isTrulyTeamMatch) ? Icons.balance : (isAllDone ? Icons.emoji_events : Icons.verified), size: 24),
                             label: Text(
-                              (isTie && isTrulyTeamMatch) ? '記録確定・星取表へ' : (isAllDone ? '確定・大会ホームへ' : '確定・次へ'), 
+                              (isTie && isTrulyTeamMatch) ? '記録確定・星取表へ' : (isAllDone ? ((match.tournamentId != null && match.tournamentId!.startsWith('bunaiksen_')) ? '確定・部内戦ホームへ' : '確定・大会ホームへ') : '確定・次へ'), 
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
                             ),
                             style: ElevatedButton.styleFrom(
@@ -535,6 +537,29 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           final strategy = MatchStrategyFactory.getStrategy(match, teamMatches.length);
                           final lastSettings = ref.read(lastUsedSettingsProvider);
                           
+                          // ★ 追加: 無限勝ち抜きモードの場合は通常の延長・判定をスキップして専用エンジンへ
+                          if (match.isKachinuki && match.matchType == '無限勝ち抜き') {
+                            if (settings.showConfirmDialog) {
+                              final confirmed = await _showConfirmDialog('試合終了', 'この試合を終了しますか？');
+                              if (!confirmed) return;
+                            }
+                            String winnerColor = 'draw';
+                            if ((match.redScore as num).toInt() > (match.whiteScore as num).toInt()) {
+                              winnerColor = 'red';
+                            } else if ((match.whiteScore as num).toInt() > (match.redScore as num).toInt()) {
+                              winnerColor = 'white';
+                            }
+                            
+                            if (!mounted || !context.mounted) return;
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (_) => const Center(child: CircularProgressIndicator()),
+                            );
+                            await _handleMatchFinish(context, ref, match, winnerColor);
+                            return;
+                          }
+
                           if (match.redScore == match.whiteScore) {
                             final nextAction = strategy.getNextActionOnTie(match: match, lastSettings: lastSettings);
 
@@ -1153,10 +1178,17 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             child: OutlinedButton.icon(
               onPressed: () {
                 Navigator.pop(ctx);
-                context.go('/home/${match.tournamentId}');
+                if (match.tournamentId != null && match.tournamentId!.startsWith('bunaiksen_')) {
+                  context.go('/bunaiksen-home');
+                } else {
+                  context.go('/home/${match.tournamentId}');
+                }
               },
               icon: const Icon(Icons.home),
-              label: const Text('大会ホームへ戻る', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: Text(
+                (match.tournamentId != null && match.tournamentId!.startsWith('bunaiksen_')) ? '部内戦ホームに戻る' : '大会ホームへ戻る',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey.shade400), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             ),
           ),
@@ -1424,5 +1456,87 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         ],
       ),
     );
+  }
+
+  // =========================================================================
+  // ★ NEW: 無限勝ち抜きエンジンの試合終了処理
+  // =========================================================================
+  Future<void> _handleMatchFinish(
+    BuildContext context,
+    WidgetRef ref,
+    MatchModel currentMatch,
+    String winnerColor,
+  ) async {
+    final finishedMatch = currentMatch.copyWith(
+      status: 'finished',
+      timerIsRunning: false,
+      remainingSeconds: 0,
+    );
+    await ref.read(matchCommandProvider).saveMatch(finishedMatch);
+
+    final engine = ref.read(bunaiksenInfiniteEngineProvider);
+    final nextMatch = await engine.processMatchResult(finishedMatch, winnerColor);
+
+    if (!mounted || !context.mounted) return;
+    Navigator.of(context, rootNavigator: true).pop(); // プログレスダイアログを閉じる
+
+    if (nextMatch != null) {
+      final streaks = ref.read(bunaiksenInfiniteStreakProvider);
+      final winnerStreak = streaks[nextMatch.redName] ?? 0;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: const Text('無限稽古: 次の試合'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('🔥 挑戦者が入りました！'),
+                const SizedBox(height: 12),
+                Text('防衛(赤): ${nextMatch.redName} ($winnerStreak連勝中)', 
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                const SizedBox(height: 8),
+                Text('挑戦(白): ${nextMatch.whiteName}',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                const Text('どうしますか？'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  context.pop(); // 一覧に戻る
+                },
+                child: const Text('一覧に戻る（休憩）'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrange.shade600,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  Navigator.of(dialogContext).pop();
+                  final startMatch = nextMatch.copyWith(status: 'in_progress');
+                  await ref.read(matchCommandProvider).saveMatch(startMatch);
+                  if (context.mounted) {
+                    context.pushReplacement('/match/${nextMatch.id}');
+                  }
+                },
+                child: const Text('すぐに次の試合を開始'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('待機列の選手がいなくなりました。無限稽古を終了します')),
+      );
+      context.pop();
+    }
   }
 }

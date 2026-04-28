@@ -35,6 +35,9 @@ import 'models/local/match_entity.dart';
 import 'repositories/local_match_repository.dart';
 import 'widgets/sync_status_bar.dart'; 
 import 'models/local_stroke_model.dart'; // ★ これを追加
+import 'screens/bunaiksen_home_screen.dart';
+import 'screens/bunaiksen_setup_screen.dart';
+import 'screens/bunaiksen_official_record_screen.dart';
 
 import 'presentation/provider/role_provider.dart';
 
@@ -167,6 +170,18 @@ final _router = GoRouter(
     GoRoute(
       path: '/team-registration/:id',
       builder: (context, state) => TeamRegistrationScreen(tournamentId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/bunaiksen-home',
+      builder: (context, state) => const BunaiksenHomeScreen(),
+    ),
+    GoRoute(
+      path: '/bunaiksen-setup',
+      builder: (context, state) => const BunaiksenSetupScreen(),
+    ),
+    GoRoute(
+      path: '/bunaiksen-record',
+      builder: (context, state) => const BunaiksenOfficialRecordScreen(),
     ),
   ],
 );
