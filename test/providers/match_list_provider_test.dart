@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
@@ -96,10 +97,10 @@ void main() {
   // ★ 修正：二重初期化のエラーを安全に回避（スルー）する構造に変更
   setUpAll(() async {
     try {
-      await Isar.initializeIsarCore(download: true);
+      await Isar.initializeIsarCore(download: true).timeout(const Duration(minutes: 2)); // ★ CI環境でのダウンロード遅延によるタイムアウトを防止
     } catch (e) {
       // 既に初期化されている場合などのエラーは無視してテストを続行する
-      print('Isar initialize skipped: $e');
+      debugPrint('Isar initialize skipped: $e');
     }
   });
 
@@ -121,6 +122,7 @@ void main() {
         [MatchEntitySchema],
         directory: tempDir.path, // ★ プロジェクト直下ではなく、一時フォルダを指定
         name: 'test_isar_${DateTime.now().microsecondsSinceEpoch}', 
+        inspector: false, // ★ CI環境でインスペクタが起動してテストがハング・クラッシュするのを防ぐ
       );
 
       fakeFirestore = FakeFirebaseFirestore();
