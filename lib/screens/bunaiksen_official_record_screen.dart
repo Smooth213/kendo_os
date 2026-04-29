@@ -8,6 +8,7 @@ import '../application/service/pdf_service.dart';
 import 'kachinuki_scoreboard_screen.dart'; // 勝ち抜き戦描画用
 import '../domain/kendo_rule_engine.dart';
 import '../presentation/provider/match_rule_provider.dart';
+import '../utils/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 
 class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   const BunaiksenOfficialRecordScreen({super.key});
@@ -257,7 +258,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               _buildTeamRow(matches, true, sideLabelRed, isDark),
               TableRow(children: [
                 const SizedBox.shrink(),
-                ...matches.map((m) => _scoreCell(m, isDark)),
+                ...matches.map((m) => _scoreCell(m, isDark, false)),
                 _summaryCell(matches, true, isDark),
               ]),
               // ★ sideLabelWhite ("白") を使用
@@ -281,39 +282,31 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     ]);
   }
 
-  Widget _scoreCell(MatchModel m, bool isDark) {
+  Widget _scoreCell(MatchModel m, bool isDark, bool isSummary) {
+    if (isSummary) {
+      return Container(height: 70, color: Colors.transparent);
+    }
     final isDone = m.status == 'finished' || m.status == 'approved';
     final rScore = (m.redScore as num).toInt();
     final wScore = (m.whiteScore as num).toInt();
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white; // 背景色取得
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white; 
     
-    // イベントから技を抽出（公式表示用）
-    List<String> redPts = _extractMarks(m.events, true);
-    List<String> whitePts = _extractMarks(m.events, false);
+    // 分離したヘルパーから技を抽出
+    List<String> redPts = BunaiksenHelper.extractMarks(m.events, true);
+    List<String> whitePts = BunaiksenHelper.extractMarks(m.events, false);
 
     return Container(
       height: 70, alignment: Alignment.center,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 中央の横線
           Divider(color: isDark ? Colors.white10 : Colors.grey.shade300, thickness: 1, height: 0),
-          
-          // ★ 修正2：引き分け（分）の時に真ん中に表示する「✕」を太く大きく変更
           if (isDone && rScore == wScore)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 2),
               color: cardColor, 
-              child: Text(
-                '✕', 
-                style: TextStyle(
-                  fontSize: 16, // サイズアップ
-                  fontWeight: FontWeight.w900, // 極太に変更
-                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade500
-                )
-              ),
+              child: Text('✕', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: isDark ? Colors.grey.shade500 : Colors.grey.shade500)),
             ),
-
           Column(
             children: [
               Expanded(child: _buildPointBox(redPts, isDone && rScore > wScore, true, isDark)),
@@ -347,49 +340,6 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   }
 
   // --- 共通ロジック & ヘルパー ---
-
-  List<String> _extractMarks(List<dynamic>? events, bool isRed) {
-    if (events == null) return [];
-    List<String> res = [];
-    bool isFirst = true; // ★ 試合全体の先取を管理
-    for (var e in events) {
-      String s = e.toString().toLowerCase();
-      if (s.contains('iscanceled: true') || s.contains('undo')) continue;
-      bool eventIsRed = s.contains('red') || s.contains('赤');
-      
-      String mark = '';
-      if (s.contains('men') || s.contains('メ')) {
-        mark = 'メ';
-      } else if (s.contains('kote') || s.contains('コ')) {
-        mark = 'コ';
-      } else if (s.contains('do') || s.contains('ド')) {
-        mark = 'ド';
-      } else if (s.contains('tsuki') || s.contains('ツ')) {
-        mark = 'ツ';
-      } else if (s.contains('hansoku') || s.contains('反')) {
-        mark = '反';
-      }
-
-      if (mark.isNotEmpty) {
-        if (isFirst) {
-          if (mark == 'メ') {
-            mark = '㋱';
-          } else if (mark == 'コ') {
-            mark = '㋙';
-          } else if (mark == 'ド') {
-            mark = '㋣';
-          } else if (mark == 'ツ') {
-            mark = '㋡';
-          }
-        }
-        if (eventIsRed == isRed) {
-          res.add(mark);
-        }
-        isFirst = false; // 1本目以降は文字だけにする
-      }
-    }
-    return res;
-  }
 
   Widget _buildVerticalName(String text, String initial, bool isDark) {
     final style = TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800);
@@ -481,34 +431,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               final stat = stats.firstWhere((s) => s.name == rowTeam, orElse: () => stats.first);
               final rankStr = allFinished ? '${stats.indexWhere((s) => s.name == rowTeam) + 1}' : '-';
 
-              // ★ 追加：勝=3、分=1、負=0 で「勝ち点」をこの画面独自に強制計算する
-              int customTeamPoints = 0;
-              for (var colTeam in teamList) {
-                if (rowTeam == colTeam) continue;
-                final bouts = normalMatches.where((m) {
-                  final r = m.redName.split(':').first.trim();
-                  final w = m.whiteName.split(':').first.trim();
-                  return (r == rowTeam && w == colTeam) || (r == colTeam && w == rowTeam);
-                }).toList();
-                
-                // 試合が終わっていない場合は計算しない
-                if (bouts.isEmpty || !bouts.every((m) => m.status == 'approved' || m.status == 'finished')) continue;
-                
-                int rWins = 0, cWins = 0;
-                for (var m in bouts) {
-                  final isRowRed = m.redName.split(':').first.trim() == rowTeam;
-                  final rs = (m.redScore as num).toInt(); final ws = (m.whiteScore as num).toInt();
-                  if (rs > ws) { isRowRed ? rWins++ : cWins++; }
-                  else if (ws > rs) { isRowRed ? cWins++ : rWins++; }
-                }
-                
-                // 勝ち点の付与ルール（勝：3、分：1、負：0）
-                if (rWins > cWins) {
-                  customTeamPoints += 3; 
-                } else if (rWins == cWins) {
-                  customTeamPoints += 1; 
-                }
-              }
+              // ★ 修正：分離したヘルパーを使って勝点を計算する
+              int customTeamPoints = BunaiksenHelper.calculateCustomLeaguePoints(rowTeam, teamList, normalMatches);
 
               return TableRow(
                 children: [
@@ -536,7 +460,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       if (rs > ws) { isRowRed ? rWins++ : cWins++; isRowRed ? rWinners++ : cWinners++; }
                       else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }
                       isRowRed ? rPoints += rs : cPoints += rs; isRowRed ? cPoints += ws : rPoints += ws;
-                      if (isIndiv) techs.addAll(_extractTechs(m.events, isRowRed, isRowRed ? rs : ws));
+                      if (isIndiv) techs.addAll(BunaiksenHelper.extractTechs(m.events, isRowRed, isRowRed ? rs : ws));
                     }
                     
                     String result = 'draw';
@@ -679,50 +603,4 @@ class ResultShapePainter extends CustomPainter {
 Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
   // ★ 修正：コンテナを使わず文字だけで表示
   return Text(tech, style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.bold, height: 1.1));
-}
-
-// ログから技（メ・コ・ド・ツ・反）を抽出するヘルパー
-List<String> _extractTechs(List<dynamic> logs, bool isRed, int count) {
-  List<String> res = [];
-  bool isFirst = true; // ★ 試合全体の先取を管理
-  for (var log in logs) {
-    String s = log.toString().toLowerCase();
-    if (s.contains('undo') || s.contains('iscanceled: true')) continue;
-    bool isRedPoint = s.contains('red') || s.contains('赤');
-    
-    String mark = '';
-    if (s.contains('men') || s.contains('メ')) {
-      mark = 'メ';
-    } else if (s.contains('kote') || s.contains('コ')) {
-      mark = 'コ';
-    } else if (s.contains('do') || s.contains('ド')) {
-      mark = 'ド';
-    } else if (s.contains('tsuki') || s.contains('ツ')) {
-      mark = 'ツ';
-    } else if (s.contains('hansoku') || s.contains('反')) {
-      mark = '反';
-    }
-
-    if (mark.isNotEmpty) {
-      if (isFirst) {
-        if (mark == 'メ') {
-          mark = '㋱';
-        } else if (mark == 'コ') {
-          mark = '㋙';
-        } else if (mark == 'ド') {
-          mark = '㋣';
-        } else if (mark == 'ツ') {
-          mark = '㋡';
-        }
-      }
-      if (isRed == isRedPoint) {
-        res.add(mark);
-      }
-      isFirst = false;
-    }
-  }
-  while (res.length < count) {
-    res.add('◯');
-  }
-  return res.take(count).toList();
 }

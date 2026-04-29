@@ -12,6 +12,7 @@ import 'home_screen.dart'; // ★ 修正：プロバイダーが確実に存在�
 import '../presentation/provider/permission_provider.dart';
 import '../domain/kendo_rule_engine.dart';
 import '../presentation/provider/match_rule_provider.dart';
+import '../utils/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 
 class OfficialPointDisplay {
   final String mark;
@@ -228,7 +229,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         );
                       } else if (matches.isNotEmpty && matches.any((m) => m.note.contains('[リーグ戦]'))) {
                         final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-                        final String leagueTitle = _generateDescriptiveLeagueTitle(matches, ownTeams);
+                        final String leagueTitle = BunaiksenHelper.generateDescriptiveLeagueTitle(matches, ownTeams);
                         final textColor = isDark ? Colors.white : Colors.indigo.shade900;
 
                         // 通常の試合と決定戦を分離
@@ -339,6 +340,9 @@ class OfficialRecordScreen extends ConsumerWidget {
     final redTeam = matches.first.redName.contains(':') ? matches.first.redName.split(':').first.trim() : matches.first.redName;
     final whiteTeam = matches.first.whiteName.contains(':') ? matches.first.whiteName.split(':').first.trim() : matches.first.whiteName;
 
+    final String sideLabelRed = '赤';
+    final String sideLabelWhite = '白';
+
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
     final headerBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
     final headerTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
@@ -418,8 +422,12 @@ class OfficialRecordScreen extends ConsumerWidget {
                     ],
                   ),
                   TableRow(children: [
-                    _teamCell(redTeam, isDark ? Colors.red.shade400 : Colors.red.shade700),
-                    ...matches.map((m) => _nameCell(m.redName, isDark, matches.map((x) => _parseName(x.redName)['last']!).where((s) => s.isNotEmpty).toList(), isDaihyo: m.matchType == '代表戦')),
+                    _teamCell(sideLabelRed, isDark ? Colors.red.shade400 : Colors.red.shade700),
+                    ...matches.map((m) => _nameCell(
+                      m.redName, isDark, 
+                      matches.map((x) => BunaiksenHelper.parseName(x.redName)['last']!).where((s) => s.isNotEmpty).toList(),
+                      isDaihyo: m.matchType == '代表戦'
+                    )),
                     _summaryCell(matches, true, isDark),
                   ]),
                   TableRow(children: [
@@ -428,8 +436,12 @@ class OfficialRecordScreen extends ConsumerWidget {
                     _teamResultCell(teamWinner, isDark, allFinished),
                   ]),
                   TableRow(children: [
-                    _teamCell(whiteTeam, isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade700),
-                    ...matches.map((m) => _nameCell(m.whiteName, isDark, matches.map((x) => _parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).toList(), isDaihyo: m.matchType == '代表戦')),
+                    _teamCell(sideLabelWhite, isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade700),
+                    ...matches.map((m) => _nameCell(
+                      m.whiteName, isDark, 
+                      matches.map((x) => BunaiksenHelper.parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).toList(),
+                      isDaihyo: m.matchType == '代表戦'
+                    )),
                     _summaryCell(matches, false, isDark),
                   ]),
                 ],
@@ -458,14 +470,6 @@ class OfficialRecordScreen extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  // ★ 追加：名前分割ヘルパー
-  Map<String, String> _parseName(String raw) {
-    if (raw.contains('欠員')) return {'last': '', 'first': ''};
-    String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
-    var parts = clean.split(RegExp(r'\s+'));
-    return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
   }
 
   // ★ Phase 8-4: allFinished を受け取り、未完了なら勝敗を隠す
@@ -509,7 +513,7 @@ class OfficialRecordScreen extends ConsumerWidget {
       return Container(color: isDaihyo ? (isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50) : Colors.transparent);
     }
 
-    final parsed = _parseName(rawName);
+    final parsed = BunaiksenHelper.parseName(rawName);
     final showInitial = teamLastNames.where((n) => n == parsed['last']).length > 1 && parsed['first']!.isNotEmpty;
 
     return Container(
@@ -649,34 +653,6 @@ class OfficialRecordScreen extends ConsumerWidget {
     return Center(child: Text('$wins\n--\n$pts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
   }
 
-  // ★ 修正：ご要望通りのタイトル（自チーム名入り）を生成し、Lint警告も解消
-  String _generateDescriptiveLeagueTitle(List<MatchModel> matches, List<String> ownTeams) {
-    final participantsSet = <String>{};
-    for (var m in matches) {
-      participantsSet.add(m.redName.split(':').first.trim());
-      participantsSet.add(m.whiteName.split(':').first.trim());
-    }
-    final int n = participantsSet.length;
-    final int mCount = n * (n - 1) ~/ 2;
-    final bool isIndiv = matches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
-
-    String selfInfo = "";
-    if (isIndiv) {
-      final myMatch = matches.firstWhere((m) => ownTeams.any((ot) => m.redName.contains(ot) || m.whiteName.contains(ot)), orElse: () => matches.first);
-      final isRedOwn = ownTeams.any((ot) => myMatch.redName.contains(ot));
-      final rawName = isRedOwn ? myMatch.redName : myMatch.whiteName;
-      final team = rawName.split(':').first.trim();
-      final name = rawName.contains(':') ? rawName.split(':').last.replaceAll(')', '').trim() : rawName;
-      selfInfo = "$name（$team）";
-    } else {
-      selfInfo = participantsSet.firstWhere((p) => ownTeams.contains(p), orElse: () => participantsSet.first);
-    }
-
-    // ★ 修正：不要な {} を削除して Lint 警告を消去
-    final suffix = isIndiv ? "$n人リーグ" : "$nチームリーグ";
-    return "$selfInfo : $suffix（全$mCount試合）";
-  }
-
   // ★ 追加：印刷画面用のリーグ星取表描画メソッド
   Widget _buildLeagueGridTable(BuildContext context, String groupName, List<MatchModel> matches, {Color? cardColor, required bool isDark, required WidgetRef ref}) {
     final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
@@ -759,7 +735,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                       if (rs > ws) { isRowRed ? rWins++ : cWins++; isRowRed ? rWinners++ : cWinners++; }
                       else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }
                       isRowRed ? rPoints += rs : cPoints += rs; isRowRed ? cPoints += ws : rPoints += ws;
-                      if (isIndiv) techs.addAll(_extractTechs(m.events, isRowRed, isRowRed ? rs : ws));
+                      if (isIndiv) techs.addAll(BunaiksenHelper.extractTechs(m.events, isRowRed, isRowRed ? rs : ws));
                     }
                     
                     String result = 'draw';
@@ -945,32 +921,4 @@ Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
     );
   }
   return Text(tech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
-}
-
-List<String> _extractTechs(List<dynamic> logs, bool isRed, int count) {
-  List<String> res = [];
-  for (var log in logs) {
-    if (log is ScoreEvent && log.isCanceled) {
-      continue;
-    }
-    String s = log.toString().toLowerCase();
-    bool isRedPoint = s.contains('red') || s.contains('赤');
-    if (isRed == isRedPoint) {
-      if (s.contains('men')) {
-        res.add('メ');
-      } else if (s.contains('kote')) {
-        res.add('コ');
-      } else if (s.contains('do')) {
-        res.add('ド');
-      } else if (s.contains('tsuki')) {
-        res.add('ツ');
-      } else if (s.contains('hansoku')) {
-        res.add('反');
-      }
-    }
-  }
-  while (res.length < count) {
-    res.add('◯');
-  }
-  return res.take(count).toList();
 }
