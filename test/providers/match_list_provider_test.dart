@@ -113,9 +113,6 @@ void main() {
     });
 
     setUp(() async {
-      // Isarのコアライブラリを初期化 (テスト実行に必須)
-      await Isar.initializeIsarCore(download: true);
-      
       // OSの一時フォルダ（tmp）を取得して、そこにテスト用DBを作る
       final tempDir = Directory.systemTemp.createTempSync('isar_test_');
       
