@@ -109,20 +109,27 @@ void main() {
     late Isar isar;
     late ProviderContainer container;
 
-    setUpAll(() {
-      registerFallbackValue(MatchModel(id: 'd', matchType: '', redName: '', whiteName: ''));
-    });
-
-    setUp(() async {
-      // OSの一時フォルダ（tmp）を取得して、そこにテスト用DBを作る
+    // ★ 1. テスト全体で「1回だけ」データベースを開く（CI環境の超安定化）
+    setUpAll(() async {
+      registerFallbackValue(const MatchModel(id: 'd', matchType: '', redName: '', whiteName: ''));
       final tempDir = Directory.systemTemp.createTempSync('isar_test_');
-      
-      // テスト用のデータベースを構築
       isar = await Isar.open(
         [MatchEntitySchema],
         directory: tempDir.path,
-        inspector: false, // ★ CI環境でのクラッシュ（ポート衝突）を防ぐための必須設定
+        inspector: false, // インスペクター無効化
       );
+    });
+
+    // ★ 2. 全てのテストが終わった時に「1回だけ」閉じて削除する
+    tearDownAll(() async {
+      await isar.close(deleteFromDisk: true);
+    });
+
+    // ★ 3. 各テストの直前は、開け閉めせず「中身を空っぽにする」だけ
+    setUp(() async {
+      await isar.writeTxn(() async {
+        await isar.clear();
+      });
 
       fakeFirestore = FakeFirebaseFirestore();
       
@@ -141,29 +148,23 @@ void main() {
       container = ProviderContainer(
         overrides: [
           firestoreProvider.overrideWithValue(fakeFirestore),
-          isarProvider.overrideWithValue(isar), // ★ Isar の鍵をテスト環境にも注入！
+          isarProvider.overrideWithValue(isar), 
           auditProvider.overrideWithValue(mockAudit),
           soundServiceProvider.overrideWithValue(MockSoundService()),
-          // ★ 不足していたオーバーライドを追加
           settingsProvider.overrideWith(() => MockSettingsNotifier(SettingsModel(confirmBehavior: 'manual'))),
           matchRuleProvider.overrideWith(() => MockMatchRuleNotifier()),
-          // ★ 書き込み先（LocalRepo）も拡張版に差し替える
           localMatchRepositoryProvider.overrideWithValue(testLocalRepo),
-          // ★ 読み込み側(MatchRepository)もIsarに向けるように強制バイパス
           matchRepositoryProvider.overrideWith((ref) => TestMatchRepository(testLocalRepo)),
-          // ★ 追加: Connectivityプラグインによるネイティブ通信エラーを防ぐ
           connectivityProvider.overrideWith((ref) => Stream.value(true)),
           syncEngineProvider.overrideWithValue(mockSyncEngine),
         ],
       );
 
-      // ★ テスト中にStreamが途切れてListが空(Bad state)になるのを防ぐため、常に監視状態を維持する
       container.listen(matchListProvider, (_, _) {});
     });
 
     tearDown(() async {
       container.dispose();
-      await isar.close(deleteFromDisk: true); // テストが終わったらIsarを破棄
     });
 
     test('addScoreEventで「面」が正しく追加され、スコアが増えるか', () async {
