@@ -101,23 +101,25 @@ void main() {
 
     // ★ 1. テスト全体で「1回だけ」データベースを開く（CI環境の超安定化）
     setUpAll(() async {
-      // 真犯人：重複登録エラー（StateError）を安全に無視する
       try {
         registerFallbackValue(const MatchModel(id: 'd', matchType: '', redName: '', whiteName: ''));
       } catch (_) {}
 
-      // コアの二重初期化エラーも安全に無視する
       try {
         await Isar.initializeIsarCore(download: true);
       } catch (_) {}
 
-      // テスト用のデータベースを構築
-      final tempDir = Directory.systemTemp.createTempSync('isar_test_');
-      isar = await Isar.open(
-        [MatchEntitySchema],
-        directory: tempDir.path,
-        inspector: false, // ★ CIでのパニックを防ぐ
-      );
+      // ★ 最後のラスボス対策：既に他のテストでIsarが開かれている場合は、エラーを出さずに「再利用」する！
+      if (Isar.instanceNames.isNotEmpty) {
+        isar = Isar.getInstance(Isar.instanceNames.first)!;
+      } else {
+        final tempDir = Directory.systemTemp.createTempSync('isar_test_');
+        isar = await Isar.open(
+          [MatchEntitySchema],
+          directory: tempDir.path,
+          inspector: false, // インスペクター無効化
+        );
+      }
     });
 
     // ★ 2. 全てのテストが終わった時に「1回だけ」閉じて削除する
