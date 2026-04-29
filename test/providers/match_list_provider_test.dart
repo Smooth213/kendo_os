@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
@@ -91,15 +90,15 @@ class TestMatchRepository extends Fake implements MatchRepository {
 class MockSyncEngine extends Mock implements SyncEngine {}
 
 void main() {
+  // ★ CRITICAL: ネイティブ機能（Wi-Fiチェックやバイブなど）をテスト環境でモックアップするために必須の1行
   TestWidgetsFlutterBinding.ensureInitialized();
-  // ★ 削除：不要になったグローバルな setUpAll は消してスッキリさせます
 
   group('MatchListProvider (Score Logic) Tests', () {
     late FakeFirebaseFirestore fakeFirestore;
     late Isar isar;
     late ProviderContainer container;
 
-    // ★ 1. テスト全体で「1回だけ」データベースを開く（CI環境の超安定化）
+    // ★ 1. テスト全体で「1回だけ」データベースを開く（CI環境の超安定化 最終形態）
     setUpAll(() async {
       try {
         registerFallbackValue(const MatchModel(id: 'd', matchType: '', redName: '', whiteName: ''));
@@ -109,7 +108,7 @@ void main() {
         await Isar.initializeIsarCore(download: true);
       } catch (_) {}
 
-      // ★ 最後のラスボス対策：既に他のテストでIsarが開かれている場合は、エラーを出さずに「再利用」する！
+      // 既に他のテストでIsarが開かれている場合は「再利用」する！
       if (Isar.instanceNames.isNotEmpty) {
         isar = Isar.getInstance(Isar.instanceNames.first)!;
       } else {
@@ -117,7 +116,7 @@ void main() {
         isar = await Isar.open(
           [MatchEntitySchema],
           directory: tempDir.path,
-          inspector: false, // インスペクター無効化
+          inspector: false, // CI環境でのパニックを防ぐ
         );
       }
     });
@@ -126,7 +125,7 @@ void main() {
     tearDownAll(() async {
       try {
         await isar.close(deleteFromDisk: true);
-      } catch (_) {} // 閉じる時の軽微なエラーも無視
+      } catch (_) {}
     });
 
     // ★ 3. 各テストの直前は、開け閉めせず「中身を空っぽにする」だけ
