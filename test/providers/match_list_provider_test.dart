@@ -91,18 +91,8 @@ class TestMatchRepository extends Fake implements MatchRepository {
 class MockSyncEngine extends Mock implements SyncEngine {}
 
 void main() {
-  // ★ CRITICAL: ネイティブ機能（Wi-Fiチェックやバイブなど）をテスト環境でモックアップするために必須の1行
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  // ★ 修正：二重初期化のエラーを安全に回避（スルー）する構造に変更
-  setUpAll(() async {
-    try {
-      await Isar.initializeIsarCore(download: true).timeout(const Duration(minutes: 2)); // ★ CI環境でのダウンロード遅延によるタイムアウトを防止
-    } catch (e) {
-      // 既に初期化されている場合などのエラーは無視してテストを続行する
-      debugPrint('Isar initialize skipped: $e');
-    }
-  });
+  // ★ 削除：不要になったグローバルな setUpAll は消してスッキリさせます
 
   group('MatchListProvider (Score Logic) Tests', () {
     late FakeFirebaseFirestore fakeFirestore;
@@ -111,18 +101,30 @@ void main() {
 
     // ★ 1. テスト全体で「1回だけ」データベースを開く（CI環境の超安定化）
     setUpAll(() async {
-      registerFallbackValue(const MatchModel(id: 'd', matchType: '', redName: '', whiteName: ''));
+      // 真犯人：重複登録エラー（StateError）を安全に無視する
+      try {
+        registerFallbackValue(const MatchModel(id: 'd', matchType: '', redName: '', whiteName: ''));
+      } catch (_) {}
+
+      // コアの二重初期化エラーも安全に無視する
+      try {
+        await Isar.initializeIsarCore(download: true);
+      } catch (_) {}
+
+      // テスト用のデータベースを構築
       final tempDir = Directory.systemTemp.createTempSync('isar_test_');
       isar = await Isar.open(
         [MatchEntitySchema],
         directory: tempDir.path,
-        inspector: false, // インスペクター無効化
+        inspector: false, // ★ CIでのパニックを防ぐ
       );
     });
 
     // ★ 2. 全てのテストが終わった時に「1回だけ」閉じて削除する
     tearDownAll(() async {
-      await isar.close(deleteFromDisk: true);
+      try {
+        await isar.close(deleteFromDisk: true);
+      } catch (_) {} // 閉じる時の軽微なエラーも無視
     });
 
     // ★ 3. 各テストの直前は、開け閉めせず「中身を空っぽにする」だけ
@@ -151,7 +153,7 @@ void main() {
           isarProvider.overrideWithValue(isar), 
           auditProvider.overrideWithValue(mockAudit),
           soundServiceProvider.overrideWithValue(MockSoundService()),
-          settingsProvider.overrideWith(() => MockSettingsNotifier(SettingsModel(confirmBehavior: 'manual'))),
+          settingsProvider.overrideWith(() => MockSettingsNotifier(const SettingsModel(confirmBehavior: 'manual'))),
           matchRuleProvider.overrideWith(() => MockMatchRuleNotifier()),
           localMatchRepositoryProvider.overrideWithValue(testLocalRepo),
           matchRepositoryProvider.overrideWith((ref) => TestMatchRepository(testLocalRepo)),
@@ -166,7 +168,6 @@ void main() {
     tearDown(() async {
       container.dispose();
     });
-
     test('addScoreEventで「面」が正しく追加され、スコアが増えるか', () async {
       final testMatch = const MatchModel(id: 'test_1', matchType: '先鋒', redName: '赤', whiteName: '白');
       await container.read(localMatchRepositoryProvider).saveMatch(testMatch); // ★ Isarに保存
