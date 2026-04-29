@@ -120,9 +120,8 @@ void main() {
       // テスト用のデータベースを構築
       isar = await Isar.open(
         [MatchEntitySchema],
-        directory: tempDir.path, // ★ プロジェクト直下ではなく、一時フォルダを指定
-        name: 'test_isar_${DateTime.now().microsecondsSinceEpoch}', 
-        inspector: false, // ★ CI環境でインスペクタが起動してテストがハング・クラッシュするのを防ぐ
+        directory: tempDir.path,
+        inspector: false, // ★ CI環境でのクラッシュ（ポート衝突）を防ぐための必須設定
       );
 
       fakeFirestore = FakeFirebaseFirestore();
