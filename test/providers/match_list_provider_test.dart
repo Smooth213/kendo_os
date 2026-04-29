@@ -93,6 +93,11 @@ void main() {
   // ★ CRITICAL: ネイティブ機能（Wi-Fiチェックやバイブなど）をテスト環境でモックアップするために必須の1行
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  // ★ ここに追加：GitHub(Linux)環境でもIsarデータベースを動かすための魔法の1行
+  setUpAll(() async {
+    await Isar.initializeIsarCore(download: true);
+  });
+
   group('MatchListProvider (Score Logic) Tests', () {
     late FakeFirebaseFirestore fakeFirestore;
     late Isar isar;
