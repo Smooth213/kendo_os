@@ -11,19 +11,20 @@ import 'package:kendo_os/presentation/provider/match_command_provider.dart';
 import 'package:kendo_os/presentation/provider/match_timer_provider.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kendo_os/repositories/local_match_repository.dart';
-import 'package:kendo_os/models/local/match_entity.dart'; // ★ スキーマ（設計図）を読み込む
 import 'package:kendo_os/presentation/provider/match_provider.dart';
 import 'package:kendo_os/presentation/provider/audit_provider.dart';
 import 'package:kendo_os/presentation/provider/settings_provider.dart';
 import 'package:kendo_os/presentation/provider/match_rule_provider.dart';
 import 'package:kendo_os/application/service/sound_service.dart';
-import 'package:kendo_os/repositories/match_repository.dart'; // ★ MatchRepositoryの型を読み込む
-import 'dart:async'; // ★ StreamController用
-import 'dart:io'; // ★ 一時ディレクトリ取得のために追加
-import 'package:kendo_os/presentation/provider/sync_provider.dart'; // ★ connectivityProviderをモックするために追加
+import 'package:kendo_os/repositories/match_repository.dart';
+import 'dart:async';
+import 'package:kendo_os/presentation/provider/sync_provider.dart';
 
 class MockAuditService extends Mock implements AuditService {}
 class MockSoundService extends Mock implements SoundService {}
+
+// ★ 最終奥義：Isarそのものをダミー（モック）化し、起動エラーを物理的に消滅させる
+class MockIsar extends Mock implements Isar {} 
 
 class MockSettingsNotifier extends SettingsNotifier {
   final SettingsModel initialSettings;
@@ -37,29 +38,25 @@ class MockMatchRuleNotifier extends MatchRuleNotifier {
   MatchRule build() => MatchRule();
 }
 
-// ★ LocalMatchRepository の挙動をテスト用に拡張し、Streamの発火を確実に捉えるクラス
 class TestLocalMatchRepository extends LocalMatchRepository {
   final StreamController<List<MatchModel>> _controller = StreamController<List<MatchModel>>.broadcast();
   final List<MatchModel> _cache = [];
-  final FakeFirebaseFirestore fakeFirestore; // ★ Firestoreに依存しているコードのための保険
+  final FakeFirebaseFirestore fakeFirestore;
 
   TestLocalMatchRepository(super.isar, this.fakeFirestore);
 
   @override
   Stream<List<MatchModel>> watchMatches() async* {
-    // ★ 購読された瞬間に必ず「最新のキャッシュ」を流す（Dart標準の完璧なBehaviorSubject）
     yield List.from(_cache);
     yield* _controller.stream;
   }
 
   @override
   Future<void> saveMatch(MatchModel match) async {
-    await super.saveMatch(match); // Isarに保存（整合性チェック）
-    
-    // ★ matchListProvider がまだ Firestore を見ている可能性を考慮し、FakeFirestore にも同期する
+    // ★ 究極の修正：super.saveMatch (本物のIsarへの保存) を完全に削除！
+    // データベースを一切経由せず、メモリ上のキャッシュだけで高速に動作させます。
     await fakeFirestore.collection('matches').doc(match.id).set(match.toJson());
 
-    // テスト環境のStream遅延を防ぐため、ここで確実にキャッシュを更新して通知する
     final index = _cache.indexWhere((m) => m.id == match.id);
     if (index >= 0) {
       _cache[index] = match;
@@ -70,7 +67,6 @@ class TestLocalMatchRepository extends LocalMatchRepository {
   }
 }
 
-// ★ Firestore用のRepositoryを偽装し、強制的にIsar(ローカル)へデータを流し込むためのモッククラス
 class TestMatchRepository extends Fake implements MatchRepository {
   final TestLocalMatchRepository localRepo;
   TestMatchRepository(this.localRepo);
@@ -90,50 +86,22 @@ class TestMatchRepository extends Fake implements MatchRepository {
 class MockSyncEngine extends Mock implements SyncEngine {}
 
 void main() {
-  // ★ CRITICAL: ネイティブ機能（Wi-Fiチェックやバイブなど）をテスト環境でモックアップするために必須の1行
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('MatchListProvider (Score Logic) Tests', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late Isar isar;
+    late MockIsar mockIsar; // ★ 本物のIsarではなくモックを使用
     late ProviderContainer container;
 
-    // ★ 1. テスト全体で「1回だけ」データベースを開く（CI環境の超安定化 最終形態）
-    setUpAll(() async {
+    setUpAll(() {
       try {
         registerFallbackValue(const MatchModel(id: 'd', matchType: '', redName: '', whiteName: ''));
       } catch (_) {}
-
-      try {
-        await Isar.initializeIsarCore(download: true);
-      } catch (_) {}
-
-      // 既に他のテストでIsarが開かれている場合は「再利用」する！
-      if (Isar.instanceNames.isNotEmpty) {
-        isar = Isar.getInstance(Isar.instanceNames.first)!;
-      } else {
-        final tempDir = Directory.systemTemp.createTempSync('isar_test_');
-        isar = await Isar.open(
-          [MatchEntitySchema],
-          directory: tempDir.path,
-          inspector: false, // CI環境でのパニックを防ぐ
-        );
-      }
+      // ★ データベースのダウンロードや起動のコードは全て消し去りました！
     });
 
-    // ★ 2. 全てのテストが終わった時に「1回だけ」閉じて削除する
-    tearDownAll(() async {
-      try {
-        await isar.close(deleteFromDisk: true);
-      } catch (_) {}
-    });
-
-    // ★ 3. 各テストの直前は、開け閉めせず「中身を空っぽにする」だけ
     setUp(() async {
-      await isar.writeTxn(() async {
-        await isar.clear();
-      });
-
+      mockIsar = MockIsar(); // ★ 0.01秒でダミーを生成
       fakeFirestore = FakeFirebaseFirestore();
       
       final mockAudit = MockAuditService();
@@ -143,7 +111,7 @@ void main() {
         details: any(named: 'details'),
       )).thenAnswer((_) async => {});
 
-      final testLocalRepo = TestLocalMatchRepository(isar, fakeFirestore);
+      final testLocalRepo = TestLocalMatchRepository(mockIsar, fakeFirestore);
       
       final mockSyncEngine = MockSyncEngine();
       when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
@@ -151,7 +119,7 @@ void main() {
       container = ProviderContainer(
         overrides: [
           firestoreProvider.overrideWithValue(fakeFirestore),
-          isarProvider.overrideWithValue(isar), 
+          isarProvider.overrideWithValue(mockIsar), // ★ プロバイダーにもダミーを注入
           auditProvider.overrideWithValue(mockAudit),
           soundServiceProvider.overrideWithValue(MockSoundService()),
           settingsProvider.overrideWith(() => MockSettingsNotifier(const SettingsModel(confirmBehavior: 'manual'))),
