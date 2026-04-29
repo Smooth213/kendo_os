@@ -93,9 +93,14 @@ void main() {
   // ★ CRITICAL: ネイティブ機能（Wi-Fiチェックやバイブなど）をテスト環境でモックアップするために必須の1行
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // ★ ここに追加：GitHub(Linux)環境でもIsarデータベースを動かすための魔法の1行
+  // ★ 修正：二重初期化のエラーを安全に回避（スルー）する構造に変更
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    try {
+      await Isar.initializeIsarCore(download: true);
+    } catch (e) {
+      // 既に初期化されている場合などのエラーは無視してテストを続行する
+      print('Isar initialize skipped: $e');
+    }
   });
 
   group('MatchListProvider (Score Logic) Tests', () {
