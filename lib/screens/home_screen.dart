@@ -821,23 +821,27 @@ class HomeScreen extends ConsumerWidget {
                                                       }
                                                     }
 
-                                                    // ★ 修正：リーグ戦か、それ以外（通常の団体・勝ち抜き）かで子要素の作り方を分岐
+                                                    // ★ 修正：リーグ戦の中枠削除（個人戦のみ）
                                                     if (label.contains('リーグ戦')) {
-                                                      // 【リーグ戦】対戦カードごとに中枠アコーディオンを作る（従来通り）
-                                                      final boutsByMatchup = <String, List<MatchModel>>{};
-                                                      final matchupOrder = <String>[];
-                                                      for (var m in normalMatches) {
-                                                        final t1 = m.redName.split(':').first.trim();
-                                                        final t2 = m.whiteName.split(':').first.trim();
-                                                        final matchupName = '$t1 vs $t2';
-                                                        if (!boutsByMatchup.containsKey(matchupName)) {
-                                                          matchupOrder.add(matchupName);
-                                                          boutsByMatchup[matchupName] = [];
+                                                      if (label.contains('個人戦')) {
+                                                        // 【リーグ個人戦】中枠を省き、直接試合リストを表示
+                                                        childrenWidgets.addAll(normalMatches.map((m) => _buildMatchListTile(context, ref, m)).toList());
+                                                      } else {
+                                                        // 【リーグ団体戦】対戦カードごとに中枠アコーディオンを作る（従来通り）
+                                                        final boutsByMatchup = <String, List<MatchModel>>{};
+                                                        final matchupOrder = <String>[];
+                                                        for (var m in normalMatches) {
+                                                          final t1 = m.redName.split(':').first.trim();
+                                                          final t2 = m.whiteName.split(':').first.trim();
+                                                          final matchupName = '$t1 vs $t2';
+                                                          if (!boutsByMatchup.containsKey(matchupName)) {
+                                                            matchupOrder.add(matchupName);
+                                                            boutsByMatchup[matchupName] = [];
+                                                          }
+                                                          boutsByMatchup[matchupName]!.add(m);
                                                         }
-                                                        boutsByMatchup[matchupName]!.add(m);
-                                                      }
 
-                                                      childrenWidgets.addAll(matchupOrder.map((name) {
+                                                        childrenWidgets.addAll(matchupOrder.map((name) {
                                                         final bouts = boutsByMatchup[name]!;
                                                         final bool boutsInProgress = bouts.any((m) => m.status == 'in_progress');
                                                         final bool boutsAllFinished = bouts.every((m) => m.status == 'finished' || m.status == 'approved');
@@ -936,6 +940,7 @@ class HomeScreen extends ConsumerWidget {
                                                           ),
                                                         );
                                                       }));
+                                                      }
                                                     } else {
                                                       // 【団体戦・勝ち抜き戦】中枠アコーディオンを省き、直接試合リストを表示
                                                       childrenWidgets.addAll(normalMatches.map((m) => _buildMatchListTile(context, ref, m)).toList());

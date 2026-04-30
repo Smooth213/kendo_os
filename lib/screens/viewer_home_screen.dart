@@ -619,20 +619,25 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                       // 決定戦作成ボタンは削除済み
 
                                                       if (label.contains('リーグ戦')) {
-                                                        final boutsByMatchup = <String, List<MatchModel>>{};
-                                                        final matchupOrder = <String>[];
-                                                        for (var m in normalMatches) {
-                                                          final t1 = m.redName.split(':').first.trim();
-                                                          final t2 = m.whiteName.split(':').first.trim();
-                                                          final matchupName = '$t1 vs $t2';
-                                                          if (!boutsByMatchup.containsKey(matchupName)) {
-                                                            matchupOrder.add(matchupName);
-                                                            boutsByMatchup[matchupName] = [];
+                                                        if (label.contains('個人戦')) {
+                                                          // 【リーグ個人戦】中枠を省き、直接試合リストを表示
+                                                          childrenWidgets.addAll(normalMatches.map((m) => _buildMatchListTile(context, ref, m)).toList());
+                                                        } else {
+                                                          // 【リーグ団体戦】中枠あり
+                                                          final boutsByMatchup = <String, List<MatchModel>>{};
+                                                          final matchupOrder = <String>[];
+                                                          for (var m in normalMatches) {
+                                                            final t1 = m.redName.split(':').first.trim();
+                                                            final t2 = m.whiteName.split(':').first.trim();
+                                                            final matchupName = '$t1 vs $t2';
+                                                            if (!boutsByMatchup.containsKey(matchupName)) {
+                                                              matchupOrder.add(matchupName);
+                                                              boutsByMatchup[matchupName] = [];
+                                                            }
+                                                            boutsByMatchup[matchupName]!.add(m);
                                                           }
-                                                          boutsByMatchup[matchupName]!.add(m);
-                                                        }
 
-                                                        childrenWidgets.addAll(matchupOrder.map((name) {
+                                                          childrenWidgets.addAll(matchupOrder.map((name) {
                                                           final bouts = boutsByMatchup[name]!;
                                                           final bool boutsInProgress = bouts.any((m) => m.status == 'in_progress');
                                                           final bool boutsAllFinished = bouts.every((m) => m.status == 'finished' || m.status == 'approved');
@@ -713,6 +718,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                             ),
                                                           );
                                                         }));
+                                                        }
                                                       } else {
                                                         childrenWidgets.addAll(normalMatches.map((m) => _buildMatchListTile(context, ref, m)).toList());
                                                       }

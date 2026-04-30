@@ -498,7 +498,16 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       if (rs > ws) { isRowRed ? rWins++ : cWins++; isRowRed ? rWinners++ : cWinners++; }
                       else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }
                       isRowRed ? rPoints += rs : cPoints += rs; isRowRed ? cPoints += ws : rPoints += ws;
-                      if (isIndiv) techs.addAll(BunaiksenHelper.extractTechs(m.events, isRowRed, isRowRed ? rs : ws));
+                      if (isIndiv) {
+                        final extracted = BunaiksenHelper.extractTechs(m.events, isRowRed, isRowRed ? rs : ws);
+                        if (extracted.isEmpty && (isRowRed ? rs : ws) > 0) {
+                          // 🌟 修正：簡易入力時は「反」ではなく「◯」を補填
+                          for(int k=0; k<(isRowRed ? rs : ws); k++) {
+                            extracted.add('◯');
+                          }
+                        }
+                        techs.addAll(extracted);
+                      }
                     }
                     
                     String result = 'draw';
@@ -510,32 +519,94 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                     
                     final textColor = isDark ? Colors.white : Colors.black87;
 
-                    return Container(
-                      height: 65,
-                      alignment: Alignment.center,
-                      child: Stack(
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        showGeneralDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          barrierLabel: '閉じる',
+                          barrierColor: Colors.black.withValues(alpha: 0.7),
+                          transitionDuration: const Duration(milliseconds: 350), 
+                          pageBuilder: (ctx, anim1, anim2) {
+                            return Center(
+                              child: Dialog(
+                                backgroundColor: Colors.transparent,
+                                elevation: 0,
+                                insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                                child: Container(
+                                  constraints: const BoxConstraints(maxWidth: 550),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
+                                  ),
+                                  padding: const EdgeInsets.all(20), 
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: isIndiv 
+                                          // 🌟 修正：個人戦なら必ずリスト形式を呼び出し、ソートは不要(applySort: false)
+                                          ? _buildIndividualMatchesList('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark)
+                                          : _buildScoreTable('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      ElevatedButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                                          foregroundColor: isDark ? Colors.white : Colors.black87,
+                                          shape: const StadiumBorder(),
+                                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                                          elevation: 0,
+                                        ),
+                                        child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          transitionBuilder: (ctx, anim1, anim2, child) {
+                            return FadeTransition(
+                              opacity: anim1,
+                              child: ScaleTransition(
+                                scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+                                child: child,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        height: 65,
                         alignment: Alignment.center,
-                        children: [
-                          CustomPaint(size: const Size(45, 45), painter: ResultShapePainter(result: result, color: symbolColor)),
-                          if (isIndiv)
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                techs.isNotEmpty ? _buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
-                                Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                techs.length > 1 ? _buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
-                              ],
-                            )
-                          else
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('$rPoints', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, height: 1.1, color: textColor)),
-                                Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                Text('$rWinners', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, height: 1.1, color: textColor)),
-                              ]
-                            ),
-                        ],
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CustomPaint(size: const Size(45, 45), painter: ResultShapePainter(result: result, color: symbolColor)),
+                            if (isIndiv)
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  techs.isNotEmpty ? _buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
+                                  Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
+                                  techs.length > 1 ? _buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
+                                ],
+                              )
+                            else
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('$rPoints', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, height: 1.1, color: textColor)),
+                                  Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
+                                  Text('$rWinners', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, height: 1.1, color: textColor)),
+                                ]
+                              ),
+                          ],
+                        ),
                       ),
                     );
                   }),

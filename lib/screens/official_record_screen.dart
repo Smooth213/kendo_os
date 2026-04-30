@@ -313,16 +313,20 @@ class OfficialRecordScreen extends ConsumerWidget {
                               child: Text('▼ 対戦カード別 スコア詳細', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey)),
                             ),
                             
-                            // 2. 各対戦カード（先鋒〜大将）のまとまり表示
-                            ...matchupOrder.map((matchupName) {
-                              final bouts = boutsByMatchup[matchupName]!;
-                              return Padding(
+                            // 2. 詳細スコアの表示（個人戦なら中枠なしの一括リスト）
+                            if (isIndiv)
+                              Padding(
                                 padding: const EdgeInsets.only(bottom: 24),
-                                child: isIndiv
-                                    ? _buildIndividualMatchesList(matchupName, bouts, cardColor: cardColor, isDark: isDark, ref: ref, applySort: false)
-                                    : _buildScoreTable(matchupName, bouts, cardColor: cardColor, isDark: isDark),
-                              );
-                            }),
+                                child: _buildIndividualMatchesList('対戦スコア詳細', normalMatches, cardColor: cardColor, isDark: isDark, ref: ref, applySort: false),
+                              )
+                            else
+                              ...matchupOrder.map((matchupName) {
+                                final bouts = boutsByMatchup[matchupName]!;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  child: _buildScoreTable(matchupName, bouts, cardColor: cardColor, isDark: isDark),
+                                );
+                              }),
 
                             // 3. 順位決定戦
                             if (tieBouts.isNotEmpty) ...[
@@ -331,15 +335,19 @@ class OfficialRecordScreen extends ConsumerWidget {
                                 padding: EdgeInsets.only(left: 8, bottom: 8),
                                 child: Text('▼ 順位決定戦', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.orange)),
                               ),
-                              ...tieMatchupOrder.map((matchupName) {
-                                final bouts = tieBoutsByMatchup[matchupName]!;
-                                return Padding(
+                              if (isIndiv)
+                                Padding(
                                   padding: const EdgeInsets.only(bottom: 16),
-                                  child: isIndiv
-                                      ? _buildIndividualMatchesList(matchupName, bouts, cardColor: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.shade50, isDark: isDark, ref: ref, applySort: false)
-                                      : _buildScoreTable(matchupName, bouts, cardColor: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.shade50, isDark: isDark),
-                                );
-                              }),
+                                  child: _buildIndividualMatchesList('順位決定戦', tieBouts, cardColor: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.shade50, isDark: isDark, ref: ref, applySort: false),
+                                )
+                              else
+                                ...tieMatchupOrder.map((matchupName) {
+                                  final bouts = tieBoutsByMatchup[matchupName]!;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: _buildScoreTable(matchupName, bouts, cardColor: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.shade50, isDark: isDark),
+                                  );
+                                }),
                             ],
                             const SizedBox(height: 48),
                           ],
@@ -792,7 +800,19 @@ class OfficialRecordScreen extends ConsumerWidget {
                       if (rs > ws) { isRowRed ? rWins++ : cWins++; isRowRed ? rWinners++ : cWinners++; }
                       else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }
                       isRowRed ? rPoints += rs : cPoints += rs; isRowRed ? cPoints += ws : rPoints += ws;
-                      if (isIndiv) techs.addAll(BunaiksenHelper.extractTechs(m.events, isRowRed, isRowRed ? rs : ws));
+                      if (isIndiv) {
+                        final extracted = BunaiksenHelper.extractTechs(m.events, isRowRed, isRowRed ? rs : ws);
+                        
+                        // 🌟 修正：既存の extracted があっても、SUMMARYタグがあれば記号を「◯」に統一する
+                        final bool isSummary = m.note.contains('[SUMMARY]');
+                        if (isSummary || extracted.isEmpty) {
+                          extracted.clear();
+                          for(int k=0; k<(isRowRed ? rs : ws); k++) {
+                            extracted.add('◯');
+                          }
+                        }
+                        techs.addAll(extracted);
+                      }
                     }
                     
                     String result = 'draw';
@@ -831,7 +851,10 @@ class OfficialRecordScreen extends ConsumerWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Flexible(
-                                        child: _buildScoreTable('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark),
+                                        child: isIndiv 
+                                          // 🌟 修正：個人戦なら必ずリスト形式を呼び出し、ソートは不要(applySort: false)
+                                          ? _buildIndividualMatchesList('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark, ref: ref, applySort: false)
+                                          : _buildScoreTable('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark),
                                       ),
                                       const SizedBox(height: 16),
                                       ElevatedButton(
@@ -1031,7 +1054,15 @@ class OfficialRecordScreen extends ConsumerWidget {
                 }
               }
 
-              return Padding(
+              // 自チーム判定
+              final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+              final bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
+              final bool wOwn = ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
+              final bool hasOwnTeam = rOwn || wOwn;
+              final bool isRowSummary = m.note.contains('[SUMMARY]');
+              
+              // 行のコンテンツ
+              Widget rowContent = Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 child: Row(
                   children: [
@@ -1068,6 +1099,35 @@ class OfficialRecordScreen extends ConsumerWidget {
                   ],
                 ),
               );
+
+              // 🌟 修正：警告表示の条件とダイアログ形式の統一
+              if (isRowSummary && !hasOwnTeam) {
+                return Container(
+                  color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.05),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Opacity(opacity: 0.2, child: rowContent), // さらに薄く
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade400, width: 0.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
+                        ),
+                        child: Text(
+                          '※簡易入力された結果です\n（詳細スコアはありません）',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return rowContent;
             },
           ),
         ],

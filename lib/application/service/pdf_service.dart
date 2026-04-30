@@ -96,27 +96,32 @@ class PdfService {
                   (!m.redName.contains(':') && !m.whiteName.contains(':'))
                 );
                 
-                for (int j = 0; j < matchupLists.length; j += 2) {
-                  final pw.Widget table1 = isIndivLeague
-                    ? _buildPdfIndividualMatchesList('matchup', matchupLists[j], ttf, ttfBold)
-                    : _buildPdfScoreTable('matchup', matchupLists[j], ttf, ttfBold);
-                  pw.Widget table2 = pw.SizedBox();
-                  if (j + 1 < matchupLists.length) {
-                    table2 = isIndivLeague
-                      ? _buildPdfIndividualMatchesList('matchup', matchupLists[j + 1], ttf, ttfBold)
-                      : _buildPdfScoreTable('matchup', matchupLists[j + 1], ttf, ttfBold);
+                if (isIndivLeague) {
+                  // ★ PDFでの個人戦リーグ一括リスト化
+                  final indivMatches = normalMatches.where((m) => !m.note.contains('[SUMMARY]')).toList();
+                  if (indivMatches.isNotEmpty) {
+                    contentWidgets.add(_buildPdfIndividualMatchesList('対戦スコア詳細', indivMatches, ttf, ttfBold));
+                    contentWidgets.add(pw.SizedBox(height: 16));
                   }
-                  contentWidgets.add(
-                    pw.Row(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Expanded(child: table1),
-                        pw.SizedBox(width: 16),
-                        pw.Expanded(child: table2),
-                      ],
-                    ),
-                  );
-                  contentWidgets.add(pw.SizedBox(height: 16));
+                } else {
+                  for (int j = 0; j < matchupLists.length; j += 2) {
+                    final pw.Widget table1 = _buildPdfScoreTable('matchup', matchupLists[j], ttf, ttfBold);
+                    pw.Widget table2 = pw.SizedBox();
+                    if (j + 1 < matchupLists.length) {
+                      table2 = _buildPdfScoreTable('matchup', matchupLists[j + 1], ttf, ttfBold);
+                    }
+                    contentWidgets.add(
+                      pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Expanded(child: table1),
+                          pw.SizedBox(width: 16),
+                          pw.Expanded(child: table2),
+                        ],
+                      ),
+                    );
+                    contentWidgets.add(pw.SizedBox(height: 16));
+                  }
                 }
               }
 
@@ -127,17 +132,26 @@ class PdfService {
                 contentWidgets.add(pw.SizedBox(height: 10));
                 
                 final isIndivTie = tieBreakMatches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
-                final tieMatchups = _groupByMatchup(tieBreakMatches);
-                for (var entry in tieMatchups.entries) {
+                
+                if (isIndivTie) {
                   contentWidgets.add(
                     pw.SizedBox(
                       width: PdfPageFormat.a4.availableWidth / 2 - 8,
-                      child: isIndivTie
-                        ? _buildPdfIndividualMatchesList(entry.key, entry.value, ttf, ttfBold)
-                        : _buildPdfScoreTable(entry.key, entry.value, ttf, ttfBold),
+                      child: _buildPdfIndividualMatchesList('順位決定戦', tieBreakMatches, ttf, ttfBold),
                     )
                   );
                   contentWidgets.add(pw.SizedBox(height: 16));
+                } else {
+                  final tieMatchups = _groupByMatchup(tieBreakMatches);
+                  for (var entry in tieMatchups.entries) {
+                    contentWidgets.add(
+                      pw.SizedBox(
+                        width: PdfPageFormat.a4.availableWidth / 2 - 8,
+                        child: _buildPdfScoreTable(entry.key, entry.value, ttf, ttfBold),
+                      )
+                    );
+                    contentWidgets.add(pw.SizedBox(height: 16));
+                  }
                 }
               }
               contentWidgets.add(pw.SizedBox(height: 16));
@@ -1090,6 +1104,7 @@ class PdfService {
       }
     }
     while (res.length < count) {
+      // 🌟 ここが '◯' になっていることを確認
       res.add('◯');
     }
     return res.take(count).toList();
