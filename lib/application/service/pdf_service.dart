@@ -90,12 +90,21 @@ class PdfService {
                 final matchups = _groupByMatchup(normalMatches);
                 // ★ 修正：簡易入力（SUMMARY）された対戦カードは詳細出力から除外して紙面をスッキリさせる
                 final matchupLists = matchups.values.where((ms) => !ms.any((m) => m.note.contains('[SUMMARY]'))).toList();
+                // PDF側も判定ロジックを画面UIと同期（強化）
+                final isIndivLeague = normalMatches.any((m) => 
+                  m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦') ||
+                  (!m.redName.contains(':') && !m.whiteName.contains(':'))
+                );
                 
                 for (int j = 0; j < matchupLists.length; j += 2) {
-                  final table1 = _buildPdfScoreTable('matchup', matchupLists[j], ttf, ttfBold);
+                  final pw.Widget table1 = isIndivLeague
+                    ? _buildPdfIndividualMatchesList('matchup', matchupLists[j], ttf, ttfBold)
+                    : _buildPdfScoreTable('matchup', matchupLists[j], ttf, ttfBold);
                   pw.Widget table2 = pw.SizedBox();
                   if (j + 1 < matchupLists.length) {
-                    table2 = _buildPdfScoreTable('matchup', matchupLists[j + 1], ttf, ttfBold);
+                    table2 = isIndivLeague
+                      ? _buildPdfIndividualMatchesList('matchup', matchupLists[j + 1], ttf, ttfBold)
+                      : _buildPdfScoreTable('matchup', matchupLists[j + 1], ttf, ttfBold);
                   }
                   contentWidgets.add(
                     pw.Row(
@@ -117,12 +126,15 @@ class PdfService {
                 contentWidgets.add(pw.Text('▼ 順位決定戦', style: pw.TextStyle(font: ttfBold, fontSize: 12, color: PdfColors.orange700)));
                 contentWidgets.add(pw.SizedBox(height: 10));
                 
+                final isIndivTie = tieBreakMatches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
                 final tieMatchups = _groupByMatchup(tieBreakMatches);
                 for (var entry in tieMatchups.entries) {
                   contentWidgets.add(
                     pw.SizedBox(
                       width: PdfPageFormat.a4.availableWidth / 2 - 8,
-                      child: _buildPdfScoreTable(entry.key, entry.value, ttf, ttfBold),
+                      child: isIndivTie
+                        ? _buildPdfIndividualMatchesList(entry.key, entry.value, ttf, ttfBold)
+                        : _buildPdfScoreTable(entry.key, entry.value, ttf, ttfBold),
                     )
                   );
                   contentWidgets.add(pw.SizedBox(height: 16));
@@ -136,14 +148,20 @@ class PdfService {
                 continue;
               }
               
-              final table1 = _buildPdfScoreTable(group['groupName'], matches, ttf, ttfBold);
+              final isIndiv = matches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
+              final pw.Widget table1 = isIndiv
+                ? _buildPdfIndividualMatchesList(group['groupName'], matches, ttf, ttfBold)
+                : _buildPdfScoreTable(group['groupName'], matches, ttf, ttfBold);
               pw.Widget table2 = pw.SizedBox();
               
               if (i + 1 < groupDataList.length) {
                 final nextGroup = groupDataList[i + 1];
                 final nextMatches = nextGroup['matches'] as List<MatchModel>;
                 if (!(nextMatches.isNotEmpty && (nextMatches.first.isKachinuki || nextMatches.first.note.contains('[リーグ戦]')))) {
-                  table2 = _buildPdfScoreTable(nextGroup['groupName'], nextMatches, ttf, ttfBold);
+                  final isNextIndiv = nextMatches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
+                  table2 = isNextIndiv
+                    ? _buildPdfIndividualMatchesList(nextGroup['groupName'], nextMatches, ttf, ttfBold)
+                    : _buildPdfScoreTable(nextGroup['groupName'], nextMatches, ttf, ttfBold);
                   i++; 
                 }
               }
@@ -1087,6 +1105,108 @@ class PdfService {
       matchups.putIfAbsent(key.join(' vs '), () => []).add(m);
     }
     return matchups;
+  }
+
+  // ★ 追加：PDF用の個人戦（縦並びリスト）描画エンジン
+  static pw.Widget _buildPdfIndividualMatchesList(String groupName, List<MatchModel> matches, pw.Font ttf, pw.Font ttfBold) {
+    if (matches.isEmpty) return pw.SizedBox();
+
+    final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+    String displayGroupName = groupName;
+    if (uuidRegex.hasMatch(groupName) || groupName.length > 20 || groupName == 'matchup') {
+      displayGroupName = '';
+    }
+
+    final note = matches.first.note;
+    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
+    
+    String headerTitle = '【個人戦】';
+    if (displayGroupName.isNotEmpty) {
+      headerTitle += ' $displayGroupName';
+    } else {
+      final rTeam = matches.first.redName.contains(':') ? matches.first.redName.split(':').first.trim() : '';
+      final wTeam = matches.first.whiteName.contains(':') ? matches.first.whiteName.split(':').first.trim() : '';
+      if (rTeam.isNotEmpty && wTeam.isNotEmpty && rTeam != wTeam) {
+        headerTitle += ' $rTeam vs $wTeam';
+      }
+    }
+    if (cleanNote.isNotEmpty && !cleanNote.contains('個人戦')) headerTitle += ' ($cleanNote)';
+
+    final rows = <pw.Widget>[];
+    for (int i = 0; i < matches.length; i++) {
+      final m = matches[i];
+      final rName = m.redName.contains(':') ? m.redName.split(':').last.replaceAll(')', '').trim() : m.redName;
+      final wName = m.whiteName.contains(':') ? m.whiteName.split(':').last.replaceAll(')', '').trim() : m.whiteName;
+      final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
+      final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
+
+      final isDone = m.status == 'finished' || m.status == 'approved';
+      final rScore = (m.redScore as num).toInt();
+      final wScore = (m.whiteScore as num).toInt();
+      final isDraw = isDone && rScore == wScore;
+      final rWin = isDone && rScore > wScore;
+      final wWin = isDone && wScore > rScore;
+
+      final ptsMap = _calculatePointsRaw(m);
+
+      rows.add(
+        pw.Container(
+          padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5))),
+          child: pw.Row(
+            children: [
+              pw.Container(
+                width: 45,
+                child: pw.Text(m.note.isNotEmpty ? m.note : '第${i+1}試合', style: pw.TextStyle(font: ttfBold, fontSize: 8, color: PdfColors.grey600), textAlign: pw.TextAlign.center),
+              ),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    if (rTeam.isNotEmpty) pw.Text(rTeam, style: pw.TextStyle(font: ttf, fontSize: 7, color: PdfColors.grey600)),
+                    pw.Text(rName, style: pw.TextStyle(font: ttfBold, fontSize: 10, color: rWin ? PdfColors.red700 : PdfColors.black)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(width: 8),
+              _pdfPointBox(ptsMap['red']!, rWin, true, ttfBold),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(horizontal: 6),
+                child: pw.Text(isDraw ? '✕' : '-', style: pw.TextStyle(font: ttf, fontSize: 12, color: PdfColors.grey500)),
+              ),
+              _pdfPointBox(ptsMap['white']!, wWin, false, ttfBold),
+              pw.SizedBox(width: 8),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    if (wTeam.isNotEmpty) pw.Text(wTeam, style: pw.TextStyle(font: ttf, fontSize: 7, color: PdfColors.grey600)),
+                    pw.Text(wName, style: pw.TextStyle(font: ttfBold, fontSize: 10, color: wWin ? PdfColors.red700 : PdfColors.black)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        )
+      );
+    }
+
+    return pw.Container(
+      margin: const pw.EdgeInsets.symmetric(vertical: 4),
+      decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey500, width: 0.5)),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Container(
+            padding: const pw.EdgeInsets.all(6),
+            color: PdfColors.grey200,
+            width: double.infinity,
+            child: pw.Text(headerTitle, style: pw.TextStyle(font: ttfBold, fontSize: 10)),
+          ),
+          ...rows,
+        ],
+      ),
+    );
   }
 }
 

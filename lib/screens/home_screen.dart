@@ -133,6 +133,13 @@ class HomeScreen extends ConsumerWidget {
           elevation: 0,
           iconTheme: IconThemeData(color: textColor),
           actions: [
+            // 👇 ここから追加：一時的なViewer確認用ボタン
+            IconButton(
+              icon: const Icon(Icons.remove_red_eye, color: Colors.amber),
+              tooltip: 'Viewer確認',
+              onPressed: () => context.push('/viewer-home/$tournamentId'),
+            ),
+            // 👆 ここまで追加
             if (!permissions.isReadOnly)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -1409,7 +1416,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   void _showShareDialog(BuildContext context, String tournamentId) {
-    final String shareUrl = 'https://kendo-os.web.app/home/$tournamentId?role=viewer';
+    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId';
     
     showDialog(
       context: context,

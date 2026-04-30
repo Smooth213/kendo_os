@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart'; 
 import '../models/match_model.dart';
 import '../domain/match/score_event.dart';
 import '../presentation/provider/match_list_provider.dart';
-import '../application/service/pdf_service.dart'; 
-// ★ 追加：先ほど作成した勝ち抜き戦の最強描画エンジンを呼び出す
-import 'kachinuki_scoreboard_screen.dart'; 
-import 'home_screen.dart'; // ★ 修正：プロバイダーが確実に存在する home_screen を直接読み込む
-// ★ Phase 7: 権限プロバイダのインポート
-import '../presentation/provider/permission_provider.dart';
+import '../application/service/pdf_service.dart';
+import 'kachinuki_scoreboard_screen.dart';
+import 'home_screen.dart';
+import '../utils/bunaiksen_helper.dart';
 import '../domain/kendo_rule_engine.dart';
 import '../presentation/provider/match_rule_provider.dart';
-import '../utils/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 
 class OfficialPointDisplay {
   final String mark;
@@ -20,23 +16,20 @@ class OfficialPointDisplay {
   OfficialPointDisplay(this.mark, this.isFirstMatchPoint);
 }
 
-class OfficialRecordScreen extends ConsumerWidget {
+class ViewerOfficialRecordScreen extends ConsumerWidget {
   final String tournamentId; 
-  const OfficialRecordScreen({super.key, required this.tournamentId});
+  const ViewerOfficialRecordScreen({super.key, required this.tournamentId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    // ★ Phase 7: 権限プロバイダから取得
-    final permissions = ref.watch(permissionProvider);
-    final String screenTitle = permissions.isReadOnly ? '全試合スコア' : '大会 公式記録';
+    const String screenTitle = '大会 公式記録';
 
     final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
 
-    // ★ Step 3-2: selectによる最適化
     final matchesForThisTournament = ref.watch(matchListProvider.select((list) => 
       list.where((m) => m.tournamentId == tournamentId).toList()
     ));
@@ -76,17 +69,6 @@ class OfficialRecordScreen extends ConsumerWidget {
           title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, 
           elevation: 0,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-              child: ElevatedButton.icon(
-                onPressed: () => context.go('/'),
-                icon: Icon(Icons.home, color: Colors.indigo.shade700, size: 16),
-                label: Text('トップへ', style: TextStyle(color: Colors.indigo.shade700, fontWeight: FontWeight.bold, fontSize: 12)),
-                style: ElevatedButton.styleFrom(backgroundColor: isDark ? Colors.indigo.shade900.withValues(alpha: 0.5) : Colors.indigo.shade50, elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 12)),
-              ),
-            ),
-          ],
           bottom: TabBar(
             isScrollable: true,
             labelColor: headerTextColor, 
@@ -191,8 +173,8 @@ class OfficialRecordScreen extends ConsumerWidget {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    shrinkWrap: true, // ★ 追加
-                    physics: const ClampingScrollPhysics(), // ★ 追加
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.all(8),
                     itemCount: sortedGroupKeys.length,
                     itemBuilder: (context, index) {
@@ -201,7 +183,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                       final matches = mergedGroups[groupName]!..sort((a, b) => a.order.compareTo(b.order));
                       
                       if (matches.isNotEmpty && matches.first.isKachinuki) {
-                        // 勝ち抜き戦の描画
                         final firstMatch = matches.first;
                         final note = firstMatch.note;
                         final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
@@ -219,7 +200,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                         int maxRem = redRem > whiteRem ? redRem : whiteRem;
                         int totalCols = matches.length + maxRem;
 
-                        // ★ 修正：画面幅以上の試合数がある場合に広がるよう余裕を持たせる
                         final canvasWidth = 60.0 + (totalCols * 60.0) + 120.0;
                         
                         return Card(
@@ -236,19 +216,18 @@ class OfficialRecordScreen extends ConsumerWidget {
                                 width: double.infinity,
                                 child: Text(titleText, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.indigo.shade100 : Colors.indigo.shade900)),
                               ),
-                              // ★ 修正：InteractiveViewer を廃止し、確実に横に滑る SingleChildScrollView に変更
                               SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   color: isDark ? Colors.black : Colors.white,
                                   width: canvasWidth < MediaQuery.of(context).size.width ? MediaQuery.of(context).size.width : canvasWidth,
-                                  height: 520, // 描画高さに固定
+                                  height: 520,
                                   child: CustomPaint(
                                     painter: KachinukiBracketPainter(
                                       matches: matches,
                                       isDark: isDark,
-                                      ref: ref, // ★ 最新のPainterに合わせて引数を修正
+                                      ref: ref,
                                     ),
                                     size: Size.infinite,
                                   ),
@@ -262,11 +241,9 @@ class OfficialRecordScreen extends ConsumerWidget {
                         final String leagueTitle = BunaiksenHelper.generateDescriptiveLeagueTitle(matches, ownTeams);
                         final textColor = isDark ? Colors.white : Colors.indigo.shade900;
 
-                        // 通常の試合と決定戦を分離
                         final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
                         final tieBouts = matches.where((m) => m.note.contains('[順位決定戦]')).toList();
 
-                        // 対戦カードごとのグルーピング（通常用）
                         final boutsByMatchup = <String, List<MatchModel>>{};
                         final matchupOrder = <String>[];
                         for (var m in normalMatches) {
@@ -280,7 +257,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                           boutsByMatchup[matchupName]!.add(m);
                         }
 
-                        // ★ 追加：対戦カードごとのグルーピング（順位決定戦用）
                         final tieBoutsByMatchup = <String, List<MatchModel>>{};
                         final tieMatchupOrder = <String>[];
                         for (var m in tieBouts) {
@@ -304,7 +280,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                               child: Text('【リーグ戦】 $leagueTitle', style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 16)),
                             ),
                             
-                            // 1. ブラッシュアップされた星取表（マトリックス）
                             _buildLeagueGridTable(context, groupName, matches, cardColor: cardColor, isDark: isDark, ref: ref),
                             
                             const SizedBox(height: 32),
@@ -313,7 +288,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                               child: Text('▼ 対戦カード別 スコア詳細', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey)),
                             ),
                             
-                            // 2. 各対戦カード（先鋒〜大将）のまとまり表示
                             ...matchupOrder.map((matchupName) {
                               final bouts = boutsByMatchup[matchupName]!;
                               return Padding(
@@ -324,7 +298,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                               );
                             }),
 
-                            // 3. 順位決定戦
                             if (tieBouts.isNotEmpty) ...[
                               const SizedBox(height: 16),
                               const Padding(
@@ -528,7 +501,6 @@ class OfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  // ★ Phase 8-4: allFinished を受け取り、未完了なら勝敗を隠す
   Widget _teamResultCell(String winner, bool isDark, bool allFinished) {
     final textColor = isDark ? Colors.white : Colors.black;
     final dividerColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
@@ -539,11 +511,9 @@ class OfficialRecordScreen extends ConsumerWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 勝負がついていても、試合途中なら境界線（Divider）だけは表示してレイアウトを保つ
           if (winner != 'draw' || !allFinished)
             Divider(color: dividerColor, thickness: 1, height: 0),
           
-          // ★ すべての試合が終わっている場合のみテキストを表示
           if (allFinished) ...[
             if (winner == 'draw')
               Center(child: _buildVerticalName('引き分け', '', isDark))
@@ -563,9 +533,7 @@ class OfficialRecordScreen extends ConsumerWidget {
   // チーム名が長い場合でも中央揃えで綺麗に折り返されるように調整
   Widget _teamCell(String name, Color color) => Center(child: Padding(padding: const EdgeInsets.all(4), child: Text(name, textAlign: TextAlign.center, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 11))));
 
-  // ★ 修正：公式記録画面の欠員は「完全に空欄」にし、同姓は右下に1文字添える
   Widget _nameCell(String rawName, bool isDark, List<String> teamLastNames, {bool isDaihyo = false}) {
-    // 欠員は文字を出さず完全に空欄のセルを返す
     if (rawName.contains('欠員')) {
       return Container(color: isDaihyo ? (isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50) : Colors.transparent);
     }
@@ -584,7 +552,6 @@ class OfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  // ★ 修正：同姓の1文字目を美しく配置する縦書きエンジン
   Widget _buildVerticalName(String text, String initial, bool isDark) {
     final style = TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800);
     
@@ -612,7 +579,6 @@ class OfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  // --- スコアセル ---
   Widget _scoreCell(MatchModel m, bool isDark, bool isSummary) {
     if (isSummary) return const SizedBox(height: 70);
     final isDone = m.status == 'finished' || m.status == 'approved';
@@ -710,7 +676,6 @@ class OfficialRecordScreen extends ConsumerWidget {
     return Center(child: Text('$wins\n--\n$pts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
   }
 
-  // ★ 追加：印刷画面用のリーグ星取表描画メソッド
   Widget _buildLeagueGridTable(BuildContext context, String groupName, List<MatchModel> matches, {Color? cardColor, required bool isDark, required WidgetRef ref}) {
     final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
     if (normalMatches.isEmpty) return const SizedBox();
@@ -1076,7 +1041,6 @@ class OfficialRecordScreen extends ConsumerWidget {
   }
 }
 
-// ★ 追加：表の「自分自身」のセルに斜め線を引くためのクラス
 class DiagonalLinePainter extends CustomPainter {
   final Color color;
   DiagonalLinePainter({required this.color});
@@ -1091,7 +1055,6 @@ class DiagonalLinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ★ ◯・△・□ を描画する究極のペインター（図形のみを描画、分数の線はWidget側で描画します）
 class ResultShapePainter extends CustomPainter {
   final String result; // 'win', 'loss', 'draw'
   final Color color;
@@ -1125,7 +1088,6 @@ class ResultShapePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// リーグ戦・個人戦表示用ヘルパー
 Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
   if (isFirst && tech != '◯' && tech != '反') {
     return Container(

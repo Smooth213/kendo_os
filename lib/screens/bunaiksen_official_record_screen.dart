@@ -78,7 +78,30 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         body: TabBarView(
           children: categories.map((cat) {
             final groupsMap = categoryGroups[cat]!;
-            final sortedGroupKeys = groupsMap.keys.toList()..sort();
+
+            // 個人戦グループを統合するためのマップ
+            final mergedGroups = <String, List<MatchModel>>{};
+            final List<MatchModel> individualMergedList = [];
+            final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+
+            groupsMap.forEach((key, matches) {
+              final isIndiv = matches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
+              final isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
+              
+              // 通常の個人戦（リーグ戦以外）かつ、ID形式のグループ名を統合対象とする
+              if (isIndiv && !isLeague && (uuidRegex.hasMatch(key) || key.length > 20)) {
+                individualMergedList.addAll(matches);
+              } else {
+                mergedGroups[key] = matches;
+              }
+            });
+
+            // 統合された個人戦がある場合、特殊なキーで登録
+            if (individualMergedList.isNotEmpty) {
+              mergedGroups['__merged_individual__'] = individualMergedList;
+            }
+
+            final sortedGroupKeys = mergedGroups.keys.toList()..sort();
 
             return Column(
               children: [
@@ -91,9 +114,9 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      Expanded(child: _buildActionButton(context, Icons.print, 'PDF印刷', Colors.grey.shade800, () => _handleExport(context, cat, groupsMap, sortedGroupKeys, isPdf: true))),
+                      Expanded(child: _buildActionButton(context, Icons.print, 'PDF印刷', Colors.grey.shade800, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: true))),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildActionButton(context, Icons.share, '画像シェア', Colors.teal.shade600, () => _handleExport(context, cat, groupsMap, sortedGroupKeys, isPdf: false))),
+                      Expanded(child: _buildActionButton(context, Icons.share, '画像シェア', Colors.teal.shade600, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: false))),
                     ],
                   ),
                 ),
@@ -104,7 +127,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                     itemCount: sortedGroupKeys.length,
                     itemBuilder: (context, index) {
                       final groupName = sortedGroupKeys[index];
-                      final bouts = groupsMap[groupName]!..sort((a, b) => a.order.compareTo(b.order));
+                      final bouts = mergedGroups[groupName]!..sort((a, b) => a.order.compareTo(b.order));
                       
                       // 1. 勝ち抜き戦の描画
                       if (bouts.isNotEmpty && bouts.first.isKachinuki) {
@@ -117,7 +140,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       }
 
                       // 3. 通常の団体戦・個人戦の描画
-                      return _buildScoreTable(groupName, bouts, cardColor: cardColor, isDark: isDark);
+                      if (bouts.isNotEmpty && bouts.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'))) {
+                        return _buildIndividualMatchesList(groupName, bouts, cardColor: cardColor, isDark: isDark);
+                      } else {
+                        return _buildScoreTable(groupName, bouts, cardColor: cardColor, isDark: isDark);
+                      }
                     },
                   ),
                 ),
@@ -177,15 +204,26 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  // ★ リーグ戦セクションの描画（公式仕様）
+  // ★ リーグ戦セクションの描画（公式仕様：個人戦リスト対応版）
   Widget _buildLeagueSection(BuildContext context, WidgetRef ref, String groupName, List<MatchModel> matches, Color cardColor, bool isDark) {
+    // 判定ロジックを強化：部内戦ではmatchTypeが様々であるため、団体戦（:を含む名前）でない場合は個人戦とみなす、または既存のキーワードチェックを行う
+    final isIndiv = matches.any((m) => 
+      m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦') ||
+      (!m.redName.contains(':') && !m.whiteName.contains(':')) // 名前形式からの判定を追加
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
         _buildLeagueGridTable(context, groupName, matches, cardColor: cardColor, isDark: isDark, ref: ref),
         const SizedBox(height: 16),
-        ..._groupMatchesByMatchup(matches).entries.map((e) => _buildScoreTable(e.key, e.value, cardColor: cardColor, isDark: isDark)),
+        ..._groupMatchesByMatchup(matches).entries.map((e) {
+          // 詳細スコア部分も個人戦ならリスト形式、団体戦なら表形式に分岐
+          return isIndiv
+              ? _buildIndividualMatchesList(e.key, e.value, cardColor: cardColor, isDark: isDark)
+              : _buildScoreTable(e.key, e.value, cardColor: cardColor, isDark: isDark);
+        }),
       ],
     );
   }
@@ -525,6 +563,104 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       height: 65, alignment: Alignment.center,
       color: isRank ? (isDark ? Colors.orange.withValues(alpha: 0.2) : Colors.orange.shade50) : null,
       child: Text(text, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isRank ? 16 : 13, color: isRank ? Colors.orange.shade800 : (isDark ? Colors.white : Colors.black87))),
+    );
+  }
+
+  // ★ 追加：個人戦専用の縦並びリスト描画エンジン（部内戦用：ソートなし・進行順）
+  Widget _buildIndividualMatchesList(String groupName, List<MatchModel> matches, {Color? cardColor, required bool isDark}) {
+    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+    final headerBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
+    // ヘッダー名からシステムID（英数字とハイフンの羅列）を隠す処理
+    final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+    String displayGroupName = groupName;
+    if (uuidRegex.hasMatch(groupName) || groupName.length > 20) {
+      displayGroupName = '';
+    }
+
+    final note = matches.first.note;
+    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
+    String headerTitle = '【個人戦】';
+    if (displayGroupName.isNotEmpty) headerTitle += ' $displayGroupName';
+    if (cleanNote.isNotEmpty && !cleanNote.contains('個人戦')) headerTitle += ' ($cleanNote)';
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      elevation: 0,
+      color: cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12), color: headerBgColor, width: double.infinity,
+            child: Text(headerTitle, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800)),
+          ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: matches.length,
+            separatorBuilder: (context, index) => Divider(color: borderColor, height: 1, indent: 16, endIndent: 16),
+            itemBuilder: (context, index) {
+              final m = matches[index];
+              final rName = m.redName.contains(':') ? m.redName.split(':').last.replaceAll(')', '').trim() : m.redName;
+              final wName = m.whiteName.contains(':') ? m.whiteName.split(':').last.replaceAll(')', '').trim() : m.whiteName;
+              final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
+              final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
+
+              final isDone = m.status == 'finished' || m.status == 'approved';
+              final rScore = (m.redScore as num).toInt();
+              final wScore = (m.whiteScore as num).toInt();
+              final isDraw = isDone && rScore == wScore;
+              final rWin = isDone && rScore > wScore;
+              final wWin = isDone && wScore > rScore;
+
+              // 分離したヘルパーから技を抽出（部内戦用）
+              List<String> redPts = BunaiksenHelper.extractMarks(m.events, true);
+              List<String> whitePts = BunaiksenHelper.extractMarks(m.events, false);
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 55,
+                      child: Text(m.note.isNotEmpty ? m.note : '第${index+1}試合', style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          if (rTeam.isNotEmpty) Text(rTeam, style: TextStyle(fontSize: 9, color: Colors.grey.shade500), overflow: TextOverflow.ellipsis),
+                          Text(rName, style: TextStyle(fontWeight: rWin ? FontWeight.w900 : FontWeight.bold, color: rWin ? Colors.red.shade700 : textColor), overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildPointBox(redPts, rWin, true, isDark),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(isDraw ? '✕' : '-', style: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w300, fontSize: 16)),
+                    ),
+                    _buildPointBox(whitePts, wWin, false, isDark),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (wTeam.isNotEmpty) Text(wTeam, style: TextStyle(fontSize: 9, color: Colors.grey.shade500), overflow: TextOverflow.ellipsis),
+                          Text(wName, style: TextStyle(fontWeight: wWin ? FontWeight.w900 : FontWeight.bold, color: wWin ? Colors.red.shade700 : textColor), overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 

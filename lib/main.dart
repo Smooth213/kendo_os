@@ -19,6 +19,7 @@ import 'screens/program_viewer_screen.dart';
 import 'models/program_model.dart';
 import 'screens/tournament_list_screen.dart'; 
 import 'screens/match_router.dart'; // ★ Phase 5: ルーターを追加
+import 'screens/viewer_match_screen.dart';
 import 'screens/master_management_screen.dart';
 import 'screens/create_tournament_screen.dart';
 import 'screens/setup_match_format_screen.dart';
@@ -38,6 +39,10 @@ import 'models/local_stroke_model.dart'; // ★ これを追加
 import 'screens/bunaiksen_home_screen.dart';
 import 'screens/bunaiksen_setup_screen.dart';
 import 'screens/bunaiksen_official_record_screen.dart';
+import 'screens/viewer_home_screen.dart';
+import 'screens/viewer_official_record_screen.dart';
+import 'screens/viewer_team_scoreboard_screen.dart';
+import 'screens/viewer_kachinuki_scoreboard_screen.dart';
 
 import 'presentation/provider/role_provider.dart';
 
@@ -127,6 +132,10 @@ final _router = GoRouter(
         return TournamentListScreen(isArchive: isArchive);
       }
     ),
+    GoRoute(
+      path: '/viewer/:id',
+      builder: (context, state) => ViewerMatchScreen(matchId: state.pathParameters['id']!),
+    ),
     // ★ Phase 6: 全ての共有可能画面を RoleInjector で包み、URLからViewer権限を適用できるようにする
     GoRoute(
       path: '/home/:tournamentId', 
@@ -154,6 +163,22 @@ final _router = GoRouter(
     GoRoute(
       path: '/team-scoreboard/:groupName',
       builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: TeamScoreboardScreen(groupName: state.pathParameters['groupName']!))
+    ),
+    GoRoute(
+      path: '/viewer-home/:tournamentId',
+      builder: (context, state) => ViewerHomeScreen(tournamentId: state.pathParameters['tournamentId']!),
+    ),
+    GoRoute(
+      path: '/viewer-record/:tournamentId',
+      builder: (context, state) => ViewerOfficialRecordScreen(tournamentId: state.pathParameters['tournamentId']!),
+    ),
+    GoRoute(
+      path: '/viewer-team/:groupName',
+      builder: (context, state) => ViewerTeamScoreboardScreen(groupName: state.pathParameters['groupName']!),
+    ),
+    GoRoute(
+      path: '/viewer-kachinuki/:groupName',
+      builder: (context, state) => ViewerKachinukiScoreboardScreen(groupName: state.pathParameters['groupName']!),
     ),
     GoRoute(
       path: '/kachinuki-scoreboard/:groupName',

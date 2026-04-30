@@ -36,7 +36,6 @@ import 'match/widgets/scoreboard.dart';
 // ★ 追加：システム設定プロバイダの読み込み
 import '../presentation/provider/settings_provider.dart';
 import '../presentation/provider/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
-import '../presentation/provider/permission_provider.dart';
 import '../presentation/provider/bunaiksen_infinite_engine_provider.dart'; // ★ 追加: 無限勝ち抜きエンジン
 import '../presentation/provider/bunaiksen_provider.dart'; // ★ 追加: 無限勝ち抜き状態
 
@@ -183,7 +182,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final permissions = ref.watch(permissionProvider);
     final rule = ref.watch(matchRuleProvider);
 
     // ★ 修正: 消してしまった match 本体と teamMatches を復旧
@@ -200,7 +198,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       match.groupName != null ? list.where((m) => m.groupName == match.groupName).toList() : <MatchModel>[]
     ));
 
-    final isViewOnly = permissions.isReadOnly;
+    // ★ 修正: 閲覧者はRouterで弾かれるため、ここでの isViewOnly は「他端末が操作中（ロック競合）」のみを意味する
+    final isViewOnly = match.scorerId != null && match.scorerId != _myUserId;
     final isInputLocked = isViewOnly || match.status == 'finished' || match.status == 'approved';
 
     final vs = ref.watch(matchViewStateProvider(widget.matchId));
@@ -255,6 +254,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           ],
         ),
         actions: [
+          // 👇 ここから追加：一時的なViewer確認用ボタン
+          IconButton(
+            icon: const Icon(Icons.remove_red_eye, color: Colors.amber),
+            onPressed: () => context.push('/viewer/${match.id}'),
+          ),
+          // 👆 ここまで追加
           IconButton(
             // ★ 変更: 歯車アイコンも白
             icon: const Icon(Icons.settings_outlined, color: Colors.white),
@@ -381,7 +386,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
-                                final shareText = '${match.redName} vs ${match.whiteName} の試合状況:\nhttps://kendo-os.web.app/match/${match.id}';
+                                // ★ 修正: 共有URLを観戦専用の /viewer/ に変更
+                                final shareText = '${match.redName} vs ${match.whiteName} の試合状況:\nhttps://kendo-os.web.app/viewer/${match.id}';
                                 SharePlus.instance.share(ShareParams(text: shareText));
                               },
                               icon: const Icon(Icons.ios_share, size: 16),

@@ -14,8 +14,8 @@ class ShareService {
     // ★ 本番環境のホスティングURL（Firebase Hosting等のURLに変更してください）
     const String baseUrl = 'https://kendo-os.web.app'; 
     
-    // フェーズ6で作った「閲覧者用パラメーター(?role=viewer)」を付与したURL
-    final String matchUrl = '$baseUrl/match/${match.id}?role=viewer';
+    // ロードマップ通り、完全分離されたViewer専用のルーティングを発行
+    final String matchUrl = '$baseUrl/viewer/${match.id}';
 
     final rScore = match.redScore;
     final wScore = match.whiteScore;
