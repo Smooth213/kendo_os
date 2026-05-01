@@ -8,8 +8,8 @@ import '../models/match_model.dart';
 import '../presentation/provider/bunaiksen_provider.dart';
 import '../presentation/provider/match_command_provider.dart';
 import '../models/player_model.dart';
-import '../widgets/smart_player_input.dart';
-import '../widgets/multi_player_select_input.dart'; // ★追加: 複数選択ウィジェット
+import '../presentation/widgets/smart_player_input.dart';
+import '../presentation/widgets/multi_player_select_input.dart'; // ★追加: 複数選択ウィジェット
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
   const BunaiksenSetupScreen({super.key});

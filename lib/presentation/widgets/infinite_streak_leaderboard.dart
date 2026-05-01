@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../presentation/provider/bunaiksen_provider.dart';
+import '../provider/bunaiksen_provider.dart';
 
 class InfiniteStreakLeaderboard extends ConsumerWidget {
   const InfiniteStreakLeaderboard({super.key});

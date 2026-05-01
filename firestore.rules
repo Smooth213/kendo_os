@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. 大会のセキュリティレベルを取得する関数
+    function getSecurityLevel(tournamentId) {
+      // tournamentIdが無い試合(単発の練習など)は標準(Lv.2)として扱う
+      return tournamentId == null 
+        ? 2 
+        : get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.securityLevel;
+    }
+
+    // 2. 試合(matches)コレクションの保護ルール
+    match /matches/{matchId} {
+      // 読み込み、新規作成、削除はアプリ側のUIで制御するためFirestore側は許可
+      allow read, create, delete: if true; 
+      
+      // 更新(上書き)に対する強固な防弾ルール
+      allow update: if 
+        // 【Lv.1 自由 & Lv.2 標準】
+        // アプリ側のロック機構(scorerId)に判断を委ねるため、Firestore側は許可
+        getSecurityLevel(resource.data.tournamentId) <= 2 
+        ||
+        // 【Lv.3 厳格】公式大会モード
+        // 試合が終了(finished)している場合、いかなる理由があっても上書きさせない
+        // ※進行中の試合(waiting, in_progress)のみ更新可能
+        (
+          getSecurityLevel(resource.data.tournamentId) == 3 
+          && resource.data.status != 'finished'
+        );
+    }
+
+    // 3. その他のコレクション（tournaments, players等）は基本許可
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

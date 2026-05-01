@@ -15,9 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TournamentModel {
 
- String get id; String get name;@TimestampConverter() DateTime get date;// ★ これで日付エラーが永遠に起きなくなる！
- String get venue; List<String> get categories; String get status;// ★ エラーログにあったstatusを維持
- String get notes;
+ String get id; String get name;@TimestampConverter() DateTime get date; String get venue; List<String> get categories; String get status; String get notes;// ★ Phase 8: バックエンド防弾化用のセキュリティレベル（初期値2: 標準）
+ int get securityLevel;
 /// Create a copy of TournamentModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +29,16 @@ $TournamentModelCopyWith<TournamentModel> get copyWith => _$TournamentModelCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TournamentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&(identical(other.venue, venue) || other.venue == venue)&&const DeepCollectionEquality().equals(other.categories, categories)&&(identical(other.status, status) || other.status == status)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TournamentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&(identical(other.venue, venue) || other.venue == venue)&&const DeepCollectionEquality().equals(other.categories, categories)&&(identical(other.status, status) || other.status == status)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,date,venue,const DeepCollectionEquality().hash(categories),status,notes);
+int get hashCode => Object.hash(runtimeType,id,name,date,venue,const DeepCollectionEquality().hash(categories),status,notes,securityLevel);
 
 @override
 String toString() {
-  return 'TournamentModel(id: $id, name: $name, date: $date, venue: $venue, categories: $categories, status: $status, notes: $notes)';
+  return 'TournamentModel(id: $id, name: $name, date: $date, venue: $venue, categories: $categories, status: $status, notes: $notes, securityLevel: $securityLevel)';
 }
 
 
@@ -50,7 +49,7 @@ abstract mixin class $TournamentModelCopyWith<$Res>  {
   factory $TournamentModelCopyWith(TournamentModel value, $Res Function(TournamentModel) _then) = _$TournamentModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String name,@TimestampConverter() DateTime date, String venue, List<String> categories, String status, String notes
+ String id, String name,@TimestampConverter() DateTime date, String venue, List<String> categories, String status, String notes, int securityLevel
 });
 
 
@@ -67,7 +66,7 @@ class _$TournamentModelCopyWithImpl<$Res>
 
 /// Create a copy of TournamentModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? date = null,Object? venue = null,Object? categories = null,Object? status = null,Object? notes = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? date = null,Object? venue = null,Object? categories = null,Object? status = null,Object? notes = null,Object? securityLevel = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -76,7 +75,8 @@ as DateTime,venue: null == venue ? _self.venue : venue // ignore: cast_nullable_
 as String,categories: null == categories ? _self.categories : categories // ignore: cast_nullable_to_non_nullable
 as List<String>,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String,
+as String,securityLevel: null == securityLevel ? _self.securityLevel : securityLevel // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -161,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name, @TimestampConverter()  DateTime date,  String venue,  List<String> categories,  String status,  String notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name, @TimestampConverter()  DateTime date,  String venue,  List<String> categories,  String status,  String notes,  int securityLevel)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TournamentModel() when $default != null:
-return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_that.status,_that.notes);case _:
+return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_that.status,_that.notes,_that.securityLevel);case _:
   return orElse();
 
 }
@@ -182,10 +182,10 @@ return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name, @TimestampConverter()  DateTime date,  String venue,  List<String> categories,  String status,  String notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name, @TimestampConverter()  DateTime date,  String venue,  List<String> categories,  String status,  String notes,  int securityLevel)  $default,) {final _that = this;
 switch (_that) {
 case _TournamentModel():
-return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_that.status,_that.notes);case _:
+return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_that.status,_that.notes,_that.securityLevel);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +202,10 @@ return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name, @TimestampConverter()  DateTime date,  String venue,  List<String> categories,  String status,  String notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name, @TimestampConverter()  DateTime date,  String venue,  List<String> categories,  String status,  String notes,  int securityLevel)?  $default,) {final _that = this;
 switch (_that) {
 case _TournamentModel() when $default != null:
-return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_that.status,_that.notes);case _:
+return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_that.status,_that.notes,_that.securityLevel);case _:
   return null;
 
 }
@@ -217,13 +217,12 @@ return $default(_that.id,_that.name,_that.date,_that.venue,_that.categories,_tha
 @JsonSerializable()
 
 class _TournamentModel implements TournamentModel {
-  const _TournamentModel({required this.id, required this.name, @TimestampConverter() required this.date, required this.venue, final  List<String> categories = const [], this.status = 'active', this.notes = ''}): _categories = categories;
+  const _TournamentModel({required this.id, required this.name, @TimestampConverter() required this.date, required this.venue, final  List<String> categories = const [], this.status = 'active', this.notes = '', this.securityLevel = 2}): _categories = categories;
   factory _TournamentModel.fromJson(Map<String, dynamic> json) => _$TournamentModelFromJson(json);
 
 @override final  String id;
 @override final  String name;
 @override@TimestampConverter() final  DateTime date;
-// ★ これで日付エラーが永遠に起きなくなる！
 @override final  String venue;
  final  List<String> _categories;
 @override@JsonKey() List<String> get categories {
@@ -233,8 +232,9 @@ class _TournamentModel implements TournamentModel {
 }
 
 @override@JsonKey() final  String status;
-// ★ エラーログにあったstatusを維持
 @override@JsonKey() final  String notes;
+// ★ Phase 8: バックエンド防弾化用のセキュリティレベル（初期値2: 標準）
+@override@JsonKey() final  int securityLevel;
 
 /// Create a copy of TournamentModel
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +249,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TournamentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&(identical(other.venue, venue) || other.venue == venue)&&const DeepCollectionEquality().equals(other._categories, _categories)&&(identical(other.status, status) || other.status == status)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TournamentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&(identical(other.venue, venue) || other.venue == venue)&&const DeepCollectionEquality().equals(other._categories, _categories)&&(identical(other.status, status) || other.status == status)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,date,venue,const DeepCollectionEquality().hash(_categories),status,notes);
+int get hashCode => Object.hash(runtimeType,id,name,date,venue,const DeepCollectionEquality().hash(_categories),status,notes,securityLevel);
 
 @override
 String toString() {
-  return 'TournamentModel(id: $id, name: $name, date: $date, venue: $venue, categories: $categories, status: $status, notes: $notes)';
+  return 'TournamentModel(id: $id, name: $name, date: $date, venue: $venue, categories: $categories, status: $status, notes: $notes, securityLevel: $securityLevel)';
 }
 
 
@@ -269,7 +269,7 @@ abstract mixin class _$TournamentModelCopyWith<$Res> implements $TournamentModel
   factory _$TournamentModelCopyWith(_TournamentModel value, $Res Function(_TournamentModel) _then) = __$TournamentModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name,@TimestampConverter() DateTime date, String venue, List<String> categories, String status, String notes
+ String id, String name,@TimestampConverter() DateTime date, String venue, List<String> categories, String status, String notes, int securityLevel
 });
 
 
@@ -286,7 +286,7 @@ class __$TournamentModelCopyWithImpl<$Res>
 
 /// Create a copy of TournamentModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? date = null,Object? venue = null,Object? categories = null,Object? status = null,Object? notes = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? date = null,Object? venue = null,Object? categories = null,Object? status = null,Object? notes = null,Object? securityLevel = null,}) {
   return _then(_TournamentModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -295,7 +295,8 @@ as DateTime,venue: null == venue ? _self.venue : venue // ignore: cast_nullable_
 as String,categories: null == categories ? _self._categories : categories // ignore: cast_nullable_to_non_nullable
 as List<String>,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String,
+as String,securityLevel: null == securityLevel ? _self.securityLevel : securityLevel // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

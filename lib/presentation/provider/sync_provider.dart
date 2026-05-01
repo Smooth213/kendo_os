@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../repositories/local_match_repository.dart';
 import 'match_list_provider.dart'; 
+import '../../models/match_model.dart';
+import '../../domain/match/score_event.dart';
+import '../../application/usecase/match_usecases.dart';
+import 'match_rule_provider.dart';
 
 // ★ Phase 2: 自動バックアップ用のパッケージを追加
 import 'dart:convert';
@@ -129,13 +133,61 @@ class SyncEngine {
         int targetVersion = match.version;
 
         if (snapshot.exists) {
-          final remoteVersion = (snapshot.data()!['version'] as num?)?.toInt() ?? 1;
-          // 競合チェック：自分の持っているデータが古ければスキップ（後のPhaseで解決UIを出す）
+          final remoteData = snapshot.data()!;
+          final remoteVersion = (remoteData['version'] as num?)?.toInt() ?? 1;
+          
           if (match.version < remoteVersion) {
-            debugPrint('⚠️ [Sync Engine] 競合検知 ID:${match.id}');
-            continue; 
+            debugPrint('⚠️ [Sync Engine] 競合検知 ID:${match.id} -> 🛡️ CRDT自動マージを実行します');
+            
+            // 1. リモートデータを復元
+            remoteData['id'] = docRef.id;
+            final remoteMatch = MatchModel.fromJson(remoteData);
+            
+            // 2. イベント履歴の統合 (IDベースで重複排除)
+            final Map<String, ScoreEvent> mergedEventsMap = {};
+            for (var e in remoteMatch.events) { mergedEventsMap[e.id] = e; }
+            for (var e in match.events) { 
+              if (mergedEventsMap.containsKey(e.id)) {
+                try {
+                   if ((mergedEventsMap[e.id] as dynamic).isCanceled == true) continue;
+                } catch(_) {}
+              }
+              mergedEventsMap[e.id] = e; 
+            }
+            
+            // 時間順にソートして正しい歴史を作る
+            final mergedEvents = mergedEventsMap.values.toList()
+              ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+            MatchModel rebuiltMatch = remoteMatch.copyWith(events: mergedEvents);
+
+            // 3. ルールエンジンを通してスコアを再計算（真実の復元）
+            try {
+              final rule = ref.read(matchRuleProvider);
+              rebuiltMatch = ref.read(rebuildMatchFromEventsUseCaseProvider).execute(rebuiltMatch, rule);
+            } catch (e) {
+              debugPrint('⚠️ 再計算ロジックに失敗しました。マージのみ実行します: $e');
+            }
+
+            // 4. マージ完了後のデータを新バージョンとして両方に保存
+            targetVersion = remoteVersion + 1;
+            final uploadData = rebuiltMatch.copyWith(isDirty: false, version: targetVersion).toJson();
+            
+            await docRef.set(uploadData);
+
+            // 🛡️ Phase 3 ガード: 同期中にユーザーが新しい技を入力していないか確認
+            final currentLocal = await localRepo.getMatch(match.id);
+            if (currentLocal != null && currentLocal.events.length > match.events.length) {
+              _needsSyncAgain = true;
+              debugPrint('⚠️ [Sync Engine] CRDTマージ中に追加入力あり。ローカル上書きを回避し再同期します。');
+            } else {
+              await localRepo.saveMatch(rebuiltMatch.copyWith(isDirty: false, version: targetVersion));
+            }
+            
+            debugPrint('✅ [Sync Engine] CRDTマージ完了＆保存 ID:${match.id}');
+            continue; // 次の試合へ
           }
-          targetVersion = remoteVersion + 1; // サーバーの続きから
+          targetVersion = remoteVersion + 1; // 競合がなければそのまま進める
         } else {
           targetVersion = 1; // 新規
         }
@@ -143,8 +195,14 @@ class SyncEngine {
         final uploadData = match.copyWith(isDirty: false, version: targetVersion).toJson();
         await docRef.set(uploadData);
         
-        // ★ 重要：ローカル側も「同期済み」かつ「最新バージョン」に更新する
-        await localRepo.markAsSynced(match.id);
+        // 🛡️ Phase 3 ガード: 通常同期中に追加入力がないか確認
+        final currentLocal = await localRepo.getMatch(match.id);
+        if (currentLocal != null && currentLocal.events.length > match.events.length) {
+          _needsSyncAgain = true;
+          debugPrint('⚠️ [Sync Engine] 通常同期中に追加入力あり。未送信フラグ(isDirty)を維持し再同期します。');
+        } else {
+          await localRepo.markAsSynced(match.id);
+        }
       }
     } catch (e) {
       debugPrint('🔥 [Sync Engine] 同期失敗: $e');

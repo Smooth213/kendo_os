@@ -203,114 +203,114 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     });
   }
 
-  // ★ 追加：団体リーグ戦で参加チームのオーダー（先鋒〜大将）を入力するダイアログ
-  Future<List<String>?> _showLeagueOrderDialog(String teamName, List<String> positions) async {
-    List<TextEditingController> controllers = List.generate(positions.length, (i) => TextEditingController());
+  // ★ 団体リーグ戦：最下部に適度な余白（24px）を追加
+  Future<List<String>?> _showLeagueOrderSheet(String teamName, List<String> positions) async {
+    final List<TextEditingController> controllers = List.generate(positions.length, (i) => TextEditingController());
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return showDialog<List<String>>(
+    return showModalBottomSheet<List<String>>(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        title: Text('$teamName のオーダー', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.teal.shade300 : Colors.teal.shade800)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: positions.length,
-            itemBuilder: (context, i) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: TextField(
-                  controller: controllers[i],
-                  style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                  decoration: InputDecoration(
-                    labelText: positions[i],
-                    labelStyle: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
-                    isDense: true,
-                    filled: true,
-                    fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      isScrollControlled: true, // キーボード対応
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom, // キーボードを避ける
+          top: 16, left: 24, right: 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 16),
+            Text('$teamName のオーダー', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.teal.shade300 : Colors.teal.shade800)),
+            const SizedBox(height: 16),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: positions.length,
+                itemBuilder: (context, i) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: TextField(
+                    controller: controllers[i],
+                    autofocus: i == 0,
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: positions[i],
+                      filled: true, fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, controllers.map((c) => TextSanitizer.clean(c.text)).toList()),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+                child: const Text('決定して追加', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            // ★ 修正：団体戦用の下部余白
+            const SizedBox(height: 24), 
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
-          ElevatedButton(
-            onPressed: () {
-              List<String> order = controllers.map((c) => TextSanitizer.clean(c.text)).toList();
-              Navigator.pop(ctx, order);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, elevation: 0),
-            child: const Text('決定して追加', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
     );
   }
 
-  // ★ 修正：個人リーグ戦で「所属」と「名前」をセットで入力するダイアログ（サジェスト付き）
-  Future<Map<String, String>?> _showIndividualLeagueEntryDialog(String initialName) async {
-    final affiController = TextEditingController();
-    final affiFocusNode = FocusNode(); // ★ 追加
-    final nameController = TextEditingController(text: initialName);
+  // ★ 個人リーグ戦：最下部に広めの余白（48px）を追加してゆったり配置
+  Future<String?> _showIndividualNameInputSheet(String teamName) async {
+    final nameController = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final history = ref.read(opponentTeamHistoryProvider); // ★ 履歴を読み込む
 
-    final result = await showDialog<Map<String, String>>(
+    return showModalBottomSheet<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        title: const Text('リーグ参加者の登録', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        content: Column(
+      isScrollControlled: true,
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          top: 16, left: 24, right: 24,
+        ),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ★ 所属（チーム名）のサジェスト付き入力欄
-            _buildTeamAutocomplete(
-              controller: affiController,
-              focusNode: affiFocusNode,
-              suggestions: history,
-              labelText: '所属（例：広島剣道会）',
-              hintText: '空欄でもOK',
-              fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
-              borderColor: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-              textColor: isDark ? Colors.white : Colors.black87,
-              subTextColor: Colors.grey,
-              isDark: isDark,
-            ),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 16),
+            Text(teamName.isNotEmpty ? '$teamName の選手名' : '選手名の登録', 
+                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.teal.shade300 : Colors.teal.shade800)),
             const SizedBox(height: 16),
             TextField(
               controller: nameController,
+              autofocus: true,
+              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               decoration: InputDecoration(
                 labelText: '選手名（例：田中太郎）',
-                filled: true, fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+                filled: true, 
+                fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
             ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, TextSanitizer.clean(nameController.text)),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+                child: const Text('決定して追加', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            // ★ 修正：個人戦用は「少し広め」の48pxに設定
+            const SizedBox(height: 48), 
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, {
-              'affiliation': TextSanitizer.clean(affiController.text),
-              'name': TextSanitizer.clean(nameController.text),
-            }),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, elevation: 0),
-            child: const Text('追加', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
     );
-
-    affiController.dispose(); // ★ 追加：メモリリーク防止
-    affiFocusNode.dispose(); // ★ 追加：メモリリーク防止
-    return result; // ★ 追加
   }
 
   // ★ フェーズ3：没入型AppBar（戻るボタンの色をTealへ統一）
@@ -435,7 +435,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             controller: _addParticipantController,
                             focusNode: _addParticipantFocusNode,
                             suggestions: ref.watch(opponentTeamHistoryProvider),
-                            labelText: matchType.contains('個人戦') ? '参加選手名を追加' : '参加チーム名を追加',
+                            labelText: '参加チーム名を追加', // ★ 修正：個人戦・団体戦で統一
                             hintText: '入力または履歴から選択',
                             fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                             borderColor: borderColor,
@@ -444,45 +444,46 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             isDark: isDark,
                           ),
                           const SizedBox(height: 8),
+                          // ★ 統一改修：ダイアログからボトムシート呼び出しへ変更
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
                               onPressed: () async {
                                 _addParticipantFocusNode.unfocus();
                                 FocusScope.of(context).unfocus();
-                                final input = TextSanitizer.clean(_addParticipantController.text);
-                                if (input.isEmpty && !matchType.contains('個人戦')) return;
+                                
+                                final inputTeamName = TextSanitizer.clean(_addParticipantController.text);
+                                
+                                if (_leagueParticipants.contains(inputTeamName)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('その名称は既に登録されています')));
+                                  return;
+                                }
 
                                 if (matchType.contains('個人戦')) {
-                                  // ★ 修正：個人戦は「所属」と「名前」を入力する専用ダイアログを表示
-                                  final result = await _showIndividualLeagueEntryDialog(input);
-                                  if (result != null) {
-                                    final fullName = result['affiliation']!.isNotEmpty 
-                                        ? '${result['affiliation']} : ${result['name']}' 
-                                        : result['name']!;
-                                    if (!_leagueParticipants.contains(fullName)) {
-                                      setState(() {
-                                        _leagueParticipants.add(fullName);
-                                        _leagueTeamOrders[fullName] = [result['name']!];
-                                      });
-                                      if (!context.mounted) return;
-                                      _addParticipantFocusNode.unfocus();
-                                      FocusScope.of(context).unfocus();
-                                      _addParticipantController.clear();
-                                    }
+                                  // ★ ボトムシートを呼び出す
+                                  final playerName = await _showIndividualNameInputSheet(inputTeamName);
+                                  if (playerName != null && playerName.isNotEmpty) {
+                                    final fullName = inputTeamName.isNotEmpty 
+                                        ? '$inputTeamName : $playerName' 
+                                        : playerName;
+                                    setState(() {
+                                      _leagueParticipants.add(fullName);
+                                      _leagueTeamOrders[fullName] = [playerName];
+                                    });
+                                    _addParticipantController.clear();
                                   }
                                 } else {
-                                  // 団体戦：既存のロジック
-                                  if (input.isEmpty || _leagueParticipants.contains(input)) return;
-                                  final order = await _showLeagueOrderDialog(input, _positions);
+                                  if (inputTeamName.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('チーム名を入力してください')));
+                                    return;
+                                  }
+                                  // ★ ボトムシートを呼び出す
+                                  final order = await _showLeagueOrderSheet(inputTeamName, _positions);
                                   if (order != null) {
                                     setState(() {
-                                      _leagueParticipants.add(input);
-                                      _leagueTeamOrders[input] = order;
+                                      _leagueParticipants.add(inputTeamName);
+                                      _leagueTeamOrders[inputTeamName] = order;
                                     });
-                                    if (!context.mounted) return;
-                                    _addParticipantFocusNode.unfocus();
-                                    FocusScope.of(context).unfocus();
                                     _addParticipantController.clear();
                                   }
                                 }

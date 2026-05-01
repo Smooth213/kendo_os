@@ -34,7 +34,7 @@ import 'presentation/provider/settings_provider.dart';
 import 'presentation/provider/sync_provider.dart'; 
 import 'models/local/match_entity.dart';
 import 'repositories/local_match_repository.dart';
-import 'widgets/sync_status_bar.dart'; 
+import 'presentation/widgets/sync_status_bar.dart'; 
 import 'models/local_stroke_model.dart'; // ★ これを追加
 import 'screens/bunaiksen_home_screen.dart';
 import 'screens/bunaiksen_setup_screen.dart';

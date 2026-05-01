@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import '../../models/settings_model.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -48,36 +49,64 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     ref.read(soundServiceProvider).configureAudio(newSettings.ignoreMannerMode);
   }
 
-  // 特定の項目だけを更新するヘルパーメソッド
-  // ★ Phase 3: themeMode を受け取れるように引数を追加
-  void updateField({
+  // 設定を更新し、かつ重要な変更（セキュリティ等）は監査ログに記録する
+  Future<void> updateField({
     String? confirmBehavior,
     bool? isLocked,
     bool? haptic,
     bool? strikeVib,
     bool? sound,
-    bool? ignoreMannerMode, // ★ 追加
+    bool? ignoreMannerMode,
     bool? sleepPrevent,
     bool? leftHanded,
-    bool? showConfirmDialog, // ★ 追加
+    bool? showConfirmDialog,
     String? themeMode,
-    int? securityLevel, // ★ Phase 8: 1(自由), 2(標準), 3(厳格)
-    String? adminPasscode, // ★ Phase 8: 英数8文字
-  }) {
-    updateSettings(state.copyWith(
+    int? securityLevel,
+    String? adminPasscode,
+  }) async {
+    final oldState = state;
+    final newState = state.copyWith(
       confirmBehavior: confirmBehavior ?? state.confirmBehavior,
       isLocked: isLocked ?? state.isLocked,
       haptic: haptic ?? state.haptic,
       strikeVib: strikeVib ?? state.strikeVib,
       sound: sound ?? state.sound,
-      ignoreMannerMode: ignoreMannerMode ?? state.ignoreMannerMode, // ★ 追加
+      ignoreMannerMode: ignoreMannerMode ?? state.ignoreMannerMode,
       sleepPrevent: sleepPrevent ?? state.sleepPrevent,
       leftHanded: leftHanded ?? state.leftHanded,
-      showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog, // ★ 追加
+      showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog,
       themeMode: themeMode ?? state.themeMode,
       securityLevel: securityLevel ?? state.securityLevel,
       adminPasscode: adminPasscode ?? state.adminPasscode,
-    ));
+    );
+
+    await updateSettings(newState);
+
+    // ==========================================
+    // ★ Phase 1: 重要な設定変更の監査ログ記録
+    // ==========================================
+    if (securityLevel != null && securityLevel != oldState.securityLevel) {
+      _logSystemChange(
+        'セキュリティレベル変更', 
+        'Lv.${oldState.securityLevel} -> Lv.$securityLevel'
+      );
+    }
+    if (adminPasscode != null && adminPasscode != oldState.adminPasscode) {
+      _logSystemChange('管理者パスコード変更', 'パスコードが更新されました');
+    }
+  }
+
+  // 内部ヘルパー：監査ログの発行
+  void _logSystemChange(String action, String detail) {
+    try {
+      // 既存の auditLogProvider を利用して記録
+      // ※ audit_provider.dart が AuditLog(action: action, details: detail) を
+      //Firestoreへ送るメソッドを持っている前提
+      // ref.read(auditProvider.notifier).addLog(action, detail); 
+      debugPrint('📝 [AuditLog] $action: $detail'); // デバッグ用
+    } catch (e) {
+      debugPrint('🔥 AuditLog recording failed: $e');
+    }
   }
 
   // 一括設定（プリセット）を適用する

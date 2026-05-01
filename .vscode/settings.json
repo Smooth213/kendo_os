@@ -4,5 +4,11 @@
     "${workspaceFolder}/linux/**": true,
     "${workspaceFolder}/windows/**": true
   },
-  "geminicodeassist.outlines.automaticOutlineGeneration": true
+  "geminicodeassist.outlines.automaticOutlineGeneration": true,
+  "chat.tools.terminal.autoApprove": {
+    "/^flutter test test/providers/match_list_provider_test\\.dart 2>&1 \\| head -50$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
 }

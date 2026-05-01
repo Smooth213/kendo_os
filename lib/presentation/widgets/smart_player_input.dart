@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../presentation/provider/bunaiksen_provider.dart';
-import '../repositories/player_repository.dart';
-import '../models/player_model.dart';
+import '../provider/bunaiksen_provider.dart';
+import '../../repositories/player_repository.dart';
+import '../../models/player_model.dart';
 
 // 部内戦機能で利用する選手マスタを取得する専用Provider
 final bunaiksenPlayerMasterProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../models/match_model.dart';
 import '../presentation/provider/match_list_provider.dart';
-import '../widgets/infinite_streak_leaderboard.dart';
+import '../presentation/widgets/infinite_streak_leaderboard.dart';
 import '../presentation/provider/bunaiksen_provider.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {

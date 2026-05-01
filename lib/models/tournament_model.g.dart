@@ -19,6 +19,7 @@ _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
           const [],
       status: json['status'] as String? ?? 'active',
       notes: json['notes'] as String? ?? '',
+      securityLevel: (json['securityLevel'] as num?)?.toInt() ?? 2,
     );
 
 Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
@@ -30,4 +31,5 @@ Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
       'categories': instance.categories,
       'status': instance.status,
       'notes': instance.notes,
+      'securityLevel': instance.securityLevel,
     };

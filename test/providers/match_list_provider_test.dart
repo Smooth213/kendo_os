@@ -25,7 +25,32 @@ class MockAuditService extends Mock implements AuditService {}
 class MockSoundService extends Mock implements SoundService {}
 
 // ★ 最終奥義：Isarそのものをダミー（モック）化し、起動エラーを物理的に消滅させる
-class MockIsar extends Mock implements Isar {} 
+class MockIsar extends Mock implements Isar {
+  @override
+  Future<T> writeTxn<T>(Future<T> Function() callback, {bool silent = false}) async {
+    return await callback();
+  }
+  
+  @override
+  Future<void> clear() async {}
+  
+  @override
+  Future<bool> close({bool deleteFromDisk = false}) async => true;
+  
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    if (invocation.memberName == Symbol('matchEntitys')) {
+      return MockIsarCollectionDynamic();
+    }
+    return super.noSuchMethod(invocation);
+  }
+}
+
+class MockIsarCollectionDynamic extends Mock {
+  Future<void> put(dynamic item) async {}
+  
+  Future<dynamic> filter() async => null;
+}
 
 class MockSettingsNotifier extends SettingsNotifier {
   final SettingsModel initialSettings;
@@ -66,14 +91,27 @@ class TestLocalMatchRepository extends LocalMatchRepository {
     }
     _controller.add(List.from(_cache));
   }
+
+  @override
+  Future<void> saveMatchesBulk(List<MatchModel> matches) async {
+    // ★ saveMatchesBulk もメモリ上のキャッシュで実装
+    for (final match in matches) {
+      await saveMatch(match);
+    }
+  }
 }
 
 class TestMatchRepository extends Fake implements MatchRepository {
   final TestLocalMatchRepository localRepo;
   TestMatchRepository(this.localRepo);
 
+  // ★ 無限ループ回避: テスト時は「リモートからの更新」と「ローカルの更新」を切り離すため、
+  // リモートからのリアルタイム監視は一旦「空のストリーム」を返すようにします。
   @override
-  Stream<List<MatchModel>> watchMatches() => localRepo.watchMatches();
+  Stream<List<MatchModel>> watchInProgressMatches() => const Stream.empty();
+
+  @override
+  Future<List<MatchModel>> getStaticMatches() async => [];
 
   @override
   Stream<MatchModel> watchSingleMatch(String matchId) {
@@ -101,7 +139,7 @@ void main() {
     late MockIsar mockIsar; 
     late ProviderContainer container;
 
-    setUp(() async {
+    setUp(() {
       mockIsar = MockIsar(); // ★ 0.01秒でダミーを生成
       fakeFirestore = FakeFirebaseFirestore();
       

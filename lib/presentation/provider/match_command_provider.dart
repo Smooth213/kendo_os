@@ -399,11 +399,50 @@ final matchCommandQueueProvider = Provider<MatchCommandQueue>((ref) {
   return queue;
 });
 
+// ============================================================================
+// ★ Phase 2: デッドレターキュー（送信エラーデータ）の可視化と操作プロバイダ
+// ============================================================================
+
+class DeadLetterQueueNotifier extends Notifier<List<MatchCommandModel>> {
+  @override
+  List<MatchCommandModel> build() => [];
+
+  // キューにエラーデータを追加（MatchCommandQueueから呼ばれる）
+  void addErrorCommand(MatchCommandModel cmd) {
+    state = [...state, cmd];
+  }
+
+  // エラーデータを再送キューに戻す
+  Future<void> retryCommand(MatchCommandModel cmd) async {
+    final queue = ref.read(matchCommandQueueProvider);
+    state = state.where((c) => c.id != cmd.id).toList(); // リストから消す
+    
+    // エラーカウントをリセットして再度キューに突っ込む
+    final newCmd = MatchCommandModel(
+      id: cmd.id,
+      type: cmd.type,
+      payload: cmd.payload,
+      createdAt: cmd.createdAt,
+      status: CommandStatus.pending,
+    );
+    await queue.enqueue(newCmd);
+  }
+
+  // エラーデータを完全に破棄する
+  void discardCommand(MatchCommandModel cmd) {
+    state = state.where((c) => c.id != cmd.id).toList();
+  }
+}
+
+final deadLetterQueueProvider = NotifierProvider<DeadLetterQueueNotifier, List<MatchCommandModel>>(() {
+  return DeadLetterQueueNotifier();
+});
+
 class MatchCommandQueue {
   final Ref ref;
   final List<MatchCommandModel> _queue = [];
-  // ★ 追加: デッドレターキュー（処理できないコマンドの退避場所）
-  final List<MatchCommandModel> _deadLetterQueue = [];
+  // ★ 修正: 内部リストではなく、Notifierを通してUIと連動させるように変更
+  // final List<MatchCommandModel> _deadLetterQueue = [];
   final Map<String, int> _errorCounts = {};
   bool _isProcessing = false;
 
@@ -446,7 +485,8 @@ class MatchCommandQueue {
           
           if (_errorCounts[cmd.id]! >= 3) {
             debugPrint('🚨 [CommandQueue] 失敗上限到達。デッドレターキューへ退避: ${cmd.id}');
-            _deadLetterQueue.add(cmd);
+            // ★ 修正: 内部リストではなくプロバイダに送ってUIと連動させる
+            ref.read(deadLetterQueueProvider.notifier).addErrorCommand(cmd); 
             _queue.removeAt(0);
             await localRepo.deleteCommand(cmd.id);
             ref.read(matchCommandErrorProvider.notifier).state = '一部のデータが保存できず退避されました。電波状況を確認してください。';

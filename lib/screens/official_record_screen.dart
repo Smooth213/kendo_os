@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../models/match_model.dart';
 import '../domain/match/score_event.dart';
 import '../presentation/provider/match_list_provider.dart';
-import '../application/service/pdf/pdf_service.dart'; 
+import '../application/service/pdf/pdf_service.dart';
 // ★ 追加：先ほど作成した勝ち抜き戦の最強描画エンジンを呼び出す
 import 'kachinuki_scoreboard_screen.dart'; 
 import 'home_screen.dart'; // ★ 修正：プロバイダーが確実に存在する home_screen を直接読み込む
@@ -12,6 +12,7 @@ import 'home_screen.dart'; // ★ 修正：プロバイダーが確実に存在�
 import '../presentation/provider/permission_provider.dart';
 import '../domain/kendo_rule_engine.dart';
 import '../presentation/provider/match_rule_provider.dart';
+import '../application/service/csv_service.dart';
 import '../utils/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 
 class OfficialPointDisplay {
@@ -130,6 +131,7 @@ class OfficialRecordScreen extends ConsumerWidget {
 
             return Column(
               children: [
+                // ★ Phase 3: 三位一体の出力ボタン（PDF・画像・CSV）
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -139,52 +141,28 @@ class OfficialRecordScreen extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final groupDataList = sortedGroupKeys.map((key) => {
-                              'groupName': key,
-                              'matches': mergedGroups[key]!..sort((a, b) => a.order.compareTo(b.order)),
-                            }).toList();
-
-                            showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
-
-                            try {
-                              await PdfService.printOfficialRecord(cat, groupDataList);
-                            } catch (e) {
-                              if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
-                            } finally {
-                              if (context.mounted) Navigator.pop(context);
-                            }
-                          },
-                          icon: const Icon(Icons.print),
-                          label: const Text('PDF印刷', style: TextStyle(fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade800, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                        ),
+                      // 1. PDF出力
+                      _buildHeaderActionButton(
+                        icon: Icons.print,
+                        label: 'PDF',
+                        color: Colors.grey.shade800,
+                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'pdf'),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final groupDataList = sortedGroupKeys.map((key) => {
-                              'groupName': key,
-                              'matches': mergedGroups[key]!..sort((a, b) => a.order.compareTo(b.order)),
-                            }).toList();
-
-                            showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
-
-                            try {
-                              await PdfService.shareOfficialRecordAsImage(cat, groupDataList);
-                            } catch (e) {
-                              if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
-                            } finally {
-                              if (context.mounted) Navigator.pop(context);
-                            }
-                          },
-                          icon: const Icon(Icons.share),
-                          label: const Text('画像シェア', style: TextStyle(fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                        ),
+                      const SizedBox(width: 8),
+                      // 2. 画像出力
+                      _buildHeaderActionButton(
+                        icon: Icons.share,
+                        label: '画像',
+                        color: Colors.teal.shade600,
+                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'image'),
+                      ),
+                      const SizedBox(width: 8),
+                      // 3. ★新規: CSV出力
+                      _buildHeaderActionButton(
+                        icon: Icons.table_chart,
+                        label: 'CSV',
+                        color: Colors.indigo.shade600,
+                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'csv'),
                       ),
                     ],
                   ),
@@ -378,6 +356,45 @@ class OfficialRecordScreen extends ConsumerWidget {
       }
     }
     return last;
+  }
+
+  // 出力ボタンの共通デザイン
+  Widget _buildHeaderActionButton({required IconData icon, required String label, required Color color, required VoidCallback onPressed}) {
+    return Expanded(
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 16),
+        label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    );
+  }
+
+  // 出力処理の共通ハンドラ
+  Future<void> _handleExport(BuildContext context, List<String> sortedGroupKeys, Map<String, List<MatchModel>> mergedGroups, String cat, String type) async {
+    final groupDataList = sortedGroupKeys.map((key) => {
+      'groupName': key,
+      'matches': mergedGroups[key]!..sort((a, b) => a.order.compareTo(b.order)),
+    }).toList();
+
+    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+
+    try {
+      if (type == 'pdf') await PdfService.printOfficialRecord(cat, groupDataList);
+      if (type == 'image') await PdfService.shareOfficialRecordAsImage(cat, groupDataList);
+      // ★ CSVサービスを呼び出し
+      if (type == 'csv') await CsvService.shareOfficialRecordAsCsv(cat, groupDataList);
+    } catch (e) {
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
+    } finally {
+      if (context.mounted) Navigator.pop(context);
+    }
   }
 
   Widget _buildScoreTable(String groupName, List<MatchModel> matches, {Color? cardColor, bool isDark = false}) {

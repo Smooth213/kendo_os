@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../presentation/provider/bunaiksen_provider.dart';
+import '../provider/bunaiksen_provider.dart';
 import 'smart_player_input.dart'; // マスタ取得用のプロバイダを参照するため
 
 class MultiPlayerSelectInput extends ConsumerStatefulWidget {

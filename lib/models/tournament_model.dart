@@ -9,11 +9,13 @@ abstract class TournamentModel with _$TournamentModel {
   const factory TournamentModel({
     required String id,
     required String name,
-    @TimestampConverter() required DateTime date, // ★ これで日付エラーが永遠に起きなくなる！
+    @TimestampConverter() required DateTime date, 
     required String venue,
     @Default([]) List<String> categories,
-    @Default('active') String status, // ★ エラーログにあったstatusを維持
-    @Default('') String notes,        // ★ notesを追加
+    @Default('active') String status, 
+    @Default('') String notes,        
+    // ★ Phase 8: バックエンド防弾化用のセキュリティレベル（初期値2: 標準）
+    @Default(2) int securityLevel,
   }) = _TournamentModel;
 
   factory TournamentModel.fromJson(Map<String, dynamic> json) => _$TournamentModelFromJson(json);
