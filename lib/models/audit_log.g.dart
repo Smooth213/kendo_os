@@ -10,7 +10,7 @@ _AuditLog _$AuditLogFromJson(Map<String, dynamic> json) => _AuditLog(
   id: json['id'] as String,
   matchId: json['matchId'] as String,
   userId: json['userId'] as String,
-  action: json['action'] as String,
+  action: $enumDecode(_$AuditActionEnumMap, json['action']),
   details: json['details'] as String,
   timestamp: const TimestampConverter().fromJson(json['timestamp']),
 );
@@ -19,7 +19,16 @@ Map<String, dynamic> _$AuditLogToJson(_AuditLog instance) => <String, dynamic>{
   'id': instance.id,
   'matchId': instance.matchId,
   'userId': instance.userId,
-  'action': instance.action,
+  'action': _$AuditActionEnumMap[instance.action]!,
   'details': instance.details,
   'timestamp': const TimestampConverter().toJson(instance.timestamp),
+};
+
+const _$AuditActionEnumMap = {
+  AuditAction.addScore: 'add_score',
+  AuditAction.undo: 'undo',
+  AuditAction.finish: 'finish',
+  AuditAction.approved: 'approved',
+  AuditAction.timeUp: 'time_up',
+  AuditAction.other: 'other',
 };

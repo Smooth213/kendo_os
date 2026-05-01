@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../models/match_model.dart';
 import '../domain/match/score_event.dart';
 import '../presentation/provider/match_list_provider.dart';
-import '../application/service/pdf_service.dart'; 
+import '../application/service/pdf/pdf_service.dart'; 
 // ★ 追加：先ほど作成した勝ち抜き戦の最強描画エンジンを呼び出す
 import 'kachinuki_scoreboard_screen.dart'; 
 import 'home_screen.dart'; // ★ 修正：プロバイダーが確実に存在する home_screen を直接読み込む
@@ -1176,7 +1176,8 @@ class ResultShapePainter extends CustomPainter {
       canvas.drawPath(path, bgPaint);
       canvas.drawPath(path, strokePaint);
     } else {
-      final rect = Rect.fromCenter(center: center, width: radius * 1.6, height: radius * 1.6);
+      // 🌟 修正：◯（直径 radius * 2）や△と同等のボリューム感になるよう、サイズを拡大（1.8倍に調整）
+      final rect = Rect.fromCenter(center: center, width: radius * 1.8, height: radius * 1.8);
       canvas.drawRect(rect, bgPaint);
       canvas.drawRect(rect, strokePaint);
     }

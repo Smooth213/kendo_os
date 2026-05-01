@@ -12,6 +12,7 @@ import 'package:kendo_os/domain/match/score_event.dart';
 import 'package:kendo_os/models/match_model.dart';
 import 'package:kendo_os/domain/match/match_rule.dart';
 import 'package:kendo_os/models/settings_model.dart';
+import 'package:kendo_os/models/audit_log.dart'; // ★ AuditAction を使用するために追加
 import '../helpers/test_match_factory.dart';
 
 class MockMatchCommand extends Mock implements MatchCommand {}
@@ -40,6 +41,7 @@ void main() {
   
   setUpAll(() {
     registerFallbackValue(MatchModel(id: 'dummy', matchType: '', redName: '', whiteName: ''));
+    registerFallbackValue(AuditAction.addScore); // ★ mocktailでEnum引数をany()で受け取るために必要
   });
 
   setUp(() {
@@ -97,7 +99,7 @@ void main() {
       // 修正：名前付き引数に named API を適用
       verify(() => mockAudit.logAction(
         matchId: 'match-101',
-        action: 'add_score',
+        action: AuditAction.addScore,
         details: any(named: 'details'),
       )).called(3);
     });
@@ -197,8 +199,8 @@ void main() {
       expect(match.status, 'finished');
       
       // 監査ログに undo と add_score が正しく記録されているか検証
-      verify(() => mockAudit.logAction(matchId: 'match-recovery-01', action: 'undo', details: any(named: 'details'))).called(1);
-      verify(() => mockAudit.logAction(matchId: 'match-recovery-01', action: 'add_score', details: any(named: 'details'))).called(3);
+      verify(() => mockAudit.logAction(matchId: 'match-recovery-01', action: AuditAction.undo, details: any(named: 'details'))).called(1);
+      verify(() => mockAudit.logAction(matchId: 'match-recovery-01', action: AuditAction.addScore, details: any(named: 'details'))).called(3);
     });
   });
 }

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/match_model.dart';
 import '../presentation/provider/match_list_provider.dart';
 import '../presentation/provider/bunaiksen_provider.dart';
-import '../application/service/pdf_service.dart';
+import '../application/service/pdf/pdf_service.dart';
 import 'kachinuki_scoreboard_screen.dart'; // 勝ち抜き戦描画用
 import '../domain/kendo_rule_engine.dart';
 import '../presentation/provider/match_rule_provider.dart';
@@ -420,7 +420,12 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     final rule = normalMatches.first.rule ?? ref.read(matchRuleProvider);
     final nonNullRule = rule!;
     final stats = KendoRuleEngine.calculateLeagueStandings(normalMatches, nonNullRule);
-    final isIndiv = normalMatches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
+    
+    // 🌟 修正：部内戦特有のデータ形式に対応するため、名前形式（:を含まない）での個人戦判定を追加
+    final isIndiv = normalMatches.any((m) => 
+      m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦') ||
+      (!m.redName.contains(':') && !m.whiteName.contains(':'))
+    );
     final allFinished = matches.every((m) => m.status == 'approved' || m.status == 'finished');
     final hasMatchPoints = nonNullRule.isLeague;
 
@@ -796,8 +801,8 @@ class ResultShapePainter extends CustomPainter {
       canvas.drawPath(path, bgPaint);
       canvas.drawPath(path, strokePaint);
     } else { // □ 引き分け（星取り表）
-      final double d = radius * 0.6; // □のサイズ調整
-      final rect = Rect.fromCenter(center: center, width: d * 2, height: d * 2);
+      // 🌟 修正：◯（直径 radius * 2）や△と同等のボリューム感になるよう、サイズを拡大（1.8倍に調整）
+      final rect = Rect.fromCenter(center: center, width: radius * 1.8, height: radius * 1.8);
       canvas.drawRect(rect, bgPaint);
       canvas.drawRect(rect, strokePaint);
     }

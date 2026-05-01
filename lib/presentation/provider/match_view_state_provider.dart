@@ -30,6 +30,9 @@ class MatchViewState {
   final bool isInputLocked;
   final bool isAllDone;
   final bool isTie;
+  // ★ 改善: UIから追い出した文字列操作の結果を保持
+  final String redCleanName;
+  final String whiteCleanName;
 
   MatchViewState({
     required this.scoreText,
@@ -45,6 +48,8 @@ class MatchViewState {
     required this.isInputLocked,
     required this.isAllDone,
     required this.isTie,
+    required this.redCleanName,
+    required this.whiteCleanName,
   });
 }
 
@@ -62,7 +67,8 @@ final matchViewStateProvider = Provider.family<MatchViewState, String>((ref, mat
     return MatchViewState(
       scoreText: '0 - 0', redScore: 0, whiteScore: 0, isEncho: false, 
       winner: null, lastEventText: '', canUndo: false, statusText: '', syncStatus: syncStatus,
-      isViewOnly: true, isInputLocked: true, isAllDone: false, isTie: false
+      isViewOnly: true, isInputLocked: true, isAllDone: false, isTie: false,
+      redCleanName: '', whiteCleanName: ''
     );
   }
 
@@ -109,6 +115,13 @@ final matchViewStateProvider = Provider.family<MatchViewState, String>((ref, mat
     lastEventText = '$sideStr ${typeMap[validLastEvent.type] ?? ''}';
   }
 
+  // 5. 表示用文字列の整形 (UI側から移動)
+  String cleanName(String name) {
+    if (name.contains('欠員')) return '(欠員)';
+    if (!name.contains(':')) return name.trim();
+    return name.split(':').last.replaceAll(')', '').trim();
+  }
+
   return MatchViewState(
     scoreText: '${match.redScore} - ${match.whiteScore}',
     redScore: match.redScore.toInt(),
@@ -123,5 +136,7 @@ final matchViewStateProvider = Provider.family<MatchViewState, String>((ref, mat
     isInputLocked: isInputLocked,
     isAllDone: groupStatus.isAllDone,
     isTie: groupStatus.isTie,
+    redCleanName: cleanName(match.redName),
+    whiteCleanName: cleanName(match.whiteName),
   );
 });

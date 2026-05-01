@@ -10,6 +10,7 @@ import 'match_rule_provider.dart';
 import '../../repositories/local_match_repository.dart'; // ★ Firestore版からIsar版に差し替え
 import 'sync_provider.dart'; // ★ 追加: クラウド同期ワーカー
 import '../../domain/match/match_aggregate.dart'; // ★ 追加
+import '../../application/usecase/match_usecases.dart'; // ★ 追加: UseCaseの参照
 
 // ★ 修正: キューシステム導入に伴い、役割を明確にするため MatchCommandService にリネーム
 final matchCommandServiceProvider = Provider<MatchCommandService>((ref) {
@@ -300,7 +301,7 @@ class MatchCommandService {
     
     final rule = ref.read(matchRuleProvider);
     // UseCaseの計算ロジックを使用して、歴史から真実を復元
-    final rebuiltMatch = ref.read(matchUseCaseProvider).rebuildFromEvents(match, rule);
+    final rebuiltMatch = ref.read(rebuildMatchFromEventsUseCaseProvider).execute(match, rule);
     
     // 計算結果をFirestoreへ強制同期
     await saveMatch(rebuiltMatch);
@@ -401,6 +402,9 @@ final matchCommandQueueProvider = Provider<MatchCommandQueue>((ref) {
 class MatchCommandQueue {
   final Ref ref;
   final List<MatchCommandModel> _queue = [];
+  // ★ 追加: デッドレターキュー（処理できないコマンドの退避場所）
+  final List<MatchCommandModel> _deadLetterQueue = [];
+  final Map<String, int> _errorCounts = {};
   bool _isProcessing = false;
 
   MatchCommandQueue(this.ref);
@@ -435,9 +439,20 @@ class MatchCommandQueue {
           await _executeCommand(cmd);
           await localRepo.deleteCommand(cmd.id);
           _queue.removeAt(0); 
+          _errorCounts.remove(cmd.id);
         } catch (e) {
-          debugPrint('🔥 [CommandQueue] 処理失敗: $e');
-          break; 
+          _errorCounts[cmd.id] = (_errorCounts[cmd.id] ?? 0) + 1;
+          debugPrint('🔥 [CommandQueue] 処理失敗 (${_errorCounts[cmd.id]}回目): $e');
+          
+          if (_errorCounts[cmd.id]! >= 3) {
+            debugPrint('🚨 [CommandQueue] 失敗上限到達。デッドレターキューへ退避: ${cmd.id}');
+            _deadLetterQueue.add(cmd);
+            _queue.removeAt(0);
+            await localRepo.deleteCommand(cmd.id);
+            ref.read(matchCommandErrorProvider.notifier).state = '一部のデータが保存できず退避されました。電波状況を確認してください。';
+          } else {
+            break; // リトライのため一旦ループを抜ける
+          }
         }
       }
     } finally {

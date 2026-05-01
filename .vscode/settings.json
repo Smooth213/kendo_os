@@ -3,5 +3,6 @@
     "**/.vscode": true,
     "${workspaceFolder}/linux/**": true,
     "${workspaceFolder}/windows/**": true
-  }
+  },
+  "geminicodeassist.outlines.automaticOutlineGeneration": true
 }

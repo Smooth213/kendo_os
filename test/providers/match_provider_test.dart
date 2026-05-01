@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/presentation/provider/match_provider.dart';
 import 'package:kendo_os/models/match_model.dart';
 import 'package:kendo_os/repositories/match_repository.dart';
+import 'package:kendo_os/models/audit_log.dart'; // ★ AuditAction を使用するためにインポート
 import 'package:kendo_os/presentation/provider/audit_provider.dart';
 import 'package:kendo_os/application/service/sound_service.dart';
 import 'package:kendo_os/presentation/provider/match_command_provider.dart';
@@ -12,6 +13,7 @@ import 'package:kendo_os/presentation/provider/settings_provider.dart';
 import 'package:kendo_os/models/settings_model.dart';
 import 'package:kendo_os/domain/match/score_event.dart';
 import '../helpers/test_match_factory.dart';
+import 'package:kendo_os/application/usecase/match_usecases.dart';
 
 /// 依存サービスの Mock 作成
 class MockMatchRepository extends Mock implements MatchRepository {}
@@ -41,6 +43,7 @@ void main() {
   setUp(() {
     // any() を MatchModel 型で使用するための登録
     registerFallbackValue(FakeMatchModel());
+    registerFallbackValue(AuditAction.addScore); // ★ AuditAction 型を any() で使用するための登録
 
     mockRepository = MockMatchRepository();
     mockAudit = MockAuditService();
@@ -75,9 +78,9 @@ void main() {
       expect(engine, isNotNull);
     });
 
-    test('matchUseCaseProvider が依存関係（Engine）を持って初期化されていること', () {
-      final useCase = container.read(matchUseCaseProvider);
-      expect(useCase, isNotNull);
+    test('addScoreUseCaseProvider が依存関係（Engine）を持って初期化されていること', () {
+      final addScoreUseCase = container.read(addScoreUseCaseProvider);
+      expect(addScoreUseCase, isNotNull);
     });
 
     test('matchActionProvider が正しく取得できること', () {
@@ -115,7 +118,7 @@ void main() {
       // 2. 監査ログが記録されたか検証
       verify(() => mockAudit.logAction(
             matchId: 'match-123',
-            action: 'add_score',
+            action: AuditAction.addScore, // ★ StringからEnumに変更
             details: any(named: 'details', that: contains('red')),
           )).called(1);
     });

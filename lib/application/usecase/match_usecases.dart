@@ -24,10 +24,16 @@ class AddScoreUseCase {
     final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(newEvent);
     final nextAnalysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
     
+    // ★ 錬成モード（ランニングタイマー）への完全対応
+    // ルール設定から「流し時間」のフラグを正確に取得
+    final bool isRunningTimerMode = rule.isRunningTime;
+
     MatchModel updatedMatch = currentMatch.copyWith(
       events: updatedEvents,
       redScore: nextAnalysis.context.redIppon,
       whiteScore: nextAnalysis.context.whiteIppon,
+      // ★ 改善：流し時間モードなら現在のタイマー状態をそのまま維持、通常モードなら「やめ」に合わせて時計を止める
+      timerIsRunning: isRunningTimerMode ? currentMatch.timerIsRunning : false, 
       isDirty: true,
       lastUpdatedAt: DateTime.now(),
     );
@@ -96,7 +102,48 @@ class TimeUpUseCase {
   }
 }
 
+/// ④ イベント履歴からの再構築 UseCase
+/// 試合のイベント履歴を元に、現在のスコアやステータスを再計算して整合性を保証します。
+class RebuildMatchFromEventsUseCase {
+  final KendoRuleEngine _engine;
+  RebuildMatchFromEventsUseCase(this._engine);
+
+  MatchModel execute(MatchModel baseMatch, MatchRule rule) {
+    final analysis = _engine.analyzeHistory(baseMatch.events, baseMatch, rule);
+    final result = _engine.decideResult(analysis.context);
+
+    // 歴史から再構築したデータも、最新のローカルデータとしてマーク
+    return baseMatch.copyWith(
+      redScore: analysis.context.redIppon,
+      whiteScore: analysis.context.whiteIppon,
+      status: (result != MatchResultStatus.inProgress && baseMatch.status != 'approved')
+          ? 'finished'
+          : baseMatch.status,
+      isDirty: true,
+      lastUpdatedAt: DateTime.now(),
+    );
+  }
+}
+
+/// ⑤ ポイント表示計算 UseCase
+/// 試合のイベント履歴を解析し、UI表示用のデータを生成します。
+class CalculatePointDisplaysUseCase {
+  final KendoRuleEngine _engine;
+  CalculatePointDisplaysUseCase(this._engine);
+
+  Map<Side, List<PointDisplay>> execute(MatchModel match) {
+    // 移行元のロジックでは rule が null で渡されていたため、ここでも null を渡します
+    return _engine.analyzeHistory(match.events, match, null).displays;
+  }
+}
+
 // ★ DI (依存性の注入) 用のプロバイダ定義
 final addScoreUseCaseProvider = Provider((ref) => AddScoreUseCase(ref.watch(kendoRuleEngineProvider)));
 final undoScoreUseCaseProvider = Provider((ref) => UndoScoreUseCase(ref.watch(kendoRuleEngineProvider)));
 final timeUpUseCaseProvider = Provider((ref) => TimeUpUseCase(ref.watch(kendoRuleEngineProvider)));
+
+/// 新しく追加したUseCaseのプロバイダ
+final rebuildMatchFromEventsUseCaseProvider =
+    Provider((ref) => RebuildMatchFromEventsUseCase(ref.watch(kendoRuleEngineProvider)));
+final calculatePointDisplaysUseCaseProvider =
+    Provider((ref) => CalculatePointDisplaysUseCase(ref.watch(kendoRuleEngineProvider)));

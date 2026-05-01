@@ -19,7 +19,7 @@ class AuditService {
   /// 監査ログをFirestoreの 'audit_logs' コレクションに保存する
   Future<void> logAction({
     required String matchId,
-    required String action,
+    required AuditAction action, // ★ String から AuditAction に変更
     required String details,
   }) async {
     try {

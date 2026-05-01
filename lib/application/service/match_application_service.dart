@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/match_model.dart';
+import '../../models/audit_log.dart';
 import '../../domain/match/score_event.dart'; 
 import '../../domain/match/match_context.dart'; 
 import '../../domain/kendo_rule_engine.dart'; 
@@ -12,9 +13,11 @@ import '../../presentation/provider/match_command_provider.dart';
 import '../../presentation/provider/audit_provider.dart';
 import '../../presentation/provider/ui_message_provider.dart'; // ★ 追加: 通知司令塔
 import 'sound_service.dart';
+import '../../domain/service/match_domain_service.dart'; // ★ 追加
 
 // ==========================================
 // ★ ApplicationService設計：フローの完全集約と安全網
+// アプリケーション層はオーケストレーションに専念し、ドメインロジックはMatchDomainServiceに委譲する
 // ==========================================
 
 class MatchApplicationService {
@@ -22,8 +25,9 @@ class MatchApplicationService {
   final AddScoreUseCase _addScore;
   final UndoScoreUseCase _undoScore;
   final TimeUpUseCase _timeUp;
+  final MatchDomainService _domainService;
 
-  MatchApplicationService(this._ref, this._addScore, this._undoScore, this._timeUp);
+  MatchApplicationService(this._ref, this._addScore, this._undoScore, this._timeUp, this._domainService);
 
   // --- ヘルパー：エラーをキャッチして通知する安全網 ---
   Future<void> _safeExecute(Future<void> Function() action, String errorPrefix) async {
@@ -70,7 +74,7 @@ class MatchApplicationService {
       }
 
       await _saveAndSync(updatedMatch);
-      await _ref.read(auditProvider).logAction(matchId: match.id, action: 'add_score', details: '${side.name} ${type.name}');
+      await _ref.read(auditProvider).logAction(matchId: match.id, action: AuditAction.addScore, details: '${side.name} ${type.name}');
 
       await _finalizeIfNeeded(updatedMatch, match);
     }, '端末にスコアが保存されませんでした。もう一度お試しください'); // addIppon
@@ -92,7 +96,7 @@ class MatchApplicationService {
       }
 
       await _saveAndSync(updatedMatch);
-      await _ref.read(auditProvider).logAction(matchId: match.id, action: 'undo', details: '取消');
+      await _ref.read(auditProvider).logAction(matchId: match.id, action: AuditAction.undo, details: '取消');
     }, '操作を取り消せませんでした。もう一度お試しください'); // undo
   }
 
@@ -113,7 +117,7 @@ class MatchApplicationService {
       }
 
       await _saveAndSync(updatedMatch);
-      await _ref.read(auditProvider).logAction(matchId: match.id, action: 'time_up', details: '時間切れ');
+      await _ref.read(auditProvider).logAction(matchId: match.id, action: AuditAction.timeUp, details: '時間切れ');
 
       await _finalizeIfNeeded(updatedMatch, match);
     }, '時間切れ処理に失敗しました');
@@ -181,104 +185,28 @@ class MatchApplicationService {
   }
 
   Future<void> _autoProcessFusenIfNeeded(MatchModel match) async {
-    if (match.status != 'waiting' && match.status != 'in_progress') return;
-    
-    bool rMiss = match.redName.contains('欠員');
-    bool wMiss = match.whiteName.contains('欠員');
-    bool hasFusen = match.events.any((e) => e.type == PointType.fusen);
-
-    if ((rMiss || wMiss) && !hasFusen) {
-      if (rMiss && wMiss) {
-        await finishMatch(match.id);
-      } else if (rMiss && !wMiss) {
-        await addIppon(match.id, Side.white, PointType.fusen);
-        await addIppon(match.id, Side.white, PointType.fusen);
-      } else if (wMiss && !rMiss) {
-        await addIppon(match.id, Side.red, PointType.fusen);
-        await addIppon(match.id, Side.red, PointType.fusen);
-      }
+    final fusenEvents = _domainService.generateAutoFusenEvents(match);
+    for (var event in fusenEvents) {
+      await addIppon(match.id, event.side, event.type);
+    }
+    if (match.redName.contains('欠員') && match.whiteName.contains('欠員') && match.status != 'finished') {
+      await finishMatch(match.id);
     }
   }
 
   Future<void> _generateNextKachinukiMatchIfNeeded(MatchModel match) async {
-    if (!match.isKachinuki) return;
-
     final rule = _ref.read(matchRuleProvider);
-    final rPts = match.redScore;
-    final wPts = match.whiteScore;
-    List<String> nextRedRem = List.from(match.redRemaining);
-    List<String> nextWhiteRem = List.from(match.whiteRemaining);
-    String nextRedName = match.redName;
-    String nextWhiteName = match.whiteName;
-    bool isMatchOver = false;
-    bool isEncho = false; 
-
-    if (rPts == wPts) { 
-      if (nextRedRem.isEmpty && nextWhiteRem.isEmpty) {
-        if (rule.kachinukiUnlimitedType == '大将引き分け延長' && match.matchType != '大将延長戦') {
-          isMatchOver = false;
-          isEncho = true;
-        } else {
-          isMatchOver = true;
-        }
-      } else if (nextRedRem.isEmpty || nextWhiteRem.isEmpty) {
-        isMatchOver = true;
-      } else {
-        nextRedName = nextRedRem.removeAt(0);
-        nextWhiteName = nextWhiteRem.removeAt(0);
-      }
-    } else if (rPts > wPts) { 
-      if (nextWhiteRem.isEmpty) {
-        isMatchOver = true; 
-      } else {
-        nextWhiteName = nextWhiteRem.removeAt(0);
-      }
-    } else { 
-      if (nextRedRem.isEmpty) {
-        isMatchOver = true;
-      } else {
-        nextRedName = nextRedRem.removeAt(0);
-      }
-    }
-
-    if (!isMatchOver) {
-      final nextMatchId = const Uuid().v4();
-      final nextMatch = MatchModel(
-        id: nextMatchId, tournamentId: match.tournamentId, category: match.category, groupName: match.groupName,
-        matchType: isEncho ? '大将延長戦' : '勝ち抜き戦', redName: nextRedName, whiteName: nextWhiteName,
-        status: 'waiting', matchTimeMinutes: match.matchTimeMinutes, isRunningTime: match.isRunningTime,
-        remainingSeconds: match.matchTimeMinutes * 60, order: match.order + 0.1, 
-        note: isEncho ? '延長戦（1本勝負）' : match.note, isKachinuki: true,
-        redRemaining: nextRedRem, whiteRemaining: nextWhiteRem,
-      );
+    final nextMatch = _domainService.generateNextKachinukiMatch(match, rule);
+    if (nextMatch != null) {
       await _saveAndSync(nextMatch);
     }
   }
 
   Future<void> _propagateNameToNextMatch(MatchModel finishedMatch) async {
-    final isRedWin = finishedMatch.redScore > finishedMatch.whiteScore;
-    final isWhiteWin = finishedMatch.whiteScore > finishedMatch.redScore;
-    if (!isRedWin && !isWhiteWin) return;
-
-    final winnerName = isRedWin ? finishedMatch.redName : finishedMatch.whiteName;
-    final loserName = isRedWin ? finishedMatch.whiteName : finishedMatch.redName;
     final matches = _ref.read(matchListProvider);
-    final winnerTag = 'winner(${finishedMatch.id})';
-    final loserTag = 'loser(${finishedMatch.id})';
-
-    for (var m in matches) {
-      if (m.status != 'finished') {
-        bool updated = false;
-        String nextRed = m.redName;
-        String nextWhite = m.whiteName;
-
-        if (nextRed.contains(winnerTag)) { nextRed = nextRed.replaceFirst(winnerTag, winnerName); updated = true; }
-        if (nextRed.contains(loserTag)) { nextRed = nextRed.replaceFirst(loserTag, loserName); updated = true; }
-        if (nextWhite.contains(winnerTag)) { nextWhite = nextWhite.replaceFirst(winnerTag, winnerName); updated = true; }
-        if (nextWhite.contains(loserTag)) { nextWhite = nextWhite.replaceFirst(loserTag, loserName); updated = true; }
-
-        if (updated) await _saveAndSync(m.copyWith(redName: nextRed, whiteName: nextWhite));
-      }
+    final updatedMatches = _domainService.propagateNameToNextMatches(finishedMatch, matches);
+    for (var m in updatedMatches) {
+      await _saveAndSync(m);
     }
   }
 
@@ -298,5 +226,5 @@ class MatchApplicationService {
 }
 
 final matchApplicationServiceProvider = Provider<MatchApplicationService>((ref) {
-  return MatchApplicationService(ref, ref.watch(addScoreUseCaseProvider), ref.watch(undoScoreUseCaseProvider), ref.watch(timeUpUseCaseProvider));
+  return MatchApplicationService(ref, ref.watch(addScoreUseCaseProvider), ref.watch(undoScoreUseCaseProvider), ref.watch(timeUpUseCaseProvider), MatchDomainService());
 });

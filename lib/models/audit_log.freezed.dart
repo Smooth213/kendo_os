@@ -15,10 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuditLog {
 
- String get id; String get matchId; String get userId;// 誰が操作したか
- String get action;// 例: 'add_score', 'undo', 'finish', 'approved'
- String get details;// 例: '赤 メ', '試合終了'
-@TimestampConverter() DateTime get timestamp;
+ String get id; String get matchId; String get userId; AuditAction get action;// ★ StringからEnumへ変更
+ String get details;@TimestampConverter() DateTime get timestamp;
 /// Create a copy of AuditLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -51,7 +49,7 @@ abstract mixin class $AuditLogCopyWith<$Res>  {
   factory $AuditLogCopyWith(AuditLog value, $Res Function(AuditLog) _then) = _$AuditLogCopyWithImpl;
 @useResult
 $Res call({
- String id, String matchId, String userId, String action, String details,@TimestampConverter() DateTime timestamp
+ String id, String matchId, String userId, AuditAction action, String details,@TimestampConverter() DateTime timestamp
 });
 
 
@@ -74,7 +72,7 @@ id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,action: null == action ? _self.action : action // ignore: cast_nullable_to_non_nullable
-as String,details: null == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
+as AuditAction,details: null == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -161,7 +159,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String matchId,  String userId,  String action,  String details, @TimestampConverter()  DateTime timestamp)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuditLog() when $default != null:
 return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp);case _:
@@ -182,7 +180,7 @@ return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String matchId,  String userId,  String action,  String details, @TimestampConverter()  DateTime timestamp)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp)  $default,) {final _that = this;
 switch (_that) {
 case _AuditLog():
 return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp);case _:
@@ -202,7 +200,7 @@ return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String matchId,  String userId,  String action,  String details, @TimestampConverter()  DateTime timestamp)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp)?  $default,) {final _that = this;
 switch (_that) {
 case _AuditLog() when $default != null:
 return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp);case _:
@@ -223,11 +221,9 @@ class _AuditLog implements AuditLog {
 @override final  String id;
 @override final  String matchId;
 @override final  String userId;
-// 誰が操作したか
-@override final  String action;
-// 例: 'add_score', 'undo', 'finish', 'approved'
+@override final  AuditAction action;
+// ★ StringからEnumへ変更
 @override final  String details;
-// 例: '赤 メ', '試合終了'
 @override@TimestampConverter() final  DateTime timestamp;
 
 /// Create a copy of AuditLog
@@ -263,7 +259,7 @@ abstract mixin class _$AuditLogCopyWith<$Res> implements $AuditLogCopyWith<$Res>
   factory _$AuditLogCopyWith(_AuditLog value, $Res Function(_AuditLog) _then) = __$AuditLogCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String matchId, String userId, String action, String details,@TimestampConverter() DateTime timestamp
+ String id, String matchId, String userId, AuditAction action, String details,@TimestampConverter() DateTime timestamp
 });
 
 
@@ -286,7 +282,7 @@ id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,action: null == action ? _self.action : action // ignore: cast_nullable_to_non_nullable
-as String,details: null == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
+as AuditAction,details: null == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));

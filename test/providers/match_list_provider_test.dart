@@ -19,6 +19,7 @@ import 'package:kendo_os/application/service/sound_service.dart';
 import 'package:kendo_os/repositories/match_repository.dart';
 import 'dart:async';
 import 'package:kendo_os/presentation/provider/sync_provider.dart';
+import 'package:kendo_os/models/audit_log.dart';
 
 class MockAuditService extends Mock implements AuditService {}
 class MockSoundService extends Mock implements SoundService {}
@@ -88,17 +89,17 @@ class MockSyncEngine extends Mock implements SyncEngine {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  // ★ 修正1: 起動時に一度だけ、必要なモックの型（Fallback）を確実に登録する
+  setUpAll(() {
+    registerFallbackValue(const MatchModel(id: 'dummy', matchType: '', redName: '', whiteName: ''));
+    // 🌟 エラーの原因だった AuditAction (enum) のダミー登録を追加！
+    registerFallbackValue(AuditAction.addScore);
+  });
+
   group('MatchListProvider (Score Logic) Tests', () {
     late FakeFirebaseFirestore fakeFirestore;
-    late MockIsar mockIsar; // ★ 本物のIsarではなくモックを使用
+    late MockIsar mockIsar; 
     late ProviderContainer container;
-
-    setUpAll(() {
-      try {
-        registerFallbackValue(const MatchModel(id: 'd', matchType: '', redName: '', whiteName: ''));
-      } catch (_) {}
-      // ★ データベースのダウンロードや起動のコードは全て消し去りました！
-    });
 
     setUp(() async {
       mockIsar = MockIsar(); // ★ 0.01秒でダミーを生成

@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/match_model.dart';
 import '../../../../domain/match/score_event.dart';
 import '../../../../domain/kendo_rule_engine.dart';
-import '../../../presentation/provider/match_provider.dart';
-import '../../../application/usecase/match_usecase.dart'; // ★ 追加: UseCaseの参照
+import '../../../application/usecase/match_usecases.dart'; // ★ 追加: UseCaseの参照
 import '../../../presentation/provider/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
 import '../../../presentation/provider/match_list_provider.dart'; // ★ 追加: matchListProvider
 
@@ -27,8 +26,8 @@ class MatchScoreboard extends ConsumerWidget {
     ));
     if (match == null) return const SizedBox.shrink();
 
-    final engine = ref.watch(kendoRuleEngineProvider);
-    final ptsMap = MatchUseCase.calculatePointDisplays(match, engine);
+    final calculatePointDisplays = ref.watch(calculatePointDisplaysUseCaseProvider);
+    final ptsMap = calculatePointDisplays.execute(match);
     
     // ★ 修正: ViewStateからすべての計算済み状態を取得
     final viewState = ref.watch(matchViewStateProvider(matchId));
@@ -79,7 +78,9 @@ class MatchScoreboard extends ConsumerWidget {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    _cleanName(side == Side.red ? match.redName : match.whiteName),
+                    // ★ 改善: 文字列の整形は ViewState（または Provider）から提供される値をそのまま使う
+                    // (※MatchViewState に redCleanName / whiteCleanName などのプロパティが追加されている想定)
+                    side == Side.red ? viewState.redCleanName : viewState.whiteCleanName,
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -142,12 +143,8 @@ class MatchScoreboard extends ConsumerWidget {
     );
   }
 
-  String _cleanName(String name) {
-    if (name.contains('欠員')) return '(欠員)';
-    if (!name.contains(':')) return name.trim();
-    return name.split(':').last.replaceAll(')', '').trim();
-  }
-
+  // ★ 改善: _cleanName を削除。UI側で文字列操作（ビジネス/プレゼンテーションロジック）を持たないようにする。
+  // (※呼び出し元の _buildScoreColumn 内で Text() に渡す値も修正します)
   Widget _buildPoint(BuildContext context, PointDisplay pd, bool isDark, Color color) {
     const double fs = 26; 
     Widget pointWidget;

@@ -5,8 +5,7 @@ import '../../domain/match/score_event.dart';
 import 'match_command_provider.dart';
 import '../../application/service/match_application_service.dart'; 
 import '../../repositories/match_repository.dart'; // ★ 復元
-import '../../domain/kendo_rule_engine.dart';      // ★ 復元
-import '../../application/usecase/match_usecase.dart';         // ★ 復元
+import '../../domain/kendo_rule_engine.dart';      // ★ 復元         // ★ 復元
 
 // 1. 現在選択されている試合ID
 class CurrentMatchIdNotifier extends Notifier<String?> {
@@ -28,10 +27,6 @@ final currentMatchStreamProvider = StreamProvider<MatchModel?>((ref) {
 
 final kendoRuleEngineProvider = Provider<KendoRuleEngine>((ref) {
   return KendoRuleEngine();
-});
-
-final matchUseCaseProvider = Provider<MatchUseCase>((ref) {
-  return MatchUseCase(ref.watch(kendoRuleEngineProvider));
 });
 
 final matchActionProvider = Provider<MatchActionController>((ref) {
@@ -65,7 +60,9 @@ class MatchActionController {
     await ref.read(matchApplicationServiceProvider).finishMatch(currentMatch.id);
   }
 
-  void updateScore(MatchModel currentMatch, int redScore, int whiteScore) async {
+  Future<void> updateScore(MatchModel currentMatch, int redScore, int whiteScore) async {
+    // ★ 改善: UI側でawaitしてローディング表示や通信エラーハンドリングができるよう Future<void> に変更
+    // (理想は matchApplicationServiceProvider に委譲することですが、まずは安全な非同期処理を担保します)
     final updatedMatch = currentMatch.copyWith(redScore: redScore, whiteScore: whiteScore, status: 'in_progress');
     await ref.read(matchCommandProvider).saveMatch(updatedMatch);
   }

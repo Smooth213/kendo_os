@@ -10,17 +10,24 @@ import '../presentation/provider/bunaiksen_provider.dart';
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
 
-  // ★ 究極版：絶対に数字を出さず、どんなデータ構造からでも記号化するエンジン
-  String _getScoreMarks(MatchModel match) {
+  // ★ 究極版：記号化しつつ、区切り文字を「中央揃えのアイコン」で美しく表示するWidgetエンジン
+  Widget _buildScoreMarks(MatchModel match, bool isDark) {
+    final textColor = isDark ? Colors.white : Colors.black87;
+    // 区切り文字を少しグレーにして、スコア本体(メやコ)と明確に区別する
+    final iconColor = isDark ? Colors.grey.shade600 : Colors.grey.shade400;
+
+    // 完全無得点の引き分け
     if (match.redScore == 0 && match.whiteScore == 0) {
-      return '0 - 0';
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: Icon(Icons.close, size: 18, color: iconColor), // 完璧な中央揃えの「✕」アイコン
+      );
     }
 
     List<String> redMarks = [];
     List<String> whiteMarks = [];
     bool isFirst = true;
 
-    // 1. まずは技ログ(events)から正確にメ・コ・ドを力技で抽出
     for (var event in match.events) {
       try {
         String eStr = event.toString().toLowerCase();
@@ -74,7 +81,6 @@ class BunaiksenHomeScreen extends ConsumerWidget {
       } catch (_) {}
     }
     
-    // 2. ★最終防衛ライン：技ログが存在しない(手動加算など)場合でも、絶対に数字を出さず「◯(取得)」で補完する
     while (redMarks.length < match.redScore) {
       redMarks.add(isFirst ? '◎' : '◯');
       isFirst = false;
@@ -84,7 +90,6 @@ class BunaiksenHomeScreen extends ConsumerWidget {
       isFirst = false;
     }
 
-    // 3. データ不整合防止：記号がスコアより多い場合は切り詰める
     if (redMarks.length > match.redScore) {
       redMarks = redMarks.sublist(0, match.redScore);
     }
@@ -92,7 +97,21 @@ class BunaiksenHomeScreen extends ConsumerWidget {
       whiteMarks = whiteMarks.sublist(0, match.whiteScore);
     }
 
-    return '${redMarks.join('')} - ${whiteMarks.join('')}';
+    final bool isDraw = match.redScore == match.whiteScore;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center, // ここで完璧な垂直中央揃えを実現
+      children: [
+        Text(redMarks.join(''), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor, height: 1.1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          // 引き分けなら「✕（close）」、勝敗がついていれば「-（remove）」のアイコンを表示
+          child: Icon(isDraw ? Icons.close : Icons.remove, size: 16, color: iconColor),
+        ),
+        Text(whiteMarks.join(''), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor, height: 1.1)),
+      ],
+    );
   }
 
   @override
@@ -298,7 +317,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       Expanded(child: Text(match.redName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red), textAlign: TextAlign.right, overflow: TextOverflow.ellipsis)),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                        child: Text(isFinished ? _getScoreMarks(match) : 'VS', style: TextStyle(fontSize: isFinished ? 20 : 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)), // ★ 修正：_getScoreMarks を呼び出す
+                                        child: isFinished 
+                                            ? _buildScoreMarks(match, isDark) 
+                                            : Text('VS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
                                       ),
                                       Expanded(child: Text(match.whiteName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87), textAlign: TextAlign.left, overflow: TextOverflow.ellipsis)),
                                     ],

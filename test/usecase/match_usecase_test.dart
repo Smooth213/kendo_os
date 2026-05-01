@@ -2,16 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/kendo_rule_engine.dart';
 // ★ 修正: 移動したScoreEventとMatchRuleの絶対パス（住所）を追加
 import 'package:kendo_os/domain/match/score_event.dart';
-import 'package:kendo_os/application/usecase/match_usecase.dart';
+import 'package:kendo_os/application/usecase/match_usecases.dart';
 import '../helpers/test_match_factory.dart';
 
 void main() {
   late KendoRuleEngine engine;
-  late MatchUseCase useCase;
+  late AddScoreUseCase addScoreUseCase;
+  late UndoScoreUseCase undoScoreUseCase;
 
   setUp(() {
     engine = KendoRuleEngine();
-    useCase = MatchUseCase(engine);
+    addScoreUseCase = AddScoreUseCase(engine);
+    undoScoreUseCase = UndoScoreUseCase(engine);
   });
 
   group('MatchUseCase - スコア操作テスト', () {
@@ -25,7 +27,7 @@ void main() {
       );
 
       // When: UseCase経由でスコアを追加
-      final updatedMatch = useCase.addScore(match, event, rule);
+      final updatedMatch = addScoreUseCase.execute(match, event, rule);
 
       // Then: MatchModel の状態が更新されていること
       expect(updatedMatch.redScore, 1);
@@ -40,8 +42,8 @@ void main() {
       final e1 = TestMatchFactory.createEvent(side: Side.red, type: PointType.men, sequence: 1);
       final e2 = TestMatchFactory.createEvent(side: Side.red, type: PointType.kote, sequence: 2);
 
-      final matchAfter1 = useCase.addScore(match, e1, rule);
-      final matchAfter2 = useCase.addScore(matchAfter1, e2, rule);
+      final matchAfter1 = addScoreUseCase.execute(match, e1, rule);
+      final matchAfter2 = addScoreUseCase.execute(matchAfter1, e2, rule);
 
       expect(matchAfter2.redScore, 2);
       expect(matchAfter2.status, 'finished');
@@ -54,11 +56,11 @@ void main() {
       final match = TestMatchFactory.createIndividualMatch();
       final rule = TestMatchFactory.createDefaultRule();
       final e1 = TestMatchFactory.createEvent(side: Side.red, type: PointType.men);
-      final matchWithScore = useCase.addScore(match, e1, rule);
+      final matchWithScore = addScoreUseCase.execute(match, e1, rule);
       expect(matchWithScore.redScore, 1);
 
       // When: Undoを実行
-      final undoneMatch = useCase.undoLastEvent(matchWithScore, rule);
+      final undoneMatch = undoScoreUseCase.execute(matchWithScore, rule);
 
       // Then: スコアが0に戻り、対象イベントが「論理削除（isCanceled = true）」されていること
       expect(undoneMatch.redScore, 0);
@@ -72,11 +74,11 @@ void main() {
       
       final e1 = TestMatchFactory.createEvent(side: Side.red, type: PointType.men, sequence: 1);
       final e2 = TestMatchFactory.createEvent(side: Side.red, type: PointType.kote, sequence: 2);
-      final matchFinished = useCase.addScore(useCase.addScore(match, e1, rule), e2, rule);
+      final matchFinished = addScoreUseCase.execute(addScoreUseCase.execute(match, e1, rule), e2, rule);
       expect(matchFinished.status, 'finished');
 
       // When: Undoを実行
-      final resumedMatch = useCase.undoLastEvent(matchFinished, rule);
+      final resumedMatch = undoScoreUseCase.execute(matchFinished, rule);
 
       // Then: スコアが1に戻り、ステータスが in_progress に戻ること
       expect(resumedMatch.redScore, 1);
@@ -94,7 +96,7 @@ void main() {
       // When & Then: DomainException が投げられることを確認
       // (UseCaseがエンジンを使用してバリデーションを行っている前提)
       expect(
-        () => useCase.addScore(match, event, rule),
+        () => addScoreUseCase.execute(match, event, rule),
         throwsA(isA<DomainException>()),
       );
     });
@@ -105,7 +107,7 @@ void main() {
       final rule = TestMatchFactory.createDefaultRule();
       final e1 = TestMatchFactory.createEvent(side: Side.red, type: PointType.men, sequence: 1);
       final e2 = TestMatchFactory.createEvent(side: Side.red, type: PointType.kote, sequence: 2);
-      final finishedMatch = useCase.addScore(useCase.addScore(match, e1, rule), e2, rule);
+      final finishedMatch = addScoreUseCase.execute(addScoreUseCase.execute(match, e1, rule), e2, rule);
       
       expect(finishedMatch.status, 'finished');
 
@@ -114,7 +116,7 @@ void main() {
 
       // Then: バリデーションにより阻止される
       expect(
-        () => useCase.addScore(finishedMatch, e3, rule),
+        () => addScoreUseCase.execute(finishedMatch, e3, rule),
         throwsA(isA<DomainException>()),
       );
     });
@@ -131,9 +133,9 @@ void main() {
       final e2 = TestMatchFactory.createEvent(side: Side.white, type: PointType.kote, sequence: 2);
       final e3 = TestMatchFactory.createEvent(side: Side.red, type: PointType.doIdo, sequence: 3);
 
-      var currentMatch = useCase.addScore(match, e1, rule);
-      currentMatch = useCase.addScore(currentMatch, e2, rule);
-      currentMatch = useCase.addScore(currentMatch, e3, rule);
+      var currentMatch = addScoreUseCase.execute(match, e1, rule);
+      currentMatch = addScoreUseCase.execute(currentMatch, e2, rule);
+      currentMatch = addScoreUseCase.execute(currentMatch, e3, rule);
 
       // Then
       expect(currentMatch.redScore, 2);
@@ -148,10 +150,10 @@ void main() {
       final rule = TestMatchFactory.createDefaultRule();
 
       final e1 = TestMatchFactory.createEvent(side: Side.red, type: PointType.men, sequence: 1);
-      final m1 = useCase.addScore(match, e1, rule);
-      final m2 = useCase.undoLastEvent(m1, rule);
+      final m1 = addScoreUseCase.execute(match, e1, rule);
+      final m2 = undoScoreUseCase.execute(m1, rule);
       final e2 = TestMatchFactory.createEvent(side: Side.white, type: PointType.kote, sequence: 2);
-      final m3 = useCase.addScore(m2, e2, rule);
+      final m3 = addScoreUseCase.execute(m2, e2, rule);
 
       expect(m3.redScore, 0);
       expect(m3.whiteScore, 1);
