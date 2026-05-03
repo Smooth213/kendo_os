@@ -1,5 +1,5 @@
-import '../../../../domain/match/score_event.dart';
-import '../../../../models/match_model.dart';
+import '../../../../domain/entities/score_event.dart';
+import '../../../../domain/entities/match_model.dart';
 import 'pdf_point_data.dart';
 
 class PdfViewModel {
@@ -15,35 +15,49 @@ class PdfViewModel {
     }
   }
 
-  static Map<String, List<PdfPointData>> calculatePointsRaw(MatchModel match) {
+  static Map<String, List<PdfPointData>> calculatePointsRaw(dynamic match) {
     List<PdfPointData> redPts = [], whitePts = [];
-    int rH = 0, wH = 0;
-    bool isFirst = true; 
-    for (var e in match.events) {
-      if (e.type == PointType.undo) continue;
-      if (e.isCanceled) continue; 
-      
-      String mark = '';
-      Side side = e.side;
-      if (e.type == PointType.hansoku) {
-        if (e.side == Side.red) {
-          rH++;
-          if (rH == 2 || rH == 4) { mark = '反'; side = Side.white; } else { continue; }
-        } else if (e.side == Side.white) {
-          wH++;
-          if (wH == 2 || wH == 4) { mark = '反'; side = Side.red; } else { continue; }
+    
+    if (match is MatchModel) {
+      int rH = 0, wH = 0;
+      bool isFirst = true; 
+      for (var e in match.events) {
+        if (e.type == PointType.undo) continue;
+        if (e.isCanceled) continue; 
+        
+        String mark = '';
+        Side side = e.side;
+        if (e.type == PointType.hansoku) {
+          if (e.side == Side.red) {
+            rH++;
+            if (rH == 2 || rH == 4) { mark = '反'; side = Side.white; } else { continue; }
+          } else if (e.side == Side.white) {
+            wH++;
+            if (wH == 2 || wH == 4) { mark = '反'; side = Side.red; } else { continue; }
+          }
+        } else {
+          mark = toMark(e.type);
         }
-      } else {
-        mark = toMark(e.type);
+        
+        if (side == Side.red) {
+          redPts.add(PdfPointData(mark, isFirst));
+          isFirst = false;
+        } else if (side == Side.white) {
+          whitePts.add(PdfPointData(mark, isFirst));
+          isFirst = false;
+        }
       }
-      
-      if (side == Side.red) {
-        redPts.add(PdfPointData(mark, isFirst));
-        isFirst = false;
-      } else if (side == Side.white) {
-        whitePts.add(PdfPointData(mark, isFirst));
-        isFirst = false;
-      }
+    } else {
+      try {
+        bool rIsFirst = (match.firstPointSide == 'red');
+        bool wIsFirst = (match.firstPointSide == 'white');
+        for (int i = 0; i < (match.redPointMarks as List).length; i++) {
+          redPts.add(PdfPointData(match.redPointMarks[i], i == 0 && rIsFirst));
+        }
+        for (int i = 0; i < (match.whitePointMarks as List).length; i++) {
+          whitePts.add(PdfPointData(match.whitePointMarks[i], i == 0 && wIsFirst));
+        }
+      } catch (_) {}
     }
     return {'red': redPts, 'white': whitePts};
   }
@@ -64,8 +78,8 @@ class PdfViewModel {
     return res.take(count).toList();
   }
 
-  static Map<String, List<MatchModel>> groupByMatchup(List<MatchModel> matches) {
-    final matchups = <String, List<MatchModel>>{};
+  static Map<String, List<dynamic>> groupByMatchup(List<dynamic> matches) {
+    final matchups = <String, List<dynamic>>{};
     for (var m in matches) {
       final t1 = m.redName.split(':').first.trim();
       final t2 = m.whiteName.split(':').first.trim();

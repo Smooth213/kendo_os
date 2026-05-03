@@ -11,40 +11,40 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart'; 
 
 import 'firebase_options.dart';
-import 'screens/team_registration_screen.dart'; 
-import 'screens/start_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/program_management_screen.dart';
-import 'screens/program_viewer_screen.dart';
-import 'models/program_model.dart';
-import 'screens/tournament_list_screen.dart'; 
-import 'screens/match_router.dart'; // ★ Phase 5: ルーターを追加
-import 'screens/viewer_match_screen.dart';
-import 'screens/master_management_screen.dart';
-import 'screens/create_tournament_screen.dart';
-import 'screens/setup_match_format_screen.dart';
-import 'screens/order_setup_screen.dart'; 
-import 'screens/team_scoreboard_screen.dart'; 
-import 'screens/kachinuki_scoreboard_screen.dart'; // ★ Phase 6: 勝ち抜き戦のルーティング用に追加
-import 'screens/login_screen.dart'; 
-import 'screens/settings_screen.dart'; 
-import 'presentation/provider/auth_provider.dart';
-import 'screens/audit_log_screen.dart'; // ★ Phase 5: 監査ログ画面を追加
-import 'presentation/provider/settings_provider.dart'; 
-import 'presentation/provider/sync_provider.dart'; 
-import 'models/local/match_entity.dart';
-import 'repositories/local_match_repository.dart';
-import 'presentation/widgets/sync_status_bar.dart'; 
-import 'models/local_stroke_model.dart'; // ★ これを追加
-import 'screens/bunaiksen_home_screen.dart';
-import 'screens/bunaiksen_setup_screen.dart';
-import 'screens/bunaiksen_official_record_screen.dart';
-import 'screens/viewer_home_screen.dart';
-import 'screens/viewer_official_record_screen.dart';
-import 'screens/viewer_team_scoreboard_screen.dart';
-import 'screens/viewer_kachinuki_scoreboard_screen.dart';
+import 'presentation/operate/screens/team_registration_screen.dart'; 
+import 'presentation/operate/screens/start_screen.dart';
+import 'presentation/operate/screens/home_screen.dart';
+import 'presentation/operate/screens/program_management_screen.dart';
+import 'presentation/operate/screens/program_viewer_screen.dart';
+import 'domain/entities/program_model.dart';
+import 'presentation/operate/screens/tournament_list_screen.dart'; 
+import 'presentation/match_router.dart'; // ★ Phase 5: ルーターを追加
+import 'presentation/viewer/screens/viewer_match_screen.dart';
+import 'presentation/operate/screens/master_management_screen.dart';
+import 'presentation/operate/screens/create_tournament_screen.dart';
+import 'presentation/operate/screens/setup_match_format_screen.dart';
+import 'presentation/operate/screens/order_setup_screen.dart'; 
+import 'presentation/operate/screens/team_scoreboard_screen.dart'; 
+import 'presentation/operate/screens/kachinuki_scoreboard_screen.dart'; // ★ Phase 6: 勝ち抜き戦のルーティング用に追加
+import 'presentation/operate/screens/login_screen.dart'; 
+import 'presentation/operate/screens/settings_screen.dart'; 
+import 'presentation/operate/providers/auth_provider.dart';
+import 'presentation/operate/screens/audit_log_screen.dart'; // ★ Phase 5: 監査ログ画面を追加
+import 'presentation/operate/providers/settings_provider.dart'; 
+import 'presentation/operate/providers/sync_provider.dart'; 
+import 'infrastructure/persistence/models/match_entity.dart';
+import 'infrastructure/repository/local_match_repository.dart';
+import 'presentation/shared/widgets/sync_status_bar.dart'; 
+import 'infrastructure/persistence/models/local_stroke_model.dart'; // ★ これを追加
+import 'presentation/operate/screens/bunaiksen_home_screen.dart';
+import 'presentation/operate/screens/bunaiksen_setup_screen.dart';
+import 'presentation/operate/screens/bunaiksen_official_record_screen.dart';
+import 'presentation/viewer/screens/viewer_home_screen.dart';
+import 'presentation/viewer/screens/viewer_official_record_screen.dart';
+import 'presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
+import 'presentation/viewer/screens/viewer_kachinuki_scoreboard_screen.dart';
 
-import 'presentation/provider/role_provider.dart';
+import 'presentation/operate/providers/role_provider.dart';
 
 // ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();

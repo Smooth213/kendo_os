@@ -1,11 +1,10 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import '../../../../models/match_model.dart';
 import '../models/pdf_point_data.dart';
 import '../models/pdf_view_model.dart';
 
 class PdfKachinukiPainter {
-  static pw.Widget build(String groupName, List<MatchModel> matches, pw.Font ttf, pw.Font ttfBold) {
+  static pw.Widget build(String groupName, List<dynamic> matches, pw.Font ttf, pw.Font ttfBold) {
     if (matches.isEmpty) return pw.SizedBox();
 
     final firstMatch = matches.first;
@@ -36,15 +35,22 @@ class PdfKachinukiPainter {
     }
 
     final latestMatch = matches.last;
+    List<dynamic> rRemaining = [];
+    List<dynamic> wRemaining = [];
+    try {
+      rRemaining = latestMatch.redRemaining;
+      wRemaining = latestMatch.whiteRemaining;
+    } catch (_) {}
+
     int currentRedIdx = matches.length;
-    for (String name in latestMatch.redRemaining) {
+    for (String name in rRemaining) {
       final cleanName = name.contains(':') ? name.split(':').last.replaceAll(')', '').trim() : name;
       redSpans.add(PdfPlayerSpan(cleanName, currentRedIdx, currentRedIdx));
       currentRedIdx++;
     }
 
     int currentWhiteIdx = matches.length;
-    for (String name in latestMatch.whiteRemaining) {
+    for (String name in wRemaining) {
       final cleanName = name.contains(':') ? name.split(':').last.replaceAll(')', '').trim() : name;
       whiteSpans.add(PdfPlayerSpan(cleanName, currentWhiteIdx, currentWhiteIdx));
       currentWhiteIdx++;

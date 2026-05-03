@@ -1,11 +1,10 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import '../../../../models/match_model.dart';
 import '../models/pdf_point_data.dart';
 import '../models/pdf_view_model.dart';
 
 class PdfTeamTable {
-  static pw.Widget build(String groupName, List<MatchModel> matches, pw.Font ttf, pw.Font ttfBold) {
+  static pw.Widget build(String groupName, List<dynamic> matches, pw.Font ttf, pw.Font ttfBold) {
     if (matches.isEmpty) return pw.SizedBox();
 
     final note = matches.first.note;
@@ -23,13 +22,13 @@ class PdfTeamTable {
     List<String> rLasts = matches.map((m) => parse(m.redName)['last']!).where((s) => s.isNotEmpty).toList();
     List<String> wLasts = matches.map((m) => parse(m.whiteName)['last']!).where((s) => s.isNotEmpty).toList();
 
-    final allFinished = matches.every((m) => m.status == 'finished' || m.status == 'approved');
+    final allFinished = matches.every((m) => m.status.toString().contains('finished') || m.status.toString().contains('approved'));
     String teamWinner = 'none';
 
     if (allFinished) {
       teamWinner = 'draw';
       int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
-      MatchModel? daihyo;
+      dynamic daihyo;
       for (var m in matches) {
         final rs = (m.redScore as num).toInt(); 
         final ws = (m.whiteScore as num).toInt();
@@ -113,8 +112,8 @@ class PdfTeamTable {
     return pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2), child: pw.Row(mainAxisSize: pw.MainAxisSize.min, crossAxisAlignment: pw.CrossAxisAlignment.end, children: [pw.Text(lastName.split('').join('\n'), style: pw.TextStyle(font: ttf, fontSize: 9), textAlign: pw.TextAlign.center), if (showInitial) pw.Padding(padding: const pw.EdgeInsets.only(left: 1, bottom: 0), child: pw.Text(firstName.substring(0, 1), style: pw.TextStyle(font: ttf, fontSize: 6, color: PdfColors.grey700)))])));
   }
 
-  static pw.Widget _pdfScoreCell(MatchModel m, pw.Font fontBold) {
-    final isDone = m.status == 'finished' || m.status == 'approved';
+  static pw.Widget _pdfScoreCell(dynamic m, pw.Font fontBold) {
+    final isDone = m.status.toString().contains('finished') || m.status.toString().contains('approved');
     final rScore = (m.redScore as num).toInt(); final wScore = (m.whiteScore as num).toInt();
     final ptsMap = PdfViewModel.calculatePointsRaw(m);
     return pw.Container(height: 60, alignment: pw.Alignment.center, child: pw.Stack(alignment: pw.Alignment.center, children: [pw.Divider(color: PdfColors.black, thickness: 1, height: 0), if (isDone && rScore == wScore) pw.Center(child: pw.Text('×', style: pw.TextStyle(fontSize: 32, color: PdfColors.red300, font: fontBold))), pw.Column(children: [pw.Expanded(child: pdfPointBox(ptsMap['red']!, isDone && rScore > wScore, true, fontBold)), pw.Expanded(child: pdfPointBox(ptsMap['white']!, isDone && wScore > rScore, false, fontBold))])]));
@@ -128,5 +127,5 @@ class PdfTeamTable {
   }
 
   static pw.Widget _pdfSingleMark(PdfPointData p, PdfColor color, pw.Font fontBold) { return p.isFirstOverall && p.mark != '◯' ? pw.Container(width: 10, height: 10, alignment: pw.Alignment.center, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(color: color, width: 0.8)), child: pw.Text(p.mark, style: pw.TextStyle(font: fontBold, fontSize: 6, color: color))) : pw.Text(p.mark, style: pw.TextStyle(font: fontBold, fontSize: 8, color: color)); }
-  static pw.Widget _pdfSummaryCell(List<MatchModel> ms, bool isRed, pw.Font fontBold) { int wins = 0, pts = 0; for (var m in ms) { final r = (m.redScore as num).toInt(); final w = (m.whiteScore as num).toInt(); pts += isRed ? r : w; if (isRed && r > w) wins++; if (!isRed && w > r) wins++; } return pw.Center(child: pw.Text('$wins\nー\n$pts', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10), textAlign: pw.TextAlign.center)); }
+  static pw.Widget _pdfSummaryCell(List<dynamic> ms, bool isRed, pw.Font fontBold) { int wins = 0, pts = 0; for (var m in ms) { final r = (m.redScore as num).toInt(); final w = (m.whiteScore as num).toInt(); pts += isRed ? r : w; if (isRed && r > w) wins++; if (!isRed && w > r) wins++; } return pw.Center(child: pw.Text('$wins\nー\n$pts', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10), textAlign: pw.TextAlign.center)); }
 }

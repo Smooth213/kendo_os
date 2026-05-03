@@ -1,11 +1,10 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import '../../../../models/match_model.dart';
 import '../models/pdf_view_model.dart';
 import 'pdf_team_table.dart';
 
 class PdfIndividualList {
-  static pw.Widget build(String groupName, List<MatchModel> matches, pw.Font ttf, pw.Font ttfBold) {
+  static pw.Widget build(String groupName, List<dynamic> matches, pw.Font ttf, pw.Font ttfBold) {
     if (matches.isEmpty) return pw.SizedBox();
 
     final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
@@ -37,7 +36,7 @@ class PdfIndividualList {
       final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
       final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
 
-      final isDone = m.status == 'finished' || m.status == 'approved';
+      final isDone = m.status.toString().contains('finished') || m.status.toString().contains('approved');
       final rScore = (m.redScore as num).toInt();
       final wScore = (m.whiteScore as num).toInt();
       final isDraw = isDone && rScore == wScore;

@@ -1,0 +1,1548 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart'; 
+import 'dart:async';
+import 'package:uuid/uuid.dart'; 
+import 'package:flutter/services.dart'; // ★ Phase 6: バイブレーション用
+import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
+import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/entities/score_event.dart';
+import '../providers/match_list_provider.dart';
+import '../providers/match_provider.dart';
+import '../providers/match_rule_provider.dart'; 
+import '../providers/match_command_provider.dart'; // ★ 追加: 書き込み専門家
+import '../providers/match_timer_provider.dart';   // ★ 追加: 時計専門家
+import '../providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateパターンの導入
+// ★ 追加: 通知司令塔
+import '../providers/ui_message_provider.dart';
+// ★ Phase 7: UIのロジック委譲先
+import 'package:kendo_os/application/usecases/match_application_service.dart';
+// ★ 追加：マスタとチーム情報を参照するためのインポート
+import 'package:kendo_os/domain/entities/player_model.dart';
+import 'package:kendo_os/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/domain/entities/team_model.dart';
+import 'package:kendo_os/infrastructure/repository/team_repository.dart';
+// ★ Phase 3: 分割した専用Widgetをインポート
+import 'package:kendo_os/domain/services/match_strategy.dart'; // ★ Phase 5: 戦略ファクトリの読み込み
+import 'package:kendo_os/application/services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
+
+// ★ Phase 3: 分割したWidget群
+import '../../shared/widgets/timer_widget.dart';
+import '../../shared/widgets/action_buttons.dart';
+import '../../shared/widgets/scoreboard.dart';
+
+// ★ 追加：システム設定プロバイダの読み込み
+import '../providers/settings_provider.dart';
+import '../providers/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
+import '../providers/bunaiksen_infinite_engine_provider.dart'; // ★ 追加: 無限勝ち抜きエンジン
+import '../providers/bunaiksen_provider.dart'; // ★ 追加: 無限勝ち抜き状態
+
+final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
+  return ref.watch(playerRepositoryProvider).getPlayers();
+});
+final registeredTeamsProvider = StreamProvider.family.autoDispose<List<TeamModel>, String>((ref, tournamentId) {
+  return ref.watch(teamRepositoryProvider).watchTeamsByTournament(tournamentId);
+});
+
+class MatchScreen extends ConsumerStatefulWidget {
+  final String matchId; 
+  const MatchScreen({super.key, required this.matchId});
+
+  @override
+  ConsumerState<MatchScreen> createState() => _MatchScreenState();
+}
+
+class _MatchScreenState extends ConsumerState<MatchScreen> {
+  String? _myUserId;
+  Timer? _ticker; 
+
+  @override
+  void initState() {
+    super.initState();
+    _myUserId = FirebaseAuth.instance.currentUser?.uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+    
+    // ★ Step 3-3: 画面全体のタイマー(Timer.periodic)を完全に削除し、
+    // タイマーが動いている場合のみ、バックグラウンドの時計（MatchTimerProvider）を動かす指示を出す
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.matchId.isNotEmpty) {
+        // ★ 追加: 試合画面を開いた瞬間にSoundServiceを強制的に初期化し、音源の事前ロードを開始させる
+        ref.read(soundServiceProvider);
+
+        ref.read(matchCommandProvider).claimScorer(widget.matchId, _myUserId!);
+        
+        final match = ref.read(matchListProvider).where((m) => m.id == widget.matchId).firstOrNull;
+        if (match != null) {
+          _checkFusenOrFinish(match);
+          if (match.timerIsRunning) {
+            ref.read(matchTimerProvider).startLocalTicker(widget.matchId);
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel(); 
+    if (widget.matchId.isNotEmpty) {
+      try {
+        // ★ 修正: matchCommandProvider を使用
+        ref.read(matchCommandProvider).releaseScorer(widget.matchId, _myUserId!);
+      } catch (_) {}
+    }
+    super.dispose();
+  }
+
+  // ★ Phase 7: ロジックを裏側(MatchApplicationService)に移動したため、
+  // UI側は「変更があったらシステムの自動処理をキックする」だけの1行になります。
+  void _checkFusenOrFinish(MatchModel next) {
+    // 処理はすべて MatchApplicationService._finalizeIfNeeded が裏で実行します
+  }
+
+  // ★ 追加：同点時の「判定ダイアログ」
+  Future<String?> _showHanteiDialog(MatchModel match) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final rName = match.redName.contains(':') ? match.redName.split(':').last.trim() : match.redName;
+    final wName = match.whiteName.contains(':') ? match.whiteName.split(':').last.trim() : match.whiteName;
+
+    return await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('勝敗の判定', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('同点のため、判定（または引き分け）を選択してください', textAlign: TextAlign.center, style: TextStyle(color: isDark ? Colors.grey.shade300 : Colors.black87)),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, 'red'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
+                    child: Text('赤の判定勝ち\n($rName)', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, 'white'),
+                    style: ElevatedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, foregroundColor: isDark ? Colors.white : Colors.black87, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
+                    child: Text('白の判定勝ち\n($wName)', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(ctx, 'draw'),
+                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey.shade400), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: Text('引き分け', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.black87)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(onPressed: () => Navigator.pop(ctx, null), child: const Text('キャンセル（戻る）', style: TextStyle(color: Colors.grey))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ★ Phase 6: 危険操作ガード（確認ダイアログ）
+  Future<bool> _showConfirmDialog(String title, String content) async {
+    HapticFeedback.heavyImpact(); // 警告の意味を込めた強い振動
+    return await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+        content: Text(content),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white, elevation: 0),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('実行する', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rule = ref.watch(matchRuleProvider);
+
+    // ★ 修正: 消してしまった match 本体と teamMatches を復旧
+    // （タイマー秒数の更新は分離されているため、これを監視しても毎秒リビルドはされません）
+    final match = ref.watch(matchListProvider.select((list) => 
+      list.where((m) => m.id == widget.matchId).firstOrNull
+    ));
+    
+    if (match == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final teamMatches = ref.watch(matchListProvider.select((list) => 
+      match.groupName != null ? list.where((m) => m.groupName == match.groupName).toList() : <MatchModel>[]
+    ));
+
+    // ★ 修正: 閲覧者はRouterで弾かれるため、ここでの isViewOnly は「他端末が操作中（ロック競合）」のみを意味する
+    final isViewOnly = match.scorerId != null && match.scorerId != _myUserId;
+    final isInputLocked = isViewOnly || match.status == 'finished' || match.status == 'approved';
+
+    final vs = ref.watch(matchViewStateProvider(widget.matchId));
+    final isAllDone = vs.isAllDone;
+    final isTie = vs.isTie;
+    final isApproved = match.status == 'approved';
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // ★ Phase 7 - Step 3: エラー通知の監視（リスナー）
+    ref.listen<UiMessage?>(uiMessageProvider, (previous, next) {
+      if (next != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            backgroundColor: next.isError ? Colors.red.shade800 : Colors.green.shade800,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(label: 'OK', textColor: Colors.white, onPressed: () {}),
+          ),
+        );
+      }
+    });
+
+    // ★ Phase 3 修正版: ナビゲーションの復旧と、競合しないスワイプUndoの完成
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.white, 
+      appBar: AppBar(
+        centerTitle: true,
+        // ★ 変更: 背景色を下部の「終了ボタン」と全く同じインディゴに設定
+        backgroundColor: Colors.indigo.shade600,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              (match.category != null && match.category!.isNotEmpty)
+                  ? '${match.category} - ${match.matchType}'
+                  : match.matchType,
+              // ★ 変更: タイトルを白抜き
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              '${match.redName} vs ${match.whiteName}',
+              // ★ 変更: サブタイトルは少し透過した白
+              style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        actions: [
+          // 👇 ここから追加：一時的なViewer確認用ボタン
+          IconButton(
+            icon: const Icon(Icons.remove_red_eye, color: Colors.amber),
+            onPressed: () => context.push('/viewer/${match.id}'),
+          ),
+          // 👆 ここまで追加
+          IconButton(
+            // ★ 変更: 歯車アイコンも白
+            icon: const Icon(Icons.settings_outlined, color: Colors.white),
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+          // ★ ポイント：PopScopeを消去し、画面全体をGestureDetectorで包む
+          GestureDetector(
+            behavior: HitTestBehavior.translucent, // ボタン以外のタップも透過して検知
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 500) {
+                // ★ 修正: キャンセル済みのイベントを除外して判定
+                if (match.events.any((e) => !e.isCanceled && e.type != PointType.undo)) {
+                  HapticFeedback.mediumImpact();
+                  ref.read(matchCommandQueueProvider).enqueue(
+                    MatchCommandModel(
+                      id: const Uuid().v4(),
+                      type: CommandType.undoLastEvent,
+                      payload: {'matchId': match.id},
+                      createdAt: DateTime.now(),
+                    ),
+                  );
+                }
+              }
+            },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+                final isTabletLandscape = isLandscape && constraints.maxWidth > 600;
+
+                final viewOnlyBanner = (isViewOnly && !isApproved) 
+                  ? Container(
+                      width: double.infinity,
+                      color: Colors.red.shade900.withValues(alpha: 0.9), 
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 18),
+                          const SizedBox(width: 12),
+                          const Expanded(child: Text('他の記録員が入力中です', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+                          TextButton(
+                            onPressed: () async {
+                              final confirmed = await _showConfirmDialog('入力権限の奪取', '他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？');
+                              if (confirmed) {
+                                await ref.read(matchCommandProvider).forceClaimScorer(match.id, _myUserId!);
+                              }
+                            },
+                            style: TextButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.2), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0), minimumSize: const Size(0, 30)),
+                            child: const Text('自分に切り替える', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink();
+
+                // ★ 修正: キャンセル（Undo）されていない有効なイベントのみを対象にする
+                final validEvents = match.events.where((e) => !e.isCanceled && e.type != PointType.undo).toList();
+                final canUndoReal = validEvents.isNotEmpty;
+                String lastEventText = '最新の操作';
+                if (canUndoReal) {
+                  final lastE = validEvents.last;
+                  final sideStr = lastE.side == Side.red ? '赤' : (lastE.side == Side.white ? '白' : '');
+                  String typeStr = '';
+                  switch (lastE.type) {
+                    case PointType.men: typeStr = 'メン'; break;
+                    case PointType.kote: typeStr = 'コテ'; break;
+                    case PointType.doIdo: typeStr = 'ドウ'; break;
+                    case PointType.tsuki: typeStr = 'ツキ'; break;
+                    case PointType.hansoku: typeStr = '反則(▲)'; break;
+                    case PointType.fusen: typeStr = '不戦勝'; break;
+                    case PointType.hantei: typeStr = '判定'; break;
+                    default: typeStr = 'ポイント'; break;
+                  }
+                  lastEventText = sideStr.isNotEmpty ? '$sideStr $typeStr' : typeStr;
+                }
+
+                // 共通Undoエリア
+                final undoArea = canUndoReal
+                    ? GestureDetector(
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          ref.read(matchCommandQueueProvider).enqueue(
+                            MatchCommandModel(
+                              id: const Uuid().v4(),
+                              type: CommandType.undoLastEvent,
+                              payload: {'matchId': match.id},
+                              createdAt: DateTime.now(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.undo, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, size: 24),
+                              const SizedBox(width: 8),
+                              Text('スワイプまたはタップで取消 ( $lastEventText )', 
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : const SizedBox(height: 40);
+
+                final timerPart = TimerWidget(matchId: match.id, isInputLocked: isInputLocked);
+                
+                // ★ 修正: ボタンの並び順を「URL共有・復元 / スコア・ルール」に変更
+                final groupButtonPart = Padding(
+                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                  child: Column(
+                    children: [
+                      // 1段目: 観戦URLを共有 | 履歴から復元
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                // ★ 修正: 共有URLを観戦専用の /viewer/ に変更
+                                final shareText = '${match.redName} vs ${match.whiteName} の試合状況:\nhttps://kendo-os.web.app/viewer/${match.id}';
+                                SharePlus.instance.share(ShareParams(text: shareText));
+                              },
+                              icon: const Icon(Icons.ios_share, size: 16),
+                              label: const Text('観戦URLを共有', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              // ★ 修正: 試合確定済み（approved）でも復元できるようにロックを解除
+                              onPressed: isViewOnly ? null : () => _showSnapshotDialog(context, ref, match),
+                              icon: const Icon(Icons.history, size: 16),
+                              label: const Text('履歴から復元', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // 2段目: スコアを確認 | ルールを確認
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => match.isKachinuki ? context.push('/kachinuki-scoreboard/${match.groupName}') : context.push('/team-scoreboard/${match.groupName}'),
+                              icon: Icon(match.isKachinuki ? Icons.timeline : Icons.table_chart_outlined, size: 16),
+                              label: const Text('スコアを確認', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _showRuleInfoSheet(context, match), 
+                              icon: const Icon(Icons.info_outline, size: 16),
+                              label: const Text('ルールを確認', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+
+                final scoreboardPart = MatchScoreboard(
+                  matchId: match.id, myUserId: _myUserId,
+                  onNameTap: (side) => _showNameEditBottomSheet(match, side),
+                );
+
+                final actionPanelPart = Container(
+                  color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final settings = ref.watch(settingsProvider);
+                      final redPanel = ScoreActionPanel(matchId: match.id, side: Side.red, color: Colors.red.shade600, isLocked: isInputLocked);
+                      final whitePanel = ScoreActionPanel(matchId: match.id, side: Side.white, color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100, textColor: isDark ? Colors.white : Colors.black87, isLocked: isInputLocked);
+                      final divider = VerticalDivider(width: 1, color: isDark ? Colors.white10 : Colors.black12);
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch, 
+                        children: settings.leftHanded ? [whitePanel, divider, redPanel] : [redPanel, divider, whitePanel]
+                      );
+                    }
+                  ),
+                );
+
+                final bottomButtonPart = Container(
+                  color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Builder(
+                    builder: (context) {
+                      final settings = ref.watch(settingsProvider);
+                      
+                      if (isApproved) {
+                        return const SizedBox(height: 54, child: Center(child: Text('公式記録確定済み', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))));
+                      }
+                      
+                      if (rule.isRenseikai && rule.renseikaiType == '時間制' && (match.matchType == rule.positions.last || match.matchType == '錬成会') && match.status == 'finished') {
+                        return _buildRenseikaiNextButton(context, ref, match);
+                      }
+
+                      if (match.status == 'finished') {
+                        final confirmAction = isViewOnly ? null : () async {
+                          if (settings.haptic) HapticFeedback.heavyImpact();
+                          
+                          if (settings.showConfirmDialog) {
+                            final confirmed = await _showConfirmDialog('記録の確定', 'この試合の記録を確定して次に進みますか？\n確定後は点数の修正ができなくなります。');
+                            if (!confirmed) return;
+                          }
+
+                          // ★ Phase 7: UIからは「確定してね」と頼むだけ。
+                          // 勝ち抜き戦の次試合生成などは、すべて裏側で自動的に行われます。
+                          await ref.read(matchApplicationServiceProvider).approveMatch(match.id);
+
+                          if (!context.mounted) return;
+                          
+                          // 画面遷移ロジック（UIの管轄なので残します）
+                          final matches = ref.read(matchListProvider);
+                          final groupNextMatches = matches.where((m) => m.groupName == match.groupName && m.order > match.order && m.status != 'approved' && m.status != 'finished').toList();
+                          groupNextMatches.sort((a, b) => a.order.compareTo(b.order));
+                          
+                          if (groupNextMatches.isNotEmpty) {
+                            // 同じカードの続き（大将の次など）か、別カードへの移行かを判定
+                            final nextM = groupNextMatches.first;
+                            final currentRedTeam = match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName;
+                            final currentWhiteTeam = match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName;
+                            final nextRedTeam = nextM.redName.contains(':') ? nextM.redName.split(':').first.trim() : nextM.redName;
+                            final nextWhiteTeam = nextM.whiteName.contains(':') ? nextM.whiteName.split(':').first.trim() : nextM.whiteName;
+
+                            bool isCardEndingPosition = match.matchType == '大将' || match.matchType == '代表戦' || match.matchType == '個人戦' || match.matchType == '選手';
+
+                            if (currentRedTeam == nextRedTeam && currentWhiteTeam == nextWhiteTeam && !isCardEndingPosition && !match.isKachinuki) {
+                              context.go('/match/${nextM.id}');
+                            } else {
+                              _showMatchFinishedDialog(context, match, nextM);
+                            }
+                          } else {
+                            bool hasDaihyo = rule.isLeague ? rule.hasLeagueDaihyo : rule.hasRepresentativeMatch;
+                            if (isTie && match.groupName != null && match.matchType != '代表戦' && hasDaihyo) {
+                              context.push('/team-scoreboard/${match.groupName}');
+                            } else {
+                              _showMatchFinishedDialog(context, match, null);
+                            }
+                          }
+                        };
+
+                        final bool isTrulyTeamMatch = match.groupName != null && teamMatches.length > 1;
+
+                        return GestureDetector(
+                          onDoubleTap: settings.confirmBehavior == 'double' ? confirmAction : null,
+                          child: ElevatedButton.icon(
+                            onPressed: settings.confirmBehavior == 'single' ? confirmAction : (isViewOnly ? null : () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.confirmBehavior == 'double' ? 'ダブルタップで確定してください' : '長押しで確定してください'), duration: const Duration(milliseconds: 1500)))),
+                            onLongPress: settings.confirmBehavior == 'long' ? confirmAction : null,
+                            icon: Icon((isTie && isTrulyTeamMatch) ? Icons.balance : (isAllDone ? Icons.emoji_events : Icons.verified), size: 24),
+                            label: Text(
+                              (isTie && isTrulyTeamMatch) ? '記録確定・星取表へ' : (isAllDone ? ((match.tournamentId != null && match.tournamentId!.startsWith('bunaiksen_')) ? '確定・部内戦ホームへ' : '確定・大会ホームへ') : '確定・次へ'), 
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isTie ? Colors.red.shade700 : (isAllDone ? Colors.indigo.shade700 : Colors.teal.shade600), 
+                              foregroundColor: Colors.white, 
+                              minimumSize: const Size(double.infinity, 54), 
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), 
+                              elevation: 4
+                            ),
+                          ),
+                        );
+                      } else {
+                        final finishAction = isViewOnly ? null : () async {
+                          if (settings.haptic) HapticFeedback.heavyImpact();
+                          final strategy = MatchStrategyFactory.getStrategy(match, teamMatches.length);
+                          final lastSettings = ref.read(lastUsedSettingsProvider);
+                          
+                          // ★ 追加: 無限勝ち抜きモードの場合は通常の延長・判定をスキップして専用エンジンへ
+                          if (match.isKachinuki && match.matchType == '無限勝ち抜き') {
+                            if (settings.showConfirmDialog) {
+                              final confirmed = await _showConfirmDialog('試合終了', 'この試合を終了しますか？');
+                              if (!confirmed) return;
+                            }
+                            String winnerColor = 'draw';
+                            if ((match.redScore as num).toInt() > (match.whiteScore as num).toInt()) {
+                              winnerColor = 'red';
+                            } else if ((match.whiteScore as num).toInt() > (match.redScore as num).toInt()) {
+                              winnerColor = 'white';
+                            }
+                            
+                            if (!mounted || !context.mounted) return;
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (_) => const Center(child: CircularProgressIndicator()),
+                            );
+                            await _handleMatchFinish(context, ref, match, winnerColor);
+                            return;
+                          }
+
+                          if (match.redScore == match.whiteScore) {
+                            final nextAction = strategy.getNextActionOnTie(match: match, lastSettings: lastSettings);
+
+                            if (nextAction == NextMatchAction.startExtension) {
+                              final confirmed = await _showConfirmDialog('延長戦', '延長戦に入りますか？');
+                              if (!confirmed) return;
+
+                              final dynamic rawTime = lastSettings['extensionTimeMinutes'];
+                              final double extMins = (rawTime is num) ? rawTime.toDouble() : 3.0;
+                              final int currentExtCount = '延長'.allMatches(match.note).length;
+                              final extStr = '延長${currentExtCount + 1}回目';
+                              
+                              await ref.read(matchCommandProvider).saveMatch(match.copyWith(
+                                remainingSeconds: (extMins * 60).toInt(),
+                                timerIsRunning: false,
+                                note: match.note.isEmpty ? extStr : '${match.note} ($extStr)',
+                                extensionTimeMinutes: extMins.toInt(),
+                              ));
+                              
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$extStr（$extMins分）を開始します')));
+                              return;
+                            } 
+                            
+                            if (nextAction == NextMatchAction.showHantei) {
+                              final hanteiResult = await _showHanteiDialog(match);
+                              if (hanteiResult == null) return;
+                              try {
+                                await ref.read(matchCommandProvider).completeMatchWithHantei(match, hanteiResult, _myUserId);
+                              } catch (e) {
+                                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('判定の保存に失敗しました: $e')));
+                              }
+                              return;
+                            }
+                          }
+                          
+                          if (settings.showConfirmDialog) {
+                            final confirmed = await _showConfirmDialog('試合終了', 'この試合を終了しますか？');
+                            if (!confirmed) return;
+                          }
+                          
+                          // ★ 修正: 直接保存するのではなく、音が鳴る finishMatch を呼び出す
+                          ref.read(matchActionProvider).finishMatch(match);
+                        };
+
+                        return Consumer(
+                          builder: (context, ref, child) {
+                            final isProcessing = ref.watch(isMatchCommandProcessingProvider);
+                            final effectiveFinishAction = isProcessing ? null : finishAction;
+
+                            return GestureDetector(
+                              onDoubleTap: settings.confirmBehavior == 'double' ? effectiveFinishAction : null,
+                              child: ElevatedButton(
+                                onPressed: settings.confirmBehavior == 'single' ? effectiveFinishAction : (isViewOnly ? null : () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.confirmBehavior == 'double' ? 'ダブルタップで終了してください' : '長押しで終了してください'), duration: const Duration(milliseconds: 1500)))),
+                                onLongPress: settings.confirmBehavior == 'long' ? effectiveFinishAction : null,
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo.shade600, foregroundColor: Colors.white, minimumSize: const Size(double.infinity, 54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
+                                child: isProcessing 
+                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : const Text('この試合を終了する', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                              ),
+                            );
+                          }
+                        );
+                      }
+                    }
+                  ),
+                );
+
+                if (isTabletLandscape) {
+                  return Column(
+                    children: [
+                      viewOnlyBanner,
+                      Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              flex: 5,
+                              child: Column(
+                                children: [
+                                  timerPart,
+                                  groupButtonPart,
+                                  Expanded(child: scoreboardPart),
+                                ],
+                              ),
+                            ),
+                            VerticalDivider(width: 1, thickness: 1, color: isDark ? Colors.white10 : Colors.black12),
+                            Expanded(
+                              flex: 6,
+                              child: Column(
+                                children: [
+                                  Expanded(child: actionPanelPart),
+                                  undoArea,
+                                  bottomButtonPart,
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    children: [
+                      viewOnlyBanner,
+                      timerPart,
+                      groupButtonPart,
+                      Expanded(flex: 5, child: scoreboardPart),
+                      Expanded(flex: 6, child: actionPanelPart), 
+                      undoArea,
+                      bottomButtonPart,
+                    ],
+                  );
+                }
+              },
+            ),
+          ),
+          
+          if (match.matchType == '代表戦' && (match.redName.contains('未定') || match.whiteName.contains('未定') || match.redName.contains('代表選手') || match.whiteName.contains('代表選手')))
+            Container(
+              color: Colors.black.withValues(alpha: 0.8),
+              width: double.infinity,
+              height: double.infinity,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.person_add, color: Colors.white, size: 80),
+                    const SizedBox(height: 24),
+                    const Text(
+                      '代表戦の選手が未設定です',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: 250,
+                      height: 60,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo.shade600,
+                          foregroundColor: Colors.white,
+                          elevation: 8,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        ),
+                        onPressed: () => _showDaihyoSelectDialog(match),
+                        child: const Text('代表者を選択する', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  // ★ 直感UX改修：試合中の選手変更を、状況（自チーム/相手チーム）に応じて分岐するモダンなボトムシートへ昇格
+  void _showNameEditBottomSheet(MatchModel match, String side) {
+    String fullName = side == 'red' ? match.redName : match.whiteName;
+    String teamName = fullName.contains(':') ? fullName.split(':').first.trim() : '';
+    String playerName = fullName.contains(':') ? fullName.split(':').last.replaceAll(')', '').trim() : fullName;
+    
+    final ctrl = TextEditingController(text: playerName == '欠員' ? '' : playerName);
+
+    // 共通の保存ロジック
+    Future<void> updatePlayerName(String newName) async {
+      final newFullName = teamName.isNotEmpty ? '$teamName : $newName' : newName;
+      final updatedMatch = side == 'red' 
+          ? match.copyWith(redName: newFullName) 
+          : match.copyWith(whiteName: newFullName);
+      await ref.read(matchCommandProvider).saveMatch(updatedMatch);
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Consumer(
+        builder: (context, modalRef, child) {
+          final playersAsync = modalRef.watch(playerListProvider);
+          final teamsAsync = modalRef.watch(registeredTeamsProvider(match.tournamentId ?? ''));
+
+          final registeredTeams = teamsAsync.value ?? [];
+          final players = playersAsync.value ?? [];
+
+          bool isOwnTeam = registeredTeams.any((t) => t.teamName == teamName);
+
+          // ★ Phase 8-3: キーボードに潰されないようにコンテナごと上にスライドさせる
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.85),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+              child: Column(
+                children: [
+                  Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10))),
+                  const SizedBox(height: 24),
+                Text('選手名の変更', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
+                if (teamName.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(teamName, style: TextStyle(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.bold)),
+                ],
+                const SizedBox(height: 24),
+                
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: ctrl,
+                        style: TextStyle(color: textColor),
+                        decoration: InputDecoration(
+                          labelText: '名前を直接入力 (助っ人など)',
+                          labelStyle: const TextStyle(color: Colors.grey),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          filled: true, fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                          prefixIcon: Icon(Icons.edit, color: isDark ? Colors.indigo.shade300 : Colors.indigo.shade600),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final newName = ctrl.text.trim().isEmpty ? '欠員' : ctrl.text.trim();
+                        await updatePlayerName(newName);
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo.shade600, foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0
+                      ),
+                      child: const Text('確定', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await updatePlayerName('欠員');
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    },
+                    icon: const Icon(Icons.block, size: 18),
+                    label: const Text('このポジションを「欠員」にする', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red.shade400, side: BorderSide(color: Colors.red.shade400),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+                    ),
+                  ),
+                ),
+
+                if (isOwnTeam) ...[
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 12),
+                  Align(alignment: Alignment.centerLeft, child: Text('道場の名簿から選ぶ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.indigo.shade300 : Colors.indigo))),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: players.isEmpty
+                      ? const Center(child: Text('名簿に登録されている選手がいません', style: TextStyle(color: Colors.grey)))
+                      : ListView.builder(
+                          itemCount: players.length,
+                          itemBuilder: (context, index) {
+                            final p = players[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              elevation: 0,
+                              color: isDark ? Colors.indigo.shade900.withValues(alpha: 0.3) : Colors.indigo.shade50.withValues(alpha: 0.5),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: isDark ? Colors.indigo.shade900 : Colors.indigo.shade100)),
+                              child: ListTile(
+                                leading: CircleAvatar(backgroundColor: isDark ? Colors.indigo.shade700 : Colors.white, child: Text(p.name.substring(0, 1), style: TextStyle(color: isDark ? Colors.white : Colors.indigo.shade700, fontWeight: FontWeight.bold))),
+                                title: Text(p.name, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+                                subtitle: Text(p.gradeName, style: TextStyle(color: Colors.indigo.shade400, fontSize: 12)),
+                                trailing: Icon(Icons.check_circle_outline, color: isDark ? Colors.indigo.shade300 : Colors.indigo),
+                                onTap: () async {
+                                  await updatePlayerName(p.name);
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                  ),
+                ] else ...[
+                  const Spacer(),
+                ]
+              ],
+            ),
+          ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ★ 修正：他と同様のデザインルールとダークモードを適用した代表戦設定シート
+  void _showDaihyoSelectDialog(MatchModel match) {
+    String rTeam = match.redName.contains(':') ? match.redName.split(':').first.trim() : '赤';
+    String wTeam = match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : '白';
+    
+    final allMatches = ref.read(matchListProvider);
+    final teamMatches = allMatches.where((m) => m.groupName == match.groupName && m.matchType != '代表戦').toList();
+    
+    List<String> redPlayers = teamMatches.map((m) => m.redName.contains(':') ? m.redName.split(':').last.trim() : m.redName).where((n) => n.isNotEmpty && !n.contains('未定') && !n.contains('欠員') && !n.contains('代表選手')).toSet().toList();
+    List<String> whitePlayers = teamMatches.map((m) => m.whiteName.contains(':') ? m.whiteName.split(':').last.trim() : m.whiteName).where((n) => n.isNotEmpty && !n.contains('未定') && !n.contains('欠員') && !n.contains('代表選手')).toSet().toList();
+
+    final redCtrl = TextEditingController(text: redPlayers.isNotEmpty ? redPlayers.first : '');
+    final whiteCtrl = TextEditingController(text: whitePlayers.isNotEmpty ? whitePlayers.first : '');
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final inputBg = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+
+    showModalBottomSheet(
+      context: context, 
+      isScrollControlled: true, 
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          // ★ Phase 8-3: ここも同様にキーボード追従型へ変更
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.85),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+              child: Column(
+                children: [
+                  Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10))),
+                  const SizedBox(height: 24),
+                Text('代表戦の準備', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
+                const SizedBox(height: 8),
+                Text('代表戦を戦う選手を選んでください。\n決定するとタイマーが0:00にリセットされます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                const SizedBox(height: 24),
+                
+                Expanded(
+                  child: ListView(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50, borderRadius: BorderRadius.circular(16), border: Border.all(color: isDark ? Colors.red.shade900 : Colors.red.shade100)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(children: [Icon(Icons.shield, color: isDark ? Colors.red.shade400 : Colors.red, size: 18), const SizedBox(width: 8), Text('$rTeam の代表者', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.red.shade300 : Colors.red.shade800, fontSize: 16))]),
+                            const SizedBox(height: 12),
+                            if (redPlayers.isNotEmpty) ...[
+                              Wrap(
+                                spacing: 8, runSpacing: 8,
+                                children: redPlayers.map((p) => ChoiceChip(
+                                  label: Text(p),
+                                  selected: redCtrl.text == p,
+                                  selectedColor: isDark ? Colors.red.shade700 : Colors.red.shade200,
+                                  backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                                  labelStyle: TextStyle(color: redCtrl.text == p ? (isDark ? Colors.white : Colors.red.shade900) : textColor, fontWeight: FontWeight.bold),
+                                  onSelected: (s) => setState(() { redCtrl.text = p; }),
+                                )).toList(),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                            TextField(
+                              controller: redCtrl,
+                              style: TextStyle(color: textColor),
+                              onChanged: (val) => setState(() {}), 
+                              decoration: InputDecoration(labelText: '名前を直接入力', labelStyle: const TextStyle(color: Colors.grey), isDense: true, prefixIcon: const Icon(Icons.edit, size: 16), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), filled: true, fillColor: inputBg),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: isDark ? Colors.blueGrey.shade900.withValues(alpha: 0.2) : Colors.grey.shade100, borderRadius: BorderRadius.circular(16), border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(children: [Icon(Icons.shield, color: Colors.grey.shade500, size: 18), const SizedBox(width: 8), Text('$wTeam の代表者', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800, fontSize: 16))]),
+                            const SizedBox(height: 12),
+                            if (whitePlayers.isNotEmpty) ...[
+                              Wrap(
+                                spacing: 8, runSpacing: 8,
+                                children: whitePlayers.map((p) => ChoiceChip(
+                                  label: Text(p),
+                                  selected: whiteCtrl.text == p,
+                                  selectedColor: isDark ? Colors.blueGrey.shade700 : Colors.grey.shade300,
+                                  backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                                  labelStyle: TextStyle(color: whiteCtrl.text == p ? (isDark ? Colors.white : Colors.black) : textColor, fontWeight: FontWeight.bold),
+                                  onSelected: (s) => setState(() { whiteCtrl.text = p; }),
+                                )).toList(),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                            TextField(
+                              controller: whiteCtrl,
+                              style: TextStyle(color: textColor),
+                              onChanged: (val) => setState(() {}),
+                              decoration: InputDecoration(labelText: '名前を直接入力', labelStyle: const TextStyle(color: Colors.grey), isDense: true, prefixIcon: const Icon(Icons.edit, size: 16), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), filled: true, fillColor: inputBg),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                SafeArea(
+                  top: false, 
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 24), 
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo.shade600, 
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 54),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 4,
+                      ),
+                      onPressed: () async {
+                        final rName = redCtrl.text.trim().isEmpty ? '代表' : redCtrl.text.trim();
+                        final wName = whiteCtrl.text.trim().isEmpty ? '代表' : whiteCtrl.text.trim();
+                        
+                        final newRed = '$rTeam : $rName';
+                        final newWhite = '$wTeam : $wName';
+                        
+                        final updatedMatch = match.copyWith(
+                          redName: newRed, 
+                          whiteName: newWhite, 
+                          remainingSeconds: 0, 
+                        );
+                        
+                        await ref.read(matchCommandProvider).saveMatch(updatedMatch);
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      }, 
+                      child: const Text('決定して準備完了', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          );
+        }
+      )
+    );
+  }
+
+  Widget _buildRenseikaiNextButton(BuildContext context, WidgetRef ref, MatchModel match) {
+    final masterTime = ref.watch(renseikaiMasterTimerProvider(match.groupName ?? ''));
+    final isTimeUp = masterTime == 0;
+    final isInputLocked = match.scorerId != null && match.scorerId != _myUserId;
+
+    return ElevatedButton.icon(
+      onPressed: (isInputLocked || isTimeUp) ? null : () => _showNextMatchDialog(context, ref, match),
+      icon: const Icon(Icons.autorenew, size: 24),
+      label: const Text('次の対戦者を追加して継続', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.teal.shade600,
+        foregroundColor: Colors.white,
+        minimumSize: const Size(double.infinity, 54),
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
+  }
+
+  void _showNextMatchDialog(BuildContext context, WidgetRef ref, MatchModel currentMatch) {
+    String rTeam = currentMatch.redName.contains(':') ? currentMatch.redName.split(':').first.trim() : '赤';
+    String wTeam = currentMatch.whiteName.contains(':') ? currentMatch.whiteName.split(':').first.trim() : '白';
+    
+    final redCtrl = TextEditingController();
+    final whiteCtrl = TextEditingController();
+
+    // iOS Native カラー
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final inputBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100;
+    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+
+    showDialog(context: context, builder: (ctx) => AlertDialog(
+      backgroundColor: bgColor,
+      title: Text('次の試合を追加 (錬成会)', style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: redCtrl,
+            style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+            decoration: InputDecoration(
+              labelText: '$rTeam の選手',
+              labelStyle: const TextStyle(color: Colors.grey),
+              filled: true, fillColor: inputBgColor,
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.indigo.shade400, width: 2)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: whiteCtrl,
+            style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+            decoration: InputDecoration(
+              labelText: '$wTeam の選手',
+              labelStyle: const TextStyle(color: Colors.grey),
+              filled: true, fillColor: inputBgColor,
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.indigo.shade400, width: 2)),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: isDark ? Colors.indigo.shade600 : Colors.indigo, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+          onPressed: () async {
+            if (!ctx.mounted) return;
+            showDialog(context: ctx, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+
+            final nextMatchId = const Uuid().v4();
+            final newRed = '$rTeam : ${redCtrl.text.trim().isEmpty ? '選手' : redCtrl.text.trim()}';
+            final newWhite = '$wTeam : ${whiteCtrl.text.trim().isEmpty ? '選手' : whiteCtrl.text.trim()}';
+            
+            final rule = ref.read(matchRuleProvider);
+            // ★ 追加：ルールの分数（int切り捨て）ではなく、設定に保存された正確な小数（double）を読み込む
+            final lastSettings = ref.read(lastUsedSettingsProvider);
+            final double exactMatchTime = (lastSettings['matchTime'] as num?)?.toDouble() ?? rule.matchTimeMinutes.toDouble();
+            final int initialSeconds = (exactMatchTime * 60).toInt();
+
+            final nextMatch = MatchModel(
+              id: nextMatchId,
+              tournamentId: currentMatch.tournamentId,
+              category: currentMatch.category,
+              groupName: currentMatch.groupName,
+              matchType: '錬成会', 
+              redName: newRed,
+              whiteName: newWhite,
+              status: 'waiting', 
+              timerIsRunning: false, 
+              matchTimeMinutes: exactMatchTime.toInt(),
+              isRunningTime: rule.isRunningTime,
+              remainingSeconds: initialSeconds, // ★ 修正：正確な秒数(initialSeconds)をセットする！
+              order: currentMatch.order + 0.1,
+              note: currentMatch.note,
+            );
+            
+            await ref.read(matchCommandProvider).saveMatch(nextMatch);
+            
+            if (!ctx.mounted) return;
+            // ★ Phase 8-1: GoRouterクラッシュ対策。ローディングダイアログを確実に閉じる
+            Navigator.of(ctx, rootNavigator: true).pop(); 
+            if (!ctx.mounted) return;
+            Navigator.pop(ctx); // ダイアログ閉じる
+            
+            if (!context.mounted) return;
+            context.pushReplacement('/match/$nextMatchId');
+          }, 
+          child: const Text('決定して開始', style: TextStyle(fontWeight: FontWeight.bold))
+        ),
+      ],
+    ));
+  }
+
+  // ★ 追加：試合終了時のナビゲーションダイアログ
+  void _showMatchFinishedDialog(BuildContext context, MatchModel match, MatchModel? nextCardMatch) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('対戦終了', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.teal.shade300 : Colors.teal.shade800)),
+        content: const Text('対戦がすべて終了しました。\n次のアクションを選択してください。'),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsOverflowDirection: VerticalDirection.down,
+        actions: [
+          if (nextCardMatch != null)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.go('/match/${nextCardMatch.id}');
+                },
+                icon: const Icon(Icons.play_arrow),
+                label: Text('次の試合へ進む (${nextCardMatch.matchType})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              ),
+            ),
+          if (nextCardMatch != null) const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (match.tournamentId != null && match.tournamentId!.startsWith('bunaiksen_')) {
+                  context.go('/bunaiksen-home');
+                } else {
+                  context.go('/home/${match.tournamentId}');
+                }
+              },
+              icon: const Icon(Icons.home),
+              label: Text(
+                (match.tournamentId != null && match.tournamentId!.startsWith('bunaiksen_')) ? '部内戦ホームに戻る' : '大会ホームへ戻る',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey.shade400), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            ),
+          ),
+          if (match.groupName != null) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  if (match.isKachinuki) {
+                    context.push('/kachinuki-scoreboard/${match.groupName}'); // ★ 真の解決: go()ではなくpush()にして履歴を残す
+                  } else {
+                    context.push('/team-scoreboard/${match.groupName}'); // ★ 真の解決: go()ではなくpush()にして履歴を残す
+                  }
+                },
+                icon: const Icon(Icons.table_chart_outlined),
+                label: const Text('スコアボードを確認する', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showRuleInfoSheet(BuildContext context, MatchModel match) {
+    HapticFeedback.mediumImpact(); 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final rule = match.rule; 
+
+    final bool isLegacyLeague = match.note.contains('[リーグ戦]');
+    final bool isLeague = (rule?.isLeague ?? false) || isLegacyLeague;
+
+    final bool isIndividual = !match.isKachinuki && (match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦') || (rule != null && rule.positions.length == 1 && (rule.positions.first == '選手' || rule.positions.first == '個人戦')));
+    
+    String formatText = isIndividual ? '個人戦' : '団体戦';
+    if (rule?.isRenseikai ?? false) {
+      formatText = '錬成会';
+    } else if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
+      formatText = '勝ち抜き戦';
+    } else if (isLeague) {
+      formatText = 'リーグ戦（総当たり）';
+    }
+
+    final double matchTime = rule?.matchTimeMinutes ?? match.matchTimeMinutes.toDouble();
+    final isRunningTime = rule?.isRunningTime ?? match.isRunningTime;
+    
+    String timeStr = matchTime == matchTime.toInt() ? '${matchTime.toInt()}分' : '${matchTime.toInt()}分${((matchTime % 1) * 60).toInt()}秒';
+    final String timeDesc = '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
+
+    final bool enchoUnlimited = rule?.isEnchoUnlimited ?? false;
+    final double enchoMins = rule?.enchoTimeMinutes ?? match.extensionTimeMinutes?.toDouble() ?? 0.0;
+    final int enchoCount = rule?.enchoCount ?? match.extensionCount ?? 1;
+    final bool enchoEnabled = match.hasExtension || enchoUnlimited || enchoMins > 0;
+    
+    String enchoDesc = 'なし';
+    if (enchoEnabled) {
+      if (enchoUnlimited) {
+        enchoDesc = 'あり (無制限)';
+      } else {
+        String extTimeStr = enchoMins == enchoMins.toInt() ? '${enchoMins.toInt()}分' : '${enchoMins.toInt()}分${((enchoMins % 1) * 60).toInt()}秒';
+        enchoDesc = 'あり ($extTimeStr・$enchoCount回)';
+      }
+    }
+    
+    final bool hanteiEnabled = rule?.hasHantei ?? match.hasHantei;
+
+    String daihyoDesc = 'なし';
+    if (rule != null) {
+      final bool hasRep = rule.hasRepresentativeMatch;
+      final bool isIppon = rule.isDaihyoIpponShobu;
+      daihyoDesc = hasRep ? (isIppon ? 'あり (一本勝負)' : 'あり (三本勝負)') : 'なし';
+    } else {
+      daihyoDesc = '不明（古いデータ）';
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10)))),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Icon(Icons.gavel_rounded, color: isDark ? Colors.teal.shade300 : Colors.teal.shade700, size: 22),
+                const SizedBox(width: 8),
+                Text('試合レギュレーション', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+              ],
+            ),
+            const Divider(height: 32),
+            
+            if (rule == null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.orange.shade300)),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text('この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。', style: TextStyle(color: Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold))),
+                  ],
+                ),
+              ),
+
+            _buildRuleRow('試合形式', formatText, isDark),
+            _buildRuleRow('試合時間', timeDesc, isDark),
+
+            if (rule?.isRenseikai ?? false) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('錬成会設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('進行方式', rule!.renseikaiType, isDark),
+              if (rule.renseikaiType == '時間制') _buildRuleRow('制限時間', '${rule.overallTimeMinutes} 分', isDark),
+            ] else ...[
+              _buildRuleRow('延長戦', enchoDesc, isDark),
+              _buildRuleRow('判定', hanteiEnabled ? 'あり' : 'なし', isDark),
+            ],
+
+            if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('勝ち抜き戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('無制限条件', rule?.kachinukiUnlimitedType ?? '大将対大将', isDark),
+              if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            if (!isIndividual && !(rule?.isRenseikai ?? false) && !match.isKachinuki && !(rule?.isKachinuki ?? false) && !isLeague) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('団体戦・チーム設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('代表戦', daihyoDesc, isDark),
+              if (rule != null && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            if (!isIndividual && (rule?.isRenseikai ?? false) && rule != null && rule.positions.isNotEmpty) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('ポジション設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal))),
+              _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+            ],
+
+            if (rule != null && rule.isLeague) ...[
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('リーグ戦設定', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange))),
+              if (!isIndividual && rule.positions.isNotEmpty) _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
+              _buildRuleRow('勝ち点設定', '勝: ${rule.winPoint} / 分: ${rule.drawPoint} / 負: ${rule.lossPoint}', isDark),
+              _buildRuleRow('同点時代表戦', rule.hasLeagueDaihyo ? 'あり' : 'なし', isDark),
+            ],
+
+            if (match.note.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _buildRuleRow('備考・メモ', match.note, isDark),
+            ],
+              
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                  foregroundColor: isDark ? Colors.white : Colors.black87,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8), 
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRuleRow(String label, String value, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 100, child: Text(label, style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, fontSize: 13))),
+          Expanded(child: Text(value, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 14))),
+        ],
+      ),
+    );
+  }
+
+  void _showSnapshotDialog(BuildContext context, WidgetRef ref, MatchModel match) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // ★ 修正: 古い snapshots ではなく、新しい events (有効な操作履歴) を使用する
+    final validEvents = match.events.where((e) => !e.isCanceled && e.type != PointType.undo).toList();
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: const Text('操作履歴と取り消し', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: validEvents.isEmpty
+              ? const Text('取り消し可能な操作履歴がありません')
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: validEvents.length,
+                  itemBuilder: (context, index) {
+                    // 新しい順（最新が一番上）に表示
+                    final eventIndex = validEvents.length - 1 - index;
+                    final event = validEvents[eventIndex];
+                    
+                    final sideStr = event.side == Side.red ? '赤' : (event.side == Side.white ? '白' : '');
+                    String typeStr = '';
+                    switch (event.type) {
+                      case PointType.men: typeStr = 'メン'; break;
+                      case PointType.kote: typeStr = 'コテ'; break;
+                      case PointType.doIdo: typeStr = 'ドウ'; break;
+                      case PointType.tsuki: typeStr = 'ツキ'; break;
+                      case PointType.hansoku: typeStr = '反則(▲)'; break;
+                      case PointType.fusen: typeStr = '不戦勝'; break;
+                      case PointType.hantei: typeStr = '判定'; break;
+                      default: typeStr = 'ポイント'; break;
+                    }
+                    final titleText = sideStr.isNotEmpty ? '$sideStr $typeStr' : typeStr;
+                    
+                    // タップ対象のイベントが、最新から数えて何個前か（= 取り消す数）
+                    final undoCount = index + 1;
+
+                    return ListTile(
+                      leading: Icon(Icons.history, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                      title: Text(titleText, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(DateFormat('HH:mm:ss').format(event.timestamp)),
+                      trailing: Text('$undoCount手前まで戻る', style: const TextStyle(fontSize: 12, color: Colors.blue)),
+                      onTap: () async {
+                        final confirm = await _showConfirmDialog('取り消しの確認', 'この操作を含め、最新の $undoCount 件の操作を取り消しますか？');
+                        if (confirm) {
+                          for (int i = 0; i < undoCount; i++) {
+                            ref.read(matchCommandQueueProvider).enqueue(
+                              MatchCommandModel(
+                                id: const Uuid().v4(),
+                                type: CommandType.undoLastEvent,
+                                payload: {'matchId': match.id},
+                                createdAt: DateTime.now(),
+                              ),
+                            );
+                          }
+                          if (ctx.mounted) Navigator.pop(ctx);
+                        }
+                      },
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // ★ NEW: 無限勝ち抜きエンジンの試合終了処理
+  // =========================================================================
+  Future<void> _handleMatchFinish(
+    BuildContext context,
+    WidgetRef ref,
+    MatchModel currentMatch,
+    String winnerColor,
+  ) async {
+    final finishedMatch = currentMatch.copyWith(
+      status: 'finished',
+      timerIsRunning: false,
+      remainingSeconds: 0,
+    );
+    await ref.read(matchCommandProvider).saveMatch(finishedMatch);
+
+    final engine = ref.read(bunaiksenInfiniteEngineProvider);
+    final nextMatch = await engine.processMatchResult(finishedMatch, winnerColor);
+
+    if (!mounted || !context.mounted) return;
+    Navigator.of(context, rootNavigator: true).pop(); // プログレスダイアログを閉じる
+
+    if (nextMatch != null) {
+      final streaks = ref.read(bunaiksenInfiniteStreakProvider);
+      final winnerStreak = streaks[nextMatch.redName] ?? 0;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: const Text('無限稽古: 次の試合'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('🔥 挑戦者が入りました！'),
+                const SizedBox(height: 12),
+                Text('防衛(赤): ${nextMatch.redName} ($winnerStreak連勝中)', 
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                const SizedBox(height: 8),
+                Text('挑戦(白): ${nextMatch.whiteName}',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                const Text('どうしますか？'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  context.pop(); // 一覧に戻る
+                },
+                child: const Text('一覧に戻る（休憩）'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrange.shade600,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  Navigator.of(dialogContext).pop();
+                  final startMatch = nextMatch.copyWith(status: 'in_progress');
+                  await ref.read(matchCommandProvider).saveMatch(startMatch);
+                  if (context.mounted) {
+                    context.pushReplacement('/match/${nextMatch.id}');
+                  }
+                },
+                child: const Text('すぐに次の試合を開始'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('待機列の選手がいなくなりました。無限稽古を終了します')),
+      );
+      context.pop();
+    }
+  }
+}

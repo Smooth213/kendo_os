@@ -1,7 +1,8 @@
-import 'package:kendo_os/models/match_model.dart';
-import 'package:kendo_os/domain/match/match_rule.dart';
-import 'package:kendo_os/domain/match/score_event.dart';
+import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/rules/match_rule.dart';
+import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:uuid/uuid.dart';
+import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 
 /// ★ Step 0-3: テスト用の MatchModel や ScoreEvent を爆速で生成する工場
 class TestMatchFactory {
@@ -28,7 +29,7 @@ class TestMatchFactory {
     required PointType type,
     int sequence = 1,
   }) {
-    return ScoreEvent(
+    return ScoreEventLegacyAdapter.fromLegacy(
       id: const Uuid().v4(),
       side: side,
       type: type,
