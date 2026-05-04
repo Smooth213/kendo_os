@@ -20,6 +20,7 @@ class TestMatchFactory {
       whiteName: whiteName,
       events: events,
       status: 'in_progress',
+      remainingSeconds: 180,
     );
   }
 

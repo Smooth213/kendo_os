@@ -7,6 +7,8 @@ import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart'
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/presentation/operate/screens/bunaiksen_official_record_screen.dart';
 import 'package:kendo_os/presentation/operate/screens/home_screen.dart' show customTeamNamesProvider;
+import 'package:kendo_os/domain/rules/match_rule.dart';
+import 'package:kendo_os/domain/entities/score_event.dart';
 
 void main() {
   group('部内戦 成績一覧 UIの表示テスト (Widget Test)', () {
@@ -93,6 +95,36 @@ void main() {
 
       final xTextFinder = find.text('✕');
       expect(xTextFinder, findsWidgets);
+    });
+
+    testWidgets('KendoRuleEngineを利用して、部内戦の公式記録（丸囲みや技マーク）が正確に描画されること', (WidgetTester tester) async {
+      final mockEvents = [
+        ScoreEvent(
+          id: 'e1', side: Side.red, strikeType: StrikeType.men, isIppon: true, timestamp: DateTime.now()
+        )
+      ];
+
+      final mockMatch = [
+        MatchModel(
+          id: 'm4',
+          tournamentId: 'bunaiksen_20260429',
+          matchType: '個人戦',
+          groupName: 'group4',
+          redName: '赤選手',
+          whiteName: '白選手',
+          redScore: 1,
+          whiteScore: 0,
+          status: 'finished',
+          note: '個人戦',
+          rule: const MatchRule(),
+          events: mockEvents,
+        )
+      ];
+
+      await tester.pumpWidget(createTestableWidget(mockMatch));
+      await tester.pumpAndSettle();
+
+      expect(find.text('メ'), findsWidgets);
     });
   });
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart'; 
-import 'package:uuid/uuid.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import '../../operate/providers/match_command_provider.dart';
 
@@ -82,20 +81,7 @@ class ScoreActionPanel extends ConsumerWidget {
           textColor: textColor ?? Colors.white,
           disabled: effectiveLocked,
           onConfirm: () {
-            // ★ 修正：直接実行せず、コマンドとしてキューに投げ込む
-            // UI側は待機(await)せず、即座に次の入力が可能な状態に戻ります
-            ref.read(matchCommandQueueProvider).enqueue(
-              MatchCommandModel(
-                id: const Uuid().v4(),
-                type: CommandType.addScore,
-                payload: {
-                  'matchId': matchId,
-                  'side': side.name,
-                  'type': type.name,
-                },
-                createdAt: DateTime.now(),
-              ),
-            );
+            ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
           },
         ),
       ),
@@ -113,20 +99,7 @@ class ScoreActionPanel extends ConsumerWidget {
           disabled: effectiveLocked,
           isFoul: true,
           onConfirm: () {
-            // ★ 修正：直接実行せず、コマンドとしてキューに投げ込む
-            // UI側は待機(await)せず、即座に次の入力が可能な状態に戻ります
-            ref.read(matchCommandQueueProvider).enqueue(
-              MatchCommandModel(
-                id: const Uuid().v4(),
-                type: CommandType.addScore,
-                payload: {
-                  'matchId': matchId,
-                  'side': side.name,
-                  'type': type.name,
-                },
-                createdAt: DateTime.now(),
-              ),
-            );
+            ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
           },
         ),
       ),

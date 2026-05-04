@@ -42,6 +42,65 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    
+    // ★ 追加: デフォルトのルール設定（2分、3本勝負、延長なし）に初期化
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(bunaiksenRuleProvider.notifier).update((state) => state.copyWith(
+        matchTimeMinutes: 2.0,
+        isIpponShobu: false, // 3本勝負
+        ipponLimit: 2, // ★ 追加: 試合エンジンに3本勝負(2本先取)を伝える
+        isEnchoUnlimited: false,
+        enchoTimeMinutes: 0.0,
+        enchoCount: 0,
+      ));
+    });
+  }
+
+  // ★ 追加: 任意の試合時間を入力するダイアログ
+  Future<double?> _showCustomTimeDialog(double currentTime) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final minController = TextEditingController(text: currentTime.toInt().toString());
+    final secController = TextEditingController(text: ((currentTime % 1) * 60).toInt().toString());
+
+    return showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: const Text('任意の試合時間', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: minController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: '分', border: OutlineInputBorder()),
+              ),
+            ),
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 16.0), child: Text(':', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
+            Expanded(
+              child: TextField(
+                controller: secController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: '秒', border: OutlineInputBorder()),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, null), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B0000), foregroundColor: Colors.white),
+            onPressed: () {
+              final m = int.tryParse(minController.text) ?? 0;
+              final s = int.tryParse(secController.text) ?? 0;
+              final total = m + (s / 60.0);
+              Navigator.pop(ctx, total);
+            },
+            child: const Text('設定する', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -125,7 +184,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
           // ルールアコーディオン
           ExpansionTile(
             title: Text(
-              '⚙️ 試合ルール: ${rule.matchTimeMinutes.toInt()}分 / 3本勝負 / 延長${(rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited) ? 'あり' : 'なし'}',
+              // ★ 修正: 小数点や1本勝負の表示に対応
+              '⚙️ 試合ルール: ${rule.matchTimeMinutes == rule.matchTimeMinutes.toInt() ? rule.matchTimeMinutes.toInt() : rule.matchTimeMinutes.toStringAsFixed(1)}分 / ${(rule.isIpponShobu) ? '1' : '3'}本勝負 / 延長${(rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited) ? 'あり' : 'なし'}',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87),
             ),
             backgroundColor: isDark ? Colors.grey.shade800.withAlpha(128) : Colors.grey.shade100,
@@ -138,12 +198,48 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('試合時間', style: TextStyle(fontWeight: FontWeight.bold)),
-                        DropdownButton<double>(
-                          value: rule.matchTimeMinutes,
-                          items: [1.0, 2.0, 3.0, 4.0, 5.0].map((v) => DropdownMenuItem(value: v, child: Text('${v.toInt()}分'))).toList(),
-                          onChanged: (v) {
+                        DropdownButton<double?>(
+                          value: [1.0, 1.5, 2.0, 2.5, 3.0].contains(rule.matchTimeMinutes) ? rule.matchTimeMinutes : null,
+                          items: [
+                            const DropdownMenuItem(value: 1.0, child: Text('1分00秒')),
+                            const DropdownMenuItem(value: 1.5, child: Text('1分30秒')),
+                            const DropdownMenuItem(value: 2.0, child: Text('2分00秒')),
+                            const DropdownMenuItem(value: 2.5, child: Text('2分30秒')),
+                            const DropdownMenuItem(value: 3.0, child: Text('3分00秒')),
+                            DropdownMenuItem(value: null, child: Text('任意 (${rule.matchTimeMinutes.toInt()}分${((rule.matchTimeMinutes % 1) * 60).toInt()}秒)')),
+                          ],
+                          onChanged: (v) async {
                             if (v != null) {
                               ref.read(bunaiksenRuleProvider.notifier).update((state) => state.copyWith(matchTimeMinutes: v));
+                            } else {
+                              // ★ 任意時間が選ばれたらダイアログを表示
+                              final customTime = await _showCustomTimeDialog(rule.matchTimeMinutes);
+                              if (customTime != null && customTime > 0) {
+                                ref.read(bunaiksenRuleProvider.notifier).update((state) => state.copyWith(matchTimeMinutes: customTime));
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    // ★ 追加: 1本勝負 / 3本勝負の選択
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('勝敗条件', style: TextStyle(fontWeight: FontWeight.bold)),
+                        DropdownButton<bool>(
+                          value: rule.isIpponShobu,
+                          items: const [
+                            DropdownMenuItem(value: false, child: Text('3本勝負')),
+                            DropdownMenuItem(value: true, child: Text('1本勝負')),
+                          ],
+                          onChanged: (v) {
+                            if (v != null) {
+                              ref.read(bunaiksenRuleProvider.notifier).update((state) => state.copyWith(
+                                isIpponShobu: v,
+                                ipponLimit: v ? 1 : 2, // ★ 追加: エンジンに1本勝負(1本)か3本勝負(2本)かを伝える
+                              ));
                             }
                           },
                         ),

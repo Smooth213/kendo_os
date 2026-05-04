@@ -588,6 +588,12 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
         alignment: Alignment.center,
         children: [
           Divider(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, thickness: 1, height: 0),
+          if (isDone && rScore == wScore)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              child: Text('✕', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400)),
+            ),
           Column(
             children: [
               Expanded(child: _buildPointBox(redPts, isDone && rScore > wScore, true, isDark)),

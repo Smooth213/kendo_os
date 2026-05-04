@@ -117,13 +117,28 @@ class RebuildMatchFromEventsUseCase {
     final analysis = _engine.analyzeHistory(baseMatch.events, baseMatch, rule);
     final result = _engine.decideResult(analysis.context);
 
+    String newStatus = baseMatch.status;
+    
+    // ★ 修正: 最新のイベントがキャンセル(Undo)されている場合、強制的に進行中に戻す（CRDTでの状態固定を防ぐ）
+    bool isJustUndone = false;
+    if (baseMatch.events.isNotEmpty) {
+      final latestEvent = baseMatch.events.reduce((a, b) => a.timestamp.isAfter(b.timestamp) ? a : b);
+      if (latestEvent.isCanceled || latestEvent.isUndo || latestEvent.type == PointType.undo) {
+        isJustUndone = true;
+      }
+    }
+
+    if (isJustUndone && baseMatch.status != 'approved') {
+      newStatus = 'in_progress';
+    } else if (result != MatchResultStatus.inProgress && baseMatch.status != 'approved') {
+      newStatus = 'finished';
+    }
+
     // 歴史から再構築したデータも、最新のローカルデータとしてマーク
     return baseMatch.copyWith(
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
-      status: (result != MatchResultStatus.inProgress && baseMatch.status != 'approved')
-          ? 'finished'
-          : (baseMatch.status == 'finished' ? 'in_progress' : baseMatch.status), // ★ 進行中ならfinishedから降格
+      status: newStatus,
       isDirty: true,
       lastUpdatedAt: DateTime.now(),
     );

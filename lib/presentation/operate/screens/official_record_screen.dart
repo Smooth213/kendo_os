@@ -442,6 +442,10 @@ class OfficialRecordScreen extends ConsumerWidget {
     MatchModel? daihyoMatch;
 
     for (var m in matches) {
+      if (m.matchType == '代表戦') {
+        daihyoMatch = m;
+        continue; // ★ 代表戦のスコアは本戦の計算から除外する
+      }
       final rs = (m.redScore as num).toInt();
       final ws = (m.whiteScore as num).toInt();
       rPts += rs; wPts += ws;
@@ -449,9 +453,6 @@ class OfficialRecordScreen extends ConsumerWidget {
         rWins++;
       } else if (ws > rs) {
         wWins++;
-      }
-      if (m.matchType == '代表戦') {
-        daihyoMatch = m;
       }
     }
 
@@ -583,7 +584,7 @@ class OfficialRecordScreen extends ConsumerWidget {
               Column(
                 children: [
                   Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? Colors.red.shade600 : textColor)))),
-                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? Colors.red.shade600 : textColor)))),
+                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? Colors.blue.shade600 : textColor)))),
                 ],
               ),
           ]
@@ -651,27 +652,15 @@ class OfficialRecordScreen extends ConsumerWidget {
     final rScore = (m.redScore as num).toInt();
     final wScore = (m.whiteScore as num).toInt();
 
-    List<OfficialPointDisplay> redPts = [];
-    List<OfficialPointDisplay> whitePts = [];
-    int redHansoku = 0;
-    int whiteHansoku = 0;
-    bool isMatchFirstPoint = true;
-
-    for (var e in m.events) {
-      if (e.type == PointType.undo || e.isCanceled) continue;
-      if (e.type == PointType.hansoku) {
-        if (e.side == Side.red) {
-          redHansoku++;
-          if (redHansoku == 2 || redHansoku == 4) { whitePts.add(OfficialPointDisplay('反', false)); isMatchFirstPoint = false; }
-        } else {
-          whiteHansoku++;
-          if (whiteHansoku == 2 || whiteHansoku == 4) { redPts.add(OfficialPointDisplay('反', false)); isMatchFirstPoint = false; }
-        }
-      } else {
-        if (e.side == Side.red) { redPts.add(OfficialPointDisplay(_toMark(e.type), isMatchFirstPoint)); isMatchFirstPoint = false; }
-        else { whitePts.add(OfficialPointDisplay(_toMark(e.type), isMatchFirstPoint)); isMatchFirstPoint = false; }
-      }
-    }
+    final engine = KendoRuleEngine();
+    final analysis = engine.analyzeHistory(m.events, m, m.rule);
+    
+    final redPts = (analysis.displays[Side.red] ?? [])
+        .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
+        .toList();
+    final whitePts = (analysis.displays[Side.white] ?? [])
+        .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
+        .toList();
 
     return Container(
       height: 70, alignment: Alignment.center,
@@ -679,6 +668,12 @@ class OfficialRecordScreen extends ConsumerWidget {
         alignment: Alignment.center,
         children: [
           Divider(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, thickness: 1, height: 0),
+          if (isDone && rScore == wScore)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              child: Text('✕', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400)),
+            ),
           Column(
             children: [
               Expanded(child: _buildPointBox(redPts, isDone && rScore > wScore, true, isDark)),
@@ -706,31 +701,21 @@ class OfficialRecordScreen extends ConsumerWidget {
   }
 
   Widget _buildSingleMark(OfficialPointDisplay p, Color color) {
-    if (p.isFirstMatchPoint && p.mark != '反') {
+    String displayMark = p.mark == '判定' ? '判' : p.mark;
+    if (p.isFirstMatchPoint && displayMark != '反') {
       return Container(
         width: 14, height: 14, alignment: Alignment.center,
         decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
-        child: Text(p.mark, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
+        child: Text(displayMark, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
       );
     }
-    return Text(p.mark, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
-  }
-
-  String _toMark(PointType type) {
-    switch (type) {
-      case PointType.men: return 'メ';
-      case PointType.kote: return 'コ';
-      case PointType.doIdo: return 'ド';
-      case PointType.tsuki: return 'ツ';
-      case PointType.hansoku: return '反';
-      case PointType.fusen: return '◯';
-      default: return '';
-    }
+    return Text(displayMark, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
   }
 
   Widget _summaryCell(List<MatchModel> ms, bool isRed, bool isDark) {
     int wins = 0; int pts = 0;
     for (var m in ms) {
+      if (m.matchType == '代表戦') continue; // ★ 代表戦のスコアはチームの本数・勝数に含めない
       final r = (m.redScore as num).toInt(); final w = (m.whiteScore as num).toInt();
       pts += isRed ? r : w;
       if (isRed && r > w) {
@@ -825,7 +810,10 @@ class OfficialRecordScreen extends ConsumerWidget {
                       else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }
                       isRowRed ? rPoints += rs : cPoints += rs; isRowRed ? cPoints += ws : rPoints += ws;
                       if (isIndiv) {
-                        final extracted = BunaiksenHelper.extractTechs(m.events, isRowRed, isRowRed ? rs : ws);
+                        final engine = KendoRuleEngine();
+                        final analysis = engine.analyzeHistory(m.events, m, m.rule);
+                        final displays = isRowRed ? analysis.displays[Side.red] : analysis.displays[Side.white];
+                        List<String> extracted = displays?.map((d) => d.mark).toList() ?? [];
                         
                         // 🌟 修正：既存の extracted があっても、SUMMARYタグがあれば記号を「◯」に統一する
                         final bool isSummary = m.note.contains('[SUMMARY]');
@@ -1059,24 +1047,15 @@ class OfficialRecordScreen extends ConsumerWidget {
               final rWin = isDone && rScore > wScore;
               final wWin = isDone && wScore > rScore;
 
-              List<OfficialPointDisplay> redPts = [];
-              List<OfficialPointDisplay> whitePts = [];
-              int redHansoku = 0; int whiteHansoku = 0; bool isMatchFirstPoint = true;
-              for (var e in m.events) {
-                if (e.type == PointType.undo || e.isCanceled) continue;
-                if (e.type == PointType.hansoku) {
-                  if (e.side == Side.red) {
-                    redHansoku++;
-                    if (redHansoku == 2 || redHansoku == 4) { whitePts.add(OfficialPointDisplay('反', false)); isMatchFirstPoint = false; }
-                  } else {
-                    whiteHansoku++;
-                    if (whiteHansoku == 2 || whiteHansoku == 4) { redPts.add(OfficialPointDisplay('反', false)); isMatchFirstPoint = false; }
-                  }
-                } else {
-                  if (e.side == Side.red) { redPts.add(OfficialPointDisplay(_toMark(e.type), isMatchFirstPoint)); isMatchFirstPoint = false; }
-                  else { whitePts.add(OfficialPointDisplay(_toMark(e.type), isMatchFirstPoint)); isMatchFirstPoint = false; }
-                }
-              }
+              final engine = KendoRuleEngine();
+              final analysis = engine.analyzeHistory(m.events, m, m.rule);
+              
+              final redPts = (analysis.displays[Side.red] ?? [])
+                  .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
+                  .toList();
+              final whitePts = (analysis.displays[Side.white] ?? [])
+                  .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
+                  .toList();
 
               // 自チーム判定
               final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
@@ -1212,12 +1191,13 @@ class ResultShapePainter extends CustomPainter {
 
 // リーグ戦・個人戦表示用ヘルパー
 Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
-  if (isFirst && tech != '◯' && tech != '反') {
+  String displayTech = tech == '判定' ? '判' : tech;
+  if (isFirst && displayTech != '◯' && displayTech != '反') {
     return Container(
       width: 14, height: 14, alignment: Alignment.center,
       decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
-      child: Text(tech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
+      child: Text(displayTech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
     );
   }
-  return Text(tech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
+  return Text(displayTech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
 }

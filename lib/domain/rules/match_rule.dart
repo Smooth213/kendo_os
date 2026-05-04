@@ -22,6 +22,7 @@ abstract class MatchRule with _$MatchRule {
     @Default('一試合制') String renseikaiType,
     @Default(30) int overallTimeMinutes,
     @Default(true) bool isDaihyoIpponShobu,
+    @Default(false) bool isIpponShobu,
     @Default(true) bool hasRepresentativeMatch,
     @Default(false) bool isEnchoUnlimited, // ★ 修正：デフォルトを「無制限ではない（回数指定）」に変更
     @Default(3.0) double enchoTimeMinutes, // ★ 修正：小数を許容する

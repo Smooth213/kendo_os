@@ -4,7 +4,6 @@ import 'package:uuid/uuid.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'match_list_provider.dart';
-import 'match_provider.dart'; // ★ MatchActionProviderを参照するために必要
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; // ★ DomainExceptionを参照するために必要
 import 'match_rule_provider.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart'; // ★ Firestore版からIsar版に差し替え
@@ -225,68 +224,37 @@ class MatchCommandService {
     _lastScoreTime = now;
     _lastScoreKey = currentKey;
 
-    final match = _getMatch(matchId);
-    if (match == null) return;
-    
-    // ★ 修正: バトンタッチ。スナップショットが追加された「最新の状態」を受け取る
-    final typeLabel = {
-      PointType.men: 'メン',
-      PointType.kote: 'コテ',
-      PointType.doIdo: 'ドウ',
-      PointType.tsuki: 'ツキ',
-      PointType.hansoku: '反則',
-      PointType.fusen: '不戦勝',
-      PointType.hantei: '判定',
-    }[type] ?? type.name;
+    if (ref.read(isMatchCommandProcessingProvider)) return;
+    ref.read(isMatchCommandProcessingProvider.notifier).state = true;
 
-    final updatedMatch = await takeSnapshot(matchId, '【${side == Side.red ? "赤" : "白"}】$typeLabel 入力前');
-    if (updatedMatch == null) return;
-
-    final event = ScoreEventLegacyAdapter.fromLegacy(
-      id: const Uuid().v4(),
-      side: side,
-      type: type,
-      timestamp: now,
-      userId: updatedMatch.scorerId,
-      sequence: updatedMatch.events.isEmpty ? 1 : updatedMatch.events.last.sequence + 1,
-    );
-
-    // 古い match ではなく、updatedMatch を渡すことで上書き消滅を防ぐ
-    await ref.read(matchActionProvider).processScoreEvent(updatedMatch, event);
+    try {
+      if (type == PointType.undo) {
+        await ref.read(matchApplicationServiceProvider).undo(matchId);
+      } else {
+        await ref.read(matchApplicationServiceProvider).addIppon(matchId, side, type);
+      }
+    } catch (e) {
+      debugPrint('🔥 [Command Error] addScoreEvent: $e');
+    } finally {
+      ref.read(isMatchCommandProcessingProvider.notifier).state = false;
+    }
   }
 
   Future<void> undoLastEvent(String matchId) async {
     debugPrint('🔙 [Undo Start] matchId=$matchId');
     if (_isUndoing) return;
+    if (ref.read(isMatchCommandProcessingProvider)) return;
+
     _isUndoing = true;
+    ref.read(isMatchCommandProcessingProvider.notifier).state = true;
     
     try {
-      final match = await ref.read(localMatchRepositoryProvider).getMatch(matchId) ?? _getMatch(matchId);
-      if (match == null || match.events.isEmpty) return;
-
-      final updatedMatch = await takeSnapshot(matchId, '取り消し 実行前');
-      if (updatedMatch == null) return;
-
-      // 古い actionProvider ではなく、UseCase を用いて履歴から直近のイベントを消去
-      final rule = ref.read(matchRuleProvider);
-      MatchModel undoneMatch = ref.read(undoScoreUseCaseProvider).execute(updatedMatch, rule);
-
-      // ★【CQRS化】ドメイン層（KendoRuleEngine）にスコアの完全再計算を委譲
-      final engine = KendoRuleEngine();
-      final analysis = engine.analyzeHistory(undoneMatch.events, undoneMatch, rule);
-
-      // ★ ステータスの強制降格と、エンジンが算出した正確なスコアの上書き
-      undoneMatch = undoneMatch.copyWith(
-        status: 'in_progress',
-        redScore: analysis.context.redIppon,
-        whiteScore: analysis.context.whiteIppon,
-      );
-
-      await saveMatch(undoneMatch);
-      debugPrint('🔙 [Undo Success] Re-calculated score: Red ${undoneMatch.redScore} - White ${undoneMatch.whiteScore}');
-      
+      await ref.read(matchApplicationServiceProvider).undo(matchId);
+    } catch (e) {
+      debugPrint('🔥 [Command Error] undoLastEvent: $e');
     } finally {
       _isUndoing = false;
+      ref.read(isMatchCommandProcessingProvider.notifier).state = false;
     }
   }
 

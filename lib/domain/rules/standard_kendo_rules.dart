@@ -13,7 +13,8 @@ class StandardScoringRule implements ScoringRule {
     int white = 0;
     for (var e in events) {
       if (e.isCanceled) continue;
-      if (e.type != PointType.hansoku && e.type != PointType.hantei && e.type != PointType.fusen) {
+      // ★ 修正: hantei を除外せず、得点としてカウントさせる
+      if (e.type != PointType.hansoku && e.type != PointType.fusen) {
         if (e.side == Side.red) red++;
         if (e.side == Side.white) white++;
       }
@@ -96,9 +97,7 @@ class StandardVictoryRule implements VictoryRule {
       
       // 3. 判定(Hantei)による決着
       if (context.hasHantei) {
-        if (redHantei > whiteHantei) return MatchResultStatus.redWin;
-        if (whiteHantei > redHantei) return MatchResultStatus.whiteWin;
-        // ★ 修正: 判定ありで同点（旗がまだ入力されていない等）の場合は「判定入力待ち（進行中）」とする
+        // Hanteiはスコアとして入るようになったため、ここに到達するのは判定入力待ちの同点状態のみ。
         return MatchResultStatus.inProgress;
       }
       return MatchResultStatus.draw;

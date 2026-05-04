@@ -10,6 +10,13 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import '../providers/match_rule_provider.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
+import 'package:kendo_os/domain/entities/score_event.dart'; // Sideなどを利用
+
+class OfficialPointDisplay {
+  final String mark;
+  final bool isFirstMatchPoint;
+  OfficialPointDisplay(this.mark, this.isFirstMatchPoint);
+}
 
 class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   const BunaiksenOfficialRecordScreen({super.key});
@@ -32,14 +39,15 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     ));
 
     // カテゴリ（種目）ごとにグループ化（未設定なら「部内戦」）
+    // ★ 修正：groupName が null または空でも処理を継続（デフォルトグループで統合）
     final categoryGroups = <String, Map<String, List<MatchModel>>>{};
     for (var m in matches) {
-      if (m.groupName == null || m.groupName!.isEmpty) {
-        continue;
-      }
       final cat = (m.category != null && m.category!.isNotEmpty) ? m.category! : '部内戦';
       categoryGroups.putIfAbsent(cat, () => {});
-      categoryGroups[cat]!.putIfAbsent(m.groupName!, () => []).add(m);
+      
+      // groupName が null または空の場合は '__default__' で統合
+      final groupKey = (m.groupName != null && m.groupName!.isNotEmpty) ? m.groupName! : '__default__';
+      categoryGroups[cat]!.putIfAbsent(groupKey, () => []).add(m);
     }
 
     if (categoryGroups.isEmpty) {
@@ -260,6 +268,54 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     String sideLabelWhite = '白';
 
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+    final headerTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
+    final daihyoBgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50;
+
+    // ★ 修正：スコアが入力されている試合は、ステータスに関わらず「完了」として扱う
+    bool allFinished = matches.every((m) {
+      final hasScore = (m.redScore as num).toInt() > 0 || (m.whiteScore as num).toInt() > 0;
+      final isOfficial = m.status == 'approved' || m.status == 'finished';
+      return isOfficial || hasScore;
+    });
+
+    String teamWinner = 'draw';
+    int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
+    MatchModel? daihyoMatch;
+
+    for (var m in matches) {
+      if (m.matchType == '代表戦') {
+        daihyoMatch = m;
+        continue; 
+      }
+      final rs = (m.redScore as num).toInt();
+      final ws = (m.whiteScore as num).toInt();
+      rPts += rs; wPts += ws;
+      if (rs > ws) {
+        rWins++;
+      } else if (ws > rs) {
+        wWins++;
+      }
+    }
+
+    if (rWins > wWins) {
+      teamWinner = 'red';
+    } else if (wWins > rWins) {
+      teamWinner = 'white';
+    } else if (rPts > wPts) {
+      teamWinner = 'red';
+    } else if (wPts > rPts) {
+      teamWinner = 'white';
+    } else if (daihyoMatch != null) {
+      final rs = (daihyoMatch.redScore as num).toInt();
+      final ws = (daihyoMatch.whiteScore as num).toInt();
+      if (rs > ws) {
+        teamWinner = 'red';
+      } else if (ws > rs) {
+        teamWinner = 'white';
+      }
+    }
+    
+    final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -267,49 +323,106 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
       clipBehavior: Clip.antiAlias,
-      child: Column(
+      child: Stack(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-            width: double.infinity,
-            child: Text(
-              cleanNote.isNotEmpty ? '【$cleanNote】 $headerRed vs $headerWhite' : '$headerRed vs $headerWhite',
-              style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800),
-            ),
-          ),
-          Table(
-            border: TableBorder.all(color: borderColor, width: 1),
-            columnWidths: {
-              0: const FlexColumnWidth(1.2),
-              for (int i = 1; i <= matches.length; i++) i: const FlexColumnWidth(1.0),
-              matches.length + 1: const FlexColumnWidth(0.8),
-            },
+          Column(
             children: [
-              TableRow(
-                decoration: BoxDecoration(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50),
+              Container(
+                padding: const EdgeInsets.all(12),
+                color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+                width: double.infinity,
+                child: Text(
+                  cleanNote.isNotEmpty ? '【$cleanNote】 $headerRed vs $headerWhite' : '$headerRed vs $headerWhite',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800),
+                ),
+              ),
+              Table(
+                border: TableBorder.all(color: borderColor, width: 1),
+                columnWidths: {
+                  0: const FlexColumnWidth(1.2),
+                  for (int i = 1; i <= matches.length; i++) i: const FlexColumnWidth(1.0),
+                  matches.length + 1: const FlexColumnWidth(0.8),
+                },
                 children: [
-                  const SizedBox.shrink(),
-                  ...matches.map((m) => Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Text(m.matchType, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold))
-                    )
-                  )),
-                  const Center(child: Padding(padding: EdgeInsets.all(8), child: Text('勝/本', style: TextStyle(fontSize: 10)))),
+                  TableRow(
+                    decoration: BoxDecoration(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50),
+                    children: [
+                      const SizedBox.shrink(),
+                      ...matches.map((m) => Container(
+                        color: m.matchType == '代表戦' ? daihyoBgColor : Colors.transparent,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Text(m.matchType, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: m.matchType == '代表戦' ? (isDark ? Colors.red.shade400 : Colors.red.shade900) : (isDark ? Colors.grey.shade300 : Colors.grey.shade800)))
+                          )
+                        )
+                      )),
+                      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text('勝/本', style: TextStyle(fontSize: 10, color: headerTextColor)))),
+                    ],
+                  ),
+                  // ★ sideLabelRed ("赤") を使用
+                  _buildTeamRow(matches, true, sideLabelRed, isDark),
+                  TableRow(children: [
+                    const SizedBox.shrink(),
+                    ...matches.map((m) => _scoreCell(m, isDark, isSummary)),
+                    _teamResultCell(teamWinner, isDark, allFinished),
+                  ]),
+                  // ★ sideLabelWhite ("白") を使用
+                  _buildTeamRow(matches, false, sideLabelWhite, isDark),
                 ],
               ),
-              // ★ sideLabelRed ("赤") を使用
-              _buildTeamRow(matches, true, sideLabelRed, isDark),
-              TableRow(children: [
-                const SizedBox.shrink(),
-                ...matches.map((m) => _scoreCell(m, isDark, false)),
-                _summaryCell(matches, true, isDark),
-              ]),
-              // ★ sideLabelWhite ("白") を使用
-              _buildTeamRow(matches, false, sideLabelWhite, isDark),
             ],
           ),
+          if (isSummary)
+            Positioned.fill(
+              top: 40,
+              child: Container(
+                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.6),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.black87 : Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
+                    ),
+                    child: Text('※簡易入力された結果です\n（詳細スコアはありません）', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _teamResultCell(String winner, bool isDark, bool allFinished) {
+    final textColor = isDark ? Colors.white : Colors.black;
+    final dividerColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+
+    return Container(
+      height: 70, 
+      alignment: Alignment.center,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // 勝負がついていても、試合途中なら境界線（Divider）だけは表示してレイアウトを保つ
+          if (winner != 'draw' || !allFinished)
+            Divider(color: dividerColor, thickness: 1, height: 0),
+          
+          // ★ すべての試合が終わっている場合のみテキストを表示
+          if (allFinished) ...[
+            if (winner == 'draw')
+              Center(child: _buildVerticalName('引き分け', '', isDark))
+            else
+              Column(
+                children: [
+                  Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? Colors.red.shade600 : textColor)))),
+                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? Colors.blue.shade600 : textColor)))),
+                ],
+              ),
+          ]
         ],
       ),
     );
@@ -321,7 +434,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       ...matches.map((m) {
         final name = isRed ? m.redName : m.whiteName;
         final cleanName = name.contains(':') ? name.split(':').last.trim() : name;
-        return Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: _buildVerticalName(cleanName, '', isDark)));
+        final isDaihyo = m.matchType == '代表戦';
+        return Container(
+          color: isDaihyo ? (isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50) : Colors.transparent,
+          child: Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: _buildVerticalName(cleanName, '', isDark)))
+        );
       }),
       _summaryCell(matches, isRed, isDark),
     ]);
@@ -336,9 +453,16 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     final wScore = (m.whiteScore as num).toInt();
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white; 
     
-    // 分離したヘルパーから技を抽出
-    List<String> redPts = BunaiksenHelper.extractMarks(m.events, true);
-    List<String> whitePts = BunaiksenHelper.extractMarks(m.events, false);
+    // KendoRuleEngineによる解析を使用
+    final engine = KendoRuleEngine();
+    final analysis = engine.analyzeHistory(m.events, m, m.rule);
+    
+    final redPts = (analysis.displays[Side.red] ?? [])
+        .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
+        .toList();
+    final whitePts = (analysis.displays[Side.white] ?? [])
+        .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
+        .toList();
 
     return Container(
       height: 70, alignment: Alignment.center,
@@ -364,7 +488,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   }
 
   // 公式記録風の技マークボックス（丸囲み等）
-  Widget _buildPointBox(List<String> pts, bool isWinner, bool isRed, bool isDark) {
+  Widget _buildPointBox(List<OfficialPointDisplay> pts, bool isWinner, bool isRed, bool isDark) {
     final color = isRed ? Colors.red.shade700 : Colors.blue.shade700;
     return SizedBox(
       width: 36, height: 36,
@@ -372,31 +496,58 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         alignment: Alignment.center,
         children: [
           if (isWinner) Container(width: 32, height: 32, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5))),
-          if (pts.isNotEmpty) Positioned(top: 4, left: 6, child: _renderMark(pts[0], color, true)),
-          if (pts.length > 1) Positioned(bottom: 4, right: 6, child: _renderMark(pts[1], color, false)),
+          if (pts.isNotEmpty) Positioned(top: 4, left: 6, child: _renderMark(pts[0], color)),
+          if (pts.length > 1) Positioned(bottom: 4, right: 6, child: _renderMark(pts[1], color)),
         ],
       ),
     );
   }
 
-  Widget _renderMark(String mark, Color color, bool isFirst) {
-    // ★ 修正：コンテナでの枠線描画を廃止し、丸文字化されたテキストだけを美しく表示する
-    return Text(mark, style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.bold, height: 1.1));
+  Widget _renderMark(OfficialPointDisplay p, Color color) {
+    String displayMark = p.mark == '判定' ? '判' : p.mark;
+    if (p.isFirstMatchPoint && displayMark != '反') {
+      return Container(
+        width: 14, height: 14, alignment: Alignment.center,
+        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
+        child: Text(displayMark, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
+      );
+    }
+    return Text(displayMark, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
   }
 
   // --- 共通ロジック & ヘルパー ---
 
   Widget _buildVerticalName(String text, String initial, bool isDark) {
     final style = TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800);
-    return Column(
+    
+    Widget nameCol = Column(
       mainAxisSize: MainAxisSize.min,
-      children: text.split('').map((char) => Text(char, style: style.copyWith(height: 1.1))).toList(),
+      children: text.split('').map((char) {
+        if (char == 'ー' || char == '-') return RotatedBox(quarterTurns: 1, child: Text(char, style: style));
+        if (char == '(' || char == ')' || char == '（' || char == '）') return RotatedBox(quarterTurns: 1, child: Text(char, style: style));
+        return Text(char, style: style.copyWith(height: 1.1));
+      }).toList(),
+    );
+
+    if (initial.isEmpty) return nameCol;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        nameCol,
+        Padding(
+          padding: const EdgeInsets.only(left: 1, bottom: 0),
+          child: Text(initial, style: style.copyWith(fontSize: 8, color: isDark ? Colors.grey.shade600 : Colors.grey.shade500)),
+        )
+      ],
     );
   }
 
   Widget _summaryCell(List<MatchModel> ms, bool isRed, bool isDark) {
     int wins = 0, pts = 0;
     for (var m in ms) {
+      if (m.matchType == '代表戦') continue; // ★ 代表戦のスコアはチームの本数・勝数に含めない
       final r = (m.redScore as num).toInt(); final w = (m.whiteScore as num).toInt();
       pts += isRed ? r : w;
       if (isRed && r > w) {
@@ -405,7 +556,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         wins++;
       }
     }
-    return Center(child: Text('$wins\n$pts', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center));
+    return Center(child: Text('$wins\n--\n$pts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
   }
 
   Map<String, List<MatchModel>> _groupMatchesByMatchup(List<MatchModel> matches) {
@@ -500,7 +651,9 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       return (r == rowTeam && w == colTeam) || (r == colTeam && w == rowTeam);
                     }).toList();
                     
-                    if (bouts.isEmpty) return const SizedBox(height: 65);
+                    if (bouts.isEmpty) {
+                      return const SizedBox(height: 65);
+                    }
                     
                     int rWins = 0, cWins = 0, rPoints = 0, cPoints = 0, rWinners = 0, cWinners = 0;
                     List<String> techs = [];
@@ -511,9 +664,13 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }
                       isRowRed ? rPoints += rs : cPoints += rs; isRowRed ? cPoints += ws : rPoints += ws;
                       if (isIndiv) {
-                        final extracted = BunaiksenHelper.extractTechs(m.events, isRowRed, isRowRed ? rs : ws);
-                        if (extracted.isEmpty && (isRowRed ? rs : ws) > 0) {
-                          // 🌟 修正：簡易入力時は「反」ではなく「◯」を補填
+                        final engine = KendoRuleEngine();
+                        final analysis = engine.analyzeHistory(m.events, m, m.rule);
+                        final displays = isRowRed ? analysis.displays[Side.red] : analysis.displays[Side.white];
+                        List<String> extracted = displays?.map((d) => d.mark).toList() ?? [];
+                        
+                        final bool isSummary = m.note.contains('[SUMMARY]');
+                        if (isSummary || extracted.isEmpty) {
                           for(int k=0; k<(isRowRed ? rs : ws); k++) {
                             extracted.add('◯');
                           }
@@ -527,7 +684,13 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                     if (rWins > cWins) { result = 'win'; symbolColor = isDark ? Colors.red.shade300 : Colors.red.shade700; }
                     else if (cWins > rWins) { result = 'loss'; symbolColor = isDark ? Colors.blue.shade300 : Colors.indigo.shade700; }
                     
-                    if (!bouts.every((m) => m.status == 'approved' || m.status == 'finished')) return const SizedBox(height: 65);
+                    if (!bouts.every((m) {
+                      final hasScore = (m.redScore as num).toInt() > 0 || (m.whiteScore as num).toInt() > 0;
+                      final isOfficial = m.status == 'approved' || m.status == 'finished';
+                      return isOfficial || hasScore;
+                    })) {
+                      return const SizedBox(height: 65);
+                    }
                     
                     final textColor = isDark ? Colors.white : Colors.black87;
 
@@ -658,7 +821,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     // ヘッダー名からシステムID（英数字とハイフンの羅列）を隠す処理
     final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
     String displayGroupName = groupName;
-    if (uuidRegex.hasMatch(groupName) || groupName.length > 20) {
+    // ★ 修正：__default__ グループと UUID、長い名前は表示しない
+    if (uuidRegex.hasMatch(groupName) || groupName.length > 20 || groupName == '__default__') {
       displayGroupName = '';
     }
 
@@ -692,16 +856,22 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
               final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
 
-              final isDone = m.status == 'finished' || m.status == 'approved';
+              final isDone = m.status == 'finished' || m.status == 'approved' || (m.redScore as num).toInt() > 0 || (m.whiteScore as num).toInt() > 0;
               final rScore = (m.redScore as num).toInt();
               final wScore = (m.whiteScore as num).toInt();
               final isDraw = isDone && rScore == wScore;
               final rWin = isDone && rScore > wScore;
               final wWin = isDone && wScore > rScore;
 
-              // 分離したヘルパーから技を抽出（部内戦用）
-              List<String> redPts = BunaiksenHelper.extractMarks(m.events, true);
-              List<String> whitePts = BunaiksenHelper.extractMarks(m.events, false);
+              final engine = KendoRuleEngine();
+              final analysis = engine.analyzeHistory(m.events, m, m.rule);
+              
+              final redPts = (analysis.displays[Side.red] ?? [])
+                  .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
+                  .toList();
+              final whitePts = (analysis.displays[Side.white] ?? [])
+                  .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
+                  .toList();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -820,6 +990,13 @@ class ResultShapePainter extends CustomPainter {
 
 // 1本目だけ丸囲みする個人戦用ヘルパー
 Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
-  // ★ 修正：コンテナを使わず文字だけで表示
-  return Text(tech, style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.bold, height: 1.1));
+  String displayTech = tech == '判定' ? '判' : tech;
+  if (isFirst && displayTech != '◯' && displayTech != '反') {
+    return Container(
+      width: 14, height: 14, alignment: Alignment.center,
+      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
+      child: Text(displayTech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
+    );
+  }
+  return Text(displayTech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
 }

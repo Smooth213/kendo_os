@@ -53,7 +53,17 @@ class KendoRuleEngine {
     final activeEvents = _filterActiveEvents(allEvents);
 
     final strategy = MatchStrategyFactory.getStrategy(match);
-    final target = strategy.getTargetIppon(match, rule);
+    int target = strategy.getTargetIppon(match, rule);
+
+    // ★ 修正: ルール側で明示的に「1本勝負」や「勝敗ライン(ipponLimit)」が設定されている場合はそちらを優先する
+    if (rule != null) {
+      if (rule.isIpponShobu) {
+        target = 1;
+      } else if (rule.ipponLimit != 2 && rule.ipponLimit > 0) {
+        target = rule.ipponLimit;
+      }
+    }
+
     final hasHantei = rule?.hasHantei ?? false;
     
     MatchContext currentContext = MatchContext(
@@ -84,7 +94,7 @@ class KendoRuleEngine {
       );
     }
 
-    currentContext = ruleSet.time.apply(currentContext, 1.0);
+    currentContext = ruleSet.time.apply(currentContext, match.remainingSeconds.toDouble());
 
     final displays = _buildDisplays(activeEvents, currentContext);
 
@@ -115,10 +125,16 @@ class KendoRuleEngine {
     if (match.events.any((e) => e.id == event.id)) {
       return ValidationResult(false, '重複入力です。');
     }
+    
+    final bool isHanteiEvent = event.isHantei || event.type == PointType.hantei;
+    
     if (match.status == 'finished' || match.status == 'approved') {
-      return ValidationResult(false, '試合は既に終了しています。');
+      // ★ 修正: 判定(Hantei)やUndoは、試合終了ステータスからでも入力可能にする
+      if (!event.isUndo && !isHanteiEvent) {
+        return ValidationResult(false, '試合は既に終了しています。');
+      }
     }
-    if (!event.isUndo && !event.isHansoku) {
+    if (!event.isUndo && !event.isHansoku && !isHanteiEvent) {
       if (ctx.redIppon >= ctx.targetIppon || ctx.whiteIppon >= ctx.targetIppon) {
         return ValidationResult(false, '既に規定本数に達しています。');
       }

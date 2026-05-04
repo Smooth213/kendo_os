@@ -15,6 +15,7 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import '../../helpers/test_match_factory.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/application/usecases/match_application_service.dart';
 
 /// 依存サービスの Mock 作成
 class MockMatchRepository extends Mock implements MatchRepository {}
@@ -220,6 +221,37 @@ void main() {
         action: any(named: 'action'),
         details: any(named: 'details'),
       ));
+    });
+  });
+
+  group('MatchApplicationService - 修正事項の回帰テスト', () {
+    test('finishMatch を呼び出した際、残り時間が0秒にリセットされないこと', () async {
+      final match = TestMatchFactory.createIndividualMatch(id: 'match-time-test').copyWith(remainingSeconds: 45);
+      container.read(mockMatchListProvider.notifier).state = [match];
+      when(() => mockLocalRepo.getMatch(any())).thenAnswer((_) async => match);
+      when(() => mockCommand.saveMatch(any())).thenAnswer((_) async => {});
+
+      final appService = container.read(matchApplicationServiceProvider);
+      await appService.finishMatch(match.id);
+
+      verify(() => mockCommand.saveMatch(any(that: isA<MatchModel>().having((m) => m.remainingSeconds, 'remainingSeconds', 45).having((m) => m.status, 'status', 'finished')))).called(1);
+    });
+
+    test('addIppon を呼び出した際、DB保存(saveMatch)が1回しか呼ばれないこと（二重保存の防止）', () async {
+      final match = TestMatchFactory.createIndividualMatch(id: 'match-add-ippon');
+      container.read(mockMatchListProvider.notifier).state = [match];
+      when(() => mockLocalRepo.getMatch(any())).thenAnswer((_) async => match);
+      when(() => mockCommand.saveMatch(any())).thenAnswer((_) async => {});
+      when(() => mockAudit.logAction(
+            matchId: any(named: 'matchId'),
+            action: any(named: 'action'),
+            details: any(named: 'details'),
+          )).thenAnswer((_) async => {});
+
+      final appService = container.read(matchApplicationServiceProvider);
+      await appService.addIppon(match.id, Side.red, PointType.men);
+
+      verify(() => mockCommand.saveMatch(any())).called(1);
     });
   });
 }

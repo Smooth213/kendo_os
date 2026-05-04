@@ -9,8 +9,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/rules/match_rule.dart';
 import '../providers/match_list_provider.dart';
-import '../providers/match_provider.dart';
 import '../providers/match_rule_provider.dart'; 
 import '../providers/match_command_provider.dart'; // ★ 追加: 書き込み専門家
 import '../providers/match_timer_provider.dart';   // ★ 追加: 時計専門家
@@ -88,8 +88,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     _ticker?.cancel(); 
     if (widget.matchId.isNotEmpty) {
       try {
-        // ★ 修正: matchCommandProvider を使用
-        ref.read(matchCommandProvider).releaseScorer(widget.matchId, _myUserId!);
+        // ★ 修正: 既に終了・確定済みの場合は、古い状態での上書き（releaseScorer）を防止する
+        final match = ref.read(matchListProvider).where((m) => m.id == widget.matchId).firstOrNull;
+        if (match != null && match.status != 'finished' && match.status != 'approved') {
+          ref.read(matchCommandProvider).releaseScorer(widget.matchId, _myUserId!);
+        }
       } catch (_) {}
     }
     super.dispose();
@@ -182,8 +185,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final rule = ref.watch(matchRuleProvider);
-
     // ★ 修正: 消してしまった match 本体と teamMatches を復旧
     // （タイマー秒数の更新は分離されているため、これを監視しても毎秒リビルドはされません）
     final match = ref.watch(matchListProvider.select((list) => 
@@ -193,6 +194,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     if (match == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
+    // ★ 修正: 試合に紐づいた専用ルールがあればそれをUIの表示制御に使う
+    final MatchRule rule = match.rule ?? ref.watch(matchRuleProvider);
 
     final teamMatches = ref.watch(matchListProvider.select((list) => 
       match.groupName != null ? list.where((m) => m.groupName == match.groupName).toList() : <MatchModel>[]
@@ -254,6 +258,18 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           ],
         ),
         actions: [
+          // ★ 追加: 大会ホーム（試合一覧）に一気に戻るボタン
+          IconButton(
+            icon: const Icon(Icons.view_list_rounded, color: Colors.white),
+            tooltip: '大会ホーム（試合一覧）へ戻る',
+            onPressed: () {
+              if (match.tournamentId != null && match.tournamentId!.startsWith('bunaiksen_')) {
+                context.go('/bunaiksen-home');
+              } else {
+                context.go('/home/${match.tournamentId}');
+              }
+            },
+          ),
           // 👇 ここから追加：一時的なViewer確認用ボタン
           IconButton(
             icon: const Icon(Icons.remove_red_eye, color: Colors.amber),
@@ -280,14 +296,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 // ★ 修正: キャンセル済みのイベントを除外して判定
                 if (match.events.any((e) => !e.isCanceled && e.type != PointType.undo)) {
                   HapticFeedback.mediumImpact();
-                  ref.read(matchCommandQueueProvider).enqueue(
-                    MatchCommandModel(
-                      id: const Uuid().v4(),
-                      type: CommandType.undoLastEvent,
-                      payload: {'matchId': match.id},
-                      createdAt: DateTime.now(),
-                    ),
-                  );
+                  ref.read(matchCommandProvider).undoLastEvent(match.id);
                 }
               }
             },
@@ -347,14 +356,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     ? GestureDetector(
                         onTap: () {
                           HapticFeedback.mediumImpact();
-                          ref.read(matchCommandQueueProvider).enqueue(
-                            MatchCommandModel(
-                              id: const Uuid().v4(),
-                              type: CommandType.undoLastEvent,
-                              payload: {'matchId': match.id},
-                              createdAt: DateTime.now(),
-                            ),
-                          );
+                          ref.read(matchCommandProvider).undoLastEvent(match.id);
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -502,7 +504,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             bool isCardEndingPosition = match.matchType == '大将' || match.matchType == '代表戦' || match.matchType == '個人戦' || match.matchType == '選手';
 
                             if (currentRedTeam == nextRedTeam && currentWhiteTeam == nextWhiteTeam && !isCardEndingPosition && !match.isKachinuki) {
-                              context.go('/match/${nextM.id}');
+                              context.push('/match/${nextM.id}'); // ★ go() から push() に変更して履歴を残す
                             } else {
                               _showMatchFinishedDialog(context, match, nextM);
                             }
@@ -594,7 +596,14 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               final hanteiResult = await _showHanteiDialog(match);
                               if (hanteiResult == null) return;
                               try {
-                                await ref.read(matchCommandProvider).completeMatchWithHantei(match, hanteiResult, _myUserId);
+                                if (hanteiResult == 'red' || hanteiResult == 'white') {
+                                  final side = hanteiResult == 'red' ? Side.red : Side.white;
+                                  // ★ 修正: 競合を防ぐため1トランザクションで終了する
+                                  await ref.read(matchApplicationServiceProvider).finishMatchManually(match.id, hanteiWinner: side);
+                                } else if (hanteiResult == 'draw') {
+                                  // ★ 修正: 引き分けの場合も1トランザクションで終了マーカーを残す
+                                  await ref.read(matchApplicationServiceProvider).finishMatchManually(match.id);
+                                }
                               } catch (e) {
                                 if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('判定の保存に失敗しました: $e')));
                               }
@@ -607,8 +616,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             if (!confirmed) return;
                           }
                           
-                          // ★ 修正: 直接保存するのではなく、音が鳴る finishMatch を呼び出す
-                          ref.read(matchActionProvider).finishMatch(match);
+                          // ★ 修正: 手動終了の場合も1トランザクションで終了マーカーを残して終了する
+                          await ref.read(matchApplicationServiceProvider).finishMatchManually(match.id);
                         };
 
                         return Consumer(
@@ -1171,7 +1180,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(ctx);
-                  context.go('/match/${nextCardMatch.id}');
+                  context.push('/match/${nextCardMatch.id}'); // ★ go() から push() に変更して履歴を残す
                 },
                 icon: const Icon(Icons.play_arrow),
                 label: Text('次の試合へ進む (${nextCardMatch.matchType})', style: const TextStyle(fontWeight: FontWeight.bold)),

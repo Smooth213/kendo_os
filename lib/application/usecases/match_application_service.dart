@@ -4,6 +4,7 @@ import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/audit_log.dart';
 import 'package:kendo_os/domain/entities/score_event.dart'; 
 import 'package:kendo_os/domain/entities/match_context.dart'; 
+import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; 
 import 'package:kendo_os/domain/entities/match_aggregate.dart';
@@ -54,7 +55,8 @@ class MatchApplicationService {
       var match = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
       if (match == null) return;
       
-      final rule = _ref.read(matchRuleProvider);
+      // ★ 修正: 試合自体が専用のルールを持っている場合はそれを優先する
+      final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
       final settings = _ref.read(settingsProvider);
 
       // DB保存回数を減らして点滅を防ぐため、スナップショットはメモリ上でのみ追加する
@@ -102,7 +104,8 @@ class MatchApplicationService {
       
       match = _addSnapshotToMatch(match, '取り消し 実行前');
       
-      final rule = _ref.read(matchRuleProvider);
+      // ★ 修正
+      final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
 
       MatchModel updatedMatch = _undoScore.execute(match, rule);
       
@@ -149,7 +152,8 @@ class MatchApplicationService {
     await _safeExecute(() async {
       final match = _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
       if (match == null) return;
-      final rule = _ref.read(matchRuleProvider);
+      // ★ 修正
+      final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
 
       final canExtend = rule.isEnchoUnlimited || rule.enchoCount > 0;
       final updatedMatch = _timeUp.execute(match, canExtend, rule);
@@ -185,12 +189,67 @@ class MatchApplicationService {
 
   Future<void> finishMatch(String matchId) async {
     await _safeExecute(() async {
-      final match = _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      final localRepo = _ref.read(localMatchRepositoryProvider);
+      final match = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
       if (match == null) return;
-      final updated = match.copyWith(status: 'finished', isDirty: true, lastUpdatedAt: DateTime.now());
+      
+      // ★ 修正: タイマー停止やロック解除もここで行う
+      final updated = match.copyWith(
+        status: 'finished', 
+        timerIsRunning: false,
+        hasExtension: false,
+        scorerId: null,
+        isDirty: true, 
+        lastUpdatedAt: DateTime.now()
+      );
       await _saveAndSync(updated);
       await _finalizeIfNeeded(updated, match);
     }, '試合終了の保存に失敗しました');
+  }
+
+  // ★ 追加: 手動終了用（マーカーの追加と終了を1回のDB書き込みで行い、同期競合を防ぐ）
+  Future<void> finishMatchManually(String matchId, {Side? hanteiWinner}) async {
+    await _safeExecute(() async {
+      final localRepo = _ref.read(localMatchRepositoryProvider);
+      final match = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      if (match == null) return;
+      
+      // ★ 修正
+      final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
+      
+      // 1. マーカーまたは判定イベントの作成
+      final side = hanteiWinner ?? Side.none;
+      final event = ScoreEventLegacyAdapter.fromLegacy(
+        id: const Uuid().v4(),
+        side: side,
+        type: PointType.hantei,
+        timestamp: DateTime.now(),
+        userId: match.scorerId,
+        sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
+      );
+
+      // 2. スコアの追加計算（判定勝ちなら得点が入る）
+      MatchModel updated = _addScore.execute(match, event, rule);
+
+      // 3. 強制的に終了ステータスで上書きし、ロックなどを解除
+      updated = updated.copyWith(
+        status: 'finished', 
+        timerIsRunning: false,
+        hasExtension: false,
+        scorerId: null,
+        isDirty: true, 
+        lastUpdatedAt: DateTime.now()
+      );
+
+      // 4. 1回の保存で済ませる（同期競合を完全に防ぐ）
+      await _saveAndSync(updated);
+      
+      if (_ref.read(settingsProvider).sound && updated.status == 'finished' && match.status != 'finished') {
+         _ref.read(soundServiceProvider).playFinishFanfare();
+      }
+
+      await _finalizeIfNeeded(updated, match);
+    }, '試合の終了保存に失敗しました');
   }
 
   // --------------------------------------------------
@@ -202,7 +261,8 @@ class MatchApplicationService {
 
     // 2. 勝敗が決定（規定本数到達）していれば自動で終了処理へ
     if (updatedMatch.status != 'finished' && updatedMatch.status != 'approved') {
-      final rule = _ref.read(matchRuleProvider);
+      // ★ 修正
+      final MatchRule rule = updatedMatch.rule ?? _ref.read(matchRuleProvider);
       final engine = KendoRuleEngine();
       final analysis = engine.analyzeHistory(updatedMatch.events, updatedMatch, rule);
       final result = engine.decideResult(analysis.context, rule);
@@ -237,7 +297,8 @@ class MatchApplicationService {
   }
 
   Future<void> _generateNextKachinukiMatchIfNeeded(MatchModel match) async {
-    final rule = _ref.read(matchRuleProvider);
+    // ★ 修正
+    final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
     final nextMatch = _domainService.generateNextKachinukiMatch(match, rule);
     if (nextMatch != null) {
       await _saveAndSync(nextMatch);

@@ -6,6 +6,9 @@ import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart';
 // ★ 追加：本番環境のヘルパークラスをインポート
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart';
+import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/entities/match_context.dart';
 
 // ============================================================================
 // 【単体テスト（Unit Test）実行部】
@@ -23,6 +26,37 @@ void main() {
       expect(rule.matchTimeMinutes, 3, reason: '試合時間は3分であるべき');
       expect(rule.enchoTimeMinutes, 0, reason: '基本ルールでは延長戦は無し(0分)であるべき');
       expect(rule.isEnchoUnlimited, false, reason: '無限延長は無効であるべき');
+    });
+
+    test('1本勝負の設定を適用した場合、1本で勝敗が決まるルールになること', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(bunaiksenRuleProvider.notifier).update((state) => state.copyWith(
+        isIpponShobu: true,
+        ipponLimit: 1,
+      ));
+
+      final rule = container.read(bunaiksenRuleProvider);
+
+      expect(rule.isIpponShobu, true);
+      expect(rule.ipponLimit, 1);
+
+      final engine = KendoRuleEngine();
+      final mockMatch = MatchModel(
+        id: 'test', tournamentId: 't1', matchOrder: 1, order: 1,
+        redName: 'Red', whiteName: 'White',
+        status: 'in_progress', matchType: '個人戦',
+      );
+      final mockEvents = [
+        ScoreEvent(id: 'e1', side: Side.red, strikeType: StrikeType.men, isIppon: true, timestamp: DateTime.now())
+      ];
+      
+      final analysis = engine.analyzeHistory(mockEvents, mockMatch, rule);
+      final result = engine.decideResult(analysis.context, rule);
+      
+      expect(analysis.context.redIppon, 1);
+      expect(result, MatchResultStatus.redWin, reason: '1本勝負なので、1本先取した時点で勝利となるべき');
     });
   });
 
