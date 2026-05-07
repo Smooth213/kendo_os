@@ -45,6 +45,8 @@ import 'presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
 import 'presentation/viewer/screens/viewer_kachinuki_scoreboard_screen.dart';
 
 import 'presentation/operate/providers/role_provider.dart';
+import 'presentation/operate/providers/metrics_provider.dart'; // ★ 追加: グローバルエラーをメトリクスへ流す
+import 'presentation/operate/screens/observability_dashboard_screen.dart'; // ★ Phase 2-5: ダッシュボードを追加
 
 // ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -78,14 +80,24 @@ void main() async {
     rethrow;
   }
 
+  // ★ Phase 2-4: ProviderContainer を自前で作成し、システム全体からアクセス可能にする
+  final container = ProviderContainer(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+      isarProvider.overrideWithValue(isar),
+    ],
+  );
+
   // ★ 1. 描画やUI関連のエラーをキャッチしてフリーズを防ぐ
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
+    container.read(metricsProvider).recordError(); // ★ UIエラーをメトリクスのエラー率に加算
     debugPrint('⚠️ UIエラー: ${details.exception}');
   };
 
   // ★ 2. 非同期処理や裏側のエラーをキャッチしてアプリのクラッシュを防ぐ
   PlatformDispatcher.instance.onError = (error, stack) {
+    container.read(metricsProvider).recordError(); // ★ 裏側エラーをメトリクスのエラー率に加算
     debugPrint('⚠️ 裏側エラー: $error');
     return true; 
   };
@@ -106,13 +118,10 @@ void main() async {
     );
   };
 
-  // ProviderScopeに確実に読み込み済みの prefs と isar を注入してアプリを起動！
+  // ★ UncontrolledProviderScope を使って、自前で作ったコンテナをアプリに渡す
   runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        isarProvider.overrideWithValue(isar), // ★ アプリ全体にローカル金庫の鍵を渡す
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const KendoOSApp(),
     ),
   );
@@ -124,6 +133,7 @@ final _router = GoRouter(
     GoRoute(path: '/', builder: (context, state) => const StartScreen()),
     GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()), // ★ Phase 2: 設定画面へのルート
     GoRoute(path: '/audit-log', builder: (context, state) => const AuditLogScreen()), // ★ Phase 5: 監査ログへのルート
+    GoRoute(path: '/dashboard', builder: (context, state) => const ObservabilityDashboardScreen()), // ★ Phase 2-5: ダッシュボード
     GoRoute(
       path: '/tournament-list', 
       builder: (context, state) {

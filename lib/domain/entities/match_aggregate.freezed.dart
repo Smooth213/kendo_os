@@ -15,7 +15,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MatchSnapshot {
 
- String get id;@TimestampConverter() DateTime get createdAt; String get reason; List<ScoreEvent> get events;
+ String get id; String get matchId;// ★ どの試合のスナップショットか
+ int get version;// ★ このスナップショットは何番目のイベントまでを適用した結果か
+ MatchModel get state;// ★ この時点の計算済みの試合状態（重い計算をスキップするため）
+ DateTime get createdAt; String get reason;// 下方互換のために残すが、今後はStateを使うので基本的には空になる
+ List<ScoreEvent> get events;
 /// Create a copy of MatchSnapshot
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +32,16 @@ $MatchSnapshotCopyWith<MatchSnapshot> get copyWith => _$MatchSnapshotCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.reason, reason) || other.reason == reason)&&const DeepCollectionEquality().equals(other.events, events));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.matchId, matchId) || other.matchId == matchId)&&(identical(other.version, version) || other.version == version)&&(identical(other.state, state) || other.state == state)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.reason, reason) || other.reason == reason)&&const DeepCollectionEquality().equals(other.events, events));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,createdAt,reason,const DeepCollectionEquality().hash(events));
+int get hashCode => Object.hash(runtimeType,id,matchId,version,state,createdAt,reason,const DeepCollectionEquality().hash(events));
 
 @override
 String toString() {
-  return 'MatchSnapshot(id: $id, createdAt: $createdAt, reason: $reason, events: $events)';
+  return 'MatchSnapshot(id: $id, matchId: $matchId, version: $version, state: $state, createdAt: $createdAt, reason: $reason, events: $events)';
 }
 
 
@@ -48,11 +52,11 @@ abstract mixin class $MatchSnapshotCopyWith<$Res>  {
   factory $MatchSnapshotCopyWith(MatchSnapshot value, $Res Function(MatchSnapshot) _then) = _$MatchSnapshotCopyWithImpl;
 @useResult
 $Res call({
- String id,@TimestampConverter() DateTime createdAt, String reason, List<ScoreEvent> events
+ String id, String matchId, int version, MatchModel state, DateTime createdAt, String reason, List<ScoreEvent> events
 });
 
 
-
+$MatchModelCopyWith<$Res> get state;
 
 }
 /// @nodoc
@@ -65,16 +69,28 @@ class _$MatchSnapshotCopyWithImpl<$Res>
 
 /// Create a copy of MatchSnapshot
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? createdAt = null,Object? reason = null,Object? events = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? matchId = null,Object? version = null,Object? state = null,Object? createdAt = null,Object? reason = null,Object? events = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
+as String,version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
+as int,state: null == state ? _self.state : state // ignore: cast_nullable_to_non_nullable
+as MatchModel,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,reason: null == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
 as String,events: null == events ? _self.events : events // ignore: cast_nullable_to_non_nullable
 as List<ScoreEvent>,
   ));
 }
-
+/// Create a copy of MatchSnapshot
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MatchModelCopyWith<$Res> get state {
+  
+  return $MatchModelCopyWith<$Res>(_self.state, (value) {
+    return _then(_self.copyWith(state: value));
+  });
+}
 }
 
 
@@ -156,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @TimestampConverter()  DateTime createdAt,  String reason,  List<ScoreEvent> events)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String matchId,  int version,  MatchModel state,  DateTime createdAt,  String reason,  List<ScoreEvent> events)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MatchSnapshot() when $default != null:
-return $default(_that.id,_that.createdAt,_that.reason,_that.events);case _:
+return $default(_that.id,_that.matchId,_that.version,_that.state,_that.createdAt,_that.reason,_that.events);case _:
   return orElse();
 
 }
@@ -177,10 +193,10 @@ return $default(_that.id,_that.createdAt,_that.reason,_that.events);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @TimestampConverter()  DateTime createdAt,  String reason,  List<ScoreEvent> events)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String matchId,  int version,  MatchModel state,  DateTime createdAt,  String reason,  List<ScoreEvent> events)  $default,) {final _that = this;
 switch (_that) {
 case _MatchSnapshot():
-return $default(_that.id,_that.createdAt,_that.reason,_that.events);case _:
+return $default(_that.id,_that.matchId,_that.version,_that.state,_that.createdAt,_that.reason,_that.events);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +213,10 @@ return $default(_that.id,_that.createdAt,_that.reason,_that.events);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @TimestampConverter()  DateTime createdAt,  String reason,  List<ScoreEvent> events)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String matchId,  int version,  MatchModel state,  DateTime createdAt,  String reason,  List<ScoreEvent> events)?  $default,) {final _that = this;
 switch (_that) {
 case _MatchSnapshot() when $default != null:
-return $default(_that.id,_that.createdAt,_that.reason,_that.events);case _:
+return $default(_that.id,_that.matchId,_that.version,_that.state,_that.createdAt,_that.reason,_that.events);case _:
   return null;
 
 }
@@ -212,13 +228,21 @@ return $default(_that.id,_that.createdAt,_that.reason,_that.events);case _:
 @JsonSerializable()
 
 class _MatchSnapshot implements MatchSnapshot {
-  const _MatchSnapshot({required this.id, @TimestampConverter() required this.createdAt, required this.reason, final  List<ScoreEvent> events = const []}): _events = events;
+  const _MatchSnapshot({required this.id, this.matchId = '', this.version = 0, required this.state, required this.createdAt, required this.reason, final  List<ScoreEvent> events = const []}): _events = events;
   factory _MatchSnapshot.fromJson(Map<String, dynamic> json) => _$MatchSnapshotFromJson(json);
 
 @override final  String id;
-@override@TimestampConverter() final  DateTime createdAt;
+@override@JsonKey() final  String matchId;
+// ★ どの試合のスナップショットか
+@override@JsonKey() final  int version;
+// ★ このスナップショットは何番目のイベントまでを適用した結果か
+@override final  MatchModel state;
+// ★ この時点の計算済みの試合状態（重い計算をスキップするため）
+@override final  DateTime createdAt;
 @override final  String reason;
+// 下方互換のために残すが、今後はStateを使うので基本的には空になる
  final  List<ScoreEvent> _events;
+// 下方互換のために残すが、今後はStateを使うので基本的には空になる
 @override@JsonKey() List<ScoreEvent> get events {
   if (_events is EqualUnmodifiableListView) return _events;
   // ignore: implicit_dynamic_type
@@ -239,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.reason, reason) || other.reason == reason)&&const DeepCollectionEquality().equals(other._events, _events));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchSnapshot&&(identical(other.id, id) || other.id == id)&&(identical(other.matchId, matchId) || other.matchId == matchId)&&(identical(other.version, version) || other.version == version)&&(identical(other.state, state) || other.state == state)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.reason, reason) || other.reason == reason)&&const DeepCollectionEquality().equals(other._events, _events));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,createdAt,reason,const DeepCollectionEquality().hash(_events));
+int get hashCode => Object.hash(runtimeType,id,matchId,version,state,createdAt,reason,const DeepCollectionEquality().hash(_events));
 
 @override
 String toString() {
-  return 'MatchSnapshot(id: $id, createdAt: $createdAt, reason: $reason, events: $events)';
+  return 'MatchSnapshot(id: $id, matchId: $matchId, version: $version, state: $state, createdAt: $createdAt, reason: $reason, events: $events)';
 }
 
 
@@ -259,11 +283,11 @@ abstract mixin class _$MatchSnapshotCopyWith<$Res> implements $MatchSnapshotCopy
   factory _$MatchSnapshotCopyWith(_MatchSnapshot value, $Res Function(_MatchSnapshot) _then) = __$MatchSnapshotCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@TimestampConverter() DateTime createdAt, String reason, List<ScoreEvent> events
+ String id, String matchId, int version, MatchModel state, DateTime createdAt, String reason, List<ScoreEvent> events
 });
 
 
-
+@override $MatchModelCopyWith<$Res> get state;
 
 }
 /// @nodoc
@@ -276,25 +300,39 @@ class __$MatchSnapshotCopyWithImpl<$Res>
 
 /// Create a copy of MatchSnapshot
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? createdAt = null,Object? reason = null,Object? events = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? matchId = null,Object? version = null,Object? state = null,Object? createdAt = null,Object? reason = null,Object? events = null,}) {
   return _then(_MatchSnapshot(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
+as String,version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
+as int,state: null == state ? _self.state : state // ignore: cast_nullable_to_non_nullable
+as MatchModel,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,reason: null == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
 as String,events: null == events ? _self._events : events // ignore: cast_nullable_to_non_nullable
 as List<ScoreEvent>,
   ));
 }
 
-
+/// Create a copy of MatchSnapshot
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MatchModelCopyWith<$Res> get state {
+  
+  return $MatchModelCopyWith<$Res>(_self.state, (value) {
+    return _then(_self.copyWith(state: value));
+  });
+}
 }
 
 
 /// @nodoc
 mixin _$MatchAggregate {
 
- String get id; MatchRule get rule; List<ScoreEvent> get events; List<MatchSnapshot> get snapshots;// 試合の進行状態（永続化が必要なドメインの状態）
- String get status; int get redScore; int get whiteScore; int get remainingSeconds; bool get timerIsRunning;
+ String get id;// イベントソーシング：すべての変更履歴
+ List<ScoreEvent> get events;// 楽観的ロック用：現在のイベント数（バージョン）
+ int get version;// 試合の基本情報や状態（投影元となるベースデータ）
+ String get status; int get remainingSeconds; bool get timerIsRunning;
 /// Create a copy of MatchAggregate
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -307,16 +345,16 @@ $MatchAggregateCopyWith<MatchAggregate> get copyWith => _$MatchAggregateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchAggregate&&(identical(other.id, id) || other.id == id)&&(identical(other.rule, rule) || other.rule == rule)&&const DeepCollectionEquality().equals(other.events, events)&&const DeepCollectionEquality().equals(other.snapshots, snapshots)&&(identical(other.status, status) || other.status == status)&&(identical(other.redScore, redScore) || other.redScore == redScore)&&(identical(other.whiteScore, whiteScore) || other.whiteScore == whiteScore)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchAggregate&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other.events, events)&&(identical(other.version, version) || other.version == version)&&(identical(other.status, status) || other.status == status)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,rule,const DeepCollectionEquality().hash(events),const DeepCollectionEquality().hash(snapshots),status,redScore,whiteScore,remainingSeconds,timerIsRunning);
+int get hashCode => Object.hash(runtimeType,id,const DeepCollectionEquality().hash(events),version,status,remainingSeconds,timerIsRunning);
 
 @override
 String toString() {
-  return 'MatchAggregate(id: $id, rule: $rule, events: $events, snapshots: $snapshots, status: $status, redScore: $redScore, whiteScore: $whiteScore, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning)';
+  return 'MatchAggregate(id: $id, events: $events, version: $version, status: $status, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning)';
 }
 
 
@@ -327,11 +365,11 @@ abstract mixin class $MatchAggregateCopyWith<$Res>  {
   factory $MatchAggregateCopyWith(MatchAggregate value, $Res Function(MatchAggregate) _then) = _$MatchAggregateCopyWithImpl;
 @useResult
 $Res call({
- String id, MatchRule rule, List<ScoreEvent> events, List<MatchSnapshot> snapshots, String status, int redScore, int whiteScore, int remainingSeconds, bool timerIsRunning
+ String id, List<ScoreEvent> events, int version, String status, int remainingSeconds, bool timerIsRunning
 });
 
 
-$MatchRuleCopyWith<$Res> get rule;
+
 
 }
 /// @nodoc
@@ -344,30 +382,18 @@ class _$MatchAggregateCopyWithImpl<$Res>
 
 /// Create a copy of MatchAggregate
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? rule = null,Object? events = null,Object? snapshots = null,Object? status = null,Object? redScore = null,Object? whiteScore = null,Object? remainingSeconds = null,Object? timerIsRunning = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? events = null,Object? version = null,Object? status = null,Object? remainingSeconds = null,Object? timerIsRunning = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,rule: null == rule ? _self.rule : rule // ignore: cast_nullable_to_non_nullable
-as MatchRule,events: null == events ? _self.events : events // ignore: cast_nullable_to_non_nullable
-as List<ScoreEvent>,snapshots: null == snapshots ? _self.snapshots : snapshots // ignore: cast_nullable_to_non_nullable
-as List<MatchSnapshot>,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,redScore: null == redScore ? _self.redScore : redScore // ignore: cast_nullable_to_non_nullable
-as int,whiteScore: null == whiteScore ? _self.whiteScore : whiteScore // ignore: cast_nullable_to_non_nullable
-as int,remainingSeconds: null == remainingSeconds ? _self.remainingSeconds : remainingSeconds // ignore: cast_nullable_to_non_nullable
+as String,events: null == events ? _self.events : events // ignore: cast_nullable_to_non_nullable
+as List<ScoreEvent>,version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
+as int,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,remainingSeconds: null == remainingSeconds ? _self.remainingSeconds : remainingSeconds // ignore: cast_nullable_to_non_nullable
 as int,timerIsRunning: null == timerIsRunning ? _self.timerIsRunning : timerIsRunning // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
-/// Create a copy of MatchAggregate
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$MatchRuleCopyWith<$Res> get rule {
-  
-  return $MatchRuleCopyWith<$Res>(_self.rule, (value) {
-    return _then(_self.copyWith(rule: value));
-  });
-}
+
 }
 
 
@@ -449,10 +475,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  MatchRule rule,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  String status,  int redScore,  int whiteScore,  int remainingSeconds,  bool timerIsRunning)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  List<ScoreEvent> events,  int version,  String status,  int remainingSeconds,  bool timerIsRunning)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MatchAggregate() when $default != null:
-return $default(_that.id,_that.rule,_that.events,_that.snapshots,_that.status,_that.redScore,_that.whiteScore,_that.remainingSeconds,_that.timerIsRunning);case _:
+return $default(_that.id,_that.events,_that.version,_that.status,_that.remainingSeconds,_that.timerIsRunning);case _:
   return orElse();
 
 }
@@ -470,10 +496,10 @@ return $default(_that.id,_that.rule,_that.events,_that.snapshots,_that.status,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  MatchRule rule,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  String status,  int redScore,  int whiteScore,  int remainingSeconds,  bool timerIsRunning)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  List<ScoreEvent> events,  int version,  String status,  int remainingSeconds,  bool timerIsRunning)  $default,) {final _that = this;
 switch (_that) {
 case _MatchAggregate():
-return $default(_that.id,_that.rule,_that.events,_that.snapshots,_that.status,_that.redScore,_that.whiteScore,_that.remainingSeconds,_that.timerIsRunning);case _:
+return $default(_that.id,_that.events,_that.version,_that.status,_that.remainingSeconds,_that.timerIsRunning);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -490,10 +516,10 @@ return $default(_that.id,_that.rule,_that.events,_that.snapshots,_that.status,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  MatchRule rule,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  String status,  int redScore,  int whiteScore,  int remainingSeconds,  bool timerIsRunning)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  List<ScoreEvent> events,  int version,  String status,  int remainingSeconds,  bool timerIsRunning)?  $default,) {final _that = this;
 switch (_that) {
 case _MatchAggregate() when $default != null:
-return $default(_that.id,_that.rule,_that.events,_that.snapshots,_that.status,_that.redScore,_that.whiteScore,_that.remainingSeconds,_that.timerIsRunning);case _:
+return $default(_that.id,_that.events,_that.version,_that.status,_that.remainingSeconds,_that.timerIsRunning);case _:
   return null;
 
 }
@@ -505,31 +531,25 @@ return $default(_that.id,_that.rule,_that.events,_that.snapshots,_that.status,_t
 @JsonSerializable()
 
 class _MatchAggregate extends MatchAggregate {
-  const _MatchAggregate({required this.id, required this.rule, final  List<ScoreEvent> events = const [], final  List<MatchSnapshot> snapshots = const [], this.status = 'waiting', this.redScore = 0, this.whiteScore = 0, this.remainingSeconds = 180, this.timerIsRunning = false}): _events = events,_snapshots = snapshots,super._();
+  const _MatchAggregate({required this.id, final  List<ScoreEvent> events = const [], this.version = 0, required this.status, required this.remainingSeconds, required this.timerIsRunning}): _events = events,super._();
   factory _MatchAggregate.fromJson(Map<String, dynamic> json) => _$MatchAggregateFromJson(json);
 
 @override final  String id;
-@override final  MatchRule rule;
+// イベントソーシング：すべての変更履歴
  final  List<ScoreEvent> _events;
+// イベントソーシング：すべての変更履歴
 @override@JsonKey() List<ScoreEvent> get events {
   if (_events is EqualUnmodifiableListView) return _events;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_events);
 }
 
- final  List<MatchSnapshot> _snapshots;
-@override@JsonKey() List<MatchSnapshot> get snapshots {
-  if (_snapshots is EqualUnmodifiableListView) return _snapshots;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_snapshots);
-}
-
-// 試合の進行状態（永続化が必要なドメインの状態）
-@override@JsonKey() final  String status;
-@override@JsonKey() final  int redScore;
-@override@JsonKey() final  int whiteScore;
-@override@JsonKey() final  int remainingSeconds;
-@override@JsonKey() final  bool timerIsRunning;
+// 楽観的ロック用：現在のイベント数（バージョン）
+@override@JsonKey() final  int version;
+// 試合の基本情報や状態（投影元となるベースデータ）
+@override final  String status;
+@override final  int remainingSeconds;
+@override final  bool timerIsRunning;
 
 /// Create a copy of MatchAggregate
 /// with the given fields replaced by the non-null parameter values.
@@ -544,16 +564,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchAggregate&&(identical(other.id, id) || other.id == id)&&(identical(other.rule, rule) || other.rule == rule)&&const DeepCollectionEquality().equals(other._events, _events)&&const DeepCollectionEquality().equals(other._snapshots, _snapshots)&&(identical(other.status, status) || other.status == status)&&(identical(other.redScore, redScore) || other.redScore == redScore)&&(identical(other.whiteScore, whiteScore) || other.whiteScore == whiteScore)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchAggregate&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other._events, _events)&&(identical(other.version, version) || other.version == version)&&(identical(other.status, status) || other.status == status)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,rule,const DeepCollectionEquality().hash(_events),const DeepCollectionEquality().hash(_snapshots),status,redScore,whiteScore,remainingSeconds,timerIsRunning);
+int get hashCode => Object.hash(runtimeType,id,const DeepCollectionEquality().hash(_events),version,status,remainingSeconds,timerIsRunning);
 
 @override
 String toString() {
-  return 'MatchAggregate(id: $id, rule: $rule, events: $events, snapshots: $snapshots, status: $status, redScore: $redScore, whiteScore: $whiteScore, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning)';
+  return 'MatchAggregate(id: $id, events: $events, version: $version, status: $status, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning)';
 }
 
 
@@ -564,11 +584,11 @@ abstract mixin class _$MatchAggregateCopyWith<$Res> implements $MatchAggregateCo
   factory _$MatchAggregateCopyWith(_MatchAggregate value, $Res Function(_MatchAggregate) _then) = __$MatchAggregateCopyWithImpl;
 @override @useResult
 $Res call({
- String id, MatchRule rule, List<ScoreEvent> events, List<MatchSnapshot> snapshots, String status, int redScore, int whiteScore, int remainingSeconds, bool timerIsRunning
+ String id, List<ScoreEvent> events, int version, String status, int remainingSeconds, bool timerIsRunning
 });
 
 
-@override $MatchRuleCopyWith<$Res> get rule;
+
 
 }
 /// @nodoc
@@ -581,31 +601,19 @@ class __$MatchAggregateCopyWithImpl<$Res>
 
 /// Create a copy of MatchAggregate
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? rule = null,Object? events = null,Object? snapshots = null,Object? status = null,Object? redScore = null,Object? whiteScore = null,Object? remainingSeconds = null,Object? timerIsRunning = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? events = null,Object? version = null,Object? status = null,Object? remainingSeconds = null,Object? timerIsRunning = null,}) {
   return _then(_MatchAggregate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,rule: null == rule ? _self.rule : rule // ignore: cast_nullable_to_non_nullable
-as MatchRule,events: null == events ? _self._events : events // ignore: cast_nullable_to_non_nullable
-as List<ScoreEvent>,snapshots: null == snapshots ? _self._snapshots : snapshots // ignore: cast_nullable_to_non_nullable
-as List<MatchSnapshot>,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,redScore: null == redScore ? _self.redScore : redScore // ignore: cast_nullable_to_non_nullable
-as int,whiteScore: null == whiteScore ? _self.whiteScore : whiteScore // ignore: cast_nullable_to_non_nullable
-as int,remainingSeconds: null == remainingSeconds ? _self.remainingSeconds : remainingSeconds // ignore: cast_nullable_to_non_nullable
+as String,events: null == events ? _self._events : events // ignore: cast_nullable_to_non_nullable
+as List<ScoreEvent>,version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
+as int,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,remainingSeconds: null == remainingSeconds ? _self.remainingSeconds : remainingSeconds // ignore: cast_nullable_to_non_nullable
 as int,timerIsRunning: null == timerIsRunning ? _self.timerIsRunning : timerIsRunning // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
 
-/// Create a copy of MatchAggregate
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$MatchRuleCopyWith<$Res> get rule {
-  
-  return $MatchRuleCopyWith<$Res>(_self.rule, (value) {
-    return _then(_self.copyWith(rule: value));
-  });
-}
+
 }
 
 // dart format on

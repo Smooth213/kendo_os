@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
-import '../providers/match_command_provider.dart';
+import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import 'package:uuid/uuid.dart';
 import '../providers/match_rule_provider.dart';
@@ -1000,7 +1000,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               }
                             });
 
-                            if (matchesToSave.isNotEmpty) await ref.read(matchCommandProvider).saveMatchesBulk(matchesToSave);
+                            if (matchesToSave.isNotEmpty) await ref.read(matchApplicationServiceProvider).saveMatchesBulk(matchesToSave); // ★ 修正
                             
                             if (!context.mounted) return;
                             Navigator.of(context, rootNavigator: true).pop(); // ★ Phase 8-1: ローディングダイアログだけを確実に閉じる！

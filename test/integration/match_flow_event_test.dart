@@ -4,6 +4,7 @@ import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ 追加
 import '../helpers/event_factory.dart';
 
 void main() {
@@ -11,15 +12,18 @@ void main() {
     late KendoRuleEngine engine;
     late AddScoreUseCase addScoreUsecase;
     late UndoScoreUseCase undoUsecase;
+    late User testUser; // ★ 追加
 
     setUp(() {
       engine = KendoRuleEngine();
-      addScoreUsecase = AddScoreUseCase(engine);
-      undoUsecase = UndoScoreUseCase(engine);
+      final permission = PermissionService(); // ★ 関所を追加
+      addScoreUsecase = AddScoreUseCase(engine, permission); // ★ 引数追加
+      undoUsecase = UndoScoreUseCase(engine, permission); // ★ 引数追加
+      testUser = const User(id: 'test_user', role: Role.admin, organizationId: 'test_org'); 
     });
 
     test('赤が2本先取して試合が終了するまでのフロー', () {
-      var match = MatchModel( // ★ constを外し、コンパイラクラッシュを回避
+      var match = MatchModel( 
         id: 'test', tournamentId: 't1', matchOrder: 1,
         redName: 'Red', whiteName: 'White',
         status: 'in_progress', matchType: '個人戦',
@@ -28,22 +32,22 @@ void main() {
       final rule = MatchRule();
 
       // 赤が面を打つ
-      match = addScoreUsecase.execute(match, men(Side.red), rule);
+      match = addScoreUsecase.execute(testUser, match, men(Side.red), rule); // ★ 変更
       expect(match.redScore, 1);
 
       // 白が小手を打つ
-      match = addScoreUsecase.execute(match, kote(Side.white), rule);
+      match = addScoreUsecase.execute(testUser, match, kote(Side.white), rule); // ★ 変更
       expect(match.redScore, 1);
       expect(match.whiteScore, 1);
 
       // 白の小手を取り消す(Undo)
-      match = undoUsecase.execute(match, rule);
-      expect(match.events.length, 2); // Undoの仕様上、要素は増えずに対象イベントの isCanceled が true になる
+      match = undoUsecase.execute(testUser, match, rule); // ★ 変更
+      expect(match.events.length, 2); 
       expect(match.events.last.isCanceled, true);
       expect(match.whiteScore, 0);
 
       // 赤が胴を打って決着
-      match = addScoreUsecase.execute(match, dou(Side.red), rule);
+      match = addScoreUsecase.execute(testUser, match, dou(Side.red), rule); // ★ 変更
       expect(match.redScore, 2);
       
       // ステータスが終了になること

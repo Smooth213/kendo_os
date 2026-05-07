@@ -14,6 +14,11 @@ import 'package:kendo_os/presentation/viewer/screens/viewer_home_screen.dart';
 import 'package:kendo_os/presentation/viewer/screens/viewer_official_record_screen.dart';
 import 'package:kendo_os/presentation/operate/screens/home_screen.dart' as home;
 
+// ★ 追加：Projectionをモックするために必要なimport
+import 'package:kendo_os/domain/repositories/projection_store.dart';
+import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
+import 'package:kendo_os/application/projections/match_projection.dart';
+
 // === モックデータ・プロバイダの準備 ===
 
 class MockTournamentRepository implements TournamentRepository {
@@ -130,13 +135,68 @@ final List<MatchModel> mockMatches = [
   ),
 ];
 
+// ★ 追加: ProjectionStoreのモック
+class MockProjectionStore implements ProjectionStore {
+  final List<MatchProjection> projections;
+
+  MockProjectionStore(this.projections);
+
+  @override
+  Future<void> save(MatchProjection projection) async {}
+
+  @override
+  Future<MatchProjection?> get(String matchId) async {
+    return projections.where((p) => p.id == matchId).firstOrNull;
+  }
+
+  @override
+  Stream<MatchProjection> watch(String matchId) async* {
+    final p = projections.where((proj) => proj.id == matchId).firstOrNull;
+    if (p != null) yield p;
+  }
+
+  @override
+  Stream<List<MatchProjection>> watchByTournament(String tournamentId) async* {
+    yield projections.where((p) => p.tournamentId == tournamentId).toList();
+  }
+}
+
 // テスト用ユーティリティ：ProviderScopeでラップしてマウントする
 Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
+  // ★ 追加: MatchModelのモックを、Viewerが依存するMatchProjectionのモックに変換
+  final mockProjections = mockMatches.map((m) {
+    return MatchProjection(
+      id: m.id,
+      tournamentId: m.tournamentId ?? '',
+      matchOrder: m.order.toInt(),
+      matchType: m.matchType,
+      status: m.status,
+      groupName: m.groupName ?? '',
+      isKachinuki: m.isKachinuki || (m.rule?.isKachinuki ?? false),
+      redName: m.redName,
+      whiteName: m.whiteName,
+      redRemaining: m.redRemaining,
+      whiteRemaining: m.whiteRemaining,
+      redScore: m.redScore,
+      whiteScore: m.whiteScore,
+      redDisplays: const [],
+      whiteDisplays: const [],
+      firstPointSide: '',
+      redPointMarks: const [],
+      whitePointMarks: const [],
+      remainingSeconds: m.remainingSeconds,
+      timerIsRunning: m.timerIsRunning,
+      note: m.note,
+    );
+  }).toList();
+
   return ProviderScope(
     overrides: [
       activeRoleProvider.overrideWith((ref) => role),
       matchListProvider.overrideWith((ref) => mockMatches),
       tournamentRepositoryProvider.overrideWithValue(MockTournamentRepository()),
+      // ★ 追加: Viewer用のProjectionStoreをモックデータで上書き
+      projectionStoreProvider.overrideWithValue(MockProjectionStore(mockProjections)),
       // ★ 修正3: これがないと画面描画時に必ずクラッシュするため追加
       customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
       home.customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
@@ -194,8 +254,7 @@ void main() {
 
       expect(find.text('PDF印刷'), findsWidgets);
       expect(find.text('画像シェア'), findsWidgets);
-      expect(find.text('一般'), findsWidgets); 
-      expect(find.text('個人'), findsWidgets);
+      expect(find.text('全カテゴリ'), findsWidgets); 
     });
 
     testWidgets('4-1. Renders normal Team Match (Table Format)', (WidgetTester tester) async {
@@ -224,10 +283,18 @@ void main() {
     });
 
     testWidgets('4-3. Renders Individual League with SUMMARY (Flat List & Star Table)', (WidgetTester tester) async {
+      // ★ 追加：画面サイズを縦長にして、リスト下部の試合が確実に描画されるようにする
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('個人').first);
+      await tester.tap(find.text('全カテゴリ').first);
       await tester.pumpAndSettle();
 
       // ★ 修正4: タイトルのアサーションを柔軟にしてエラーを回避

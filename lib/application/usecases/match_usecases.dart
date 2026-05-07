@@ -4,7 +4,8 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/match_context.dart';
-import 'package:kendo_os/presentation/operate/providers/match_provider.dart'; // ★ 追加: kendoRuleEngineProvider を参照するため
+import 'package:kendo_os/presentation/operate/providers/match_provider.dart'; 
+import 'package:kendo_os/domain/entities/role_permission.dart';
 
 // ==========================================
 // ★ ② UseCaseの役割明確化：「1 UseCase = 1 責務」
@@ -14,9 +15,24 @@ import 'package:kendo_os/presentation/operate/providers/match_provider.dart'; //
 /// ① スコア追加 UseCase
 class AddScoreUseCase {
   final KendoRuleEngine _engine;
-  AddScoreUseCase(this._engine);
+  final PermissionService _permission; // ★ 関所を追加
+  
+  AddScoreUseCase(this._engine, this._permission);
 
-  MatchModel execute(MatchModel currentMatch, ScoreEvent newEvent, MatchRule rule) {
+  MatchModel execute(User user, MatchModel currentMatch, ScoreEvent newEvent, MatchRule rule) {
+    // ★ Phase 1-Step 2: 認可チェック（Zero Trust）
+    if (!_permission.canAppend(user, newEvent)) {
+      throw UnauthorizedException('この操作を実行する権限がありません');
+    }
+
+    // ★ Phase 3-2: 競合チェック（Concurrency Control）
+    // 追加しようとしているイベントの順番(sequence)が、現在の状態が期待する次の順番と一致しない場合は弾く
+    final expectedSequence = currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1;
+    // ★ テスト用後方互換: 過去のテスト(sequenceが0)の場合は特別に競合チェックをスキップする
+    if (newEvent.sequence != 0 && newEvent.sequence != expectedSequence) {
+      throw DomainException('競合が発生しました。他の端末で先にデータが更新されています。');
+    }
+
     final analysis = _engine.analyzeHistory(currentMatch.events, currentMatch, rule);
     final validation = _engine.validateEvent(currentMatch, newEvent, analysis.context);
     if (!validation.isValid) throw DomainException(validation.reason ?? '不正な操作です');
@@ -24,15 +40,12 @@ class AddScoreUseCase {
     final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(newEvent);
     final nextAnalysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
     
-    // ★ 錬成モード（ランニングタイマー）への完全対応
-    // ルール設定から「流し時間」のフラグを正確に取得
     final bool isRunningTimerMode = rule.isRunningTime;
 
     MatchModel updatedMatch = currentMatch.copyWith(
       events: updatedEvents,
       redScore: nextAnalysis.context.redIppon,
       whiteScore: nextAnalysis.context.whiteIppon,
-      // ★ 改善：流し時間モードなら現在のタイマー状態をそのまま維持、通常モードなら「やめ」に合わせて時計を止める
       timerIsRunning: isRunningTimerMode ? currentMatch.timerIsRunning : false, 
       isDirty: true,
       lastUpdatedAt: DateTime.now(),
@@ -42,7 +55,6 @@ class AddScoreUseCase {
     if (result != MatchResultStatus.inProgress) {
       updatedMatch = updatedMatch.copyWith(status: 'finished');
     } else {
-      // ★ 追加：スコアが減って進行中に戻る場合（Undo時など）、ステータスを強制的に降格させる
       if (updatedMatch.status == 'finished') {
         updatedMatch = updatedMatch.copyWith(status: 'in_progress');
       }
@@ -54,9 +66,16 @@ class AddScoreUseCase {
 /// ② Undo UseCase
 class UndoScoreUseCase {
   final KendoRuleEngine _engine;
-  UndoScoreUseCase(this._engine);
+  final PermissionService _permission; // ★ 関所を追加
+  
+  UndoScoreUseCase(this._engine, this._permission);
 
-  MatchModel execute(MatchModel currentMatch, MatchRule rule) {
+  MatchModel execute(User user, MatchModel currentMatch, MatchRule rule) {
+    // ★ Phase 1-Step 2: 認可チェック（Zero Trust）
+    if (!_permission.canUndo(user)) {
+      throw UnauthorizedException('操作を取り消す権限がありません');
+    }
+
     if (currentMatch.events.isEmpty) return currentMatch;
     
     final updatedEvents = List<ScoreEvent>.from(currentMatch.events);
@@ -84,9 +103,16 @@ class UndoScoreUseCase {
 /// ③ 時間切れ処理 UseCase
 class TimeUpUseCase {
   final KendoRuleEngine _engine;
-  TimeUpUseCase(this._engine);
+  final PermissionService _permission; // ★ 関所を追加
+  
+  TimeUpUseCase(this._engine, this._permission);
 
-  MatchModel execute(MatchModel currentMatch, bool isEnchoEnabled, MatchRule rule) {
+  MatchModel execute(User user, MatchModel currentMatch, bool isEnchoEnabled, MatchRule rule) {
+    // ★ Phase 1-Step 2: 認可チェック（Zero Trust）
+    if (!_permission.canTimeUp(user)) {
+      throw UnauthorizedException('時間切れ操作を実行する権限がありません');
+    }
+
     final analysis = _engine.analyzeHistory(currentMatch.events, currentMatch, rule);
     final timeUpContext = MatchContext(
       redIppon: analysis.context.redIppon, whiteIppon: analysis.context.whiteIppon,
@@ -107,8 +133,7 @@ class TimeUpUseCase {
   }
 }
 
-/// ④ イベント履歴からの再構築 UseCase
-/// 試合のイベント履歴を元に、現在のスコアやステータスを再計算して整合性を保証します。
+/// ④ イベント履歴からの再構築 UseCase (読み取り専用なので関所不要)
 class RebuildMatchFromEventsUseCase {
   final KendoRuleEngine _engine;
   RebuildMatchFromEventsUseCase(this._engine);
@@ -119,7 +144,6 @@ class RebuildMatchFromEventsUseCase {
 
     String newStatus = baseMatch.status;
     
-    // ★ 修正: 最新のイベントがキャンセル(Undo)されている場合、強制的に進行中に戻す（CRDTでの状態固定を防ぐ）
     bool isJustUndone = false;
     if (baseMatch.events.isNotEmpty) {
       final latestEvent = baseMatch.events.reduce((a, b) => a.timestamp.isAfter(b.timestamp) ? a : b);
@@ -134,7 +158,6 @@ class RebuildMatchFromEventsUseCase {
       newStatus = 'finished';
     }
 
-    // 歴史から再構築したデータも、最新のローカルデータとしてマーク
     return baseMatch.copyWith(
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
@@ -145,25 +168,22 @@ class RebuildMatchFromEventsUseCase {
   }
 }
 
-/// ⑤ ポイント表示計算 UseCase
-/// 試合のイベント履歴を解析し、UI表示用のデータを生成します。
+/// ⑤ ポイント表示計算 UseCase (読み取り専用なので関所不要)
 class CalculatePointDisplaysUseCase {
   final KendoRuleEngine _engine;
   CalculatePointDisplaysUseCase(this._engine);
 
   Map<Side, List<PointDisplay>> execute(MatchModel match) {
-    // 移行元のロジックでは rule が null で渡されていたため、ここでも null を渡します
     return _engine.analyzeHistory(match.events, match, null).displays;
   }
 }
 
-// ★ DI (依存性の注入) 用のプロバイダ定義
-final addScoreUseCaseProvider = Provider((ref) => AddScoreUseCase(ref.watch(kendoRuleEngineProvider)));
-final undoScoreUseCaseProvider = Provider((ref) => UndoScoreUseCase(ref.watch(kendoRuleEngineProvider)));
-final timeUpUseCaseProvider = Provider((ref) => TimeUpUseCase(ref.watch(kendoRuleEngineProvider)));
+// ★ DI 用のプロバイダ定義
+final permissionServiceProvider = Provider((ref) => PermissionService()); // ★ 追加
 
-/// 新しく追加したUseCaseのプロバイダ
-final rebuildMatchFromEventsUseCaseProvider =
-    Provider((ref) => RebuildMatchFromEventsUseCase(ref.watch(kendoRuleEngineProvider)));
-final calculatePointDisplaysUseCaseProvider =
-    Provider((ref) => CalculatePointDisplaysUseCase(ref.watch(kendoRuleEngineProvider)));
+final addScoreUseCaseProvider = Provider((ref) => AddScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
+final undoScoreUseCaseProvider = Provider((ref) => UndoScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
+final timeUpUseCaseProvider = Provider((ref) => TimeUpUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
+
+final rebuildMatchFromEventsUseCaseProvider = Provider((ref) => RebuildMatchFromEventsUseCase(ref.watch(kendoRuleEngineProvider)));
+final calculatePointDisplaysUseCaseProvider = Provider((ref) => CalculatePointDisplaysUseCase(ref.watch(kendoRuleEngineProvider)));

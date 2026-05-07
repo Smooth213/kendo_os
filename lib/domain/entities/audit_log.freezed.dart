@@ -15,8 +15,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuditLog {
 
- String get id; String get matchId; String get userId; AuditAction get action;// ★ StringからEnumへ変更
- String get details;@TimestampConverter() DateTime get timestamp;
+ String get id; String get matchId; String get userId; AuditAction get action; String get details;@TimestampConverter() DateTime get timestamp;// ==========================================
+// ★ Phase 5-Step 1: 分散同期のトレーサビリティ強化
+// ==========================================
+ String get deviceId;// どの端末からの操作か
+ int get logicalClock;
 /// Create a copy of AuditLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +32,16 @@ $AuditLogCopyWith<AuditLog> get copyWith => _$AuditLogCopyWithImpl<AuditLog>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuditLog&&(identical(other.id, id) || other.id == id)&&(identical(other.matchId, matchId) || other.matchId == matchId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.action, action) || other.action == action)&&(identical(other.details, details) || other.details == details)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuditLog&&(identical(other.id, id) || other.id == id)&&(identical(other.matchId, matchId) || other.matchId == matchId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.action, action) || other.action == action)&&(identical(other.details, details) || other.details == details)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.logicalClock, logicalClock) || other.logicalClock == logicalClock));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,matchId,userId,action,details,timestamp);
+int get hashCode => Object.hash(runtimeType,id,matchId,userId,action,details,timestamp,deviceId,logicalClock);
 
 @override
 String toString() {
-  return 'AuditLog(id: $id, matchId: $matchId, userId: $userId, action: $action, details: $details, timestamp: $timestamp)';
+  return 'AuditLog(id: $id, matchId: $matchId, userId: $userId, action: $action, details: $details, timestamp: $timestamp, deviceId: $deviceId, logicalClock: $logicalClock)';
 }
 
 
@@ -49,7 +52,7 @@ abstract mixin class $AuditLogCopyWith<$Res>  {
   factory $AuditLogCopyWith(AuditLog value, $Res Function(AuditLog) _then) = _$AuditLogCopyWithImpl;
 @useResult
 $Res call({
- String id, String matchId, String userId, AuditAction action, String details,@TimestampConverter() DateTime timestamp
+ String id, String matchId, String userId, AuditAction action, String details,@TimestampConverter() DateTime timestamp, String deviceId, int logicalClock
 });
 
 
@@ -66,7 +69,7 @@ class _$AuditLogCopyWithImpl<$Res>
 
 /// Create a copy of AuditLog
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? matchId = null,Object? userId = null,Object? action = null,Object? details = null,Object? timestamp = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? matchId = null,Object? userId = null,Object? action = null,Object? details = null,Object? timestamp = null,Object? deviceId = null,Object? logicalClock = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
@@ -74,7 +77,9 @@ as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullabl
 as String,action: null == action ? _self.action : action // ignore: cast_nullable_to_non_nullable
 as AuditAction,details: null == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String,logicalClock: null == logicalClock ? _self.logicalClock : logicalClock // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -159,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp,  String deviceId,  int logicalClock)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuditLog() when $default != null:
-return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp);case _:
+return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp,_that.deviceId,_that.logicalClock);case _:
   return orElse();
 
 }
@@ -180,10 +185,10 @@ return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp,  String deviceId,  int logicalClock)  $default,) {final _that = this;
 switch (_that) {
 case _AuditLog():
-return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp);case _:
+return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp,_that.deviceId,_that.logicalClock);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +205,10 @@ return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String matchId,  String userId,  AuditAction action,  String details, @TimestampConverter()  DateTime timestamp,  String deviceId,  int logicalClock)?  $default,) {final _that = this;
 switch (_that) {
 case _AuditLog() when $default != null:
-return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp);case _:
+return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_that.timestamp,_that.deviceId,_that.logicalClock);case _:
   return null;
 
 }
@@ -215,16 +220,21 @@ return $default(_that.id,_that.matchId,_that.userId,_that.action,_that.details,_
 @JsonSerializable()
 
 class _AuditLog implements AuditLog {
-  const _AuditLog({required this.id, required this.matchId, required this.userId, required this.action, required this.details, @TimestampConverter() required this.timestamp});
+  const _AuditLog({required this.id, required this.matchId, required this.userId, required this.action, required this.details, @TimestampConverter() required this.timestamp, this.deviceId = 'local_device', this.logicalClock = 0});
   factory _AuditLog.fromJson(Map<String, dynamic> json) => _$AuditLogFromJson(json);
 
 @override final  String id;
 @override final  String matchId;
 @override final  String userId;
 @override final  AuditAction action;
-// ★ StringからEnumへ変更
 @override final  String details;
 @override@TimestampConverter() final  DateTime timestamp;
+// ==========================================
+// ★ Phase 5-Step 1: 分散同期のトレーサビリティ強化
+// ==========================================
+@override@JsonKey() final  String deviceId;
+// どの端末からの操作か
+@override@JsonKey() final  int logicalClock;
 
 /// Create a copy of AuditLog
 /// with the given fields replaced by the non-null parameter values.
@@ -239,16 +249,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuditLog&&(identical(other.id, id) || other.id == id)&&(identical(other.matchId, matchId) || other.matchId == matchId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.action, action) || other.action == action)&&(identical(other.details, details) || other.details == details)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuditLog&&(identical(other.id, id) || other.id == id)&&(identical(other.matchId, matchId) || other.matchId == matchId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.action, action) || other.action == action)&&(identical(other.details, details) || other.details == details)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.logicalClock, logicalClock) || other.logicalClock == logicalClock));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,matchId,userId,action,details,timestamp);
+int get hashCode => Object.hash(runtimeType,id,matchId,userId,action,details,timestamp,deviceId,logicalClock);
 
 @override
 String toString() {
-  return 'AuditLog(id: $id, matchId: $matchId, userId: $userId, action: $action, details: $details, timestamp: $timestamp)';
+  return 'AuditLog(id: $id, matchId: $matchId, userId: $userId, action: $action, details: $details, timestamp: $timestamp, deviceId: $deviceId, logicalClock: $logicalClock)';
 }
 
 
@@ -259,7 +269,7 @@ abstract mixin class _$AuditLogCopyWith<$Res> implements $AuditLogCopyWith<$Res>
   factory _$AuditLogCopyWith(_AuditLog value, $Res Function(_AuditLog) _then) = __$AuditLogCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String matchId, String userId, AuditAction action, String details,@TimestampConverter() DateTime timestamp
+ String id, String matchId, String userId, AuditAction action, String details,@TimestampConverter() DateTime timestamp, String deviceId, int logicalClock
 });
 
 
@@ -276,7 +286,7 @@ class __$AuditLogCopyWithImpl<$Res>
 
 /// Create a copy of AuditLog
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? matchId = null,Object? userId = null,Object? action = null,Object? details = null,Object? timestamp = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? matchId = null,Object? userId = null,Object? action = null,Object? details = null,Object? timestamp = null,Object? deviceId = null,Object? logicalClock = null,}) {
   return _then(_AuditLog(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
@@ -284,7 +294,9 @@ as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullabl
 as String,action: null == action ? _self.action : action // ignore: cast_nullable_to_non_nullable
 as AuditAction,details: null == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String,logicalClock: null == logicalClock ? _self.logicalClock : logicalClock // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

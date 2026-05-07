@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // ★ 追加: ログイン状態の確認用
 import 'settings_provider.dart';
 
 enum Role { admin, scorer, viewer, editor }
@@ -37,8 +38,21 @@ final persistentRoleProvider = StateProvider<Role>((ref) {
 // 3. URL等による「一時的な上書き（QRからの閲覧者など）」を管理（他画面の参照エラー防止のため維持）
 final temporaryRoleOverrideProvider = StateProvider<Role?>((ref) => null);
 
-// ★ 今の「有効な役割」を導き出す唯一の真実
+// ==========================================
+// ★ Phase 1-Step 6: Viewer完全隔離（Zero Trust）
+// ==========================================
+// 今の「有効な役割」を導き出す唯一の真実
 final activeRoleProvider = Provider<Role>((ref) {
+  // 1. まず「システムとしてのログイン状態」を確認
+  final currentUser = FirebaseAuth.instance.currentUser;
+  
+  // 2. ログインしていない（ゲストユーザー）場合は、無条件で viewer に強制固定する
+  // これにより、URLを知っているだけの第三者が書き込み権限を得ることを物理的に防ぐ
+  if (currentUser == null) {
+    return Role.viewer;
+  }
+
+  // 3. ログインしている場合は、これまでの設定やモードに従う
   final mode = ref.watch(operationModeProvider);
   final base = ref.watch(persistentRoleProvider);
 
@@ -47,7 +61,6 @@ final activeRoleProvider = Provider<Role>((ref) {
     return base == Role.admin ? Role.admin : Role.scorer;
   } else {
     // 【道場モード】
-    // 管理者は「編集者」に、記録係は「閲覧のみ」に自動で切り替わる
     return base == Role.admin ? Role.editor : Role.viewer;
   }
 });

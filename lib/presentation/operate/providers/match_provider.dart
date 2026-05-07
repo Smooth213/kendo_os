@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
-import 'match_command_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart'; 
 import 'package:kendo_os/infrastructure/repository/match_repository.dart'; // ★ 復元
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';      // ★ 復元         // ★ 復元
@@ -61,9 +60,7 @@ class MatchActionController {
   }
 
   Future<void> updateScore(MatchModel currentMatch, int redScore, int whiteScore) async {
-    // ★ 改善: UI側でawaitしてローディング表示や通信エラーハンドリングができるよう Future<void> に変更
-    // (理想は matchApplicationServiceProvider に委譲することですが、まずは安全な非同期処理を担保します)
     final updatedMatch = currentMatch.copyWith(redScore: redScore, whiteScore: whiteScore, status: 'in_progress');
-    await ref.read(matchCommandProvider).saveMatch(updatedMatch);
+    await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch); // ★ 修正
   }
 }

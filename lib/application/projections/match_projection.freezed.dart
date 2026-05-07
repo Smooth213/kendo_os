@@ -12,17 +12,292 @@ part of 'match_projection.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
+mixin _$TimelineEvent {
+
+ String get id; DateTime get timestamp; String get side;// 'red', 'white', 'none'
+ String get actionName;// 'メン', '反則', '取り消し' など
+ bool get isImportant;
+/// Create a copy of TimelineEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TimelineEventCopyWith<TimelineEvent> get copyWith => _$TimelineEventCopyWithImpl<TimelineEvent>(this as TimelineEvent, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TimelineEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.side, side) || other.side == side)&&(identical(other.actionName, actionName) || other.actionName == actionName)&&(identical(other.isImportant, isImportant) || other.isImportant == isImportant));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,timestamp,side,actionName,isImportant);
+
+@override
+String toString() {
+  return 'TimelineEvent(id: $id, timestamp: $timestamp, side: $side, actionName: $actionName, isImportant: $isImportant)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $TimelineEventCopyWith<$Res>  {
+  factory $TimelineEventCopyWith(TimelineEvent value, $Res Function(TimelineEvent) _then) = _$TimelineEventCopyWithImpl;
+@useResult
+$Res call({
+ String id, DateTime timestamp, String side, String actionName, bool isImportant
+});
+
+
+
+
+}
+/// @nodoc
+class _$TimelineEventCopyWithImpl<$Res>
+    implements $TimelineEventCopyWith<$Res> {
+  _$TimelineEventCopyWithImpl(this._self, this._then);
+
+  final TimelineEvent _self;
+  final $Res Function(TimelineEvent) _then;
+
+/// Create a copy of TimelineEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? timestamp = null,Object? side = null,Object? actionName = null,Object? isImportant = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
+as DateTime,side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
+as String,actionName: null == actionName ? _self.actionName : actionName // ignore: cast_nullable_to_non_nullable
+as String,isImportant: null == isImportant ? _self.isImportant : isImportant // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [TimelineEvent].
+extension TimelineEventPatterns on TimelineEvent {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _TimelineEvent value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _TimelineEvent() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _TimelineEvent value)  $default,){
+final _that = this;
+switch (_that) {
+case _TimelineEvent():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _TimelineEvent value)?  $default,){
+final _that = this;
+switch (_that) {
+case _TimelineEvent() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String side,  String actionName,  bool isImportant)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _TimelineEvent() when $default != null:
+return $default(_that.id,_that.timestamp,_that.side,_that.actionName,_that.isImportant);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  DateTime timestamp,  String side,  String actionName,  bool isImportant)  $default,) {final _that = this;
+switch (_that) {
+case _TimelineEvent():
+return $default(_that.id,_that.timestamp,_that.side,_that.actionName,_that.isImportant);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  DateTime timestamp,  String side,  String actionName,  bool isImportant)?  $default,) {final _that = this;
+switch (_that) {
+case _TimelineEvent() when $default != null:
+return $default(_that.id,_that.timestamp,_that.side,_that.actionName,_that.isImportant);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _TimelineEvent implements TimelineEvent {
+  const _TimelineEvent({required this.id, required this.timestamp, required this.side, required this.actionName, required this.isImportant});
+  
+
+@override final  String id;
+@override final  DateTime timestamp;
+@override final  String side;
+// 'red', 'white', 'none'
+@override final  String actionName;
+// 'メン', '反則', '取り消し' など
+@override final  bool isImportant;
+
+/// Create a copy of TimelineEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$TimelineEventCopyWith<_TimelineEvent> get copyWith => __$TimelineEventCopyWithImpl<_TimelineEvent>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TimelineEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.side, side) || other.side == side)&&(identical(other.actionName, actionName) || other.actionName == actionName)&&(identical(other.isImportant, isImportant) || other.isImportant == isImportant));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,timestamp,side,actionName,isImportant);
+
+@override
+String toString() {
+  return 'TimelineEvent(id: $id, timestamp: $timestamp, side: $side, actionName: $actionName, isImportant: $isImportant)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$TimelineEventCopyWith<$Res> implements $TimelineEventCopyWith<$Res> {
+  factory _$TimelineEventCopyWith(_TimelineEvent value, $Res Function(_TimelineEvent) _then) = __$TimelineEventCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, DateTime timestamp, String side, String actionName, bool isImportant
+});
+
+
+
+
+}
+/// @nodoc
+class __$TimelineEventCopyWithImpl<$Res>
+    implements _$TimelineEventCopyWith<$Res> {
+  __$TimelineEventCopyWithImpl(this._self, this._then);
+
+  final _TimelineEvent _self;
+  final $Res Function(_TimelineEvent) _then;
+
+/// Create a copy of TimelineEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? timestamp = null,Object? side = null,Object? actionName = null,Object? isImportant = null,}) {
+  return _then(_TimelineEvent(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
+as DateTime,side: null == side ? _self.side : side // ignore: cast_nullable_to_non_nullable
+as String,actionName: null == actionName ? _self.actionName : actionName // ignore: cast_nullable_to_non_nullable
+as String,isImportant: null == isImportant ? _self.isImportant : isImportant // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$MatchProjection {
 
  String get id; String get tournamentId; int get matchOrder; String get matchType; String get status;// 'waiting', 'in_progress', 'finished', 'approved' のString
 // UI互換用プロパティ
- String get groupName;// ★追加
- bool get isKachinuki;// ★追加
-// 選手情報
+ String get groupName; bool get isKachinuki;// 選手情報
  String get redName; String get whiteName; List<String> get redRemaining; List<String> get whiteRemaining;// スコアと表示データ
  int get redScore; int get whiteScore; List<PointDisplay> get redDisplays; List<PointDisplay> get whiteDisplays;// UI特有の表示マーク（公式記録等用）
  String get firstPointSide; List<String> get redPointMarks; List<String> get whitePointMarks;// タイマー・その他
- int get remainingSeconds; bool get timerIsRunning; String get note;
+ int get remainingSeconds; bool get timerIsRunning; String get note;// ==========================================
+// ★ Phase 4-Step 1: 新しいUX強化データ
+// ==========================================
+ List<TimelineEvent> get timeline;// 試合の流れを可視化
+ double get momentum;
 /// Create a copy of MatchProjection
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,16 +308,16 @@ $MatchProjectionCopyWith<MatchProjection> get copyWith => _$MatchProjectionCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchProjection&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.matchOrder, matchOrder) || other.matchOrder == matchOrder)&&(identical(other.matchType, matchType) || other.matchType == matchType)&&(identical(other.status, status) || other.status == status)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.redName, redName) || other.redName == redName)&&(identical(other.whiteName, whiteName) || other.whiteName == whiteName)&&const DeepCollectionEquality().equals(other.redRemaining, redRemaining)&&const DeepCollectionEquality().equals(other.whiteRemaining, whiteRemaining)&&(identical(other.redScore, redScore) || other.redScore == redScore)&&(identical(other.whiteScore, whiteScore) || other.whiteScore == whiteScore)&&const DeepCollectionEquality().equals(other.redDisplays, redDisplays)&&const DeepCollectionEquality().equals(other.whiteDisplays, whiteDisplays)&&(identical(other.firstPointSide, firstPointSide) || other.firstPointSide == firstPointSide)&&const DeepCollectionEquality().equals(other.redPointMarks, redPointMarks)&&const DeepCollectionEquality().equals(other.whitePointMarks, whitePointMarks)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchProjection&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.matchOrder, matchOrder) || other.matchOrder == matchOrder)&&(identical(other.matchType, matchType) || other.matchType == matchType)&&(identical(other.status, status) || other.status == status)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.redName, redName) || other.redName == redName)&&(identical(other.whiteName, whiteName) || other.whiteName == whiteName)&&const DeepCollectionEquality().equals(other.redRemaining, redRemaining)&&const DeepCollectionEquality().equals(other.whiteRemaining, whiteRemaining)&&(identical(other.redScore, redScore) || other.redScore == redScore)&&(identical(other.whiteScore, whiteScore) || other.whiteScore == whiteScore)&&const DeepCollectionEquality().equals(other.redDisplays, redDisplays)&&const DeepCollectionEquality().equals(other.whiteDisplays, whiteDisplays)&&(identical(other.firstPointSide, firstPointSide) || other.firstPointSide == firstPointSide)&&const DeepCollectionEquality().equals(other.redPointMarks, redPointMarks)&&const DeepCollectionEquality().equals(other.whitePointMarks, whitePointMarks)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning)&&(identical(other.note, note) || other.note == note)&&const DeepCollectionEquality().equals(other.timeline, timeline)&&(identical(other.momentum, momentum) || other.momentum == momentum));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,tournamentId,matchOrder,matchType,status,groupName,isKachinuki,redName,whiteName,const DeepCollectionEquality().hash(redRemaining),const DeepCollectionEquality().hash(whiteRemaining),redScore,whiteScore,const DeepCollectionEquality().hash(redDisplays),const DeepCollectionEquality().hash(whiteDisplays),firstPointSide,const DeepCollectionEquality().hash(redPointMarks),const DeepCollectionEquality().hash(whitePointMarks),remainingSeconds,timerIsRunning,note]);
+int get hashCode => Object.hashAll([runtimeType,id,tournamentId,matchOrder,matchType,status,groupName,isKachinuki,redName,whiteName,const DeepCollectionEquality().hash(redRemaining),const DeepCollectionEquality().hash(whiteRemaining),redScore,whiteScore,const DeepCollectionEquality().hash(redDisplays),const DeepCollectionEquality().hash(whiteDisplays),firstPointSide,const DeepCollectionEquality().hash(redPointMarks),const DeepCollectionEquality().hash(whitePointMarks),remainingSeconds,timerIsRunning,note,const DeepCollectionEquality().hash(timeline),momentum]);
 
 @override
 String toString() {
-  return 'MatchProjection(id: $id, tournamentId: $tournamentId, matchOrder: $matchOrder, matchType: $matchType, status: $status, groupName: $groupName, isKachinuki: $isKachinuki, redName: $redName, whiteName: $whiteName, redRemaining: $redRemaining, whiteRemaining: $whiteRemaining, redScore: $redScore, whiteScore: $whiteScore, redDisplays: $redDisplays, whiteDisplays: $whiteDisplays, firstPointSide: $firstPointSide, redPointMarks: $redPointMarks, whitePointMarks: $whitePointMarks, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning, note: $note)';
+  return 'MatchProjection(id: $id, tournamentId: $tournamentId, matchOrder: $matchOrder, matchType: $matchType, status: $status, groupName: $groupName, isKachinuki: $isKachinuki, redName: $redName, whiteName: $whiteName, redRemaining: $redRemaining, whiteRemaining: $whiteRemaining, redScore: $redScore, whiteScore: $whiteScore, redDisplays: $redDisplays, whiteDisplays: $whiteDisplays, firstPointSide: $firstPointSide, redPointMarks: $redPointMarks, whitePointMarks: $whitePointMarks, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning, note: $note, timeline: $timeline, momentum: $momentum)';
 }
 
 
@@ -53,7 +328,7 @@ abstract mixin class $MatchProjectionCopyWith<$Res>  {
   factory $MatchProjectionCopyWith(MatchProjection value, $Res Function(MatchProjection) _then) = _$MatchProjectionCopyWithImpl;
 @useResult
 $Res call({
- String id, String tournamentId, int matchOrder, String matchType, String status, String groupName, bool isKachinuki, String redName, String whiteName, List<String> redRemaining, List<String> whiteRemaining, int redScore, int whiteScore, List<PointDisplay> redDisplays, List<PointDisplay> whiteDisplays, String firstPointSide, List<String> redPointMarks, List<String> whitePointMarks, int remainingSeconds, bool timerIsRunning, String note
+ String id, String tournamentId, int matchOrder, String matchType, String status, String groupName, bool isKachinuki, String redName, String whiteName, List<String> redRemaining, List<String> whiteRemaining, int redScore, int whiteScore, List<PointDisplay> redDisplays, List<PointDisplay> whiteDisplays, String firstPointSide, List<String> redPointMarks, List<String> whitePointMarks, int remainingSeconds, bool timerIsRunning, String note, List<TimelineEvent> timeline, double momentum
 });
 
 
@@ -70,7 +345,7 @@ class _$MatchProjectionCopyWithImpl<$Res>
 
 /// Create a copy of MatchProjection
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tournamentId = null,Object? matchOrder = null,Object? matchType = null,Object? status = null,Object? groupName = null,Object? isKachinuki = null,Object? redName = null,Object? whiteName = null,Object? redRemaining = null,Object? whiteRemaining = null,Object? redScore = null,Object? whiteScore = null,Object? redDisplays = null,Object? whiteDisplays = null,Object? firstPointSide = null,Object? redPointMarks = null,Object? whitePointMarks = null,Object? remainingSeconds = null,Object? timerIsRunning = null,Object? note = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tournamentId = null,Object? matchOrder = null,Object? matchType = null,Object? status = null,Object? groupName = null,Object? isKachinuki = null,Object? redName = null,Object? whiteName = null,Object? redRemaining = null,Object? whiteRemaining = null,Object? redScore = null,Object? whiteScore = null,Object? redDisplays = null,Object? whiteDisplays = null,Object? firstPointSide = null,Object? redPointMarks = null,Object? whitePointMarks = null,Object? remainingSeconds = null,Object? timerIsRunning = null,Object? note = null,Object? timeline = null,Object? momentum = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tournamentId: null == tournamentId ? _self.tournamentId : tournamentId // ignore: cast_nullable_to_non_nullable
@@ -93,7 +368,9 @@ as List<String>,whitePointMarks: null == whitePointMarks ? _self.whitePointMarks
 as List<String>,remainingSeconds: null == remainingSeconds ? _self.remainingSeconds : remainingSeconds // ignore: cast_nullable_to_non_nullable
 as int,timerIsRunning: null == timerIsRunning ? _self.timerIsRunning : timerIsRunning // ignore: cast_nullable_to_non_nullable
 as bool,note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
-as String,
+as String,timeline: null == timeline ? _self.timeline : timeline // ignore: cast_nullable_to_non_nullable
+as List<TimelineEvent>,momentum: null == momentum ? _self.momentum : momentum // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 
@@ -178,10 +455,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String groupName,  bool isKachinuki,  String redName,  String whiteName,  List<String> redRemaining,  List<String> whiteRemaining,  int redScore,  int whiteScore,  List<PointDisplay> redDisplays,  List<PointDisplay> whiteDisplays,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks,  int remainingSeconds,  bool timerIsRunning,  String note)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String groupName,  bool isKachinuki,  String redName,  String whiteName,  List<String> redRemaining,  List<String> whiteRemaining,  int redScore,  int whiteScore,  List<PointDisplay> redDisplays,  List<PointDisplay> whiteDisplays,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks,  int remainingSeconds,  bool timerIsRunning,  String note,  List<TimelineEvent> timeline,  double momentum)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MatchProjection() when $default != null:
-return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.groupName,_that.isKachinuki,_that.redName,_that.whiteName,_that.redRemaining,_that.whiteRemaining,_that.redScore,_that.whiteScore,_that.redDisplays,_that.whiteDisplays,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks,_that.remainingSeconds,_that.timerIsRunning,_that.note);case _:
+return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.groupName,_that.isKachinuki,_that.redName,_that.whiteName,_that.redRemaining,_that.whiteRemaining,_that.redScore,_that.whiteScore,_that.redDisplays,_that.whiteDisplays,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks,_that.remainingSeconds,_that.timerIsRunning,_that.note,_that.timeline,_that.momentum);case _:
   return orElse();
 
 }
@@ -199,10 +476,10 @@ return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String groupName,  bool isKachinuki,  String redName,  String whiteName,  List<String> redRemaining,  List<String> whiteRemaining,  int redScore,  int whiteScore,  List<PointDisplay> redDisplays,  List<PointDisplay> whiteDisplays,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks,  int remainingSeconds,  bool timerIsRunning,  String note)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String groupName,  bool isKachinuki,  String redName,  String whiteName,  List<String> redRemaining,  List<String> whiteRemaining,  int redScore,  int whiteScore,  List<PointDisplay> redDisplays,  List<PointDisplay> whiteDisplays,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks,  int remainingSeconds,  bool timerIsRunning,  String note,  List<TimelineEvent> timeline,  double momentum)  $default,) {final _that = this;
 switch (_that) {
 case _MatchProjection():
-return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.groupName,_that.isKachinuki,_that.redName,_that.whiteName,_that.redRemaining,_that.whiteRemaining,_that.redScore,_that.whiteScore,_that.redDisplays,_that.whiteDisplays,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks,_that.remainingSeconds,_that.timerIsRunning,_that.note);case _:
+return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.groupName,_that.isKachinuki,_that.redName,_that.whiteName,_that.redRemaining,_that.whiteRemaining,_that.redScore,_that.whiteScore,_that.redDisplays,_that.whiteDisplays,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks,_that.remainingSeconds,_that.timerIsRunning,_that.note,_that.timeline,_that.momentum);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -219,10 +496,10 @@ return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String groupName,  bool isKachinuki,  String redName,  String whiteName,  List<String> redRemaining,  List<String> whiteRemaining,  int redScore,  int whiteScore,  List<PointDisplay> redDisplays,  List<PointDisplay> whiteDisplays,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks,  int remainingSeconds,  bool timerIsRunning,  String note)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String groupName,  bool isKachinuki,  String redName,  String whiteName,  List<String> redRemaining,  List<String> whiteRemaining,  int redScore,  int whiteScore,  List<PointDisplay> redDisplays,  List<PointDisplay> whiteDisplays,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks,  int remainingSeconds,  bool timerIsRunning,  String note,  List<TimelineEvent> timeline,  double momentum)?  $default,) {final _that = this;
 switch (_that) {
 case _MatchProjection() when $default != null:
-return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.groupName,_that.isKachinuki,_that.redName,_that.whiteName,_that.redRemaining,_that.whiteRemaining,_that.redScore,_that.whiteScore,_that.redDisplays,_that.whiteDisplays,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks,_that.remainingSeconds,_that.timerIsRunning,_that.note);case _:
+return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.groupName,_that.isKachinuki,_that.redName,_that.whiteName,_that.redRemaining,_that.whiteRemaining,_that.redScore,_that.whiteScore,_that.redDisplays,_that.whiteDisplays,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks,_that.remainingSeconds,_that.timerIsRunning,_that.note,_that.timeline,_that.momentum);case _:
   return null;
 
 }
@@ -234,7 +511,7 @@ return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_th
 
 
 class _MatchProjection implements MatchProjection {
-  const _MatchProjection({required this.id, required this.tournamentId, required this.matchOrder, required this.matchType, required this.status, required this.groupName, required this.isKachinuki, required this.redName, required this.whiteName, final  List<String> redRemaining = const [], final  List<String> whiteRemaining = const [], required this.redScore, required this.whiteScore, final  List<PointDisplay> redDisplays = const [], final  List<PointDisplay> whiteDisplays = const [], this.firstPointSide = '', final  List<String> redPointMarks = const [], final  List<String> whitePointMarks = const [], required this.remainingSeconds, required this.timerIsRunning, required this.note}): _redRemaining = redRemaining,_whiteRemaining = whiteRemaining,_redDisplays = redDisplays,_whiteDisplays = whiteDisplays,_redPointMarks = redPointMarks,_whitePointMarks = whitePointMarks;
+  const _MatchProjection({required this.id, required this.tournamentId, required this.matchOrder, required this.matchType, required this.status, required this.groupName, required this.isKachinuki, required this.redName, required this.whiteName, final  List<String> redRemaining = const [], final  List<String> whiteRemaining = const [], required this.redScore, required this.whiteScore, final  List<PointDisplay> redDisplays = const [], final  List<PointDisplay> whiteDisplays = const [], this.firstPointSide = '', final  List<String> redPointMarks = const [], final  List<String> whitePointMarks = const [], required this.remainingSeconds, required this.timerIsRunning, required this.note, final  List<TimelineEvent> timeline = const [], this.momentum = 0.0}): _redRemaining = redRemaining,_whiteRemaining = whiteRemaining,_redDisplays = redDisplays,_whiteDisplays = whiteDisplays,_redPointMarks = redPointMarks,_whitePointMarks = whitePointMarks,_timeline = timeline;
   
 
 @override final  String id;
@@ -245,9 +522,7 @@ class _MatchProjection implements MatchProjection {
 // 'waiting', 'in_progress', 'finished', 'approved' のString
 // UI互換用プロパティ
 @override final  String groupName;
-// ★追加
 @override final  bool isKachinuki;
-// ★追加
 // 選手情報
 @override final  String redName;
 @override final  String whiteName;
@@ -302,6 +577,21 @@ class _MatchProjection implements MatchProjection {
 @override final  int remainingSeconds;
 @override final  bool timerIsRunning;
 @override final  String note;
+// ==========================================
+// ★ Phase 4-Step 1: 新しいUX強化データ
+// ==========================================
+ final  List<TimelineEvent> _timeline;
+// ==========================================
+// ★ Phase 4-Step 1: 新しいUX強化データ
+// ==========================================
+@override@JsonKey() List<TimelineEvent> get timeline {
+  if (_timeline is EqualUnmodifiableListView) return _timeline;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_timeline);
+}
+
+// 試合の流れを可視化
+@override@JsonKey() final  double momentum;
 
 /// Create a copy of MatchProjection
 /// with the given fields replaced by the non-null parameter values.
@@ -313,16 +603,16 @@ _$MatchProjectionCopyWith<_MatchProjection> get copyWith => __$MatchProjectionCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchProjection&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.matchOrder, matchOrder) || other.matchOrder == matchOrder)&&(identical(other.matchType, matchType) || other.matchType == matchType)&&(identical(other.status, status) || other.status == status)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.redName, redName) || other.redName == redName)&&(identical(other.whiteName, whiteName) || other.whiteName == whiteName)&&const DeepCollectionEquality().equals(other._redRemaining, _redRemaining)&&const DeepCollectionEquality().equals(other._whiteRemaining, _whiteRemaining)&&(identical(other.redScore, redScore) || other.redScore == redScore)&&(identical(other.whiteScore, whiteScore) || other.whiteScore == whiteScore)&&const DeepCollectionEquality().equals(other._redDisplays, _redDisplays)&&const DeepCollectionEquality().equals(other._whiteDisplays, _whiteDisplays)&&(identical(other.firstPointSide, firstPointSide) || other.firstPointSide == firstPointSide)&&const DeepCollectionEquality().equals(other._redPointMarks, _redPointMarks)&&const DeepCollectionEquality().equals(other._whitePointMarks, _whitePointMarks)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchProjection&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.matchOrder, matchOrder) || other.matchOrder == matchOrder)&&(identical(other.matchType, matchType) || other.matchType == matchType)&&(identical(other.status, status) || other.status == status)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.redName, redName) || other.redName == redName)&&(identical(other.whiteName, whiteName) || other.whiteName == whiteName)&&const DeepCollectionEquality().equals(other._redRemaining, _redRemaining)&&const DeepCollectionEquality().equals(other._whiteRemaining, _whiteRemaining)&&(identical(other.redScore, redScore) || other.redScore == redScore)&&(identical(other.whiteScore, whiteScore) || other.whiteScore == whiteScore)&&const DeepCollectionEquality().equals(other._redDisplays, _redDisplays)&&const DeepCollectionEquality().equals(other._whiteDisplays, _whiteDisplays)&&(identical(other.firstPointSide, firstPointSide) || other.firstPointSide == firstPointSide)&&const DeepCollectionEquality().equals(other._redPointMarks, _redPointMarks)&&const DeepCollectionEquality().equals(other._whitePointMarks, _whitePointMarks)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning)&&(identical(other.note, note) || other.note == note)&&const DeepCollectionEquality().equals(other._timeline, _timeline)&&(identical(other.momentum, momentum) || other.momentum == momentum));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,tournamentId,matchOrder,matchType,status,groupName,isKachinuki,redName,whiteName,const DeepCollectionEquality().hash(_redRemaining),const DeepCollectionEquality().hash(_whiteRemaining),redScore,whiteScore,const DeepCollectionEquality().hash(_redDisplays),const DeepCollectionEquality().hash(_whiteDisplays),firstPointSide,const DeepCollectionEquality().hash(_redPointMarks),const DeepCollectionEquality().hash(_whitePointMarks),remainingSeconds,timerIsRunning,note]);
+int get hashCode => Object.hashAll([runtimeType,id,tournamentId,matchOrder,matchType,status,groupName,isKachinuki,redName,whiteName,const DeepCollectionEquality().hash(_redRemaining),const DeepCollectionEquality().hash(_whiteRemaining),redScore,whiteScore,const DeepCollectionEquality().hash(_redDisplays),const DeepCollectionEquality().hash(_whiteDisplays),firstPointSide,const DeepCollectionEquality().hash(_redPointMarks),const DeepCollectionEquality().hash(_whitePointMarks),remainingSeconds,timerIsRunning,note,const DeepCollectionEquality().hash(_timeline),momentum]);
 
 @override
 String toString() {
-  return 'MatchProjection(id: $id, tournamentId: $tournamentId, matchOrder: $matchOrder, matchType: $matchType, status: $status, groupName: $groupName, isKachinuki: $isKachinuki, redName: $redName, whiteName: $whiteName, redRemaining: $redRemaining, whiteRemaining: $whiteRemaining, redScore: $redScore, whiteScore: $whiteScore, redDisplays: $redDisplays, whiteDisplays: $whiteDisplays, firstPointSide: $firstPointSide, redPointMarks: $redPointMarks, whitePointMarks: $whitePointMarks, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning, note: $note)';
+  return 'MatchProjection(id: $id, tournamentId: $tournamentId, matchOrder: $matchOrder, matchType: $matchType, status: $status, groupName: $groupName, isKachinuki: $isKachinuki, redName: $redName, whiteName: $whiteName, redRemaining: $redRemaining, whiteRemaining: $whiteRemaining, redScore: $redScore, whiteScore: $whiteScore, redDisplays: $redDisplays, whiteDisplays: $whiteDisplays, firstPointSide: $firstPointSide, redPointMarks: $redPointMarks, whitePointMarks: $whitePointMarks, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning, note: $note, timeline: $timeline, momentum: $momentum)';
 }
 
 
@@ -333,7 +623,7 @@ abstract mixin class _$MatchProjectionCopyWith<$Res> implements $MatchProjection
   factory _$MatchProjectionCopyWith(_MatchProjection value, $Res Function(_MatchProjection) _then) = __$MatchProjectionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String tournamentId, int matchOrder, String matchType, String status, String groupName, bool isKachinuki, String redName, String whiteName, List<String> redRemaining, List<String> whiteRemaining, int redScore, int whiteScore, List<PointDisplay> redDisplays, List<PointDisplay> whiteDisplays, String firstPointSide, List<String> redPointMarks, List<String> whitePointMarks, int remainingSeconds, bool timerIsRunning, String note
+ String id, String tournamentId, int matchOrder, String matchType, String status, String groupName, bool isKachinuki, String redName, String whiteName, List<String> redRemaining, List<String> whiteRemaining, int redScore, int whiteScore, List<PointDisplay> redDisplays, List<PointDisplay> whiteDisplays, String firstPointSide, List<String> redPointMarks, List<String> whitePointMarks, int remainingSeconds, bool timerIsRunning, String note, List<TimelineEvent> timeline, double momentum
 });
 
 
@@ -350,7 +640,7 @@ class __$MatchProjectionCopyWithImpl<$Res>
 
 /// Create a copy of MatchProjection
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tournamentId = null,Object? matchOrder = null,Object? matchType = null,Object? status = null,Object? groupName = null,Object? isKachinuki = null,Object? redName = null,Object? whiteName = null,Object? redRemaining = null,Object? whiteRemaining = null,Object? redScore = null,Object? whiteScore = null,Object? redDisplays = null,Object? whiteDisplays = null,Object? firstPointSide = null,Object? redPointMarks = null,Object? whitePointMarks = null,Object? remainingSeconds = null,Object? timerIsRunning = null,Object? note = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tournamentId = null,Object? matchOrder = null,Object? matchType = null,Object? status = null,Object? groupName = null,Object? isKachinuki = null,Object? redName = null,Object? whiteName = null,Object? redRemaining = null,Object? whiteRemaining = null,Object? redScore = null,Object? whiteScore = null,Object? redDisplays = null,Object? whiteDisplays = null,Object? firstPointSide = null,Object? redPointMarks = null,Object? whitePointMarks = null,Object? remainingSeconds = null,Object? timerIsRunning = null,Object? note = null,Object? timeline = null,Object? momentum = null,}) {
   return _then(_MatchProjection(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tournamentId: null == tournamentId ? _self.tournamentId : tournamentId // ignore: cast_nullable_to_non_nullable
@@ -373,7 +663,9 @@ as List<String>,whitePointMarks: null == whitePointMarks ? _self._whitePointMark
 as List<String>,remainingSeconds: null == remainingSeconds ? _self.remainingSeconds : remainingSeconds // ignore: cast_nullable_to_non_nullable
 as int,timerIsRunning: null == timerIsRunning ? _self.timerIsRunning : timerIsRunning // ignore: cast_nullable_to_non_nullable
 as bool,note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
-as String,
+as String,timeline: null == timeline ? _self._timeline : timeline // ignore: cast_nullable_to_non_nullable
+as List<TimelineEvent>,momentum: null == momentum ? _self.momentum : momentum // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 

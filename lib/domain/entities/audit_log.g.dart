@@ -13,6 +13,8 @@ _AuditLog _$AuditLogFromJson(Map<String, dynamic> json) => _AuditLog(
   action: $enumDecode(_$AuditActionEnumMap, json['action']),
   details: json['details'] as String,
   timestamp: const TimestampConverter().fromJson(json['timestamp']),
+  deviceId: json['deviceId'] as String? ?? 'local_device',
+  logicalClock: (json['logicalClock'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$AuditLogToJson(_AuditLog instance) => <String, dynamic>{
@@ -22,6 +24,8 @@ Map<String, dynamic> _$AuditLogToJson(_AuditLog instance) => <String, dynamic>{
   'action': _$AuditActionEnumMap[instance.action]!,
   'details': instance.details,
   'timestamp': const TimestampConverter().toJson(instance.timestamp),
+  'deviceId': instance.deviceId,
+  'logicalClock': instance.logicalClock,
 };
 
 const _$AuditActionEnumMap = {

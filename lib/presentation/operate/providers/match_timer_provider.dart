@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'match_list_provider.dart';
-import 'match_command_provider.dart';
+import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
 
 // ★ Step 3-3: 1秒ごとの「生の残り秒数」を配信するプロバイダ
 // 画面全体ではなく、このプロバイダを watch している小さな Widget だけがリビルドされる
@@ -27,7 +27,7 @@ class MatchTimer {
   Timer? _ticker;
   MatchTimer(this.ref);
 
-  MatchCommand get _command => ref.read(matchCommandProvider);
+  // ★ 削除: _commandプロパティは未使用になったため削除
 
   // ★ Step 3-3: ローカルでタイマーを回し、liveRemainingSecondsProvider を更新する
   void startLocalTicker(String matchId) {
@@ -70,7 +70,8 @@ class MatchTimer {
     if (!match.timerIsRunning && match.remainingSeconds <= 0 && match.matchType != '代表戦') return;
 
     final newIsRunning = !match.timerIsRunning;
-    await _command.saveMatch(match.copyWith(
+    // ★ 修正: ApplicationService に保存を委譲
+    await ref.read(matchApplicationServiceProvider).saveMatch(match.copyWith(
       timerIsRunning: newIsRunning,
       status: match.status == 'waiting' ? 'in_progress' : match.status,
     ));
@@ -94,7 +95,8 @@ class MatchTimer {
     // UI側の値も同期
     ref.read(liveRemainingSecondsProvider(matchId).notifier).state = seconds;
     
-    await _command.saveMatch(match.copyWith(remainingSeconds: seconds < 0 ? 0 : seconds));
+    // ★ 修正: ApplicationService に保存を委譲
+    await ref.read(matchApplicationServiceProvider).saveMatch(match.copyWith(remainingSeconds: seconds < 0 ? 0 : seconds));
   }
 
   MatchModel? _getMatch(String id) {

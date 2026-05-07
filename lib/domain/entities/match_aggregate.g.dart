@@ -9,7 +9,10 @@ part of 'match_aggregate.dart';
 _MatchSnapshot _$MatchSnapshotFromJson(Map<String, dynamic> json) =>
     _MatchSnapshot(
       id: json['id'] as String,
-      createdAt: const TimestampConverter().fromJson(json['createdAt']),
+      matchId: json['matchId'] as String? ?? '',
+      version: (json['version'] as num?)?.toInt() ?? 0,
+      state: MatchModel.fromJson(json['state'] as Map<String, dynamic>),
+      createdAt: DateTime.parse(json['createdAt'] as String),
       reason: json['reason'] as String,
       events:
           (json['events'] as List<dynamic>?)
@@ -21,7 +24,10 @@ _MatchSnapshot _$MatchSnapshotFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$MatchSnapshotToJson(_MatchSnapshot instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'createdAt': const TimestampConverter().toJson(instance.createdAt),
+      'matchId': instance.matchId,
+      'version': instance.version,
+      'state': instance.state.toJson(),
+      'createdAt': instance.createdAt.toIso8601String(),
       'reason': instance.reason,
       'events': instance.events.map((e) => e.toJson()).toList(),
     };
@@ -29,33 +35,23 @@ Map<String, dynamic> _$MatchSnapshotToJson(_MatchSnapshot instance) =>
 _MatchAggregate _$MatchAggregateFromJson(Map<String, dynamic> json) =>
     _MatchAggregate(
       id: json['id'] as String,
-      rule: MatchRule.fromJson(json['rule'] as Map<String, dynamic>),
       events:
           (json['events'] as List<dynamic>?)
               ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      snapshots:
-          (json['snapshots'] as List<dynamic>?)
-              ?.map((e) => MatchSnapshot.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      status: json['status'] as String? ?? 'waiting',
-      redScore: (json['redScore'] as num?)?.toInt() ?? 0,
-      whiteScore: (json['whiteScore'] as num?)?.toInt() ?? 0,
-      remainingSeconds: (json['remainingSeconds'] as num?)?.toInt() ?? 180,
-      timerIsRunning: json['timerIsRunning'] as bool? ?? false,
+      version: (json['version'] as num?)?.toInt() ?? 0,
+      status: json['status'] as String,
+      remainingSeconds: (json['remainingSeconds'] as num).toInt(),
+      timerIsRunning: json['timerIsRunning'] as bool,
     );
 
 Map<String, dynamic> _$MatchAggregateToJson(_MatchAggregate instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'rule': instance.rule.toJson(),
       'events': instance.events.map((e) => e.toJson()).toList(),
-      'snapshots': instance.snapshots.map((e) => e.toJson()).toList(),
+      'version': instance.version,
       'status': instance.status,
-      'redScore': instance.redScore,
-      'whiteScore': instance.whiteScore,
       'remainingSeconds': instance.remainingSeconds,
       'timerIsRunning': instance.timerIsRunning,
     };

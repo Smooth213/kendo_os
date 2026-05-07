@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/organization.dart';
-import '../providers/match_command_provider.dart';
 import '../providers/match_generator_provider.dart';
+import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
 import 'package:kendo_os/infrastructure/repository/organization_repository.dart';
 
 // ★ Phase 3 追加: サジェスト用のデータソース
@@ -351,7 +351,6 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
   }
 
   Future<void> _submit() async {
-    final command = ref.read(matchCommandProvider);
     final generator = ref.read(matchGeneratorProvider);
     
     if (_creationMode == '単発試合') {
@@ -366,7 +365,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         category: _categoryController.text, 
         note: _noteController.text, 
       );
-      await command.saveMatch(newMatch);
+      await ref.read(matchApplicationServiceProvider).saveMatch(newMatch); // ★ 修正
       
     } else if (_creationMode == 'リーグ戦自動生成') {
       final participants = _leagueParticipantsController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();

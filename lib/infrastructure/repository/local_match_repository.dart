@@ -9,6 +9,16 @@ import 'package:kendo_os/presentation/operate/providers/match_command_provider.d
 import 'package:kendo_os/domain/entities/match_aggregate.dart'; // ★ 追加
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 
+// ==========================================
+// ★ Phase 1-Step 4: ゼロトラストの最終防壁（例外定義）
+// ==========================================
+class TamperedEventException implements Exception {
+  final String message;
+  TamperedEventException(this.message);
+  @override
+  String toString() => 'TamperedEventException: $message';
+}
+
 // アプリ起動時に main.dart で初期化された Isar を受け取る Provider
 final isarProvider = Provider<Isar>((ref) {
   throw UnimplementedError('main.dartでIsarを初期化してoverrideしてください');
@@ -46,9 +56,18 @@ class LocalMatchRepository {
 
   // 3. 試合をローカルに保存（ここが単一真実への書き込み）
   Future<void> saveMatch(MatchModel match) async {
+    // ==========================================
+    // ★ Phase 1-Step 4: 最終防壁での署名検証
+    // 保存前にすべてのイベントが改ざんされていないかチェックする
+    // ==========================================
+    for (final event in match.events) {
+      if (!ScoreEventLegacyAdapter.verifySignature(event, 'kendo_os_secret_key_v1')) {
+        throw TamperedEventException('イベント(ID: ${event.id})の署名が無効、または改ざんされています。');
+      }
+    }
+
     final entity = _toEntity(match);
     await _isar.writeTxn(() async {
-      // 既存データを検索し、Isar内部のID(autoIncrement)を引き継いで上書き更新する
       final existing = await _isar.matchEntitys.filter().firestoreIdEqualTo(match.id).findFirst();
       if (existing != null) {
         entity.id = existing.id;
@@ -59,6 +78,15 @@ class LocalMatchRepository {
 
   // 4. 複数試合を一括保存（バッチ処理の代替）
   Future<void> saveMatchesBulk(List<MatchModel> matches) async {
+    // ★ 複数保存時もすべてのイベントの署名を検証する
+    for (final match in matches) {
+      for (final event in match.events) {
+        if (!ScoreEventLegacyAdapter.verifySignature(event, 'kendo_os_secret_key_v1')) {
+          throw TamperedEventException('イベント(ID: ${event.id})の署名が無効、または改ざんされています。');
+        }
+      }
+    }
+
     await _isar.writeTxn(() async {
       for (var match in matches) {
         final entity = _toEntity(match);
@@ -182,6 +210,14 @@ class LocalMatchRepository {
       // ★ Phase 1: スナップショットのモデル変換を追加（Isarからの読み込み）
       snapshots: entity.snapshots.map((s) => MatchSnapshot(
         id: s.id ?? '',
+        matchId: entity.firestoreId,
+        version: s.events.length,
+        state: MatchModel(
+          id: entity.firestoreId,
+          matchType: entity.matchType,
+          redName: entity.redName,
+          whiteName: entity.whiteName,
+        ),
         createdAt: s.createdAt ?? DateTime.now(),
         reason: s.reason ?? '',
         events: s.events.map((e) => ScoreEventLegacyAdapter.fromLegacy(

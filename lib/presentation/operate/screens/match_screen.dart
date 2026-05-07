@@ -580,7 +580,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               final int currentExtCount = '延長'.allMatches(match.note).length;
                               final extStr = '延長${currentExtCount + 1}回目';
                               
-                              await ref.read(matchCommandProvider).saveMatch(match.copyWith(
+                              await ref.read(matchApplicationServiceProvider).saveMatch(match.copyWith( // ★ 修正
                                 remainingSeconds: (extMins * 60).toInt(),
                                 timerIsRunning: false,
                                 note: match.note.isEmpty ? extStr : '${match.note} ($extStr)',
@@ -751,7 +751,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       final updatedMatch = side == 'red' 
           ? match.copyWith(redName: newFullName) 
           : match.copyWith(whiteName: newFullName);
-      await ref.read(matchCommandProvider).saveMatch(updatedMatch);
+      await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch); // ★ 修正
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1027,7 +1027,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           remainingSeconds: 0, 
                         );
                         
-                        await ref.read(matchCommandProvider).saveMatch(updatedMatch);
+                        await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch); // ★ 修正
                         if (ctx.mounted) Navigator.pop(ctx);
                       }, 
                       child: const Text('決定して準備完了', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
@@ -1143,7 +1143,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               note: currentMatch.note,
             );
             
-            await ref.read(matchCommandProvider).saveMatch(nextMatch);
+            await ref.read(matchApplicationServiceProvider).saveMatch(nextMatch); // ★ 修正
             
             if (!ctx.mounted) return;
             // ★ Phase 8-1: GoRouterクラッシュ対策。ローディングダイアログを確実に閉じる
@@ -1434,28 +1434,27 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       default: typeStr = 'ポイント'; break;
                     }
                     final titleText = sideStr.isNotEmpty ? '$sideStr $typeStr' : typeStr;
-                    
-                    // タップ対象のイベントが、最新から数えて何個前か（= 取り消す数）
-                    final undoCount = index + 1;
 
                     return ListTile(
                       leading: Icon(Icons.history, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                       title: Text(titleText, style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(DateFormat('HH:mm:ss').format(event.timestamp)),
-                      trailing: Text('$undoCount手前まで戻る', style: const TextStyle(fontSize: 12, color: Colors.blue)),
+                      trailing: Text('${eventIndex + 1}本目まで戻る', style: const TextStyle(fontSize: 12, color: Colors.blue)),
                       onTap: () async {
-                        final confirm = await _showConfirmDialog('取り消しの確認', 'この操作を含め、最新の $undoCount 件の操作を取り消しますか？');
+                        final confirm = await _showConfirmDialog('取り消しの確認', 'この操作(${eventIndex + 1}本目)の時点まで、試合を完全に巻き戻しますか？');
                         if (confirm) {
-                          for (int i = 0; i < undoCount; i++) {
-                            ref.read(matchCommandQueueProvider).enqueue(
-                              MatchCommandModel(
-                                id: const Uuid().v4(),
-                                type: CommandType.undoLastEvent,
-                                payload: {'matchId': match.id},
-                                createdAt: DateTime.now(),
-                              ),
-                            );
-                          }
+                          // ★ 修正: ループではなく、単一の rewindTo コマンドを発行して一気にジャンプ
+                          ref.read(matchCommandQueueProvider).enqueue(
+                            MatchCommandModel(
+                              id: const Uuid().v4(),
+                              type: CommandType.rewindTo,
+                              payload: {
+                                'matchId': match.id,
+                                'version': eventIndex + 1, // タップしたイベント「まで」を残す
+                              },
+                              createdAt: DateTime.now(),
+                            ),
+                          );
                           if (ctx.mounted) Navigator.pop(ctx);
                         }
                       },
@@ -1487,7 +1486,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       timerIsRunning: false,
       remainingSeconds: 0,
     );
-    await ref.read(matchCommandProvider).saveMatch(finishedMatch);
+    await ref.read(matchApplicationServiceProvider).saveMatch(finishedMatch); // ★ 修正
 
     final engine = ref.read(bunaiksenInfiniteEngineProvider);
     final nextMatch = await engine.processMatchResult(finishedMatch, winnerColor);
@@ -1536,7 +1535,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 onPressed: () async {
                   Navigator.of(dialogContext).pop();
                   final startMatch = nextMatch.copyWith(status: 'in_progress');
-                  await ref.read(matchCommandProvider).saveMatch(startMatch);
+                  await ref.read(matchApplicationServiceProvider).saveMatch(startMatch); // ★ 修正
                   if (context.mounted) {
                     context.pushReplacement('/match/${nextMatch.id}');
                   }

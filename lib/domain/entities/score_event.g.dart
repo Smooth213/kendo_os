@@ -8,6 +8,7 @@ part of 'score_event.dart';
 
 _ScoreEvent _$ScoreEventFromJson(Map<String, dynamic> json) => _ScoreEvent(
   id: json['id'] as String? ?? '',
+  schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 1,
   side: $enumDecode(_$SideEnumMap, json['side']),
   strikeType:
       $enumDecodeNullable(_$StrikeTypeEnumMap, json['strikeType']) ??
@@ -22,11 +23,15 @@ _ScoreEvent _$ScoreEventFromJson(Map<String, dynamic> json) => _ScoreEvent(
   userId: json['userId'] as String?,
   sequence: (json['sequence'] as num?)?.toInt() ?? 0,
   isCanceled: json['isCanceled'] as bool? ?? false,
+  deviceId: json['deviceId'] as String? ?? 'local_device',
+  logicalClock: (json['logicalClock'] as num?)?.toInt() ?? 0,
+  signature: json['signature'] as String? ?? '',
 );
 
 Map<String, dynamic> _$ScoreEventToJson(_ScoreEvent instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'schemaVersion': instance.schemaVersion,
       'side': _$SideEnumMap[instance.side]!,
       'strikeType': _$StrikeTypeEnumMap[instance.strikeType]!,
       'isIppon': instance.isIppon,
@@ -39,6 +44,9 @@ Map<String, dynamic> _$ScoreEventToJson(_ScoreEvent instance) =>
       'userId': instance.userId,
       'sequence': instance.sequence,
       'isCanceled': instance.isCanceled,
+      'deviceId': instance.deviceId,
+      'logicalClock': instance.logicalClock,
+      'signature': instance.signature,
     };
 
 const _$SideEnumMap = {Side.red: 'red', Side.white: 'white', Side.none: 'none'};

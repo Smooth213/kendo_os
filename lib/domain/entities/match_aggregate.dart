@@ -1,29 +1,35 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'score_event.dart';
-import '../rules/match_rule.dart';
-import '../../infrastructure/persistence/converters/json_converters.dart';
-import 'match_state.dart';
+import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/entities/match_model.dart';
 
 part 'match_aggregate.freezed.dart';
 part 'match_aggregate.g.dart';
 
 // ==========================================
-// ★ 責務の移動: Snapshotはドメイン（Aggregate）の履歴情報
+// ★ Phase 2-Step 1: Snapshotモデルの最適化
+// 以前は「単なる履歴のリスト」だったものを、
+// 「その時点の最新のバージョン」と「その時点の状態(State)」を記憶する形に進化させる
 // ==========================================
 @freezed
 abstract class MatchSnapshot with _$MatchSnapshot {
   const factory MatchSnapshot({
     required String id,
-    @TimestampConverter() required DateTime createdAt,
+    @Default('') String matchId, // ★ どの試合のスナップショットか
+    @Default(0) int version,     // ★ このスナップショットは何番目のイベントまでを適用した結果か
+    required MatchModel state,   // ★ この時点の計算済みの試合状態（重い計算をスキップするため）
+    required DateTime createdAt,
     required String reason,
-    @Default([]) List<ScoreEvent> events,
+    
+    // 下方互換のために残すが、今後はStateを使うので基本的には空になる
+    @Default([]) List<ScoreEvent> events, 
   }) = _MatchSnapshot;
 
-  factory MatchSnapshot.fromJson(Map<String, dynamic> json) => _$MatchSnapshotFromJson(json);
+  factory MatchSnapshot.fromJson(Map<String, dynamic> json) =>
+      _$MatchSnapshotFromJson(json);
 }
 
 // ==========================================
-// ★ ① Aggregate中心設計：純粋な「試合の本体」
+// CQRSの中核：EventStore由来の「真実の歴史」を保持する集約
 // ==========================================
 @freezed
 abstract class MatchAggregate with _$MatchAggregate {
@@ -31,58 +37,64 @@ abstract class MatchAggregate with _$MatchAggregate {
 
   const factory MatchAggregate({
     required String id,
-    required MatchRule rule,
-    @Default([]) List<ScoreEvent> events,
-    @Default([]) List<MatchSnapshot> snapshots,
     
-    // 試合の進行状態（永続化が必要なドメインの状態）
-    @Default('waiting') String status,
-    @Default(0) int redScore,
-    @Default(0) int whiteScore,
-    @Default(180) int remainingSeconds,
-    @Default(false) bool timerIsRunning,
+    // イベントソーシング：すべての変更履歴
+    @Default([]) List<ScoreEvent> events,
+    
+    // 楽観的ロック用：現在のイベント数（バージョン）
+    @Default(0) int version,
+
+    // 試合の基本情報や状態（投影元となるベースデータ）
+    required String status,
+    required int remainingSeconds,
+    required bool timerIsRunning,
   }) = _MatchAggregate;
 
-  factory MatchAggregate.fromJson(Map<String, dynamic> json) => _$MatchAggregateFromJson(json);
+  factory MatchAggregate.fromJson(Map<String, dynamic> json) =>
+      _$MatchAggregateFromJson(json);
 
-  // --- ドメインロジック（振る舞い） ---
-  
-  // 現在のイベント履歴から現在の状態（スコア等）を計算して導出する
-  MatchState get state {
-    int rScore = 0;
-    int wScore = 0;
+  // ==========================================
+  // ★ Phase 2-Step 3: 復元ロジック (Rehydrate)
+  // Snapshot と残りの Events から、最新のAggregateを高速に復元する
+  // ==========================================
+  static MatchAggregate rehydrate(
+    String matchId,
+    MatchSnapshot? snapshot, 
+    List<ScoreEvent> allEvents, 
+    MatchModel baseModel // 初期状態のベースモデル
+  ) {
+    MatchModel currentState;
+    int currentVersion;
+
+    if (snapshot != null) {
+      // 1. スナップショットがあれば、そこから状態とバージョンを復元（高速ワープ）
+      currentState = snapshot.state;
+      currentVersion = snapshot.version;
+    } else {
+      // 2. スナップショットがなければ、初期状態からスタート
+      currentState = baseModel.copyWith(events: []);
+      currentVersion = 0;
+    }
+
+    // 3. スナップショットのバージョン以降の「残りのイベント」だけを抽出
+    final remainingEvents = allEvents.skip(currentVersion).toList();
+
+    // 4. 残りのイベントを順次適用（リプレイ）して最新状態を構築
+    // ※ ここではKendoRuleEngineを使って再計算を行うのが理想だが、
+    // 現在のアーキテクチャでは ProjectionMapper 側で計算しているため、
+    // Aggregateとしては単にイベントリストを結合するだけに留める。
+    // ★ 完璧なCQRSを目指すなら、このAggregate内で状態(State)を完全に持たせるべきだが、
+    // Phase 2の段階ではまず「イベントの結合」と「バージョンのカウント」を担保する。
     
-    // キャンセルされていない、かつUndo・Restoreでない有効なポイントだけをカウントする簡易導出
-    // ※本格的な計算はKendoRuleEngineが行うが、Aggregate自身も基本状態を知っているべき
-    for (var e in events) {
-      if (e.isCanceled || e.isUndo || e.isRestore) continue;
-      if (e.isIppon) {
-        if (e.side == Side.red) rScore++;
-        if (e.side == Side.white) wScore++;
-      }
-    }
+    final updatedEvents = List<ScoreEvent>.from(currentState.events)..addAll(remainingEvents);
 
-    MatchStatus currentStatus;
-    switch (status) {
-      case 'waiting': currentStatus = MatchStatus.waiting; break;
-      case 'in_progress': currentStatus = MatchStatus.inProgress; break;
-      case 'finished': currentStatus = MatchStatus.finished; break;
-      case 'approved': currentStatus = MatchStatus.approved; break;
-      default: currentStatus = MatchStatus.inProgress;
-    }
-
-    return MatchState(
-      leftScore: rScore,
-      rightScore: wScore,
-      status: currentStatus,
-    );
-  }
-
-  // イベントを追加して新しい状態（Aggregate）を返す純粋関数
-  MatchAggregate addEvent(ScoreEvent event) {
-    return copyWith(
-      events: [...events, event],
-      status: 'in_progress', // イベントが追加されたら進行中とする
+    return MatchAggregate(
+      id: matchId,
+      events: updatedEvents,
+      version: allEvents.length, // 最新のバージョンは、全イベントの数
+      status: currentState.status,
+      remainingSeconds: currentState.remainingSeconds,
+      timerIsRunning: currentState.timerIsRunning,
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import '../providers/bunaiksen_provider.dart';
 import '../providers/match_command_provider.dart';
+import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
 import 'package:kendo_os/domain/entities/player_model.dart';
 import '../../shared/widgets/smart_player_input.dart';
 import '../../shared/widgets/multi_player_select_input.dart'; // ★追加: 複数選択ウィジェット
@@ -629,7 +630,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                   ));
                 }
 
-                await ref.read(matchCommandProvider).saveMatchesBulk(matchesToSave);
+                await ref.read(matchApplicationServiceProvider).saveMatchesBulk(matchesToSave); // ★ 修正
                 if (context.mounted) context.pop();
               },
             ),
@@ -732,7 +733,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                   }
                 }
 
-                await ref.read(matchCommandProvider).saveMatchesBulk(matchesToSave);
+                await ref.read(matchApplicationServiceProvider).saveMatchesBulk(matchesToSave); // ★ 修正
                 if (context.mounted) context.pop();
               },
             ),

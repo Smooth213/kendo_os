@@ -4,7 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'match_list_provider.dart';
-import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; // ★ DomainExceptionを参照するために必要
+// ★ kendo_rule_engine.dart のインポートを削除 (未使用のため)
 import 'match_rule_provider.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart'; // ★ Firestore版からIsar版に差し替え
 import 'sync_provider.dart'; // ★ 追加: クラウド同期ワーカー
@@ -40,69 +40,24 @@ class MatchCommandService {
   
   bool _isUndoing = false; // ★ 追加: Undo連打防止用フラグ
 
-  // 1. 試合の保存（純粋なDB書き込み。二重送信防止はQueueが担当するためガードを撤廃）
-  Future<void> saveMatch(MatchModel match) async {
-    // 以前の if (ref.read(isMatchCommandProcessingProvider)) return; は削除しました
-    ref.read(matchCommandErrorProvider.notifier).state = null;
+  // ==========================================
+  // ★ Phase 1-Step 5: API境界の固定（Zero Trust）
+  // 以前ここにあった saveMatch と saveMatchesBulk は、UIからの直接の
+  // データベース書き込みを許してしまうため削除しました。
+  // すべての書き込みは、必ず関所（PermissionService）を持った
+  // MatchApplicationService を経由しなければなりません。
+  // ==========================================
 
-    try {
-      final matchToSave = match.copyWith(
-        isDirty: true,
-        lastUpdatedAt: DateTime.now(),
-      );
-      await ref.read(localMatchRepositoryProvider).saveMatch(matchToSave);
-      
-      // ★ Phase 3: ローカル保存後、即座にクラウドへ同期（UI反映のトリガー）
-      Future.microtask(() => ref.read(syncEngineProvider).syncNow());
-    } catch (e) {
-      debugPrint('🔥 [Command Error]: $e');
-      String msg = '保存に失敗しました';
-      if (e is DomainException) msg = e.message;
-      ref.read(matchCommandErrorProvider.notifier).state = msg;
-    }
-  }
-
-  // 2. 複数の試合を一括保存（バッチ処理）
-  Future<void> saveMatchesBulk(List<MatchModel> newMatches) async {
-    if (newMatches.isEmpty) return;
-    try {
-      debugPrint('🚚 [2. 保存センサー] DBに渡す直前のRuleがnullか?: ${newMatches.first.rule == null}'); // ★ デバッグ用センサー
-      await ref.read(localMatchRepositoryProvider).saveMatchesBulk(newMatches);
-      
-      // ★ Phase 3: 一括保存後も同期ワーカーをキック
-      Future.microtask(() => ref.read(syncEngineProvider).syncNow());
-    } catch (e) {
-      debugPrint('🔥 [Command Error] saveMatchesBulk: $e');
-      throw Exception('一括保存に失敗しました');
-    }
-  }
-
-  // 3. 判定による試合終了処理（Firestoreトランザクションを撤廃）
+  // 3. 判定による試合終了処理
   Future<void> completeMatchWithHantei(MatchModel currentMatch, String hanteiResult, String? userId) async {
     try {
-      MatchModel updatedMatch = currentMatch;
+      // ★ 修正: 直接データを書き換えて saveMatch するのではなく、関所を通る ApplicationService に委譲する
       if (hanteiResult == 'red' || hanteiResult == 'white') {
-        final newEvent = ScoreEventLegacyAdapter.fromLegacy(
-          id: const Uuid().v4(),
-          side: hanteiResult == 'red' ? Side.red : Side.white,
-          type: PointType.hantei,
-          timestamp: DateTime.now(),
-          userId: userId,
-          sequence: currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1,
-        );
-        updatedMatch = updatedMatch.copyWith(
-          events: [...currentMatch.events, newEvent],
-          redScore: (currentMatch.redScore as num).toInt() + (hanteiResult == 'red' ? 1 : 0),
-          whiteScore: (currentMatch.whiteScore as num).toInt() + (hanteiResult == 'white' ? 1 : 0),
-        );
+        final side = hanteiResult == 'red' ? Side.red : Side.white;
+        await ref.read(matchApplicationServiceProvider).finishMatchManually(currentMatch.id, hanteiWinner: side);
+      } else if (hanteiResult == 'draw') {
+        await ref.read(matchApplicationServiceProvider).finishMatchManually(currentMatch.id);
       }
-      updatedMatch = updatedMatch.copyWith(
-        status: 'finished',
-        remainingSeconds: 0,
-        timerIsRunning: false,
-      );
-      // 単一のsaveMatch（ローカルへの書き込み）に委譲
-      await saveMatch(updatedMatch);
     } catch (e) {
       debugPrint('🔥 [Command Error] completeMatchWithHantei: $e');
       rethrow;
@@ -111,37 +66,19 @@ class MatchCommandService {
 
   // 4. ★ Phase 3: スコアラー権限（有効期限付きロック機構）
   Future<bool> claimScorer(String matchId, String userId) async {
-    final match = _getMatch(matchId);
-    if (match == null) return false;
-    
-    final now = DateTime.now();
-    final isLockExpired = match.lockExpiresAt != null && match.lockExpiresAt!.isBefore(now);
-    
-    // ロックが空、自分のロック、または「他人のロックだが有効期限切れ（放置状態）」の場合
-    if (match.scorerId == null || match.scorerId == userId || isLockExpired) {
-      // 30分の有効期限でロックを取得・更新（剣道の試合には十分すぎる猶予時間）
-      final expiresAt = now.add(const Duration(minutes: 30));
-      await saveMatch(match.copyWith(scorerId: userId, lockExpiresAt: expiresAt));
-      return true;
-    }
-    return false;
+    // ★ 修正: ApplicationService にロック操作を委譲
+    return await ref.read(matchApplicationServiceProvider).claimScorer(matchId, userId);
   }
 
   Future<void> releaseScorer(String matchId, String userId) async {
-    final match = _getMatch(matchId);
-    if (match != null && match.scorerId == userId) {
-      await saveMatch(match.copyWith(scorerId: null, lockExpiresAt: null));
-    }
+    // ★ 修正: ApplicationService にアンロック操作を委譲
+    await ref.read(matchApplicationServiceProvider).releaseScorer(matchId, userId);
   }
 
   // ★ Phase 3: スコアラー権限の強制奪取 (テイクオーバー)
   Future<void> forceClaimScorer(String matchId, String userId) async {
-    final match = _getMatch(matchId);
-    if (match == null) return;
-    
-    final expiresAt = DateTime.now().add(const Duration(minutes: 30));
-    await saveMatch(match.copyWith(scorerId: userId, lockExpiresAt: expiresAt));
-    debugPrint('⚡ Scorer Overwritten by: $userId (Lock Extended)');
+    // ★ 修正: ApplicationService にテイクオーバー操作を委譲
+    await ref.read(matchApplicationServiceProvider).forceClaimScorer(matchId, userId);
   }
 
   // 5. 試合削除
@@ -202,7 +139,7 @@ class MatchCommandService {
     }
 
     if (updatedMatches.isNotEmpty) {
-      await saveMatchesBulk(updatedMatches);
+      await ref.read(matchApplicationServiceProvider).saveMatchesBulk(updatedMatches); // ★ 修正
       debugPrint('⚡ Team Renamed Bulk: $oldTeamName -> $newTeamName (${updatedMatches.length} matches)');
     }
   }
@@ -260,7 +197,7 @@ class MatchCommandService {
 
   // 7. 新規試合の追加
   Future<void> addMatch(MatchModel newMatch) async {
-    await saveMatch(newMatch);
+    await ref.read(matchApplicationServiceProvider).saveMatch(newMatch); // ★ 修正
   }
 
   // 8. ★ Step 4-4: 歴史(Events)からSnapshotを再構築（データ修復）
@@ -273,7 +210,7 @@ class MatchCommandService {
     final rebuiltMatch = ref.read(rebuildMatchFromEventsUseCaseProvider).execute(match, rule);
     
     // 計算結果をFirestoreへ強制同期
-    await saveMatch(rebuiltMatch);
+    await ref.read(matchApplicationServiceProvider).saveMatch(rebuiltMatch); // ★ 修正
   }
 
   // ==========================================
@@ -289,6 +226,9 @@ class MatchCommandService {
     
     final snapshot = MatchSnapshot(
       id: const Uuid().v4(),
+      matchId: match.id,
+      version: match.events.length,
+      state: match,
       createdAt: DateTime.now(),
       reason: reason,
       events: List.from(match.events), // その時点のイベント履歴を完全コピー
@@ -301,7 +241,7 @@ class MatchCommandService {
     }
 
     final updatedMatch = match.copyWith(snapshots: newSnapshots);
-    await saveMatch(updatedMatch);
+    await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch); // ★ 修正
     return updatedMatch; // 最新の状態を返す
   }
 
@@ -324,7 +264,7 @@ class MatchCommandService {
     final newEvents = [...snapshot.events, restoreEvent];
 
     // 状態を上書きし、rebuildMatchSnapshot を呼んでスコアなどを再計算させる
-    await saveMatch(match.copyWith(events: newEvents));
+    await ref.read(matchApplicationServiceProvider).saveMatch(match.copyWith(events: newEvents)); // ★ 修正
     await rebuildMatchSnapshot(matchId);
     
     // 復元後、現在の状態を「復元直後」として再度スナップショットを取っておくとさらに安全
@@ -341,7 +281,7 @@ class MatchCommandService {
 // ★【Phase 1: 堅牢化】オフラインファースト・キューシステムの基盤
 // ============================================================================
 
-enum CommandType { addScore, undoLastEvent, approveMatch }
+enum CommandType { addScore, undoLastEvent, approveMatch, rewindTo } // ★ rewindTo を追加
 enum CommandStatus { pending, done, failed }
 
 // 1. 操作の意図をパッキングするデータクラス (名前の競合を避けるため Model を付与)
@@ -452,15 +392,25 @@ class MatchCommandQueue {
           _errorCounts[cmd.id] = (_errorCounts[cmd.id] ?? 0) + 1;
           debugPrint('🔥 [CommandQueue] 処理失敗 (${_errorCounts[cmd.id]}回目): $e');
           
+          // ==========================================
+          // ★ Phase 3-Step 5: オフラインキューの強化
+          // ConcurrencyException のような一時的なエラーはすぐリトライするが、
+          // ネットワークエラーなどはデッドレターキューへ送る
+          // ==========================================
+          if (e.toString().contains('ConcurrencyException') && _errorCounts[cmd.id]! < 5) {
+            // 競合エラーの場合は、上限を増やして少し待ってから再挑戦する
+            await Future.delayed(const Duration(milliseconds: 200));
+            continue; // 次のループ（リトライ）へ
+          }
+          
           if (_errorCounts[cmd.id]! >= 3) {
             debugPrint('🚨 [CommandQueue] 失敗上限到達。デッドレターキューへ退避: ${cmd.id}');
-            // ★ 修正: 内部リストではなくプロバイダに送ってUIと連動させる
             ref.read(deadLetterQueueProvider.notifier).addErrorCommand(cmd); 
             _queue.removeAt(0);
             await localRepo.deleteCommand(cmd.id);
-            ref.read(matchCommandErrorProvider.notifier).state = '一部のデータが保存できず退避されました。電波状況を確認してください。';
+            ref.read(matchCommandErrorProvider.notifier).state = '一時的な通信エラーにより、データ送信を保留しました。電波状況を確認して再送してください。';
           } else {
-            break; // リトライのため一旦ループを抜ける
+            break; // その他のエラーは一旦ループを抜けて全体の処理を止める
           }
         }
       }
@@ -497,6 +447,10 @@ class MatchCommandQueue {
         break;
       case CommandType.approveMatch:
         await appService.approveMatch(matchId);
+        break;
+      case CommandType.rewindTo:
+        final version = cmd.payload['version'] as int;
+        await appService.rewindTo(matchId, version);
         break;
     }
   }

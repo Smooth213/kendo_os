@@ -20,6 +20,7 @@ import '../providers/match_rule_provider.dart';
 import 'package:uuid/uuid.dart'; // ★ 追加: 簡易入力のダミーイベントID生成用
 import 'package:kendo_os/domain/entities/score_event.dart'; // ★ 追加: ダミーイベント用
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
 
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
   final repo = ref.watch(tournamentRepositoryProvider);
@@ -2055,7 +2056,7 @@ class HomeScreen extends ConsumerWidget {
                         redScore: matchRedScore,
                         whiteScore: matchWhiteScore,
                       );
-                      await ref.read(matchCommandProvider).saveMatch(updated);
+                      await ref.read(matchApplicationServiceProvider).saveMatch(updated); // ★ 修正
                     }
                   } catch(e) {
                     if (context.mounted) {

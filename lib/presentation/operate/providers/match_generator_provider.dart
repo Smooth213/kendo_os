@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../domain/entities/match_model.dart';
 import 'match_list_provider.dart';
-import 'match_command_provider.dart';
+import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 修正: ApplicationServiceを使用
 
 // ★ Phase 3: 試合の大量生成（リーグ・団体）専門のプロバイダ
 final matchGeneratorProvider = Provider<MatchGenerator>((ref) {
@@ -14,11 +14,11 @@ class MatchGenerator {
   MatchGenerator(this.ref);
 
   FirebaseFirestore get _firestore => ref.read(firestoreProvider);
-  MatchCommand get _command => ref.read(matchCommandProvider);
 
   // リーグ戦生成
   Future<void> generateLeagueMatches(String category, List<String> participants, bool countForStandings, [String? note]) async {
     int order = 1;
+    List<MatchModel> matchesToSave = [];
     for (int i = 0; i < participants.length; i++) {
       for (int j = i + 1; j < participants.length; j++) {
         final docRef = _firestore.collection('matches').doc();
@@ -28,9 +28,11 @@ class MatchGenerator {
           countForStandings: countForStandings, source: 'auto_league',
           order: (order++).toDouble(), note: note ?? '',
         );
-        await _command.saveMatch(newMatch);
+        matchesToSave.add(newMatch);
       }
     }
+    // ★ 修正: ApplicationService に一括保存を委譲
+    await ref.read(matchApplicationServiceProvider).saveMatchesBulk(matchesToSave);
   }
 
   // 団体戦生成
@@ -42,6 +44,7 @@ class MatchGenerator {
     final groupName = '$redTeamName vs $whiteTeamName';
     int maxLength = redMembers.length > whiteMembers.length ? redMembers.length : whiteMembers.length;
     final positions = ['先鋒', '次鋒', '中堅', '副将', '大将']; 
+    List<MatchModel> matchesToSave = [];
     for (int i = 0; i < maxLength; i++) {
       final docRef = _firestore.collection('matches').doc();
       final newMatch = MatchModel(
@@ -53,8 +56,10 @@ class MatchGenerator {
         countForStandings: countForStandings, source: 'auto_team',
         matchOrder: i + 1, order: (i + 1).toDouble(), note: note ?? '',
       );
-      await _command.saveMatch(newMatch);
+      matchesToSave.add(newMatch);
     }
+    // ★ 修正: ApplicationService に一括保存を委譲
+    await ref.read(matchApplicationServiceProvider).saveMatchesBulk(matchesToSave);
   }
 
   // ★ Step 5-3: トーナメント形式のプレースホルダー試合を生成するヘルパー（例：準決勝）
@@ -76,6 +81,7 @@ class MatchGenerator {
       source: 'auto_tournament',
       order: order,
     );
-    await _command.saveMatch(newMatch);
+    // ★ 修正: ApplicationService に単一保存を委譲
+    await ref.read(matchApplicationServiceProvider).saveMatch(newMatch);
   }
 }

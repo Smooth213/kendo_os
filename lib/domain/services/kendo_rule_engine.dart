@@ -55,7 +55,6 @@ class KendoRuleEngine {
     final strategy = MatchStrategyFactory.getStrategy(match);
     int target = strategy.getTargetIppon(match, rule);
 
-    // ★ 修正: ルール側で明示的に「1本勝負」や「勝敗ライン(ipponLimit)」が設定されている場合はそちらを優先する
     if (rule != null) {
       if (rule.isIpponShobu) {
         target = 1;
@@ -70,15 +69,15 @@ class KendoRuleEngine {
       redIppon: 0, whiteIppon: 0,
       redHansoku: 0, whiteHansoku: 0,
       isTimeUp: false,
-      targetIppon: target, // 一旦本来のターゲットを設定
+      targetIppon: target, 
       hasHantei: hasHantei,
     );
 
-    // パイプライン処理でスコアと反則を計算
-    currentContext = ruleSet.scoring.apply(activeEvents, currentContext);
-    currentContext = ruleSet.hansoku.apply(activeEvents, currentContext);
+    // ★ C-4: 修正 - 各ルールのapplyに rule を渡すように変更
+    currentContext = ruleSet.scoring.apply(activeEvents, currentContext, rule);
+    currentContext = ruleSet.hansoku.apply(activeEvents, currentContext, rule);
     
-    // ★ 延長戦・代表戦（サドンデス）の規定本数を事後計算で補正
+    // 延長戦・代表戦（サドンデス）の規定本数を事後計算で補正
     if (match.matchType == '延長戦' || match.matchType == '代表戦') {
       int minScore = currentContext.redIppon < currentContext.whiteIppon 
           ? currentContext.redIppon 
@@ -89,12 +88,13 @@ class KendoRuleEngine {
         redHansoku: currentContext.redHansoku,
         whiteHansoku: currentContext.whiteHansoku,
         isTimeUp: currentContext.isTimeUp,
-        targetIppon: minScore + 1, // 少ない方のスコア + 1 をターゲットとする
+        targetIppon: minScore + 1,
         hasHantei: currentContext.hasHantei,
       );
     }
 
-    currentContext = ruleSet.time.apply(currentContext, match.remainingSeconds.toDouble());
+    // ★ C-4: 修正 - timeのapplyに rule を渡すように変更
+    currentContext = ruleSet.time.apply(currentContext, match.remainingSeconds.toDouble(), rule);
 
     final displays = _buildDisplays(activeEvents, currentContext);
 
@@ -106,11 +106,15 @@ class KendoRuleEngine {
 
   /// 2. 勝敗の決定ロジック (動的生成されたVictoryRuleに委譲)
   MatchResultStatus decideResult(MatchContext ctx, [MatchRule? rule]) {
-    return _getRuleSet(rule).victory.evaluate(ctx, 0, 0); 
+    // ★ C-4: 修正 - evaluateに rule を渡すように変更
+    return _getRuleSet(rule).victory.evaluate(ctx, 0, 0, rule); 
   }
 
   /// 3. 反則が一本に到達したかの判定
-  bool isHansokuIppon(int count) => count > 0 && count % 2 == 0;
+  bool isHansokuIppon(int count, [MatchRule? rule]) {
+    final limit = rule?.hansokuLimit ?? 2;
+    return limit > 0 && count > 0 && count % limit == 0;
+  }
 
   /// 4. 延長突入判定
   bool shouldEnterEncho(MatchContext ctx, bool allowsEncho, [MatchRule? rule]) {
@@ -129,7 +133,6 @@ class KendoRuleEngine {
     final bool isHanteiEvent = event.isHantei || event.type == PointType.hantei;
     
     if (match.status == 'finished' || match.status == 'approved') {
-      // ★ 修正: 判定(Hantei)やUndoは、試合終了ステータスからでも入力可能にする
       if (!event.isUndo && !isHanteiEvent) {
         return ValidationResult(false, '試合は既に終了しています。');
       }
@@ -157,7 +160,6 @@ class KendoRuleEngine {
     return active;
   }
 
-  // UI用のDisplay構築ロジック（既存の表示互換を維持）
   Map<Side, List<PointDisplay>> _buildDisplays(List<ScoreEvent> activeEvents, MatchContext finalContext) {
     List<PointDisplay> redDisplays = [];
     List<PointDisplay> whiteDisplays = [];
@@ -168,7 +170,7 @@ class KendoRuleEngine {
       if (e.isHansoku) {
         if (e.side == Side.red) {
           rHansoku++;
-          if (isHansokuIppon(rHansoku)) {
+          if (isHansokuIppon(rHansoku)) { // ※本当はruleを渡したいがUI表示上の互換維持のため一旦そのまま
             whiteDisplays.add(PointDisplay('反', isFirstOfMatch));
             isFirstOfMatch = false;
           }
@@ -289,7 +291,6 @@ class KendoRuleEngine {
     return GroupMatchStatus(isAllDone: isAllDone, isTie: isTie);
   }
 
-  // ★ Phase 6: 順位算出ロジックを専用の StandingsCalculator に移譲
   static List<LeagueTeamStat> calculateLeagueStandings(List<MatchModel> matches, MatchRule rule) {
     return LeagueStandingsCalculator().calculate(matches, rule);
   }

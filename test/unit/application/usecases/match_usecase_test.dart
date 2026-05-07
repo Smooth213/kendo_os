@@ -4,6 +4,7 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart';
+import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ 追加
 import '../../../helpers/event_factory.dart';
 
 void main() {
@@ -13,18 +14,21 @@ void main() {
     late UndoScoreUseCase undoScoreUseCase;
     late RebuildMatchFromEventsUseCase rebuildUseCase;
     late MatchModel dummyMatch;
+    late User testUser; // ★ 追加
 
     setUp(() {
       engine = KendoRuleEngine();
-      addScoreUseCase = AddScoreUseCase(engine);
-      undoScoreUseCase = UndoScoreUseCase(engine);
+      final permission = PermissionService(); // ★ 関所を追加
+      addScoreUseCase = AddScoreUseCase(engine, permission); // ★ 引数追加
+      undoScoreUseCase = UndoScoreUseCase(engine, permission); // ★ 引数追加
       rebuildUseCase = RebuildMatchFromEventsUseCase(engine);
-      dummyMatch = MatchModel( // ★ constを外し、コンパイラクラッシュを回避
+      dummyMatch = MatchModel( 
         id: 'test_m1', tournamentId: 't1', matchOrder: 1,
         redName: 'Red', whiteName: 'White',
         status: 'in_progress', matchType: '個人戦',
         remainingSeconds: 180,
       );
+      testUser = const User(id: 'test_user', role: Role.admin, organizationId: 'test_org'); // ★ 追加
     });
 
     test('ポイント追加によって MatchModel のスコアとイベント履歴が更新されること', () {
@@ -34,7 +38,7 @@ void main() {
       final rule = MatchRule();
 
       // Act
-      final updatedMatch = addScoreUseCase.execute(initialMatch, event, rule);
+      final updatedMatch = addScoreUseCase.execute(testUser, initialMatch, event, rule); // ★ 変更
 
       // Assert
       expect(updatedMatch.events.length, 1);
@@ -51,24 +55,24 @@ void main() {
       final rule = MatchRule();
 
       // Act
-      final undoneMatch = undoScoreUseCase.execute(matchWithScore, rule);
+      final undoneMatch = undoScoreUseCase.execute(testUser, matchWithScore, rule); // ★ 変更
 
       // Assert
-      expect(undoneMatch.events.last.isCanceled, true); // 最新イベントがキャンセルされる
-      expect(undoneMatch.redScore, 0); // スコアが 0 に戻る
+      expect(undoneMatch.events.last.isCanceled, true); 
+      expect(undoneMatch.redScore, 0); 
     });
 
     test('イベント履歴からの再構築 UseCase が正しく機能すること', () {
-      // Arrange: 手動でイベントだけを詰め込んだ「不整合な」モデルを用意
+      // Arrange
       final baseMatch = dummyMatch.copyWith(
         events: [men(Side.red), kote(Side.white)],
-        redScore: 0, // スコアがまだ計算されていない状態
+        redScore: 0, 
         whiteScore: 0,
       );
       final rule = MatchRule();
 
       // Act
-      final rebuiltMatch = rebuildUseCase.execute(baseMatch, rule);
+      final rebuiltMatch = rebuildUseCase.execute(baseMatch, rule); // ★ 再構築は読み取りなのでUser不要のまま
 
       // Assert
       expect(rebuiltMatch.redScore, 1);

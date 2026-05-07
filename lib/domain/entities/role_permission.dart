@@ -1,4 +1,22 @@
+import 'package:kendo_os/domain/entities/score_event.dart'; // ★ PermissionServiceで参照するため追加
+
 // ★ フェーズ①: ドメイン定義（モード・役割・権限）
+
+// ==========================================
+// ★ Phase 1-Step 1: ドメインに「主体（User）」を導入
+// システムのすべての変更操作において「誰が」行っているかを強制・証明するための基盤
+// ==========================================
+class User {
+  final String id;
+  final Role role;
+  final String organizationId;
+
+  const User({
+    required this.id,
+    required this.role,
+    required this.organizationId,
+  });
+}
 
 // ① OperationMode: アプリの動作モード
 enum OperationMode {
@@ -61,5 +79,43 @@ class PermissionFactory {
           isReadOnly: true,
         );
     }
+  }
+}
+
+// ==========================================
+// ★ Phase 1-Step 2: 操作単位の厳密な認可サービス (Zero Trustの関所)
+// UIの表示制御ではなく、ドメインロジックの直前で操作の正当性を検証する
+// ==========================================
+
+class UnauthorizedException implements Exception {
+  final String message;
+  UnauthorizedException(this.message);
+  @override
+  String toString() => 'UnauthorizedException: $message';
+}
+
+class PermissionService {
+  // スコア（イベント）追加の権限
+  bool canAppend(User user, ScoreEvent event) {
+    if (user.role == Role.viewer) return false;
+    
+    // 例: 取り消し(Undo)や復元イベントは記録係以上のみ
+    if (event.isUndo || event.isRestore || event.isCanceled) {
+      return user.role == Role.admin || user.role == Role.scorer;
+    }
+    
+    return user.role == Role.admin || user.role == Role.scorer || user.role == Role.editor;
+  }
+
+  // 取り消しの権限
+  bool canUndo(User user) {
+    if (user.role == Role.viewer) return false;
+    return user.role == Role.admin || user.role == Role.scorer;
+  }
+
+  // 時間切れ操作の権限
+  bool canTimeUp(User user) {
+    if (user.role == Role.viewer) return false;
+    return user.role == Role.admin || user.role == Role.scorer || user.role == Role.editor;
   }
 }

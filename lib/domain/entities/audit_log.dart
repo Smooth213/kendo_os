@@ -20,9 +20,15 @@ abstract class AuditLog with _$AuditLog {
     required String id,
     required String matchId,
     required String userId,
-    required AuditAction action, // ★ StringからEnumへ変更
+    required AuditAction action,
     required String details,
     @TimestampConverter() required DateTime timestamp,
+
+    // ==========================================
+    // ★ Phase 5-Step 1: 分散同期のトレーサビリティ強化
+    // ==========================================
+    @Default('local_device') String deviceId, // どの端末からの操作か
+    @Default(0) int logicalClock,             // 操作時の論理時計（順序の証拠）
   }) = _AuditLog;
 
   factory AuditLog.fromJson(Map<String, dynamic> json) => _$AuditLogFromJson(json);

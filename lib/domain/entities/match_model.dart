@@ -63,12 +63,8 @@ abstract class MatchModel with _$MatchModel {
   
   MatchAggregate get toAggregate => MatchAggregate(
     id: id,
-    rule: rule ?? const MatchRule(), 
     events: events,
-    snapshots: snapshots,
     status: status,
-    redScore: redScore,
-    whiteScore: whiteScore,
     remainingSeconds: remainingSeconds,
     timerIsRunning: timerIsRunning,
   );
