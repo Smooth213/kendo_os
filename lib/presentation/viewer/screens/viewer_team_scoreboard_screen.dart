@@ -167,7 +167,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  TableRow _buildMatchRow(MatchProjection m, BuildContext ctx, bool isDark, List<String> redLastNames, List<String> whiteLastNames) {
+  TableRow _buildMatchRow(MatchListProjection m, BuildContext ctx, bool isDark, List<String> redLastNames, List<String> whiteLastNames) {
     final isDone = m.status == 'approved' || m.status == 'finished';
     final rS = m.redScore;
     final wS = m.whiteScore;

@@ -7,26 +7,28 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/services/team_match_calculator.dart'; 
 
 class TournamentProjectionMapper {
-  // 既存の旧型変換メソッド（下位互換性のため残す）
+  
+  /// ★ 修正: 内部で toListProjection を使用し、軽量版のリストを作るように変更
   static TournamentProjection fromModels(TournamentModel tournament, List<MatchModel> matches) {
     final engine = KendoRuleEngine();
     final projections = matches.map((m) {
       final analysis = engine.analyzeHistory(m.events, m, m.rule);
-      return MatchProjectionMapper.toProjection(m, analysis);
+      // 詳細版(toProjection)ではなく軽量版(toListProjection)に変換
+      return MatchProjectionMapper.toListProjection(m, analysis);
     }).toList();
 
     return _buildTournamentProjection(tournament, projections);
   }
 
-  // ★ B-4: すでに構築済みのProjectionリストからTournamentProjectionを生成する
-  static TournamentProjection fromProjections(TournamentModel tournament, List<MatchProjection> projections) {
+  // ★ Phase 5: MatchProjection(詳細) ではなく MatchListProjection(軽量) を受け取るように修正
+  static TournamentProjection fromProjections(TournamentModel tournament, List<MatchListProjection> projections) {
     return _buildTournamentProjection(tournament, projections);
   }
 
-  // 内部の共通組み立てロジック
+  /// 内部の共通組み立てロジック
   static TournamentProjection _buildTournamentProjection(
     TournamentModel tournament, 
-    List<MatchProjection> projections,
+    List<MatchListProjection> projections,
   ) {
     final Map<String, TeamMatchProjection> teamMatches = {};
     final Map<String, Set<String>> categoryToGroupKeys = {};
@@ -40,14 +42,14 @@ class TournamentProjectionMapper {
       if (!teamMatches.containsKey(p.groupName)) {
         final groupProjections = projections.where((m) => m.groupName == p.groupName).toList();
 
-        // 団体戦結果の簡易計算（Projectionのデータだけで計算する）
+        // 団体戦結果の簡易計算
         int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
-        bool hasDaihyo = false; // ★ 追加
+        bool hasDaihyo = false;
         bool allFinished = groupProjections.every((m) => m.status == 'approved' || m.status == 'finished');
         
         for (var m in groupProjections) {
           if (m.matchType == '代表戦') {
-            hasDaihyo = true; // ★ 追加
+            hasDaihyo = true;
           }
           if (m.status == 'approved' || m.status == 'finished') {
             if (m.redScore > m.whiteScore) {
@@ -81,7 +83,7 @@ class TournamentProjectionMapper {
           isKachinuki: p.isKachinuki,
           isLeague: p.note.contains('[リーグ戦]'),
           note: p.note,
-          matches: groupProjections,
+          matches: groupProjections, // ここで MatchListProjection のリストが渡される
           result: TeamMatchResult(
             teamWinner: winner,
             redWins: rWins,
@@ -89,8 +91,8 @@ class TournamentProjectionMapper {
             redPoints: rPts,
             whitePoints: wPts,
             allFinished: allFinished,
-            hasDaihyo: hasDaihyo, // ★ 修正: 必須パラメータ追加
-            isTie: winner == 'draw', // ★ 修正: 必須パラメータ追加
+            hasDaihyo: hasDaihyo,
+            isTie: winner == 'draw',
           ),
         );
       }

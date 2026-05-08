@@ -14,9 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TimelineEvent {
 
- String get id; DateTime get timestamp; String get side;// 'red', 'white', 'none'
- String get actionName;// 'メン', '反則', '取り消し' など
- bool get isImportant;
+ String get id; DateTime get timestamp; String get side; String get actionName; bool get isImportant;
 /// Create a copy of TimelineEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -218,9 +216,7 @@ class _TimelineEvent implements TimelineEvent {
 @override final  String id;
 @override final  DateTime timestamp;
 @override final  String side;
-// 'red', 'white', 'none'
 @override final  String actionName;
-// 'メン', '反則', '取り消し' など
 @override final  bool isImportant;
 
 /// Create a copy of TimelineEvent
@@ -285,19 +281,323 @@ as bool,
 }
 
 /// @nodoc
+mixin _$MatchListProjection {
+
+ String get id; String get tournamentId; int get matchOrder; String get matchType; String get status; String get redName; String get whiteName; int get redScore; int get whiteScore;// 集計・表示用に必須のフィールドを追加
+ String get groupName; bool get isKachinuki; String get note; String get firstPointSide; List<String> get redPointMarks; List<String> get whitePointMarks;
+/// Create a copy of MatchListProjection
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MatchListProjectionCopyWith<MatchListProjection> get copyWith => _$MatchListProjectionCopyWithImpl<MatchListProjection>(this as MatchListProjection, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchListProjection&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.matchOrder, matchOrder) || other.matchOrder == matchOrder)&&(identical(other.matchType, matchType) || other.matchType == matchType)&&(identical(other.status, status) || other.status == status)&&(identical(other.redName, redName) || other.redName == redName)&&(identical(other.whiteName, whiteName) || other.whiteName == whiteName)&&(identical(other.redScore, redScore) || other.redScore == redScore)&&(identical(other.whiteScore, whiteScore) || other.whiteScore == whiteScore)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.note, note) || other.note == note)&&(identical(other.firstPointSide, firstPointSide) || other.firstPointSide == firstPointSide)&&const DeepCollectionEquality().equals(other.redPointMarks, redPointMarks)&&const DeepCollectionEquality().equals(other.whitePointMarks, whitePointMarks));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,tournamentId,matchOrder,matchType,status,redName,whiteName,redScore,whiteScore,groupName,isKachinuki,note,firstPointSide,const DeepCollectionEquality().hash(redPointMarks),const DeepCollectionEquality().hash(whitePointMarks));
+
+@override
+String toString() {
+  return 'MatchListProjection(id: $id, tournamentId: $tournamentId, matchOrder: $matchOrder, matchType: $matchType, status: $status, redName: $redName, whiteName: $whiteName, redScore: $redScore, whiteScore: $whiteScore, groupName: $groupName, isKachinuki: $isKachinuki, note: $note, firstPointSide: $firstPointSide, redPointMarks: $redPointMarks, whitePointMarks: $whitePointMarks)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MatchListProjectionCopyWith<$Res>  {
+  factory $MatchListProjectionCopyWith(MatchListProjection value, $Res Function(MatchListProjection) _then) = _$MatchListProjectionCopyWithImpl;
+@useResult
+$Res call({
+ String id, String tournamentId, int matchOrder, String matchType, String status, String redName, String whiteName, int redScore, int whiteScore, String groupName, bool isKachinuki, String note, String firstPointSide, List<String> redPointMarks, List<String> whitePointMarks
+});
+
+
+
+
+}
+/// @nodoc
+class _$MatchListProjectionCopyWithImpl<$Res>
+    implements $MatchListProjectionCopyWith<$Res> {
+  _$MatchListProjectionCopyWithImpl(this._self, this._then);
+
+  final MatchListProjection _self;
+  final $Res Function(MatchListProjection) _then;
+
+/// Create a copy of MatchListProjection
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tournamentId = null,Object? matchOrder = null,Object? matchType = null,Object? status = null,Object? redName = null,Object? whiteName = null,Object? redScore = null,Object? whiteScore = null,Object? groupName = null,Object? isKachinuki = null,Object? note = null,Object? firstPointSide = null,Object? redPointMarks = null,Object? whitePointMarks = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,tournamentId: null == tournamentId ? _self.tournamentId : tournamentId // ignore: cast_nullable_to_non_nullable
+as String,matchOrder: null == matchOrder ? _self.matchOrder : matchOrder // ignore: cast_nullable_to_non_nullable
+as int,matchType: null == matchType ? _self.matchType : matchType // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,redName: null == redName ? _self.redName : redName // ignore: cast_nullable_to_non_nullable
+as String,whiteName: null == whiteName ? _self.whiteName : whiteName // ignore: cast_nullable_to_non_nullable
+as String,redScore: null == redScore ? _self.redScore : redScore // ignore: cast_nullable_to_non_nullable
+as int,whiteScore: null == whiteScore ? _self.whiteScore : whiteScore // ignore: cast_nullable_to_non_nullable
+as int,groupName: null == groupName ? _self.groupName : groupName // ignore: cast_nullable_to_non_nullable
+as String,isKachinuki: null == isKachinuki ? _self.isKachinuki : isKachinuki // ignore: cast_nullable_to_non_nullable
+as bool,note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String,firstPointSide: null == firstPointSide ? _self.firstPointSide : firstPointSide // ignore: cast_nullable_to_non_nullable
+as String,redPointMarks: null == redPointMarks ? _self.redPointMarks : redPointMarks // ignore: cast_nullable_to_non_nullable
+as List<String>,whitePointMarks: null == whitePointMarks ? _self.whitePointMarks : whitePointMarks // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [MatchListProjection].
+extension MatchListProjectionPatterns on MatchListProjection {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MatchListProjection value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MatchListProjection() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MatchListProjection value)  $default,){
+final _that = this;
+switch (_that) {
+case _MatchListProjection():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MatchListProjection value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MatchListProjection() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String redName,  String whiteName,  int redScore,  int whiteScore,  String groupName,  bool isKachinuki,  String note,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _MatchListProjection() when $default != null:
+return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.redName,_that.whiteName,_that.redScore,_that.whiteScore,_that.groupName,_that.isKachinuki,_that.note,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String redName,  String whiteName,  int redScore,  int whiteScore,  String groupName,  bool isKachinuki,  String note,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks)  $default,) {final _that = this;
+switch (_that) {
+case _MatchListProjection():
+return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.redName,_that.whiteName,_that.redScore,_that.whiteScore,_that.groupName,_that.isKachinuki,_that.note,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tournamentId,  int matchOrder,  String matchType,  String status,  String redName,  String whiteName,  int redScore,  int whiteScore,  String groupName,  bool isKachinuki,  String note,  String firstPointSide,  List<String> redPointMarks,  List<String> whitePointMarks)?  $default,) {final _that = this;
+switch (_that) {
+case _MatchListProjection() when $default != null:
+return $default(_that.id,_that.tournamentId,_that.matchOrder,_that.matchType,_that.status,_that.redName,_that.whiteName,_that.redScore,_that.whiteScore,_that.groupName,_that.isKachinuki,_that.note,_that.firstPointSide,_that.redPointMarks,_that.whitePointMarks);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _MatchListProjection implements MatchListProjection {
+  const _MatchListProjection({required this.id, required this.tournamentId, required this.matchOrder, required this.matchType, required this.status, required this.redName, required this.whiteName, required this.redScore, required this.whiteScore, this.groupName = '', this.isKachinuki = false, this.note = '', this.firstPointSide = '', final  List<String> redPointMarks = const [], final  List<String> whitePointMarks = const []}): _redPointMarks = redPointMarks,_whitePointMarks = whitePointMarks;
+  
+
+@override final  String id;
+@override final  String tournamentId;
+@override final  int matchOrder;
+@override final  String matchType;
+@override final  String status;
+@override final  String redName;
+@override final  String whiteName;
+@override final  int redScore;
+@override final  int whiteScore;
+// 集計・表示用に必須のフィールドを追加
+@override@JsonKey() final  String groupName;
+@override@JsonKey() final  bool isKachinuki;
+@override@JsonKey() final  String note;
+@override@JsonKey() final  String firstPointSide;
+ final  List<String> _redPointMarks;
+@override@JsonKey() List<String> get redPointMarks {
+  if (_redPointMarks is EqualUnmodifiableListView) return _redPointMarks;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_redPointMarks);
+}
+
+ final  List<String> _whitePointMarks;
+@override@JsonKey() List<String> get whitePointMarks {
+  if (_whitePointMarks is EqualUnmodifiableListView) return _whitePointMarks;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_whitePointMarks);
+}
+
+
+/// Create a copy of MatchListProjection
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MatchListProjectionCopyWith<_MatchListProjection> get copyWith => __$MatchListProjectionCopyWithImpl<_MatchListProjection>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchListProjection&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.matchOrder, matchOrder) || other.matchOrder == matchOrder)&&(identical(other.matchType, matchType) || other.matchType == matchType)&&(identical(other.status, status) || other.status == status)&&(identical(other.redName, redName) || other.redName == redName)&&(identical(other.whiteName, whiteName) || other.whiteName == whiteName)&&(identical(other.redScore, redScore) || other.redScore == redScore)&&(identical(other.whiteScore, whiteScore) || other.whiteScore == whiteScore)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.isKachinuki, isKachinuki) || other.isKachinuki == isKachinuki)&&(identical(other.note, note) || other.note == note)&&(identical(other.firstPointSide, firstPointSide) || other.firstPointSide == firstPointSide)&&const DeepCollectionEquality().equals(other._redPointMarks, _redPointMarks)&&const DeepCollectionEquality().equals(other._whitePointMarks, _whitePointMarks));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,tournamentId,matchOrder,matchType,status,redName,whiteName,redScore,whiteScore,groupName,isKachinuki,note,firstPointSide,const DeepCollectionEquality().hash(_redPointMarks),const DeepCollectionEquality().hash(_whitePointMarks));
+
+@override
+String toString() {
+  return 'MatchListProjection(id: $id, tournamentId: $tournamentId, matchOrder: $matchOrder, matchType: $matchType, status: $status, redName: $redName, whiteName: $whiteName, redScore: $redScore, whiteScore: $whiteScore, groupName: $groupName, isKachinuki: $isKachinuki, note: $note, firstPointSide: $firstPointSide, redPointMarks: $redPointMarks, whitePointMarks: $whitePointMarks)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MatchListProjectionCopyWith<$Res> implements $MatchListProjectionCopyWith<$Res> {
+  factory _$MatchListProjectionCopyWith(_MatchListProjection value, $Res Function(_MatchListProjection) _then) = __$MatchListProjectionCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String tournamentId, int matchOrder, String matchType, String status, String redName, String whiteName, int redScore, int whiteScore, String groupName, bool isKachinuki, String note, String firstPointSide, List<String> redPointMarks, List<String> whitePointMarks
+});
+
+
+
+
+}
+/// @nodoc
+class __$MatchListProjectionCopyWithImpl<$Res>
+    implements _$MatchListProjectionCopyWith<$Res> {
+  __$MatchListProjectionCopyWithImpl(this._self, this._then);
+
+  final _MatchListProjection _self;
+  final $Res Function(_MatchListProjection) _then;
+
+/// Create a copy of MatchListProjection
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tournamentId = null,Object? matchOrder = null,Object? matchType = null,Object? status = null,Object? redName = null,Object? whiteName = null,Object? redScore = null,Object? whiteScore = null,Object? groupName = null,Object? isKachinuki = null,Object? note = null,Object? firstPointSide = null,Object? redPointMarks = null,Object? whitePointMarks = null,}) {
+  return _then(_MatchListProjection(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,tournamentId: null == tournamentId ? _self.tournamentId : tournamentId // ignore: cast_nullable_to_non_nullable
+as String,matchOrder: null == matchOrder ? _self.matchOrder : matchOrder // ignore: cast_nullable_to_non_nullable
+as int,matchType: null == matchType ? _self.matchType : matchType // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,redName: null == redName ? _self.redName : redName // ignore: cast_nullable_to_non_nullable
+as String,whiteName: null == whiteName ? _self.whiteName : whiteName // ignore: cast_nullable_to_non_nullable
+as String,redScore: null == redScore ? _self.redScore : redScore // ignore: cast_nullable_to_non_nullable
+as int,whiteScore: null == whiteScore ? _self.whiteScore : whiteScore // ignore: cast_nullable_to_non_nullable
+as int,groupName: null == groupName ? _self.groupName : groupName // ignore: cast_nullable_to_non_nullable
+as String,isKachinuki: null == isKachinuki ? _self.isKachinuki : isKachinuki // ignore: cast_nullable_to_non_nullable
+as bool,note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String,firstPointSide: null == firstPointSide ? _self.firstPointSide : firstPointSide // ignore: cast_nullable_to_non_nullable
+as String,redPointMarks: null == redPointMarks ? _self._redPointMarks : redPointMarks // ignore: cast_nullable_to_non_nullable
+as List<String>,whitePointMarks: null == whitePointMarks ? _self._whitePointMarks : whitePointMarks // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$MatchProjection {
 
- String get id; String get tournamentId; int get matchOrder; String get matchType; String get status;// 'waiting', 'in_progress', 'finished', 'approved' のString
-// UI互換用プロパティ
- String get groupName; bool get isKachinuki;// 選手情報
- String get redName; String get whiteName; List<String> get redRemaining; List<String> get whiteRemaining;// スコアと表示データ
- int get redScore; int get whiteScore; List<PointDisplay> get redDisplays; List<PointDisplay> get whiteDisplays;// UI特有の表示マーク（公式記録等用）
- String get firstPointSide; List<String> get redPointMarks; List<String> get whitePointMarks;// タイマー・その他
- int get remainingSeconds; bool get timerIsRunning; String get note;// ==========================================
-// ★ Phase 4-Step 1: 新しいUX強化データ
-// ==========================================
- List<TimelineEvent> get timeline;// 試合の流れを可視化
- double get momentum;
+ String get id; String get tournamentId; int get matchOrder; String get matchType; String get status; String get groupName; bool get isKachinuki; String get redName; String get whiteName; List<String> get redRemaining; List<String> get whiteRemaining; int get redScore; int get whiteScore; List<PointDisplay> get redDisplays; List<PointDisplay> get whiteDisplays;// ★ 復元: 公式記録画面やスコアボードで必須の表示用フィールド
+ String get firstPointSide; List<String> get redPointMarks; List<String> get whitePointMarks; int get remainingSeconds; bool get timerIsRunning; String get note; List<TimelineEvent> get timeline; double get momentum;
 /// Create a copy of MatchProjection
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -519,11 +819,8 @@ class _MatchProjection implements MatchProjection {
 @override final  int matchOrder;
 @override final  String matchType;
 @override final  String status;
-// 'waiting', 'in_progress', 'finished', 'approved' のString
-// UI互換用プロパティ
 @override final  String groupName;
 @override final  bool isKachinuki;
-// 選手情報
 @override final  String redName;
 @override final  String whiteName;
  final  List<String> _redRemaining;
@@ -540,7 +837,6 @@ class _MatchProjection implements MatchProjection {
   return EqualUnmodifiableListView(_whiteRemaining);
 }
 
-// スコアと表示データ
 @override final  int redScore;
 @override final  int whiteScore;
  final  List<PointDisplay> _redDisplays;
@@ -557,7 +853,7 @@ class _MatchProjection implements MatchProjection {
   return EqualUnmodifiableListView(_whiteDisplays);
 }
 
-// UI特有の表示マーク（公式記録等用）
+// ★ 復元: 公式記録画面やスコアボードで必須の表示用フィールド
 @override@JsonKey() final  String firstPointSide;
  final  List<String> _redPointMarks;
 @override@JsonKey() List<String> get redPointMarks {
@@ -573,24 +869,16 @@ class _MatchProjection implements MatchProjection {
   return EqualUnmodifiableListView(_whitePointMarks);
 }
 
-// タイマー・その他
 @override final  int remainingSeconds;
 @override final  bool timerIsRunning;
 @override final  String note;
-// ==========================================
-// ★ Phase 4-Step 1: 新しいUX強化データ
-// ==========================================
  final  List<TimelineEvent> _timeline;
-// ==========================================
-// ★ Phase 4-Step 1: 新しいUX強化データ
-// ==========================================
 @override@JsonKey() List<TimelineEvent> get timeline {
   if (_timeline is EqualUnmodifiableListView) return _timeline;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_timeline);
 }
 
-// 試合の流れを可視化
 @override@JsonKey() final  double momentum;
 
 /// Create a copy of MatchProjection
@@ -666,6 +954,284 @@ as bool,note: null == note ? _self.note : note // ignore: cast_nullable_to_non_n
 as String,timeline: null == timeline ? _self._timeline : timeline // ignore: cast_nullable_to_non_nullable
 as List<TimelineEvent>,momentum: null == momentum ? _self.momentum : momentum // ignore: cast_nullable_to_non_nullable
 as double,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$MatchAuditProjection {
+
+ String get id; String get status; List<TimelineEvent> get fullHistory; String? get scorerId; int get eventCount; SyncStatus get syncStatus;
+/// Create a copy of MatchAuditProjection
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MatchAuditProjectionCopyWith<MatchAuditProjection> get copyWith => _$MatchAuditProjectionCopyWithImpl<MatchAuditProjection>(this as MatchAuditProjection, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchAuditProjection&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.fullHistory, fullHistory)&&(identical(other.scorerId, scorerId) || other.scorerId == scorerId)&&(identical(other.eventCount, eventCount) || other.eventCount == eventCount)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,status,const DeepCollectionEquality().hash(fullHistory),scorerId,eventCount,syncStatus);
+
+@override
+String toString() {
+  return 'MatchAuditProjection(id: $id, status: $status, fullHistory: $fullHistory, scorerId: $scorerId, eventCount: $eventCount, syncStatus: $syncStatus)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MatchAuditProjectionCopyWith<$Res>  {
+  factory $MatchAuditProjectionCopyWith(MatchAuditProjection value, $Res Function(MatchAuditProjection) _then) = _$MatchAuditProjectionCopyWithImpl;
+@useResult
+$Res call({
+ String id, String status, List<TimelineEvent> fullHistory, String? scorerId, int eventCount, SyncStatus syncStatus
+});
+
+
+
+
+}
+/// @nodoc
+class _$MatchAuditProjectionCopyWithImpl<$Res>
+    implements $MatchAuditProjectionCopyWith<$Res> {
+  _$MatchAuditProjectionCopyWithImpl(this._self, this._then);
+
+  final MatchAuditProjection _self;
+  final $Res Function(MatchAuditProjection) _then;
+
+/// Create a copy of MatchAuditProjection
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? status = null,Object? fullHistory = null,Object? scorerId = freezed,Object? eventCount = null,Object? syncStatus = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,fullHistory: null == fullHistory ? _self.fullHistory : fullHistory // ignore: cast_nullable_to_non_nullable
+as List<TimelineEvent>,scorerId: freezed == scorerId ? _self.scorerId : scorerId // ignore: cast_nullable_to_non_nullable
+as String?,eventCount: null == eventCount ? _self.eventCount : eventCount // ignore: cast_nullable_to_non_nullable
+as int,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [MatchAuditProjection].
+extension MatchAuditProjectionPatterns on MatchAuditProjection {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MatchAuditProjection value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MatchAuditProjection() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MatchAuditProjection value)  $default,){
+final _that = this;
+switch (_that) {
+case _MatchAuditProjection():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MatchAuditProjection value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MatchAuditProjection() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String status,  List<TimelineEvent> fullHistory,  String? scorerId,  int eventCount,  SyncStatus syncStatus)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _MatchAuditProjection() when $default != null:
+return $default(_that.id,_that.status,_that.fullHistory,_that.scorerId,_that.eventCount,_that.syncStatus);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String status,  List<TimelineEvent> fullHistory,  String? scorerId,  int eventCount,  SyncStatus syncStatus)  $default,) {final _that = this;
+switch (_that) {
+case _MatchAuditProjection():
+return $default(_that.id,_that.status,_that.fullHistory,_that.scorerId,_that.eventCount,_that.syncStatus);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String status,  List<TimelineEvent> fullHistory,  String? scorerId,  int eventCount,  SyncStatus syncStatus)?  $default,) {final _that = this;
+switch (_that) {
+case _MatchAuditProjection() when $default != null:
+return $default(_that.id,_that.status,_that.fullHistory,_that.scorerId,_that.eventCount,_that.syncStatus);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _MatchAuditProjection implements MatchAuditProjection {
+  const _MatchAuditProjection({required this.id, required this.status, final  List<TimelineEvent> fullHistory = const [], this.scorerId, this.eventCount = 0, this.syncStatus = SyncStatus.synced}): _fullHistory = fullHistory;
+  
+
+@override final  String id;
+@override final  String status;
+ final  List<TimelineEvent> _fullHistory;
+@override@JsonKey() List<TimelineEvent> get fullHistory {
+  if (_fullHistory is EqualUnmodifiableListView) return _fullHistory;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_fullHistory);
+}
+
+@override final  String? scorerId;
+@override@JsonKey() final  int eventCount;
+@override@JsonKey() final  SyncStatus syncStatus;
+
+/// Create a copy of MatchAuditProjection
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MatchAuditProjectionCopyWith<_MatchAuditProjection> get copyWith => __$MatchAuditProjectionCopyWithImpl<_MatchAuditProjection>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchAuditProjection&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other._fullHistory, _fullHistory)&&(identical(other.scorerId, scorerId) || other.scorerId == scorerId)&&(identical(other.eventCount, eventCount) || other.eventCount == eventCount)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,status,const DeepCollectionEquality().hash(_fullHistory),scorerId,eventCount,syncStatus);
+
+@override
+String toString() {
+  return 'MatchAuditProjection(id: $id, status: $status, fullHistory: $fullHistory, scorerId: $scorerId, eventCount: $eventCount, syncStatus: $syncStatus)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MatchAuditProjectionCopyWith<$Res> implements $MatchAuditProjectionCopyWith<$Res> {
+  factory _$MatchAuditProjectionCopyWith(_MatchAuditProjection value, $Res Function(_MatchAuditProjection) _then) = __$MatchAuditProjectionCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String status, List<TimelineEvent> fullHistory, String? scorerId, int eventCount, SyncStatus syncStatus
+});
+
+
+
+
+}
+/// @nodoc
+class __$MatchAuditProjectionCopyWithImpl<$Res>
+    implements _$MatchAuditProjectionCopyWith<$Res> {
+  __$MatchAuditProjectionCopyWithImpl(this._self, this._then);
+
+  final _MatchAuditProjection _self;
+  final $Res Function(_MatchAuditProjection) _then;
+
+/// Create a copy of MatchAuditProjection
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? status = null,Object? fullHistory = null,Object? scorerId = freezed,Object? eventCount = null,Object? syncStatus = null,}) {
+  return _then(_MatchAuditProjection(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,fullHistory: null == fullHistory ? _self._fullHistory : fullHistory // ignore: cast_nullable_to_non_nullable
+as List<TimelineEvent>,scorerId: freezed == scorerId ? _self.scorerId : scorerId // ignore: cast_nullable_to_non_nullable
+as String?,eventCount: null == eventCount ? _self.eventCount : eventCount // ignore: cast_nullable_to_non_nullable
+as int,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,
   ));
 }
 

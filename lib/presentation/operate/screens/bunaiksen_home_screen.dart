@@ -6,6 +6,9 @@ import 'package:kendo_os/domain/entities/match_model.dart';
 import '../providers/match_list_provider.dart';
 import '../../shared/widgets/infinite_streak_leaderboard.dart';
 import '../providers/bunaiksen_provider.dart';
+// ★ Phase 8: 削除機能と権限管理用プロバイダを追加
+import '../providers/permission_provider.dart';
+import '../providers/match_command_provider.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -282,32 +285,53 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(color: isDark ? Colors.grey.shade800 : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
-                                        child: Text(match.matchType, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)),
-                                      ),
-                                      if (inProgress)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF8B0000).withValues(alpha: isDark ? 0.3 : 0.15), // ★ 修正
-                                            borderRadius: BorderRadius.circular(4)
+                                      // 左側：試合タイプとステータスをまとめる
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(color: isDark ? Colors.grey.shade800 : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+                                            child: Text(match.matchType, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)),
                                           ),
-                                          child: Text(
-                                            '進行中',
-                                            style: TextStyle(
-                                              fontSize: 10, 
-                                              fontWeight: FontWeight.bold,
-                                              color: isDark ? Colors.white : const Color(0xFF8B0000), // ★ 修正
+                                          const SizedBox(width: 8),
+                                          if (inProgress)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF8B0000).withValues(alpha: isDark ? 0.3 : 0.15),
+                                                borderRadius: BorderRadius.circular(4)
+                                              ),
+                                              child: Text('進行中', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF8B0000))),
+                                            )
+                                          else if (isFinished)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300, borderRadius: BorderRadius.circular(8)),
+                                              child: Text('終了', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
                                             ),
-                                          ),
-                                        )
-                                      else if (isFinished)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300, borderRadius: BorderRadius.circular(8)),
-                                          child: Text('終了', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
+                                        ],
+                                      ),
+                                      // 右側：削除ボタン（★ Phase 8: 権限チェック付き）
+                                      if (ref.watch(permissionProvider).canDeleteData)
+                                        IconButton(
+                                          icon: Icon(Icons.delete_outline, color: Colors.grey.withValues(alpha: isFinished ? 0.5 : 1.0), size: 20),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          onPressed: () async {
+                                            final confirm = await showDialog<bool>(
+                                              context: context,
+                                              builder: (ctx) => AlertDialog(
+                                                backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                                                title: Text('試合の削除', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                                                content: Text('削除しますか？', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+                                                actions: [
+                                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
+                                                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+                                                ],
+                                              ),
+                                            );
+                                            if (confirm == true) await ref.read(matchCommandProvider).deleteMatch(match.id);
+                                          },
                                         ),
                                     ],
                                   ),

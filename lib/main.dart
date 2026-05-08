@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // ★ Phase 9-3: インポート追加
 import 'package:shared_preferences/shared_preferences.dart'; 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
@@ -28,6 +29,8 @@ import 'presentation/operate/screens/team_scoreboard_screen.dart';
 import 'presentation/operate/screens/kachinuki_scoreboard_screen.dart'; // ★ Phase 6: 勝ち抜き戦のルーティング用に追加
 import 'presentation/operate/screens/login_screen.dart'; 
 import 'presentation/operate/screens/settings_screen.dart'; 
+import 'presentation/operate/screens/standings_screen.dart'; // ★ 追加: Phase 8-3 自チーム成績画面
+import 'presentation/operate/screens/official_record_screen.dart'; // ★ 追加: Phase 8-3 出力用スコア画面
 import 'presentation/operate/providers/auth_provider.dart';
 import 'presentation/operate/screens/audit_log_screen.dart'; // ★ Phase 5: 監査ログ画面を追加
 import 'presentation/operate/providers/settings_provider.dart'; 
@@ -91,12 +94,14 @@ void main() async {
   // ★ 1. 描画やUI関連のエラーをキャッチしてフリーズを防ぐ
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
+    FirebaseCrashlytics.instance.recordFlutterFatalError(details); // ★ Phase 9-3: 致命的なUIエラーをFirebaseへ送信
     container.read(metricsProvider).recordError(); // ★ UIエラーをメトリクスのエラー率に加算
     debugPrint('⚠️ UIエラー: ${details.exception}');
   };
 
   // ★ 2. 非同期処理や裏側のエラーをキャッチしてアプリのクラッシュを防ぐ
   PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true); // ★ Phase 9-3: 裏側のクラッシュもFirebaseへ送信
     container.read(metricsProvider).recordError(); // ★ 裏側エラーをメトリクスのエラー率に加算
     debugPrint('⚠️ 裏側エラー: $error');
     return true; 
@@ -206,6 +211,15 @@ final _router = GoRouter(
       path: '/team-registration/:id',
       builder: (context, state) => TeamRegistrationScreen(tournamentId: state.pathParameters['id']!),
     ),
+    // ★ Phase 8-3: 自チーム成績と出力用スコアのルーター設定を追加
+    GoRoute(
+      path: '/standings/:id',
+      builder: (context, state) => StandingsScreen(tournamentId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/official-record/:id',
+      builder: (context, state) => OfficialRecordScreen(tournamentId: state.pathParameters['id']!),
+    ),
     GoRoute(
       path: '/bunaiksen-home',
       builder: (context, state) => const BunaiksenHomeScreen(),
@@ -245,10 +259,43 @@ final routeObserverProvider = Provider<void>((ref) {
   ref.onDispose(() => router.routerDelegate.removeListener(listener));
 });
 
-class KendoOSApp extends ConsumerWidget {
+class KendoOSApp extends ConsumerStatefulWidget {
   const KendoOSApp({super.key});
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<KendoOSApp> createState() => _KendoOSAppState();
+}
+
+// ★ Phase 8-4: ライフサイクルを監視するために WidgetsBindingObserver を追加
+class _KendoOSAppState extends ConsumerState<KendoOSApp> with WidgetsBindingObserver {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this); // 監視スタート
+  }
+
+  // ★ Phase 8-4: アプリの状態が変わった時に呼ばれる
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    // アプリがバックグラウンドに回った（スリープ、ホーム画面に戻る等）瞬間
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。未送信データの強制同期を試行します...');
+      // SyncEngineの syncNow() を呼び出して残った仕事を終わらせる
+      ref.read(syncEngineProvider).syncNow();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // 監視終了
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // ★ Phase 4: 同期エンジンを監視（起動）させ、バックグラウンドで常駐させる
     ref.watch(syncEngineProvider);
 

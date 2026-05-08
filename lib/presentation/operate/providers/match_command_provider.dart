@@ -132,7 +132,7 @@ class MatchCommandService {
         updatedMatches.add(m.copyWith(
           redName: rName,
           whiteName: wName,
-          isDirty: true,
+          syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
           lastUpdatedAt: DateTime.now(),
         ));
       }

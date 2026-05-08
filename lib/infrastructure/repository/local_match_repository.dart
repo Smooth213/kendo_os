@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
+import 'package:kendo_os/domain/entities/score_event.dart'; // ★ ScoreEventの型認識のため追加
 import 'dart:convert'; // ★ 追加: Ruleを文字列に圧縮・解凍するための道具
 import 'package:kendo_os/domain/rules/match_rule.dart'; // ★ 追加: MatchRuleの型を認識させるため
 import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart'; // ★ 追加: MatchCommandModel等の型を認識させるため
@@ -104,26 +105,43 @@ class LocalMatchRepository {
     });
   }
 
-  // ★ Phase 3 復旧: 同期キュー（未送信データ）の取得
+  // ★ Phase 4 復旧: Isarの正しい否定構文に修正
   Future<List<MatchModel>> getPendingMatches() async {
-    final entities = await _isar.matchEntitys.filter().isDirtyEqualTo(true).findAll();
+    final entities = await _isar.matchEntitys.filter().not().syncStateEqualTo(SyncState.synced).findAll();
     return entities.map((e) => _toModel(e)).toList();
   }
 
-  // ★ Phase 3 復旧: 同期完了処理（isDirtyをfalseにする）
+  // ★ Phase 4 復旧: 同期完了処理
   Future<void> markAsSynced(String matchId) async {
     await _isar.writeTxn(() async {
       final entity = await _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).findFirst();
       if (entity != null) {
-        entity.isDirty = false;
+        entity.syncState = SyncState.synced;
+        entity.pendingEvents = []; // ★ 送信が完了したため差分キューを空にする
         await _isar.matchEntitys.put(entity);
       }
     });
   }
 
-  // ★ Phase 6: UI表示用 - 未送信データの「件数」をリアルタイム監視するストリーム
+  // ★ Phase 4 復旧: Isarの正しい否定構文に修正
   Stream<int> watchPendingMatchesCount() {
-    return _isar.matchEntitys.filter().isDirtyEqualTo(true).watch(fireImmediately: true).map((events) => events.length);
+    return _isar.matchEntitys.filter().not().syncStateEqualTo(SyncState.synced).watch(fireImmediately: true).map((events) => events.length);
+  }
+
+  ScoreEventEntity _eventToEntity(ScoreEvent e) {
+    return ScoreEventEntity()
+      ..id = e.id
+      ..side = e.side
+      ..type = e.type
+      ..timestamp = e.timestamp
+      ..userId = e.userId
+      ..sequence = e.sequence
+      ..isCanceled = e.isCanceled
+      ..isUndo = e.isUndo
+      ..isRestore = e.isRestore
+      ..deviceId = e.deviceId
+      ..logicalClock = e.logicalClock
+      ..signature = e.signature;
   }
 
   // --- 翻訳機（マッパー関数） ---
@@ -136,31 +154,15 @@ class LocalMatchRepository {
       ..redScore = model.redScore
       ..whiteScore = model.whiteScore
       ..status = model.status
-      ..events = model.events.map((e) => ScoreEventEntity()
-        ..id = e.id
-        ..side = e.side
-        ..type = e.type
-        ..timestamp = e.timestamp
-        ..userId = e.userId
-        ..sequence = e.sequence
-        ..isCanceled = e.isCanceled
-      ).toList()
-      // ★ Phase 1: スナップショットのエンティティ変換を追加（Isarへの保存）
+      ..events = model.events.map<ScoreEventEntity>((e) => _eventToEntity(e)).toList() // ★ 型を明示的に指定して変換エラーを回避
       ..snapshots = model.snapshots.map((s) => MatchSnapshotEntity()
         ..id = s.id
         ..createdAt = s.createdAt
         ..reason = s.reason
-        ..events = s.events.map((e) => ScoreEventEntity()
-          ..id = e.id
-          ..side = e.side
-          ..type = e.type
-          ..timestamp = e.timestamp
-          ..userId = e.userId
-          ..sequence = e.sequence
-          ..isCanceled = e.isCanceled
-        ).toList()
+        ..events = s.events.map<ScoreEventEntity>((e) => _eventToEntity(e)).toList()
       ).toList()
-      ..isDirty = model.isDirty
+      ..syncState = model.syncState
+      ..pendingEvents = model.pendingEvents.map<ScoreEventEntity>((e) => _eventToEntity(e)).toList()
       ..lastUpdatedAt = model.lastUpdatedAt
       ..refereeNames = model.refereeNames
       ..countForStandings = model.countForStandings
@@ -189,6 +191,24 @@ class LocalMatchRepository {
       ..whiteRemaining = model.whiteRemaining;
   }
 
+  ScoreEvent _entityToEvent(ScoreEventEntity e) {
+    return ScoreEventLegacyAdapter.fromLegacy(
+      id: e.id ?? '',
+      side: e.side,
+      type: e.type,
+      timestamp: e.timestamp ?? DateTime.now(),
+      userId: e.userId,
+      sequence: e.sequence,
+      isCanceled: e.isCanceled,
+    ).copyWith(
+      isUndo: e.isUndo,
+      isRestore: e.isRestore,
+      deviceId: e.deviceId,
+      logicalClock: e.logicalClock,
+      signature: e.signature,
+    );
+  }
+
   MatchModel _toModel(MatchEntity entity) {
     return MatchModel(
       id: entity.firestoreId,
@@ -198,15 +218,9 @@ class LocalMatchRepository {
       redScore: entity.redScore,
       whiteScore: entity.whiteScore,
       status: entity.status,
-      events: entity.events.map((e) => ScoreEventLegacyAdapter.fromLegacy(
-        id: e.id ?? '',
-        side: e.side,
-        type: e.type,
-        timestamp: e.timestamp ?? DateTime.now(),
-        userId: e.userId,
-        sequence: e.sequence,
-        isCanceled: e.isCanceled,
-      )).toList(),
+      syncState: entity.syncState,
+      pendingEvents: entity.pendingEvents.map(_entityToEvent).toList(),
+      events: entity.events.map(_entityToEvent).toList(),
       // ★ Phase 1: スナップショットのモデル変換を追加（Isarからの読み込み）
       snapshots: entity.snapshots.map((s) => MatchSnapshot(
         id: s.id ?? '',
@@ -220,17 +234,8 @@ class LocalMatchRepository {
         ),
         createdAt: s.createdAt ?? DateTime.now(),
         reason: s.reason ?? '',
-        events: s.events.map((e) => ScoreEventLegacyAdapter.fromLegacy(
-          id: e.id ?? '',
-          side: e.side,
-          type: e.type,
-          timestamp: e.timestamp ?? DateTime.now(),
-          userId: e.userId,
-          sequence: e.sequence,
-          isCanceled: e.isCanceled,
-        )).toList(),
+        events: s.events.map(_entityToEvent).toList(),
       )).toList(),
-      isDirty: entity.isDirty,
       lastUpdatedAt: entity.lastUpdatedAt,
       refereeNames: entity.refereeNames,
       countForStandings: entity.countForStandings,

@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TeamMatchProjection {
 
- String get groupName; String get redTeamName; String get whiteTeamName; String get matchType; String get note; bool get isKachinuki; bool get isLeague; List<MatchProjection> get matches; TeamMatchResult get result; List<LeagueTeamStat> get leagueStandings;
+ String get groupName; String get redTeamName; String get whiteTeamName; String get matchType; String get note; bool get isKachinuki; bool get isLeague;// ★ Phase 5: リスト表示用の軽量データ(MatchListProjection)を持つように変更
+ List<MatchListProjection> get matches; TeamMatchResult get result; List<LeagueTeamStat> get leagueStandings;
 /// Create a copy of TeamMatchProjection
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -45,7 +46,7 @@ abstract mixin class $TeamMatchProjectionCopyWith<$Res>  {
   factory $TeamMatchProjectionCopyWith(TeamMatchProjection value, $Res Function(TeamMatchProjection) _then) = _$TeamMatchProjectionCopyWithImpl;
 @useResult
 $Res call({
- String groupName, String redTeamName, String whiteTeamName, String matchType, String note, bool isKachinuki, bool isLeague, List<MatchProjection> matches, TeamMatchResult result, List<LeagueTeamStat> leagueStandings
+ String groupName, String redTeamName, String whiteTeamName, String matchType, String note, bool isKachinuki, bool isLeague, List<MatchListProjection> matches, TeamMatchResult result, List<LeagueTeamStat> leagueStandings
 });
 
 
@@ -72,7 +73,7 @@ as String,note: null == note ? _self.note : note // ignore: cast_nullable_to_non
 as String,isKachinuki: null == isKachinuki ? _self.isKachinuki : isKachinuki // ignore: cast_nullable_to_non_nullable
 as bool,isLeague: null == isLeague ? _self.isLeague : isLeague // ignore: cast_nullable_to_non_nullable
 as bool,matches: null == matches ? _self.matches : matches // ignore: cast_nullable_to_non_nullable
-as List<MatchProjection>,result: null == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
+as List<MatchListProjection>,result: null == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
 as TeamMatchResult,leagueStandings: null == leagueStandings ? _self.leagueStandings : leagueStandings // ignore: cast_nullable_to_non_nullable
 as List<LeagueTeamStat>,
   ));
@@ -159,7 +160,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String groupName,  String redTeamName,  String whiteTeamName,  String matchType,  String note,  bool isKachinuki,  bool isLeague,  List<MatchProjection> matches,  TeamMatchResult result,  List<LeagueTeamStat> leagueStandings)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String groupName,  String redTeamName,  String whiteTeamName,  String matchType,  String note,  bool isKachinuki,  bool isLeague,  List<MatchListProjection> matches,  TeamMatchResult result,  List<LeagueTeamStat> leagueStandings)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TeamMatchProjection() when $default != null:
 return $default(_that.groupName,_that.redTeamName,_that.whiteTeamName,_that.matchType,_that.note,_that.isKachinuki,_that.isLeague,_that.matches,_that.result,_that.leagueStandings);case _:
@@ -180,7 +181,7 @@ return $default(_that.groupName,_that.redTeamName,_that.whiteTeamName,_that.matc
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String groupName,  String redTeamName,  String whiteTeamName,  String matchType,  String note,  bool isKachinuki,  bool isLeague,  List<MatchProjection> matches,  TeamMatchResult result,  List<LeagueTeamStat> leagueStandings)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String groupName,  String redTeamName,  String whiteTeamName,  String matchType,  String note,  bool isKachinuki,  bool isLeague,  List<MatchListProjection> matches,  TeamMatchResult result,  List<LeagueTeamStat> leagueStandings)  $default,) {final _that = this;
 switch (_that) {
 case _TeamMatchProjection():
 return $default(_that.groupName,_that.redTeamName,_that.whiteTeamName,_that.matchType,_that.note,_that.isKachinuki,_that.isLeague,_that.matches,_that.result,_that.leagueStandings);case _:
@@ -200,7 +201,7 @@ return $default(_that.groupName,_that.redTeamName,_that.whiteTeamName,_that.matc
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String groupName,  String redTeamName,  String whiteTeamName,  String matchType,  String note,  bool isKachinuki,  bool isLeague,  List<MatchProjection> matches,  TeamMatchResult result,  List<LeagueTeamStat> leagueStandings)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String groupName,  String redTeamName,  String whiteTeamName,  String matchType,  String note,  bool isKachinuki,  bool isLeague,  List<MatchListProjection> matches,  TeamMatchResult result,  List<LeagueTeamStat> leagueStandings)?  $default,) {final _that = this;
 switch (_that) {
 case _TeamMatchProjection() when $default != null:
 return $default(_that.groupName,_that.redTeamName,_that.whiteTeamName,_that.matchType,_that.note,_that.isKachinuki,_that.isLeague,_that.matches,_that.result,_that.leagueStandings);case _:
@@ -215,7 +216,7 @@ return $default(_that.groupName,_that.redTeamName,_that.whiteTeamName,_that.matc
 
 
 class _TeamMatchProjection implements TeamMatchProjection {
-  const _TeamMatchProjection({required this.groupName, required this.redTeamName, required this.whiteTeamName, required this.matchType, required this.note, required this.isKachinuki, required this.isLeague, required final  List<MatchProjection> matches, required this.result, final  List<LeagueTeamStat> leagueStandings = const []}): _matches = matches,_leagueStandings = leagueStandings;
+  const _TeamMatchProjection({required this.groupName, required this.redTeamName, required this.whiteTeamName, required this.matchType, required this.note, required this.isKachinuki, required this.isLeague, required final  List<MatchListProjection> matches, required this.result, final  List<LeagueTeamStat> leagueStandings = const []}): _matches = matches,_leagueStandings = leagueStandings;
   
 
 @override final  String groupName;
@@ -225,8 +226,10 @@ class _TeamMatchProjection implements TeamMatchProjection {
 @override final  String note;
 @override final  bool isKachinuki;
 @override final  bool isLeague;
- final  List<MatchProjection> _matches;
-@override List<MatchProjection> get matches {
+// ★ Phase 5: リスト表示用の軽量データ(MatchListProjection)を持つように変更
+ final  List<MatchListProjection> _matches;
+// ★ Phase 5: リスト表示用の軽量データ(MatchListProjection)を持つように変更
+@override List<MatchListProjection> get matches {
   if (_matches is EqualUnmodifiableListView) return _matches;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_matches);
@@ -271,7 +274,7 @@ abstract mixin class _$TeamMatchProjectionCopyWith<$Res> implements $TeamMatchPr
   factory _$TeamMatchProjectionCopyWith(_TeamMatchProjection value, $Res Function(_TeamMatchProjection) _then) = __$TeamMatchProjectionCopyWithImpl;
 @override @useResult
 $Res call({
- String groupName, String redTeamName, String whiteTeamName, String matchType, String note, bool isKachinuki, bool isLeague, List<MatchProjection> matches, TeamMatchResult result, List<LeagueTeamStat> leagueStandings
+ String groupName, String redTeamName, String whiteTeamName, String matchType, String note, bool isKachinuki, bool isLeague, List<MatchListProjection> matches, TeamMatchResult result, List<LeagueTeamStat> leagueStandings
 });
 
 
@@ -298,7 +301,7 @@ as String,note: null == note ? _self.note : note // ignore: cast_nullable_to_non
 as String,isKachinuki: null == isKachinuki ? _self.isKachinuki : isKachinuki // ignore: cast_nullable_to_non_nullable
 as bool,isLeague: null == isLeague ? _self.isLeague : isLeague // ignore: cast_nullable_to_non_nullable
 as bool,matches: null == matches ? _self._matches : matches // ignore: cast_nullable_to_non_nullable
-as List<MatchProjection>,result: null == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
+as List<MatchListProjection>,result: null == result ? _self.result : result // ignore: cast_nullable_to_non_nullable
 as TeamMatchResult,leagueStandings: null == leagueStandings ? _self._leagueStandings : leagueStandings // ignore: cast_nullable_to_non_nullable
 as List<LeagueTeamStat>,
   ));
@@ -310,7 +313,8 @@ as List<LeagueTeamStat>,
 /// @nodoc
 mixin _$TournamentProjection {
 
- TournamentModel get tournament; List<MatchProjection> get allMatches; Map<String, TeamMatchProjection> get teamMatches;// --- 追加: 公式記録用の集計データ ---
+ TournamentModel get tournament;// ★ Phase 5: リスト表示用の軽量データ(MatchListProjection)を持つように変更
+ List<MatchListProjection> get allMatches; Map<String, TeamMatchProjection> get teamMatches;// --- 追加: 公式記録用の集計データ ---
  Map<String, List<String>> get categoryToGroupKeys;
 /// Create a copy of TournamentProjection
 /// with the given fields replaced by the non-null parameter values.
@@ -342,7 +346,7 @@ abstract mixin class $TournamentProjectionCopyWith<$Res>  {
   factory $TournamentProjectionCopyWith(TournamentProjection value, $Res Function(TournamentProjection) _then) = _$TournamentProjectionCopyWithImpl;
 @useResult
 $Res call({
- TournamentModel tournament, List<MatchProjection> allMatches, Map<String, TeamMatchProjection> teamMatches, Map<String, List<String>> categoryToGroupKeys
+ TournamentModel tournament, List<MatchListProjection> allMatches, Map<String, TeamMatchProjection> teamMatches, Map<String, List<String>> categoryToGroupKeys
 });
 
 
@@ -363,7 +367,7 @@ class _$TournamentProjectionCopyWithImpl<$Res>
   return _then(_self.copyWith(
 tournament: null == tournament ? _self.tournament : tournament // ignore: cast_nullable_to_non_nullable
 as TournamentModel,allMatches: null == allMatches ? _self.allMatches : allMatches // ignore: cast_nullable_to_non_nullable
-as List<MatchProjection>,teamMatches: null == teamMatches ? _self.teamMatches : teamMatches // ignore: cast_nullable_to_non_nullable
+as List<MatchListProjection>,teamMatches: null == teamMatches ? _self.teamMatches : teamMatches // ignore: cast_nullable_to_non_nullable
 as Map<String, TeamMatchProjection>,categoryToGroupKeys: null == categoryToGroupKeys ? _self.categoryToGroupKeys : categoryToGroupKeys // ignore: cast_nullable_to_non_nullable
 as Map<String, List<String>>,
   ));
@@ -459,7 +463,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( TournamentModel tournament,  List<MatchProjection> allMatches,  Map<String, TeamMatchProjection> teamMatches,  Map<String, List<String>> categoryToGroupKeys)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( TournamentModel tournament,  List<MatchListProjection> allMatches,  Map<String, TeamMatchProjection> teamMatches,  Map<String, List<String>> categoryToGroupKeys)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TournamentProjection() when $default != null:
 return $default(_that.tournament,_that.allMatches,_that.teamMatches,_that.categoryToGroupKeys);case _:
@@ -480,7 +484,7 @@ return $default(_that.tournament,_that.allMatches,_that.teamMatches,_that.catego
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( TournamentModel tournament,  List<MatchProjection> allMatches,  Map<String, TeamMatchProjection> teamMatches,  Map<String, List<String>> categoryToGroupKeys)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( TournamentModel tournament,  List<MatchListProjection> allMatches,  Map<String, TeamMatchProjection> teamMatches,  Map<String, List<String>> categoryToGroupKeys)  $default,) {final _that = this;
 switch (_that) {
 case _TournamentProjection():
 return $default(_that.tournament,_that.allMatches,_that.teamMatches,_that.categoryToGroupKeys);case _:
@@ -500,7 +504,7 @@ return $default(_that.tournament,_that.allMatches,_that.teamMatches,_that.catego
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( TournamentModel tournament,  List<MatchProjection> allMatches,  Map<String, TeamMatchProjection> teamMatches,  Map<String, List<String>> categoryToGroupKeys)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( TournamentModel tournament,  List<MatchListProjection> allMatches,  Map<String, TeamMatchProjection> teamMatches,  Map<String, List<String>> categoryToGroupKeys)?  $default,) {final _that = this;
 switch (_that) {
 case _TournamentProjection() when $default != null:
 return $default(_that.tournament,_that.allMatches,_that.teamMatches,_that.categoryToGroupKeys);case _:
@@ -515,12 +519,14 @@ return $default(_that.tournament,_that.allMatches,_that.teamMatches,_that.catego
 
 
 class _TournamentProjection implements TournamentProjection {
-  const _TournamentProjection({required this.tournament, required final  List<MatchProjection> allMatches, required final  Map<String, TeamMatchProjection> teamMatches, required final  Map<String, List<String>> categoryToGroupKeys}): _allMatches = allMatches,_teamMatches = teamMatches,_categoryToGroupKeys = categoryToGroupKeys;
+  const _TournamentProjection({required this.tournament, required final  List<MatchListProjection> allMatches, required final  Map<String, TeamMatchProjection> teamMatches, required final  Map<String, List<String>> categoryToGroupKeys}): _allMatches = allMatches,_teamMatches = teamMatches,_categoryToGroupKeys = categoryToGroupKeys;
   
 
 @override final  TournamentModel tournament;
- final  List<MatchProjection> _allMatches;
-@override List<MatchProjection> get allMatches {
+// ★ Phase 5: リスト表示用の軽量データ(MatchListProjection)を持つように変更
+ final  List<MatchListProjection> _allMatches;
+// ★ Phase 5: リスト表示用の軽量データ(MatchListProjection)を持つように変更
+@override List<MatchListProjection> get allMatches {
   if (_allMatches is EqualUnmodifiableListView) return _allMatches;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_allMatches);
@@ -573,7 +579,7 @@ abstract mixin class _$TournamentProjectionCopyWith<$Res> implements $Tournament
   factory _$TournamentProjectionCopyWith(_TournamentProjection value, $Res Function(_TournamentProjection) _then) = __$TournamentProjectionCopyWithImpl;
 @override @useResult
 $Res call({
- TournamentModel tournament, List<MatchProjection> allMatches, Map<String, TeamMatchProjection> teamMatches, Map<String, List<String>> categoryToGroupKeys
+ TournamentModel tournament, List<MatchListProjection> allMatches, Map<String, TeamMatchProjection> teamMatches, Map<String, List<String>> categoryToGroupKeys
 });
 
 
@@ -594,7 +600,7 @@ class __$TournamentProjectionCopyWithImpl<$Res>
   return _then(_TournamentProjection(
 tournament: null == tournament ? _self.tournament : tournament // ignore: cast_nullable_to_non_nullable
 as TournamentModel,allMatches: null == allMatches ? _self._allMatches : allMatches // ignore: cast_nullable_to_non_nullable
-as List<MatchProjection>,teamMatches: null == teamMatches ? _self._teamMatches : teamMatches // ignore: cast_nullable_to_non_nullable
+as List<MatchListProjection>,teamMatches: null == teamMatches ? _self._teamMatches : teamMatches // ignore: cast_nullable_to_non_nullable
 as Map<String, TeamMatchProjection>,categoryToGroupKeys: null == categoryToGroupKeys ? _self._categoryToGroupKeys : categoryToGroupKeys // ignore: cast_nullable_to_non_nullable
 as Map<String, List<String>>,
   ));

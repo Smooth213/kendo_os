@@ -176,13 +176,14 @@ void main() {
     });
 
     test('既に規定本数に達していても、Undo（取り消し）イベントは有効と判定されること', () {
-      final match = dummyMatch;
+      // Undoを許可するためには、まず歴史に何らかのイベントが必要
+      final match = dummyMatch.copyWith(events: [men(Side.red)]);
       final event = cancel(Side.none).copyWith(isUndo: true);
       final ctx = MatchContext(redIppon: 2, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2, hasHantei: false);
       
       final validation = engine.validateEvent(match, event, ctx);
 
-      expect(validation.isValid, isTrue);
+      expect(validation.isValid, isTrue, reason: 'イベントが存在すれば、スコア確定後でもUndoは有効であるべき');
     });
 
     test('【判定】判定(Hantei)が入力された際、マークが「判定」かつ「◯囲み対象」になるか', () {

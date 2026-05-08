@@ -6,6 +6,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/match_context.dart';
 import 'package:kendo_os/presentation/operate/providers/match_provider.dart'; 
 import 'package:kendo_os/domain/entities/role_permission.dart';
+import 'package:kendo_os/domain/entities/match_state.dart'; // ★ Phase 1: FSMのインポート
 
 // ==========================================
 // ★ ② UseCaseの役割明確化：「1 UseCase = 1 責務」
@@ -20,15 +21,13 @@ class AddScoreUseCase {
   AddScoreUseCase(this._engine, this._permission);
 
   MatchModel execute(User user, MatchModel currentMatch, ScoreEvent newEvent, MatchRule rule) {
-    // ★ Phase 1-Step 2: 認可チェック（Zero Trust）
+    // 認可チェック
     if (!_permission.canAppend(user, newEvent)) {
       throw UnauthorizedException('この操作を実行する権限がありません');
     }
 
-    // ★ Phase 3-2: 競合チェック（Concurrency Control）
-    // 追加しようとしているイベントの順番(sequence)が、現在の状態が期待する次の順番と一致しない場合は弾く
+    // 競合チェック
     final expectedSequence = currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1;
-    // ★ テスト用後方互換: 過去のテスト(sequenceが0)の場合は特別に競合チェックをスキップする
     if (newEvent.sequence != 0 && newEvent.sequence != expectedSequence) {
       throw DomainException('競合が発生しました。他の端末で先にデータが更新されています。');
     }
@@ -38,28 +37,44 @@ class AddScoreUseCase {
     if (!validation.isValid) throw DomainException(validation.reason ?? '不正な操作です');
 
     final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(newEvent);
+    // ★ 修正: ここで updatedPendingEvents を確実に定義します
+    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents)..add(newEvent);
+
     final nextAnalysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
     
+    // ====================================================
+    // ★ Phase 1: FSMによる厳密な状態遷移 (直接の文字列代入禁止)
+    // ====================================================
+    MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
+
+    // 初期状態なら開始イベント発火
+    if (currentState == MatchLifecycleState.ready || currentState == MatchLifecycleState.notStarted || currentState == MatchLifecycleState.waitingForPlayers) {
+      currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.startMatch);
+    }
+
+    final result = _engine.decideResult(nextAnalysis.context);
+    if (result != MatchResultStatus.inProgress) {
+      if (currentState != MatchLifecycleState.completed && currentState != MatchLifecycleState.fusen) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.decideWinner);
+      }
+    } else {
+      if (currentState == MatchLifecycleState.completed || currentState == MatchLifecycleState.fusen) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.undo);
+      }
+    }
+
     final bool isRunningTimerMode = rule.isRunningTime;
 
-    MatchModel updatedMatch = currentMatch.copyWith(
+    return currentMatch.copyWith(
       events: updatedEvents,
       redScore: nextAnalysis.context.redIppon,
       whiteScore: nextAnalysis.context.whiteIppon,
       timerIsRunning: isRunningTimerMode ? currentMatch.timerIsRunning : false, 
-      isDirty: true,
+      status: currentState.toLegacyString(),
+      syncState: SyncState.localOnly, // ★ isDirty: true の代わり
+      pendingEvents: updatedPendingEvents, // ★ これでエラーが消えます
       lastUpdatedAt: DateTime.now(),
     );
-
-    final result = _engine.decideResult(nextAnalysis.context);
-    if (result != MatchResultStatus.inProgress) {
-      updatedMatch = updatedMatch.copyWith(status: 'finished');
-    } else {
-      if (updatedMatch.status == 'finished') {
-        updatedMatch = updatedMatch.copyWith(status: 'in_progress');
-      }
-    }
-    return updatedMatch;
   }
 }
 
@@ -71,30 +86,100 @@ class UndoScoreUseCase {
   UndoScoreUseCase(this._engine, this._permission);
 
   MatchModel execute(User user, MatchModel currentMatch, MatchRule rule) {
-    // ★ Phase 1-Step 2: 認可チェック（Zero Trust）
     if (!_permission.canUndo(user)) {
       throw UnauthorizedException('操作を取り消す権限がありません');
     }
 
     if (currentMatch.events.isEmpty) return currentMatch;
     
-    final updatedEvents = List<ScoreEvent>.from(currentMatch.events);
-    final lastValidIndex = updatedEvents.lastIndexWhere((e) => !e.isCanceled && !e.isUndo && !e.isRestore);
+    // ★ Phase 2: isCanceled による過去のミューテーション（突然変異）を完全廃止。
+    // 過去を書き換えるのではなく、「直前の操作を取り消す」という新しいUndoイベントを追記する。
+    final newSequence = currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1;
     
-    if (lastValidIndex == -1) {
-      final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
-      return currentMatch.copyWith(redScore: analysis.context.redIppon, whiteScore: analysis.context.whiteIppon, isDirty: true, lastUpdatedAt: DateTime.now());
-    }
+    final undoEvent = ScoreEvent(
+      id: 'undo-${DateTime.now().microsecondsSinceEpoch}',
+      schemaVersion: 2,
+      side: Side.none,
+      strikeType: StrikeType.none,
+      isUndo: true,
+      timestamp: DateTime.now(),
+      sequence: newSequence,
+      userId: user.id,
+    );
 
-    updatedEvents[lastValidIndex] = updatedEvents[lastValidIndex].copyWith(isCanceled: true);
+    final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(undoEvent);
+    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents)..add(undoEvent);
     final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
+
+    // ★ Phase 1: FSMによる厳密な状態遷移
+    MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
+    if (currentState == MatchLifecycleState.completed || currentState == MatchLifecycleState.fusen) {
+      currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.undo);
+    }
 
     return currentMatch.copyWith(
       events: updatedEvents, 
-      status: 'in_progress',
-      redScore: analysis.context.redIppon, 
+      status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
+      pendingEvents: updatedPendingEvents,
+      redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
-      isDirty: true, 
+      syncState: SyncState.localOnly, // ★ isDirty: true の代わり
+      lastUpdatedAt: DateTime.now(),
+    );
+  }
+}
+
+/// ★ Phase 2-3: Redo(やり直し) UseCase
+class RedoScoreUseCase {
+  final KendoRuleEngine _engine;
+  final PermissionService _permission;
+  
+  RedoScoreUseCase(this._engine, this._permission);
+
+  MatchModel execute(User user, MatchModel currentMatch, MatchRule rule) {
+    if (!_permission.canUndo(user)) { // 権限はUndoと同じものを流用
+      throw UnauthorizedException('操作をやり直す権限がありません');
+    }
+
+    if (currentMatch.events.isEmpty) return currentMatch;
+    
+    final newSequence = currentMatch.events.last.sequence + 1;
+    final redoEvent = ScoreEvent(
+      id: 'redo-${DateTime.now().microsecondsSinceEpoch}',
+      schemaVersion: 2,
+      side: Side.none,
+      strikeType: StrikeType.none,
+      isRestore: true, // ★ Restore(Redo)イベントとして追記
+      timestamp: DateTime.now(),
+      sequence: newSequence,
+      userId: user.id,
+    );
+
+    final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(redoEvent);
+    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents)..add(redoEvent);
+    final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
+
+    MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
+    final result = _engine.decideResult(analysis.context);
+    
+    // Redoによって勝敗がつく可能性があるため状態遷移チェック
+    if (result != MatchResultStatus.inProgress) {
+      if (currentState != MatchLifecycleState.completed && currentState != MatchLifecycleState.fusen) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.decideWinner);
+      }
+    } else {
+      if (currentState == MatchLifecycleState.completed || currentState == MatchLifecycleState.fusen) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.undo);
+      }
+    }
+
+    return currentMatch.copyWith(
+      events: updatedEvents, 
+      status: currentState.toLegacyString(),
+      pendingEvents: updatedPendingEvents,
+      redScore: analysis.context.redIppon,
+      whiteScore: analysis.context.whiteIppon,
+      syncState: SyncState.localOnly, // ★ isDirty: true の代わり
       lastUpdatedAt: DateTime.now(),
     );
   }
@@ -108,7 +193,6 @@ class TimeUpUseCase {
   TimeUpUseCase(this._engine, this._permission);
 
   MatchModel execute(User user, MatchModel currentMatch, bool isEnchoEnabled, MatchRule rule) {
-    // ★ Phase 1-Step 2: 認可チェック（Zero Trust）
     if (!_permission.canTimeUp(user)) {
       throw UnauthorizedException('時間切れ操作を実行する権限がありません');
     }
@@ -120,15 +204,24 @@ class TimeUpUseCase {
       isTimeUp: true, targetIppon: analysis.context.targetIppon, hasHantei: rule.hasHantei,
     );
 
+    // ★ Phase 1: FSMによる厳密な状態遷移
+    MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
+
     if (_engine.shouldEnterEncho(timeUpContext, isEnchoEnabled)) {
+      currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.startEncho);
       final newNote = currentMatch.note.isEmpty ? '延長' : '${currentMatch.note}, 延長';
       final enchoSeconds = rule.isEnchoUnlimited ? 0 : (rule.enchoTimeMinutes * 60).toInt();
       return currentMatch.copyWith(
         matchType: '延長戦', note: newNote, remainingSeconds: enchoSeconds,
-        timerIsRunning: false, isDirty: true, lastUpdatedAt: DateTime.now(),
+        timerIsRunning: false, syncState: SyncState.localOnly, lastUpdatedAt: DateTime.now(),
+        status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
       ); 
     } else {
-      return currentMatch.copyWith(status: 'finished', isDirty: true, lastUpdatedAt: DateTime.now());
+      currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.timeUp);
+      return currentMatch.copyWith(
+        status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
+        syncState: SyncState.localOnly, lastUpdatedAt: DateTime.now()
+      );
     }
   }
 }
@@ -142,7 +235,8 @@ class RebuildMatchFromEventsUseCase {
     final analysis = _engine.analyzeHistory(baseMatch.events, baseMatch, rule);
     final result = _engine.decideResult(analysis.context);
 
-    String newStatus = baseMatch.status;
+    // ★ Phase 1: FSMによる厳密な状態遷移
+    MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(baseMatch.status);
     
     bool isJustUndone = false;
     if (baseMatch.events.isNotEmpty) {
@@ -153,16 +247,20 @@ class RebuildMatchFromEventsUseCase {
     }
 
     if (isJustUndone && baseMatch.status != 'approved') {
-      newStatus = 'in_progress';
+      if (currentState == MatchLifecycleState.completed || currentState == MatchLifecycleState.fusen) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.undo);
+      }
     } else if (result != MatchResultStatus.inProgress && baseMatch.status != 'approved') {
-      newStatus = 'finished';
+      if (currentState != MatchLifecycleState.completed && currentState != MatchLifecycleState.fusen) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.decideWinner);
+      }
     }
 
     return baseMatch.copyWith(
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
-      status: newStatus,
-      isDirty: true,
+      status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
+      syncState: SyncState.localOnly,
       lastUpdatedAt: DateTime.now(),
     );
   }
@@ -183,6 +281,7 @@ final permissionServiceProvider = Provider((ref) => PermissionService()); // ★
 
 final addScoreUseCaseProvider = Provider((ref) => AddScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
 final undoScoreUseCaseProvider = Provider((ref) => UndoScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
+final redoScoreUseCaseProvider = Provider((ref) => RedoScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
 final timeUpUseCaseProvider = Provider((ref) => TimeUpUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
 
 final rebuildMatchFromEventsUseCaseProvider = Provider((ref) => RebuildMatchFromEventsUseCase(ref.watch(kendoRuleEngineProvider)));

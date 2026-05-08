@@ -78,13 +78,15 @@ class MatchScoreboard extends ConsumerWidget {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    // ★ 改善: 文字列の整形は ViewState（または Provider）から提供される値をそのまま使う
-                    // (※MatchViewState に redCleanName / whiteCleanName などのプロパティが追加されている想定)
                     side == Side.red ? viewState.redCleanName : viewState.whiteCleanName,
                     style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: nameColor),
+                        // ★ 文字サイズを24から32へ拡大。さらにウェイトを極太に。
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: nameColor,
+                        // 文字の視認性を上げるために少しだけレタースペーシングを広げる
+                        letterSpacing: 1.2,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),

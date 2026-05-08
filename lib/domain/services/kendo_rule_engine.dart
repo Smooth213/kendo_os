@@ -130,6 +130,20 @@ class KendoRuleEngine {
       return ValidationResult(false, '重複入力です。');
     }
     
+    // ★ Phase 2: Undoイベント専用のバリデーション（空の時にUndoさせない）
+    if (event.isUndo || event.type == PointType.undo) {
+      final activeEvents = _filterActiveEvents(match.events);
+      if (activeEvents.isEmpty) {
+        return ValidationResult(false, '取り消すイベントがありません。');
+      }
+      return ValidationResult(true); // Undoは試合終了後でも可能なためここで許可
+    }
+    
+    // ★ Phase 2-3: Redoイベント専用のバリデーション
+    if (event.isRestore || event.type == PointType.restore) {
+      return ValidationResult(true); // Redoも試合終了後でも許可 (無効な場合はReducerが安全に無視する)
+    }
+
     final bool isHanteiEvent = event.isHantei || event.type == PointType.hantei;
     
     if (match.status == 'finished' || match.status == 'approved') {
@@ -147,14 +161,26 @@ class KendoRuleEngine {
 
   // --- 内部ヘルパー ---
 
+  // ★ Phase 2-5 Reducer完結: Undoされたイベントを保持し、Redo(Restore)で復活させる完全版
   List<ScoreEvent> _filterActiveEvents(List<ScoreEvent> events) {
     List<ScoreEvent> active = [];
+    List<ScoreEvent> undone = []; // ★ Redo用に「直近Undoされたイベント」を保持するスタック
+
     for (var e in events) {
       if (e.isCanceled) continue; 
-      if (e.isUndo) {
-        if (active.isNotEmpty) active.removeLast();
+      
+      if (e.isUndo || e.type == PointType.undo) {
+        if (active.isNotEmpty) {
+          undone.add(active.removeLast()); // 有効リストから削り、Undoスタックに退避
+        }
+      } else if (e.isRestore || e.type == PointType.restore) {
+        // ★ Phase 2-3: Redo(やり直し)イベント。Undoスタックから1つ取り出して有効リストに復活させる
+        if (undone.isNotEmpty) {
+          active.add(undone.removeLast());
+        }
       } else {
         active.add(e);
+        undone.clear(); // 新しい通常の打突イベントが入ったら、過去のRedoの権利は消滅する
       }
     }
     return active;

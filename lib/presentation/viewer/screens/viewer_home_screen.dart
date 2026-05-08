@@ -37,8 +37,8 @@ class ViewerHomeScreen extends ConsumerWidget {
 
         final matches = proj.allMatches;
 
-        final uniqueInProgress = <MatchProjection>[];
-        final uniqueWaiting = <MatchProjection>[];
+        final uniqueInProgress = <MatchListProjection>[];
+        final uniqueWaiting = <MatchListProjection>[];
         final seenGroups = <String>{};
 
         for (var m in matches) {
@@ -96,7 +96,7 @@ class ViewerHomeScreen extends ConsumerWidget {
           }
         }
 
-        final matchesByCategory = <String, List<MatchProjection>>{};
+        final matchesByCategory = <String, List<MatchListProjection>>{};
         for (var m in matches) {
           if (sanitizedQuery.isNotEmpty) {
             final isMatchedGroup = matchedGroupNames.contains(m.groupName);
@@ -300,7 +300,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                       final catMatches = catEntry.value;
 
                       final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-                      final matchesByTeam = <String, List<MatchProjection>>{};
+                      final matchesByTeam = <String, List<MatchListProjection>>{};
                       
                       final groupToOwnTeams = <String, Set<String>>{};
                       for (var m in catMatches) {
@@ -351,7 +351,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                             final teamName = teamEntry.key;
                             final teamMatchesList = teamEntry.value;
 
-                            String getMatchLabel(MatchProjection m) {
+                            String getMatchLabel(MatchListProjection m) {
                               final bool isLeague = m.note.contains('[リーグ戦]'); 
                               final bool isKachinuki = m.isKachinuki;
                               final bool isIndividual = !isKachinuki && (m.matchType == 'individual' || m.matchType == '選手');
@@ -361,8 +361,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                               return isIndividual ? '個人戦' : '団体戦';
                             }
 
-                            final catGroupedMatches = <String, List<MatchProjection>>{};
-                            final catIndividualMatches = <MatchProjection>[];
+                            final catGroupedMatches = <String, List<MatchListProjection>>{};
+                            final catIndividualMatches = <MatchListProjection>[];
 
                             for (var m in teamMatchesList) {
                               bool forceIndividual = sanitizedQuery.isNotEmpty && 
@@ -376,7 +376,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                               }
                             }
 
-                            final actualGroupedMatches = <String, List<MatchProjection>>{};
+                            final actualGroupedMatches = <String, List<MatchListProjection>>{};
                             for (var entry in catGroupedMatches.entries) {
                               if (entry.value.length > 1 || entry.value.first.isKachinuki) {
                                 actualGroupedMatches[entry.key] = entry.value;
@@ -385,7 +385,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                               }
                             }
 
-                            final matchesByPlayer = <String, List<MatchProjection>>{};
+                            final matchesByPlayer = <String, List<MatchListProjection>>{};
                             for (var m in catIndividualMatches) {
                               String playerName = '選手名不明';
                               
@@ -605,7 +605,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                           childrenWidgets.addAll(normalMatches.map((m) => _buildMatchListTile(context, ref, m)).toList());
                                                         } else {
                                                           // 【リーグ団体戦】中枠あり
-                                                          final boutsByMatchup = <String, List<MatchProjection>>{};
+                                                          final boutsByMatchup = <String, List<MatchListProjection>>{};
                                                           final matchupOrder = <String>[];
                                                           for (var m in normalMatches) {
                                                             final t1 = m.redName.split(':').first.trim();
@@ -870,7 +870,7 @@ class ViewerHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMatchListTile(BuildContext context, WidgetRef ref, MatchProjection match) {
+  Widget _buildMatchListTile(BuildContext context, WidgetRef ref, MatchListProjection match) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFinished = match.status == 'finished' || match.status == 'approved';
     final isPlaying = match.status == 'in_progress';
@@ -1100,7 +1100,7 @@ class ViewerHomeScreen extends ConsumerWidget {
     );
   }
 
-  String _generateDescriptiveLeagueTitle(List<MatchProjection> matches, List<String> ownTeams) {
+  String _generateDescriptiveLeagueTitle(List<MatchListProjection> matches, List<String> ownTeams) {
     final participantsSet = <String>{};
     for (var m in matches) {
       participantsSet.add(m.redName.split(':').first.trim());

@@ -333,47 +333,84 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 // ★ 修正: キャンセル（Undo）されていない有効なイベントのみを対象にする
                 final validEvents = match.events.where((e) => !e.isCanceled && e.type != PointType.undo).toList();
                 final canUndoReal = validEvents.isNotEmpty;
-                String lastEventText = '最新の操作';
-                if (canUndoReal) {
-                  final lastE = validEvents.last;
-                  final sideStr = lastE.side == Side.red ? '赤' : (lastE.side == Side.white ? '白' : '');
-                  String typeStr = '';
-                  switch (lastE.type) {
-                    case PointType.men: typeStr = 'メン'; break;
-                    case PointType.kote: typeStr = 'コテ'; break;
-                    case PointType.doIdo: typeStr = 'ドウ'; break;
-                    case PointType.tsuki: typeStr = 'ツキ'; break;
-                    case PointType.hansoku: typeStr = '反則(▲)'; break;
-                    case PointType.fusen: typeStr = '不戦勝'; break;
-                    case PointType.hantei: typeStr = '判定'; break;
-                    default: typeStr = 'ポイント'; break;
-                  }
-                  lastEventText = sideStr.isNotEmpty ? '$sideStr $typeStr' : typeStr;
-                }
 
-                // 共通Undoエリア
-                final undoArea = canUndoReal
-                    ? GestureDetector(
-                        onTap: () {
+                // ★ Phase 6-4: 操作履歴の透明化（ミニログ ＋ Undoボタン）
+                final undoArea = Column(
+                  children: [
+                    // 1. 直近3件のミニログ表示エリア
+                    if (validEvents.isNotEmpty)
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white10 : Colors.grey.shade100,
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                        ),
+                        child: Column(
+                          children: validEvents.reversed.take(3).toList().asMap().entries.map((entry) {
+                            final e = entry.value;
+                            final isLast = entry.key == 0;
+                            final sideColor = e.side == Side.red ? Colors.red.shade600 : (e.side == Side.white ? (isDark ? Colors.white : Colors.black87) : Colors.grey);
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 1),
+                              child: Row(
+                                children: [
+                                  Text('${validEvents.indexOf(e) + 1}.', style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                                  const SizedBox(width: 8),
+                                  Icon(Icons.circle, size: 8, color: sideColor),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    e.type == PointType.men ? 'メン' : e.type == PointType.kote ? 'コテ' : e.type == PointType.doIdo ? 'ドウ' : e.type == PointType.tsuki ? 'ツキ' : e.type == PointType.hansoku ? '反則' : '判定',
+                                    style: TextStyle(fontSize: 12, fontWeight: isLast ? FontWeight.w900 : FontWeight.normal, color: isLast ? sideColor : sideColor.withValues(alpha: 0.7)),
+                                  ),
+                                  const Spacer(),
+                                  Text(DateFormat('HH:mm:ss').format(e.timestamp), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    // 2. Undoボタン（ログの直下に配置して一体化）
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                      child: InkWell(
+                        onTap: canUndoReal ? () {
                           HapticFeedback.mediumImpact();
                           ref.read(matchCommandProvider).undoLastEvent(match.id);
-                        },
+                        } : null,
+                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.grey.shade200,
+                            borderRadius: validEvents.isNotEmpty 
+                                ? const BorderRadius.vertical(bottom: Radius.circular(8))
+                                : BorderRadius.circular(8),
+                            border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
+                          ),
                           alignment: Alignment.center,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.undo, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600, size: 24),
-                              const SizedBox(width: 8),
-                              Text('スワイプまたはタップで取消 ( $lastEventText )', 
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)
+                              Icon(Icons.undo, color: canUndoReal ? (isDark ? Colors.amber.shade300 : Colors.indigo.shade700) : Colors.grey, size: 24),
+                              const SizedBox(width: 12),
+                              Text(
+                                canUndoReal ? '１つ前の操作を取り消す' : '操作履歴なし', 
+                                style: TextStyle(
+                                  fontSize: 14, 
+                                  fontWeight: FontWeight.w900, 
+                                  color: canUndoReal ? (isDark ? Colors.white : Colors.black87) : Colors.grey
+                                )
                               ),
                             ],
                           ),
                         ),
-                      )
-                    : const SizedBox(height: 40);
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                );
 
                 final timerPart = TimerWidget(matchId: match.id, isInputLocked: isInputLocked);
                 

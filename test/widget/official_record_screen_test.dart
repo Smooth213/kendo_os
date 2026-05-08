@@ -23,6 +23,8 @@ void main() {
                 canCreateMatch: true,
                 canManageTournament: true,
                 isReadOnly: false,
+                canChangeSettings: true, // ★ 追加
+                canDeleteData: true,     // ★ 追加
               )),
         ],
         child: const MaterialApp(

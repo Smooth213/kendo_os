@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'match_list_provider.dart';
-import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
+import 'package:kendo_os/application/usecases/match_application_service.dart';
+import 'package:kendo_os/domain/entities/match_state.dart'; // ★ Phase 1 & 3: FSM連携用
 
 // ★ Step 3-3: 1秒ごとの「生の残り秒数」を配信するプロバイダ
 // 画面全体ではなく、このプロバイダを watch している小さな Widget だけがリビルドされる
@@ -27,76 +28,130 @@ class MatchTimer {
   Timer? _ticker;
   MatchTimer(this.ref);
 
-  // ★ 削除: _commandプロパティは未使用になったため削除
+  // ★ Phase 3-2: 派生状態（Derived Remaining）の計算
+  int _calculateRemainingSeconds(MatchModel match) {
+    if (match.timerStartedAt == null) return match.remainingSeconds;
+    
+    final now = DateTime.now();
+    int elapsedMs = 0;
+    
+    if (match.timerIsRunning) {
+      elapsedMs = now.difference(match.timerStartedAt!).inMilliseconds - match.accumulatedPauseDurationMs;
+    } else if (match.timerPausedAt != null) {
+      elapsedMs = match.timerPausedAt!.difference(match.timerStartedAt!).inMilliseconds - match.accumulatedPauseDurationMs;
+    }
+    
+    bool isUnlimited = match.matchType == '代表戦' || (match.matchType == '延長戦' && match.remainingSeconds == 0);
+    if (isUnlimited) {
+      return (elapsedMs / 1000).floor(); // 無制限時はカウントアップ
+    }
+    
+    final remainingMs = (match.remainingSeconds * 1000) - elapsedMs;
+    return remainingMs > 0 ? (remainingMs / 1000).ceil() : 0;
+  }
 
-  // ★ Step 3-3: ローカルでタイマーを回し、liveRemainingSecondsProvider を更新する
+  // ★ Phase 3-3 & 3-4: Tick依存廃止（UI更新専用の超高頻度・軽量Tick）と AppLifecycle対応
   void startLocalTicker(String matchId) {
     _ticker?.cancel();
-    _ticker = Timer.periodic(const Duration(seconds: 1), (timer) {
+    // データ(DB)は一切更新せず、現在時刻からの差分だけを計算するため100ms周期でも超軽量
+    _ticker = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       final match = _getMatch(matchId);
       if (match == null || !match.timerIsRunning) {
         timer.cancel();
         return;
       }
 
-      final currentLive = ref.read(liveRemainingSecondsProvider(matchId));
-      
-      // ★ Phase 7-1: 無制限延長戦の判定
-      // 代表戦、または「延長戦かつ UseCase で 0秒 にリセットされている場合」は無制限とみなしてカウントアップ
-      bool isUnlimited = match.matchType == '代表戦' || 
-                        (match.matchType == '延長戦' && match.remainingSeconds == 0);
+      final currentDerived = _calculateRemainingSeconds(match);
+      final currentUiState = ref.read(liveRemainingSecondsProvider(matchId));
 
-      if (isUnlimited) {
-        ref.read(liveRemainingSecondsProvider(matchId).notifier).state = currentLive + 1;
-      } else if (currentLive > 0) {
-        // 通常はカウントダウン
-        final nextValue = currentLive - 1;
-        ref.read(liveRemainingSecondsProvider(matchId).notifier).state = nextValue;
+      // 秒数が変わった瞬間だけUI(Provider)を更新
+      if (currentDerived != currentUiState) {
+        ref.read(liveRemainingSecondsProvider(matchId).notifier).state = currentDerived;
         
-        // 0秒になったらFirestoreへ同期（試合終了判定をトリガーするため）
-        if (nextValue == 0) {
-          updateRemainingSeconds(matchId, 0);
-          timer.cancel();
+        // 0秒到達時の処理
+        if (currentDerived == 0 && match.matchType != '代表戦' && match.matchType != '延長戦') {
+           timer.cancel();
+           updateRemainingSeconds(matchId, 0); // ここで初めてFirestoreへ保存
         }
       }
     });
   }
 
-  // タイマーのスタート・ストップ
+  // ★ Phase 3-1: Absolute Time化 (startedAt/pausedAt導入)
   Future<void> toggleTimer(String matchId) async {
     final match = _getMatch(matchId);
     if (match == null) return;
-
     if (!match.timerIsRunning && match.remainingSeconds <= 0 && match.matchType != '代表戦') return;
 
     final newIsRunning = !match.timerIsRunning;
-    // ★ 修正: ApplicationService に保存を委譲
-    await ref.read(matchApplicationServiceProvider).saveMatch(match.copyWith(
-      timerIsRunning: newIsRunning,
-      status: match.status == 'waiting' ? 'in_progress' : match.status,
-    ));
-
-    // ローカルティッカーの開始/停止
+    final now = DateTime.now();
+    
+    // ★ Phase 1 & 3: FSM連携による正しい状態遷移
+    MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(match.status);
     if (newIsRunning) {
+      if (currentState == MatchLifecycleState.ready || currentState == MatchLifecycleState.notStarted || currentState == MatchLifecycleState.waitingForPlayers) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.startMatch);
+      } else if (currentState == MatchLifecycleState.paused) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.resume);
+      }
+    } else {
+      if (currentState == MatchLifecycleState.inProgress || currentState == MatchLifecycleState.encho) {
+        currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.pause);
+      }
+    }
+    
+    MatchModel updatedMatch = match.copyWith(
+      timerIsRunning: newIsRunning,
+      status: currentState.toLegacyString(),
+    );
+
+    if (newIsRunning) {
+      // START / RESUME
+      if (match.timerStartedAt == null) {
+        updatedMatch = updatedMatch.copyWith(timerStartedAt: now);
+      } else if (match.timerPausedAt != null) {
+        final pauseDuration = now.difference(match.timerPausedAt!).inMilliseconds;
+        updatedMatch = updatedMatch.copyWith(
+          accumulatedPauseDurationMs: match.accumulatedPauseDurationMs + pauseDuration,
+          timerPausedAt: null,
+        );
+      }
+      await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch);
       startLocalTicker(matchId);
     } else {
+      // PAUSE
       _ticker?.cancel();
-      // 停止時に現在の秒数をFirestoreへ同期
-      final currentLive = ref.read(liveRemainingSecondsProvider(matchId));
-      updateRemainingSeconds(matchId, currentLive);
+      updatedMatch = updatedMatch.copyWith(timerPausedAt: now);
+      final derivedRemaining = _calculateRemainingSeconds(updatedMatch);
+      updatedMatch = updatedMatch.copyWith(remainingSeconds: derivedRemaining);
+      
+      ref.read(liveRemainingSecondsProvider(matchId).notifier).state = derivedRemaining;
+      await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch);
     }
   }
 
-  // 残り秒数の同期（Firestore書き込み）
+  // 残り秒数の手動同期（UIダイアログからの時間修正等）
   Future<void> updateRemainingSeconds(String matchId, int seconds) async {
     final match = _getMatch(matchId);
     if (match == null) return;
     
-    // UI側の値も同期
     ref.read(liveRemainingSecondsProvider(matchId).notifier).state = seconds;
     
-    // ★ 修正: ApplicationService に保存を委譲
-    await ref.read(matchApplicationServiceProvider).saveMatch(match.copyWith(remainingSeconds: seconds < 0 ? 0 : seconds));
+    // UIからの手動時間修正か、タイマー0秒自動到達かを判別
+    bool isTimeUp = (seconds == 0 && match.timerIsRunning); 
+    
+    MatchModel updatedMatch = match.copyWith(remainingSeconds: seconds < 0 ? 0 : seconds);
+    
+    if (!isTimeUp) { 
+      // ★ 手動で時間が修正されたら、絶対時刻ベースの計算をリセットする
+      updatedMatch = updatedMatch.copyWith(
+        timerStartedAt: null, 
+        timerPausedAt: null,
+        accumulatedPauseDurationMs: 0,
+      );
+    }
+    
+    await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch);
   }
 
   MatchModel? _getMatch(String id) {

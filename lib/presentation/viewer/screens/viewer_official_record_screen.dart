@@ -113,7 +113,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                           onPressed: () async {
                             final groupDataList = sortedGroupKeys.map((key) => {
                               'groupName': key,
-                              'matches': List<MatchProjection>.from(proj.teamMatches[key]!.matches)..sort((a, b) => a.order.compareTo(b.order)),
+                              'matches': List<MatchListProjection>.from(proj.teamMatches[key]!.matches)..sort((a, b) => a.order.compareTo(b.order)),
                             }).toList();
 
                             showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
@@ -137,7 +137,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                           onPressed: () async {
                             final groupDataList = sortedGroupKeys.map((key) => {
                               'groupName': key,
-                              'matches': List<MatchProjection>.from(proj.teamMatches[key]!.matches)..sort((a, b) => a.order.compareTo(b.order)),
+                              'matches': List<MatchListProjection>.from(proj.teamMatches[key]!.matches)..sort((a, b) => a.order.compareTo(b.order)),
                             }).toList();
 
                             showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
@@ -169,7 +169,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       final teamProj = proj.teamMatches[groupName];
                       if (teamProj == null) return const SizedBox.shrink();
                       
-                      final matches = List<MatchProjection>.from(teamProj.matches)..sort((a, b) => a.order.compareTo(b.order));
+                      final matches = List<MatchListProjection>.from(teamProj.matches)..sort((a, b) => a.order.compareTo(b.order));
                       
                       if (matches.isNotEmpty && teamProj.isKachinuki) {
                         final firstMatch = matches.first;
@@ -230,7 +230,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                         final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
                         final tieBouts = matches.where((m) => m.note.contains('[順位決定戦]')).toList();
 
-                        final boutsByMatchup = <String, List<MatchProjection>>{};
+                        final boutsByMatchup = <String, List<MatchListProjection>>{};
                         final matchupOrder = <String>[];
                         for (var m in normalMatches) {
                           final t1 = m.redName.split(':').first.trim();
@@ -243,7 +243,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                           boutsByMatchup[matchupName]!.add(m);
                         }
 
-                        final tieBoutsByMatchup = <String, List<MatchProjection>>{};
+                        final tieBoutsByMatchup = <String, List<MatchListProjection>>{};
                         final tieMatchupOrder = <String>[];
                         for (var m in tieBouts) {
                           final t1 = m.redName.split(':').first.trim();
@@ -332,7 +332,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildScoreTable(String groupName, List<MatchProjection> matches, {TeamMatchResult? result, Color? cardColor, bool isDark = false}) {
+  Widget _buildScoreTable(String groupName, List<MatchListProjection> matches, {TeamMatchResult? result, Color? cardColor, bool isDark = false}) {
     final note = matches.first.note;
     final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
 
@@ -376,7 +376,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
       allFinished = result.allFinished;
     } else {
       allFinished = matches.every((m) => m.status == 'approved' || m.status == 'finished');
-      MatchProjection? daihyoMatch;
+      MatchListProjection? daihyoMatch;
       for (var m in matches) {
         if (m.status == 'approved' || m.status == 'finished') {
           final rs = m.redScore;
@@ -439,7 +439,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                     _teamCell(sideLabelRed, isDark ? Colors.red.shade400 : Colors.red.shade700),
                     ...matches.map((m) => _nameCell(
                       m.redName, isDark, 
-                      matches.map((x) => _parseName(x.redName)['last']!).where((s) => s.isNotEmpty).toList(),
+                      matches.map((x) => _parseName(x.redName)['last']!).where((s) => s.isNotEmpty).cast<String>().toList(),
                       isDaihyo: m.matchType == '代表戦'
                     )),
                     _summaryCell(rWins, rPts, isDark),
@@ -453,7 +453,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                     _teamCell(sideLabelWhite, isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade700),
                     ...matches.map((m) => _nameCell(
                       m.whiteName, isDark, 
-                      matches.map((x) => _parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).toList(),
+                      matches.map((x) => _parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).cast<String>().toList(),
                       isDaihyo: m.matchType == '代表戦'
                     )),
                     _summaryCell(wWins, wPts, isDark),
@@ -564,7 +564,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  Widget _scoreCell(MatchProjection m, bool isDark, bool isSummary) {
+  Widget _scoreCell(MatchListProjection m, bool isDark, bool isSummary) {
     if (isSummary) return const SizedBox(height: 70);
     final isDone = m.status == 'finished' || m.status == 'approved';
     final rScore = m.redScore;
@@ -635,7 +635,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     return Center(child: Text('$wins\n--\n$pts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
   }
 
-  Widget _buildLeagueGridTable(BuildContext context, String groupName, List<MatchProjection> matches, {Color? cardColor, required bool isDark, required WidgetRef ref, required List<LeagueTeamStat> stats, required bool isLeagueRule}) {
+  Widget _buildLeagueGridTable(BuildContext context, String groupName, List<MatchListProjection> matches, {Color? cardColor, required bool isDark, required WidgetRef ref, required List<LeagueTeamStat> stats, required bool isLeagueRule}) {
     final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
     if (normalMatches.isEmpty) return const SizedBox();
 
@@ -854,17 +854,17 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
   }
 
   // 👇 ここから追加：個人戦専用の縦並びリスト描画エンジン
-  Widget _buildIndividualMatchesList(String groupName, List<MatchProjection> matches, {Color? cardColor, required bool isDark, required WidgetRef ref, required bool applySort}) {
+  Widget _buildIndividualMatchesList(String groupName, List<MatchListProjection> matches, {Color? cardColor, required bool isDark, required WidgetRef ref, required bool applySort}) {
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
     final headerBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
     final textColor = isDark ? Colors.white : Colors.black87;
 
-    List<MatchProjection> displayMatches = List.from(matches);
+    List<MatchListProjection> displayMatches = List.from(matches);
 
     if (applySort) {
       final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
       
-      int getTeamPriority(MatchProjection m) {
+      int getTeamPriority(MatchListProjection m) {
         final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
         final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
         bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
@@ -874,7 +874,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
         return 3; // 他チーム同士
       }
 
-      String getSortName(MatchProjection m) {
+      String getSortName(MatchListProjection m) {
         final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
         final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
         final rName = m.redName.contains(':') ? m.redName.split(':').last.trim() : m.redName;
@@ -1047,7 +1047,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
   }
 
-  String _generateDescriptiveLeagueTitle(List<MatchProjection> matches, List<String> ownTeams) {
+  String _generateDescriptiveLeagueTitle(List<MatchListProjection> matches, List<String> ownTeams) {
     final participantsSet = <String>{};
     for (var m in matches) {
       participantsSet.add(m.redName.split(':').first.trim());

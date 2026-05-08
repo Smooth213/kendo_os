@@ -15,7 +15,8 @@ abstract class SettingsModel with _$SettingsModel {
     // 【フィードバック】
     @Default(true) bool haptic,              
     @Default(true) bool strikeVib,           
-    @Default(false) bool sound, // ★ 錬成会モードに合わせて初期値はオフ
+    // ★ Phase 6-3: 音声フィードバックを3択に変更 ('off', 'effect', 'voice')
+    @Default('off') String audioFeedbackMode, 
     @Default(true) bool ignoreMannerMode, // ★ 追加：マナーモード時も強制的に音を鳴らす（初期値ON）
     
     // 【システム・表示】

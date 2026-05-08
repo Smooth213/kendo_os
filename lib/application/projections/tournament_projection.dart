@@ -16,7 +16,8 @@ abstract class TeamMatchProjection with _$TeamMatchProjection {
     required String note,
     required bool isKachinuki,
     required bool isLeague,
-    required List<MatchProjection> matches,
+    // ★ Phase 5: リスト表示用の軽量データ(MatchListProjection)を持つように変更
+    required List<MatchListProjection> matches,
     required TeamMatchResult result,
     @Default([]) List<LeagueTeamStat> leagueStandings,
   }) = _TeamMatchProjection;
@@ -26,7 +27,8 @@ abstract class TeamMatchProjection with _$TeamMatchProjection {
 abstract class TournamentProjection with _$TournamentProjection {
   const factory TournamentProjection({
     required TournamentModel tournament,
-    required List<MatchProjection> allMatches,
+    // ★ Phase 5: リスト表示用の軽量データ(MatchListProjection)を持つように変更
+    required List<MatchListProjection> allMatches,
     required Map<String, TeamMatchProjection> teamMatches,
     // --- 追加: 公式記録用の集計データ ---
     required Map<String, List<String>> categoryToGroupKeys, // カテゴリ名 -> グループ名リスト

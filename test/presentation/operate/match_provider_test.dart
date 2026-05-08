@@ -183,7 +183,9 @@ void main() {
         fireImmediately: false,
       );
 
-      notifier.state = notifier.state.copyWith(sound: !notifier.state.sound);
+      notifier.state = notifier.state.copyWith(
+        audioFeedbackMode: notifier.state.audioFeedbackMode == 'off' ? 'effect' : 'off'
+      );
       expect(callCount, 0);
 
       notifier.state = notifier.state.copyWith(strikeVib: !notifier.state.strikeVib);

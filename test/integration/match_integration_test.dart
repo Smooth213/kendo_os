@@ -102,9 +102,9 @@ void main() {
       match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
       expect(match.redScore, 1);
 
-      match = undoScoreUseCase.execute(testUser, match, rule); // ★ 変更
+      match = undoScoreUseCase.execute(testUser, match, rule);
       expect(match.redScore, 0);
-      expect(match.events.last.isCanceled, isTrue);
+      expect(match.events.last.isUndo, isTrue, reason: '仕様変更: isCanceledではなくisUndoが追記される');
 
       match = addScoreUseCase.execute(testUser, match, men(Side.white), rule); // ★ 変更
       expect(match.whiteScore, 1);
@@ -219,12 +219,11 @@ void main() {
       match = addScoreUseCase.execute(testUser, match, finishMarker, rule); // ★ 変更
       match = match.copyWith(status: 'finished'); 
 
-      match = undoScoreUseCase.execute(testUser, match, rule); // ★ 変更
+      match = undoScoreUseCase.execute(testUser, match, rule);
       
       expect(match.status, 'in_progress', reason: '終了マーカーが取り消され、進行中に戻るべき');
-      expect(match.redScore, 1, reason: '直前のメンは取り消されず、スコア1が維持されるべき');
-      expect(match.events.last.isCanceled, isTrue, reason: '最新のマーカーイベントのみがキャンセルされるべき');
-      expect(match.events.first.isCanceled, isFalse, reason: '最初のメンは有効なままであるべき');
+      expect(match.redScore, 1, reason: '直前のメンは計算上維持されるべき');
+      expect(match.events.last.isUndo, isTrue, reason: '最新のイベントとしてUndoが追記されているべき');
     });
 
     test('終了ステータスからでも判定(hantei)を入力でき、スコアに反映されて終了状態を維持すること', () {

@@ -41,9 +41,10 @@ void main() {
       expect(match.whiteScore, 1);
 
       // 白の小手を取り消す(Undo)
-      match = undoUsecase.execute(testUser, match, rule); // ★ 変更
-      expect(match.events.length, 2); 
-      expect(match.events.last.isCanceled, true);
+      match = undoUsecase.execute(testUser, match, rule);
+      // 履歴: 赤メン + 白コテ + Undo = 3件
+      expect(match.events.length, 3, reason: 'Undoイベントが追記され、履歴は3件になるべき'); 
+      expect(match.events.last.isUndo, true);
       expect(match.whiteScore, 0);
 
       // 赤が胴を打って決着

@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
-import '../providers/sync_provider.dart'; // ★ Phase 6: 手動同期用Providerのインポート
+import '../providers/sync_provider.dart'; 
+import '../providers/permission_provider.dart'; // ★ Phase 8: 削除権限の監視用に追加
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -105,6 +106,61 @@ class TournamentListScreen extends ConsumerWidget {
               final showHeader = currentMonth != previousMonth;
 
               Widget buildUnifiedCard() {
+                final permissions = ref.watch(permissionProvider);
+                
+                final cardChild = Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: 0,
+                  color: cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), 
+                    side: isDark ? BorderSide.none : BorderSide(color: separatorColor.withValues(alpha: 0.5), width: 0.5),
+                  ),
+                  child: InkWell(
+                    onTap: () => context.push('/home/$id'),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(color: softAccentColor, shape: BoxShape.circle),
+                            child: Icon(isArchive ? Icons.history : Icons.emoji_events, color: accentColor, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  tournament.name, 
+                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: textColor)
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Text(
+                                      DateFormat('yyyy年MM月dd日').format(tournament.date), 
+                                      style: TextStyle(fontSize: 14, color: subTextColor)
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right, color: subTextColor, size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+
+                // ★ Phase 8: 削除権限がない場合は、スワイプできない単なるカードを返す
+                if (!permissions.canDeleteData) {
+                  return cardChild;
+                }
+
                 // ★ Phase 7-2: スワイプして一括削除（Dismissible）の追加
                 return Dismissible(
                   key: Key(id),
@@ -113,14 +169,13 @@ class TournamentListScreen extends ConsumerWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
                       color: Colors.red.shade400,
-                      borderRadius: BorderRadius.circular(12), // カードの丸みと合わせる
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 20),
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
                   confirmDismiss: (direction) async {
-                    // ★ 誤操作防止の確認ダイアログ
                     return await showDialog<bool>(
                       context: context,
                       builder: (context) {
@@ -142,59 +197,12 @@ class TournamentListScreen extends ConsumerWidget {
                     );
                   },
                   onDismissed: (direction) {
-                    // 一括削除処理の実行
                     ref.read(tournamentRepositoryProvider).deleteTournament(id);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('大会と関連データを削除しました')),
                     );
                   },
-                  child: Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    elevation: 0,
-                    color: cardColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), 
-                      side: isDark ? BorderSide.none : BorderSide(color: separatorColor.withValues(alpha: 0.5), width: 0.5),
-                    ),
-                    child: InkWell(
-                      onTap: () => context.push('/home/$id'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(color: softAccentColor, shape: BoxShape.circle),
-                              child: Icon(isArchive ? Icons.history : Icons.emoji_events, color: accentColor, size: 24),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    tournament.name, 
-                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: textColor)
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        DateFormat('yyyy年MM月dd日').format(tournament.date), 
-                                        style: TextStyle(fontSize: 14, color: subTextColor)
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.chevron_right, color: subTextColor, size: 20),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  child: cardChild,
                 );
               }
 

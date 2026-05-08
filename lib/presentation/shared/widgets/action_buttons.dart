@@ -107,7 +107,7 @@ class ScoreActionPanel extends ConsumerWidget {
   }
 }
 
-// ★ Phase 2: 長押し確定UI（究極の誤操作防止ボタン）
+// ★ Phase 6: 高齢者・緊急時対応の究極ボタン
 class HoldConfirmButton extends StatefulWidget {
   final String label;
   final Color color;
@@ -137,11 +137,12 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton> with SingleTicker
   @override
   void initState() {
     super.initState();
-    // 0.4秒で確定（現場の体感として最も「待たされず、誤爆しない」絶妙な時間）
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    // 0.35秒で確定（現場の緊迫感に合わせて、少しだけ応答速度を上げつつ誤爆を防ぐ）
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        HapticFeedback.heavyImpact(); // 確定時の強い振動
+        // ★ 触覚フィードバック：スマホ全体が「決定」を伝える強い振動
+        HapticFeedback.heavyImpact(); 
         widget.onConfirm();
         _controller.reset();
         setState(() => _isHolding = false);
@@ -157,20 +158,22 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton> with SingleTicker
 
   void _startHold() {
     if (widget.disabled) return;
-    HapticFeedback.lightImpact(); // 触れた瞬間の軽い振動（プレビュー）
+    // ★ 指が触れた瞬間の「準備OK」の軽い振動
+    HapticFeedback.selectionClick(); 
     setState(() => _isHolding = true);
     _controller.forward();
   }
 
   void _cancelHold() {
-    if (widget.disabled || !_isHolding) return; // 既にfalseなら何もしない
-    _controller.reverse(); // 離すと滑らかに戻る（キャンセル）
+    if (widget.disabled || !_isHolding) return;
+    _controller.reverse();
     setState(() => _isHolding = false);
   }
 
   @override
   Widget build(BuildContext context) {
     final isTablet = MediaQuery.of(context).size.width > 600;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTapDown: (_) => _startHold(),
@@ -179,65 +182,57 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton> with SingleTicker
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          final scale = 1.0 - (_controller.value * 0.05);
-          final buttonColor = widget.disabled 
-              ? Colors.grey.withValues(alpha: 0.3) 
-              : (_isHolding ? widget.color.withValues(alpha: 0.85) : widget.color);
+          // ★ 視認性強化: 押し込んでいる間はボタンがわずかに縮み、色が濃くなる
+          final scale = 1.0 - (_controller.value * 0.08);
+          final displayColor = widget.disabled 
+              ? (isDark ? Colors.grey.shade900 : Colors.grey.shade200)
+              : (_isHolding ? Color.lerp(widget.color, Colors.black, 0.2) : widget.color);
 
           return Transform.scale(
             scale: scale,
             child: Container(
               decoration: BoxDecoration(
-                color: buttonColor,
-                borderRadius: BorderRadius.circular(16),
+                color: displayColor,
+                borderRadius: BorderRadius.circular(12), // 角を少し鋭くして、タップ領域を視覚的に広く見せる
                 boxShadow: widget.disabled || _isHolding ? [] : [
                   BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 4))
                 ],
                 border: Border.all(
-                  color: _isHolding ? widget.textColor.withValues(alpha: 0.5) : Colors.transparent,
-                  width: 2,
+                  // ★ 高コントラスト: 押し込んでいる間は外枠を白く光らせる
+                  color: _isHolding ? Colors.white : (isDark ? Colors.white12 : Colors.black12),
+                  width: _isHolding ? 4 : 1,
                 ),
               ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  if (_isHolding || _controller.value > 0)
+                  // ★ 進捗の可視化：ボタンの背景自体が塗りつぶされていくアニメーション（円形より直感的）
+                  if (_isHolding)
                     Positioned.fill(
-                      child: Center(
-                        child: AspectRatio(
-                          aspectRatio: 1.0, 
-                          child: Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: CircularProgressIndicator(
-                              value: _controller.value,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                (widget.isFoul 
-                                    ? (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade500 : Colors.grey.shade600) 
-                                    : widget.textColor).withValues(alpha: 0.7)
-                              ),
-                              strokeWidth: 4, 
-                            ),
-                          ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: LinearProgressIndicator(
+                          value: _controller.value,
+                          backgroundColor: Colors.transparent,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.2)),
                         ),
                       ),
                     ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.isFoul ? '反則' : widget.label,
-                        style: TextStyle(
-                          fontSize: widget.isFoul ? (isTablet ? 24 : 20) : (isTablet ? 36 : 30), 
-                          fontWeight: FontWeight.w900,
-                          color: widget.disabled 
-                              ? Colors.grey 
-                              : (widget.isFoul 
-                                  ? (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Colors.grey.shade600) 
-                                  : widget.textColor),
-                          letterSpacing: widget.isFoul ? 0.0 : 2.0, 
-                        ),
-                      ),
-                    ],
+                  Text(
+                    widget.isFoul ? '反則' : widget.label,
+                    style: TextStyle(
+                      // ★ 巨大文字: どんなに目が悪くても見えるサイズ
+                      fontSize: widget.isFoul ? (isTablet ? 32 : 24) : (isTablet ? 56 : 48), 
+                      fontWeight: FontWeight.w900,
+                      color: widget.disabled 
+                          ? Colors.grey.shade600 
+                          : (widget.isFoul && !isDark ? Colors.black87 : widget.textColor),
+                      letterSpacing: 2.0, 
+                      // 文字に細い縁取りをして、背景色に埋もれないようにする
+                      shadows: [
+                        Shadow(offset: const Offset(1, 1), blurRadius: 2, color: Colors.black.withValues(alpha: 0.3))
+                      ]
+                    ),
                   ),
                 ],
               ),

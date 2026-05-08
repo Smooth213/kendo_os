@@ -8,6 +8,9 @@ import 'match_meta.dart';      // ★ 新しい構造のインポート
 part 'match_model.freezed.dart';
 part 'match_model.g.dart';
 
+// ★ Phase 4-2: 同期ステータスの厳密化 (partディレクティブの下に配置)
+enum SyncState { localOnly, syncing, synced, conflict }
+
 @freezed
 abstract class MatchModel with _$MatchModel {
   const MatchModel._(); 
@@ -23,7 +26,11 @@ abstract class MatchModel with _$MatchModel {
     @Default('waiting') String status,
     @Default([]) List<ScoreEvent> events, 
     @Default([]) List<MatchSnapshot> snapshots, 
-    @Default(false) bool isDirty, 
+    
+    // ★ Phase 4: isDirtyを廃止し、厳密なSyncStateと差分キュー(pendingEvents)を導入
+    @Default(SyncState.synced) SyncState syncState,
+    @Default([]) List<ScoreEvent> pendingEvents,
+    
     @TimestampConverter() DateTime? lastUpdatedAt, 
     @Default([]) List<String> refereeNames,
     @Default(true) bool countForStandings,
@@ -46,6 +53,10 @@ abstract class MatchModel with _$MatchModel {
     @Default(false) bool hasHantei,
     @Default(180) int remainingSeconds,
     @Default(false) bool timerIsRunning,
+    // ★ Phase 3-1: Absolute Time (絶対時刻) 化のためのフィールド
+    @TimestampConverter() DateTime? timerStartedAt,
+    @TimestampConverter() DateTime? timerPausedAt,
+    @Default(0) int accumulatedPauseDurationMs,
     @Default('') String note,
     @Default(false) bool isKachinuki,
     MatchRule? rule, 
@@ -82,4 +93,7 @@ abstract class MatchModel with _$MatchModel {
     countForStandings: countForStandings,
     isAutoAssigned: isAutoAssigned,
   );
+
+  // ★ Phase 4 移行用: 既存の isDirty 参照エラーを防ぐ Strangler Fig パターンの魔法
+  bool get isDirty => syncState != SyncState.synced;
 }

@@ -1,6 +1,7 @@
 
-import 'package:isar_community/isar.dart'; // ★ パッケージ名は isar_community ですが、ファイル名は isar.dart です
+import 'package:isar_community/isar.dart'; 
 import '../../../domain/entities/score_event.dart';
+import '../../../domain/entities/match_model.dart'; // ★ SyncStateを使うため追加
 
 part 'match_entity.g.dart';
 
@@ -18,7 +19,14 @@ class ScoreEventEntity {
   DateTime? timestamp;
   String? userId;
   int sequence = 0;
-  bool isCanceled = false; // ★ Phase 4: 非破壊Undo用のフラグを追加
+  bool isCanceled = false; 
+  
+  // ★ Phase 4: EventSourcing & Sync 用のメタデータを永続化
+  bool isUndo = false;
+  bool isRestore = false;
+  String deviceId = 'local_device';
+  int logicalClock = 0;
+  String signature = '';
 }
 
 // ★ Phase 1: 復元用のスナップショット（特定の時点のイベント履歴を丸ごと保存）
@@ -53,8 +61,11 @@ class MatchEntity {
   // ★ Phase 1: 保存されたスナップショットの履歴
   List<MatchSnapshotEntity> snapshots = [];
 
-  // ★ オフライン同期用のフラグ
-  bool isDirty = false;
+  // ★ Phase 4: オフライン同期基盤 (isDirty廃止)
+  @enumerated
+  SyncState syncState = SyncState.synced;
+  List<ScoreEventEntity> pendingEvents = []; // 送信待ちの差分キュー
+  
   DateTime? lastUpdatedAt;
 
   List<String> refereeNames = [];

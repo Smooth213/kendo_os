@@ -55,10 +55,12 @@ void main() {
       final rule = MatchRule();
 
       // Act
-      final undoneMatch = undoScoreUseCase.execute(testUser, matchWithScore, rule); // ★ 変更
+      final undoneMatch = undoScoreUseCase.execute(testUser, matchWithScore, rule);
 
       // Assert
-      expect(undoneMatch.events.last.isCanceled, true); 
+      // ★ 仕様変更: 書き換えではなく、Undoイベントが「追記」されていることを確認
+      expect(undoneMatch.events.length, 2, reason: '元イベント1件 + Undoイベント1件 で計2件になるべき');
+      expect(undoneMatch.events.last.isUndo, true, reason: '最新のイベントはUndoフラグが立っているべき');
       expect(undoneMatch.redScore, 0); 
     });
 

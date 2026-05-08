@@ -68,14 +68,15 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
         elevation: 0,
         actions: _isSelectionMode
             ? [
-                // ★ 選択モード時のアクション（ゴミ箱）
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  tooltip: '選択した選手を削除',
-                  onPressed: _selectedPlayerIds.isEmpty 
-                      ? null 
-                      : () => _confirmBulkDelete(context, ref),
-                ),
+                // ★ Phase 8: 削除権限がない場合は一括削除のゴミ箱を出さない
+                if (permissions.canDeleteData)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    tooltip: '選択した選手を削除',
+                    onPressed: _selectedPlayerIds.isEmpty 
+                        ? null 
+                        : () => _confirmBulkDelete(context, ref),
+                  ),
                 const SizedBox(width: 8),
               ]
             // ★ 修正：閲覧のみ権限（isReadOnly）の場合はすべて空っぽにして隠す！
@@ -364,8 +365,12 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(icon: Icon(Icons.edit, color: Colors.grey.shade400, size: 20), onPressed: () => _showPlayerBottomSheet(context, ref, player: player), constraints: const BoxConstraints(), padding: const EdgeInsets.all(8)),
-                    IconButton(icon: Icon(Icons.delete, color: Colors.red.shade400, size: 20), onPressed: () => _confirmDelete(context, ref, player), constraints: const BoxConstraints(), padding: const EdgeInsets.all(8)),
+                    // ★ Phase 8: 設定変更権限で編集ボタンをロック
+                    if (ref.watch(permissionProvider).canChangeSettings)
+                      IconButton(icon: Icon(Icons.edit, color: Colors.grey.shade400, size: 20), onPressed: () => _showPlayerBottomSheet(context, ref, player: player), constraints: const BoxConstraints(), padding: const EdgeInsets.all(8)),
+                    // ★ Phase 8: 削除権限でゴミ箱ボタンをロック
+                    if (ref.watch(permissionProvider).canDeleteData)
+                      IconButton(icon: Icon(Icons.delete, color: Colors.red.shade400, size: 20), onPressed: () => _confirmDelete(context, ref, player), constraints: const BoxConstraints(), padding: const EdgeInsets.all(8)),
                   ],
                 ),
             ],
@@ -917,10 +922,11 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
             ),
             const Divider(height: 24),
             
-            // 2. 過去の大会データの一括削除
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(backgroundColor: Colors.red.shade50, child: const Icon(Icons.delete_sweep, color: Colors.red)),
+            // 2. 過去の大会データの一括削除（★ Phase 8: 削除権限がない場合は非表示）
+            if (ref.watch(permissionProvider).canDeleteData)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: CircleAvatar(backgroundColor: Colors.red.shade50, child: const Icon(Icons.delete_sweep, color: Colors.red)),
               title: const Text('1年以上前の大会を削除', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               subtitle: const Text('古いデータを完全に消去し容量を空けます', style: TextStyle(fontSize: 12)),
               trailing: ElevatedButton(
@@ -1049,10 +1055,12 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                       margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
                         title: Text(names[index], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                          onPressed: () => ref.read(teamNameHistoryProvider.notifier).deleteName(names[index], orgName),
-                        ),
+                        trailing: ref.watch(permissionProvider).canDeleteData // ★ Phase 8: 削除権限でロック
+                            ? IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                                onPressed: () => ref.read(teamNameHistoryProvider.notifier).deleteName(names[index], orgName),
+                              )
+                            : null,
                       ),
                     ),
                   );

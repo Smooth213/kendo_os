@@ -6,10 +6,7 @@ import 'package:kendo_os/domain/entities/match_aggregate.dart';
 
 class MatchProjectionMapper {
   
-  // ==========================================
-  // ★ Phase 4-Step 2: タイムラインの生成
-  // ScoreEventをUI表示用のTimelineEventに翻訳する
-  // ==========================================
+  // タイムライン生成
   static List<TimelineEvent> _buildTimeline(List<ScoreEvent> events) {
     return events.map((e) {
       String side = e.side == Side.red ? 'red' : (e.side == Side.white ? 'white' : 'none');
@@ -48,77 +45,98 @@ class MatchProjectionMapper {
     }).toList();
   }
 
-  // ==========================================
-  // ★ Phase 4-Step 3: モメンタム（勢い）の算出
-  // 直近のイベントやスコアから、どちらが優勢かを数値化（-1.0 〜 +1.0）
-  // ==========================================
+  // モメンタム算出
   static double _calculateMomentum(MatchModel model, MatchAnalysis analysis) {
     double momentum = 0.0;
-    
-    // スコアによる優勢度（一本取っている方が強い）
     momentum += (analysis.context.redIppon - analysis.context.whiteIppon) * 0.5;
-
-    // 反則による劣勢度（反則している方は勢いが下がる）
-    final redHansoku = model.events.where((e) => e.side == Side.red && e.isHansoku && !e.isCanceled).length;
-    final whiteHansoku = model.events.where((e) => e.side == Side.white && e.isHansoku && !e.isCanceled).length;
+    final redHansoku = model.events.where((e) => e.side == Side.red && e.isHansoku).length;
+    final whiteHansoku = model.events.where((e) => e.side == Side.white && e.isHansoku).length;
     momentum -= (redHansoku - whiteHansoku) * 0.2;
 
-    // 直近のイベントによる勢い（直近に技を決めた方に勢いが傾く）
-    final recentStrikes = model.events.where((e) => e.isIppon && !e.isCanceled).toList();
-    if (recentStrikes.isNotEmpty) {
-      momentum += recentStrikes.last.side == Side.red ? 0.3 : -0.3;
+    final activeEvents = model.events.where((e) => !e.isUndo && !e.isCanceled).toList();
+    if (activeEvents.isNotEmpty) {
+      final last = activeEvents.last;
+      if (last.isIppon) momentum += last.side == Side.red ? 0.3 : -0.3;
     }
 
-    // 値を -1.0 〜 +1.0 に丸める
-    if (momentum > 1.0) return 1.0;
-    if (momentum < -1.0) return -1.0;
-    return momentum;
+    return momentum.clamp(-1.0, 1.0);
   }
 
+  // ★ 互換性維持: 既存の画面が toProjection を探しているため、エイリアスとして残す
+  static MatchProjection toProjection(MatchModel model, MatchAnalysis analysis) => toMatchProjection(model, analysis);
 
-  // 既存のメソッド（新機能を追加）
-  static MatchProjection toProjection(MatchModel aggregate, MatchAnalysis analysis) {
+  // ★ Phase 5: 軽量版にも集計に必要なデータを詰め込む
+  static MatchListProjection toListProjection(MatchModel model, MatchAnalysis analysis) {
     List<String> rMarks = analysis.displays[Side.red]?.map((d) => d.mark).toList() ?? [];
     List<String> wMarks = analysis.displays[Side.white]?.map((d) => d.mark).toList() ?? [];
     
     String firstPointSide = '';
-    if (aggregate.events.isNotEmpty) {
-      final firstPoint = aggregate.events.where((e) => e.isIppon && !e.isCanceled && !e.isUndo).firstOrNull;
+    final firstPoint = model.events.where((e) => e.isIppon && !e.isCanceled && !e.isUndo).firstOrNull;
+    if (firstPoint != null) {
+      firstPointSide = firstPoint.side == Side.red ? 'red' : 'white';
+    }
+
+    return MatchListProjection(
+      id: model.id,
+      tournamentId: model.tournamentId ?? '',
+      matchOrder: model.matchOrder ?? 0,
+      matchType: model.matchType,
+      status: model.status,
+      redName: model.redName,
+      whiteName: model.whiteName,
+      redScore: analysis.context.redIppon,
+      whiteScore: analysis.context.whiteIppon,
+      groupName: model.groupName ?? '',
+      isKachinuki: model.isKachinuki,
+      note: model.note,
+      firstPointSide: firstPointSide,
+      redPointMarks: rMarks,
+      whitePointMarks: wMarks,
+    );
+  }
+
+  // 詳細・記録用リッチ射影
+  static MatchProjection toMatchProjection(MatchModel model, MatchAnalysis analysis) {
+    // 表示用マーク（メ、コ、反など）のリスト生成
+    List<String> rMarks = analysis.displays[Side.red]?.map((d) => d.mark).toList() ?? [];
+    List<String> wMarks = analysis.displays[Side.white]?.map((d) => d.mark).toList() ?? [];
+    
+    // 初取（先取）のサイド判定
+    String firstPointSide = '';
+    if (model.events.isNotEmpty) {
+      final firstPoint = model.events.where((e) => e.isIppon && !e.isCanceled && !e.isUndo).firstOrNull;
       if (firstPoint != null) {
         firstPointSide = firstPoint.side == Side.red ? 'red' : 'white';
       }
     }
 
-    // ★ Phase 4-Step 2 & 3 の結果を取得
-    final timeline = _buildTimeline(aggregate.events);
-    final momentum = _calculateMomentum(aggregate, analysis);
-
     return MatchProjection(
-      id: aggregate.id,
-      tournamentId: aggregate.tournamentId ?? '',
-      matchOrder: aggregate.matchOrder ?? 0,
-      matchType: aggregate.matchType,
-      status: aggregate.status,
-      groupName: '', 
-      isKachinuki: aggregate.matchType == '勝ち抜き戦',
-      redName: aggregate.redName,
-      whiteName: aggregate.whiteName,
-      redRemaining: aggregate.redRemaining,
-      whiteRemaining: aggregate.whiteRemaining,
+      id: model.id,
+      tournamentId: model.tournamentId ?? '',
+      matchOrder: model.matchOrder ?? 0,
+      matchType: model.matchType,
+      status: model.status,
+      groupName: model.groupName ?? '',
+      isKachinuki: model.isKachinuki,
+      redName: model.redName,
+      whiteName: model.whiteName,
+      redRemaining: model.redRemaining,
+      whiteRemaining: model.whiteRemaining,
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
       redDisplays: analysis.displays[Side.red] ?? [],
       whiteDisplays: analysis.displays[Side.white] ?? [],
+      
+      // ★ 復元された値をセット
       firstPointSide: firstPointSide,
       redPointMarks: rMarks,
       whitePointMarks: wMarks,
-      remainingSeconds: aggregate.remainingSeconds,
-      timerIsRunning: aggregate.timerIsRunning,
-      note: aggregate.note,
-      
-      // ★ 追加
-      timeline: timeline,
-      momentum: momentum,
+
+      remainingSeconds: model.remainingSeconds,
+      timerIsRunning: model.timerIsRunning,
+      note: model.note,
+      timeline: _buildTimeline(model.events),
+      momentum: _calculateMomentum(model, analysis),
     );
   }
 
@@ -133,6 +151,6 @@ class MatchProjectionMapper {
     final engine = KendoRuleEngine();
     final analysis = engine.analyzeHistory(mergedModel.events, mergedModel, mergedModel.rule);
     
-    return toProjection(mergedModel, analysis);
+    return toMatchProjection(mergedModel, analysis);
   }
 }

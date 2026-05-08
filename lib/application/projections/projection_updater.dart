@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/domain/entities/match_aggregate.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/repositories/event_store.dart';
 import 'package:kendo_os/domain/repositories/projection_store.dart';
 import 'package:kendo_os/infrastructure/repository/match_aggregate_repository.dart';
@@ -35,14 +36,24 @@ class ProjectionUpdater {
     if (_subscriptions.containsKey(matchId)) return; // 既に監視中なら何もしない
 
     _subscriptions[matchId] = eventStore.watch(matchId).listen((events) async {
-      // 1. 新しいイベントリストを使ってAggregate（集約）を再構築する
+      // 1. 真実のドメイン状態（Aggregate）を再構築
       final updatedAggregate = baseAggregate.copyWith(events: events);
+      
+      // 2. 共通の計算エンジン（RuleEngine）で解析
+      final engine = KendoRuleEngine();
+      final mergedModel = baseModel.copyWith(
+        events: events,
+        status: updatedAggregate.status,
+      );
+      final analysis = engine.analyzeHistory(events, mergedModel, mergedModel.rule);
 
-      // 2. Mapperを使って、純粋なAggregateとUI用メタデータ(baseModel)を合体させてProjectionを作る
-      final projection = MatchProjectionMapper.fromAggregate(updatedAggregate, baseModel);
-
-      // 3. ProjectionStoreに保存する（これがUIにリアルタイム配信される）
-      await projectionStore.save(projection);
+      // 3. ★ Phase 5-1: 用途別に異なる3種類のProjectionを同時に生成
+      final richProjection = MatchProjectionMapper.toMatchProjection(mergedModel, analysis);
+      // final listProjection = MatchProjectionMapper.toListProjection(mergedModel, analysis); // ★ 将来的なキャッシュ拡張用
+      
+      // 4. ProjectionStoreに保存
+      await projectionStore.save(richProjection);
+      // await projectionStore.saveListCache(listProjection); // 拡張予定
     });
   }
 

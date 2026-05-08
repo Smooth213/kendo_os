@@ -24,7 +24,14 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
           ?.map((e) => MatchSnapshot.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
-  isDirty: json['isDirty'] as bool? ?? false,
+  syncState:
+      $enumDecodeNullable(_$SyncStateEnumMap, json['syncState']) ??
+      SyncState.synced,
+  pendingEvents:
+      (json['pendingEvents'] as List<dynamic>?)
+          ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
   lastUpdatedAt: const TimestampConverter().fromJson(json['lastUpdatedAt']),
   refereeNames:
       (json['refereeNames'] as List<dynamic>?)
@@ -52,6 +59,10 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
   hasHantei: json['hasHantei'] as bool? ?? false,
   remainingSeconds: (json['remainingSeconds'] as num?)?.toInt() ?? 180,
   timerIsRunning: json['timerIsRunning'] as bool? ?? false,
+  timerStartedAt: const TimestampConverter().fromJson(json['timerStartedAt']),
+  timerPausedAt: const TimestampConverter().fromJson(json['timerPausedAt']),
+  accumulatedPauseDurationMs:
+      (json['accumulatedPauseDurationMs'] as num?)?.toInt() ?? 0,
   note: json['note'] as String? ?? '',
   isKachinuki: json['isKachinuki'] as bool? ?? false,
   rule: json['rule'] == null
@@ -80,7 +91,8 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'status': instance.status,
       'events': instance.events.map((e) => e.toJson()).toList(),
       'snapshots': instance.snapshots.map((e) => e.toJson()).toList(),
-      'isDirty': instance.isDirty,
+      'syncState': _$SyncStateEnumMap[instance.syncState]!,
+      'pendingEvents': instance.pendingEvents.map((e) => e.toJson()).toList(),
       'lastUpdatedAt': _$JsonConverterToJson<dynamic, DateTime>(
         instance.lastUpdatedAt,
         const TimestampConverter().toJson,
@@ -108,12 +120,28 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'hasHantei': instance.hasHantei,
       'remainingSeconds': instance.remainingSeconds,
       'timerIsRunning': instance.timerIsRunning,
+      'timerStartedAt': _$JsonConverterToJson<dynamic, DateTime>(
+        instance.timerStartedAt,
+        const TimestampConverter().toJson,
+      ),
+      'timerPausedAt': _$JsonConverterToJson<dynamic, DateTime>(
+        instance.timerPausedAt,
+        const TimestampConverter().toJson,
+      ),
+      'accumulatedPauseDurationMs': instance.accumulatedPauseDurationMs,
       'note': instance.note,
       'isKachinuki': instance.isKachinuki,
       'rule': instance.rule?.toJson(),
       'redRemaining': instance.redRemaining,
       'whiteRemaining': instance.whiteRemaining,
     };
+
+const _$SyncStateEnumMap = {
+  SyncState.localOnly: 'localOnly',
+  SyncState.syncing: 'syncing',
+  SyncState.synced: 'synced',
+  SyncState.conflict: 'conflict',
+};
 
 Json? _$JsonConverterToJson<Json, Value>(
   Value? value,

@@ -57,12 +57,16 @@ class SyncEngine {
       }
     });
 
-    // ★ Phase 2: 自動バックアップ（アプリがバックグラウンドに回った時に作動）
+    // ★ Phase 2 & Phase 8-4: ライフサイクル監視（アプリがバックグラウンドに回った時に作動）
     final lifecycleListener = AppLifecycleListener(
       onStateChange: (AppLifecycleState state) {
         // ユーザーがアプリを閉じた、または別のアプリに切り替えた瞬間に実行
         if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
           _autoBackupToJson();
+          
+          // ★ Phase 8-4: アプリがスリープする前の「最後の数秒間」を使って未送信データを強制送信
+          debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。未送信データの強制同期を試行します...');
+          syncNow();
         }
       },
     );
@@ -143,21 +147,27 @@ class SyncEngine {
             remoteData['id'] = docRef.id;
             final remoteMatch = MatchModel.fromJson(remoteData);
             
-            // 2. イベント履歴の統合 (IDベースで重複排除)
+            // ==========================================
+            // ★ Phase 4-3: Append-only Sync (差分追記同期)
+            // 過去の全履歴ではなく、ローカルの「未送信差分(pendingEvents)」だけを
+            // サーバーの歴史に対して追記する。これで先祖返りが理論上起きなくなる。
+            // ==========================================
             final Map<String, ScoreEvent> mergedEventsMap = {};
             for (var e in remoteMatch.events) { mergedEventsMap[e.id] = e; }
-            for (var e in match.events) { 
-              if (mergedEventsMap.containsKey(e.id)) {
-                try {
-                   if ((mergedEventsMap[e.id] as dynamic).isCanceled == true) continue;
-                } catch(_) {}
-              }
-              mergedEventsMap[e.id] = e; 
+            for (var e in match.pendingEvents) { 
+              mergedEventsMap[e.id] = e; // 新しいイベント、またはローカルで生成されたUndoイベントを追加
             }
             
-            // 時間順にソートして正しい歴史を作る
+            // ==========================================
+            // ★ Phase 4-4: Conflict Resolver (CRDTによる確定的解決)
+            // 複数端末から同時に追記された場合でも、ランポート論理時計(logicalClock)と
+            // 絶対時刻(timestamp)で厳密にソートし、「全員が同じ歴史」を共有できるようにする。
+            // ==========================================
             final mergedEvents = mergedEventsMap.values.toList()
-              ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+              ..sort((a, b) {
+                if (a.logicalClock != b.logicalClock) return a.logicalClock.compareTo(b.logicalClock);
+                return a.timestamp.compareTo(b.timestamp);
+              });
 
             MatchModel rebuiltMatch = remoteMatch.copyWith(events: mergedEvents);
 
@@ -170,8 +180,8 @@ class SyncEngine {
             }
 
             // 4. マージ完了後のデータを新バージョンとして両方に保存
-            targetVersion = remoteVersion + 1;
-            final uploadData = rebuiltMatch.copyWith(isDirty: false, version: targetVersion).toJson();
+            targetVersion = remoteVersion + 1; // 競合がなければそのまま進める
+            final uploadData = rebuiltMatch.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion).toJson();
             
             await docRef.set(uploadData);
 
@@ -181,7 +191,7 @@ class SyncEngine {
               _needsSyncAgain = true;
               debugPrint('⚠️ [Sync Engine] CRDTマージ中に追加入力あり。ローカル上書きを回避し再同期します。');
             } else {
-              await localRepo.saveMatch(rebuiltMatch.copyWith(isDirty: false, version: targetVersion));
+              await localRepo.saveMatch(rebuiltMatch.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion));
             }
             
             debugPrint('✅ [Sync Engine] CRDTマージ完了＆保存 ID:${match.id}');
@@ -192,14 +202,14 @@ class SyncEngine {
           targetVersion = 1; // 新規
         }
 
-        final uploadData = match.copyWith(isDirty: false, version: targetVersion).toJson();
+        final uploadData = match.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion).toJson();
         await docRef.set(uploadData);
         
         // 🛡️ Phase 3 ガード: 通常同期中に追加入力がないか確認
         final currentLocal = await localRepo.getMatch(match.id);
         if (currentLocal != null && currentLocal.events.length > match.events.length) {
           _needsSyncAgain = true;
-          debugPrint('⚠️ [Sync Engine] 通常同期中に追加入力あり。未送信フラグ(isDirty)を維持し再同期します。');
+          debugPrint('⚠️ [Sync Engine] 通常同期中に追加入力あり。未送信フラグを維持し再同期します。');
         } else {
           await localRepo.markAsSynced(match.id);
         }
@@ -263,7 +273,7 @@ enum SyncStatus { synced, syncing, pending }
 
 final syncStatusProvider = Provider<SyncStatus>((ref) {
   final isSyncing = ref.watch(isSyncingStateProvider);
-  // ローカルDBに1つでも isDirty (未送信) があるか監視
+  // ★ 修正: エラーが出た syncState の pending ではなく、元々正しく動いていた isDirty を監視
   final hasDirty = ref.watch(matchListProvider).any((m) => m.isDirty);
 
   if (isSyncing) return SyncStatus.syncing;

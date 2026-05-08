@@ -59,7 +59,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     _buildPresetCard('公式大会', 'official', Icons.emoji_events, settings.confirmBehavior == 'long' && settings.isLocked, notifier),
                     const SizedBox(width: 8),
-                    _buildPresetCard('大会・錬成会', 'renseikai', null, settings.confirmBehavior == 'double' && !settings.sound, notifier, customAsset: 'assets/kendo_icon.png'),
+                    // ★ 修正：audioFeedbackMode が 'off' かどうかで判定
+                    _buildPresetCard('大会・錬成会', 'renseikai', null, settings.confirmBehavior == 'double' && settings.audioFeedbackMode == 'off', notifier, customAsset: 'assets/kendo_icon.png'),
                     const SizedBox(width: 8),
                     _buildPresetCard('練習・道場', 'practice', Icons.home, settings.confirmBehavior == 'single' && !settings.haptic, notifier),
                   ],
@@ -137,10 +138,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ==========================================
                 _buildSectionHeader(context, '音と振動・フィードバック'),
                 _buildSettingsBlock(context, [
-                  _buildSwitchTile(context, '操作サウンド (音)', settings.sound, (val) => notifier.updateField(sound: val),
+                  _buildListTile(context,
+                    title: '音声・サウンド設定',
                     icon: Icons.volume_up, iconBgColor: Colors.pinkAccent,
+                    trailing: DropdownButton<String>(
+                      value: settings.audioFeedbackMode,
+                      underline: const SizedBox(),
+                      borderRadius: BorderRadius.circular(12),
+                      icon: Icon(Icons.arrow_drop_down, color: dynamicTextColor),
+                      style: TextStyle(color: dynamicTextColor, fontWeight: FontWeight.bold, fontSize: 14),
+                      items: const [
+                        DropdownMenuItem(value: 'off', child: Text('OFF')),
+                        DropdownMenuItem(value: 'effect', child: Text('効果音')),
+                        DropdownMenuItem(value: 'voice', child: Text('音声読み上げ')),
+                      ],
+                      onChanged: (val) => notifier.updateField(audioFeedbackMode: val),
+                    ),
                   ),
-                  if (settings.sound)
+                  if (settings.audioFeedbackMode != 'off')
                     _buildSwitchTile(context, 'マナーモード時も強制的に鳴らす', settings.ignoreMannerMode, (val) => notifier.updateField(ignoreMannerMode: val),
                       icon: Icons.volume_off, iconBgColor: Colors.pink,
                     ),

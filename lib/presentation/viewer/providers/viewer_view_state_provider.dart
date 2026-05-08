@@ -15,12 +15,39 @@ final viewerMatchProjectionProvider = StreamProvider.family<MatchProjection?, St
   return ref.watch(projectionStoreProvider).watch(matchId);
 });
 
+// =========================================================================
+// ★ Phase 5-3: Rebuild最適化 (Selectors)
+// 画面全体ではなく、変更があった「部分」だけを Widget に通知するためのフィルタ
+// =========================================================================
+
+/// 試合の基本ステータス（進行中・終了など）だけを監視する
+final viewerMatchStatusProvider = Provider.family<AsyncValue<String>, String>((ref, matchId) {
+  return ref.watch(viewerMatchProjectionProvider(matchId).select(
+    (async) => async.whenData((p) => p?.status ?? 'waiting')
+  ));
+});
+
+/// モメンタム（勢い）だけを監視する（高頻度更新用）
+final viewerMatchMomentumProvider = Provider.family<AsyncValue<double>, String>((ref, matchId) {
+  return ref.watch(viewerMatchProjectionProvider(matchId).select(
+    (async) => async.whenData((p) => p?.momentum ?? 0.0)
+  ));
+});
+
+/// タイムラインだけを監視する
+final viewerMatchTimelineProvider = Provider.family<AsyncValue<List<TimelineEvent>>, String>((ref, matchId) {
+  return ref.watch(viewerMatchProjectionProvider(matchId).select(
+    (async) => async.whenData((p) => p?.timeline ?? [])
+  ));
+});
+
 // --- 大会全体を監視するための内部Provider ---
 final _tournamentModelStreamProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
   return ref.watch(tournamentRepositoryProvider).getTournamentStream(id);
 });
 
-final _tournamentProjectionsStreamProvider = StreamProvider.family<List<MatchProjection>, String>((ref, id) {
+// ★ Phase 5: watchByTournament が返す MatchListProjection 型に合わせる
+final _tournamentProjectionsStreamProvider = StreamProvider.family<List<MatchListProjection>, String>((ref, id) {
   return ref.watch(projectionStoreProvider).watchByTournament(id);
 });
 

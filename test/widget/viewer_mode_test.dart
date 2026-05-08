@@ -19,7 +19,16 @@ import 'package:kendo_os/domain/repositories/projection_store.dart';
 import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 
+// ★ Phase 8: settingsProviderのモック用
+import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
+import 'package:kendo_os/domain/entities/settings_model.dart';
+
 // === モックデータ・プロバイダの準備 ===
+
+class MockSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsModel build() => const SettingsModel(securityLevel: 1); // テスト用デフォルト
+}
 
 class MockTournamentRepository implements TournamentRepository {
   @override
@@ -135,7 +144,7 @@ final List<MatchModel> mockMatches = [
   ),
 ];
 
-// ★ 追加: ProjectionStoreのモック
+// ★ Phase 5: インターフェース変更に合わせて Mock も更新
 class MockProjectionStore implements ProjectionStore {
   final List<MatchProjection> projections;
 
@@ -155,9 +164,24 @@ class MockProjectionStore implements ProjectionStore {
     if (p != null) yield p;
   }
 
+  // ★ 戻り値を MatchListProjection に変換して返すように修正
   @override
-  Stream<List<MatchProjection>> watchByTournament(String tournamentId) async* {
-    yield projections.where((p) => p.tournamentId == tournamentId).toList();
+  Stream<List<MatchListProjection>> watchByTournament(String tournamentId) async* {
+    final list = projections.where((p) => p.tournamentId == tournamentId).map((p) => MatchListProjection(
+      id: p.id,
+      tournamentId: p.tournamentId,
+      matchOrder: p.matchOrder,
+      matchType: p.matchType,
+      status: p.status,
+      redName: p.redName,
+      whiteName: p.whiteName,
+      redScore: p.redScore,
+      whiteScore: p.whiteScore,
+      groupName: p.groupName,
+      isKachinuki: p.isKachinuki,
+      note: p.note,
+    )).toList();
+    yield list;
   }
 }
 
@@ -200,6 +224,8 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
       // ★ 修正3: これがないと画面描画時に必ずクラッシュするため追加
       customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
       home.customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
+      // ★ Phase 8: SettingsProviderをモック化してSharedPreferences未実装エラーを回避
+      settingsProvider.overrideWith(() => MockSettingsNotifier()),
     ],
     child: MaterialApp(
       home: child,
@@ -213,7 +239,11 @@ void main() {
 
     testWidgets('1. Read-Only Permission is strictly applied in Viewer Mode', (WidgetTester tester) async {
       final container = ProviderContainer(
-        overrides: [activeRoleProvider.overrideWith((ref) => Role.viewer)],
+        overrides: [
+          activeRoleProvider.overrideWith((ref) => Role.viewer),
+          // ★ Phase 8: ここでもSettingsProviderをモック化
+          settingsProvider.overrideWith(() => MockSettingsNotifier()),
+        ],
       );
       final permissions = container.read(permissionProvider);
       

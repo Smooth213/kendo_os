@@ -117,14 +117,24 @@ class MatchApplicationService {
       // ★ UseCaseに主体を渡す
       final updatedMatch = _addScore.execute(currentUser, match, event, rule);
 
-      if (settings.sound) {
+      final soundService = _ref.read(soundServiceProvider);
+      final mode = settings.audioFeedbackMode;
+      final sideLabel = side == Side.red ? '赤' : '白';
+      // typeLabel は既に上で定義済みのため再宣言不要
+
+      if (mode == 'voice') {
+        soundService.speak('$sideLabel、$typeLabel！');
+        if (updatedMatch.status == 'finished' && match.status != 'finished') {
+          Future.delayed(const Duration(milliseconds: 1000), () => soundService.speak('試合終了です'));
+        }
+      } else if (mode == 'effect') {
         if (type == PointType.hansoku) {
-          _ref.read(soundServiceProvider).playHansokuSound();
+          soundService.playHansokuSound();
         } else {
-          _ref.read(soundServiceProvider).playScoreSound(side == Side.red);
+          soundService.playScoreSound(side == Side.red);
         }
         if (updatedMatch.status == 'finished' && match.status != 'finished') {
-          _ref.read(soundServiceProvider).playFinishFanfare();
+          soundService.playFinishFanfare();
         }
       }
 
@@ -165,9 +175,13 @@ class MatchApplicationService {
         whiteScore: analysis.context.whiteIppon,
       );
       
-      if (_ref.read(settingsProvider).sound) {
+      final mode = _ref.read(settingsProvider).audioFeedbackMode;
+      if (mode == 'voice') {
+        _ref.read(soundServiceProvider).speak('取り消し');
+      } else if (mode == 'effect') {
         _ref.read(soundServiceProvider).playUndoSound();
       }
+
 
       await _saveAndSync(updatedMatch);
       await _ref.read(auditProvider).logAction(matchId: match.id, action: AuditAction.undo, details: '取消', traceId: traceId);
@@ -203,7 +217,7 @@ class MatchApplicationService {
         status: 'in_progress', // 巻き戻した後は進行中に戻す
         redScore: analysis.context.redIppon,
         whiteScore: analysis.context.whiteIppon,
-        isDirty: true,
+        syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
         lastUpdatedAt: DateTime.now(),
       );
 
@@ -254,8 +268,13 @@ class MatchApplicationService {
       // ★ UseCaseに主体を渡す
       final updatedMatch = _timeUp.execute(currentUser, match, canExtend, rule);
       
-      if (_ref.read(settingsProvider).sound && updatedMatch.status == 'finished') {
-        _ref.read(soundServiceProvider).playFinishFanfare(); 
+      final mode = _ref.read(settingsProvider).audioFeedbackMode;
+      if (updatedMatch.status == 'finished') {
+        if (mode == 'voice') {
+          _ref.read(soundServiceProvider).speak('時間切れ、試合終了です');
+        } else if (mode == 'effect') {
+          _ref.read(soundServiceProvider).playFinishFanfare(); 
+        }
       }
 
       await _saveAndSync(updatedMatch);
@@ -274,7 +293,7 @@ class MatchApplicationService {
       // 保存時に未送信キュー（Queue）を通す場合は matchCommandQueueProvider 経由でも良いですが、
       // ここは直接リポジトリを叩く「真の保存処理」として定義します。
       final matchToSave = match.copyWith(
-        isDirty: true,
+        syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
         lastUpdatedAt: DateTime.now(),
       );
       await _ref.read(localMatchRepositoryProvider).saveMatch(matchToSave);
@@ -355,7 +374,7 @@ class MatchApplicationService {
         timerIsRunning: false,
         hasExtension: false,
         scorerId: null,
-        isDirty: true, 
+        syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
         lastUpdatedAt: DateTime.now()
       );
       await _saveAndSync(updated);
@@ -396,15 +415,21 @@ class MatchApplicationService {
         timerIsRunning: false,
         hasExtension: false,
         scorerId: null,
-        isDirty: true, 
+        syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
         lastUpdatedAt: DateTime.now()
       );
 
       // 4. 1回の保存で済ませる（同期競合を完全に防ぐ）
       await _saveAndSync(updated);
       
-      if (_ref.read(settingsProvider).sound && updated.status == 'finished' && match.status != 'finished') {
-         _ref.read(soundServiceProvider).playFinishFanfare();
+      final settings = _ref.read(settingsProvider);
+      final mode = settings.audioFeedbackMode;
+      if (updated.status == 'finished' && match.status != 'finished') {
+        if (mode == 'voice') {
+          _ref.read(soundServiceProvider).speak('試合終了です');
+        } else if (mode == 'effect') {
+          _ref.read(soundServiceProvider).playFinishFanfare();
+        }
       }
 
       await _finalizeIfNeeded(updated, match);

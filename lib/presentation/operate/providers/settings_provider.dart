@@ -55,7 +55,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     bool? isLocked,
     bool? haptic,
     bool? strikeVib,
-    bool? sound,
+    String? audioFeedbackMode, // ★ 変更
     bool? ignoreMannerMode,
     bool? sleepPrevent,
     bool? leftHanded,
@@ -70,7 +70,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       isLocked: isLocked ?? state.isLocked,
       haptic: haptic ?? state.haptic,
       strikeVib: strikeVib ?? state.strikeVib,
-      sound: sound ?? state.sound,
+      audioFeedbackMode: audioFeedbackMode ?? state.audioFeedbackMode,
       ignoreMannerMode: ignoreMannerMode ?? state.ignoreMannerMode,
       sleepPrevent: sleepPrevent ?? state.sleepPrevent,
       leftHanded: leftHanded ?? state.leftHanded,
@@ -112,26 +112,23 @@ class SettingsNotifier extends Notifier<SettingsModel> {
   // 一括設定（プリセット）を適用する
   void applyPreset(String presetName) {
     if (presetName == 'official') {
-      // 🏆 公式大会モード：絶対にミスが許されないためダイアログはON
-      updateSettings(SettingsModel(
+      updateSettings(const SettingsModel(
         confirmBehavior: 'long', isLocked: true, showConfirmDialog: true, 
-        haptic: true, strikeVib: true, sound: true, ignoreMannerMode: true, // ★ 追加
+        haptic: true, strikeVib: true, audioFeedbackMode: 'effect', ignoreMannerMode: true,
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
-        securityLevel: 2, // 🏆 公式はデフォルトで「標準」ガード
+        securityLevel: 2,
       ));
     } else if (presetName == 'renseikai') {
-      // 🤺 試合・錬成会モード（アプリのデフォルト）：テンポ重視
-      updateSettings(SettingsModel(
+      updateSettings(const SettingsModel(
         confirmBehavior: 'double', isLocked: false, showConfirmDialog: false, 
-        haptic: true, strikeVib: true, sound: false, ignoreMannerMode: true, // ★ 追加
+        haptic: true, strikeVib: true, audioFeedbackMode: 'off', ignoreMannerMode: true,
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
         securityLevel: 1,
       ));
     } else if (presetName == 'practice') {
-      // 🏠 練習・道場モード：極限までテンポと静かさを重視
-      updateSettings(SettingsModel(
+      updateSettings(const SettingsModel(
         confirmBehavior: 'single', isLocked: false, showConfirmDialog: false, 
-        haptic: false, strikeVib: false, sound: false, ignoreMannerMode: false, // ★ 追加
+        haptic: false, strikeVib: false, audioFeedbackMode: 'off', ignoreMannerMode: false,
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
         securityLevel: 1,
       ));
