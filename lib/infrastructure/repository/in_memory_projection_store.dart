@@ -36,6 +36,12 @@ class InMemoryProjectionStore implements ProjectionStore {
       whiteName: projection.whiteName,
       redScore: projection.redScore,
       whiteScore: projection.whiteScore,
+      groupName: projection.groupName,
+      isKachinuki: projection.isKachinuki,
+      note: projection.note,
+      firstPointSide: projection.firstPointSide,
+      redPointMarks: projection.redPointMarks,
+      whitePointMarks: projection.whitePointMarks,
     );
     
     _listController.add(_listStore.values.toList());

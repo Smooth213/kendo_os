@@ -133,10 +133,17 @@ class MatchScoreboard extends ConsumerWidget {
             
             SizedBox(
               height: 36, 
-              child: Text(
-                // ★ 修正: Undo（キャンセル）された反則イベントを除外してカウントする
-                List.filled(match.events.where((e) => !e.isCanceled && e.side == side && e.type == PointType.hansoku).length, '▲').join(''),
-                style: const TextStyle(fontSize: 24, color: Colors.amber),
+              child: Builder(
+                builder: (context) {
+                  // ★ 修正: KendoRuleEngineを使用して、Undoされた反則イベントを正確に除外してカウントする
+                  final engine = KendoRuleEngine();
+                  final activeEvents = engine.filterActiveEvents(match.events);
+                  final hansokuCount = activeEvents.where((e) => e.side == side && (e.isHansoku || e.type == PointType.hansoku)).length;
+                  return Text(
+                    List.filled(hansokuCount, '▲').join(''),
+                    style: const TextStyle(fontSize: 24, color: Colors.amber),
+                  );
+                }
               ),
             ),
           ],

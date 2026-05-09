@@ -27,6 +27,7 @@ import 'package:kendo_os/infrastructure/repository/team_repository.dart';
 // ★ Phase 3: 分割した専用Widgetをインポート
 import 'package:kendo_os/domain/services/match_strategy.dart'; // ★ Phase 5: 戦略ファクトリの読み込み
 import 'package:kendo_os/application/services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
+import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; // ★ 追加: KendoRuleEngineを使用するため
 
 // ★ Phase 3: 分割したWidget群
 import '../../shared/widgets/timer_widget.dart';
@@ -330,8 +331,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     )
                   : const SizedBox.shrink();
 
-                // ★ 修正: キャンセル（Undo）されていない有効なイベントのみを対象にする
-                final validEvents = match.events.where((e) => !e.isCanceled && e.type != PointType.undo).toList();
+                // ★ 修正: KendoRuleEngineを使って正確に有効なイベントのみを抽出する
+                final engine = KendoRuleEngine();
+                final validEvents = engine.filterActiveEvents(match.events);
                 final canUndoReal = validEvents.isNotEmpty;
 
                 // ★ Phase 6-4: 操作履歴の透明化（ミニログ ＋ Undoボタン）
@@ -1439,7 +1441,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // ★ 修正: 古い snapshots ではなく、新しい events (有効な操作履歴) を使用する
-    final validEvents = match.events.where((e) => !e.isCanceled && e.type != PointType.undo).toList();
+    final engine = KendoRuleEngine();
+    final validEvents = engine.filterActiveEvents(match.events);
     
     showDialog(
       context: context,
@@ -1487,7 +1490,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               type: CommandType.rewindTo,
                               payload: {
                                 'matchId': match.id,
-                                'version': eventIndex + 1, // タップしたイベント「まで」を残す
+                                'version': eventIndex + 1, // 有効なイベントの中で、タップしたもの「まで」を残す（残すべき有効イベント数）
                               },
                               createdAt: DateTime.now(),
                             ),

@@ -1028,7 +1028,7 @@ class OfficialRecordScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(12), color: headerBgColor, width: double.infinity,
             child: Text(headerTitle, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800)),
           ),
-          ListView.separated(
+              ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: displayMatches.length,
@@ -1057,13 +1057,6 @@ class OfficialRecordScreen extends ConsumerWidget {
                   .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
                   .toList();
 
-              // 自チーム判定
-              final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-              final bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
-              final bool wOwn = ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
-              final bool hasOwnTeam = rOwn || wOwn;
-              final bool isRowSummary = m.note.contains('[SUMMARY]');
-              
               // 行のコンテンツ
               Widget rowContent = Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -1103,7 +1096,13 @@ class OfficialRecordScreen extends ConsumerWidget {
                 ),
               );
 
-              // 🌟 修正：警告表示の条件とダイアログ形式の統一
+              final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+              final bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
+              final bool wOwn = ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
+              final bool hasOwnTeam = rOwn || wOwn;
+              final bool isRowSummary = m.note.contains('[SUMMARY]');
+
+              // ★ 修正：行ごとの簡易入力オーバーレイを復活（他チーム同士の場合のみ）
               if (isRowSummary && !hasOwnTeam) {
                 return Container(
                   color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.05),

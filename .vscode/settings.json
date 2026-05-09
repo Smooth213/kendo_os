@@ -9,6 +9,10 @@
     "/^flutter test test/providers/match_list_provider_test\\.dart 2>&1 \\| head -50$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^flutter analyze$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

@@ -26,28 +26,63 @@ class AddScoreUseCase {
       throw UnauthorizedException('この操作を実行する権限がありません');
     }
 
+    // ★ Phase 10: イベントに当時のルールバージョンを刻み込む
+    final finalEvent = newEvent.copyWith(ruleVersion: rule.toRuleConfig.schemaVersion);
+
     // 競合チェック
     final expectedSequence = currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1;
-    if (newEvent.sequence != 0 && newEvent.sequence != expectedSequence) {
+    if (finalEvent.sequence != 0 && finalEvent.sequence != expectedSequence) {
       throw DomainException('競合が発生しました。他の端末で先にデータが更新されています。');
     }
 
     final analysis = _engine.analyzeHistory(currentMatch.events, currentMatch, rule);
-    final validation = _engine.validateEvent(currentMatch, newEvent, analysis.context);
+    final validation = _engine.validateEvent(currentMatch, finalEvent, analysis.context);
     if (!validation.isValid) throw DomainException(validation.reason ?? '不正な操作です');
 
-    final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(newEvent);
-    // ★ 修正: ここで updatedPendingEvents を確実に定義します
-    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents)..add(newEvent);
+    final updatedEvents = List<ScoreEvent>.from(currentMatch.events);
+    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents);
+
+    if (finalEvent.isUndo || finalEvent.type == PointType.undo) {
+      int skipCount = 0;
+      for (int i = updatedEvents.length - 1; i >= 0; i--) {
+        if (updatedEvents[i].isCanceled) continue;
+        if (updatedEvents[i].isUndo || updatedEvents[i].type == PointType.undo) {
+          skipCount++;
+          continue;
+        }
+        if (updatedEvents[i].isRestore || updatedEvents[i].type == PointType.restore) {
+          skipCount = skipCount > 0 ? skipCount - 1 : 0;
+          continue;
+        }
+        
+        if (skipCount == 0) {
+          updatedEvents[i] = updatedEvents[i].copyWith(isCanceled: true);
+          final pIndex = updatedPendingEvents.indexWhere((e) => e.id == updatedEvents[i].id);
+          if (pIndex != -1) updatedPendingEvents[pIndex] = updatedEvents[i];
+          break; // 直近1件のみを取り消す
+        } else {
+          skipCount--;
+        }
+      }
+    } else if (finalEvent.isRestore || finalEvent.type == PointType.restore) {
+      // Redo互換: isCanceled を false に戻す
+      for (int i = updatedEvents.length - 1; i >= 0; i--) {
+        if (updatedEvents[i].isCanceled) {
+          updatedEvents[i] = updatedEvents[i].copyWith(isCanceled: false);
+          final pIndex = updatedPendingEvents.indexWhere((e) => e.id == updatedEvents[i].id);
+          if (pIndex != -1) updatedPendingEvents[pIndex] = updatedEvents[i];
+          break;
+        }
+      }
+    }
+
+    updatedEvents.add(finalEvent);
+    updatedPendingEvents.add(finalEvent);
 
     final nextAnalysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
     
-    // ====================================================
-    // ★ Phase 1: FSMによる厳密な状態遷移 (直接の文字列代入禁止)
-    // ====================================================
     MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
 
-    // 初期状態なら開始イベント発火
     if (currentState == MatchLifecycleState.ready || currentState == MatchLifecycleState.notStarted || currentState == MatchLifecycleState.waitingForPlayers) {
       currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.startMatch);
     }
@@ -71,8 +106,8 @@ class AddScoreUseCase {
       whiteScore: nextAnalysis.context.whiteIppon,
       timerIsRunning: isRunningTimerMode ? currentMatch.timerIsRunning : false, 
       status: currentState.toLegacyString(),
-      syncState: SyncState.localOnly, // ★ isDirty: true の代わり
-      pendingEvents: updatedPendingEvents, // ★ これでエラーが消えます
+      syncState: SyncState.localOnly, 
+      pendingEvents: updatedPendingEvents, 
       lastUpdatedAt: DateTime.now(),
     );
   }
@@ -81,7 +116,7 @@ class AddScoreUseCase {
 /// ② Undo UseCase
 class UndoScoreUseCase {
   final KendoRuleEngine _engine;
-  final PermissionService _permission; // ★ 関所を追加
+  final PermissionService _permission;
   
   UndoScoreUseCase(this._engine, this._permission);
 
@@ -92,8 +127,6 @@ class UndoScoreUseCase {
 
     if (currentMatch.events.isEmpty) return currentMatch;
     
-    // ★ Phase 2: isCanceled による過去のミューテーション（突然変異）を完全廃止。
-    // 過去を書き換えるのではなく、「直前の操作を取り消す」という新しいUndoイベントを追記する。
     final newSequence = currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1;
     
     final undoEvent = ScoreEvent(
@@ -105,13 +138,38 @@ class UndoScoreUseCase {
       timestamp: DateTime.now(),
       sequence: newSequence,
       userId: user.id,
+      ruleVersion: rule.toRuleConfig.schemaVersion, // ★ Phase 10
     );
 
-    final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(undoEvent);
-    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents)..add(undoEvent);
+    final updatedEvents = List<ScoreEvent>.from(currentMatch.events);
+    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents);
+
+    int skipCount = 0;
+    for (int i = updatedEvents.length - 1; i >= 0; i--) {
+      if (updatedEvents[i].isCanceled) continue;
+      if (updatedEvents[i].isUndo || updatedEvents[i].type == PointType.undo) {
+        skipCount++;
+        continue;
+      }
+      if (updatedEvents[i].isRestore || updatedEvents[i].type == PointType.restore) {
+        skipCount = skipCount > 0 ? skipCount - 1 : 0;
+        continue;
+      }
+      if (skipCount == 0) {
+        updatedEvents[i] = updatedEvents[i].copyWith(isCanceled: true);
+        final pIndex = updatedPendingEvents.indexWhere((e) => e.id == updatedEvents[i].id);
+        if (pIndex != -1) updatedPendingEvents[pIndex] = updatedEvents[i];
+        break;
+      } else {
+        skipCount--;
+      }
+    }
+
+    updatedEvents.add(undoEvent);
+    updatedPendingEvents.add(undoEvent);
+
     final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
 
-    // ★ Phase 1: FSMによる厳密な状態遷移
     MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
     if (currentState == MatchLifecycleState.completed || currentState == MatchLifecycleState.fusen) {
       currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.undo);
@@ -119,11 +177,11 @@ class UndoScoreUseCase {
 
     return currentMatch.copyWith(
       events: updatedEvents, 
-      status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
+      status: currentState.toLegacyString(), 
       pendingEvents: updatedPendingEvents,
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
-      syncState: SyncState.localOnly, // ★ isDirty: true の代わり
+      syncState: SyncState.localOnly,
       lastUpdatedAt: DateTime.now(),
     );
   }
@@ -137,7 +195,7 @@ class RedoScoreUseCase {
   RedoScoreUseCase(this._engine, this._permission);
 
   MatchModel execute(User user, MatchModel currentMatch, MatchRule rule) {
-    if (!_permission.canUndo(user)) { // 権限はUndoと同じものを流用
+    if (!_permission.canUndo(user)) { 
       throw UnauthorizedException('操作をやり直す権限がありません');
     }
 
@@ -149,10 +207,11 @@ class RedoScoreUseCase {
       schemaVersion: 2,
       side: Side.none,
       strikeType: StrikeType.none,
-      isRestore: true, // ★ Restore(Redo)イベントとして追記
+      isRestore: true, 
       timestamp: DateTime.now(),
       sequence: newSequence,
       userId: user.id,
+      ruleVersion: rule.toRuleConfig.schemaVersion, // ★ Phase 10
     );
 
     final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(redoEvent);
@@ -162,7 +221,6 @@ class RedoScoreUseCase {
     MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
     final result = _engine.decideResult(analysis.context);
     
-    // Redoによって勝敗がつく可能性があるため状態遷移チェック
     if (result != MatchResultStatus.inProgress) {
       if (currentState != MatchLifecycleState.completed && currentState != MatchLifecycleState.fusen) {
         currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.decideWinner);
@@ -179,7 +237,7 @@ class RedoScoreUseCase {
       pendingEvents: updatedPendingEvents,
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
-      syncState: SyncState.localOnly, // ★ isDirty: true の代わり
+      syncState: SyncState.localOnly,
       lastUpdatedAt: DateTime.now(),
     );
   }
@@ -231,9 +289,29 @@ class RebuildMatchFromEventsUseCase {
   final KendoRuleEngine _engine;
   RebuildMatchFromEventsUseCase(this._engine);
 
-  MatchModel execute(MatchModel baseMatch, MatchRule rule) {
-    final analysis = _engine.analyzeHistory(baseMatch.events, baseMatch, rule);
-    final result = _engine.decideResult(analysis.context);
+  MatchModel execute(MatchModel baseMatch, MatchRule currentSystemRule) {
+    // ==========================================
+    // ★ Phase 10: 10-2 Historical Replay 保証 & 10-3 Rule Migration Strategy
+    // 過去の試合を再構築する際、現在のシステム設定(currentSystemRule)で上書きしてしまうと、
+    // 「昔は1本勝負だったのに、今は3本勝負だから試合が再開されてしまう」という歴史改変(バグ)が起きる。
+    // これを防ぐため、イベントに刻まれた ruleVersion や baseMatch.rule を最優先する。
+    // ==========================================
+    MatchRule replayRule = currentSystemRule;
+    
+    if (baseMatch.events.isNotEmpty) {
+      final oldestRuleVersion = baseMatch.events.map((e) => e.ruleVersion).reduce((a, b) => a < b ? a : b);
+      // イベント当時のルールバージョンが現在のシステムより古い場合、
+      // 試合当時の設定（baseMatch.rule）を「真実のルール」として強制適用する（後方互換性）
+      if (oldestRuleVersion < currentSystemRule.toRuleConfig.schemaVersion || baseMatch.status == 'approved' || baseMatch.status == 'finished') {
+         replayRule = baseMatch.rule ?? currentSystemRule;
+      }
+    } else if (baseMatch.status == 'finished' || baseMatch.status == 'approved') {
+      // イベントが無くても終了済みの過去試合なら当時のルールを適用
+      replayRule = baseMatch.rule ?? currentSystemRule;
+    }
+
+    final analysis = _engine.analyzeHistory(baseMatch.events, baseMatch, replayRule);
+    final result = _engine.decideResult(analysis.context, replayRule); // ★ Replay用のルールを渡す
 
     // ★ Phase 1: FSMによる厳密な状態遷移
     MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(baseMatch.status);
@@ -259,7 +337,7 @@ class RebuildMatchFromEventsUseCase {
     return baseMatch.copyWith(
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
-      status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
+      status: currentState.toLegacyString(),
       syncState: SyncState.localOnly,
       lastUpdatedAt: DateTime.now(),
     );

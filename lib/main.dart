@@ -51,6 +51,9 @@ import 'presentation/operate/providers/role_provider.dart';
 import 'presentation/operate/providers/metrics_provider.dart'; // ★ 追加: グローバルエラーをメトリクスへ流す
 import 'presentation/operate/screens/observability_dashboard_screen.dart'; // ★ Phase 2-5: ダッシュボードを追加
 
+// ★ 追加: 画面のNavigatorをどこからでも取得するためのグローバルキー
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 // ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -133,6 +136,7 @@ void main() async {
 }
 
 final _router = GoRouter(
+  navigatorKey: rootNavigatorKey, // ★ 追加: ルーターキーを登録
   initialLocation: '/',
   routes: [
     GoRoute(path: '/', builder: (context, state) => const StartScreen()),

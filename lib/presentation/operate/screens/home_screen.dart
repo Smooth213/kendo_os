@@ -917,23 +917,30 @@ class HomeScreen extends ConsumerWidget {
                                                                           child: Text('スコア', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mTitleColor)),
                                                                         ),
                                                                       ),
-                                                                      // ★ 修正：対戦カードごとの簡易入力ボタンを配置（Wrap内で自動改行対応）
-                                                                      if (!permissions.isReadOnly && !boutsAllFinished &&
-                                                                          !(ref.read(customTeamNamesProvider).value ?? []).contains(bouts.first.redName.split(':').first.trim()) &&
-                                                                          !(ref.read(customTeamNamesProvider).value ?? []).contains(bouts.first.whiteName.split(':').first.trim()))
-                                                                        SizedBox(
-                                                                          height: 24,
-                                                                          child: OutlinedButton.icon(
-                                                                            onPressed: () => _showSummaryInputDialog(context, ref, bouts),
-                                                                            icon: Icon(Icons.flash_on, size: 12, color: Colors.amber.shade700),
-                                                                            label: Text('簡易入力', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mTitleColor)),
-                                                                            style: OutlinedButton.styleFrom(
-                                                                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                                                                              side: BorderSide(color: mTitleColor.withValues(alpha: 0.3), width: 1),
-                                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                                                                      // ★ 復活：対戦カードごとの簡易入力ボタン（自チーム判定を完全修復）
+                                                                      Builder(builder: (context) {
+                                                                        final ownT = ref.read(customTeamNamesProvider).value ?? [];
+                                                                        final rT = bouts.first.redName.split(':').first.trim();
+                                                                        final wT = bouts.first.whiteName.split(':').first.trim();
+                                                                        final isROwn = ownT.contains(rT) || bouts.first.redName.contains('自チーム');
+                                                                        final isWOwn = ownT.contains(wT) || bouts.first.whiteName.contains('自チーム');
+                                                                        if (!permissions.isReadOnly && !boutsAllFinished && !isROwn && !isWOwn) {
+                                                                          return SizedBox(
+                                                                            height: 24,
+                                                                            child: OutlinedButton.icon(
+                                                                              onPressed: () => _showSummaryInputDialog(context, ref, bouts),
+                                                                              icon: Icon(Icons.flash_on, size: 12, color: Colors.amber.shade700),
+                                                                              label: Text('簡易入力', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mTitleColor)),
+                                                                              style: OutlinedButton.styleFrom(
+                                                                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                                                side: BorderSide(color: mTitleColor.withValues(alpha: 0.3), width: 1),
+                                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                                                                              ),
                                                                             ),
-                                                                          ),
-                                                                        ),
+                                                                          );
+                                                                        }
+                                                                        return const SizedBox.shrink();
+                                                                      }),
                                                                     ],
                                                                   ),
                                                                 ),
@@ -1302,6 +1309,35 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+
+            // ★ 復活：自チームを含まない個人戦（リーグ戦等）での簡易入力ボタン
+            Builder(builder: (context) {
+              final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+              final rT = match.redName.split(':').first.trim();
+              final wT = match.whiteName.split(':').first.trim();
+              final isRedOwn = ownTeams.contains(rT) || match.redName.contains('自チーム');
+              final isWhiteOwn = ownTeams.contains(wT) || match.whiteName.contains('自チーム');
+              
+              if (!ref.watch(permissionProvider).isReadOnly && !isFinished && !isPlaying && !isRedOwn && !isWhiteOwn && isIndividual) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: SizedBox(
+                    height: 28,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showSummaryInputDialog(context, ref, [match]),
+                      icon: Icon(Icons.flash_on, size: 12, color: Colors.amber.shade700),
+                      label: Text('簡易', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textC)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        side: BorderSide(color: textC.withValues(alpha: 0.3), width: 1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
 
             if (isIndividual || match.note.contains('[順位決定戦]') || match.matchType == '代表戦')
               SizedBox(

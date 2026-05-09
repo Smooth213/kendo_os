@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../operate/providers/role_provider.dart';
 import '../../operate/providers/sync_provider.dart';
 import '../../operate/providers/match_command_provider.dart'; // ★ deadLetterQueueProvider を参照するために追加
+import '../../../main.dart'; // ★ 追加: rootNavigatorKey を参照するため
 
 class SyncStatusBar extends ConsumerWidget {
   const SyncStatusBar({super.key});
@@ -127,8 +128,10 @@ class SyncStatusBar extends ConsumerWidget {
 
   // ★ 追加: デッドレター（エラー）一覧を表示・操作するボトムシート
   void _showErrorQueueSheet(BuildContext context, WidgetRef ref) {
+    final navContext = rootNavigatorKey.currentContext ?? context; // ★ 修正: ルートのNavigatorContextを使用
     showModalBottomSheet(
-      context: context,
+      context: navContext, // ★ 修正: 安全なコンテキストを渡す
+      useRootNavigator: true, // ★ Phase 8修正: ステータスバーからの安全な展開のためルートナビゲーターを使用
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),

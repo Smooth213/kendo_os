@@ -7,6 +7,7 @@ import '../providers/match_command_provider.dart';
 import '../providers/match_list_provider.dart';
 import '../providers/match_rule_provider.dart'; // ★ 追加：レギュレーション確認用
 import 'package:kendo_os/domain/services/team_match_calculator.dart'; // ★ Phase 7: 計算機の結線
+import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'kachinuki_scoreboard_screen.dart'; // ★ 追加：勝ち抜き画面への誘導用
 
 class TeamPointDisplay {
@@ -150,21 +151,45 @@ class TeamScoreboardScreen extends ConsumerWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Table(
-                    border: TableBorder.symmetric(inside: BorderSide(color: borderColor, width: 0.5)),
-                    columnWidths: const {
-                      0: FlexColumnWidth(1.2), 1: FlexColumnWidth(2.0), 2: FlexColumnWidth(1.2),
-                      3: FlexColumnWidth(1.2), 4: FlexColumnWidth(2.0),
-                    },
+                  child: Stack(
                     children: [
-                      _buildHeaderRow(redTeam, whiteTeam, isDark),
-                      ...teamMatches.map((m) => _buildMatchRow(
-                        m, context, isDark, 
-                        teamMatches.map((x) => _parseName(x.redName)['last']!).where((s) => s.isNotEmpty).toList(),
-                        teamMatches.map((x) => _parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).toList()
-                      )),
-                      // ★ Phase 7: 計算結果オブジェクトをそのまま渡す
-                      _buildTotalRow(result, isDark),
+                      Table(
+                        border: TableBorder.symmetric(inside: BorderSide(color: borderColor, width: 0.5)),
+                        columnWidths: const {
+                          0: FlexColumnWidth(1.2), 1: FlexColumnWidth(2.0), 2: FlexColumnWidth(1.2),
+                          3: FlexColumnWidth(1.2), 4: FlexColumnWidth(2.0),
+                        },
+                        children: [
+                          _buildHeaderRow(redTeam, whiteTeam, isDark),
+                          ...teamMatches.map((m) => _buildMatchRow(
+                            m, context, isDark, 
+                            teamMatches.map((x) => _parseName(x.redName)['last']!).where((s) => s.isNotEmpty).toList(),
+                            teamMatches.map((x) => _parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).toList()
+                          )),
+                          // ★ Phase 7: 計算結果オブジェクトをそのまま渡す
+                          _buildTotalRow(result, isDark),
+                        ],
+                      ),
+                      // ★ 復活: スコアボード全体の簡易入力オーバーレイ
+                      if (teamMatches.any((m) => m.note.contains('[SUMMARY]')))
+                        Positioned.fill(
+                          top: 40,
+                          child: Container(
+                            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.6),
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isDark ? Colors.black87 : Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
+                                ),
+                                child: Text('※簡易入力された結果です\n（詳細スコアはありません）', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -467,56 +492,19 @@ class TeamScoreboardScreen extends ConsumerWidget {
   }
 
   Map<String, List<TeamPointDisplay>> _calcPts(MatchModel m) {
-    List<TeamPointDisplay> redPts = [];
-    List<TeamPointDisplay> whitePts = [];
-    int redHansoku = 0;
-    int whiteHansoku = 0;
-    bool isMatchFirstPoint = true;
-
-    for (var e in m.events) {
-      if (e.type == PointType.undo) {
-        continue;
-      }
-      if (e.isCanceled) continue; // ★ 追加: Undo（キャンセル）されたイベントを除外する
-      
-      if (e.type == PointType.hansoku) {
-        if (e.side == Side.red) { // ★ Enum比較
-          redHansoku++;
-          if (redHansoku == 2 || redHansoku == 4) { 
-            whitePts.add(TeamPointDisplay('反', isMatchFirstPoint));
-            isMatchFirstPoint = false;
-          }
-        } else if (e.side == Side.white) { // ★ Enum比較
-          whiteHansoku++;
-          if (whiteHansoku == 2 || whiteHansoku == 4) { 
-            redPts.add(TeamPointDisplay('反', isMatchFirstPoint));
-            isMatchFirstPoint = false;
-          }
-        }
-      } else {
-        if (e.side == Side.red) { // ★ Enum比較
-          redPts.add(TeamPointDisplay(_toM(e.type), isMatchFirstPoint));
-          isMatchFirstPoint = false;
-        } else if (e.side == Side.white) { // ★ Enum比較
-          whitePts.add(TeamPointDisplay(_toM(e.type), isMatchFirstPoint));
-          isMatchFirstPoint = false;
-        }
-      }
-    }
+    final engine = KendoRuleEngine();
+    final analysis = engine.analyzeHistory(m.events, m, m.rule);
+    
+    final redPts = (analysis.displays[Side.red] ?? [])
+        .map((d) => TeamPointDisplay(d.mark == '判定' ? '判' : d.mark, d.isFirstMatchPoint))
+        .toList();
+    final whitePts = (analysis.displays[Side.white] ?? [])
+        .map((d) => TeamPointDisplay(d.mark == '判定' ? '判' : d.mark, d.isFirstMatchPoint))
+        .toList();
+        
     return {'red': redPts, 'white': whitePts};
   }
 
-  String _toM(PointType t) {
-    switch (t) {
-      case PointType.men: return 'メ';
-      case PointType.kote: return 'コ';
-      case PointType.doIdo: return 'ド';
-      case PointType.tsuki: return 'ツ';
-      case PointType.fusen: return '◯'; 
-      case PointType.hantei: return '判'; // ★ 追加：判定勝ちは「判」の文字を返す
-      default: return '';
-    }
-  }
 
   String _cleanName(String n, bool team) {
     if (!n.contains(':')) {

@@ -206,32 +206,49 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton> with SingleTicker
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // ★ 進捗の可視化：ボタンの背景自体が塗りつぶされていくアニメーション（円形より直感的）
+                  // ★ 修正: ボタンが長方形でも、最小辺に合わせた「完璧な真円」のゲージにする
                   if (_isHolding)
                     Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: LinearProgressIndicator(
-                          value: _controller.value,
-                          backgroundColor: Colors.transparent,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withValues(alpha: 0.2)),
-                        ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // 短い方の辺に合わせて正方形のサイズを決定
+                          final size = constraints.maxWidth < constraints.maxHeight 
+                              ? constraints.maxWidth 
+                              : constraints.maxHeight;
+                          return Center(
+                            child: SizedBox(
+                              width: size * 0.9, // ボタン枠ギリギリを避けるため少し小さめに
+                              height: size * 0.9,
+                              child: CircularProgressIndicator(
+                                value: _controller.value,
+                                strokeWidth: 8.0, // 高齢補助員にも見えやすく少し太めに
+                                backgroundColor: Colors.black12,
+                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white70),
+                              ),
+                            ),
+                          );
+                        }
                       ),
                     ),
-                  Text(
-                    widget.isFoul ? '反則' : widget.label,
-                    style: TextStyle(
-                      // ★ 巨大文字: どんなに目が悪くても見えるサイズ
-                      fontSize: widget.isFoul ? (isTablet ? 32 : 24) : (isTablet ? 56 : 48), 
-                      fontWeight: FontWeight.w900,
-                      color: widget.disabled 
-                          ? Colors.grey.shade600 
-                          : (widget.isFoul && !isDark ? Colors.black87 : widget.textColor),
-                      letterSpacing: 2.0, 
-                      // 文字に細い縁取りをして、背景色に埋もれないようにする
-                      shadows: [
-                        Shadow(offset: const Offset(1, 1), blurRadius: 2, color: Colors.black.withValues(alpha: 0.3))
-                      ]
+                  // ★ 修正: 文字がボタン枠からはみ出さないように FittedBox で自動縮小させる
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        widget.isFoul ? '反則' : widget.label,
+                        style: TextStyle(
+                          fontSize: widget.isFoul ? (isTablet ? 32 : 24) : (isTablet ? 56 : 48), 
+                          fontWeight: FontWeight.w900,
+                          color: widget.disabled 
+                              ? Colors.grey.shade600 
+                              : (widget.isFoul && !isDark ? Colors.black87 : widget.textColor),
+                          letterSpacing: 2.0, 
+                          shadows: [
+                            Shadow(offset: const Offset(1, 1), blurRadius: 2, color: Colors.black.withValues(alpha: 0.3))
+                          ]
+                        ),
+                      ),
                     ),
                   ),
                 ],

@@ -1,6 +1,13 @@
 import 'package:kendo_os/domain/entities/match_context.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
+
+// ==========================================
+// ★ Phase 2: Rule Interface統一 - Base Interface
+// すべてのルール（時間、延長、反則、勝敗など）は、
+// 単一の apply メソッドを持つこのインターフェースを実装します。
+// ==========================================
+abstract class RuleModule {
+  RuleResult apply(RuleContext context);
+}
 
 // ==========================================
 // ★ Phase 6: Rule分割 - 専門特化したルールの型定義
@@ -8,21 +15,13 @@ import 'package:kendo_os/domain/rules/match_rule.dart';
 // ==========================================
 
 /// ① スコア（得点）に関するルール
-abstract class ScoringRule {
-  MatchContext apply(List<ScoreEvent> events, MatchContext currentContext, MatchRule? rule);
-}
+abstract class ScoringRule implements RuleModule {}
 
 /// ② 反則に関するルール
-abstract class HansokuRule {
-  MatchContext apply(List<ScoreEvent> events, MatchContext currentContext, MatchRule? rule);
-}
+abstract class HansokuRule implements RuleModule {}
 
 /// ③ 試合時間に関するルール
-abstract class TimeRule {
-  MatchContext apply(MatchContext currentContext, double remainingSeconds, MatchRule? rule);
-}
+abstract class TimeRule implements RuleModule {}
 
 /// ④ 勝敗判定に関するルール
-abstract class VictoryRule {
-  MatchResultStatus evaluate(MatchContext context, int redHantei, int whiteHantei, MatchRule? rule);
-}
+abstract class VictoryRule implements RuleModule {}

@@ -1,3 +1,8 @@
+// ============================================================================
+// 【GOVERNANCE BASELINE FREEZE】
+// 本ファイルは Phase 0 にて「Golden Replay Baseline」として凍結されました。
+// このテストが失敗するような変更（歴史的真実の破壊）は、いかなる理由があってもマージ禁止です。
+// ============================================================================
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';

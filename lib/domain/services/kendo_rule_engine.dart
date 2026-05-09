@@ -4,6 +4,7 @@ import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/entities/match_context.dart';
 import 'package:kendo_os/domain/services/match_strategy.dart';
 import 'package:kendo_os/domain/rules/rule_factory.dart';
+import 'package:kendo_os/domain/rules/tournament_rule_config.dart'; // ★ Phase 5
 
 // ★ 追加: 新しく切り出した集計ロジックを読み込み、外部(UI)へ横流しする
 import 'package:kendo_os/domain/services/standings_calculator.dart';
@@ -44,26 +45,28 @@ class ValidationResult {
 /// すべての「計算」「判定」をこのクラスに集約する
 /// ==========================================
 class KendoRuleEngine {
-  // ★ Phase 6: RuleFactoryを使って、設定(MatchRule)から動的にルールセットを取得
-  MatchRuleSet _getRuleSet(MatchRule? rule) => RuleFactory.fromConfig(rule);
+  // ★ Phase 5: アダプター(toRuleConfig)経由で階層型ConfigとしてResolverを呼び出す
+  MatchRuleSet _getRuleSet(TournamentRuleConfig config) => RuleResolver.build(config);
   
   /// 1. 歴史（Events）から現在の状況をすべて解析する最重要メソッド
   MatchAnalysis analyzeHistory(List<ScoreEvent> allEvents, MatchModel match, MatchRule? rule) {
-    final ruleSet = _getRuleSet(rule);
+    final safeRule = rule ?? const MatchRule();
+    final config = safeRule.toRuleConfig; // ★ 新Configへ変換
+    final ruleSet = _getRuleSet(config);
+
     final activeEvents = _filterActiveEvents(allEvents);
 
     final strategy = MatchStrategyFactory.getStrategy(match);
     int target = strategy.getTargetIppon(match, rule);
 
-    if (rule != null) {
-      if (rule.isIpponShobu) {
-        target = 1;
-      } else if (rule.ipponLimit != 2 && rule.ipponLimit > 0) {
-        target = rule.ipponLimit;
-      }
+    // ★ 階層型Configの使用に書き換え
+    if (config.scoring.isIpponShobu) {
+      target = 1;
+    } else if (config.scoring.ipponLimit != 2 && config.scoring.ipponLimit > 0) {
+      target = config.scoring.ipponLimit;
     }
 
-    final hasHantei = rule?.hasHantei ?? false;
+    final hasHantei = config.draw.hasHantei; // ★ 階層型Config
     
     MatchContext currentContext = MatchContext(
       redIppon: 0, whiteIppon: 0,
@@ -73,9 +76,15 @@ class KendoRuleEngine {
       hasHantei: hasHantei,
     );
 
-    // ★ C-4: 修正 - 各ルールのapplyに rule を渡すように変更
-    currentContext = ruleSet.scoring.apply(activeEvents, currentContext, rule);
-    currentContext = ruleSet.hansoku.apply(activeEvents, currentContext, rule);
+    // 1. Scoring Rule 適用
+    var ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.remainingSeconds.toDouble());
+    var res = ruleSet.scoring.apply(ruleCtx);
+    if (res.transition != null) currentContext = res.transition!.updatedState;
+
+    // 2. Hansoku Rule 適用
+    ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.remainingSeconds.toDouble());
+    res = ruleSet.hansoku.apply(ruleCtx);
+    if (res.transition != null) currentContext = res.transition!.updatedState;
     
     // 延長戦・代表戦（サドンデス）の規定本数を事後計算で補正
     if (match.matchType == '延長戦' || match.matchType == '代表戦') {
@@ -93,8 +102,10 @@ class KendoRuleEngine {
       );
     }
 
-    // ★ C-4: 修正 - timeのapplyに rule を渡すように変更
-    currentContext = ruleSet.time.apply(currentContext, match.remainingSeconds.toDouble(), rule);
+    // 3. Time Rule 適用
+    ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.remainingSeconds.toDouble());
+    res = ruleSet.time.apply(ruleCtx);
+    if (res.transition != null) currentContext = res.transition!.updatedState;
 
     final displays = _buildDisplays(activeEvents, currentContext);
 
@@ -106,13 +117,16 @@ class KendoRuleEngine {
 
   /// 2. 勝敗の決定ロジック (動的生成されたVictoryRuleに委譲)
   MatchResultStatus decideResult(MatchContext ctx, [MatchRule? rule]) {
-    // ★ C-4: 修正 - evaluateに rule を渡すように変更
-    return _getRuleSet(rule).victory.evaluate(ctx, 0, 0, rule); 
+    final safeRule = rule ?? const MatchRule();
+    final config = safeRule.toRuleConfig;
+    final ruleCtx = RuleContext(matchState: ctx, events: [], tournamentConfig: config, clock: 0);
+    final res = _getRuleSet(config).victory.apply(ruleCtx);
+    return res.transition?.resultStatus ?? MatchResultStatus.inProgress;
   }
 
   /// 3. 反則が一本に到達したかの判定
   bool isHansokuIppon(int count, [MatchRule? rule]) {
-    final limit = rule?.hansokuLimit ?? 2;
+    final limit = (rule ?? const MatchRule()).toRuleConfig.hansoku.hansokuLimit;
     return limit > 0 && count > 0 && count % limit == 0;
   }
 
@@ -159,17 +173,30 @@ class KendoRuleEngine {
     return ValidationResult(true);
   }
 
+  // ★ Phase 5: Undoされたイベントをフィルタし、現在有効なイベントのみを返す（外部公開版）
+  List<ScoreEvent> filterActiveEvents(List<ScoreEvent> events) {
+    return _filterActiveEvents(events);
+  }
+
   // --- 内部ヘルパー ---
 
   // ★ Phase 2-5 Reducer完結: Undoされたイベントを保持し、Redo(Restore)で復活させる完全版
   List<ScoreEvent> _filterActiveEvents(List<ScoreEvent> events) {
     List<ScoreEvent> active = [];
     List<ScoreEvent> undone = []; // ★ Redo用に「直近Undoされたイベント」を保持するスタック
+    int pendingUndoCount = 0; // ★ 追加: isCanceledとUndoイベントの二重処理を防ぐ
 
     for (var e in events) {
-      if (e.isCanceled) continue; 
+      if (e.isCanceled) {
+        pendingUndoCount++;
+        continue; 
+      }
       
       if (e.isUndo || e.type == PointType.undo) {
+        if (pendingUndoCount > 0) {
+          pendingUndoCount--;
+          continue; // UI互換のisCanceledによってすでに無効化されたものと相殺
+        }
         if (active.isNotEmpty) {
           undone.add(active.removeLast()); // 有効リストから削り、Undoスタックに退避
         }

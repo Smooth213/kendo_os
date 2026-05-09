@@ -1,30 +1,23 @@
 import 'package:kendo_os/domain/entities/match_context.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule_interface.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
 
 // ==========================================
-// ★ Phase C: データ駆動型の標準剣道ルール実装
-// すべてのハードコードを排除し、MatchRuleのパラメータに従って動く
+// ★ Phase 13: Dead Code削除
+// if文で分岐していた「移行用プロキシ (StandardScoringRule等)」を完全削除しました。
 // ==========================================
 
-class StandardScoringRule implements ScoringRule {
+// --- Scoring Rule Modules ---
+abstract class BaseScoringRule implements ScoringRule {
+  int determineTarget(RuleContext context);
+
   @override
-  MatchContext apply(List<ScoreEvent> events, MatchContext currentContext, MatchRule? rule) {
+  RuleResult apply(RuleContext context) {
     int red = 0;
     int white = 0;
-    
-    // C-3: 勝利に必要な本数を動的に決定
-    int currentTarget = currentContext.targetIppon;
-    if (rule != null) {
-      if (rule.isIpponShobu) {
-        currentTarget = 1;
-      } else if (rule.ipponLimit > 0) {
-        currentTarget = rule.ipponLimit;
-      }
-    }
+    int currentTarget = determineTarget(context);
 
-    for (var e in events) {
+    for (var e in context.events) {
       if (e.isCanceled) continue;
       if (e.type != PointType.hansoku && e.type != PointType.fusen) {
         if (e.side == Side.red) red++;
@@ -35,89 +28,131 @@ class StandardScoringRule implements ScoringRule {
         if (e.side == Side.white) white += currentTarget;
       }
     }
-    return MatchContext(
+    
+    final newState = MatchContext(
       redIppon: red,
       whiteIppon: white,
-      redHansoku: currentContext.redHansoku,
-      whiteHansoku: currentContext.whiteHansoku,
-      isTimeUp: currentContext.isTimeUp,
-      targetIppon: currentTarget, // 計算されたターゲットをコンテキストに上書き
-      hasHantei: rule?.hasHantei ?? currentContext.hasHantei,
+      redHansoku: context.matchState.redHansoku,
+      whiteHansoku: context.matchState.whiteHansoku,
+      isTimeUp: context.matchState.isTimeUp,
+      targetIppon: currentTarget,
+      hasHantei: context.tournamentConfig.draw.hasHantei,
     );
+    return RuleResult(allowed: true, transition: MatchTransition(updatedState: newState));
   }
 }
 
-class StandardHansokuRule implements HansokuRule {
+class LimitScoringRule extends BaseScoringRule {
   @override
-  MatchContext apply(List<ScoreEvent> events, MatchContext currentContext, MatchRule? rule) {
+  int determineTarget(RuleContext context) {
+    return context.tournamentConfig.scoring.ipponLimit > 0
+        ? context.tournamentConfig.scoring.ipponLimit 
+        : context.matchState.targetIppon;
+  }
+}
+
+class IpponShobuScoringRule extends BaseScoringRule {
+  @override
+  int determineTarget(RuleContext context) => 1;
+}
+
+// --- Hansoku Rule Modules ---
+class LimitHansokuRule implements HansokuRule {
+  @override
+  RuleResult apply(RuleContext context) {
     int redHansoku = 0;
     int whiteHansoku = 0;
     int redIpponAdded = 0;
     int whiteIpponAdded = 0;
     
-    // C-3: 反則何回で1本になるかを動的に決定（デフォルトは2回）
-    final limit = rule?.hansokuLimit ?? 2;
+    final limit = context.tournamentConfig.hansoku.hansokuLimit;
 
-    for (var e in events) {
+    for (var e in context.events) {
       if (e.isCanceled) continue;
       if (e.type == PointType.hansoku) {
         if (e.side == Side.red) {
           redHansoku++;
-          // limit（通常2）に到達するごとに相手に1本追加
-          if (limit > 0 && redHansoku % limit == 0) whiteIpponAdded++;
+          if (redHansoku % limit == 0) whiteIpponAdded++;
         } else {
           whiteHansoku++;
-          if (limit > 0 && whiteHansoku % limit == 0) redIpponAdded++;
+          if (whiteHansoku % limit == 0) redIpponAdded++;
         }
       }
     }
 
-    return MatchContext(
-      redIppon: currentContext.redIppon + redIpponAdded,
-      whiteIppon: currentContext.whiteIppon + whiteIpponAdded,
+    final newState = MatchContext(
+      redIppon: context.matchState.redIppon + redIpponAdded,
+      whiteIppon: context.matchState.whiteIppon + whiteIpponAdded,
       redHansoku: redHansoku,
       whiteHansoku: whiteHansoku,
-      isTimeUp: currentContext.isTimeUp,
-      targetIppon: currentContext.targetIppon,
-      hasHantei: currentContext.hasHantei,
+      isTimeUp: context.matchState.isTimeUp,
+      targetIppon: context.matchState.targetIppon,
+      hasHantei: context.matchState.hasHantei,
     );
+    return RuleResult(allowed: true, transition: MatchTransition(updatedState: newState));
   }
 }
 
+class NoHansokuRule implements HansokuRule {
+  @override
+  RuleResult apply(RuleContext context) {
+    return RuleResult(allowed: true, transition: MatchTransition(updatedState: context.matchState));
+  }
+}
+
+// --- Time Rule Modules ---
 class StandardTimeRule implements TimeRule {
   @override
-  MatchContext apply(MatchContext currentContext, double remainingSeconds, MatchRule? rule) {
-    return MatchContext(
-      redIppon: currentContext.redIppon,
-      whiteIppon: currentContext.whiteIppon,
-      redHansoku: currentContext.redHansoku,
-      whiteHansoku: currentContext.whiteHansoku,
-      isTimeUp: remainingSeconds <= 0,
-      targetIppon: currentContext.targetIppon,
-      hasHantei: currentContext.hasHantei,
+  RuleResult apply(RuleContext context) {
+    final newState = MatchContext(
+      redIppon: context.matchState.redIppon,
+      whiteIppon: context.matchState.whiteIppon,
+      redHansoku: context.matchState.redHansoku,
+      whiteHansoku: context.matchState.whiteHansoku,
+      isTimeUp: context.clock <= 0,
+      targetIppon: context.matchState.targetIppon,
+      hasHantei: context.matchState.hasHantei,
+    );
+    return RuleResult(allowed: true, transition: MatchTransition(updatedState: newState));
+  }
+}
+
+// --- Victory Rule Modules ---
+abstract class BaseVictoryRule implements VictoryRule {
+  MatchResultStatus handleTimeUpTie(RuleContext context);
+
+  @override
+  RuleResult apply(RuleContext context) {
+    MatchResultStatus status = MatchResultStatus.inProgress;
+    final state = context.matchState;
+
+    if (state.redIppon >= state.targetIppon) {
+      status = MatchResultStatus.redWin;
+    } else if (state.whiteIppon >= state.targetIppon) {
+      status = MatchResultStatus.whiteWin;
+    } else if (state.isTimeUp) {
+      if (state.redIppon > state.whiteIppon) {
+        status = MatchResultStatus.redWin;
+      } else if (state.whiteIppon > state.redIppon) {
+        status = MatchResultStatus.whiteWin;
+      } else {
+        status = handleTimeUpTie(context);
+      }
+    }
+
+    return RuleResult(
+      allowed: true, 
+      transition: MatchTransition(updatedState: state, resultStatus: status)
     );
   }
 }
 
-class StandardVictoryRule implements VictoryRule {
+class DrawVictoryRule extends BaseVictoryRule {
   @override
-  MatchResultStatus evaluate(MatchContext context, int redHantei, int whiteHantei, MatchRule? rule) {
-    // 1. 規定本数（データから計算済み）到達の判定
-    if (context.redIppon >= context.targetIppon) return MatchResultStatus.redWin;
-    if (context.whiteIppon >= context.targetIppon) return MatchResultStatus.whiteWin;
+  MatchResultStatus handleTimeUpTie(RuleContext context) => MatchResultStatus.draw;
+}
 
-    // 2. 時間切れ時の判定
-    if (context.isTimeUp) {
-      if (context.redIppon > context.whiteIppon) return MatchResultStatus.redWin;
-      if (context.whiteIppon > context.redIppon) return MatchResultStatus.whiteWin;
-      
-      // 3. 判定(Hantei)による決着
-      if (context.hasHantei) {
-        return MatchResultStatus.inProgress;
-      }
-      return MatchResultStatus.draw;
-    }
-
-    return MatchResultStatus.inProgress;
-  }
+class HanteiVictoryRule extends BaseVictoryRule {
+  @override
+  MatchResultStatus handleTimeUpTie(RuleContext context) => MatchResultStatus.inProgress;
 }

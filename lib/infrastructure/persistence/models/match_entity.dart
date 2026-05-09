@@ -21,6 +21,9 @@ class ScoreEventEntity {
   int sequence = 0;
   bool isCanceled = false; 
   
+  // ★ Phase 10: Event/Replayer整合
+  int ruleVersion = 1;
+
   // ★ Phase 4: EventSourcing & Sync 用のメタデータを永続化
   bool isUndo = false;
   bool isRestore = false;

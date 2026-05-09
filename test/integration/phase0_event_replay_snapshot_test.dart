@@ -65,6 +65,40 @@ void main() {
       expect(totalWhiteScoreChecksum, 132, reason: '白の総スコア合計(Checksum)が壊れています。リファクタリングによるデグレが発生しました。');
       expect(totalFinishedMatches, 88, reason: '終了した試合数(Checksum)が壊れています。リファクタリングによるデグレが発生しました。');
     });
+
+    test('0-2: Rule JSON Snapshot (入力イベントと期待される結果の固定化)', () {
+      final engine = KendoRuleEngine();
+      final permission = PermissionService();
+      final addScoreUseCase = AddScoreUseCase(engine, permission);
+      final testUser = const User(id: 'json_user', role: Role.admin, organizationId: 'test_org');
+      final rule = const MatchRule();
+
+      var match = TestMatchFactory.createIndividualMatch(id: 'json-snapshot-1');
+      
+      // テスト用のイベントを追加
+      match = addScoreUseCase.execute(testUser, match, ScoreEventLegacyAdapter.fromLegacy(side: Side.red, type: PointType.men, sequence: 0, userId: testUser.id), rule);
+      match = addScoreUseCase.execute(testUser, match, ScoreEventLegacyAdapter.fromLegacy(side: Side.white, type: PointType.kote, sequence: 0, userId: testUser.id), rule);
+
+      // JSON化 (0-2の要件)
+      final snapshot = {
+        "events": match.events.map((e) => {'type': e.type.name, 'side': e.side.name}).toList(),
+        "expectedResult": {
+          "redScore": match.redScore,
+          "whiteScore": match.whiteScore,
+          "status": match.status,
+        }
+      };
+
+      // 現状のルールエンジンが弾き出すJSON構造を絶対に変わらない「真実」としてアサートする
+      expect(snapshot['events'], [
+        {'type': 'men', 'side': 'red'},
+        {'type': 'kote', 'side': 'white'}
+      ], reason: 'イベントのJSONシリアライズ結果が一致しません');
+      
+      expect((snapshot['expectedResult'] as Map)['redScore'], 1);
+      expect((snapshot['expectedResult'] as Map)['whiteScore'], 1);
+      expect((snapshot['expectedResult'] as Map)['status'], 'in_progress');
+    });
   });
 }
 

@@ -143,9 +143,21 @@ class SyncEngine {
           if (match.version < remoteVersion) {
             debugPrint('⚠️ [Sync Engine] 競合検知 ID:${match.id} -> 🛡️ CRDT自動マージを実行します');
             
-            // 1. リモートデータを復元
-            remoteData['id'] = docRef.id;
-            final remoteMatch = MatchModel.fromJson(remoteData);
+            MatchModel remoteMatch;
+            try {
+              // 1. リモートデータを復元
+              remoteData['id'] = docRef.id;
+              remoteMatch = MatchModel.fromJson(remoteData);
+            } catch (e) {
+              debugPrint('🔥 [Sync Engine] リモートデータの解析エラー（古い形式のデータ）: $e');
+              // ★ 修正: リモートのデータが古くて壊れている場合は、最新のローカルデータで強制上書き（自己修復）する
+              targetVersion = remoteVersion + 1;
+              final uploadData = match.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion).toJson();
+              await docRef.set(uploadData);
+              await localRepo.markAsSynced(match.id);
+              debugPrint('✅ [Sync Engine] 古いデータを最新の設計図で自己修復しました ID:${match.id}');
+              continue;
+            }
             
             // ==========================================
             // ★ Phase 4-3: Append-only Sync (差分追記同期)

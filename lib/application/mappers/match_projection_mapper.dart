@@ -53,7 +53,9 @@ class MatchProjectionMapper {
     final whiteHansoku = model.events.where((e) => e.side == Side.white && e.isHansoku).length;
     momentum -= (redHansoku - whiteHansoku) * 0.2;
 
-    final activeEvents = model.events.where((e) => !e.isUndo && !e.isCanceled).toList();
+    // ★ 修正: filterActiveEventsを使って有効イベントのみを考慮
+    final engine = KendoRuleEngine();
+    final activeEvents = engine.filterActiveEvents(model.events);
     if (activeEvents.isNotEmpty) {
       final last = activeEvents.last;
       if (last.isIppon) momentum += last.side == Side.red ? 0.3 : -0.3;
@@ -71,7 +73,10 @@ class MatchProjectionMapper {
     List<String> wMarks = analysis.displays[Side.white]?.map((d) => d.mark).toList() ?? [];
     
     String firstPointSide = '';
-    final firstPoint = model.events.where((e) => e.isIppon && !e.isCanceled && !e.isUndo).firstOrNull;
+    // ★ 修正: KendoRuleEngineのfilterActiveEventsを通して、Undoされたイベントを正確に除外する
+    final engine = KendoRuleEngine();
+    final activeEvents = engine.filterActiveEvents(model.events);
+    final firstPoint = activeEvents.where((e) => e.isIppon).firstOrNull;
     if (firstPoint != null) {
       firstPointSide = firstPoint.side == Side.red ? 'red' : 'white';
     }
@@ -101,10 +106,12 @@ class MatchProjectionMapper {
     List<String> rMarks = analysis.displays[Side.red]?.map((d) => d.mark).toList() ?? [];
     List<String> wMarks = analysis.displays[Side.white]?.map((d) => d.mark).toList() ?? [];
     
-    // 初取（先取）のサイド判定
+    // ★ 修正: 初取（先取）のサイド判定にも有効イベント抽出を適用
     String firstPointSide = '';
     if (model.events.isNotEmpty) {
-      final firstPoint = model.events.where((e) => e.isIppon && !e.isCanceled && !e.isUndo).firstOrNull;
+      final engine = KendoRuleEngine();
+      final activeEvents = engine.filterActiveEvents(model.events);
+      final firstPoint = activeEvents.where((e) => e.isIppon).firstOrNull;
       if (firstPoint != null) {
         firstPointSide = firstPoint.side == Side.red ? 'red' : 'white';
       }

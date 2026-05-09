@@ -392,12 +392,24 @@ class MatchCommandQueue {
           _errorCounts[cmd.id] = (_errorCounts[cmd.id] ?? 0) + 1;
           debugPrint('🔥 [CommandQueue] 処理失敗 (${_errorCounts[cmd.id]}回目): $e');
           
+          final errStr = e.toString();
+          // ★ 追加: ドメインルールの制約によるエラー（再送しても絶対に成功しない）は即座に破棄する
+          if (errStr.contains('DomainException') || 
+              errStr.contains('取り消すイベントがありません') ||
+              errStr.contains('既に規定本数に達しています')) {
+            debugPrint('🛡️ [CommandQueue] ドメインルールの制約によりコマンドを破棄します: $errStr');
+            _queue.removeAt(0);
+            await localRepo.deleteCommand(cmd.id);
+            _errorCounts.remove(cmd.id);
+            continue; // 次のコマンドへ
+          }
+          
           // ==========================================
           // ★ Phase 3-Step 5: オフラインキューの強化
           // ConcurrencyException のような一時的なエラーはすぐリトライするが、
           // ネットワークエラーなどはデッドレターキューへ送る
           // ==========================================
-          if (e.toString().contains('ConcurrencyException') && _errorCounts[cmd.id]! < 5) {
+          if (errStr.contains('ConcurrencyException') && _errorCounts[cmd.id]! < 5) {
             // 競合エラーの場合は、上限を増やして少し待ってから再挑戦する
             await Future.delayed(const Duration(milliseconds: 200));
             continue; // 次のループ（リトライ）へ

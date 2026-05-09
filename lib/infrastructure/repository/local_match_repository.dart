@@ -278,6 +278,12 @@ class LocalMatchRepository {
       ..status = cmd.status.name;
 
     await _isar.writeTxn(() async {
+      // ★ 修正: リトライ機能が同じコマンドを何度も保存しようとした際に
+      // Unique index violated（一意制約エラー）を出さないよう、既存のIDを引き継いで安全に上書きする
+      final existing = await _isar.matchCommandEntitys.filter().idEqualTo(cmd.id).findFirst();
+      if (existing != null) {
+        entity.isarId = existing.isarId;
+      }
       await _isar.matchCommandEntitys.put(entity);
     });
   }

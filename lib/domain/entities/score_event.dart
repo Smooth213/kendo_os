@@ -41,6 +41,13 @@ abstract class ScoreEvent with _$ScoreEvent {
     @Default(false) bool isCanceled,
 
     // ==========================================
+    // ★ Phase 10: Historical Replay 保証
+    // このイベントが発火した「当時のルールバージョン」を固定記録する
+    // これにより将来ルールが変わっても過去の試合は当時のルールで安全にリプレイ可能になる
+    // ==========================================
+    @Default(1) int ruleVersion,
+
+    // ==========================================
     // ★ Phase 3-Step 1: 分散同期のためのメタデータを追加
     // ==========================================
     @Default('local_device') String deviceId, // どの端末から発火したか

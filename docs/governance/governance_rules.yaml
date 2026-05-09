@@ -1,0 +1,42 @@
+# ============================================================================
+# Machine-readable Governance Invariants
+# 本ファイルはAIアシスタントに読み込ませるためのシステム不変条件定義です。
+# AIがコードを生成する際、このルールを破る提案をすることは固く禁じられます。
+# ============================================================================
+
+# Step 2-1: Rule Engine Invariants
+rule_engine:
+  deterministic: true
+  stateless: true
+  allow_io: false
+  allow_random: false
+  allow_datetime_now: false
+
+# Step 2-2: Failure Policy
+failure_policy:
+  rule_evaluation: fail_closed
+  sync_failure: fail_open
+  projection_error: fail_open
+  audit_logging: fail_open
+
+# Step 2-3: Replay Compatibility
+replay:
+  compatibility_required: true
+  mutation_forbidden: true
+  silent_correction_allowed: false
+
+# Step 2-4: Capability Schema Definition
+rule_capability_schema:
+  type: object
+  properties:
+    category: 
+      type: string
+      description: "例: encho, hansoku, scoring"
+    requires:
+      type: array
+      items: string
+      description: "依存する他のルールカテゴリ"
+    conflicts_with:
+      type: array
+      items: string
+      description: "同時に有効化できないルールカテゴリ"

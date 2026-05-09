@@ -6700,30 +6700,35 @@ const ScoreEventEntitySchema = Schema(
       name: r'logicalClock',
       type: IsarType.long,
     ),
-    r'sequence': PropertySchema(id: 6, name: r'sequence', type: IsarType.long),
+    r'ruleVersion': PropertySchema(
+      id: 6,
+      name: r'ruleVersion',
+      type: IsarType.long,
+    ),
+    r'sequence': PropertySchema(id: 7, name: r'sequence', type: IsarType.long),
     r'side': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'side',
       type: IsarType.byte,
       enumMap: _ScoreEventEntitysideEnumValueMap,
     ),
     r'signature': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'signature',
       type: IsarType.string,
     ),
     r'timestamp': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'timestamp',
       type: IsarType.dateTime,
     ),
     r'type': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'type',
       type: IsarType.byte,
       enumMap: _ScoreEventEntitytypeEnumValueMap,
     ),
-    r'userId': PropertySchema(id: 11, name: r'userId', type: IsarType.string),
+    r'userId': PropertySchema(id: 12, name: r'userId', type: IsarType.string),
   },
 
   estimateSize: _scoreEventEntityEstimateSize,
@@ -6767,12 +6772,13 @@ void _scoreEventEntitySerialize(
   writer.writeBool(offsets[3], object.isRestore);
   writer.writeBool(offsets[4], object.isUndo);
   writer.writeLong(offsets[5], object.logicalClock);
-  writer.writeLong(offsets[6], object.sequence);
-  writer.writeByte(offsets[7], object.side.index);
-  writer.writeString(offsets[8], object.signature);
-  writer.writeDateTime(offsets[9], object.timestamp);
-  writer.writeByte(offsets[10], object.type.index);
-  writer.writeString(offsets[11], object.userId);
+  writer.writeLong(offsets[6], object.ruleVersion);
+  writer.writeLong(offsets[7], object.sequence);
+  writer.writeByte(offsets[8], object.side.index);
+  writer.writeString(offsets[9], object.signature);
+  writer.writeDateTime(offsets[10], object.timestamp);
+  writer.writeByte(offsets[11], object.type.index);
+  writer.writeString(offsets[12], object.userId);
 }
 
 ScoreEventEntity _scoreEventEntityDeserialize(
@@ -6788,16 +6794,17 @@ ScoreEventEntity _scoreEventEntityDeserialize(
   object.isRestore = reader.readBool(offsets[3]);
   object.isUndo = reader.readBool(offsets[4]);
   object.logicalClock = reader.readLong(offsets[5]);
-  object.sequence = reader.readLong(offsets[6]);
+  object.ruleVersion = reader.readLong(offsets[6]);
+  object.sequence = reader.readLong(offsets[7]);
   object.side =
-      _ScoreEventEntitysideValueEnumMap[reader.readByteOrNull(offsets[7])] ??
+      _ScoreEventEntitysideValueEnumMap[reader.readByteOrNull(offsets[8])] ??
       Side.red;
-  object.signature = reader.readString(offsets[8]);
-  object.timestamp = reader.readDateTimeOrNull(offsets[9]);
+  object.signature = reader.readString(offsets[9]);
+  object.timestamp = reader.readDateTimeOrNull(offsets[10]);
   object.type =
-      _ScoreEventEntitytypeValueEnumMap[reader.readByteOrNull(offsets[10])] ??
+      _ScoreEventEntitytypeValueEnumMap[reader.readByteOrNull(offsets[11])] ??
       PointType.men;
-  object.userId = reader.readStringOrNull(offsets[11]);
+  object.userId = reader.readStringOrNull(offsets[12]);
   return object;
 }
 
@@ -6823,22 +6830,24 @@ P _scoreEventEntityDeserializeProp<P>(
     case 6:
       return (reader.readLong(offset)) as P;
     case 7:
+      return (reader.readLong(offset)) as P;
+    case 8:
       return (_ScoreEventEntitysideValueEnumMap[reader.readByteOrNull(
                 offset,
               )] ??
               Side.red)
           as P;
-    case 8:
-      return (reader.readString(offset)) as P;
     case 9:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 10:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 11:
       return (_ScoreEventEntitytypeValueEnumMap[reader.readByteOrNull(
                 offset,
               )] ??
               PointType.men)
           as P;
-    case 11:
+    case 12:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -7245,6 +7254,61 @@ extension ScoreEventEntityQueryFilter
       return query.addFilterCondition(
         FilterCondition.between(
           property: r'logicalClock',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ScoreEventEntity, ScoreEventEntity, QAfterFilterCondition>
+  ruleVersionEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'ruleVersion', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<ScoreEventEntity, ScoreEventEntity, QAfterFilterCondition>
+  ruleVersionGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'ruleVersion',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ScoreEventEntity, ScoreEventEntity, QAfterFilterCondition>
+  ruleVersionLessThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'ruleVersion',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ScoreEventEntity, ScoreEventEntity, QAfterFilterCondition>
+  ruleVersionBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'ruleVersion',
           lower: lower,
           includeLower: includeLower,
           upper: upper,

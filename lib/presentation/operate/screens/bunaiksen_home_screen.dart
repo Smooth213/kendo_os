@@ -9,6 +9,8 @@ import '../providers/bunaiksen_provider.dart';
 // ★ Phase 8: 削除機能と権限管理用プロバイダを追加
 import '../providers/permission_provider.dart';
 import '../providers/match_command_provider.dart';
+import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/domain/entities/score_event.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -27,78 +29,35 @@ class BunaiksenHomeScreen extends ConsumerWidget {
       );
     }
 
-    List<String> redMarks = [];
-    List<String> whiteMarks = [];
-    bool isFirst = true;
-
-    for (var event in match.events) {
-      try {
-        String eStr = event.toString().toLowerCase();
-        bool isCanceled = eStr.contains('iscanceled: true') || eStr.contains('iscanceled=true');
-        if (event is Map && (event as Map)['isCanceled'] == true) {
-          isCanceled = true;
-        }
-        try {
-          if ((event as dynamic).isCanceled == true) {
-            isCanceled = true;
-          }
-        } catch (_) {}
-        if (isCanceled) {
-          continue;
-        }
-
-        bool isRed = eStr.contains('red') || eStr.contains('side.red') || eStr.contains('赤');
-        String mark = '';
-        
-        if (eStr.contains('men') || eStr.contains('メ')) {
-          mark = 'メ';
-        } else if (eStr.contains('kote') || eStr.contains('コ')) {
-          mark = 'コ';
-        } else if (eStr.contains('do') || eStr.contains('ド')) {
-          mark = 'ド';
-        } else if (eStr.contains('tsuki') || eStr.contains('ツ')) {
-          mark = 'ツ';
-        } else if (eStr.contains('hansoku') || eStr.contains('反')) {
-          mark = '反';
-        }
-
-        if (mark.isNotEmpty) {
-          if (isFirst) {
-            if (mark == 'メ') {
-              mark = '㋱';
-            } else if (mark == 'コ') {
-              mark = '㋙';
-            } else if (mark == 'ド') {
-              mark = '㋣';
-            } else if (mark == 'ツ') {
-              mark = '㋡';
-            }
-          }
-          if (isRed) {
-            redMarks.add(mark);
-          } else {
-            whiteMarks.add(mark);
-          }
-          isFirst = false;
-        }
-      } catch (_) {}
-    }
+    // ★ 修正: KendoRuleEngine を使用し、Undoされたイベントを除外した正確な結果を使用
+    final engine = KendoRuleEngine();
+    final analysis = engine.analyzeHistory(match.events, match, match.rule);
     
-    while (redMarks.length < match.redScore) {
-      redMarks.add(isFirst ? '◎' : '◯');
-      isFirst = false;
-    }
-    while (whiteMarks.length < match.whiteScore) {
-      whiteMarks.add(isFirst ? '◎' : '◯');
-      isFirst = false;
-    }
-
-    if (redMarks.length > match.redScore) {
-      redMarks = redMarks.sublist(0, match.redScore);
-    }
-    if (whiteMarks.length > match.whiteScore) {
-      whiteMarks = whiteMarks.sublist(0, match.whiteScore);
-    }
+    final rDisplays = analysis.displays[Side.red] ?? [];
+    final wDisplays = analysis.displays[Side.white] ?? [];
+    
+    // 表示用のマークを抽出して、1本目なら丸囲み文字に変換
+    String rMarksStr = rDisplays.map((d) {
+      if (d.mark == 'メ') return d.isFirstMatchPoint ? '㋱' : 'メ';
+      if (d.mark == 'コ') return d.isFirstMatchPoint ? '㋙' : 'コ';
+      if (d.mark == 'ド') return d.isFirstMatchPoint ? '㋣' : 'ド';
+      if (d.mark == 'ツ') return d.isFirstMatchPoint ? '㋡' : 'ツ';
+      if (d.mark == '反') return '反';
+      if (d.mark == '判定') return '判';
+      if (d.mark == '◯') return d.isFirstMatchPoint ? '◎' : '◯';
+      return d.mark;
+    }).join('');
+    
+    String wMarksStr = wDisplays.map((d) {
+      if (d.mark == 'メ') return d.isFirstMatchPoint ? '㋱' : 'メ';
+      if (d.mark == 'コ') return d.isFirstMatchPoint ? '㋙' : 'コ';
+      if (d.mark == 'ド') return d.isFirstMatchPoint ? '㋣' : 'ド';
+      if (d.mark == 'ツ') return d.isFirstMatchPoint ? '㋡' : 'ツ';
+      if (d.mark == '反') return '反';
+      if (d.mark == '判定') return '判';
+      if (d.mark == '◯') return d.isFirstMatchPoint ? '◎' : '◯';
+      return d.mark;
+    }).join('');
 
     final bool isDraw = match.redScore == match.whiteScore;
 
@@ -106,13 +65,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center, // ここで完璧な垂直中央揃えを実現
       children: [
-        Text(redMarks.join(''), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor, height: 1.1)),
+        Text(rMarksStr, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor, height: 1.1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           // 引き分けなら「✕（close）」、勝敗がついていれば「-（remove）」のアイコンを表示
           child: Icon(isDraw ? Icons.close : Icons.remove, size: 16, color: iconColor),
         ),
-        Text(whiteMarks.join(''), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor, height: 1.1)),
+        Text(wMarksStr, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor, height: 1.1)),
       ],
     );
   }
@@ -205,7 +164,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         ],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => context.pop(),
+          onPressed: () => context.go('/'),
         ),
       ),
       body: matches.isEmpty 

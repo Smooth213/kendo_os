@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart'; // ★ 追加: debugPrintを使うためのインポート
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User; // ★ Firebase側のUserを隠し、自作のUserとの衝突を防ぐ
@@ -7,7 +8,8 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/entities/match_context.dart'; 
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ Userモデル用に追加
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
+import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; 
 import 'package:kendo_os/domain/entities/match_aggregate.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart'; 
@@ -16,6 +18,7 @@ import 'package:kendo_os/presentation/operate/providers/match_rule_provider.dart
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 // ★ match_command_provider.dart のインポートを削除 (相互依存エラー解消のため)
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/presentation/operate/providers/audit_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/ui_message_provider.dart'; // ★ 追加: 通知司令塔
 import 'package:kendo_os/application/services/sound_service.dart';
@@ -31,11 +34,10 @@ import 'package:kendo_os/presentation/operate/providers/metrics_provider.dart'; 
 class MatchApplicationService {
   final Ref _ref;
   final AddScoreUseCase _addScore;
-  final UndoScoreUseCase _undoScore;
   final TimeUpUseCase _timeUp;
   final MatchDomainService _domainService;
 
-  MatchApplicationService(this._ref, this._addScore, this._undoScore, this._timeUp, this._domainService);
+  MatchApplicationService(this._ref, this._addScore, this._timeUp, this._domainService);
 
   // ==========================================
   // ★ Phase 1-Step 1: 実行主体(User)の取得ヘルパー
@@ -93,17 +95,19 @@ class MatchApplicationService {
     await _safeExecute(() async {
       // DBから直接最新状態を取得し、上書きによる競合を防ぐ
       final localRepo = _ref.read(localMatchRepositoryProvider);
-      var match = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
-      if (match == null) return;
+      final initialMatch = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      if (initialMatch == null) return;
       
       // ★ 修正: 試合自体が専用のルールを持っている場合はそれを優先する
-      final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
+      final MatchRule rule = initialMatch.rule ?? _ref.read(matchRuleProvider);
       final settings = _ref.read(settingsProvider);
       final currentUser = _getCurrentUser(); // ★ 主体を取得
 
       // DB保存回数を減らして点滅を防ぐため、スナップショットはメモリ上でのみ追加する
       final typeLabel = {PointType.men: 'メン', PointType.kote: 'コテ', PointType.doIdo: 'ドウ', PointType.tsuki: 'ツキ', PointType.hansoku: '反則', PointType.fusen: '不戦勝', PointType.hantei: '判定'}[type] ?? type.name;
-      match = _addSnapshotToMatch(match, '【${side == Side.red ? "赤" : "白"}】$typeLabel 入力前');
+      var match = _addSnapshotToMatch(initialMatch, '【${side == Side.red ? "赤" : "白"}】$typeLabel 入力前');
+
+      int maxClock = match.events.isEmpty ? 0 : match.events.map((e) => e.logicalClock).reduce((a, b) => a > b ? a : b);
 
       final event = ScoreEventLegacyAdapter.fromLegacy(
         id: const Uuid().v4(),
@@ -112,6 +116,7 @@ class MatchApplicationService {
         timestamp: DateTime.now(),
         userId: currentUser.id, // ★ イベントにも主体を記録
         sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
+        logicalClock: maxClock + 1, // ★ 追加: CRDT同期時にイベント順序が過去にワープするのを防ぐ
       );
 
       // ★ UseCaseに主体を渡す
@@ -153,17 +158,36 @@ class MatchApplicationService {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(() async {
       final localRepo = _ref.read(localMatchRepositoryProvider);
-      var match = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
-      if (match == null || match.events.isEmpty) return;
+      final initialMatch = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      if (initialMatch == null) return;
+
+      // ★ 修正: もう消すイベントがない（0件）の場合は、エラーを吐かずに静かに終了する
+      if (initialMatch.events.isEmpty) {
+        debugPrint('取り消すイベントがありません（スキップ）');
+        return; 
+      }
       
-      match = _addSnapshotToMatch(match, '取り消し 実行前');
+      var match = _addSnapshotToMatch(initialMatch, '取り消し 実行前');
       
       // ★ 修正
       final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
       final currentUser = _getCurrentUser(); // ★ 主体を取得
 
-      // ★ UseCaseに主体を渡す
-      MatchModel updatedMatch = _undoScore.execute(currentUser, match, rule);
+      int maxClock = match.events.isEmpty ? 0 : match.events.map((e) => e.logicalClock).reduce((a, b) => a > b ? a : b);
+
+      // ★ 修正: 旧式の _undoScore UseCase はセキュリティ署名更新から漏れていたため廃止。
+      // 正規のセキュリティチェックを完璧に通過する _addScore.execute に「Undoイベント」として流し込む形に統一します。
+      final undoEvent = ScoreEventLegacyAdapter.fromLegacy(
+        id: 'undo-${DateTime.now().microsecondsSinceEpoch}',
+        side: Side.none,
+        type: PointType.undo,
+        timestamp: DateTime.now(),
+        userId: currentUser.id,
+        sequence: match.events.last.sequence + 1,
+        logicalClock: maxClock + 1, // ★ 追加: CRDT同期時にUndoイベントが過去にワープして無視されるのを防ぐ
+      );
+
+      MatchModel updatedMatch = _addScore.execute(currentUser, match, undoEvent, rule);
       
       // ★【CQRS化】ドメイン層（KendoRuleEngine）にスコアの完全再計算を委譲し、Undoを完璧に機能させる
       final engine = KendoRuleEngine();
@@ -196,28 +220,58 @@ class MatchApplicationService {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(() async {
       final localRepo = _ref.read(localMatchRepositoryProvider);
-      var match = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      final initialMatch = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
       
-      // 指定したバージョンが現在のイベント数より多い場合は何もしない
-      if (match == null || match.events.length < targetVersion) return;
+      if (initialMatch == null) return;
+
+      final engine = KendoRuleEngine();
+      final validEvents = engine.filterActiveEvents(initialMatch.events);
+
+      // 指定したバージョンが現在の有効なイベント数以上の場合は何もしない
+      if (validEvents.length <= targetVersion) return;
 
       // 1. スナップショット作成（巻き戻す前の「今の状態」を念のため保存）
-      match = _addSnapshotToMatch(match, '巻き戻し実行 (Version: $targetVersion へ)');
+      var match = _addSnapshotToMatch(initialMatch, '巻き戻し実行 (Version: $targetVersion へ)');
 
-      // 2. 指定した件数までイベントを切り詰める (targetVersion件残す)
-      final truncatedEvents = match.events.take(targetVersion).toList();
+      // ★ 最終解決策: 物理削除(truncate)はCRDT同期時に競合しやすいため、
+      // 確定済みの試合であっても強制的に「Undoイベントの追記」で歴史を巻き戻します。
       
-      // 3. ルールエンジンでその時点のスコアを再計算
+      // 1. まず、勝敗が確定していても操作を受け付けるようにステータスを強制解除
+      // ★ 修正: 存在しない「winner」プロパティの指定を削除し、サイレントな実行時エラーを完全に防ぐ
+      MatchModel processMatch = match.copyWith(status: 'in_progress');
+      
+      int undoCount = validEvents.length - targetVersion;
+      final currentUser = _getCurrentUser();
       final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
-      final engine = KendoRuleEngine();
-      final analysis = engine.analyzeHistory(truncatedEvents, match, rule);
+      
+      // 超高速ループでも絶対に被らないタイムスタンプID
+      final String syncSeed = DateTime.now().microsecondsSinceEpoch.toString();
 
-      final updatedMatch = match.copyWith(
-        events: truncatedEvents,
-        status: 'in_progress', // 巻き戻した後は進行中に戻す
+      int maxClock = processMatch.events.isEmpty ? 0 : processMatch.events.map((e) => e.logicalClock).reduce((a, b) => a > b ? a : b);
+
+      for (int i = 0; i < undoCount; i++) {
+        maxClock++;
+        final undoEvent = ScoreEventLegacyAdapter.fromLegacy(
+          id: 'rewind-$matchId-$syncSeed-$i', // ★ IDの完全ユニーク化
+          side: Side.none,
+          type: PointType.undo,
+          timestamp: DateTime.now().add(Duration(milliseconds: i)),
+          userId: currentUser.id,
+          sequence: processMatch.events.isEmpty ? 1 : processMatch.events.last.sequence + 1,
+          logicalClock: maxClock, // ★ 追加: タイムトラベル復元時のイベント順序保証
+        );
+        // 一つずつイベントを適用して状態を更新
+        processMatch = _addScore.execute(currentUser, processMatch, undoEvent, rule);
+      }
+      
+      // 3. ルールエンジンで最終的なスコアと表示を確定
+      final analysis = engine.analyzeHistory(processMatch.events, processMatch, rule);
+
+      final updatedMatch = processMatch.copyWith(
+        status: 'in_progress', 
         redScore: analysis.context.redIppon,
         whiteScore: analysis.context.whiteIppon,
-        syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
+        syncState: SyncState.localOnly, 
         lastUpdatedAt: DateTime.now(),
       );
 
@@ -314,6 +368,13 @@ class MatchApplicationService {
 
   Future<void> _saveAndSync(MatchModel match) async {
     await saveMatch(match);
+    
+    // ★ 追加: ProjectionStoreも更新してViewerモードをサポート
+    final rule = match.rule ?? _ref.read(matchRuleProvider);
+    final engine = KendoRuleEngine();
+    final analysis = engine.analyzeHistory(match.events, match, rule);
+    final projection = MatchProjectionMapper.toMatchProjection(match, analysis);
+    await _ref.read(projectionStoreProvider).save(projection);
   }
 
   // --------------------------------------------------
@@ -394,6 +455,8 @@ class MatchApplicationService {
       final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
       final currentUser = _getCurrentUser(); // ★ 主体を取得
       
+      int maxClock = match.events.isEmpty ? 0 : match.events.map((e) => e.logicalClock).reduce((a, b) => a > b ? a : b);
+
       // 1. マーカーまたは判定イベントの作成
       final side = hanteiWinner ?? Side.none;
       final event = ScoreEventLegacyAdapter.fromLegacy(
@@ -403,6 +466,7 @@ class MatchApplicationService {
         timestamp: DateTime.now(),
         userId: currentUser.id, // ★ イベントにも主体を記録
         sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
+        logicalClock: maxClock + 1, // ★ 追加: 判定イベント順序保証
       );
 
       // 2. スコアの追加計算（判定勝ちなら得点が入る）
@@ -513,5 +577,5 @@ class MatchApplicationService {
 }
 
 final matchApplicationServiceProvider = Provider<MatchApplicationService>((ref) {
-  return MatchApplicationService(ref, ref.watch(addScoreUseCaseProvider), ref.watch(undoScoreUseCaseProvider), ref.watch(timeUpUseCaseProvider), MatchDomainService());
+  return MatchApplicationService(ref, ref.watch(addScoreUseCaseProvider), ref.watch(timeUpUseCaseProvider), MatchDomainService());
 });
