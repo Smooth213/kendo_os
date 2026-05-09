@@ -1,0 +1,7 @@
+# Critical Boundary Definition
+critical_paths:
+  - "lib/domain/rules/"
+  - "lib/domain/entities/score_event.dart"
+  - "lib/application/projections/"
+  - "lib/domain/services/kendo_rule_engine.dart"
+  - "docs/governance/"

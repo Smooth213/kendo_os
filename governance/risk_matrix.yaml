@@ -1,0 +1,12 @@
+# Governance Risk Matrix Definition
+# 変更内容に応じた重み付け（定量化スコア）
+weights:
+  event_schema: 90      # 最も危険（歴史破壊リスク）
+  rule_logic: 70        # 危険（挙動変化リスク）
+  projection_logic: 30  # 中程度（表示乖離リスク）
+  test_code: 5          # 低い
+  documentation: 1      # 極めて低い
+
+thresholds:
+  mandatory_human_review: 50
+  block_merge: 85

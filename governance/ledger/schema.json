@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Governance Decision Ledger Schema",
+  "type": "object",
+  "required": ["decision_id", "timestamp", "task_type", "capability_level", "risk_level", "replay_risk"],
+  "properties": {
+    "decision_id": { "type": "string", "description": "Unique UUID for the decision" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "task_type": { "type": "string" },
+    "capability_level": { "type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"] },
+    "risk_level": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL", "CATASTROPHIC"] },
+    "replay_risk": { "type": "string", "enum": ["YES", "NO"] },
+    "escalated": { "type": "boolean" },
+    "human_approved": { "type": "boolean" },
+    "affected_files": { "type": "array", "items": { "type": "string" } },
+    "reasoning": { "type": "string", "description": "AI's logic for this change" }
+  }
+}

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../providers/settings_provider.dart';
 import '../providers/role_provider.dart';
 import 'package:go_router/go_router.dart'; // ★ Phase 5: 画面遷移用に追加
+import 'package:firebase_auth/firebase_auth.dart'; // ★ 追加: ログアウト処理用
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -218,6 +219,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ]),
                   _buildSectionFooter(context, 'システムの詳細な操作履歴（監査ログ）を確認できます。'),
                 ],
+                
+                // ==========================================
+                // 6. アカウントセクション
+                // ==========================================
+                const SizedBox(height: 24),
+                _buildSectionHeader(context, 'アカウント'),
+                _buildSettingsBlock(context, [
+                  // ★ 追加: ログイン中のアカウント表示
+                  _buildListTile(context,
+                    title: 'ログイン中のアカウント',
+                    subtitle: FirebaseAuth.instance.currentUser?.email ?? '取得できませんでした',
+                    icon: Icons.account_circle, iconBgColor: Colors.blueAccent,
+                    trailing: const SizedBox.shrink(), // タップアクションがないため空のウィジェット
+                  ),
+                  _buildListTile(context,
+                    title: 'ログアウト',
+                    icon: Icons.logout, iconBgColor: Colors.red,
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                    onTap: () => _showLogoutConfirmation(context, ref),
+                  ),
+                ]),
+                _buildSectionFooter(context, '現在ログインしているアカウントからサインアウトします。'),
+                const SizedBox(height: 48), // 下部に十分な余白を確保
               ],
             ),
           ),
@@ -564,6 +588,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 16), // 下部に余白を追加
           ],
         ),
+      ),
+    );
+  }
+
+  // ログアウト確認ダイアログ
+  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('ログアウトしますか？'),
+        content: const Text('ログアウトすると、次回の利用時に再度ログインが必要になります。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              // FirebaseAuthを直接呼び出してサインアウト
+              await FirebaseAuth.instance.signOut();
+              // authStateProviderが検知し、自動的にLoginScreenへ遷移します
+            },
+            child: const Text('ログアウト', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }

@@ -1,0 +1,72 @@
+# ============================================================================
+# Phase 4: PDF Projection Pipeline
+# Markdown (Source of Truth) から PDF (Projection) を自動生成する設定ファイル
+# ============================================================================
+
+site_name: Kendo Sync 運用マニュアル
+site_description: 剣道大会運営システム Kendo Sync の公式ドキュメント
+site_author: Kendo Sync Governance Team
+
+# ドキュメントのソースディレクトリ（Phase 1で定義した場所）
+docs_dir: docs/manuals
+
+# 現場で見やすい Material テーマを採用
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.sections
+    - navigation.top
+  palette:
+    primary: indigo
+    accent: pink
+
+# AI検索や自動生成のためのプラグイン
+plugins:
+  - search
+  - with-pdf:
+      # クイックガイド等を綺麗に出力するためのPDF出力設定
+      cover: true
+      toc_title: "目次"
+      output_path: "../generated/pdf/kendo_sync_manual.pdf"
+
+# Phase 1で構築した Information Architecture に基づくナビゲーション
+nav:
+  - ホーム: index.md
+  - クイックガイド (現場用):
+    - quickstart/index.md
+  - 運営・記録マニュアル (Operator):
+    - operator/index.md
+    - ログイン・設定:
+      - operator/login.md
+      - operator/start.md
+      - operator/settings.md
+    - 大会管理:
+      - operator/create_tournament.md
+      - operator/setup_match_format.md
+      - operator/team_registration.md
+      - operator/order_setup.md
+      - operator/program_management.md
+      - operator/master_management.md
+    - 試合記録:
+      - operator/home.md
+      - operator/tournament_list.md
+      - operator/match.md
+      - operator/standings.md
+      - operator/official_record.md
+    - 部内戦:
+      - operator/bunaiksen_home.md
+      - operator/bunaiksen_setup.md
+      - operator/bunaiksen_official_record.md
+  - 観客・閲覧マニュアル (Viewer):
+    - viewer/index.md
+    - viewer/viewer_home.md
+    - viewer/viewer_match.md
+    - viewer/viewer_team_scoreboard.md
+    - viewer/viewer_kachinuki_scoreboard.md
+    - viewer/viewer_official_record.md
+    - viewer/program_viewer.md
+  - 障害復旧・監査 (Recovery):
+    - recovery/index.md
+    - recovery/audit_log.md
+    - recovery/observability_dashboard.md

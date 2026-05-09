@@ -1,0 +1,5 @@
+# kendo_os AI Governance Runtime Versioning
+governance_version: 1.0.0
+frozen_at: 2026-05
+baseline_status: LOCKED
+authority: Human Final Authority

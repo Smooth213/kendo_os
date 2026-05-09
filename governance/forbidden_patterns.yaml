@@ -1,0 +1,12 @@
+# Forbidden API & Patterns Definition
+forbidden_apis:
+  - pattern: "DateTime.now()"
+    reason: "Breaks deterministic evaluation. Use TimeSource from RuleContext."
+  - pattern: "Random()"
+    reason: "Breaks deterministic behavior."
+  - pattern: "sleep("
+    reason: "Breaks bounded cost and determinism."
+forbidden_states:
+  - pattern: "static "
+    ignore_if_contains: ["const", "final"]
+    reason: "Hidden global mutable state is strictly prohibited."

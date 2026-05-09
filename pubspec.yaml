@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  crypto: ^3.0.3
   flutter_riverpod: ^2.5.1
   google_fonts: ^6.2.1
   cupertino_icons: ^1.0.8
@@ -64,9 +65,12 @@ dependencies:
   path: ^1.9.0
   audioplayers: ^6.0.0
   flutter_tts: ^4.1.1
+  flutter_markdown: ^0.7.3  # ★ Phase 5: アプリ内ドキュメント表示用
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -99,6 +103,12 @@ flutter:
     - assets/kendo_icon.png
     # ★ Phase 4: 音源フォルダの読み込み設定をここに追加
     - assets/sounds/
+    - docs/manuals/ # ★ Phase 5: Markdownファイルをアセットとして同梱
+    - docs/manuals/operator/
+    - docs/manuals/viewer/
+    - docs/manuals/recovery/
+    - docs/manuals/quickstart/
+    - assets/manual_embeddings/ # ★ Phase 6: AI検索用インデックスデータの同梱
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,0 +1,10 @@
+# AI Capability ↔ Template Mapping (Fixed Baseline)
+mappings:
+  L1:
+    required_template: "03_projection_modification_template.md"
+    forbidden_paths: ["lib/domain/rules/", "lib/domain/services/"]
+  L2:
+    required_template: "01_rule_addition_template.md"
+    forbidden_paths: ["lib/domain/services/kendo_rule_engine.dart"]
+  L3:
+    required_template: "02_replay_migration_template.md"

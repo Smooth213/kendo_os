@@ -1,0 +1,22 @@
+# AI Sandbox & Runtime Boundary Policy
+branch_strategy:
+  main: "Protected (Human Only)"
+  develop: "Protected (Human Only)"
+  ai_sandbox: "ai/sandbox/*"
+  human_review: "human/review/*"
+
+# Step 4-4: Protected Runtime Boundary
+# AIによる直接の変更を一切禁止するファイル群
+protected_boundaries:
+  - "lib/domain/repositories/event_store.dart"
+  - "lib/domain/repositories/snapshot_store.dart"
+  - "lib/domain/services/kendo_rule_engine.dart"
+  - "docs/governance/governance_constitution.md"
+  - "governance/sandbox_policy.yaml"
+
+merge_requirements:
+  mandatory_checks:
+    - "replay_safety_test"
+    - "governance_linter"
+    - "chaos_validation"
+  metadata_required: "AI-GENERATED: TRUE"

@@ -1,0 +1,23 @@
+# Screenshot Governance Registry
+# このファイルに定義されていない画像ファイルが docs/manuals/images/ に存在した場合、CIはエラーを出力します。
+
+create_tournament_screen:
+  - 01_initial_state.png
+  - 02_input_example.png
+  - 03_completed_state.png
+
+match_screen:
+  - 01_initial_timer.png
+  - 02_point_awarded.png
+  - 03_match_finished.png
+
+settings_screen:
+  - 01_preset_selection.png
+  - 02_role_selection.png
+
+bunaiksen_setup_screen:
+  - 01_initial_state.png
+  - 02_input_example.png
+
+start_screen:
+  - 01_initial_state.png

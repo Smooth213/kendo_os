@@ -1,0 +1,7 @@
+# Rule Execution Constraints
+rule_constraints:
+  requirements:
+    - require_rule_version: true
+    - stateless: true
+    - no_hidden_cache: true
+    - no_io: true

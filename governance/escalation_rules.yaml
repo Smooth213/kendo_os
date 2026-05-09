@@ -1,0 +1,17 @@
+# Automated Escalation Logic
+severity_mapping:
+  - path: "lib/domain/rules/"
+    severity: "HIGH"
+  - path: "lib/domain/entities/score_event.dart"
+    severity: "CATASTROPHIC"
+  - path: "lib/domain/services/kendo_rule_engine.dart"
+    severity: "CRITICAL"
+  - path: "docs/governance/"
+    severity: "CATASTROPHIC"
+
+ambiguity_triggers:
+  - "unclear ownership"
+  - "undefined replay behavior"
+  - "conflicting ADR"
+  - "maybe"
+  - "assume"

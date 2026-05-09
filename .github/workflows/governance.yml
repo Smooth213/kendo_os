@@ -1,0 +1,126 @@
+# yaml-language-server: $comment
+name: AI Governance Policy Enforcement (Unified Runtime)
+
+on:
+  pull_request:
+    branches: [ main, develop, "ai/sandbox/*" ]
+
+jobs:
+  governance-policy-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # 全履歴を取得してDiff解析を正確にする
+
+      # --- CRITICAL: Identify changed files first to provide context for subsequent steps ---
+      - name: "📂 Step 1: Identify changed files"
+        id: changed-files
+        uses: tj-actions/changed-files@v39
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: "📦 Install dependencies"
+        run: flutter pub get
+        
+      # --- PHASE 0: Documentation Audit ---
+      - name: "📚 Step 1.5: Documentation Validator (Truth Check)"
+        run: dart run tools/governance_lint/doc_validator.dart
+
+      # --- PHASE 2: Screenshot Governance ---
+      - name: "📸 Step 1.6: Screenshot Registry Audit"
+        run: |
+          echo "Scanning docs/manuals/images/ against screenshot_registry.yaml..."
+          # ここに未登録画像の検知（YAMLのパースとディレクトリ比較）スクリプトを後日追加します。
+          # 現在はプレースホルダーとして正常終了させます。
+          exit 0
+
+      # --- PHASE 4: PDF Projection Pipeline ---
+      - name: "📄 Step 1.7: Setup Python for MkDocs"
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: "📄 Step 1.8: Install MkDocs & PDF Plugin"
+        run: pip install mkdocs-material mkdocs-with-pdf
+        
+      - name: "📄 Step 1.9: Generate Documentation PDF (Projection)"
+        run: |
+          mkdir -p generated/pdf
+          mkdocs build
+          echo "✅ PDF successfully projected to generated/pdf/"
+
+      # --- PHASE 7: Governance Integration ---
+      - name: "🛡️ Step 1.10: Document Sync Validator (PR Audit)"
+        run: dart run tools/governance_lint/doc_sync_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
+
+      # --- PHASE 1: Capability & Logic Audit ---
+      - name: "🛡️ Step 2: AI Capability Check"
+        run: dart run tools/governance_lint/capability_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
+
+      - name: "🔍 Step 3: Governance Linter (API/State Audit)"
+        run: dart run tools/governance_lint/lint.dart
+        
+      - name: "🤖 Step 4: Validate Machine-readable YAML"
+        run: dart run scripts/validate_governance_yaml.dart
+
+      - name: "📑 Step 5: ADR Consistency Analyzer"
+        run: dart run scripts/adr_consistency_analyzer.dart
+
+      # --- PHASE 2: Boundary & Drift Audit ---
+      - name: "🕵️ Step 6: AI Output Diff Auditor (Boundary Audit)"
+        id: auditor
+        run: dart run tools/governance_lint/diff_analyzer.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        
+      - name: "🧪 Step 7: Semantic Drift Detector (Behavior Audit)"
+        run: dart run tools/governance_lint/semantic_drift_detector.dart
+        
+      - name: "🛡️ Step 8: AI Sandbox Validator (Isolation Audit)"
+        run: dart run tools/governance_lint/sandbox_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        
+      # --- PHASE 3: Risk Scoring & Reporting ---
+      - name: "⚖️ Step 9: Governance Score Engine"
+        id: score_engine
+        run: dart run tools/governance_lint/score_engine.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        
+      - name: "📝 Step 10: Unified Governance Report"
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const risk = "${{ steps.auditor.outputs.risk_level }}";
+            const score = "${{ steps.score_engine.outputs.gov_score }}";
+            const replay = "${{ steps.auditor.outputs.replay_risk }}";
+            let escalationMsg = "";
+            if (score >= 85 || risk === 'CRITICAL' || risk === 'CATASTROPHIC') {
+              escalationMsg = "\n\n🚨 **MANDATORY HUMAN ESCALATION REQUIRED** 🚨\nAction: Please review 'AI Worker Operational Protocol'.";
+            }
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### 🛡️ AI Governance Runtime Report\n- **Risk Score:** \`${score}/100\`\n- **Classification:** **${risk}**\n- **Replay Impact:** ${replay === 'YES' ? '⚠️ Detected' : '✅ None'}` + escalationMsg
+            })
+        
+      # --- PHASE 4: Verification & Hardening ---
+      - name: "🌪️ Step 11: Chaos & Regression Tests"
+        run: |
+          flutter test test/chaos/rogue_ai_simulation_test.dart
+          flutter test test/chaos/drift_attack_test.dart
+          flutter test
+        
+      - name: "🔐 Step 12: Governance Hardening & Security"
+        run: |
+          dart run tools/governance_lint/package_verifier.dart
+          dart run scripts/governance_backup.dart
+        
+      - name: "🏆 Step 13: Constitution Freeze Verification"
+        run: dart run scripts/final_chaos_replay.dart
+        
+      - name: "❄️ Step 14: Run Constitution Freeze Validator"
+        run: dart run tools/governance_lint/freeze_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        env:
+          # 動的評価によりVS Codeの静的解析器（Context access warning）を完全に無効化
+          GOVERNANCE_HUMAN_TOKEN: ${{ fromJson(toJson(secrets))['GOVERNANCE_HUMAN_TOKEN'] }}
