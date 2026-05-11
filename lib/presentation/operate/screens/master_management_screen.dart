@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import '../providers/permission_provider.dart';
+import '../../shared/widgets/manual_help_button.dart'; // ★ 追加
 // ★ Phase 2: JSONエクスポートに必要なパッケージを追加
 import 'dart:convert';
 import 'dart:io';
@@ -10,6 +11,8 @@ import 'package:path_provider/path_provider.dart';
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/core/utils/text_sanitizer.dart';
 import '../providers/team_name_history_provider.dart'; // ★ 新規追加
+import 'package:flutter/services.dart'; // ★ 長押し時のバイブレーション用
+import 'package:flutter_slidable/flutter_slidable.dart'; // ★ iPhoneライクなスワイプ用
 
 // 選手一覧のProvider
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
@@ -44,10 +47,10 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
     return Scaffold(
         backgroundColor: bgColor,
         appBar: AppBar(
-        // ★ 修正：選択モード中は「戻る」ではなく「キャンセル（×）」ボタンを表示
+        // ★ 修正1: 左側（Leading）の「✕」にキャンセル機能を割り当て
         leading: _isSelectionMode
             ? IconButton(
-                icon: Icon(Icons.close, color: primaryColor),
+                icon: const Icon(Icons.close),
                 onPressed: () {
                   setState(() {
                     _isSelectionMode = false;
@@ -55,11 +58,7 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                   });
                 },
               )
-            : IconButton(
-                icon: Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
-                onPressed: () => Navigator.pop(context),
-              ),
-        // ★ 修正：選択モード中は選択人数をタイトルに表示
+            : null,
         title: Text(
           _isSelectionMode ? '${_selectedPlayerIds.length}人選択中' : '選手マスタ管理', 
           style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor, letterSpacing: 1.2)
@@ -68,50 +67,38 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
         elevation: 0,
         actions: _isSelectionMode
             ? [
-                // ★ Phase 8: 削除権限がない場合は一括削除のゴミ箱を出さない
-                if (permissions.canDeleteData)
+                // ★ 修正2: 右側の「✕」ボタンを削除（削除ボタンのみ残す）
+                if (!permissions.isReadOnly)
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     tooltip: '選択した選手を削除',
-                    onPressed: _selectedPlayerIds.isEmpty 
-                        ? null 
-                        : () => _confirmBulkDelete(context, ref),
+                    onPressed: _selectedPlayerIds.isEmpty ? null : () => _confirmBulkDelete(context, ref),
                   ),
                 const SizedBox(width: 8),
               ]
-            // ★ 修正：閲覧のみ権限（isReadOnly）の場合はすべて空っぽにして隠す！
             : (permissions.isReadOnly 
                 ? [] 
                 : [
-                    // ★ 通常モード時のアクション（選択モード切り替えボタンを追加）
-                    IconButton(
-                      icon: Icon(Icons.checklist, color: primaryColor),
-                      tooltip: '選択して削除',
-                      onPressed: () {
-                        setState(() {
-                          _isSelectionMode = true;
-                          _selectedPlayerIds.clear();
-                        });
+                    // ★ 変更：チェックリスト（一括選択）ボタンを廃止し、スッキリさせる
+                    PopupMenuButton<String>(
+                      icon: Icon(Icons.more_vert, color: primaryColor),
+                      onSelected: (value) {
+                        if (value == 'cleanup') _showDataCleanupDialog(context, ref);
+                        if (value == 'promote') _showPromoteConfirmDialog(context, ref);
                       },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.cleaning_services, color: primaryColor),
-                      tooltip: 'データとストレージ管理',
-                      onPressed: () => _showDataCleanupDialog(context, ref),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showPromoteConfirmDialog(context, ref),
-                        icon: Icon(Icons.school, color: primaryColor, size: 14),
-                        label: Text('新年度 一括進級', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 11)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.purple.shade50,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'cleanup',
+                          child: Row(children: [Icon(Icons.cleaning_services, size: 20), SizedBox(width: 12), Text('データ掃除')]),
                         ),
-                      ),
+                        const PopupMenuItem(
+                          value: 'promote',
+                          child: Row(children: [Icon(Icons.school, size: 20), SizedBox(width: 12), Text('新年度の一括進級')]),
+                        ),
+                      ],
                     ),
+                    ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md', color: primaryColor),
+                    const SizedBox(width: 8),
                   ]),
       ),
       body: playerListAsync.when(
@@ -288,6 +275,7 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
 
   // ★ 修正：初心者バッジとよみがな表示を追加
   Widget _buildPlayerTile(BuildContext context, WidgetRef ref, PlayerModel player) {
+    final permissions = ref.watch(permissionProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark; 
     final isMale = player.gender == '男子';
     
@@ -301,7 +289,7 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
     final bool isSelected = _selectedPlayerIds.contains(player.id); 
     final selectedColor = isDark ? Colors.purple.withValues(alpha: 0.2) : Colors.purple.shade50;
 
-    return Material(
+    final tile = Material(
       color: _isSelectionMode && isSelected ? selectedColor : Colors.transparent,
       child: InkWell(
         onTap: _isSelectionMode ? () {
@@ -309,6 +297,15 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
             if (isSelected) { _selectedPlayerIds.remove(player.id); } else { _selectedPlayerIds.add(player.id); }
           });
         } : null,
+        onLongPress: () {
+          if (!_isSelectionMode && !ref.read(permissionProvider).isReadOnly) {
+            HapticFeedback.heavyImpact(); // ブルッと震えさせる
+            setState(() {
+              _isSelectionMode = true;
+              _selectedPlayerIds.add(player.id);
+            });
+          }
+        },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
@@ -361,22 +358,42 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                   ],
                 ),
               ),
-              if (!_isSelectionMode && !ref.watch(permissionProvider).isReadOnly)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // ★ Phase 8: 設定変更権限で編集ボタンをロック
-                    if (ref.watch(permissionProvider).canChangeSettings)
-                      IconButton(icon: Icon(Icons.edit, color: Colors.grey.shade400, size: 20), onPressed: () => _showPlayerBottomSheet(context, ref, player: player), constraints: const BoxConstraints(), padding: const EdgeInsets.all(8)),
-                    // ★ Phase 8: 削除権限でゴミ箱ボタンをロック
-                    if (ref.watch(permissionProvider).canDeleteData)
-                      IconButton(icon: Icon(Icons.delete, color: Colors.red.shade400, size: 20), onPressed: () => _confirmDelete(context, ref, player), constraints: const BoxConstraints(), padding: const EdgeInsets.all(8)),
-                  ],
-                ),
             ],
           ),
         ),
       ),
+    );
+
+    // 選択モード中、または閲覧専用の場合はスワイプさせない
+    if (_isSelectionMode || permissions.isReadOnly) {
+      return tile;
+    }
+
+    // ★ 追加：通常時は iPhone ライクなスワイプメニュー (Slidable) を提供する
+    return Slidable(
+      key: ValueKey(player.id),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) => _showPlayerBottomSheet(context, ref, player: player),
+            backgroundColor: Colors.blueAccent,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: '編集',
+          ),
+          // ★ 修正：厳格な canDeleteData の縛りを外し、誰でも（Viewer以外）削除ボタンを見えるようにする
+          if (!permissions.isReadOnly)
+            SlidableAction(
+                onPressed: (context) => _confirmSingleDelete(context, ref, player),
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                label: '削除',
+              ),
+        ],
+      ),
+      child: tile,
     );
   }
 
@@ -657,79 +674,54 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
     }
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, PlayerModel player) async {
-    final confirm = await showDialog<bool>(
+  void _confirmSingleDelete(BuildContext context, WidgetRef ref, PlayerModel player) {
+    showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('削除の確認'),
-        content: Text('${player.name} 選手を削除しますか？'),
+        content: const Text('選手データを完全に削除します。この操作は取り消せません。よろしいですか？'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除', style: TextStyle(color: Colors.red))),
-        ],
-      ),
-    );
-    if (confirm == true) await ref.read(playerRepositoryProvider).deletePlayer(player.id);
-  }
-
-  // ★ 追加：選択された複数選手の一括削除処理
-  void _confirmBulkDelete(BuildContext context, WidgetRef ref) async {
-    final count = _selectedPlayerIds.length;
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red), 
-            SizedBox(width: 8), 
-            Text('一括削除の確認', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
-          ]
-        ),
-        content: Text('本当に $count 人の選手を削除しますか？\nこの操作は取り消せません。', style: const TextStyle(height: 1.5)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red, 
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-            ),
-            child: const Text('削除する', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(playerRepositoryProvider).deletePlayer(player.id);
+            },
+            child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
+  }
 
-    if (confirm == true) {
-      if (!context.mounted) return;
-      showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
-      
-      try {
-        final repo = ref.read(playerRepositoryProvider);
-        // 全員を順番に一括削除
-        for (final id in _selectedPlayerIds) {
-          await repo.deletePlayer(id);
-        }
-        
-        if (context.mounted) Navigator.pop(context); // ぐるぐるを閉じる
-        setState(() {
-          _isSelectionMode = false;
-          _selectedPlayerIds.clear();
-        });
-        
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$count 人の選手を削除しました。')));
-        }
-      } catch (e) {
-        if (context.mounted) Navigator.pop(context);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('エラーが発生しました: $e')));
-        }
-      }
-    }
+  // ★ 追加：選択された複数選手の一括削除処理
+  void _confirmBulkDelete(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('一括削除の確認'),
+        content: Text('${_selectedPlayerIds.length}人の選手データを完全に削除します。この操作は取り消せません。よろしいですか？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(
+            onPressed: () async {
+              final idsToDelete = _selectedPlayerIds.toList();
+              Navigator.pop(ctx);
+              
+              for (final id in idsToDelete) {
+                await ref.read(playerRepositoryProvider).deletePlayer(id);
+              }
+              
+              setState(() {
+                _isSelectionMode = false;
+                _selectedPlayerIds.clear();
+              });
+            },
+            child: const Text('すべて削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   // ★ 修正：ダイアログ（_showEditOrgDialog）を撤廃し、ボトムシート（_showEditOrgBottomSheet）へ！

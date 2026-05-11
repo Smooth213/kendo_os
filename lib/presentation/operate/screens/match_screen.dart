@@ -33,6 +33,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; // ★ 追加:
 import '../../shared/widgets/timer_widget.dart';
 import '../../shared/widgets/action_buttons.dart';
 import '../../shared/widgets/scoreboard.dart';
+import '../../shared/widgets/manual_help_button.dart';
 
 // ★ 追加：システム設定プロバイダの読み込み
 import '../providers/settings_provider.dart';
@@ -57,7 +58,7 @@ class MatchScreen extends ConsumerStatefulWidget {
 
 class _MatchScreenState extends ConsumerState<MatchScreen> {
   String? _myUserId;
-  Timer? _ticker; 
+  ProviderContainer? _container;
 
   @override
   void initState() {
@@ -85,16 +86,25 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _container = ProviderScope.containerOf(context);
+  }
+
+  @override
   void dispose() {
-    _ticker?.cancel(); 
-    if (widget.matchId.isNotEmpty) {
-      try {
-        // ★ 修正: 既に終了・確定済みの場合は、古い状態での上書き（releaseScorer）を防止する
-        final match = ref.read(matchListProvider).where((m) => m.id == widget.matchId).firstOrNull;
-        if (match != null && match.status != 'finished' && match.status != 'approved') {
-          ref.read(matchCommandProvider).releaseScorer(widget.matchId, _myUserId!);
-        }
-      } catch (_) {}
+    final container = _container;
+    if (container != null) {
+      container.read(matchTimerProvider).stopLocalTicker(widget.matchId); // ★ 修正: 画面を閉じる際にバックグラウンドのタイマーを正しく停止させる
+      if (widget.matchId.isNotEmpty) {
+        try {
+          // ★ 修正: 既に終了・確定済みの場合は、古い状態での上書き（releaseScorer）を防止する
+          final match = container.read(matchListProvider).where((m) => m.id == widget.matchId).firstOrNull;
+          if (match != null && match.status != 'finished' && match.status != 'approved') {
+            container.read(matchCommandProvider).releaseScorer(widget.matchId, _myUserId!);
+          }
+        } catch (_) {}
+      }
     }
     super.dispose();
   }
@@ -196,6 +206,20 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    // ★ 追加: DBのタイマー稼働状態(timerIsRunning)が変化した時、ローカルの時計エンジンを同期して動かす
+    ref.listen<bool?>(
+      matchListProvider.select((list) => list.where((m) => m.id == widget.matchId).firstOrNull?.timerIsRunning),
+      (previous, next) {
+        if (previous != next && next != null) {
+          if (next) {
+            ref.read(matchTimerProvider).startLocalTicker(widget.matchId);
+          } else {
+            ref.read(matchTimerProvider).stopLocalTicker(widget.matchId);
+          }
+        }
+      },
+    );
+
     // ★ 修正: 試合に紐づいた専用ルールがあればそれをUIの表示制御に使う
     final MatchRule rule = match.rule ?? ref.watch(matchRuleProvider);
 
@@ -259,6 +283,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           ],
         ),
         actions: [
+          // ★ 記録係が最も必要とする「1枚操作ガイド」へ直行させます
+          const ManualHelpButton(manualPath: 'docs/manuals/quickstart/operator_1pager.md', color: Colors.white),
           // ★ 追加: 大会ホーム（試合一覧）に一気に戻るボタン
           IconButton(
             icon: const Icon(Icons.view_list_rounded, color: Colors.white),

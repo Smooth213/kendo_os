@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
+import '../../shared/widgets/manual_help_button.dart';
 
 class CreateTournamentScreen extends ConsumerStatefulWidget {
   const CreateTournamentScreen({super.key});
@@ -160,6 +161,14 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
 
     return Scaffold(
       backgroundColor: bgColor, 
+      appBar: AppBar(
+        title: const Text('大会の新規作成', style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: const [
+          // ★ 設定の意味を確認できるよう「設定マニュアル」へ
+          ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
+          SizedBox(width: 8),
+        ],
+      ),
       body: Stack(
         children: [
           Column(

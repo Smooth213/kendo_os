@@ -23,18 +23,20 @@
 
 ---
 
-## 📖 取扱説明書・運用知識の必須原則 (Manuals & Knowledge Base Principles)
-本項は、`docs/manuals/` 配下におけるドキュメント（取扱説明書、クイックガイド等）が単なる後付けの成果物ではなく、「システムの振る舞いを定義し、監査されるべきガバナンス資産（Operational Runtime）の一部」であることを宣言する。
+## 📖 取扱説明書・運用知識の必須原則 (Documentation Philosophy)
+本項は、`docs/manuals/` 配下におけるドキュメントが単なる後付けの成果物ではなく、「システムの振る舞いを定義し、監査されるべき知識資産（Knowledge Governance）の一部」であることを宣言する。
 
-1. **Markdown is the Source of Truth (Markdownこそが真実である)**
-   - 全ての運用知識と取扱説明書は、リポジトリ内のMarkdownとして管理されなければならない。
-2. **PDF is a projection artifact (PDFは単なる射影である)**
-   - PDFや印刷物は、Markdownから機械的に生成された一時的なビュー（Projection）に過ぎない。PDFを直接編集することは違憲とする。
-3. **Documentation must evolve with code (コードとドキュメントの同期進化)**
-   - UIやルールの変更が行われた場合、対応するドキュメントも更新されなければならない。未更新はCIによって自動的にマージブロックされる。
-4. **UI changes require documentation review (UI変更時のドキュメント監査)**
-   - 画面構成が変わる場合、取扱説明書の該当箇所およびスクリーンショット参照が矛盾しないかレビューを必須とする。
-5. **Emergency procedures require auditability (緊急対応手順の監査可能性)**
-   - ネットワーク断やデータ破損時の対応手順は、現場の誰もが実行でき、かつ後から監査可能な形でドキュメント化されていなければならない。
-6. **AI-readable structure is mandatory (AI可読な構造の義務化)**
-   - 全てのドキュメントは、将来的なAI検索（Vector Search / RAG）が正確に文脈を抽出できるよう、Style Guideに沿った厳格な構造（見出し、タグ付け）を持たなければならない。
+1. **Markdown is the Source of Truth (Markdownこそが唯一の真実である)**
+   - 全ての運用知識はリポジトリ内のMarkdownとして管理される。
+2. **PDF is a Projection (PDFは単なる射影である)**
+   - PDFを直接編集することは違憲とする。Markdownから自動生成されなければならない。
+3. **Quick Guide is an Operational Projection (クイックガイドは現場用射影である)**
+   - 現場（体育館）で即座に運用を回すための重要なプロジェクションであり、常に最新の真実と同期させる。
+4. **スクリーンショットの単独更新禁止**
+   - スクリーンショットは監査可能な資産である。UI変更を伴わない手動でのスクショ差し替えや、野良画像の追加を禁ずる。
+5. **UI変更時はDoc更新必須 (Documentation must evolve with code)**
+   - 画面や機能が変更されたPull Request内に、対応するドキュメント更新が含まれていない場合、CIでマージをブロックする。
+6. **Replay思想との整合 (Consistency with Replay)**
+   - 取説内の障害対応や操作手順は、必ず「Event SourcingによるReplay（歴史の復元）」の思想に反しない形で記述されなければならない。
+7. **AI生成Docの監査義務 (Auditability of AI-generated Docs)**
+   - AIを用いて生成された運用ドキュメントは、人間のガバナンス監査官によるレビューを経た上で真実の源泉（Source of Truth）として組み込まれる。

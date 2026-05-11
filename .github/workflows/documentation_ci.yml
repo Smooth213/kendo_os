@@ -1,0 +1,54 @@
+name: Documentation Governance CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  audit-and-build:
+    name: Manuals Sync & PDF Export Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: Check Markdown Links (Step 7-1: 全リンク自動検査)
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-verbose-mode: 'yes'
+          folder-path: 'docs/manuals'
+          # 外部リンク（http）の一時的なエラーを無視し、ローカルリンクの死活監視を優先
+          config-file: '.markdownlinkcheck.json'
+
+      - name: Enforce Appliance Quality (Step 7-2: 用語・短文監査)
+        run: |
+          echo "📝 マニュアルの家電メーカー品質（NG用語、長文）を自動監査します..."
+          dart run tools/governance_lint/doc_style_linter.dart
+
+      - name: Check UI and Screenshot Sync (Step 7-3: スクリーンショット存在・同期監査)
+        run: |
+          echo "🔍 UIコードの変更と画像の同期、および画像欠落(Missing Image)を検証します..."
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
+          dart run tools/governance_lint/doc_sync_validator.dart $CHANGED_FILES
+
+      - name: Run Full-text Search Indexer
+        run: dart run tools/governance_lint/manual_indexer.dart
+
+      - name: Run PDF Export Pipeline
+        run: |
+          echo "🖨️ MkDocs設定ファイルおよびPDF自動出力パイプラインを実行します..."
+          dart run tools/manual_pdf_export/export_pipeline.dart
+
+      - name: Enforce Commit of Auto-generated Artifacts
+        run: |
+          if [[ -n $(git status -s) ]]; then
+            echo "🚨 [BLOCK] ガバナンス違反: 生成物が最新ではありません。インデクサー等を再実行してください。"
+            exit 1
+          fi
+          echo "✅ [PASS] Documentation Platform is fully synced and ready."

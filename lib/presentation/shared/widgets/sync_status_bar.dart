@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../operate/providers/role_provider.dart';
 import '../../operate/providers/sync_provider.dart';
 import '../../operate/providers/match_command_provider.dart'; // ★ deadLetterQueueProvider を参照するために追加
+import '../../shared/screens/embedded_manual_screen.dart'; // ★ Step 8-3: ヘルプ画面への遷移用
 import '../../../main.dart'; // ★ 追加: rootNavigatorKey を参照するため
 
 class SyncStatusBar extends ConsumerWidget {
@@ -174,7 +175,28 @@ class SyncStatusBar extends ConsumerWidget {
                         decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline, color: Colors.red.shade700),
+                            // ★ Step 8-3: Error-linked Help (同期失敗時にリカバリマニュアルへ誘導)
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context); // ボトムシートを閉じる
+                                Navigator.push(
+                                  navContext,
+                                  MaterialPageRoute(
+                                    builder: (context) => const EmbeddedManualScreen(
+                                      initialFilePath: 'docs/manuals/recovery/failure_catalog.md',
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Tooltip(
+                                message: '同期エラーが発生しました。タップして復旧手順を確認してください。',
+                                child: Icon(
+                                  Icons.sync_problem,
+                                  color: Colors.red,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
                             const SizedBox(width: 8),
                             const Expanded(child: Text('通信が3回失敗したため、以下の操作が退避されました。手動で再送か破棄を選んでください。', style: TextStyle(fontSize: 12))),
                           ],

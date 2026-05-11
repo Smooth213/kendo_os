@@ -9,6 +9,7 @@ import 'package:kendo_os/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/domain/entities/team_model.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
+import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
   return ['1回戦', '2回戦', '準決勝', '決勝', '第1試合', '第2コート'];
@@ -521,6 +522,14 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
 
     return Scaffold(
       backgroundColor: bgColor,
+      appBar: AppBar(
+        title: const Text('対戦フォーマット設定', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        actions: const [
+          // 大会設定のマニュアルへ
+          ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
+          SizedBox(width: 8),
+        ],
+      ),
       body: Column(
         children: [
           // ★ キーボードが開いた時はヘッダーをスッと隠す

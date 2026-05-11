@@ -21,14 +21,17 @@ theme:
     primary: indigo
     accent: pink
 
+extra_css:
+  - stylesheets/custom_pdf.css
+
 # AI検索や自動生成のためのプラグイン
 plugins:
   - search
   - with-pdf:
-      # クイックガイド等を綺麗に出力するためのPDF出力設定
+      # フルマニュアル用のPDF出力設定
       cover: true
       toc_title: "目次"
-      output_path: "../generated/pdf/kendo_sync_manual.pdf"
+      output_path: "../generated/pdf/kendo_sync_full_manual.pdf"
 
 # Phase 1で構築した Information Architecture に基づくナビゲーション
 nav:

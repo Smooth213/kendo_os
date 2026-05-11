@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import '../providers/sync_provider.dart'; 
-import '../providers/permission_provider.dart'; // ★ Phase 8: 削除権限の監視用に追加
+import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -36,8 +36,6 @@ class TournamentListScreen extends ConsumerWidget {
     final Color subTextColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF636366);
     final Color separatorColor = isDark ? const Color(0xFF38383A) : const Color(0xFFC6C6C8);
 
-    final titleText = isArchive ? '過去の大会' : '今日の大会';
-
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
@@ -46,9 +44,14 @@ class TournamentListScreen extends ConsumerWidget {
           icon: Icon(Icons.arrow_back_ios_new, color: accentColor, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(titleText, style: TextStyle(fontWeight: FontWeight.bold, color: accentColor, letterSpacing: 1.2)),
+        title: Text(isArchive ? '過去の大会 (アーカイブ)' : '最近の大会', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         backgroundColor: Colors.transparent, // 透かしAppBar
         elevation: 0,
+        actions: const [
+          // 全体の目次へ誘導
+          ManualHelpButton(manualPath: 'docs/manuals/manual_index.md'),
+          SizedBox(width: 8),
+        ],
       ),
       body: StreamBuilder<List<TournamentModel>>(
         stream: isArchive 
@@ -106,8 +109,6 @@ class TournamentListScreen extends ConsumerWidget {
               final showHeader = currentMonth != previousMonth;
 
               Widget buildUnifiedCard() {
-                final permissions = ref.watch(permissionProvider);
-                
                 final cardChild = Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   elevation: 0,
@@ -156,54 +157,8 @@ class TournamentListScreen extends ConsumerWidget {
                   ),
                 );
 
-                // ★ Phase 8: 削除権限がない場合は、スワイプできない単なるカードを返す
-                if (!permissions.canDeleteData) {
-                  return cardChild;
-                }
-
-                // ★ Phase 7-2: スワイプして一括削除（Dismissible）の追加
-                return Dismissible(
-                  key: Key(id),
-                  direction: DismissDirection.endToStart, // 右から左へのスワイプのみ許可
-                  background: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade400,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  confirmDismiss: (direction) async {
-                    return await showDialog<bool>(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('大会の削除'),
-                          content: const Text('この大会と、紐づくすべての試合データを削除します。\n本当によろしいですか？\n（※この操作は取り消せません）'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('キャンセル'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('削除する', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  onDismissed: (direction) {
-                    ref.read(tournamentRepositoryProvider).deleteTournament(id);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('大会と関連データを削除しました')),
-                    );
-                  },
-                  child: cardChild,
-                );
+                // ★ 修正：危険な裏スワイプ（Dismissible）を完全に撤去し、純粋なカードだけを返す（要塞化）
+                return cardChild;
               }
 
               // ★ 修正：月別ヘッダーが背景に溶けないよう、アクセントカラーを適用

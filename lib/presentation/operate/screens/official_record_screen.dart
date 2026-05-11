@@ -15,6 +15,7 @@ import '../providers/match_rule_provider.dart';
 import 'package:kendo_os/application/services/csv_service.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
+import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 
 class OfficialPointDisplay {
   final String mark;
@@ -59,6 +60,10 @@ class OfficialRecordScreen extends ConsumerWidget {
           title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           elevation: 0,
+          actions: [
+            // ★ 記録の間違いに気づいた時のために「公式記録の直し方」へ直行
+            ManualHelpButton(manualPath: 'docs/manuals/operator/official_record.md', color: headerTextColor),
+          ],
         ),
         body: Center(child: Text('記録データがありません', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
       );
@@ -79,6 +84,8 @@ class OfficialRecordScreen extends ConsumerWidget {
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, 
           elevation: 0,
           actions: [
+            // ★ 記録の間違いに気づいた時のために「公式記録の直し方」へ直行
+            ManualHelpButton(manualPath: 'docs/manuals/operator/official_record.md', color: headerTextColor),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
               child: ElevatedButton.icon(

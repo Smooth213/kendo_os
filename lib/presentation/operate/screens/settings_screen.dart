@@ -5,6 +5,7 @@ import '../providers/settings_provider.dart';
 import '../providers/role_provider.dart';
 import 'package:go_router/go_router.dart'; // ★ Phase 5: 画面遷移用に追加
 import 'package:firebase_auth/firebase_auth.dart'; // ★ 追加: ログアウト処理用
+import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -45,6 +46,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: IconThemeData(color: headerTextColor),
+        actions: const [
+          // ★ パスコード復旧手順などが載っている「設定マニュアル」へ直行
+          ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
+          SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [

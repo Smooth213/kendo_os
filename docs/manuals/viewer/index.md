@@ -1,11 +1,35 @@
-# 観客・閲覧マニュアル (Viewer Manual)
+---
+ai_metadata:
+  screen: viewer_home_screen
+  role: spectator
+  risk: low
+  governance_level: L1
+  offline_supported: true
+---
+[マニュアルTOP](../manual_index.md) &gt; 観客・閲覧マニュアル
 
-保護者、観覧者、および控え選手が、試合状況や結果をリアルタイムに確認するための操作解説。
+# 観客・閲覧マニュアル (Viewer Home)
 
-## 閲覧機能
-- [閲覧者ホーム](./viewer_home.md)
-- [リアルタイム試合経過](./viewer_match.md)
-- [チーム別星取表](./viewer_team_scoreboard.md)
-- [勝ち抜き戦スコアボード](./viewer_kachinuki_scoreboard.md)
-- [大会成績一覧](./viewer_official_record.md)
-- [プログラム閲覧](./program_viewer.md)
+観客、保護者、出場選手が大会の進行状況やスコアを確認するためのマニュアルです。
+事前のアプリインストールやログインは不要です。
+
+## トップ画面の見方 {#viewer-home-view}
+
+![トップ画面の見方](../../assets/manual_images/viewer_home_01_main.png)
+① **試合進行状況を見る**: 現在行われている試合のスコアを見ることができます。
+② **大会の結果を見る**: 終了した試合の結果や、トーナメント表を見ることができます。
+
+## 目次 {#viewer-contents}
+- [試合画面の見方](viewer_match.md)
+- [団体戦スコアの見方](viewer_team_scoreboard.md)
+- [勝ち抜き戦スコアの見方](viewer_kachinuki_scoreboard.md)
+- [FAQ（よくある質問）](../faq/viewer_faq.md)
+
+---
+
+## 関連ページ (Step 2-3)
+- [⚙️ 運営者向け設定はこちら](../operator/index.md)
+
+## 困ったとき (Step 2-4)
+- [📡 通信が切れた](../faq/viewer_faq.md#faq-network-disconnected)
+- [🥶 画面が止まった](../faq/viewer_faq.md#faq-time-stopped)

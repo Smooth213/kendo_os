@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
+import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
 final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
@@ -121,6 +122,8 @@ class ViewerHomeScreen extends ConsumerWidget {
           elevation: 0,
           iconTheme: IconThemeData(color: textColor),
           actions: [
+            // ★ 初見の保護者向けに「観客向けFAQ（点数が変わらない等）」へ直行
+            ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: isDark ? Colors.white : Colors.indigo.shade900),
             IconButton(
               icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
               tooltip: '大会を共有する',

@@ -1,20 +1,16 @@
-## 🛡 Governance Enforcement PR
+## 概要
+## 変更影響分析 (Impact Analysis)
+- [ ] Replay 互換性の維持 (Event Schema に変更はないか)
+- [ ] UI / プレゼンテーション層の変更
+- [ ] ドメインルールの変更
 
-### 1. 変更の概要
-（何を変更したのか、なぜ変更が必要なのかを記載してください）
+## 🛡️ Documentation Governance Checklist (Phase 7 必須要件)
+> **⚠ 警告:** UIやルールを変更した場合、以下の更新がないPRはCIによって強制Fail（ブロック）されます。
 
-### 2. Risk Classification (リスク分類)
-*該当するものを1つ選択してください*
-- [ ] **Critical** (イベント構造・コアルールエンジンの変更)
-- [ ] **Medium** (新規ルール追加・ドメインロジックの追加)
-- [ ] **Low** (UIのみの変更・単純なリファクタリング)
+- [ ] マニュアルのMarkdown（`docs/manuals/**/*.md`）を更新した
+- [ ] スクリーンショット（`assets/manual_images/*.png`）を更新した
+- [ ] リンク先（Manual IDや相互参照）に変更・リンク切れがないことを確認した
+- [ ] （必要に応じて）`dart run tools/governance_lint/manual_indexer.dart` で検索インデックスを再生成した
+- [ ] （必要に応じて）`dart run tools/manual_pdf_export/export_pipeline.dart` でPDFを再生成した
 
-### 3. Impact Analysis (影響分析)
-- **Replay Impact:** （既存の過去データのリプレイ結果に影響を与えないことをどう証明しましたか？）
-- **Rule Impact:** （既存のルールやルールの評価順序に悪影響を与えませんか？）
-- **Event Impact:** （発行されるイベントの形や意味にサイレントな変更はありませんか？）
-
-### 4. Governance Checklist
-- [ ] `DateTime.now()` や Random()、IOアクセスをドメイン層に混入させていない。
-- [ ] `static mutable` などの隠れた状態を持たせていない。
-- [ ] `flutter test test/integration/replay_regression_test.dart` がローカルで成功している。
+## 特記事項

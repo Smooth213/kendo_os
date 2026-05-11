@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart'; // ★ Size, Locale を認識させるための追加
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 // import 'package:kendo_os/main.dart' as app;
@@ -8,7 +9,14 @@ import 'package:integration_test/integration_test.dart';
 // Golden Toolkit等と組み合わせることで、差分検知（Visual Regression）も可能です。
 // ============================================================================
 void main() {
+  // ignore: unused_local_variable
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  // Phase 3: Capture Environment 規定値
+  // ignore: unused_local_variable
+  const kManualViewSize = Size(1179, 2556); // iPhone 15 Pro
+  // ignore: unused_local_variable
+  const kManualLocale = Locale('ja', 'JP');
 
   group('Documentation Screenshot Generator', () {
     testWidgets('Capture Match Screen States', (WidgetTester tester) async {

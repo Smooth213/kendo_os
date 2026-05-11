@@ -10,6 +10,7 @@ import '../providers/match_rule_provider.dart';
 import '../providers/last_used_settings_provider.dart'; // ★ 追加：正確な小数の時間を取得するため
 import 'package:kendo_os/core/utils/text_sanitizer.dart'; // ★ 追加：お掃除フィルター
 import '../providers/match_list_provider.dart'; // ★ 追加：試合履歴の取得に必要
+import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -388,6 +389,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
+      appBar: AppBar(
+        title: const Text('オーダー編成', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        actions: const [
+          // チーム登録・オーダー設定のマニュアルへ
+          ManualHelpButton(manualPath: 'docs/manuals/operator/team_registration.md'),
+          SizedBox(width: 8),
+        ],
+      ),
       body: Column(
         children: [
           // ★ キーボードが開いた時はヘッダーをスッと隠す

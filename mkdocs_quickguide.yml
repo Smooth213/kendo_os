@@ -1,0 +1,24 @@
+# ============================================================================
+# Phase 4: Quick Guide Generator (現場向け別生成)
+# 体育館で即読可能な「1〜2ページ」の専用プロジェクション
+# ============================================================================
+site_name: Kendo Sync 現場用クイックガイド
+docs_dir: docs/manuals/quickstart
+
+theme:
+  name: material
+  language: ja
+  palette:
+    primary: red # 緊急性・重要性を示す赤基調
+
+extra_css:
+  - ../stylesheets/custom_pdf.css
+
+plugins:
+  - with-pdf:
+      cover: false # 現場用のため表紙なし（即手順が見えるようにする）
+      toc_title: ""
+      output_path: "../../generated/pdf/kendo_sync_quickguide.pdf"
+
+nav:
+  - クイックガイド: index.md

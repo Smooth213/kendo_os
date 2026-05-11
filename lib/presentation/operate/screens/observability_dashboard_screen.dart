@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/metrics_provider.dart';
+import '../../shared/widgets/manual_help_button.dart';
 
 class ObservabilityDashboardScreen extends ConsumerWidget {
   const ObservabilityDashboardScreen({super.key});
@@ -13,6 +14,11 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('運用ダッシュボード (Observability)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        actions: const [
+          // ★ 異常時なので「復旧ガイド（トラブルシューティング）」へ直行
+          ManualHelpButton(manualPath: 'docs/manuals/recovery/failure_catalog.md'),
+          SizedBox(width: 8),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

@@ -20,6 +20,7 @@ import 'package:uuid/uuid.dart'; // ★ 追加: 簡易入力のダミーイベ�
 import 'package:kendo_os/domain/entities/score_event.dart'; // ★ 追加: ダミーイベント用
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
   final repo = ref.watch(tournamentRepositoryProvider);
@@ -1091,97 +1092,9 @@ class HomeScreen extends ConsumerWidget {
                   child: Text(tournament.name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
                 ),
                 if (ref.watch(permissionProvider).canManageTournament)
-                  PopupMenuButton<String>(
-                    icon: Icon(Icons.more_horiz, color: popupIconColor),
-                    color: cardColor,
-                    onSelected: (value) async {
-                      if (value == 'edit') {
-                        final nameController = TextEditingController(text: tournament.name);
-                        final venueController = TextEditingController(text: tournament.venue);
-                        final notesController = TextEditingController(text: tournament.notes);
-                        DateTime selectedDate = tournament.date;
-
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => StatefulBuilder( 
-                            builder: (context, setState) {
-                              return AlertDialog(
-                                backgroundColor: cardColor,
-                                title: Text('大会情報の編集', style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                content: SingleChildScrollView( 
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextField(controller: nameController, style: TextStyle(color: textColor), decoration: InputDecoration(labelText: '大会名', labelStyle: TextStyle(color: subTextColor), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: borderColor)))),
-                                      const SizedBox(height: 12),
-                                      InkWell(
-                                        onTap: () async {
-                                          final DateTime? picked = await showDatePicker(
-                                            context: context, initialDate: selectedDate, firstDate: DateTime(2020), lastDate: DateTime(2030),
-                                          );
-                                          if (picked != null && picked != selectedDate) setState(() => selectedDate = picked);
-                                        },
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(labelText: '開催年月日', labelStyle: TextStyle(color: subTextColor), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: borderColor))),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(DateFormat('yyyy年MM月dd日').format(selectedDate), style: TextStyle(color: textColor)),
-                                              Icon(Icons.calendar_today, size: 20, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade600),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      TextField(controller: venueController, style: TextStyle(color: textColor), decoration: InputDecoration(labelText: '会場・住所', labelStyle: TextStyle(color: subTextColor), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: borderColor)))),
-                                      const SizedBox(height: 12),
-                                      TextField(controller: notesController, style: TextStyle(color: textColor), decoration: InputDecoration(labelText: '大会メモ（任意）', labelStyle: TextStyle(color: subTextColor), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: borderColor))), maxLines: 3),
-                                    ],
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo.shade600, foregroundColor: Colors.white, elevation: 0),
-                                    onPressed: () async {
-                                      await ref.read(tournamentRepositoryProvider).updateTournamentDetails(
-                                        tournament.id, name: nameController.text, venue: venueController.text, notes: notesController.text, date: selectedDate,
-                                      );
-                                      if (ctx.mounted) Navigator.pop(ctx);
-                                    },
-                                    child: const Text('保存'),
-                                  ),
-                                ],
-                              );
-                            }
-                          ),
-                        );
-                      } else if (value == 'delete') {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            backgroundColor: cardColor,
-                            title: Text('大会の削除', style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
-                            content: Text('この大会を削除しますか？', style: TextStyle(color: textColor)),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
-                              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
-                            ],
-                          ),
-                        );
-                        if (confirm == true) {
-                          await ref.read(tournamentRepositoryProvider).deleteTournament(tournament.id);
-                          if (context.mounted) context.go('/');
-                        }
-                      }
-                    },
-                    itemBuilder: (ctx) => [
-                      PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 18, color: textColor), const SizedBox(width: 8), Text('編集', style: TextStyle(color: textColor))])),
-                      // ★ Phase 8: 削除権限がない場合は「削除」メニューを出さない
-                      if (ref.watch(permissionProvider).canDeleteData)
-                        const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, color: Colors.red, size: 18), SizedBox(width: 8), Text('削除', style: TextStyle(color: Colors.red))])),
-                    ],
+                  IconButton(
+                    icon: Icon(Icons.more_horiz, color: popupIconColor, size: 28), // 押しやすく少し大きく
+                    onPressed: () => _showTournamentMenuBottomSheet(context, ref, tournament, cardColor, textColor, subTextColor, borderColor),
                   ),
               ],
             ),
@@ -1212,24 +1125,162 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
+  // =========================================================================
+  // ★ NEW: 大会メニューのボトムシート化
+  // =========================================================================
+  void _showTournamentMenuBottomSheet(BuildContext context, WidgetRef ref, TournamentModel tournament, Color cardColor, Color textColor, Color subTextColor, Color borderColor) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.only(top: 16, bottom: 56), // ★ 下部の余白を増やして角丸との干渉を防ぐ
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10)))),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: CircleAvatar(backgroundColor: Colors.indigo.withValues(alpha: 0.1), child: const Icon(Icons.edit, color: Colors.indigo)),
+              title: Text('大会情報の編集', style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+              subtitle: const Text('大会名や会場、日付を変更します', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _openEditTournamentDialog(context, ref, tournament, cardColor, textColor, subTextColor, borderColor);
+              },
+            ),
+            if (ref.read(permissionProvider).canDeleteData) ...[
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Divider(height: 1, color: borderColor)),
+              ListTile(
+                leading: CircleAvatar(backgroundColor: Colors.red.withValues(alpha: 0.1), child: const Icon(Icons.delete, color: Colors.red)),
+                title: const Text('この大会を削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                subtitle: const Text('関連するすべての試合も完全に削除されます', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _confirmDeleteTournament(context, ref, tournament, cardColor, textColor);
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openEditTournamentDialog(BuildContext context, WidgetRef ref, TournamentModel tournament, Color cardColor, Color textColor, Color subTextColor, Color borderColor) {
+    final nameController = TextEditingController(text: tournament.name);
+    final venueController = TextEditingController(text: tournament.venue);
+    final notesController = TextEditingController(text: tournament.notes);
+    DateTime selectedDate = tournament.date;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder( 
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: cardColor,
+            title: Text('大会情報の編集', style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            content: SingleChildScrollView( 
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: nameController, style: TextStyle(color: textColor), decoration: InputDecoration(labelText: '大会名', labelStyle: TextStyle(color: subTextColor), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: borderColor)))),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: context, initialDate: selectedDate, firstDate: DateTime(2020), lastDate: DateTime(2030),
+                        builder: (context, child) => Theme(
+                          data: Theme.of(context).copyWith(colorScheme: ColorScheme.light(primary: Colors.indigo, onPrimary: Colors.white, onSurface: isDark ? Colors.white : Colors.black), dialogTheme: DialogThemeData(backgroundColor: cardColor)),
+                          child: child!,
+                        ),
+                      );
+                      if (picked != null && picked != selectedDate) setState(() => selectedDate = picked);
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(labelText: '開催年月日', labelStyle: TextStyle(color: subTextColor), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: borderColor))),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(DateFormat('yyyy年MM月dd日').format(selectedDate), style: TextStyle(color: textColor)),
+                          Icon(Icons.calendar_today, size: 20, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade600),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(controller: venueController, style: TextStyle(color: textColor), decoration: InputDecoration(labelText: '会場・住所', labelStyle: TextStyle(color: subTextColor), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: borderColor)))),
+                  const SizedBox(height: 12),
+                  TextField(controller: notesController, style: TextStyle(color: textColor), decoration: InputDecoration(labelText: '大会メモ（任意）', labelStyle: TextStyle(color: subTextColor), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: borderColor))), maxLines: 3),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo.shade600, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                onPressed: () async {
+                  await ref.read(tournamentRepositoryProvider).updateTournamentDetails(
+                    tournament.id, name: nameController.text, venue: venueController.text, notes: notesController.text, date: selectedDate,
+                  );
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('保存', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+
+  void _confirmDeleteTournament(BuildContext context, WidgetRef ref, TournamentModel tournament, Color cardColor, Color textColor) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(children: [Icon(Icons.warning_amber_rounded, color: Colors.red), SizedBox(width: 8), Text('大会の削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))]),
+        content: Text('この大会を削除しますか？\n（取り消しはできません）', style: TextStyle(color: textColor, height: 1.5)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            onPressed: () => Navigator.pop(ctx, true), 
+            child: const Text('削除する', style: TextStyle(fontWeight: FontWeight.bold))
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await ref.read(tournamentRepositoryProvider).deleteTournament(tournament.id);
+      if (context.mounted) context.go('/');
+    }
+  }
+
   Widget _buildMatchListTile(BuildContext context, WidgetRef ref, MatchModel match) {
+    final permissions = ref.watch(permissionProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFinished = match.status == 'finished' || match.status == 'approved';
     final isPlaying = match.status == 'in_progress';
 
-    // ★ 修正：勝ち抜き戦の場合は、matchTypeが「選手」でも絶対に個人戦扱いしない
     final bool isIndividual = !match.isKachinuki && (match.matchType == '個人戦' || match.matchType == '選手');
 
     final Color bg = isFinished ? (isDark ? const Color(0xFF161618) : Colors.grey.shade50) : Colors.transparent;
     final Color textC = isFinished ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500) : (isDark ? Colors.white : Colors.black87);
     final Color noteC = isFinished ? (isDark ? Colors.grey.shade700 : Colors.grey.shade500) : Colors.grey.shade600;
 
-    return Container(
+    final tile = Container(
       decoration: BoxDecoration(
         color: bg,
-        border: Border(
-          bottom: BorderSide(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200, width: 0.5),
-        ),
+        border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200, width: 0.5)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.only(left: 16, right: 8),
@@ -1264,11 +1315,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   child: Text(
                     isPlaying ? '進行中' : (isFinished ? '終了' : '待機中'),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: isPlaying ? Colors.white : (isFinished ? (isDark ? Colors.grey.shade400 : Colors.grey.shade600) : (isDark ? Colors.grey.shade400 : Colors.grey.shade700)),
-                    ),
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isPlaying ? Colors.white : (isFinished ? (isDark ? Colors.grey.shade400 : Colors.grey.shade600) : (isDark ? Colors.grey.shade400 : Colors.grey.shade700))),
                   ),
                 ),
               ]
@@ -1296,21 +1343,16 @@ class HomeScreen extends ConsumerWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ★ 修正：個人戦（独立した試合）の場合のみアイコンを表示。団体戦の子要素（先鋒など）では非表示。
             if (!isPlaying && !isFinished && isIndividual)
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: InkWell(
                   onTap: () => _showRuleInfoSheet(context, match),
                   borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Icon(Icons.info_outline, color: isDark ? Colors.grey.shade600 : Colors.grey.shade400, size: 18),
-                  ),
+                  child: Padding(padding: const EdgeInsets.all(4.0), child: Icon(Icons.info_outline, color: isDark ? Colors.grey.shade600 : Colors.grey.shade400, size: 18)),
                 ),
               ),
 
-            // ★ 復活：自チームを含まない個人戦（リーグ戦等）での簡易入力ボタン
             Builder(builder: (context) {
               final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
               final rT = match.redName.split(':').first.trim();
@@ -1318,7 +1360,7 @@ class HomeScreen extends ConsumerWidget {
               final isRedOwn = ownTeams.contains(rT) || match.redName.contains('自チーム');
               final isWhiteOwn = ownTeams.contains(wT) || match.whiteName.contains('自チーム');
               
-              if (!ref.watch(permissionProvider).isReadOnly && !isFinished && !isPlaying && !isRedOwn && !isWhiteOwn && isIndividual) {
+              if (!permissions.isReadOnly && !isFinished && !isPlaying && !isRedOwn && !isWhiteOwn && isIndividual) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: SizedBox(
@@ -1343,11 +1385,7 @@ class HomeScreen extends ConsumerWidget {
               SizedBox(
                 height: 28,
                 child: OutlinedButton(
-                  onPressed: () {
-                    // ★ Phase 8-3: PushではなくGoRouterの pushNamed 等で一元管理（※ルーター設定に合わせて変更）
-                    // 既存ルーターに /team-scoreboard があると仮定して書き換え
-                    context.push('/team-scoreboard/${match.groupName ?? match.id}'); 
-                  },
+                  onPressed: () => context.push('/team-scoreboard/${match.groupName ?? match.id}'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     side: BorderSide(color: textC.withValues(alpha: 0.3), width: 1),
@@ -1356,31 +1394,48 @@ class HomeScreen extends ConsumerWidget {
                   child: Text('スコア', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textC)),
                 ),
               ),
-            // ★ Phase 8: 削除権限がない場合はゴミ箱ボタンを表示しない
-            if (ref.watch(permissionProvider).canDeleteData)
-              IconButton(
-                icon: Icon(Icons.delete_outline, color: isFinished ? Colors.grey.withValues(alpha: 0.5) : Colors.grey, size: 20),
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                      title: Text('試合の削除', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
-                      content: Text('削除しますか？', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
-                      actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
-                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
-                      ],
-                    ),
-                  );
-                  if (confirm == true) await ref.read(matchCommandProvider).deleteMatch(match.id);
-                },
-              ),
           ],
         ),
         onTap: () => context.push('/match/${match.id}'),
-        onLongPress: isIndividual ? () => _showRuleInfoSheet(context, match) : null, // ★ 修正：個人戦のみ長押し有効
+        onLongPress: isIndividual ? () => _showRuleInfoSheet(context, match) : null,
       ),
+    );
+
+    // ★ 修正：閲覧専用（Viewer）ならそのままタイルを返す。編集可能ならSlidableで包む。
+    if (permissions.isReadOnly) {
+      return tile;
+    }
+
+    return Slidable(
+      key: ValueKey(match.id),
+      endActionPane: ActionPane(
+        // ★ 修正：選手マスタ画面と完全に同じ滑らかな物理エンジン（ScrollMotion）に統一
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                  title: Text('試合の削除', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                  content: Text('削除しますか？\n(取り消せません)', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
+                    TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+                  ],
+                ),
+              );
+              if (confirm == true) await ref.read(matchCommandProvider).deleteMatch(match.id);
+            },
+            backgroundColor: Colors.redAccent,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: '削除',
+          ),
+        ],
+      ),
+      child: tile,
     );
   }
 

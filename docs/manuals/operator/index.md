@@ -1,28 +1,32 @@
-# 運営・記録マニュアル (Operator Manual)
+[マニュアルTOP](../manual_index.md) &gt; 運営・記録マニュアル
 
-本セクションでは、大会の作成から当日の記録、結果の確定までの操作手順を解説する。
+# 運営・記録マニュアル (Operate Home)
 
-## 1. 基本設定とログイン
-- [ログイン](./login.md)
-- [スタート画面](./start.md)
-- [システム設定](./settings.md)
+大会の準備、試合の記録、結果の確定を行う運営者・記録係・審判向けのマニュアルです。
+観客向けの操作は含まれていません。
 
-## 2. 大会・錬成会の管理
-- [大会の新規作成](./create_tournament.md)
-- [チーム登録](./team_registration.md)
-- [試合形式の設定](./setup_match_format.md)
-- [オーダー（配列）設定](./order_setup.md)
-- [進行表（プログラム）管理](./program_management.md)
-- [マスター名簿管理](./master_management.md)
+## 目次
+- [大会作成と設定](create_tournament.md)
+- [チーム・選手登録](team_registration.md)
+- [試合記録画面の操作 (点数入力)](match.md)
+- [成績管理と公式記録](official_record.md)
+- [監査ログの確認](audit_log.md)
+- [緊急トラブル時の復旧手順](../recovery/failure_catalog.md)
 
-## 3. 試合記録 (Scorekeeping)
-- [大会ホーム](./home.md)
-- [試合記録（メイン）](./match.md)
-- [大会・試合一覧](./tournament_list.md)
-- [成績表・個人成績](./standings.md)
-- [公式記録出力](./official_record.md)
+---
 
-## 4. 部内戦・申し合わせ
-- [部内戦ホーム](./bunaiksen_home.md)
-- [部内戦セットアップ](./bunaiksen_setup.md)
-- [部内戦記録出力](./bunaiksen_official_record.md)
+## 関連ページ (Step 2-3)
+- [📱 観客画面の見え方はこちら](../viewer/index.md)
+
+## 困ったとき (Step 2-4)
+- [📡 通信が切れた](../quickstart/operator_1pager.md)
+- [🥶 画面が止まった](../recovery/failure_catalog.md#recovery-flow)
+- [📝 点数を間違えた](../faq/operator_faq.md)
+
+---
+
+## 📱 スマホ版・アプリ内ヘルプはこちら
+紙のマニュアルをお読みの方へ。以下のQRコードからオンライン版にアクセスできます。アプリ内からは、右上の「？」ボタンで同じ内容を確認できます。
+
+![スマホ版QR](../../assets/manual_images/qr_operator.png)
+*(URL: https://kendo-sync.web.app/help)*

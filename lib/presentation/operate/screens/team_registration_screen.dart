@@ -7,6 +7,7 @@ import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import '../providers/team_name_history_provider.dart'; // ★ 追加：履歴プロバイダ
 import 'package:kendo_os/core/utils/text_sanitizer.dart'; // ★ お掃除フィルターを追加
+import '../../shared/widgets/manual_help_button.dart';
 
 // ★ 安定したProvider定義
 final registeredTeamsProvider = StreamProvider.family.autoDispose<List<TeamModel>, String>((ref, tournamentId) {
@@ -437,6 +438,14 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
+      appBar: AppBar(
+        title: const Text('チーム・選手登録', style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: const [
+          // ★ 欠場者の入力方法や、順番間違いの直し方が載っているページへ
+          ManualHelpButton(manualPath: 'docs/manuals/operator/team_registration.md'),
+          SizedBox(width: 8),
+        ],
+      ),
       body: Column(
         children: [
           // ★ キーボードが開いた時はヘッダーをスッと隠し、入力エリアを最大化する

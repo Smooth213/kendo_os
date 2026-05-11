@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // ★ 不要になった go_router のインポートを削除
 import 'package:intl/intl.dart'; // 時間表示用に追加
 import '../../shared/widgets/scoreboard.dart';
-import '../../shared/widgets/match_header.dart';
 // ★ TimerWidgetのインポートを削除
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart'; // ★ Projectionの型とUIXを使うために追加
+import '../../shared/widgets/manual_help_button.dart';
 
 class ViewerMatchScreen extends ConsumerWidget {
   final String matchId;
@@ -27,10 +27,14 @@ class ViewerMatchScreen extends ConsumerWidget {
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Scaffold(
-          backgroundColor: isDark ? Colors.black : Colors.white, 
-          appBar: MatchHeader(
-            matchId: matchId,
-            isInputLocked: true, 
+          backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7), 
+          appBar: AppBar(
+            title: const Text('試合状況 (観戦)', style: TextStyle(fontSize: 14)),
+            actions: const [
+              // ★ 観客が最も不安になる「点数が変わらない」等のFAQへ直行
+              ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: Colors.white),
+              SizedBox(width: 8),
+            ],
           ),
           body: Column(
             children: [

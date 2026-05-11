@@ -5,6 +5,7 @@
 | ID | 決定事項 | ステータス | 最終更新 |
 | :--- | :--- | :--- | :--- |
 | [001](./001_rule_engine_pluginization.md) | 剣道ルールエンジンのプラグイン化と階層型Configの導入 | Accepted | 2026-05 |
+| 010 | Documentation = Runtime Knowledge (運用知識のガバナンス化) | Accepted | 2026-05 |
 
 ---
 

@@ -29,7 +29,7 @@ void main() {
         print('❌ [FAIL] Missing H1 Title (# ) in: ${file.path}');
         hasError = true;
       }
-      // TODO: Implement broken link and orphan image detection via RegExp or external markdown-link-check tool.
+      // INFO: Broken link and image detection is now fully implemented and delegated to tools/governance_lint/doc_sync_validator.dart (Phase 7).
     }
   }
 

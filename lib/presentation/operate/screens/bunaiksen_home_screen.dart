@@ -7,10 +7,10 @@ import '../providers/match_list_provider.dart';
 import '../../shared/widgets/infinite_streak_leaderboard.dart';
 import '../providers/bunaiksen_provider.dart';
 // ★ Phase 8: 削除機能と権限管理用プロバイダを追加
-import '../providers/permission_provider.dart';
 import '../providers/match_command_provider.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -222,92 +222,71 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                     (context, index) {
                       final match = matches[index];
                       final isFinished = match.status == 'finished' || match.status == 'approved';
-                      final inProgress = match.status == 'in_progress';
-                      
-                      return Opacity(
-                        opacity: isFinished ? 0.6 : 1.0,
-                        child: Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                          elevation: inProgress ? 4 : 1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(color: inProgress ? Colors.deepOrange.shade400 : Colors.transparent, width: inProgress ? 2 : 0)
+
+                      // ★ 修正：一体化のため、外側のPaddingでリストの余白を管理
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+                        child: Slidable(
+                          key: ValueKey(match.id),
+                          endActionPane: ActionPane(
+                            // ★ 修正：選手マスタ画面と完全に同じ滑らかな物理エンジン（ScrollMotion）に統一
+                            motion: const ScrollMotion(),
+                            children: [
+                              SlidableAction(
+                                onPressed: (context) => _confirmDeleteMatch(context, ref, match.id),
+                                backgroundColor: Colors.redAccent,
+                                foregroundColor: Colors.white,
+                                icon: Icons.delete,
+                                label: '削除',
+                                // ★ 修正：カードの角丸と完全に一致させる
+                                borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+                              ),
+                            ],
                           ),
-                          color: isFinished ? (isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade200) : (isDark ? Colors.grey.shade900 : Colors.white),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () => context.push('/match/${match.id}'),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      // 左側：試合タイプとステータスをまとめる
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(color: isDark ? Colors.grey.shade800 : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
-                                            child: Text(match.matchType, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          if (inProgress)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF8B0000).withValues(alpha: isDark ? 0.3 : 0.15),
-                                                borderRadius: BorderRadius.circular(4)
-                                              ),
-                                              child: Text('進行中', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF8B0000))),
-                                            )
-                                          else if (isFinished)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300, borderRadius: BorderRadius.circular(8)),
-                                              child: Text('終了', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
-                                            ),
-                                        ],
-                                      ),
-                                      // 右側：削除ボタン（★ Phase 8: 権限チェック付き）
-                                      if (ref.watch(permissionProvider).canDeleteData)
-                                        IconButton(
-                                          icon: Icon(Icons.delete_outline, color: Colors.grey.withValues(alpha: isFinished ? 0.5 : 1.0), size: 20),
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                          onPressed: () async {
-                                            final confirm = await showDialog<bool>(
-                                              context: context,
-                                              builder: (ctx) => AlertDialog(
-                                                backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                                                title: Text('試合の削除', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
-                                                content: Text('削除しますか？', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
-                                                actions: [
-                                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
-                                                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
-                                                ],
-                                              ),
-                                            );
-                                            if (confirm == true) await ref.read(matchCommandProvider).deleteMatch(match.id);
-                                          },
+                          child: Card(
+                            elevation: 0,
+                            margin: EdgeInsets.zero, // ★ 重要：ここをゼロにすることで隙間を消す
+                            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () => context.push('/match/${match.id}'),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          match.note.isNotEmpty ? match.note : '部内稽古',
+                                          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
                                         ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      Expanded(child: Text(match.redName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red), textAlign: TextAlign.right, overflow: TextOverflow.ellipsis)),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                        child: isFinished 
-                                            ? _buildScoreMarks(match, isDark) 
-                                            : Text('VS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
-                                      ),
-                                      Expanded(child: Text(match.whiteName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87), textAlign: TextAlign.left, overflow: TextOverflow.ellipsis)),
-                                    ],
-                                  ),
-                                ],
+                                        // 存在しない orderDate を使わず、単に試合番号やテキストにする
+                                        Text(
+                                          '第${index + 1}試合',
+                                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(child: Text(match.redName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87), textAlign: TextAlign.right, overflow: TextOverflow.ellipsis)),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                          child: isFinished 
+                                              ? _buildScoreMarks(match, isDark) 
+                                              : Text('VS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                                        ),
+                                        Expanded(child: Text(match.whiteName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87), textAlign: TextAlign.left, overflow: TextOverflow.ellipsis)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -329,6 +308,26 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         ),
         onPressed: () => context.push('/bunaiksen-setup'),
       ) : null, // ★ 今日以外を表示している時は作成ボタンを出さない
+    );
+  }
+
+  void _confirmDeleteMatch(BuildContext context, WidgetRef ref, String matchId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('試合の削除'),
+        content: const Text('この試合データを完全に削除します。この操作は取り消せません。よろしいですか？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(matchCommandProvider).deleteMatch(matchId);
+            },
+            child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 }

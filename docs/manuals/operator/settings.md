@@ -1,3 +1,12 @@
+---
+ai_metadata:
+  screen: settings_screen
+  role: operator_admin
+  risk: medium
+  governance_level: L2
+---
+[総合ホーム](../manual_index.md) &gt; [運営・記録マニュアル](index.md) &gt; システム設定画面
+
 # システム設定画面 (Settings Screen)
 
 ## 概要
@@ -12,11 +21,21 @@
 3. 必要であれば「端末の役割設定」を変更する。
 
 ## 注意事項
-- 「記録確定後の修正ロック」をオンにすると、記録係による事後のデータ改ざんを防止できます。
+- 「記録確定後の修正ロック」をオンにします。勝敗決定後の点数変更を防ぎます。
 
 ## 障害時対応
 - 設定が反映されない場合は、一度アプリを再起動してください。
 
 ## FAQ
-- **Q: パスコードを忘れました。**
-  - A: 憲法に基づき、再設定には管理者のエスカレーションが必要です。
+- Q: パスコードを忘れました。
+  - A: セキュリティのため、この画面からは再設定できません。大会の責任者（本部）にお問い合わせください。
+
+---
+
+## 関連ページ
+- [大会作成と設定](create_tournament.md)
+- [成績管理と公式記録](official_record.md)
+
+## 困ったとき
+- [🥶 画面が止まった](../recovery/failure_catalog.md#recovery-flow)
+- [📡 通信が切断した](../recovery/failure_catalog.md#recovery-network)
