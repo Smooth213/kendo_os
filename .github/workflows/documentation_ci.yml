@@ -18,7 +18,8 @@ jobs:
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1
 
-      - name: Check Markdown Links (Step 7-1: 全リンク自動検査)
+      # ★ 修正: コロンを含む文字列をシングルクォーテーションで囲む
+      - name: 'Check Markdown Links (Step 7-1: 全リンク自動検査)'
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           use-verbose-mode: 'yes'
@@ -26,12 +27,14 @@ jobs:
           # 外部リンク（http）の一時的なエラーを無視し、ローカルリンクの死活監視を優先
           config-file: '.markdownlinkcheck.json'
 
-      - name: Enforce Appliance Quality (Step 7-2: 用語・短文監査)
+      # ★ 修正: 隠れ地雷だった箇所も囲んで保護
+      - name: 'Enforce Appliance Quality (Step 7-2: 用語・短文監査)'
         run: |
           echo "📝 マニュアルの家電メーカー品質（NG用語、長文）を自動監査します..."
           dart run tools/governance_lint/doc_style_linter.dart
 
-      - name: Check UI and Screenshot Sync (Step 7-3: スクリーンショット存在・同期監査)
+      # ★ 修正: 隠れ地雷だった箇所も囲んで保護
+      - name: 'Check UI and Screenshot Sync (Step 7-3: スクリーンショット存在・同期監査)'
         run: |
           echo "🔍 UIコードの変更と画像の同期、および画像欠落(Missing Image)を検証します..."
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
