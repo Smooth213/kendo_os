@@ -937,7 +937,6 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     // ★ 全て rule からもらう
                                     matchTimeMinutes: rule.matchTimeMinutes.toInt(), 
                                     isRunningTime: rule.isRunningTime, 
-                                    remainingSeconds: (rule.matchTimeMinutes * 60).toInt(),
                                     hasExtension: rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited, 
                                     extensionTimeMinutes: rule.enchoTimeMinutes.toInt(), 
                                     extensionCount: rule.enchoCount, 
@@ -992,7 +991,6 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       // ★ 修正：すべて完璧な状態の「rule」から直接もらう！
                                       matchTimeMinutes: rule.matchTimeMinutes.toInt(), 
                                       isRunningTime: rule.isRunningTime, 
-                                      remainingSeconds: (rule.matchTimeMinutes * 60).toInt(),
                                       hasExtension: rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited || posName.contains('代表'),
                                       extensionTimeMinutes: rule.enchoTimeMinutes.toInt(), 
                                       extensionCount: rule.enchoCount, 

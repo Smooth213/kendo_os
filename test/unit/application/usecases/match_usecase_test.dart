@@ -26,7 +26,6 @@ void main() {
         id: 'test_m1', tournamentId: 't1', matchOrder: 1,
         redName: 'Red', whiteName: 'White',
         status: 'in_progress', matchType: '個人戦',
-        remainingSeconds: 180,
       );
       testUser = const User(id: 'test_user', role: Role.admin, organizationId: 'test_org'); // ★ 追加
     });

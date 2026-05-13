@@ -26,7 +26,6 @@ void main() {
         id: 'test', tournamentId: 't1', matchOrder: 1,
         redName: 'Red', whiteName: 'White',
         status: 'in_progress', matchType: '個人戦',
-        remainingSeconds: 180,
       );
 
       // ★ 修正: 競合チェックを通過するため、期待される sequence (空の状態に対しては 1) を明示する

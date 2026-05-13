@@ -24,6 +24,9 @@ abstract class SettingsModel with _$SettingsModel {
     @Default(false) bool leftHanded,         // 左利きモード（赤白反転）
     @Default('system') String themeMode,     // ★ ダークモード対応 ('system', 'light', 'dark')
     
+    // 【実験・内部機能 (Feature Flag)】 (Phase 0: 一般ユーザーから隠蔽するため)
+    @Default(false) bool experimentalFeatures,
+    
     // 【セキュリティ・権限】 (Phase 8)
     @Default(1) int securityLevel, // ★ Phase 8: 1(自由), 2(標準), 3(厳格)
     String? adminPasscode,        // ★ Phase 8: 英数8文字パスコード

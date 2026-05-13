@@ -43,7 +43,6 @@ void main() {
         whiteName: 'White',
         status: 'in_progress',
         matchType: '個人戦',
-        remainingSeconds: 180,
       );
 
       mockRepo = MockLocalMatchRepository();
@@ -165,7 +164,7 @@ void main() {
 
     test('PHASE 8: 勝敗確定後にUndoして技を入れても、残り時間が0秒にリセットされず維持されること', () {
       final rule = const MatchRule();
-      var match = dummyMatch.copyWith(events: <ScoreEvent>[], remainingSeconds: 45);
+      var match = dummyMatch.copyWith(events: <ScoreEvent>[]).updateRemainingSeconds(45);
 
       match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
       match = addScoreUseCase.execute(testUser, match, kote(Side.red), rule); // ★ 変更
@@ -201,7 +200,6 @@ void main() {
         whiteName: 'White',
         status: 'in_progress',
         matchType: '個人戦',
-        remainingSeconds: 180,
       );
     });
 
@@ -228,7 +226,7 @@ void main() {
 
     test('終了ステータスからでも判定(hantei)を入力でき、スコアに反映されて終了状態を維持すること', () {
       final rule = MatchRule(hasHantei: true);
-      var match = dummyMatch.copyWith(events: <ScoreEvent>[], status: 'finished', remainingSeconds: 0); 
+      var match = dummyMatch.copyWith(events: <ScoreEvent>[], status: 'finished').updateRemainingSeconds(0); 
 
       final hanteiEvent = ScoreEventLegacyAdapter.fromLegacy(
         id: 'hantei-1', type: PointType.hantei, side: Side.white, timestamp: DateTime.now(),
@@ -278,7 +276,6 @@ void main() {
 
       match = match.copyWith(
         status: 'finished', 
-        timerIsRunning: false,
         hasExtension: false,
         events: [hanteiEvent],
       );

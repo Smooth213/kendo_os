@@ -268,7 +268,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('進行中'), findsWidgets);
-      expect(find.text('大会の公式記録'), findsOneWidget);
+      // ★ 修正: UIスリム化に伴い、ボタンのテキストを最新のものへ変更
+      expect(find.text('試合結果一覧 (PDF/CSV)'), findsOneWidget);
       expect(find.byIcon(Icons.search), findsOneWidget);
       
       await tester.tap(find.byIcon(Icons.search));

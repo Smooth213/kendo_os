@@ -14,11 +14,13 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Kendo OS Viewer">
+
+  <script src="https://unpkg.com/isar@3.0.0-dev.14/dist/index.js"></script>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -41,6 +43,7 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
+  <!-- ★ 修正: 絶対パスに変更し、深いURLからでも確実にロードできるようにする（ホワイトアウト対策4） -->
+  <script src="/flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -26,8 +26,7 @@ class FakeMatchApplicationService implements MatchApplicationService {
 // 2. 試合データのスタブ生成ヘルパー
 MatchModel createDummyMatch({
   required String id,
-  required int remainingSeconds,
-  bool timerIsRunning = false,
+  int matchTimeMinutes = 3,
   DateTime? timerStartedAt,
   DateTime? timerPausedAt,
   String status = 'not_started',
@@ -41,8 +40,7 @@ MatchModel createDummyMatch({
     whiteScore: 0,
     status: status,
     matchType: '個人戦',
-    remainingSeconds: remainingSeconds,
-    timerIsRunning: timerIsRunning,
+    matchTimeMinutes: matchTimeMinutes,
     timerStartedAt: timerStartedAt,
     timerPausedAt: timerPausedAt,
     events: const [],
@@ -59,7 +57,7 @@ void main() {
   group('MatchTimerProvider (UI Layer) Governance Tests', () {
 
     test('1. 無限リセット防止: キャッシュされた秒数は外部の通信ラグで上書きされない', () {
-      final dummyMatch = createDummyMatch(id: 'match1', remainingSeconds: 180);
+      final dummyMatch = createDummyMatch(id: 'match1', matchTimeMinutes: 3);
       
       final container = ProviderContainer(
         overrides: [
@@ -84,9 +82,8 @@ void main() {
 
     test('2. 計算の正確性: toggleTimer(Pause) 時に現在の残り秒数(キャッシュ)が正しくDBへ保存される', () async {
       final dummyMatch = createDummyMatch(
-        id: 'match2', 
-        remainingSeconds: 180, // 初期の残り時間
-        timerIsRunning: true,
+        id: 'match2',
+        matchTimeMinutes: 3, // 初期の残り時間
         timerStartedAt: DateTime.now().subtract(const Duration(seconds: 10)),
         status: 'in_progress',
       );
@@ -122,9 +119,8 @@ void main() {
 
     test('3. 手動更新時の凍結防止: 稼働中に時間を修正してもタイマーがフリーズしない', () async {
       final dummyMatch = createDummyMatch(
-        id: 'match3', 
-        remainingSeconds: 120,
-        timerIsRunning: true,
+        id: 'match3',
+        matchTimeMinutes: 2,
         timerStartedAt: DateTime.now().subtract(const Duration(seconds: 5)),
         status: 'in_progress',
       );

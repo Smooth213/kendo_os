@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   crypto: ^3.0.3
   flutter_riverpod: ^2.5.1
   google_fonts: ^6.2.1

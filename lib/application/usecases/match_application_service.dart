@@ -432,7 +432,7 @@ class MatchApplicationService {
       // ★ 修正: タイマー停止やロック解除もここで行う
       final updated = match.copyWith(
         status: 'finished', 
-        timerIsRunning: false,
+        timerStartedAt: null,
         hasExtension: false,
         scorerId: null,
         syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
@@ -476,7 +476,7 @@ class MatchApplicationService {
       // 3. 強制的に終了ステータスで上書きし、ロックなどを解除
       updated = updated.copyWith(
         status: 'finished', 
-        timerIsRunning: false,
+        timerStartedAt: null,
         hasExtension: false,
         scorerId: null,
         syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正

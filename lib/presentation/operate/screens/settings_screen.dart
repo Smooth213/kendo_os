@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import '../providers/settings_provider.dart';
 import '../providers/role_provider.dart';
-import 'package:go_router/go_router.dart'; // ★ Phase 5: 画面遷移用に追加
 import 'package:firebase_auth/firebase_auth.dart'; // ★ 追加: ログアウト処理用
 import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 
@@ -16,6 +15,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _testMessage = '下のボタンをタップしてテスト';
+  int _tapCount = 0; // ★ Phase 0: イースターエッグ用のタップカウンタ
   
   // ★ カラーパレットの定義（目立ちすぎない、上品で落ち着いたローズピンクへ調整）
   static const Color accentPink = Color(0xFFE06287); 
@@ -40,7 +40,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Scaffold(
       backgroundColor: dynamicBgColor,
       appBar: AppBar(
-        title: Text('システム設定', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: headerTextColor)),
+        title: GestureDetector(
+          onTap: () {
+            _tapCount++;
+            if (_tapCount >= 7) {
+              _tapCount = 0;
+              final current = settings.experimentalFeatures;
+              ref.read(settingsProvider.notifier).updateField(experimentalFeatures: !current);
+              HapticFeedback.heavyImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(!current ? '🛠️ 内部ガバナンスモードが解放されました' : '🔒 内部モードをロックしました')),
+              );
+            }
+          },
+          child: Text('システム設定', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: headerTextColor)),
+        ),
         backgroundColor: Colors.transparent, // 透かしに変更
         foregroundColor: headerTextColor,
         elevation: 0,
@@ -211,9 +225,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   '・Lv.3 (厳格): アプリの重要な設定を変更する際など、より厳格にパスコードを要求します。'
                 ),
                 
-                if (ref.watch(persistentRoleProvider) == Role.admin) ...[
+                // ==========================================
+                // ★ Phase 6: Stage 2 限定化
+                // 内部監査・ガバナンスメニューへの導線を一般UIから完全に削除します。
+                // (将来の Stage 3 で Advanced Menu として復活させます)
+                // ==========================================
+                /*
+                if (ref.watch(persistentRoleProvider) == Role.admin && settings.experimentalFeatures) ...[
                   const SizedBox(height: 24),
-                  _buildSectionHeader(context, '管理者メニュー'),
+                  _buildSectionHeader(context, '管理者・内部統治メニュー'),
                   _buildSettingsBlock(context, [
                     _buildListTile(context,
                       title: 'システム監査ログ',
@@ -225,6 +245,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ]),
                   _buildSectionFooter(context, 'システムの詳細な操作履歴（監査ログ）を確認できます。'),
                 ],
+                */
                 
                 // ==========================================
                 // 6. アカウントセクション

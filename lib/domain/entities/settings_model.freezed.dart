@@ -25,7 +25,8 @@ mixin _$SettingsModel {
  bool get sleepPrevent;// スリープ(画面消灯)防止
  bool get leftHanded;// 左利きモード（赤白反転）
  String get themeMode;// ★ ダークモード対応 ('system', 'light', 'dark')
-// 【セキュリティ・権限】 (Phase 8)
+// 【実験・内部機能 (Feature Flag)】 (Phase 0: 一般ユーザーから隠蔽するため)
+ bool get experimentalFeatures;// 【セキュリティ・権限】 (Phase 8)
  int get securityLevel;// ★ Phase 8: 1(自由), 2(標準), 3(厳格)
  String? get adminPasscode;
 /// Create a copy of SettingsModel
@@ -40,16 +41,16 @@ $SettingsModelCopyWith<SettingsModel> get copyWith => _$SettingsModelCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsModel&&(identical(other.confirmBehavior, confirmBehavior) || other.confirmBehavior == confirmBehavior)&&(identical(other.isLocked, isLocked) || other.isLocked == isLocked)&&(identical(other.showConfirmDialog, showConfirmDialog) || other.showConfirmDialog == showConfirmDialog)&&(identical(other.haptic, haptic) || other.haptic == haptic)&&(identical(other.strikeVib, strikeVib) || other.strikeVib == strikeVib)&&(identical(other.audioFeedbackMode, audioFeedbackMode) || other.audioFeedbackMode == audioFeedbackMode)&&(identical(other.ignoreMannerMode, ignoreMannerMode) || other.ignoreMannerMode == ignoreMannerMode)&&(identical(other.sleepPrevent, sleepPrevent) || other.sleepPrevent == sleepPrevent)&&(identical(other.leftHanded, leftHanded) || other.leftHanded == leftHanded)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel)&&(identical(other.adminPasscode, adminPasscode) || other.adminPasscode == adminPasscode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsModel&&(identical(other.confirmBehavior, confirmBehavior) || other.confirmBehavior == confirmBehavior)&&(identical(other.isLocked, isLocked) || other.isLocked == isLocked)&&(identical(other.showConfirmDialog, showConfirmDialog) || other.showConfirmDialog == showConfirmDialog)&&(identical(other.haptic, haptic) || other.haptic == haptic)&&(identical(other.strikeVib, strikeVib) || other.strikeVib == strikeVib)&&(identical(other.audioFeedbackMode, audioFeedbackMode) || other.audioFeedbackMode == audioFeedbackMode)&&(identical(other.ignoreMannerMode, ignoreMannerMode) || other.ignoreMannerMode == ignoreMannerMode)&&(identical(other.sleepPrevent, sleepPrevent) || other.sleepPrevent == sleepPrevent)&&(identical(other.leftHanded, leftHanded) || other.leftHanded == leftHanded)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.experimentalFeatures, experimentalFeatures) || other.experimentalFeatures == experimentalFeatures)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel)&&(identical(other.adminPasscode, adminPasscode) || other.adminPasscode == adminPasscode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,confirmBehavior,isLocked,showConfirmDialog,haptic,strikeVib,audioFeedbackMode,ignoreMannerMode,sleepPrevent,leftHanded,themeMode,securityLevel,adminPasscode);
+int get hashCode => Object.hash(runtimeType,confirmBehavior,isLocked,showConfirmDialog,haptic,strikeVib,audioFeedbackMode,ignoreMannerMode,sleepPrevent,leftHanded,themeMode,experimentalFeatures,securityLevel,adminPasscode);
 
 @override
 String toString() {
-  return 'SettingsModel(confirmBehavior: $confirmBehavior, isLocked: $isLocked, showConfirmDialog: $showConfirmDialog, haptic: $haptic, strikeVib: $strikeVib, audioFeedbackMode: $audioFeedbackMode, ignoreMannerMode: $ignoreMannerMode, sleepPrevent: $sleepPrevent, leftHanded: $leftHanded, themeMode: $themeMode, securityLevel: $securityLevel, adminPasscode: $adminPasscode)';
+  return 'SettingsModel(confirmBehavior: $confirmBehavior, isLocked: $isLocked, showConfirmDialog: $showConfirmDialog, haptic: $haptic, strikeVib: $strikeVib, audioFeedbackMode: $audioFeedbackMode, ignoreMannerMode: $ignoreMannerMode, sleepPrevent: $sleepPrevent, leftHanded: $leftHanded, themeMode: $themeMode, experimentalFeatures: $experimentalFeatures, securityLevel: $securityLevel, adminPasscode: $adminPasscode)';
 }
 
 
@@ -60,7 +61,7 @@ abstract mixin class $SettingsModelCopyWith<$Res>  {
   factory $SettingsModelCopyWith(SettingsModel value, $Res Function(SettingsModel) _then) = _$SettingsModelCopyWithImpl;
 @useResult
 $Res call({
- String confirmBehavior, bool isLocked, bool showConfirmDialog, bool haptic, bool strikeVib, String audioFeedbackMode, bool ignoreMannerMode, bool sleepPrevent, bool leftHanded, String themeMode, int securityLevel, String? adminPasscode
+ String confirmBehavior, bool isLocked, bool showConfirmDialog, bool haptic, bool strikeVib, String audioFeedbackMode, bool ignoreMannerMode, bool sleepPrevent, bool leftHanded, String themeMode, bool experimentalFeatures, int securityLevel, String? adminPasscode
 });
 
 
@@ -77,7 +78,7 @@ class _$SettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of SettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? confirmBehavior = null,Object? isLocked = null,Object? showConfirmDialog = null,Object? haptic = null,Object? strikeVib = null,Object? audioFeedbackMode = null,Object? ignoreMannerMode = null,Object? sleepPrevent = null,Object? leftHanded = null,Object? themeMode = null,Object? securityLevel = null,Object? adminPasscode = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? confirmBehavior = null,Object? isLocked = null,Object? showConfirmDialog = null,Object? haptic = null,Object? strikeVib = null,Object? audioFeedbackMode = null,Object? ignoreMannerMode = null,Object? sleepPrevent = null,Object? leftHanded = null,Object? themeMode = null,Object? experimentalFeatures = null,Object? securityLevel = null,Object? adminPasscode = freezed,}) {
   return _then(_self.copyWith(
 confirmBehavior: null == confirmBehavior ? _self.confirmBehavior : confirmBehavior // ignore: cast_nullable_to_non_nullable
 as String,isLocked: null == isLocked ? _self.isLocked : isLocked // ignore: cast_nullable_to_non_nullable
@@ -89,7 +90,8 @@ as String,ignoreMannerMode: null == ignoreMannerMode ? _self.ignoreMannerMode : 
 as bool,sleepPrevent: null == sleepPrevent ? _self.sleepPrevent : sleepPrevent // ignore: cast_nullable_to_non_nullable
 as bool,leftHanded: null == leftHanded ? _self.leftHanded : leftHanded // ignore: cast_nullable_to_non_nullable
 as bool,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
-as String,securityLevel: null == securityLevel ? _self.securityLevel : securityLevel // ignore: cast_nullable_to_non_nullable
+as String,experimentalFeatures: null == experimentalFeatures ? _self.experimentalFeatures : experimentalFeatures // ignore: cast_nullable_to_non_nullable
+as bool,securityLevel: null == securityLevel ? _self.securityLevel : securityLevel // ignore: cast_nullable_to_non_nullable
 as int,adminPasscode: freezed == adminPasscode ? _self.adminPasscode : adminPasscode // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -176,10 +178,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  int securityLevel,  String? adminPasscode)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SettingsModel() when $default != null:
-return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.securityLevel,_that.adminPasscode);case _:
+return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
   return orElse();
 
 }
@@ -197,10 +199,10 @@ return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  int securityLevel,  String? adminPasscode)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)  $default,) {final _that = this;
 switch (_that) {
 case _SettingsModel():
-return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.securityLevel,_that.adminPasscode);case _:
+return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -217,10 +219,10 @@ return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  int securityLevel,  String? adminPasscode)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)?  $default,) {final _that = this;
 switch (_that) {
 case _SettingsModel() when $default != null:
-return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.securityLevel,_that.adminPasscode);case _:
+return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
   return null;
 
 }
@@ -232,7 +234,7 @@ return $default(_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_th
 @JsonSerializable()
 
 class _SettingsModel implements SettingsModel {
-  const _SettingsModel({this.confirmBehavior = 'double', this.isLocked = false, this.showConfirmDialog = false, this.haptic = true, this.strikeVib = true, this.audioFeedbackMode = 'off', this.ignoreMannerMode = true, this.sleepPrevent = true, this.leftHanded = false, this.themeMode = 'system', this.securityLevel = 1, this.adminPasscode});
+  const _SettingsModel({this.confirmBehavior = 'double', this.isLocked = false, this.showConfirmDialog = false, this.haptic = true, this.strikeVib = true, this.audioFeedbackMode = 'off', this.ignoreMannerMode = true, this.sleepPrevent = true, this.leftHanded = false, this.themeMode = 'system', this.experimentalFeatures = false, this.securityLevel = 1, this.adminPasscode});
   factory _SettingsModel.fromJson(Map<String, dynamic> json) => _$SettingsModelFromJson(json);
 
 // 【操作・安全設定】
@@ -255,6 +257,8 @@ class _SettingsModel implements SettingsModel {
 // 左利きモード（赤白反転）
 @override@JsonKey() final  String themeMode;
 // ★ ダークモード対応 ('system', 'light', 'dark')
+// 【実験・内部機能 (Feature Flag)】 (Phase 0: 一般ユーザーから隠蔽するため)
+@override@JsonKey() final  bool experimentalFeatures;
 // 【セキュリティ・権限】 (Phase 8)
 @override@JsonKey() final  int securityLevel;
 // ★ Phase 8: 1(自由), 2(標準), 3(厳格)
@@ -273,16 +277,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsModel&&(identical(other.confirmBehavior, confirmBehavior) || other.confirmBehavior == confirmBehavior)&&(identical(other.isLocked, isLocked) || other.isLocked == isLocked)&&(identical(other.showConfirmDialog, showConfirmDialog) || other.showConfirmDialog == showConfirmDialog)&&(identical(other.haptic, haptic) || other.haptic == haptic)&&(identical(other.strikeVib, strikeVib) || other.strikeVib == strikeVib)&&(identical(other.audioFeedbackMode, audioFeedbackMode) || other.audioFeedbackMode == audioFeedbackMode)&&(identical(other.ignoreMannerMode, ignoreMannerMode) || other.ignoreMannerMode == ignoreMannerMode)&&(identical(other.sleepPrevent, sleepPrevent) || other.sleepPrevent == sleepPrevent)&&(identical(other.leftHanded, leftHanded) || other.leftHanded == leftHanded)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel)&&(identical(other.adminPasscode, adminPasscode) || other.adminPasscode == adminPasscode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsModel&&(identical(other.confirmBehavior, confirmBehavior) || other.confirmBehavior == confirmBehavior)&&(identical(other.isLocked, isLocked) || other.isLocked == isLocked)&&(identical(other.showConfirmDialog, showConfirmDialog) || other.showConfirmDialog == showConfirmDialog)&&(identical(other.haptic, haptic) || other.haptic == haptic)&&(identical(other.strikeVib, strikeVib) || other.strikeVib == strikeVib)&&(identical(other.audioFeedbackMode, audioFeedbackMode) || other.audioFeedbackMode == audioFeedbackMode)&&(identical(other.ignoreMannerMode, ignoreMannerMode) || other.ignoreMannerMode == ignoreMannerMode)&&(identical(other.sleepPrevent, sleepPrevent) || other.sleepPrevent == sleepPrevent)&&(identical(other.leftHanded, leftHanded) || other.leftHanded == leftHanded)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.experimentalFeatures, experimentalFeatures) || other.experimentalFeatures == experimentalFeatures)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel)&&(identical(other.adminPasscode, adminPasscode) || other.adminPasscode == adminPasscode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,confirmBehavior,isLocked,showConfirmDialog,haptic,strikeVib,audioFeedbackMode,ignoreMannerMode,sleepPrevent,leftHanded,themeMode,securityLevel,adminPasscode);
+int get hashCode => Object.hash(runtimeType,confirmBehavior,isLocked,showConfirmDialog,haptic,strikeVib,audioFeedbackMode,ignoreMannerMode,sleepPrevent,leftHanded,themeMode,experimentalFeatures,securityLevel,adminPasscode);
 
 @override
 String toString() {
-  return 'SettingsModel(confirmBehavior: $confirmBehavior, isLocked: $isLocked, showConfirmDialog: $showConfirmDialog, haptic: $haptic, strikeVib: $strikeVib, audioFeedbackMode: $audioFeedbackMode, ignoreMannerMode: $ignoreMannerMode, sleepPrevent: $sleepPrevent, leftHanded: $leftHanded, themeMode: $themeMode, securityLevel: $securityLevel, adminPasscode: $adminPasscode)';
+  return 'SettingsModel(confirmBehavior: $confirmBehavior, isLocked: $isLocked, showConfirmDialog: $showConfirmDialog, haptic: $haptic, strikeVib: $strikeVib, audioFeedbackMode: $audioFeedbackMode, ignoreMannerMode: $ignoreMannerMode, sleepPrevent: $sleepPrevent, leftHanded: $leftHanded, themeMode: $themeMode, experimentalFeatures: $experimentalFeatures, securityLevel: $securityLevel, adminPasscode: $adminPasscode)';
 }
 
 
@@ -293,7 +297,7 @@ abstract mixin class _$SettingsModelCopyWith<$Res> implements $SettingsModelCopy
   factory _$SettingsModelCopyWith(_SettingsModel value, $Res Function(_SettingsModel) _then) = __$SettingsModelCopyWithImpl;
 @override @useResult
 $Res call({
- String confirmBehavior, bool isLocked, bool showConfirmDialog, bool haptic, bool strikeVib, String audioFeedbackMode, bool ignoreMannerMode, bool sleepPrevent, bool leftHanded, String themeMode, int securityLevel, String? adminPasscode
+ String confirmBehavior, bool isLocked, bool showConfirmDialog, bool haptic, bool strikeVib, String audioFeedbackMode, bool ignoreMannerMode, bool sleepPrevent, bool leftHanded, String themeMode, bool experimentalFeatures, int securityLevel, String? adminPasscode
 });
 
 
@@ -310,7 +314,7 @@ class __$SettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of SettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? confirmBehavior = null,Object? isLocked = null,Object? showConfirmDialog = null,Object? haptic = null,Object? strikeVib = null,Object? audioFeedbackMode = null,Object? ignoreMannerMode = null,Object? sleepPrevent = null,Object? leftHanded = null,Object? themeMode = null,Object? securityLevel = null,Object? adminPasscode = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? confirmBehavior = null,Object? isLocked = null,Object? showConfirmDialog = null,Object? haptic = null,Object? strikeVib = null,Object? audioFeedbackMode = null,Object? ignoreMannerMode = null,Object? sleepPrevent = null,Object? leftHanded = null,Object? themeMode = null,Object? experimentalFeatures = null,Object? securityLevel = null,Object? adminPasscode = freezed,}) {
   return _then(_SettingsModel(
 confirmBehavior: null == confirmBehavior ? _self.confirmBehavior : confirmBehavior // ignore: cast_nullable_to_non_nullable
 as String,isLocked: null == isLocked ? _self.isLocked : isLocked // ignore: cast_nullable_to_non_nullable
@@ -322,7 +326,8 @@ as String,ignoreMannerMode: null == ignoreMannerMode ? _self.ignoreMannerMode : 
 as bool,sleepPrevent: null == sleepPrevent ? _self.sleepPrevent : sleepPrevent // ignore: cast_nullable_to_non_nullable
 as bool,leftHanded: null == leftHanded ? _self.leftHanded : leftHanded // ignore: cast_nullable_to_non_nullable
 as bool,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
-as String,securityLevel: null == securityLevel ? _self.securityLevel : securityLevel // ignore: cast_nullable_to_non_nullable
+as String,experimentalFeatures: null == experimentalFeatures ? _self.experimentalFeatures : experimentalFeatures // ignore: cast_nullable_to_non_nullable
+as bool,securityLevel: null == securityLevel ? _self.securityLevel : securityLevel // ignore: cast_nullable_to_non_nullable
 as int,adminPasscode: freezed == adminPasscode ? _self.adminPasscode : adminPasscode // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

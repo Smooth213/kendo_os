@@ -42,8 +42,11 @@ _MatchAggregate _$MatchAggregateFromJson(Map<String, dynamic> json) =>
           const [],
       version: (json['version'] as num?)?.toInt() ?? 0,
       status: json['status'] as String,
-      remainingSeconds: (json['remainingSeconds'] as num).toInt(),
-      timerIsRunning: json['timerIsRunning'] as bool,
+      timerStartedAt: const TimestampConverter().fromJson(
+        json['timerStartedAt'],
+      ),
+      accumulatedPauseDurationMs:
+          (json['accumulatedPauseDurationMs'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$MatchAggregateToJson(_MatchAggregate instance) =>
@@ -52,6 +55,14 @@ Map<String, dynamic> _$MatchAggregateToJson(_MatchAggregate instance) =>
       'events': instance.events.map((e) => e.toJson()).toList(),
       'version': instance.version,
       'status': instance.status,
-      'remainingSeconds': instance.remainingSeconds,
-      'timerIsRunning': instance.timerIsRunning,
+      'timerStartedAt': _$JsonConverterToJson<dynamic, DateTime>(
+        instance.timerStartedAt,
+        const TimestampConverter().toJson,
+      ),
+      'accumulatedPauseDurationMs': instance.accumulatedPauseDurationMs,
     };
+
+Json? _$JsonConverterToJson<Json, Value>(
+  Value? value,
+  Json? Function(Value value) toJson,
+) => value == null ? null : toJson(value);

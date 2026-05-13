@@ -180,34 +180,57 @@ class KendoRuleEngine {
 
   // --- 内部ヘルパー ---
 
-  // ★ Phase 2-5 Reducer完結: Undoされたイベントを保持し、Redo(Restore)で復活させる完全版
+  // ★ Phase 3 & Phase 2-5: Append-only対応の完全版Reducer
+  // isCanceledを直接書き換えるMutationを廃止し、targetIdによる相殺(Compensation)を行う。
+  // 古いデータとの後方互換性も完全に維持。
   List<ScoreEvent> _filterActiveEvents(List<ScoreEvent> events) {
     List<ScoreEvent> active = [];
-    List<ScoreEvent> undone = []; // ★ Redo用に「直近Undoされたイベント」を保持するスタック
-    int pendingUndoCount = 0; // ★ 追加: isCanceledとUndoイベントの二重処理を防ぐ
+    List<ScoreEvent> undone = []; 
+    int pendingUndoCount = 0; 
 
     for (var e in events) {
+      // 1. レガシー対応: 過去のバージョンで直接 isCanceled=true にされたイベント
       if (e.isCanceled) {
         pendingUndoCount++;
         continue; 
       }
       
+      // 2. 取り刺し（Undo）イベントの処理
       if (e.isUndo || e.type == PointType.undo) {
-        if (pendingUndoCount > 0) {
-          pendingUndoCount--;
-          continue; // UI互換のisCanceledによってすでに無効化されたものと相殺
+        if (e.targetId.isNotEmpty) {
+           // ★ 新アーキテクチャ: targetId に一致するイベントを active から消し、undone に退避
+           final targetIndex = active.indexWhere((ev) => ev.id == e.targetId);
+           if (targetIndex != -1) {
+             undone.add(active.removeAt(targetIndex));
+           }
+        } else {
+           // ★ レガシー対応: targetId が無い昔のUndoイベントの場合
+           if (pendingUndoCount > 0) {
+             pendingUndoCount--;
+             continue; // すでに上の isCanceled=true で消えているはずなので無視
+           }
+           if (active.isNotEmpty) {
+             undone.add(active.removeLast());
+           }
         }
-        if (active.isNotEmpty) {
-          undone.add(active.removeLast()); // 有効リストから削り、Undoスタックに退避
+      } 
+      // 3. やり直し（Redo / Restore）イベントの処理
+      else if (e.isRestore || e.type == PointType.restore) {
+        if (e.targetId.isNotEmpty) {
+           final targetIndex = undone.indexWhere((ev) => ev.id == e.targetId);
+           if (targetIndex != -1) {
+             active.add(undone.removeAt(targetIndex));
+           }
+        } else {
+           if (undone.isNotEmpty) {
+             active.add(undone.removeLast());
+           }
         }
-      } else if (e.isRestore || e.type == PointType.restore) {
-        // ★ Phase 2-3: Redo(やり直し)イベント。Undoスタックから1つ取り出して有効リストに復活させる
-        if (undone.isNotEmpty) {
-          active.add(undone.removeLast());
-        }
-      } else {
+      } 
+      // 4. 通常の打突・反則・判定イベントの処理
+      else {
         active.add(e);
-        undone.clear(); // 新しい通常の打突イベントが入ったら、過去のRedoの権利は消滅する
+        undone.clear(); // 新しいイベントが入ったら、過去のRedo(やり直し)の権利は消滅する
       }
     }
     return active;

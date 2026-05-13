@@ -57,8 +57,6 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
   extensionTimeMinutes: (json['extensionTimeMinutes'] as num?)?.toInt(),
   extensionCount: (json['extensionCount'] as num?)?.toInt(),
   hasHantei: json['hasHantei'] as bool? ?? false,
-  remainingSeconds: (json['remainingSeconds'] as num?)?.toInt() ?? 180,
-  timerIsRunning: json['timerIsRunning'] as bool? ?? false,
   timerStartedAt: const TimestampConverter().fromJson(json['timerStartedAt']),
   timerPausedAt: const TimestampConverter().fromJson(json['timerPausedAt']),
   accumulatedPauseDurationMs:
@@ -118,8 +116,6 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'extensionTimeMinutes': instance.extensionTimeMinutes,
       'extensionCount': instance.extensionCount,
       'hasHantei': instance.hasHantei,
-      'remainingSeconds': instance.remainingSeconds,
-      'timerIsRunning': instance.timerIsRunning,
       'timerStartedAt': _$JsonConverterToJson<dynamic, DateTime>(
         instance.timerStartedAt,
         const TimestampConverter().toJson,

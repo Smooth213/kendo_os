@@ -106,8 +106,6 @@ class MatchAggregateRepository {
         events: events,
         version: events.length,
         status: 'waiting',
-        remainingSeconds: 180,
-        timerIsRunning: false,
       );
     });
   }

@@ -46,12 +46,16 @@ class MetricsService {
   int _totalEvents = 0; // ★ 追加
 
   void _recordOperationResult(String result, {String? traceId}) {
-    _totalEvents++;
-    _recentOperations.addLast(result);
-    if (_recentOperations.length > _windowSize) {
-      _recentOperations.removeFirst();
-    }
-    _evaluateAlerts(traceId: traceId);
+    // ★ 修正: Flutterの描画中(build)にエラーを検知してもクラッシュしないよう、
+    // 状態の更新を「次のマイクロタスク（描画完了直後）」に遅延させる絶対防壁
+    Future.microtask(() {
+      _totalEvents++;
+      _recentOperations.addLast(result);
+      if (_recentOperations.length > _windowSize) {
+        _recentOperations.removeFirst();
+      }
+      _evaluateAlerts(traceId: traceId);
+    });
   }
 
   void recordLatency(String operationName, int latencyMs, {String? traceId}) {

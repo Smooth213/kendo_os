@@ -50,6 +50,9 @@ class SyncEngine {
   bool _needsSyncAgain = false; // ★ 追加：同期中に書き込みがあった場合の「おかわり」フラグ
 
   SyncEngine(this.ref) {
+    // ★ 修正: アプリ起動時に古い未送信データをクリーンアップする
+    _cleanupOldPendingData();
+
     // ネットワーク状態を監視し、オンラインになったら自動で同期を開始する
     ref.listen<bool>(isOnlineProvider, (previous, isOnline) {
       if (isOnline && (previous == false || previous == null)) {
@@ -68,9 +71,81 @@ class SyncEngine {
           debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。未送信データの強制同期を試行します...');
           syncNow();
         }
+        
+        // ★ Phase 2-3 & 2-5: アプリがフォアグラウンドに復帰した瞬間に作動
+        if (state == AppLifecycleState.resumed) {
+          debugPrint('☀️ [Lifecycle] アプリが復帰しました。Drift監視とReconnect Replayを開始します...');
+          _performReconnectReplay();
+        }
       },
     );
     ref.onDispose(() => lifecycleListener.dispose());
+  }
+
+  // ==========================================
+  // ★ Phase 2-3 & 2-4: ドリフト検知と自動修復 (Self-Healing)
+  // イベント履歴を全再生し、現在のUI状態(Score/Status)と矛盾がないか監査する
+  // ==========================================
+  Future<void> _performReconnectReplay() async {
+    _isProcessing();
+    try {
+      final localRepo = ref.read(localMatchRepositoryProvider);
+      final rule = ref.read(matchRuleProvider);
+      final rebuilder = ref.read(rebuildMatchFromEventsUseCaseProvider);
+      
+      // メモリ上の現在の状態を取得
+      final matches = ref.read(matchListProvider);
+      int driftCount = 0;
+
+      for (final match in matches) {
+        if (match.events.isEmpty) continue; // イベントがない試合はスキップ
+
+        // 過去のイベントから「正しい現在」を再計算（Projection Rebuild）
+        final rebuiltMatch = rebuilder.execute(match, rule);
+        
+        // ★ Phase 2-4: Drift Monitor (ズレ検知)
+        bool hasDrift = false;
+        if (rebuiltMatch.redScore != match.redScore) hasDrift = true;
+        if (rebuiltMatch.whiteScore != match.whiteScore) hasDrift = true;
+        if (rebuiltMatch.status != match.status) hasDrift = true;
+
+        if (hasDrift) {
+          driftCount++;
+          debugPrint('⚠️ [Drift Monitor] 試合 ${match.id} に状態の矛盾(Drift)を検知しました。歴史を正として修復します。');
+          // ズレていた場合のみ、再構築した正しい状態をローカルDBへ上書き
+          await localRepo.saveMatch(rebuiltMatch);
+        }
+      }
+
+      if (driftCount > 0) {
+        debugPrint('🛠️ [Self-Healing] $driftCount 件の試合を自動修復しました。');
+      } else {
+        debugPrint('✅ [Drift Monitor] すべての試合状態は歴史(Events)と完全に一致しています。');
+      }
+
+    } catch (e) {
+      debugPrint('🔥 [Reconnect Replay] 復旧・監査プロセス中にエラーが発生しました: $e');
+    } finally {
+      _isDone();
+      // 修復完了後、未送信データがあればサーバーへ送信する
+      syncNow(); 
+    }
+  }
+
+  // ★ Phase 7-4: カオス負荷対策 - 古すぎる未送信データの自動クリーンアップ
+  Future<void> _cleanupOldPendingData() async {
+    final localRepo = ref.read(localMatchRepositoryProvider);
+    final pendingMatches = await localRepo.getPendingMatches();
+    
+    final now = DateTime.now();
+    for (final match in pendingMatches) {
+      // 30日以上前の未送信データは、何らかの理由で同期不能な「死んだデータ」とみなし、
+      // 競合防止のため同期対象から外す（または管理者に通知する）
+      if (match.lastUpdatedAt != null && now.difference(match.lastUpdatedAt!).inDays > 30) {
+        debugPrint('🧹 [Cleanup] 30日以上経過した古い未送信データを同期対象から除外します: ${match.id}');
+        await localRepo.markAsSynced(match.id);
+      }
+    }
   }
 
   // ★ Phase 2: 裏でひっそりとJSONを書き出すメソッド

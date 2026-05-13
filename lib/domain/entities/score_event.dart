@@ -41,6 +41,13 @@ abstract class ScoreEvent with _$ScoreEvent {
     @Default(false) bool isCanceled,
 
     // ==========================================
+    // ★ Phase 3-2: Append-only Event Sourcing (相殺イベント用)
+    // 過去のイベントを直接 isCanceled=true に書き換えるのをやめ、
+    // 「この targetId のイベントを取り消す」という新しいイベントを追記する方式へ移行。
+    // ==========================================
+    @Default('') String targetId,
+
+    // ==========================================
     // ★ Phase 10: Historical Replay 保証
     // このイベントが発火した「当時のルールバージョン」を固定記録する
     // これにより将来ルールが変わっても過去の試合は当時のルールで安全にリプレイ可能になる

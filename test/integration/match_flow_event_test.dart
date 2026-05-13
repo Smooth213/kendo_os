@@ -27,7 +27,6 @@ void main() {
         id: 'test', tournamentId: 't1', matchOrder: 1,
         redName: 'Red', whiteName: 'White',
         status: 'in_progress', matchType: '個人戦',
-        remainingSeconds: 180,
       );
       final rule = MatchRule();
 

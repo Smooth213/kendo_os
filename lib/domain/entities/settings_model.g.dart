@@ -18,6 +18,7 @@ _SettingsModel _$SettingsModelFromJson(Map<String, dynamic> json) =>
       sleepPrevent: json['sleepPrevent'] as bool? ?? true,
       leftHanded: json['leftHanded'] as bool? ?? false,
       themeMode: json['themeMode'] as String? ?? 'system',
+      experimentalFeatures: json['experimentalFeatures'] as bool? ?? false,
       securityLevel: (json['securityLevel'] as num?)?.toInt() ?? 1,
       adminPasscode: json['adminPasscode'] as String?,
     );
@@ -34,6 +35,7 @@ Map<String, dynamic> _$SettingsModelToJson(_SettingsModel instance) =>
       'sleepPrevent': instance.sleepPrevent,
       'leftHanded': instance.leftHanded,
       'themeMode': instance.themeMode,
+      'experimentalFeatures': instance.experimentalFeatures,
       'securityLevel': instance.securityLevel,
       'adminPasscode': instance.adminPasscode,
     };

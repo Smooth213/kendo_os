@@ -6,11 +6,14 @@ on:
 
 jobs:
   audit-and-build:
-    name: Manuals Sync & PDF Export Audit
+    name: 'Manuals Sync & PDF Export Audit'
     runs-on: ubuntu-latest
+    # ★ 追加: 先行してNode.js 24を強制利用し、警告を黙らせる
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
-      - name: Checkout code
+      - name: 'Checkout code'
         uses: actions/checkout@v3
         with:
           fetch-depth: 0

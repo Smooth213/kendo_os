@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
+import '../../infrastructure/persistence/converters/json_converters.dart'; // ★ 追加: TimestampConverterを解決するためのインポート
 
 part 'match_aggregate.freezed.dart';
 part 'match_aggregate.g.dart';
@@ -46,8 +47,10 @@ abstract class MatchAggregate with _$MatchAggregate {
 
     // 試合の基本情報や状態（投影元となるベースデータ）
     required String status,
-    required int remainingSeconds,
-    required bool timerIsRunning,
+    
+    // ★ Phase 2: 絶対時間化
+    @TimestampConverter() DateTime? timerStartedAt,
+    @Default(0) int accumulatedPauseDurationMs,
   }) = _MatchAggregate;
 
   factory MatchAggregate.fromJson(Map<String, dynamic> json) =>
@@ -93,8 +96,8 @@ abstract class MatchAggregate with _$MatchAggregate {
       events: updatedEvents,
       version: allEvents.length, // 最新のバージョンは、全イベントの数
       status: currentState.status,
-      remainingSeconds: currentState.remainingSeconds,
-      timerIsRunning: currentState.timerIsRunning,
+      timerStartedAt: currentState.timerStartedAt,
+      accumulatedPauseDurationMs: currentState.accumulatedPauseDurationMs,
     );
   }
 }

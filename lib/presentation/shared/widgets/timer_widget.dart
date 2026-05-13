@@ -82,14 +82,10 @@ class TimerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFinished = ref.watch(matchListProvider.select((list) {
-      final m = list.where((m) => m.id == matchId).firstOrNull;
-      return m?.status == 'finished' || m?.status == 'approved';
-    }));
-
-    if (isFinished) return const SizedBox.shrink();
+    // ★ 修正：試合終了時(finished)にタイマーを「SizedBox.shrink()」で消滅させる処理を完全撤廃。
+    // これにより、試合終了後もタイマーの枠（最終時間）がそのまま残り、下のボタンが上に伸びるレイアウト崩れが消滅します。
+    // ※ 操作ロック（isInputLocked）は親から渡されているため、終了後に誤ってタイマーを動かしてしまう心配はありません。
     
-    // ★ 修正：SizedBoxでの固定高さ(140px)を完全に撤廃し、自然にピッタリ収まるようにします
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4), // 少しだけ外側に余白を持たせる
       child: _buildTimerContent(context, ref),
@@ -121,32 +117,43 @@ class TimerWidget extends ConsumerWidget {
         _showTimerEditDialog(context, ref, match);
       },
       child: Container(
-        // ★ 修正：内部の余白を適切に設定し、引き伸ばしを防止
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
         decoration: BoxDecoration(
           color: timerBgColor,
-          borderRadius: BorderRadius.circular(32), // ★ 縦幅がスリムになるため、角丸も美しく微調整
-          border: Border.all(color: timerBorderColor, width: isRunning ? 4 : 1),
+          borderRadius: BorderRadius.circular(32), 
+          // ★ 修正：ロック時はボーダーを薄いグレーにし、太さも細く(1)固定する
+          border: Border.all(
+            color: isInputLocked ? Colors.grey.withValues(alpha: 0.3) : timerBorderColor, 
+            width: (isRunning && !isInputLocked) ? 4 : 1
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(isRunning ? Icons.pause_circle : Icons.play_circle, color: isRunning ? (isDark ? Colors.red.shade400 : Colors.red.shade600) : (isDark ? Colors.indigo.shade300 : Colors.indigo.shade500), size: 32),
+            // ★ 修正：ロック時は「南京錠アイコン」にし、色もグレーにする
+            Icon(
+              isInputLocked 
+                  ? Icons.lock_outline 
+                  : (isRunning ? Icons.pause_circle : Icons.play_circle), 
+              color: isInputLocked 
+                  ? Colors.grey.shade400 
+                  : (isRunning ? (isDark ? Colors.red.shade400 : Colors.red.shade600) : (isDark ? Colors.indigo.shade300 : Colors.indigo.shade500)), 
+              size: 28
+            ),
             const SizedBox(width: 12),
-            // ★ Step 3-3: Firestoreの match.remainingSeconds ではなく、
-            // 1秒ごとに更新される liveRemainingSecondsProvider を watch する。
-            // これにより、この Text Widget だけが1秒ごとに更新されるようになる。
             Consumer(
               builder: (context, ref, child) {
                 final seconds = ref.watch(liveRemainingSecondsProvider(matchId));
                 return Text(
                   _formatTime(seconds), 
                   style: TextStyle(
-                    fontSize: 52, 
+                    fontSize: 46, 
                     fontWeight: FontWeight.w900, 
-                    fontFamily: 'Courier',
+                    // fontFamily: 'Courier', 
                     height: 1.1, 
-                    color: timerTextColor,
+                    // ★ 修正：ロック時はテキストもグレーアウトして「非アクティブ」を強調
+                    color: isInputLocked ? Colors.grey.shade500 : timerTextColor,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 );
               },

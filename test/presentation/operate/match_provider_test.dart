@@ -236,7 +236,7 @@ void main() {
 
   group('MatchApplicationService - 修正事項の回帰テスト', () {
     test('finishMatch を呼び出した際、残り時間が0秒にリセットされないこと', () async {
-      final match = TestMatchFactory.createIndividualMatch(id: 'match-time-test').copyWith(remainingSeconds: 45);
+      final match = TestMatchFactory.createIndividualMatch(id: 'match-time-test').updateRemainingSeconds(45);
       container.read(mockMatchListProvider.notifier).state = [match];
       
       final appService = container.read(matchApplicationServiceProvider);

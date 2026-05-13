@@ -8,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
+import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
 
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
 final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
@@ -114,15 +115,20 @@ class ViewerHomeScreen extends ConsumerWidget {
         return PopScope(
       canPop: false, // 戻るスワイプをブロック
       child: Scaffold(
-        backgroundColor: bgColor, 
+        backgroundColor: bgColor,
         appBar: AppBar(
-          automaticallyImplyLeading: false, // 戻るボタンを排除
+          automaticallyImplyLeading: false,
           title: Text('大会ホーム (観客席)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
-          backgroundColor: Colors.transparent, 
+          backgroundColor: Colors.transparent,
           elevation: 0,
-          iconTheme: IconThemeData(color: textColor),
+          leading: (ref.watch(temporaryRoleOverrideProvider) == Role.viewer && ref.watch(persistentRoleProvider) != Role.viewer)
+              ? IconButton(
+                  icon: const Icon(Icons.exit_to_app, color: Colors.orangeAccent),
+                  tooltip: '管理者モードへ戻る',
+                  onPressed: () => context.go('/home/$tournamentId'), // role無しで戻ることで解除
+                )
+              : null,
           actions: [
-            // ★ 初見の保護者向けに「観客向けFAQ（点数が変わらない等）」へ直行
             ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: isDark ? Colors.white : Colors.indigo.shade900),
             IconButton(
               icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
@@ -158,19 +164,21 @@ class ViewerHomeScreen extends ConsumerWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => context.push('/viewer-record/$tournamentId'),
-                  icon: Icon(Icons.assignment_outlined, size: 18, color: isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade600),
-                  label: Text('大会の公式記録', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800)),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
-                    backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  
+                  // ==========================================
+                  // ★ Phase 4-1, 4-3, 4-6: UI簡略化 & スリム化 (観客向け巨大ボタンの洗練)
+                  // 観客が混乱しないよう、巨大ボタンは「試合結果一覧」の1つに絞る。
+                  // 高齢補助員向けの押しやすさを維持しつつ、パディングを減らし、サブタイトルを削除。
+                  // アイコンとフォントサイズを小さくして高さを抑え、下の試合リストの領域を広げます。
+                  // ==========================================
+                  _buildHugeMenuButton(context, Icons.print, '試合結果一覧 (PDF/CSV)', Colors.blueGrey, () => context.push('/official-record/$tournamentId')),
+                  const SizedBox(height: 16),
+                  
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
             const SizedBox(height: 8),
@@ -1127,5 +1135,47 @@ class ViewerHomeScreen extends ConsumerWidget {
 
     final suffix = isIndiv ? "$n人リーグ" : "$nチームリーグ";
     return "$selfInfo : $suffix（全$mCount試合）";
+  }
+
+  // ==========================================
+  // ★ Phase 4-1, 4-3, 4-6: スリム化された巨大メニューボタン (観客向け)
+  // 高齢補助員向けの押しやすさを維持しつつ、パディングを減らし、サブタイトルを削除.
+  // アイコンとフォントサイズを小さくして高さを抑え、画面領域を効率的に使います。
+  // ==========================================
+  Widget _buildHugeMenuButton(BuildContext context, IconData icon, String title, MaterialColor color, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: double.infinity,
+        // パディングをsymmetricに減らす (20 -> horizontal: 16, vertical: 12)
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isDark ? color.shade900.withValues(alpha: 0.3) : color.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isDark ? color.shade700 : color.shade200, width: 2),
+        ),
+        child: Row(
+          children: [
+            // アイコンサイズを小さくする (36 -> 24)
+            Icon(icon, size: 24, color: isDark ? color.shade300 : color.shade700),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // タイトルのフォントサイズを小さくする (18 -> 16)
+                  Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                  // ★ サブタイトル(subtitle)を削除
+                ],
+              ),
+            ),
+            // 右側の矢印も小さくする (16 -> 14)
+            Icon(Icons.arrow_forward_ios, size: 14, color: isDark ? color.shade500 : color.shade300),
+          ],
+        ),
+      ),
+    );
   }
 }

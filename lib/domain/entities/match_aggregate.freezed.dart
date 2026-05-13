@@ -332,7 +332,8 @@ mixin _$MatchAggregate {
  String get id;// イベントソーシング：すべての変更履歴
  List<ScoreEvent> get events;// 楽観的ロック用：現在のイベント数（バージョン）
  int get version;// 試合の基本情報や状態（投影元となるベースデータ）
- String get status; int get remainingSeconds; bool get timerIsRunning;
+ String get status;// ★ Phase 2: 絶対時間化
+@TimestampConverter() DateTime? get timerStartedAt; int get accumulatedPauseDurationMs;
 /// Create a copy of MatchAggregate
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -345,16 +346,16 @@ $MatchAggregateCopyWith<MatchAggregate> get copyWith => _$MatchAggregateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchAggregate&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other.events, events)&&(identical(other.version, version) || other.version == version)&&(identical(other.status, status) || other.status == status)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchAggregate&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other.events, events)&&(identical(other.version, version) || other.version == version)&&(identical(other.status, status) || other.status == status)&&(identical(other.timerStartedAt, timerStartedAt) || other.timerStartedAt == timerStartedAt)&&(identical(other.accumulatedPauseDurationMs, accumulatedPauseDurationMs) || other.accumulatedPauseDurationMs == accumulatedPauseDurationMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,const DeepCollectionEquality().hash(events),version,status,remainingSeconds,timerIsRunning);
+int get hashCode => Object.hash(runtimeType,id,const DeepCollectionEquality().hash(events),version,status,timerStartedAt,accumulatedPauseDurationMs);
 
 @override
 String toString() {
-  return 'MatchAggregate(id: $id, events: $events, version: $version, status: $status, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning)';
+  return 'MatchAggregate(id: $id, events: $events, version: $version, status: $status, timerStartedAt: $timerStartedAt, accumulatedPauseDurationMs: $accumulatedPauseDurationMs)';
 }
 
 
@@ -365,7 +366,7 @@ abstract mixin class $MatchAggregateCopyWith<$Res>  {
   factory $MatchAggregateCopyWith(MatchAggregate value, $Res Function(MatchAggregate) _then) = _$MatchAggregateCopyWithImpl;
 @useResult
 $Res call({
- String id, List<ScoreEvent> events, int version, String status, int remainingSeconds, bool timerIsRunning
+ String id, List<ScoreEvent> events, int version, String status,@TimestampConverter() DateTime? timerStartedAt, int accumulatedPauseDurationMs
 });
 
 
@@ -382,15 +383,15 @@ class _$MatchAggregateCopyWithImpl<$Res>
 
 /// Create a copy of MatchAggregate
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? events = null,Object? version = null,Object? status = null,Object? remainingSeconds = null,Object? timerIsRunning = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? events = null,Object? version = null,Object? status = null,Object? timerStartedAt = freezed,Object? accumulatedPauseDurationMs = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,events: null == events ? _self.events : events // ignore: cast_nullable_to_non_nullable
 as List<ScoreEvent>,version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as int,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,remainingSeconds: null == remainingSeconds ? _self.remainingSeconds : remainingSeconds // ignore: cast_nullable_to_non_nullable
-as int,timerIsRunning: null == timerIsRunning ? _self.timerIsRunning : timerIsRunning // ignore: cast_nullable_to_non_nullable
-as bool,
+as String,timerStartedAt: freezed == timerStartedAt ? _self.timerStartedAt : timerStartedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,accumulatedPauseDurationMs: null == accumulatedPauseDurationMs ? _self.accumulatedPauseDurationMs : accumulatedPauseDurationMs // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -475,10 +476,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  List<ScoreEvent> events,  int version,  String status,  int remainingSeconds,  bool timerIsRunning)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  List<ScoreEvent> events,  int version,  String status, @TimestampConverter()  DateTime? timerStartedAt,  int accumulatedPauseDurationMs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MatchAggregate() when $default != null:
-return $default(_that.id,_that.events,_that.version,_that.status,_that.remainingSeconds,_that.timerIsRunning);case _:
+return $default(_that.id,_that.events,_that.version,_that.status,_that.timerStartedAt,_that.accumulatedPauseDurationMs);case _:
   return orElse();
 
 }
@@ -496,10 +497,10 @@ return $default(_that.id,_that.events,_that.version,_that.status,_that.remaining
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  List<ScoreEvent> events,  int version,  String status,  int remainingSeconds,  bool timerIsRunning)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  List<ScoreEvent> events,  int version,  String status, @TimestampConverter()  DateTime? timerStartedAt,  int accumulatedPauseDurationMs)  $default,) {final _that = this;
 switch (_that) {
 case _MatchAggregate():
-return $default(_that.id,_that.events,_that.version,_that.status,_that.remainingSeconds,_that.timerIsRunning);case _:
+return $default(_that.id,_that.events,_that.version,_that.status,_that.timerStartedAt,_that.accumulatedPauseDurationMs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -516,10 +517,10 @@ return $default(_that.id,_that.events,_that.version,_that.status,_that.remaining
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  List<ScoreEvent> events,  int version,  String status,  int remainingSeconds,  bool timerIsRunning)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  List<ScoreEvent> events,  int version,  String status, @TimestampConverter()  DateTime? timerStartedAt,  int accumulatedPauseDurationMs)?  $default,) {final _that = this;
 switch (_that) {
 case _MatchAggregate() when $default != null:
-return $default(_that.id,_that.events,_that.version,_that.status,_that.remainingSeconds,_that.timerIsRunning);case _:
+return $default(_that.id,_that.events,_that.version,_that.status,_that.timerStartedAt,_that.accumulatedPauseDurationMs);case _:
   return null;
 
 }
@@ -531,7 +532,7 @@ return $default(_that.id,_that.events,_that.version,_that.status,_that.remaining
 @JsonSerializable()
 
 class _MatchAggregate extends MatchAggregate {
-  const _MatchAggregate({required this.id, final  List<ScoreEvent> events = const [], this.version = 0, required this.status, required this.remainingSeconds, required this.timerIsRunning}): _events = events,super._();
+  const _MatchAggregate({required this.id, final  List<ScoreEvent> events = const [], this.version = 0, required this.status, @TimestampConverter() this.timerStartedAt, this.accumulatedPauseDurationMs = 0}): _events = events,super._();
   factory _MatchAggregate.fromJson(Map<String, dynamic> json) => _$MatchAggregateFromJson(json);
 
 @override final  String id;
@@ -548,8 +549,9 @@ class _MatchAggregate extends MatchAggregate {
 @override@JsonKey() final  int version;
 // 試合の基本情報や状態（投影元となるベースデータ）
 @override final  String status;
-@override final  int remainingSeconds;
-@override final  bool timerIsRunning;
+// ★ Phase 2: 絶対時間化
+@override@TimestampConverter() final  DateTime? timerStartedAt;
+@override@JsonKey() final  int accumulatedPauseDurationMs;
 
 /// Create a copy of MatchAggregate
 /// with the given fields replaced by the non-null parameter values.
@@ -564,16 +566,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchAggregate&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other._events, _events)&&(identical(other.version, version) || other.version == version)&&(identical(other.status, status) || other.status == status)&&(identical(other.remainingSeconds, remainingSeconds) || other.remainingSeconds == remainingSeconds)&&(identical(other.timerIsRunning, timerIsRunning) || other.timerIsRunning == timerIsRunning));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchAggregate&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other._events, _events)&&(identical(other.version, version) || other.version == version)&&(identical(other.status, status) || other.status == status)&&(identical(other.timerStartedAt, timerStartedAt) || other.timerStartedAt == timerStartedAt)&&(identical(other.accumulatedPauseDurationMs, accumulatedPauseDurationMs) || other.accumulatedPauseDurationMs == accumulatedPauseDurationMs));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,const DeepCollectionEquality().hash(_events),version,status,remainingSeconds,timerIsRunning);
+int get hashCode => Object.hash(runtimeType,id,const DeepCollectionEquality().hash(_events),version,status,timerStartedAt,accumulatedPauseDurationMs);
 
 @override
 String toString() {
-  return 'MatchAggregate(id: $id, events: $events, version: $version, status: $status, remainingSeconds: $remainingSeconds, timerIsRunning: $timerIsRunning)';
+  return 'MatchAggregate(id: $id, events: $events, version: $version, status: $status, timerStartedAt: $timerStartedAt, accumulatedPauseDurationMs: $accumulatedPauseDurationMs)';
 }
 
 
@@ -584,7 +586,7 @@ abstract mixin class _$MatchAggregateCopyWith<$Res> implements $MatchAggregateCo
   factory _$MatchAggregateCopyWith(_MatchAggregate value, $Res Function(_MatchAggregate) _then) = __$MatchAggregateCopyWithImpl;
 @override @useResult
 $Res call({
- String id, List<ScoreEvent> events, int version, String status, int remainingSeconds, bool timerIsRunning
+ String id, List<ScoreEvent> events, int version, String status,@TimestampConverter() DateTime? timerStartedAt, int accumulatedPauseDurationMs
 });
 
 
@@ -601,15 +603,15 @@ class __$MatchAggregateCopyWithImpl<$Res>
 
 /// Create a copy of MatchAggregate
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? events = null,Object? version = null,Object? status = null,Object? remainingSeconds = null,Object? timerIsRunning = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? events = null,Object? version = null,Object? status = null,Object? timerStartedAt = freezed,Object? accumulatedPauseDurationMs = null,}) {
   return _then(_MatchAggregate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,events: null == events ? _self._events : events // ignore: cast_nullable_to_non_nullable
 as List<ScoreEvent>,version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as int,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,remainingSeconds: null == remainingSeconds ? _self.remainingSeconds : remainingSeconds // ignore: cast_nullable_to_non_nullable
-as int,timerIsRunning: null == timerIsRunning ? _self.timerIsRunning : timerIsRunning // ignore: cast_nullable_to_non_nullable
-as bool,
+as String,timerStartedAt: freezed == timerStartedAt ? _self.timerStartedAt : timerStartedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,accumulatedPauseDurationMs: null == accumulatedPauseDurationMs ? _self.accumulatedPauseDurationMs : accumulatedPauseDurationMs // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

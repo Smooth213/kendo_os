@@ -151,8 +151,8 @@ class MatchProjectionMapper {
     final mergedModel = baseModel.copyWith(
       events: aggregate.events,
       status: aggregate.status,
-      remainingSeconds: aggregate.remainingSeconds,
-      timerIsRunning: aggregate.timerIsRunning,
+      timerStartedAt: aggregate.timerStartedAt,
+      accumulatedPauseDurationMs: aggregate.accumulatedPauseDurationMs,
     );
     
     final engine = KendoRuleEngine();

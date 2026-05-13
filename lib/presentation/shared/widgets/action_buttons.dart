@@ -57,11 +57,14 @@ class ScoreActionPanel extends ConsumerWidget {
             ),
             const SizedBox(height: 4), 
             // ★ Phase 4: Undo(取り消し)を親指圏内・常時表示の特等席へ配置
+            // ★ Phase 4: Undo(取り消し)を親指圏内・常時表示の特等席へ配置
             Expanded(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildFoulBtn(context, ref, effectiveLocked, '反', PointType.hansoku),
+                  const SizedBox(width: 6),
+                  _buildUndoBtn(context, ref, effectiveLocked, '取消'), // ★ 追加: 常時Undo
                 ],
               ),
             ),
@@ -100,6 +103,24 @@ class ScoreActionPanel extends ConsumerWidget {
           isFoul: true,
           onConfirm: () {
             ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUndoBtn(BuildContext context, WidgetRef ref, bool effectiveLocked, String label) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: HoldConfirmButton(
+          label: label,
+          color: Colors.grey.shade700,
+          textColor: Colors.white,
+          disabled: effectiveLocked,
+          isFoul: false,
+          onConfirm: () {
+            ref.read(matchCommandProvider).undoLastEvent(matchId);
           },
         ),
       ),
@@ -191,6 +212,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton> with SingleTicker
           return Transform.scale(
             scale: scale,
             child: Container(
+              constraints: const BoxConstraints(minHeight: 72), // ★ Phase 4-3: 高齢者向けに絶対に押し間違えない巨大ボタン化(72dp)
               decoration: BoxDecoration(
                 color: displayColor,
                 borderRadius: BorderRadius.circular(12), // 角を少し鋭くして、タップ領域を視覚的に広く見せる

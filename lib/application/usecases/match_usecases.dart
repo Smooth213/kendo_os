@@ -27,7 +27,15 @@ class AddScoreUseCase {
     }
 
     // ★ Phase 10: イベントに当時のルールバージョンを刻み込む
-    final finalEvent = newEvent.copyWith(ruleVersion: rule.toRuleConfig.schemaVersion);
+    var finalEvent = newEvent.copyWith(ruleVersion: rule.toRuleConfig.schemaVersion);
+
+    // ★ Phase 3: Undo/Redo時は、消すべき(復活させるべき)対象のIDをtargetIdに刻む
+    if (finalEvent.isUndo || finalEvent.type == PointType.undo) {
+      final activeEvents = _engine.filterActiveEvents(currentMatch.events);
+      if (activeEvents.isNotEmpty) {
+        finalEvent = finalEvent.copyWith(targetId: activeEvents.last.id);
+      }
+    }
 
     // 競合チェック
     final expectedSequence = currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1;
@@ -42,40 +50,8 @@ class AddScoreUseCase {
     final updatedEvents = List<ScoreEvent>.from(currentMatch.events);
     final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents);
 
-    if (finalEvent.isUndo || finalEvent.type == PointType.undo) {
-      int skipCount = 0;
-      for (int i = updatedEvents.length - 1; i >= 0; i--) {
-        if (updatedEvents[i].isCanceled) continue;
-        if (updatedEvents[i].isUndo || updatedEvents[i].type == PointType.undo) {
-          skipCount++;
-          continue;
-        }
-        if (updatedEvents[i].isRestore || updatedEvents[i].type == PointType.restore) {
-          skipCount = skipCount > 0 ? skipCount - 1 : 0;
-          continue;
-        }
-        
-        if (skipCount == 0) {
-          updatedEvents[i] = updatedEvents[i].copyWith(isCanceled: true);
-          final pIndex = updatedPendingEvents.indexWhere((e) => e.id == updatedEvents[i].id);
-          if (pIndex != -1) updatedPendingEvents[pIndex] = updatedEvents[i];
-          break; // 直近1件のみを取り消す
-        } else {
-          skipCount--;
-        }
-      }
-    } else if (finalEvent.isRestore || finalEvent.type == PointType.restore) {
-      // Redo互換: isCanceled を false に戻す
-      for (int i = updatedEvents.length - 1; i >= 0; i--) {
-        if (updatedEvents[i].isCanceled) {
-          updatedEvents[i] = updatedEvents[i].copyWith(isCanceled: false);
-          final pIndex = updatedPendingEvents.indexWhere((e) => e.id == updatedEvents[i].id);
-          if (pIndex != -1) updatedPendingEvents[pIndex] = updatedEvents[i];
-          break;
-        }
-      }
-    }
-
+    // ★ Phase 3: 過去のイベントの `isCanceled` を直接書き換える(Mutation)悪しきループを完全削除。
+    // 純粋に新しいイベントをリストの末尾に追記(Append)するだけに純化されました。
     updatedEvents.add(finalEvent);
     updatedPendingEvents.add(finalEvent);
 
@@ -99,12 +75,23 @@ class AddScoreUseCase {
     }
 
     final bool isRunningTimerMode = rule.isRunningTime;
+    
+    // ★ Phase 2: 通し(Running)以外のモードでスコアが入った時は、ストップ(Pause)処理を行う
+    MatchModel updatedMatch = currentMatch;
+    if (!isRunningTimerMode && currentMatch.timerIsRunning) {
+        final elapsed = DateTime.now().difference(currentMatch.timerStartedAt!).inMilliseconds;
+        updatedMatch = currentMatch.copyWith(
+          timerStartedAt: null,
+          accumulatedPauseDurationMs: currentMatch.accumulatedPauseDurationMs + elapsed,
+        );
+    }
 
-    return currentMatch.copyWith(
+    return updatedMatch.copyWith(
       events: updatedEvents,
       redScore: nextAnalysis.context.redIppon,
       whiteScore: nextAnalysis.context.whiteIppon,
-      timerIsRunning: isRunningTimerMode ? currentMatch.timerIsRunning : false, 
+      timerStartedAt: updatedMatch.timerStartedAt,
+      accumulatedPauseDurationMs: updatedMatch.accumulatedPauseDurationMs,
       status: currentState.toLegacyString(),
       syncState: SyncState.localOnly, 
       pendingEvents: updatedPendingEvents, 
@@ -125,8 +112,11 @@ class UndoScoreUseCase {
       throw UnauthorizedException('操作を取り消す権限がありません');
     }
 
-    if (currentMatch.events.isEmpty) return currentMatch;
+    final activeEvents = _engine.filterActiveEvents(currentMatch.events);
+    if (activeEvents.isEmpty) return currentMatch;
     
+    // 取り消す対象のイベントIDを取得
+    final targetEventId = activeEvents.last.id;
     final newSequence = currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1;
     
     final undoEvent = ScoreEvent(
@@ -135,38 +125,16 @@ class UndoScoreUseCase {
       side: Side.none,
       strikeType: StrikeType.none,
       isUndo: true,
+      targetId: targetEventId, // ★ Phase 3: 相殺対象を記録
       timestamp: DateTime.now(),
       sequence: newSequence,
       userId: user.id,
-      ruleVersion: rule.toRuleConfig.schemaVersion, // ★ Phase 10
+      ruleVersion: rule.toRuleConfig.schemaVersion,
     );
 
-    final updatedEvents = List<ScoreEvent>.from(currentMatch.events);
-    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents);
-
-    int skipCount = 0;
-    for (int i = updatedEvents.length - 1; i >= 0; i--) {
-      if (updatedEvents[i].isCanceled) continue;
-      if (updatedEvents[i].isUndo || updatedEvents[i].type == PointType.undo) {
-        skipCount++;
-        continue;
-      }
-      if (updatedEvents[i].isRestore || updatedEvents[i].type == PointType.restore) {
-        skipCount = skipCount > 0 ? skipCount - 1 : 0;
-        continue;
-      }
-      if (skipCount == 0) {
-        updatedEvents[i] = updatedEvents[i].copyWith(isCanceled: true);
-        final pIndex = updatedPendingEvents.indexWhere((e) => e.id == updatedEvents[i].id);
-        if (pIndex != -1) updatedPendingEvents[pIndex] = updatedEvents[i];
-        break;
-      } else {
-        skipCount--;
-      }
-    }
-
-    updatedEvents.add(undoEvent);
-    updatedPendingEvents.add(undoEvent);
+    final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(undoEvent);
+    final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents)..add(undoEvent);
+    // ★ isCanceled を直接書き換えるMutationループを完全削除
 
     final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
 
@@ -202,20 +170,24 @@ class RedoScoreUseCase {
     if (currentMatch.events.isEmpty) return currentMatch;
     
     final newSequence = currentMatch.events.last.sequence + 1;
+    
     final redoEvent = ScoreEvent(
       id: 'redo-${DateTime.now().microsecondsSinceEpoch}',
       schemaVersion: 2,
       side: Side.none,
       strikeType: StrikeType.none,
       isRestore: true, 
+      // targetId を省略した場合は、直近にUndoされたものが自動で復元される（KendoRuleEngineの機能）
       timestamp: DateTime.now(),
       sequence: newSequence,
       userId: user.id,
-      ruleVersion: rule.toRuleConfig.schemaVersion, // ★ Phase 10
+      ruleVersion: rule.toRuleConfig.schemaVersion,
     );
 
     final updatedEvents = List<ScoreEvent>.from(currentMatch.events)..add(redoEvent);
     final updatedPendingEvents = List<ScoreEvent>.from(currentMatch.pendingEvents)..add(redoEvent);
+    // ★ isCanceled = false に直接書き換えるMutationループを完全削除
+    
     final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
 
     MatchLifecycleState currentState = MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
@@ -269,11 +241,16 @@ class TimeUpUseCase {
       currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.startEncho);
       final newNote = currentMatch.note.isEmpty ? '延長' : '${currentMatch.note}, 延長';
       final enchoSeconds = rule.isEnchoUnlimited ? 0 : (rule.enchoTimeMinutes * 60).toInt();
-      return currentMatch.copyWith(
-        matchType: '延長戦', note: newNote, remainingSeconds: enchoSeconds,
-        timerIsRunning: false, syncState: SyncState.localOnly, lastUpdatedAt: DateTime.now(),
-        status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
-      ); 
+      
+      MatchModel updated = currentMatch.copyWith(
+        matchType: '延長戦', note: newNote, 
+        syncState: SyncState.localOnly, lastUpdatedAt: DateTime.now(),
+        status: currentState.toLegacyString(),
+      );
+      
+      // ★ 修正: 延長戦の時間を絶対時間エンジンにセットし直す
+      updated = updated.updateRemainingSeconds(enchoSeconds).copyWith(timerStartedAt: null);
+      return updated;
     } else {
       currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.timeUp);
       return currentMatch.copyWith(

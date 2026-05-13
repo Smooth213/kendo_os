@@ -61,6 +61,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     bool? leftHanded,
     bool? showConfirmDialog,
     String? themeMode,
+    bool? experimentalFeatures, // ★ 修正: この1行を引数に追加
     int? securityLevel,
     String? adminPasscode,
   }) async {
@@ -76,6 +77,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       leftHanded: leftHanded ?? state.leftHanded,
       showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog,
       themeMode: themeMode ?? state.themeMode,
+      experimentalFeatures: experimentalFeatures ?? state.experimentalFeatures, // ★ 修正: この1行を代入に追加
       securityLevel: securityLevel ?? state.securityLevel,
       adminPasscode: adminPasscode ?? state.adminPasscode,
     );

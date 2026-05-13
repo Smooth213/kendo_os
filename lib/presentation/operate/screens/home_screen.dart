@@ -135,13 +135,6 @@ class HomeScreen extends ConsumerWidget {
           elevation: 0,
           iconTheme: IconThemeData(color: textColor),
           actions: [
-            // 👇 ここから追加：一時的なViewer確認用ボタン
-            IconButton(
-              icon: const Icon(Icons.remove_red_eye, color: Colors.amber),
-              tooltip: 'Viewer確認',
-              onPressed: () => context.push('/viewer-home/$tournamentId'),
-            ),
-            // 👆 ここまで追加
             if (!permissions.isReadOnly)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -202,90 +195,48 @@ class HomeScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
               child: Column(
                 children: [
-                  if (permissions.canCreateMatch) ...[
-                    Container(
-                      width: double.infinity,
-                      height: 60, 
-                      decoration: BoxDecoration(
-                        color: Colors.indigo.shade600, 
-                        borderRadius: BorderRadius.circular(16), 
-                        boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))], 
-                      ),
-                      child: ElevatedButton.icon(
-                        onPressed: () => context.push('/setup-match/$tournamentId'),
-                        icon: const Icon(Icons.add_circle, color: Colors.white, size: 24),
-                        label: const Text('この大会に試合を追加する', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
+                  // ==========================================
+                  // ★ Phase 4-1, 4-2, 4-3: UI簡略化 & スリム化 (高齢補助員向け巨大ボタンの洗練)
+                  // 押し間違えないサイズを維持しつつ、パディングを減らして画面領域を確保。
+                  // サブタイトルを削除し、アイコンとフォントを小さくしてスリム化。
+                  // これにより、下の試合リストの領域を広げます。
+                  // ==========================================
+                  if (!permissions.isReadOnly) ...[
+                    _buildHugeMenuButton(context, Icons.edit_note, '試合の進行・記録', Colors.indigo, () => context.push('/setup-match/$tournamentId')),
+                    const SizedBox(height: 8),
                   ],
+                  _buildHugeMenuButton(context, Icons.cast_connected, '観客席スクリーン (Viewer)', Colors.teal, () => context.push('/viewer-home/$tournamentId?role=viewer')),
+                  const SizedBox(height: 8),
+                  _buildHugeMenuButton(context, Icons.print, 'スコアの出力・印刷', Colors.blueGrey, () => context.push('/official-record/$tournamentId')),
+                  const SizedBox(height: 16),
                   
-                  Container(
-                    width: double.infinity,
-                    height: 50,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.push('/tournament/$tournamentId/programs'),
-                      icon: Icon(
-                        Icons.picture_as_pdf, 
-                        size: 20, 
-                        color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600
-                      ),
-                      label: Text(
-                        permissions.isReadOnly ? '大会プログラムを見る' : '大会プログラムの管理', 
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800)
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
-                        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (!permissions.isReadOnly) ...[
-                        Expanded(
+                  // ★ 高度なメニューの隠蔽 (Advanced Menu)
+                  Theme(
+                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      title: const Text('⚙️ 高度な管理メニュー', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+                      children: [
+                        Container(
+                          width: double.infinity, height: 50, margin: const EdgeInsets.only(bottom: 12),
                           child: OutlinedButton.icon(
-                            // ★ Phase 8-3: PushではなくGoRouterの push で統一しつつ、メモリを意識
-                            onPressed: () => context.push('/standings/$tournamentId'),
-                            icon: Icon(Icons.military_tech, size: 18, color: Colors.amber.shade600),
-                            label: Text('自チーム選手成績', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.grey.shade800)),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
-                              backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            onPressed: () => context.push('/tournament/$tournamentId/programs'),
+                            icon: Icon(Icons.picture_as_pdf, size: 20, color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600),
+                            label: Text(permissions.isReadOnly ? '大会プログラムを見る' : '大会プログラムの管理', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800)),
+                            style: OutlinedButton.styleFrom(side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300), backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                          ),
+                        ),
+                        if (!permissions.isReadOnly)
+                          Container(
+                            width: double.infinity, height: 50, margin: const EdgeInsets.only(bottom: 12),
+                            child: OutlinedButton.icon(
+                              onPressed: () => context.push('/standings/$tournamentId'),
+                              icon: Icon(Icons.military_tech, size: 20, color: Colors.amber.shade600),
+                              label: Text('自チーム選手成績', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800)),
+                              style: OutlinedButton.styleFrom(side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300), backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
                       ],
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          // ★ Phase 8-3: PushではなくGoRouterの push で統一
-                          onPressed: () => context.push('/official-record/$tournamentId'),
-                          icon: Icon(Icons.print, size: 18, color: isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade600),
-                          label: Text(
-                            permissions.isReadOnly ? '全試合スコア' : '出力用スコア', 
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.grey.shade800)
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
-                            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -1518,7 +1469,8 @@ class HomeScreen extends ConsumerWidget {
   }
 
   void _showShareDialog(BuildContext context, String tournamentId) {
-    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId';
+    // ★ 修正：URLに role=viewer を明示し、開いた瞬間に観客モードを強制する
+    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer';
     
     showDialog(
       context: context,
@@ -1975,7 +1927,6 @@ class HomeScreen extends ConsumerWidget {
             matchTimeMinutes: isDaihyo ? 0 : baseRule.matchTimeMinutes.toInt(),
             hasExtension: true,
             // ★ 修正：モデルに存在しない isEnchoUnlimited を削除
-            remainingSeconds: isDaihyo ? 0 : (baseRule.matchTimeMinutes * 60).toInt(),
             rule: baseRule.copyWith(positions: [positions[p]], isKachinuki: false, isLeague: false),
           );
           // ★ 修正：Notifierではなく通常のProviderメソッドとして呼び出す（addMatchに変更）
@@ -2170,6 +2121,48 @@ class HomeScreen extends ConsumerWidget {
           );
         }
       )
+    );
+  }
+
+  // ==========================================
+  // ★ Phase 4-1 & 4-3: スリム化された巨大メニューボタン
+  // 高齢補助員向けの押しやすさを維持しつつ、パディングを減らし、サブタイトルを削除。
+  // アイコンとフォントサイズを小さくして高さを抑え、画面領域を効率的に使います。
+  // ==========================================
+  Widget _buildHugeMenuButton(BuildContext context, IconData icon, String title, MaterialColor color, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: double.infinity,
+        // パディングをsymmetricに減らす (20 -> horizontal: 16, vertical: 12)
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isDark ? color.shade900.withValues(alpha: 0.3) : color.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isDark ? color.shade700 : color.shade200, width: 2),
+        ),
+        child: Row(
+          children: [
+            // アイコンサイズを小さくする (36 -> 24)
+            Icon(icon, size: 24, color: isDark ? color.shade300 : color.shade700),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // タイトルのフォントサイズを小さくする (18 -> 16)
+                  Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                  // ★ サブタイトル(subtitle)を削除
+                ],
+              ),
+            ),
+            // 右側の矢印も小さくする (16 -> 14)
+            Icon(Icons.arrow_forward_ios, size: 14, color: isDark ? color.shade500 : color.shade300),
+          ],
+        ),
+      ),
     );
   }
 } // ★ HomeScreenクラスの【真の】閉じ括弧です！これより下には何も書かないでください！

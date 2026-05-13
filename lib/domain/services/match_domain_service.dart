@@ -79,7 +79,7 @@ class MatchDomainService {
         id: const Uuid().v4(), tournamentId: finishedMatch.tournamentId, category: finishedMatch.category, groupName: finishedMatch.groupName,
         matchType: isEncho ? '大将延長戦' : '勝ち抜き戦', redName: nextRedName, whiteName: nextWhiteName,
         status: 'waiting', matchTimeMinutes: finishedMatch.matchTimeMinutes, isRunningTime: finishedMatch.isRunningTime,
-        remainingSeconds: finishedMatch.matchTimeMinutes * 60, order: finishedMatch.order + 0.1, 
+        order: finishedMatch.order + 0.1, 
         note: isEncho ? '延長戦（1本勝負）' : finishedMatch.note, isKachinuki: true,
         redRemaining: nextRedRem, whiteRemaining: nextWhiteRem,
       );

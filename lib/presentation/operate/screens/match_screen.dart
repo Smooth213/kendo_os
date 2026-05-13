@@ -365,40 +365,44 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 // ★ Phase 6-4: 操作履歴の透明化（ミニログ ＋ Undoボタン）
                 final undoArea = Column(
                   children: [
-                    // 1. 直近3件のミニログ表示エリア
-                    if (validEvents.isNotEmpty)
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white10 : Colors.grey.shade100,
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                        ),
-                        child: Column(
-                          children: validEvents.reversed.take(3).toList().asMap().entries.map((entry) {
-                            final e = entry.value;
-                            final isLast = entry.key == 0;
-                            final sideColor = e.side == Side.red ? Colors.red.shade600 : (e.side == Side.white ? (isDark ? Colors.white : Colors.black87) : Colors.grey);
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 1),
-                              child: Row(
-                                children: [
-                                  Text('${validEvents.indexOf(e) + 1}.', style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
-                                  const SizedBox(width: 8),
-                                  Icon(Icons.circle, size: 8, color: sideColor),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    e.type == PointType.men ? 'メン' : e.type == PointType.kote ? 'コテ' : e.type == PointType.doIdo ? 'ドウ' : e.type == PointType.tsuki ? 'ツキ' : e.type == PointType.hansoku ? '反則' : '判定',
-                                    style: TextStyle(fontSize: 12, fontWeight: isLast ? FontWeight.w900 : FontWeight.normal, color: isLast ? sideColor : sideColor.withValues(alpha: 0.7)),
-                                  ),
-                                  const Spacer(),
-                                  Text(DateFormat('HH:mm:ss').format(e.timestamp), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                    // 1. 直近3件のミニログ表示エリア（★高さを完全に固定し、ボタンの圧迫を防ぐ）
+                    Container(
+                      height: 76, // ★ 修正: 54pxだと3件表示時に11pxあふれるため、76pxに拡張して完全に収める
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white10 : Colors.grey.shade100,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                       ),
+                      alignment: Alignment.bottomCenter, // 下から積み上がるように配置
+                      child: validEvents.isNotEmpty
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: validEvents.reversed.take(3).toList().asMap().entries.map((entry) {
+                              final e = entry.value;
+                              final isLast = entry.key == 0;
+                              final sideColor = e.side == Side.red ? Colors.red.shade600 : (e.side == Side.white ? (isDark ? Colors.white : Colors.black87) : Colors.grey);
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 1),
+                                child: Row(
+                                  children: [
+                                    Text('${validEvents.indexOf(e) + 1}.', style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                                    const SizedBox(width: 8),
+                                    Icon(Icons.circle, size: 8, color: sideColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      e.type == PointType.men ? 'メン' : e.type == PointType.kote ? 'コテ' : e.type == PointType.doIdo ? 'ドウ' : e.type == PointType.tsuki ? 'ツキ' : e.type == PointType.hansoku ? '反則' : '判定',
+                                      style: TextStyle(fontSize: 12, fontWeight: isLast ? FontWeight.w900 : FontWeight.normal, color: isLast ? sideColor : sideColor.withValues(alpha: 0.7)),
+                                    ),
+                                    const Spacer(),
+                                    Text(DateFormat('HH:mm:ss').format(e.timestamp), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          )
+                        : const Center(child: Text('操作履歴', style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2))),
+                    ),
                     // 2. Undoボタン（ログの直下に配置して一体化）
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
@@ -645,9 +649,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               final int currentExtCount = '延長'.allMatches(match.note).length;
                               final extStr = '延長${currentExtCount + 1}回目';
                               
-                              await ref.read(matchApplicationServiceProvider).saveMatch(match.copyWith( // ★ 修正
-                                remainingSeconds: (extMins * 60).toInt(),
-                                timerIsRunning: false,
+                              await ref.read(matchApplicationServiceProvider).saveMatch(match.updateRemainingSeconds((extMins * 60).toInt()).copyWith( // ★ 修正
+                                timerStartedAt: null,
                                 note: match.note.isEmpty ? extStr : '${match.note} ($extStr)',
                                 extensionTimeMinutes: extMins.toInt(),
                               ));
@@ -1089,8 +1092,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         final updatedMatch = match.copyWith(
                           redName: newRed, 
                           whiteName: newWhite, 
-                          remainingSeconds: 0, 
-                        );
+                        ).updateRemainingSeconds(0).copyWith(timerStartedAt: null); // ★ 修正
                         
                         await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch); // ★ 修正
                         if (ctx.mounted) Navigator.pop(ctx);
@@ -1189,7 +1191,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             // ★ 追加：ルールの分数（int切り捨て）ではなく、設定に保存された正確な小数（double）を読み込む
             final lastSettings = ref.read(lastUsedSettingsProvider);
             final double exactMatchTime = (lastSettings['matchTime'] as num?)?.toDouble() ?? rule.matchTimeMinutes.toDouble();
-            final int initialSeconds = (exactMatchTime * 60).toInt();
 
             final nextMatch = MatchModel(
               id: nextMatchId,
@@ -1200,13 +1201,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               redName: newRed,
               whiteName: newWhite,
               status: 'waiting', 
-              timerIsRunning: false, 
               matchTimeMinutes: exactMatchTime.toInt(),
               isRunningTime: rule.isRunningTime,
-              remainingSeconds: initialSeconds, // ★ 修正：正確な秒数(initialSeconds)をセットする！
               order: currentMatch.order + 0.1,
               note: currentMatch.note,
-            );
+            ); // ★ remainingSeconds初期化を削除（自動でbaseSecondsが使われるため）
             
             await ref.read(matchApplicationServiceProvider).saveMatch(nextMatch); // ★ 修正
             
@@ -1549,9 +1548,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   ) async {
     final finishedMatch = currentMatch.copyWith(
       status: 'finished',
-      timerIsRunning: false,
-      remainingSeconds: 0,
-    );
+      timerStartedAt: null,
+    ).updateRemainingSeconds(0); // ★ 修正
     await ref.read(matchApplicationServiceProvider).saveMatch(finishedMatch); // ★ 修正
 
     final engine = ref.read(bunaiksenInfiniteEngineProvider);
