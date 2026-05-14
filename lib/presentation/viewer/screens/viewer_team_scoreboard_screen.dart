@@ -87,11 +87,11 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                       border: isDark ? null : Border.all(color: borderColor, width: 1.0),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                       child: Table(
                         border: TableBorder.symmetric(inside: BorderSide(color: borderColor, width: 0.5)),
                         columnWidths: const {

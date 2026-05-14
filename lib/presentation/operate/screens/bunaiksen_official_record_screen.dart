@@ -56,7 +56,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         appBar: AppBar(
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           foregroundColor: headerTextColor,
-          title: const Text('成績一覧', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('成績一覧', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           elevation: 0,
           centerTitle: true,
         ),
@@ -73,7 +73,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         appBar: AppBar(
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           foregroundColor: headerTextColor,
-          title: Text('${DateFormat('yyyy/MM/dd').format(viewDate)} 成績', style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text('${DateFormat('yyyy/MM/dd').format(viewDate)} 成績', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           elevation: 0,
           centerTitle: true,
           bottom: TabBar(
@@ -192,7 +192,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -321,7 +321,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       elevation: 0,
       color: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor)),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
@@ -836,7 +836,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       elevation: 0,
       color: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor)),
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [

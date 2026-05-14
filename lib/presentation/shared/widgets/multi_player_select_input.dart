@@ -35,7 +35,7 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (BuildContext sheetContext) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {

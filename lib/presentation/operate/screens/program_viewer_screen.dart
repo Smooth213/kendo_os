@@ -501,7 +501,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   void _showPenPicker(BuildContext context, WidgetRef ref, bool canUseSharedPen) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
         return SafeArea(
           child: Padding(

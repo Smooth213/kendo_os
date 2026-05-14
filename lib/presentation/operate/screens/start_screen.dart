@@ -25,7 +25,7 @@ class StartScreen extends ConsumerWidget {
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         side: isDark ? BorderSide.none : BorderSide(color: Colors.grey.shade200, width: 1.5), 
       ),
       clipBehavior: Clip.antiAlias, 
@@ -62,7 +62,7 @@ class StartScreen extends ConsumerWidget {
     final permissions = ref.watch(permissionProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.grey.shade50;
+    final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     
     // iOS Native: ダークモード時はヘッダーのグラデーションを深みのある色に
     final headerStartColor = isDark ? Colors.indigo.shade900 : Colors.indigo.shade700;

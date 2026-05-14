@@ -155,10 +155,11 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
     final masterPlayers = ref.watch(bunaiksenPlayerMasterProvider).value ?? [];
 
     return Scaffold(
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
       appBar: AppBar(
         backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, // ★ 修正：白背景
         foregroundColor: isDark ? Colors.white : const Color(0xFF8B0000), // ★ 修正：ボルドー文字
-        title: const Text('試合セットアップ', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('試合セットアップ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -547,7 +548,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                             color: candidateData.isNotEmpty ? Colors.red.shade100 : (isDark ? Colors.grey.shade900 : Colors.white),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(color: Colors.red.shade300, width: candidateData.isNotEmpty ? 2 : 1),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: ListTile(
                               dense: true, // 少しコンパクトに
@@ -574,7 +575,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                             color: candidateData.isNotEmpty ? Colors.blueGrey.shade100 : (isDark ? Colors.grey.shade900 : Colors.white),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(color: Colors.blueGrey.shade300, width: candidateData.isNotEmpty ? 2 : 1),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: ListTile(
                               dense: true, // 少しコンパクトに

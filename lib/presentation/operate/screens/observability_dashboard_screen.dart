@@ -12,6 +12,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
       appBar: AppBar(
         title: const Text('運用ダッシュボード (Observability)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         actions: const [
@@ -69,7 +70,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
     return Card(
       color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(

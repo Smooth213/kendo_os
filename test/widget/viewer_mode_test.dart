@@ -288,6 +288,7 @@ void main() {
     });
 
     testWidgets('2. ViewerHomeScreen displays current status and correctly renders elements', (WidgetTester tester) async {
+
       // ★ 画面サイズを縦長にして、スクロールが必要な検索アイコンが確実に描画されるようにする
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;

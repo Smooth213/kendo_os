@@ -213,7 +213,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
       context: context,
       isScrollControlled: true, // キーボード対応
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(ctx).viewInsets.bottom, // キーボードを避ける
@@ -272,7 +272,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(ctx).viewInsets.bottom,

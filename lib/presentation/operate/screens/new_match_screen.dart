@@ -90,6 +90,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     combinedSuggestions.sort();
 
     return Scaffold(
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
       appBar: AppBar(title: const Text('新規試合作成・自動生成', style: TextStyle(fontWeight: FontWeight.bold))),
       body: Center(
         child: ConstrainedBox(

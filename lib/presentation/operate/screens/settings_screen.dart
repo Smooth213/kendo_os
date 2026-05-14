@@ -591,6 +591,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showRolePicker(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -136,7 +136,21 @@ class StandingsScreen extends ConsumerWidget {
           });
 
           if (sortedStats.isEmpty) {
-            return Center(child: Text('まだ承認済みの試合結果がありません', style: TextStyle(color: subTextColor)));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/kendo_icon.png', 
+                    width: 80, 
+                    height: 80, 
+                    color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, 
+                  ),
+                  const SizedBox(height: 24),
+                  Text('まだ承認済みの試合結果がありません', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: subTextColor)),
+                ],
+              ),
+            );
           }
 
           // ★ 修正：3チーム以上の完全同点に対応（勝ち点誤差対策込）
@@ -187,7 +201,7 @@ class StandingsScreen extends ConsumerWidget {
                 elevation: 0,
                 color: cardColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12), // iOS角丸
+                  borderRadius: BorderRadius.circular(16), // iOS角丸
                   side: isDark ? BorderSide.none : BorderSide(color: borderColor),
                 ),
                 child: ListTile(

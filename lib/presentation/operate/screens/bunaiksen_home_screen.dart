@@ -114,7 +114,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         foregroundColor: isDark ? Colors.white : const Color(0xFF8B0000),
         // ★ 修正：タイトルはシンプルにテキストのみ表示
-        title: Text(isToday ? '今日の部内戦' : '$dateDisplay の記録', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(isToday ? '今日の部内戦' : '$dateDisplay の記録', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         elevation: 0,
         centerTitle: true,
         actions: [
@@ -239,7 +239,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 icon: Icons.delete,
                                 label: '削除',
                                 // ★ 修正：カードの角丸と完全に一致させる
-                                borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+                                borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
                               ),
                             ],
                           ),
@@ -248,11 +248,11 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             margin: EdgeInsets.zero, // ★ 重要：ここをゼロにすることで隙間を消す
                             color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               side: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
                             ),
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               onTap: () => context.push('/match/${match.id}'),
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),

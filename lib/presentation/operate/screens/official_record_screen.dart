@@ -217,7 +217,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                           elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
                           clipBehavior: Clip.antiAlias,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,7 +487,7 @@ class OfficialRecordScreen extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4), 
       elevation: 0,
       color: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor)),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
@@ -1027,7 +1027,7 @@ class OfficialRecordScreen extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       elevation: 0,
       color: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor)),
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [

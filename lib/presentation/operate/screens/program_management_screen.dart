@@ -36,7 +36,7 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
   void _showPickerMenu() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (BuildContext context) {
         return SafeArea(
           child: Wrap(

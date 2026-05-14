@@ -731,7 +731,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
         Card(
           elevation: 0, 
           color: inputBgColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.teal.shade400, width: 2)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.teal.shade400, width: 2)),
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
             title: Text('$_selectedCategory : ${_teamNameController.text.isEmpty ? "(チーム名未入力)" : _teamNameController.text}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
@@ -751,7 +751,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                 margin: const EdgeInsets.only(bottom: 8),
                 elevation: 0,
                 color: inputBgColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor)),
                 child: ListTile(
                   title: Text('${t.category} : ${t.teamName}', style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
                   subtitle: Text('${t.matchType} / 選手: ${t.playerNames.where((n) => n.isNotEmpty).join(", ")}', style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
