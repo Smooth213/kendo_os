@@ -25,6 +25,7 @@ import 'package:kendo_os/application/services/sound_service.dart';
 import 'package:kendo_os/domain/services/match_domain_service.dart'; // ★ 追加
 import 'package:kendo_os/presentation/operate/providers/sync_provider.dart'; // ★ 追加: 同期エンジン
 import 'package:kendo_os/presentation/operate/providers/metrics_provider.dart'; // ★ 追加: メトリクス基盤
+import 'package:kendo_os/infrastructure/repository/match_repository.dart';
 
 // ==========================================
 // ★ ApplicationService設計：フローの完全集約と安全網
@@ -341,19 +342,27 @@ class MatchApplicationService {
   // --------------------------------------------------
   // 4. 共通保存ロジック（★ 修正: 外部からも呼べるようにパブリック化し、ローカルリポジトリへ直接つなぐ）
   // UIからの保存要求も、必ずここ（ApplicationService）を経由させる
+  // ★ 修正: Web版は Firestore に直接保存、Mobile版は Isar + 同期エンジン
   // --------------------------------------------------
   Future<void> saveMatch(MatchModel match) async {
     await _safeExecute(() async {
-      // 保存時に未送信キュー（Queue）を通す場合は matchCommandQueueProvider 経由でも良いですが、
-      // ここは直接リポジトリを叩く「真の保存処理」として定義します。
-      final matchToSave = match.copyWith(
-        syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
+      // 既存の match.id が空の場合は UUID を自動生成して重複保存を防ぐ
+      final matchWithId = match.id.isEmpty ? match.copyWith(id: const Uuid().v4()) : match;
+      final matchToSave = matchWithId.copyWith(
+        syncState: SyncState.localOnly,
         lastUpdatedAt: DateTime.now(),
       );
-      await _ref.read(localMatchRepositoryProvider).saveMatch(matchToSave);
       
-      // 同期キック
-      Future.microtask(() => _ref.read(syncEngineProvider).syncNow());
+      // ★ Web版と Mobile版で異なる保存先を使い分ける
+      if (kIsWeb) {
+        // Web版: Firestore に直接保存
+        await _ref.read(matchRepositoryProvider).saveMatch(matchToSave);
+      } else {
+        // Mobile版: Isar に保存して同期エンジンに委譲
+        final localRepo = _ref.read(localMatchRepositoryProvider);
+        await localRepo.saveMatch(matchToSave);
+        Future.microtask(() => _ref.read(syncEngineProvider).syncNow());
+      }
     }, '保存に失敗しました');
   }
 
@@ -361,8 +370,28 @@ class MatchApplicationService {
   Future<void> saveMatchesBulk(List<MatchModel> newMatches) async {
     await _safeExecute(() async {
       if (newMatches.isEmpty) return;
-      await _ref.read(localMatchRepositoryProvider).saveMatchesBulk(newMatches);
-      Future.microtask(() => _ref.read(syncEngineProvider).syncNow());
+      
+      // ★ 修正: 一括保存時にも確実に syncState を localOnly に設定して、SyncEngineの対象にする！
+      final preparedMatches = newMatches.map((m) {
+        final mWithId = m.id.isEmpty ? m.copyWith(id: const Uuid().v4()) : m;
+        return mWithId.copyWith(
+          syncState: SyncState.localOnly,
+          lastUpdatedAt: DateTime.now(),
+        );
+      }).toList();
+      
+      // ★ Web版と Mobile版で異なる保存先を使い分ける
+      if (kIsWeb) {
+        // Web版: Firestore に直接一括保存
+        for (final m in preparedMatches) {
+          await _ref.read(matchRepositoryProvider).saveMatch(m);
+        }
+      } else {
+        // Mobile版: Isar に保存して同期エンジンに委譲
+        final localRepo = _ref.read(localMatchRepositoryProvider);
+        await localRepo.saveMatchesBulk(preparedMatches);
+        Future.microtask(() => _ref.read(syncEngineProvider).syncNow());
+      }
     }, '一括保存に失敗しました');
   }
 

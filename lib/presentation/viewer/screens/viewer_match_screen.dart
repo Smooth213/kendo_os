@@ -8,7 +8,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart'; // ★ Projectionの型とUIXを使うために追加
 import '../../shared/widgets/manual_help_button.dart';
-import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
 
 class ViewerMatchScreen extends ConsumerWidget {
   final String matchId;
@@ -31,12 +30,17 @@ class ViewerMatchScreen extends ConsumerWidget {
         return Scaffold(
           backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
           appBar: AppBar(
+            // ★ 修正: Webで直接開いた際にGoRouterが勝手に出す「トップ(start_screen)に戻るホームボタン」を強制消去
+            automaticallyImplyLeading: false,
             title: const Text('試合状況 (観戦)', style: TextStyle(fontSize: 14)),
-            leading: (ref.watch(temporaryRoleOverrideProvider) == Role.viewer && ref.watch(persistentRoleProvider) != Role.viewer)
+            // ★ 修正: 誤って管理者ホーム(/home)に飛んでしまう扉ボタンを撤廃。
+            // 履歴がある場合（試合一覧から来た場合）は標準の「戻る」ボタンを表示し、
+            // 直リンクで来た場合は何も表示しない（ブラウザの戻るに委ねる）純粋なUXに統一。
+            leading: context.canPop()
                 ? IconButton(
-                    icon: const Icon(Icons.exit_to_app, color: Colors.orangeAccent),
-                    tooltip: '管理者モードへ戻る',
-                    onPressed: () => context.go('/home/${projection.tournamentId}'), // role無しで戻ることで解除
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                    tooltip: '戻る',
+                    onPressed: () => context.pop(),
                   )
                 : null,
             actions: [

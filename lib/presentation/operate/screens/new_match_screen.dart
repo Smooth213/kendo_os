@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/organization.dart';
 import '../providers/match_generator_provider.dart';
@@ -36,7 +37,8 @@ final newMatchHistoryProvider = Provider.autoDispose<List<String>>((ref) {
 });
 
 class NewMatchScreen extends ConsumerStatefulWidget {
-  const NewMatchScreen({super.key});
+  final String? tournamentId;
+  const NewMatchScreen({super.key, this.tournamentId});
 
   @override
   ConsumerState<NewMatchScreen> createState() => _NewMatchScreenState();
@@ -355,13 +357,19 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     
     if (_creationMode == '単発試合') {
       if (_redNameController.text.isEmpty || _whiteNameController.text.isEmpty) return;
+      if (widget.tournamentId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('大会IDが不明なため保存できません')));
+        return;
+      }
+      
       final newMatch = MatchModel(
-        id: '',
+        id: const Uuid().v4(),
         matchType: '個人戦',
         redName: _redNameController.text,
         whiteName: _whiteNameController.text,
         source: 'manual',
         countForStandings: _countForStandings,
+        tournamentId: widget.tournamentId,
         category: _categoryController.text, 
         note: _noteController.text, 
       );
@@ -370,7 +378,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     } else if (_creationMode == 'リーグ戦自動生成') {
       final participants = _leagueParticipantsController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
       if (participants.length < 2) return;
-      await generator.generateLeagueMatches(_categoryController.text, participants, _countForStandings, _noteController.text); 
+      await generator.generateLeagueMatches(_categoryController.text, participants, _countForStandings, _noteController.text, widget.tournamentId); 
       
     } else if (_creationMode == '団体戦テンプレ生成') {
       if (_redOrg == null || _redTeam == null || _whiteOrg == null || _whiteTeam == null) return;
@@ -379,7 +387,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         _whiteTeam!.name, _whiteTeam!.orderedMemberNames,
         _countForStandings,
         category: _categoryController.text, 
-        note: _noteController.text, 
+        note: _noteController.text,
+        tournamentId: widget.tournamentId,
       );
     }
     

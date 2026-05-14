@@ -16,7 +16,7 @@ class MatchGenerator {
   FirebaseFirestore get _firestore => ref.read(firestoreProvider);
 
   // リーグ戦生成
-  Future<void> generateLeagueMatches(String category, List<String> participants, bool countForStandings, [String? note]) async {
+  Future<void> generateLeagueMatches(String category, List<String> participants, bool countForStandings, [String? note, String? tournamentId]) async {
     int order = 1;
     List<MatchModel> matchesToSave = [];
     for (int i = 0; i < participants.length; i++) {
@@ -26,6 +26,7 @@ class MatchGenerator {
           id: docRef.id, matchType: 'リーグ戦', category: category,
           redName: participants[i], whiteName: participants[j],
           countForStandings: countForStandings, source: 'auto_league',
+          tournamentId: tournamentId,
           order: (order++).toDouble(), note: note ?? '',
         );
         matchesToSave.add(newMatch);
@@ -39,7 +40,7 @@ class MatchGenerator {
   Future<void> generateTeamMatchBouts(
     String redTeamName, List<String> redMembers, 
     String whiteTeamName, List<String> whiteMembers, 
-    bool countForStandings, {String? category, String? note}
+    bool countForStandings, {String? category, String? note, String? tournamentId}
   ) async {
     final groupName = '$redTeamName vs $whiteTeamName';
     int maxLength = redMembers.length > whiteMembers.length ? redMembers.length : whiteMembers.length;
@@ -49,6 +50,7 @@ class MatchGenerator {
       final docRef = _firestore.collection('matches').doc();
       final newMatch = MatchModel(
         id: docRef.id,
+        tournamentId: tournamentId,
         matchType: i < positions.length ? positions[i] : '${i + 1}将',
         groupName: groupName, category: category,
         redName: '$redTeamName:${i < redMembers.length ? redMembers[i] : '欠員'}',

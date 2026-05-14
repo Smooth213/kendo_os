@@ -90,22 +90,7 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
     }
   }
 
-  // ★ 修正：没入型AppBarのアイコンを「右上の✕」から「左上の＜」へ統一！
-  Widget _buildImmersiveAppBar(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 8, bottom: 8, left: 16, right: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: isDark ? Colors.white : Colors.grey.shade800, size: 24),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
+  // ★ 不要になった _buildImmersiveAppBar を削除し、スッキリさせます
 
   Widget _buildDynamicHeader() {
     return LayoutBuilder(
@@ -177,13 +162,8 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
               AnimatedSize(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                child: isKeyboardOpen ? const SizedBox.shrink() : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildImmersiveAppBar(context),
-                    _buildDynamicHeader(),
-                  ],
-                ),
+                // ★ 修正: 不要な Column と _buildImmersiveAppBar を削り、直接ヘッダーを描画する
+                child: isKeyboardOpen ? const SizedBox.shrink() : _buildDynamicHeader(),
               ),
               Expanded(
                 child: Form(

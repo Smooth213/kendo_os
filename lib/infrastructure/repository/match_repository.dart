@@ -11,33 +11,68 @@ class MatchRepository {
   final FirebaseFirestore _firestore;
   MatchRepository(this._firestore);
 
-  // 1-A. 進行中の試合だけをリアルタイム監視（パケット節約）
-  Stream<List<MatchModel>> watchInProgressMatches() {
+  // ★ 1-C. 全試合をリアルタイム監視（主にWeb観客席用）
+  Stream<List<MatchModel>> watchAllMatches() {
     return _firestore
         .collection('matches')
-        .where('status', isEqualTo: 'in_progress')
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return MatchModel.fromJson(data);
-      }).toList();
+      final validMatches = <MatchModel>[];
+      for (final doc in snapshot.docs) {
+        try {
+          validMatches.add(MatchModel.fromJson(<String, dynamic>{
+            ...doc.data(),
+            'id': doc.id,
+          }));
+        } catch (e, stack) {
+          debugPrint('🔥 [watchAllMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack');
+        }
+      }
+      return validMatches;
     });
   }
 
-  // 1-B. 進行中「以外」の試合を1回だけ取得（キャッシュ用）
+  // 1-A. 進行中と待機中（新規追加）の試合をリアルタイム監視（パケット節約と追加検知を両立）
+  Stream<List<MatchModel>> watchActiveMatches() {
+    return _firestore
+        .collection('matches')
+        .where('status', whereIn: ['in_progress', 'waiting'])
+        .snapshots()
+        .map((snapshot) {
+      final validMatches = <MatchModel>[];
+      for (final doc in snapshot.docs) {
+        try {
+          validMatches.add(MatchModel.fromJson(<String, dynamic>{
+            ...doc.data(),
+            'id': doc.id,
+          }));
+        } catch (e, stack) {
+          debugPrint('🔥 [watchActiveMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack');
+        }
+      }
+      return validMatches;
+    });
+  }
+
+  // 1-B. 終了済みの試合を1回だけ取得（キャッシュ用）
   Future<List<MatchModel>> getStaticMatches() async {
     final snapshot = await _firestore
         .collection('matches')
-        .where('status', isNotEqualTo: 'in_progress')
+        .where('status', whereIn: ['finished', 'approved'])
         .get();
         
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id;
-      return MatchModel.fromJson(data);
-    }).toList();
+    final validMatches = <MatchModel>[];
+    for (final doc in snapshot.docs) {
+      try {
+        validMatches.add(MatchModel.fromJson(<String, dynamic>{
+          ...doc.data(),
+          'id': doc.id,
+        }));
+      } catch (e, stack) {
+        debugPrint('🔥 [getStaticMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack');
+      }
+    }
+    return validMatches;
   }
 
   // 2. 特定の1試合をリアルタイム監視（MatchProviderで使用）
@@ -47,9 +82,10 @@ class MatchRepository {
         .doc(matchId)
         .snapshots()
         .map((doc) {
-      final data = doc.data() ?? {};
-      data['id'] = doc.id;
-      return MatchModel.fromJson(data);
+      return MatchModel.fromJson(<String, dynamic>{
+        ...doc.data() ?? {},
+        'id': doc.id,
+      });
     });
   }
 

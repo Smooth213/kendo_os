@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/application/projections/match_projection.dart';
-import '../providers/viewer_view_state_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
-import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
+import '../../operate/providers/match_list_provider.dart'; // ★ 追加
+import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/entities/tournament_model.dart';
+import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
 final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
@@ -28,29 +29,36 @@ class ViewerHomeScreen extends ConsumerWidget {
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
-    // ★ CQRS: 安全な TournamentProjection を監視
-    final asyncProj = ref.watch(viewerTournamentProjectionProvider(tournamentId));
+    // ★ デバッグ: フィルタリング前後の試合数を確認
+    final allMatches = ref.watch(matchListProvider);
+    debugPrint('🔍 [Viewer Debug] tournamentId param: "$tournamentId"');
+    debugPrint('🔍 [Viewer Debug] Total matches from provider: ${allMatches.length}');
+    for (int i = 0; i < allMatches.length && i < 5; i++) {
+      final m = allMatches[i];
+      debugPrint('  [$i] ID: ${m.id}, TID: "${m.tournamentId}", Match: ${m.redName} vs ${m.whiteName}');
+    }
 
-    return asyncProj.when(
-      data: (proj) {
-        if (proj == null) {
-          return Scaffold(backgroundColor: bgColor, body: Center(child: Text('大会データが見つかりません', style: TextStyle(color: textColor))));
-        }
+    // ★ 修正: Viewer用のProjectionの更新遅延をバイパスし、最新のFirestoreストリーム(MatchModel)を直接描画する
+    final matches = ref.watch(matchListProvider.select((list) => 
+      list.where((m) => m.tournamentId == tournamentId).toList()
+    ));
+    debugPrint('🔍 [Viewer Debug] Filtered matches (tournamentId=$tournamentId): ${matches.length}');
+    
+    matches.sort((a, b) => a.order.compareTo(b.order));
 
-        final matches = proj.allMatches;
-
-        final uniqueInProgress = <MatchListProjection>[];
-        final uniqueWaiting = <MatchListProjection>[];
+    try {
+        final uniqueInProgress = <MatchModel>[];
+        final uniqueWaiting = <MatchModel>[];
         final seenGroups = <String>{};
 
         for (var m in matches) {
-          final isGrouped = m.groupName.isNotEmpty;
+          final isGrouped = m.groupName != null && m.groupName!.isNotEmpty;
 
           if (isGrouped) {
             if (seenGroups.contains(m.groupName)) continue; 
-            seenGroups.add(m.groupName);
+            seenGroups.add(m.groupName!);
 
-            final groupMatches = proj.teamMatches[m.groupName]?.matches ?? [];
+            final groupMatches = matches.where((gm) => gm.groupName == m.groupName).toList();
             final allWaiting = groupMatches.every((gm) => gm.status == 'waiting');
             final allDone = groupMatches.every((gm) => gm.status == 'finished' || gm.status == 'approved');
 
@@ -86,30 +94,27 @@ class ViewerHomeScreen extends ConsumerWidget {
                              wPlayer.replaceAll(RegExp(r'\s+'), '').toLowerCase().contains(sanitizedQuery);
 
             if (teamHit) {
-              if (m.groupName.isNotEmpty) {
-                matchedGroupNames.add(m.groupName);
+              if (m.groupName != null && m.groupName!.isNotEmpty) {
+                matchedGroupNames.add(m.groupName!);
               } else {
-                matchedMatchIds.add(m.matchId);
+                matchedMatchIds.add(m.id);
               }
             }
             if (playerHit) {
-              matchedMatchIds.add(m.matchId);
+              matchedMatchIds.add(m.id);
             }
           }
         }
 
-        final matchesByCategory = <String, List<MatchListProjection>>{};
+        final matchesByCategory = <String, List<MatchModel>>{};
         for (var m in matches) {
           if (sanitizedQuery.isNotEmpty) {
-            final isMatchedGroup = matchedGroupNames.contains(m.groupName);
-            final isMatchedMatch = matchedMatchIds.contains(m.matchId);
+            final isMatchedGroup = m.groupName != null && matchedGroupNames.contains(m.groupName!);
+            final isMatchedMatch = matchedMatchIds.contains(m.id);
             if (!isMatchedMatch && !isMatchedGroup) continue;
           }
-          // ※ Category プロパティは Projection にないので、一旦「一般」として扱うか、
-          // 実際には TournamentProjection 側でカテゴリ分けを持つのが理想です。
-          // ここでは元の挙動を維持するため、一時的に全て同じカテゴリに入れます。
-          // （本来は MatchProjection に category を追加すべきです）
-          matchesByCategory.putIfAbsent('全カテゴリ', () => []).add(m);
+          final cat = (m.category != null && m.category!.isNotEmpty) ? m.category! : 'カテゴリ未設定（全体）';
+          matchesByCategory.putIfAbsent(cat, () => []).add(m);
         }
 
         return PopScope(
@@ -117,17 +122,21 @@ class ViewerHomeScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: bgColor,
         appBar: AppBar(
-          automaticallyImplyLeading: false,
+          // ★ 修正1: 標準の戻るボタン（<）は消す
+          automaticallyImplyLeading: false, 
+          
+          // ★ 修正2: 「管理者アプリから直接遷移してきた（戻る履歴がある）場合」のみ扉ボタンを出す
+          leading: context.canPop() 
+              ? IconButton(
+                  icon: const Icon(Icons.exit_to_app, color: Colors.deepOrange),
+                  tooltip: '管理画面に戻る',
+                  onPressed: () => context.pop(),
+                )
+              : null, // QRコードから直接来た一般客には何も表示しない（null）
+
           title: Text('大会ホーム (観客席)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: (ref.watch(temporaryRoleOverrideProvider) == Role.viewer && ref.watch(persistentRoleProvider) != Role.viewer)
-              ? IconButton(
-                  icon: const Icon(Icons.exit_to_app, color: Colors.orangeAccent),
-                  tooltip: '管理者モードへ戻る',
-                  onPressed: () => context.go('/home/$tournamentId'), // role無しで戻ることで解除
-                )
-              : null,
           actions: [
             ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: isDark ? Colors.white : Colors.indigo.shade900),
             IconButton(
@@ -187,7 +196,14 @@ class ViewerHomeScreen extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.only(bottom: 80),
                 children: [
-                  _buildTournamentInfoCard(context, ref, proj.tournament),
+                  
+                  ref.watch(tournamentProvider(tournamentId)).when(
+                    data: (tournament) => tournament != null 
+                      ? _buildTournamentInfoCard(context, ref, tournament)
+                      : const SizedBox.shrink(),
+                    loading: () => const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())),
+                    error: (e, s) => Text('大会情報の読み込みに失敗しました: $e'),
+                  ),
                   
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -307,19 +323,20 @@ class ViewerHomeScreen extends ConsumerWidget {
                     });
 
                     return sortedEntries.map<Widget>((catEntry) {
+                      try {
                       final categoryName = catEntry.key;
                       final catMatches = catEntry.value;
 
                       final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-                      final matchesByTeam = <String, List<MatchListProjection>>{};
+                      final matchesByTeam = <String, List<MatchModel>>{};
                       
                       final groupToOwnTeams = <String, Set<String>>{};
                       for (var m in catMatches) {
-                        if (m.groupName.isNotEmpty) {
+                        if (m.groupName != null && m.groupName!.isNotEmpty) {
                           String rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : m.redName;
                           String wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : m.whiteName;
-                          if (ownTeams.contains(rTeam)) groupToOwnTeams.putIfAbsent(m.groupName, () => {}).add(rTeam);
-                          if (ownTeams.contains(wTeam)) groupToOwnTeams.putIfAbsent(m.groupName, () => {}).add(wTeam);
+                          if (ownTeams.contains(rTeam)) groupToOwnTeams.putIfAbsent(m.groupName!, () => {}).add(rTeam);
+                          if (ownTeams.contains(wTeam)) groupToOwnTeams.putIfAbsent(m.groupName!, () => {}).add(wTeam);
                         }
                       }
 
@@ -330,8 +347,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                         bool isRedOwn = ownTeams.contains(rTeam);
                         bool isWhiteOwn = ownTeams.contains(wTeam);
 
-                        if (m.groupName.isNotEmpty && groupToOwnTeams.containsKey(m.groupName)) {
-                          for (String team in groupToOwnTeams[m.groupName]!) {
+                        if (m.groupName != null && m.groupName!.isNotEmpty && groupToOwnTeams.containsKey(m.groupName!)) {
+                          for (String team in groupToOwnTeams[m.groupName!]!) {
                             matchesByTeam.putIfAbsent(team, () => []).add(m);
                           }
                         } else {
@@ -341,8 +358,11 @@ class ViewerHomeScreen extends ConsumerWidget {
                           if (isWhiteOwn && wTeam != rTeam) {
                             matchesByTeam.putIfAbsent(wTeam, () => []).add(m);
                           }
-                          if (!isRedOwn && !isWhiteOwn && rTeam.isNotEmpty && !rTeam.contains('代表')) {
-                             matchesByTeam.putIfAbsent(rTeam, () => []).add(m);
+                          // ★ 修正: 観客（どちらのチームにも属さない）場合、赤チーム名が空だとリストから消滅する不具合を修正
+                          if (!isRedOwn && !isWhiteOwn) {
+                             final keyTeam = rTeam.isNotEmpty && !rTeam.contains('代表') ? rTeam 
+                                           : (wTeam.isNotEmpty && !wTeam.contains('代表') ? wTeam : '設定なし');
+                             matchesByTeam.putIfAbsent(keyTeam, () => []).add(m);
                           }
                         }
                       }
@@ -362,7 +382,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                             final teamName = teamEntry.key;
                             final teamMatchesList = teamEntry.value;
 
-                            String getMatchLabel(MatchListProjection m) {
+                            String getMatchLabel(MatchModel m) {
                               final bool isLeague = m.note.contains('[リーグ戦]'); 
                               final bool isKachinuki = m.isKachinuki;
                               final bool isIndividual = !isKachinuki && (m.matchType == 'individual' || m.matchType == '選手');
@@ -372,22 +392,22 @@ class ViewerHomeScreen extends ConsumerWidget {
                               return isIndividual ? '個人戦' : '団体戦';
                             }
 
-                            final catGroupedMatches = <String, List<MatchListProjection>>{};
-                            final catIndividualMatches = <MatchListProjection>[];
+                            final catGroupedMatches = <String, List<MatchModel>>{};
+                            final catIndividualMatches = <MatchModel>[];
 
                             for (var m in teamMatchesList) {
                               bool forceIndividual = sanitizedQuery.isNotEmpty && 
-                                                     matchedMatchIds.contains(m.matchId) && 
-                                                     (!matchedGroupNames.contains(m.groupName));
+                                                     matchedMatchIds.contains(m.id) && 
+                                                     (m.groupName == null || !matchedGroupNames.contains(m.groupName!));
 
-                              if (!forceIndividual && m.groupName.isNotEmpty) {
-                                catGroupedMatches.putIfAbsent(m.groupName, () => []).add(m);
+                              if (!forceIndividual && m.groupName != null && m.groupName!.isNotEmpty) {
+                                catGroupedMatches.putIfAbsent(m.groupName!, () => []).add(m);
                               } else {
                                 catIndividualMatches.add(m);
                               }
                             }
 
-                            final actualGroupedMatches = <String, List<MatchListProjection>>{};
+                            final actualGroupedMatches = <String, List<MatchModel>>{};
                             for (var entry in catGroupedMatches.entries) {
                               if (entry.value.length > 1 || entry.value.first.isKachinuki) {
                                 actualGroupedMatches[entry.key] = entry.value;
@@ -396,13 +416,13 @@ class ViewerHomeScreen extends ConsumerWidget {
                               }
                             }
 
-                            final matchesByPlayer = <String, List<MatchListProjection>>{};
+                            final matchesByPlayer = <String, List<MatchModel>>{};
                             for (var m in catIndividualMatches) {
                               String playerName = '選手名不明';
                               
                               bool forceIndividual = sanitizedQuery.isNotEmpty && 
-                                                     matchedMatchIds.contains(m.matchId) && 
-                                                     (!matchedGroupNames.contains(m.groupName));
+                                                     matchedMatchIds.contains(m.id) && 
+                                                     (m.groupName == null || !matchedGroupNames.contains(m.groupName!));
                               if (forceIndividual) {
                                 String rPlayer = m.redName.contains(':') ? m.redName.split(':').last.trim() : m.redName;
                                 String wPlayer = m.whiteName.contains(':') ? m.whiteName.split(':').last.trim() : m.whiteName;
@@ -509,7 +529,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       return Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          ?headerWidget,
+                                          // ignore: use_null_aware_elements
+                                          if (headerWidget != null) headerWidget,
                                           GestureDetector(
                                             onLongPress: null,
                                             child: Container(
@@ -580,7 +601,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                               ),
 
                                                             // ★ Viewer専用のスコアボードへの遷移に変更
-                                                            if (!label.contains('リーグ戦') && firstMatch.groupName.isNotEmpty) ...[
+                                                            if (!label.contains('リーグ戦') && firstMatch.groupName != null && firstMatch.groupName!.isNotEmpty) ...[
                                                               const SizedBox(width: 8),
                                                               SizedBox(
                                                                 height: 28,
@@ -616,7 +637,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                           childrenWidgets.addAll(normalMatches.map((m) => _buildMatchListTile(context, ref, m)).toList());
                                                         } else {
                                                           // 【リーグ団体戦】中枠あり
-                                                          final boutsByMatchup = <String, List<MatchListProjection>>{};
+                                                          final boutsByMatchup = <String, List<MatchModel>>{};
                                                           final matchupOrder = <String>[];
                                                           for (var m in normalMatches) {
                                                             final t1 = m.redName.split(':').first.trim();
@@ -685,7 +706,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: boutsInProgress ? Colors.white : (boutsAllFinished ? (isDark ? Colors.grey.shade400 : Colors.grey.shade600) : (isDark ? Colors.grey.shade400 : Colors.grey.shade700))),
                                                                           ),
                                                                         ),
-                                                                        if (bouts.isNotEmpty && bouts.first.groupName.isNotEmpty)
+                                                                        if (bouts.isNotEmpty && bouts.first.groupName != null && bouts.first.groupName!.isNotEmpty)
                                                                           SizedBox(
                                                                             height: 24,
                                                                             child: OutlinedButton(
@@ -806,6 +827,12 @@ class ViewerHomeScreen extends ConsumerWidget {
                         }),
                       ],
                     );
+                    } catch (e, stack) {
+                      return Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text('レンダリングエラー発生: $e\n$stack', style: const TextStyle(color: Colors.red)),
+                      );
+                    }
                   }).toList();
                 })(), 
               ],
@@ -815,10 +842,14 @@ class ViewerHomeScreen extends ConsumerWidget {
       ),
       ), // Scaffoldの終わり
     ); // PopScopeの終わり
-    }, // dataブロックの終わり
-    loading: () => Scaffold(backgroundColor: bgColor, body: const Center(child: CircularProgressIndicator())),
-    error: (e, s) => Scaffold(backgroundColor: bgColor, body: Center(child: Text('エラー: $e'))),
-    ); // asyncProj.whenの終わり
+    } catch (e, stack) {
+      return Scaffold(
+        backgroundColor: bgColor,
+        body: Center(
+          child: Text('致命的なUIエラー: $e\n$stack', style: const TextStyle(color: Colors.red)),
+        ),
+      );
+    }
   } // buildメソッドの終わり
 
   Widget _buildTournamentInfoCard(BuildContext context, WidgetRef ref, dynamic tournament) {
@@ -881,7 +912,7 @@ class ViewerHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMatchListTile(BuildContext context, WidgetRef ref, MatchListProjection match) {
+  Widget _buildMatchListTile(BuildContext context, WidgetRef ref, MatchModel match) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFinished = match.status == 'finished' || match.status == 'approved';
     final isPlaying = match.status == 'in_progress';
@@ -966,7 +997,7 @@ class ViewerHomeScreen extends ConsumerWidget {
           children: [
 
             // Viewerの個人戦・代表戦単発スコアボードへの遷移
-            if ((isIndividual || match.note.contains('[順位決定戦]') || match.matchType == '代表戦') && match.groupName.isNotEmpty)
+            if ((isIndividual || match.note.contains('[順位決定戦]') || match.matchType == '代表戦') && match.groupName != null && match.groupName!.isNotEmpty)
               SizedBox(
                 height: 28,
                 child: OutlinedButton(
@@ -985,7 +1016,7 @@ class ViewerHomeScreen extends ConsumerWidget {
           ],
         ),
         // ★ 遷移先を ViewerMatchScreen に向ける
-        onTap: () => context.push('/viewer/${match.matchId}'),
+        onTap: () => context.push('/viewer/${match.id}'),
         onLongPress: null, // ルール詳細はドメイン依存のため、ビューワーでは無効化
       ),
     );
@@ -1015,7 +1046,7 @@ class ViewerHomeScreen extends ConsumerWidget {
   }
 
   String _getMatchTitle(dynamic match) {
-    final isGrouped = match.groupName.isNotEmpty;
+    final isGrouped = match.groupName != null && match.groupName!.isNotEmpty;
     final isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦');
     
     if (isGrouped && !isIndividual) {
@@ -1111,7 +1142,7 @@ class ViewerHomeScreen extends ConsumerWidget {
     );
   }
 
-  String _generateDescriptiveLeagueTitle(List<MatchListProjection> matches, List<String> ownTeams) {
+  String _generateDescriptiveLeagueTitle(List<MatchModel> matches, List<String> ownTeams) {
     final participantsSet = <String>{};
     for (var m in matches) {
       participantsSet.add(m.redName.split(':').first.trim());
@@ -1179,3 +1210,9 @@ class ViewerHomeScreen extends ConsumerWidget {
     );
   }
 }
+
+// ★ 追加: home_screen.dart に定義されている tournamentProvider を拝借するための定義
+final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
+  final repo = ref.watch(tournamentRepositoryProvider);
+  return repo.getTournamentStream(id);
+});

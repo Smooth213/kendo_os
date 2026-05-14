@@ -202,7 +202,8 @@ class HomeScreen extends ConsumerWidget {
                   // これにより、下の試合リストの領域を広げます。
                   // ==========================================
                   if (!permissions.isReadOnly) ...[
-                    _buildHugeMenuButton(context, Icons.edit_note, '試合の進行・記録', Colors.indigo, () => context.push('/setup-match/$tournamentId')),
+                    // ★ 修正: ボタンのラベルをより直感的な「試合を作成」に変更
+                    _buildHugeMenuButton(context, Icons.edit_note, '試合を作成', Colors.indigo, () => context.push('/setup-match/$tournamentId')),
                     const SizedBox(height: 8),
                   ],
                   _buildHugeMenuButton(context, Icons.cast_connected, '観客席スクリーン (Viewer)', Colors.teal, () => context.push('/viewer-home/$tournamentId?role=viewer')),
@@ -412,8 +413,11 @@ class HomeScreen extends ConsumerWidget {
                             matchesByTeam.putIfAbsent(wTeam, () => []).add(m);
                           }
                           
-                          if (!isRedOwn && !isWhiteOwn && rTeam.isNotEmpty && !rTeam.contains('代表')) {
-                             matchesByTeam.putIfAbsent(rTeam, () => []).add(m);
+                          // ★ 修正: 自チーム設定がない場合、赤チーム名が空だとリストから消滅する不具合を修正
+                          if (!isRedOwn && !isWhiteOwn) {
+                             final keyTeam = rTeam.isNotEmpty && !rTeam.contains('代表') ? rTeam 
+                                           : (wTeam.isNotEmpty && !wTeam.contains('代表') ? wTeam : '設定なし');
+                             matchesByTeam.putIfAbsent(keyTeam, () => []).add(m);
                           }
                         }
                       }
@@ -590,7 +594,8 @@ class HomeScreen extends ConsumerWidget {
                                       return Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          ?headerWidget,
+                                          // ignore: use_null_aware_elements
+                                          if (headerWidget != null) headerWidget,
                                           // ★ 追加：団体戦のヘッダー全体を長押しでルール表示可能に
                                           GestureDetector(
                                             onLongPress: () => _showRuleInfoSheet(context, firstMatch),

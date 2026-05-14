@@ -106,10 +106,11 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
     super.dispose();
   }
 
-  // ★ 没入型AppBar
+  // ★ 修正：大会作成画面に合わせ、独自の余計な上部パディングを廃止したシンプルなAppBar
   Widget _buildImmersiveAppBar(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 8, bottom: 8, left: 16, right: 16),
+      // SafeArea や Scaffold が既にパディングを処理するため、ここでは最小限の余白のみ設定
+      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 16, right: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -117,6 +118,9 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
             icon: Icon(Icons.arrow_back_ios_new, color: Colors.grey.shade800, size: 24),
             onPressed: () => Navigator.pop(context),
           ),
+          const Spacer(),
+          // ★ ヘルプボタンもここに組み込む
+          const ManualHelpButton(manualPath: 'docs/manuals/operator/team_registration.md'),
         ],
       ),
     );
@@ -438,28 +442,23 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        title: const Text('チーム・選手登録', style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: const [
-          // ★ 欠場者の入力方法や、順番間違いの直し方が載っているページへ
-          ManualHelpButton(manualPath: 'docs/manuals/operator/team_registration.md'),
-          SizedBox(width: 8),
-        ],
-      ),
-      body: Column(
-        children: [
-          // ★ キーボードが開いた時はヘッダーをスッと隠し、入力エリアを最大化する
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-            child: isKeyboardOpen ? const SizedBox.shrink() : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildImmersiveAppBar(context),
-                _buildDynamicHeader(),
-              ],
+      // ★ 修正：標準の AppBar は使用せず、body 内のコンポーネントでヘッダーを構築（大会作成画面と統一）
+      body: SafeArea(
+        bottom: false, // 下部は StickyBottomAction があるため SafeArea から外す
+        child: Column(
+          children: [
+            // ★ キーボードが開いた時はヘッダーをスッと隠し、入力エリアを最大化する
+            AnimatedSize(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              child: isKeyboardOpen ? const SizedBox.shrink() : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildImmersiveAppBar(context),
+                  _buildDynamicHeader(),
+                ],
+              ),
             ),
-          ),
           Expanded(
             child: PageView(
               controller: _pageController,
@@ -484,6 +483,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
           ),
         ],
       ),
+    ),
     );
   }
 

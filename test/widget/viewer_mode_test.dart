@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
@@ -97,6 +98,18 @@ final List<MatchModel> mockMatches = [
     order: 3.0,
   ),
 
+  // ★ 追加: 確実に「進行中」のコールUIをトップに出現させるための個人戦データ
+  const MatchModel(
+    id: 'indiv_match_in_progress',
+    tournamentId: 'test_tournament_1',
+    category: '個人',
+    redName: '朱雀会 : 高橋',
+    whiteName: '玄武館 : 伊藤',
+    matchType: '個人戦',
+    status: 'in_progress',
+    order: 3.5,
+  ),
+
   const MatchModel(
     id: 'league_team_1',
     tournamentId: 'test_tournament_1',
@@ -159,14 +172,15 @@ class MockProjectionStore implements ProjectionStore {
   }
 
   @override
-  Stream<MatchProjection> watch(String matchId) async* {
+  Stream<MatchProjection> watch(String matchId) {
     final p = projections.where((proj) => proj.id == matchId).firstOrNull;
-    if (p != null) yield p;
+    if (p != null) return Stream.value(p);
+    return const Stream.empty();
   }
 
   // ★ 戻り値を MatchListProjection に変換して返すように修正
   @override
-  Stream<List<MatchListProjection>> watchByTournament(String tournamentId) async* {
+  Stream<List<MatchListProjection>> watchByTournament(String tournamentId) {
     final list = projections.where((p) => p.tournamentId == tournamentId).map((p) => MatchListProjection(
       id: p.id,
       tournamentId: p.tournamentId,
@@ -181,7 +195,7 @@ class MockProjectionStore implements ProjectionStore {
       isKachinuki: p.isKachinuki,
       note: p.note,
     )).toList();
-    yield list;
+    return Stream.value(list); // async* の遅延をなくし、即時反映させる
   }
 }
 
@@ -214,6 +228,16 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
     );
   }).toList();
 
+  final router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => child,
+      ),
+    ],
+  );
+
   return ProviderScope(
     overrides: [
       activeRoleProvider.overrideWith((ref) => role),
@@ -227,8 +251,8 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
       // ★ Phase 8: SettingsProviderをモック化してSharedPreferences未実装エラーを回避
       settingsProvider.overrideWith(() => MockSettingsNotifier()),
     ],
-    child: MaterialApp(
-      home: child,
+    child: MaterialApp.router(
+      routerConfig: router,
     ),
   );
 }
@@ -264,7 +288,16 @@ void main() {
     });
 
     testWidgets('2. ViewerHomeScreen displays current status and correctly renders elements', (WidgetTester tester) async {
+      // ★ 画面サイズを縦長にして、スクロールが必要な検索アイコンが確実に描画されるようにする
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(createTestableWidget(const ViewerHomeScreen(tournamentId: testTournamentId)));
+      await tester.pump(); // Streamの即時反映を待つ
       await tester.pumpAndSettle();
 
       expect(find.text('進行中'), findsWidgets);
@@ -281,6 +314,7 @@ void main() {
 
     testWidgets('3. ViewerOfficialRecordScreen renders header and export buttons', (WidgetTester tester) async {
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.text('PDF印刷'), findsWidgets);
@@ -290,6 +324,7 @@ void main() {
 
     testWidgets('4-1. Renders normal Team Match (Table Format)', (WidgetTester tester) async {
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.textContaining('【団体戦】'), findsWidgets);
@@ -307,6 +342,7 @@ void main() {
       });
 
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.textContaining('【勝ち抜き戦】'), findsWidgets);
@@ -323,6 +359,7 @@ void main() {
       });
 
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pump();
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('全カテゴリ').first);

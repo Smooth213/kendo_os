@@ -39,28 +39,29 @@ void main() {
       });
     });
 
-    test('watchInProgressMatches: 進行中(in_progress)の試合だけを抽出して監視できるか', () async {
+    test('watchActiveMatches: 進行中(in_progress)と待機中(waiting)の試合を抽出して監視できるか', () async {
       // 実行
-      final stream = repository.watchInProgressMatches();
+      final stream = repository.watchActiveMatches();
       final activeMatches = await stream.first;
 
-      // 検証: 3件中、1件だけがヒットするはず
-      expect(activeMatches.length, 1, reason: '進行中の試合は1件だけのはず');
-      expect(activeMatches.first.id, 'match_active');
-      expect(activeMatches.first.status, 'in_progress');
+      // 検証: 3件中、進行中と待機中の2件がヒットするはず
+      expect(activeMatches.length, 2, reason: '進行中と待機中の試合が2件ヒットするはず');
+      final ids = activeMatches.map((m) => m.id).toList();
+      expect(ids.contains('match_active'), isTrue);
+      expect(ids.contains('match_waiting'), isTrue);
     });
 
-    test('getStaticMatches: 進行中以外(finished, waiting等)の試合を1回だけ取得できるか', () async {
+    test('getStaticMatches: 終了済み(finished, approved)の試合を1回だけ取得できるか', () async {
       // 実行
       final staticMatches = await repository.getStaticMatches();
 
-      // 検証: 3件中、進行中を除いた2件がヒットするはず
-      expect(staticMatches.length, 2, reason: '進行中以外の試合は2件のはず');
+      // 検証: 3件中、終了済みの1件がヒットするはず
+      expect(staticMatches.length, 1, reason: '終了済みの試合は1件のはず');
       
       final ids = staticMatches.map((m) => m.id).toList();
       expect(ids.contains('match_done'), isTrue);
-      expect(ids.contains('match_waiting'), isTrue);
-      expect(ids.contains('match_active'), isFalse, reason: '進行中の試合は含まれてはいけない');
+      expect(ids.contains('match_waiting'), isFalse);
+      expect(ids.contains('match_active'), isFalse);
     });
   });
 }

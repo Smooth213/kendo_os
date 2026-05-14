@@ -13,6 +13,10 @@
     "/^flutter analyze$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^flutter analyze lib/application/usecases/match_application_service\\.dart lib/presentation/operate/screens/new_match_screen\\.dart lib/presentation/operate/providers/match_generator_provider\\.dart$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   },
   "yaml.schemas": {

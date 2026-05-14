@@ -92,9 +92,12 @@ class LocalMatchRepository {
 
       final entity = _toEntity(match);
       await _isar.writeTxn(() async {
+        // ★ 修正: putByFirestoreIdがEmbeddedリストの更新でクラッシュし、
+        // トランザクション全体がロールバックして「試合が追加されないバグ」を防ぐため、
+        // findFirstで既存IDを引き継いでから通常のputを行う「最も安全なUpsert」に切り替えます。
         final existing = await _isar.matchEntitys.filter().firestoreIdEqualTo(match.id).findFirst();
         if (existing != null) {
-          entity.id = existing.id;
+          entity.id = existing.id; // 既存の内部IDを引き継いで上書き更新する
         }
         await _isar.matchEntitys.put(entity);
       });
@@ -135,7 +138,9 @@ class LocalMatchRepository {
       for (var match in matches) {
         final entity = _toEntity(match);
         final existing = await _isar.matchEntitys.filter().firestoreIdEqualTo(match.id).findFirst();
-        if (existing != null) entity.id = existing.id;
+        if (existing != null) {
+          entity.id = existing.id; // ここでも既存IDを引き継ぐ
+        }
         await _isar.matchEntitys.put(entity);
       }
     });
@@ -194,6 +199,7 @@ class LocalMatchRepository {
   // --- 翻訳機（マッパー関数） ---
   MatchEntity _toEntity(MatchModel model) {
     return MatchEntity()
+      ..id = Isar.autoIncrement // ★ ハッシュ関数を捨て、Isarの自動採番に完全に任せる
       ..firestoreId = model.id
       ..matchType = model.matchType
       ..redName = model.redName

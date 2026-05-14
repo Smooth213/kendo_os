@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
@@ -19,24 +20,18 @@ import 'package:path_provider/path_provider.dart';
 final connectivityProvider = StreamProvider<bool>((ref) async* {
   // 1. アプリ起動時の状態をチェックして即座に返す
   final initialResults = await Connectivity().checkConnectivity();
-  yield initialResults.any((result) => 
-    result == ConnectivityResult.mobile || 
-    result == ConnectivityResult.wifi || 
-    result == ConnectivityResult.ethernet
-  );
+  // ★ 修正: シミュレータ(vpn, other)などの特殊な通信状態を考慮し、オフライン(none)以外は全てオンラインとみなす
+  yield !initialResults.contains(ConnectivityResult.none);
 
   // 2. 以降は、スマホの通信状態が変わるたびに自動で新しい状態を流し続ける
   await for (final results in Connectivity().onConnectivityChanged) {
-    yield results.any((result) => 
-      result == ConnectivityResult.mobile || 
-      result == ConnectivityResult.wifi || 
-      result == ConnectivityResult.ethernet
-    );
+    yield !results.contains(ConnectivityResult.none);
   }
 });
 
 final isOnlineProvider = Provider<bool>((ref) {
-  return ref.watch(connectivityProvider).value ?? false;
+  // ★ 修正: 判定が完了していない(null)間も、楽観的にオンラインとみなすことで自動同期のストッパーを防ぐ
+  return ref.watch(connectivityProvider).value ?? true;
 });
 
 // ★ Phase 8-1: 「現在リアルタイムに同期処理が動いているか」をUIへ通知するプロバイダ
@@ -50,12 +45,22 @@ class SyncEngine {
   bool _needsSyncAgain = false; // ★ 追加：同期中に書き込みがあった場合の「おかわり」フラグ
 
   SyncEngine(this.ref) {
+    if (kIsWeb) return; // ★ 修正: Webブラウザ（Viewer）環境ではローカルDB(Isar)を持たないため、同期エンジン全体を物理的に停止させる
+
     // ★ 修正: アプリ起動時に古い未送信データをクリーンアップする
     _cleanupOldPendingData();
 
     // ネットワーク状態を監視し、オンラインになったら自動で同期を開始する
     ref.listen<bool>(isOnlineProvider, (previous, isOnline) {
       if (isOnline && (previous == false || previous == null)) {
+        syncNow();
+      }
+    });
+
+    // ★ 修正: 未送信データが増えたらリアルタイムで自動同期を発火させる（管理者からViewerへの即時反映用）
+    ref.listen<AsyncValue<int>>(pendingMatchesCountProvider, (previous, next) {
+      final count = next.value ?? 0;
+      if (count > 0 && ref.read(isOnlineProvider)) {
         syncNow();
       }
     });
@@ -80,6 +85,9 @@ class SyncEngine {
       },
     );
     ref.onDispose(() => lifecycleListener.dispose());
+
+    // ★ アプリ起動時に一度強制的に同期を試みる (リスナーのタイミングずれによる無限待機を防止)
+    Future.delayed(const Duration(seconds: 2), () => syncNow());
   }
 
   // ==========================================
@@ -150,6 +158,8 @@ class SyncEngine {
 
   // ★ Phase 2: 裏でひっそりとJSONを書き出すメソッド
   Future<void> _autoBackupToJson() async {
+    if (kIsWeb) return; // ★ 追加: Webブラウザ環境では端末へのファイル保存機能がサポートされていないためスキップ
+    
     try {
       final matches = ref.read(matchListProvider);
       if (matches.isEmpty) return;
@@ -177,12 +187,8 @@ class SyncEngine {
 
   // ★ Phase 6: ユーザーの手動操作（引っ張って更新など）で強制的に同期を走らせるメソッド
   Future<void> forceSync() async {
-    final isOnline = ref.read(isOnlineProvider);
-    if (!isOnline) {
-      debugPrint('🚫 [Sync Engine] オフラインのため手動同期をスキップします');
-      return;
-    }
-    debugPrint('🔄 [Sync Engine] 手動同期(forceSync)を開始します...');
+    // ★ 修正: 手動操作による同期要求なので、オンライン判定を無視して強制的に試行(突破)する
+    debugPrint('🔄 [Sync Engine] 手動同期(forceSync)を強制的に開始します...');
     await syncNow();
   }
 
@@ -290,7 +296,14 @@ class SyncEngine {
         }
 
         final uploadData = match.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion).toJson();
-        await docRef.set(uploadData);
+        
+        try {
+          await docRef.set(uploadData);
+        } catch (e, stack) {
+          debugPrint('🔥 [Sync Engine] 試合ID: ${match.id} のFirestoreアップロードに失敗しました: $e\n$stack');
+          _needsSyncAgain = true; // 失敗した場合は未送信フラグを維持してリトライ対象にする
+          continue; // 失敗しても次の試合へ進み、エンジン全体が止まらないようにする
+        }
         
         // 🛡️ Phase 3 ガード: 通常同期中に追加入力がないか確認
         final currentLocal = await localRepo.getMatch(match.id);

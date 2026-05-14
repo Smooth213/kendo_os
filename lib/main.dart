@@ -26,7 +26,7 @@ import 'presentation/viewer/screens/viewer_match_screen.dart';
 // ★ Phase 6: Stage 2 限定化
 // リリース版に不要な高度機能(内部監査等)を物理的に切断(パージ)します。
 // ==========================================
-// import 'presentation/operate/screens/master_management_screen.dart';
+import 'presentation/operate/screens/master_management_screen.dart'; // ★ 復旧: マスタ画面へのインポートを再開通
 // import 'presentation/operate/screens/audit_log_screen.dart'; 
 // import 'presentation/operate/screens/observability_dashboard_screen.dart'; 
 import 'presentation/operate/screens/create_tournament_screen.dart';
@@ -250,7 +250,9 @@ final _router = GoRouter(
       // ==========================================
       // GoRoute(path: '/audit-log', builder: (context, state) => const AuditLogScreen()), 
       // GoRoute(path: '/dashboard', builder: (context, state) => const ObservabilityDashboardScreen()), 
-      // GoRoute(path: '/master', builder: (context, state) => const MasterManagementScreen()),
+      
+      // ★ 復旧: 選手マスタ管理画面へのルートを再開通
+      GoRoute(path: '/master', builder: (context, state) => const MasterManagementScreen()),
       
       GoRoute(
         path: '/tournament-list', 
@@ -399,6 +401,8 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp> with WidgetsBindingObse
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
+
+    if (kIsWeb) return; // ★ 追加: Webブラウザ環境ではローカルDBを持たないため、バックグラウンド処理全体をスキップする
     
     // アプリがバックグラウンドに回った（スリープ、ホーム画面に戻る等）瞬間
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
@@ -470,28 +474,62 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp> with WidgetsBindingObse
 // ============================================================================
 // ★ Phase 6: URLからRoleを解析し、Providerにセットしてからルーターへ流す魔法の箱
 // ============================================================================
-class RoleInjector extends ConsumerWidget {
+class RoleInjector extends ConsumerStatefulWidget {
   final Widget child; 
   final String? roleStr;
   const RoleInjector({super.key, required this.child, this.roleStr});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // ★ 修正: 権限の適用が1フレーム遅れることで、初期ビルド時に「権限なし」と判定されて
-    // 強制的にルート('/')へリダイレクトされる不具合を完全に防止する。
-    final targetRole = roleStr == 'viewer' ? Role.viewer : null;
-    final currentRole = ref.watch(temporaryRoleOverrideProvider);
+  ConsumerState<RoleInjector> createState() => _RoleInjectorState();
+}
 
-    if (currentRole != targetRole) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+class _RoleInjectorState extends ConsumerState<RoleInjector> {
+  bool _isReady = false;
+  late final ProviderContainer _container;
+
+  @override
+  void initState() {
+    super.initState();
+    // ★ 初期化時にコンテナを安全に確保しておく（破棄時の復元用）
+    _container = ProviderScope.containerOf(context, listen: false);
+    _applyRole();
+  }
+
+  void _applyRole() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final targetRole = widget.roleStr == 'viewer' ? Role.viewer : null;
+      final currentRole = ref.read(temporaryRoleOverrideProvider);
+
+      if (currentRole != targetRole) {
         ref.read(temporaryRoleOverrideProvider.notifier).state = targetRole;
         debugPrint('🎭 [Role Injector] 権限を同期的に切り替えました: ${targetRole?.label ?? "通常モード"}');
+      }
+      setState(() {
+        _isReady = true;
       });
-      // ★ 権限が正しく反映されるまでは、子画面を一切描画せずに待機する
+    });
+  }
+
+  @override
+  void dispose() {
+    // ★ 画面が閉じられた時（戻るボタン等）、自分がViewer権限にしていたなら通常モード(null)に戻す
+    final wasViewer = widget.roleStr == 'viewer';
+    if (wasViewer) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _container.read(temporaryRoleOverrideProvider.notifier).state = null;
+        debugPrint('🎭 [Role Injector] 権限を 通常モード に安全に復元しました');
+      });
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // ★ 真犯人対策：ref.watch を使わないことで、裏画面との状態の奪い合い（無限ループ）を物理的に遮断
+    if (!_isReady) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
-    // ★ 修正: widget.child ではなく child を返す（コンパイルエラーの完全解消）
-    return child;
+    return widget.child;
   }
 }
