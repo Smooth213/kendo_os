@@ -8,6 +8,9 @@ import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import '../providers/team_name_history_provider.dart'; // ★ 追加：履歴プロバイダ
 import 'package:kendo_os/core/utils/text_sanitizer.dart'; // ★ お掃除フィルターを追加
 import '../../shared/widgets/manual_help_button.dart';
+import '../../shared/widgets/liquid_background.dart';
+import '../../shared/widgets/glass_button.dart';
+import '../providers/settings_provider.dart';
 
 // ★ 安定したProvider定義
 final registeredTeamsProvider = StreamProvider.family.autoDispose<List<TeamModel>, String>((ref, tournamentId) {
@@ -435,18 +438,18 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
     for (int i = 0; i < _substituteCount; i++) {
       posNames.add('補欠'); // 役職名として「補欠」を追加
     }
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // ★ Phase 8-3: キーボードが開いているかを検知
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
-      // ★ 修正：標準の AppBar は使用せず、body 内のコンポーネントでヘッダーを構築（大会作成画面と統一）
-      body: SafeArea(
-        bottom: false, // 下部は StickyBottomAction があるため SafeArea から外す
-        child: Column(
-          children: [
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        // ★ 修正：標準の AppBar は使用せず、body 内のコンポーネントでヘッダーを構築（大会作成画面と統一）
+        body: SafeArea(
+          bottom: false, // 下部は StickyBottomAction があるため SafeArea から外す
+          child: Column(
+            children: [
             // ★ キーボードが開いた時はヘッダーをスッと隠し、入力エリアを最大化する
             AnimatedSize(
               duration: const Duration(milliseconds: 250),
@@ -482,9 +485,10 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
             child: isKeyboardOpen ? const SizedBox.shrink() : _buildStickyBottomAction(totalPlayerCount),
           ),
         ],
-      ),
-    ),
-    );
+      ), // Column
+    ), // SafeArea
+    ), // Scaffold
+    ); // LiquidBackground
   }
 
   // ===== ウィザード構成部品 =====
@@ -801,11 +805,12 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
 
   Widget _buildStickyBottomAction(int playerCount) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bottomColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final bottomColor = enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+    final borderColor = enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300);
 
     return Container(
-      padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: MediaQuery.of(context).padding.bottom + 16),
+      padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
       decoration: BoxDecoration(color: bottomColor, border: Border(top: BorderSide(color: borderColor, width: 0.5))),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -822,7 +827,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                   ),
                 ),
               Expanded(
-                child: ElevatedButton(
+                child: GlassButton(
                   onPressed: () async {
                     if (_currentPage == 2) {
                       if (_teamNameController.text.isEmpty) {
@@ -855,18 +860,17 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                       _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                     }
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 20), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
-                  child: Text(
-                    _currentPage == 2 ? (_editingTeamId != null ? '変更を保存' : '登録して、続けてチームを追加') : '次へ進む', 
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold) // 長い文字が収まるよう16に調整
-                  ),
+                  color: Colors.teal,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  label: _currentPage == 2 ? (_editingTeamId != null ? '変更を保存' : '登録して続けて追加') : '次へ進む',
+                  icon: _currentPage == 2 ? (_editingTeamId != null ? Icons.save : Icons.add_task) : null,
                 ),
               ),
             ],
           ),
           if (_currentPage == 2) ...[
             const SizedBox(height: 12),
-            OutlinedButton.icon(
+            GlassButton(
               onPressed: () async {
                 // ★ 自動保存機能
                 if (_teamNameController.text.trim().isNotEmpty) {
@@ -890,15 +894,10 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                 if (!mounted) return;
                 context.go('/home/${widget.tournamentId}');
               },
-              icon: const Icon(Icons.check_circle),
-              label: const Text('すべての登録を完了して大会画面へ', style: TextStyle(fontWeight: FontWeight.bold)),
-              style: OutlinedButton.styleFrom(
-                // iOS Native: ボタンの色と角丸(12px)の調整
-                foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.teal.shade400 : Colors.teal.shade700, 
-                minimumSize: const Size(double.infinity, 54), 
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), 
-                side: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.teal.shade400 : Colors.teal.shade700)
-              ),
+              color: Colors.teal,
+              icon: Icons.check_circle,
+              label: 'すべての登録を完了して大会画面へ',
+              padding: const EdgeInsets.symmetric(vertical: 16),
             ),
           ]
         ],

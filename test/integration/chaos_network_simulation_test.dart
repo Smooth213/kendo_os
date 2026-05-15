@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
@@ -13,7 +14,12 @@ class MockFirestoreAdapter extends Mock {
 // ★ 修正: extends LocalMatchRepository ではなく、Mock implements にしてコンストラクタ問題を回避
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
-class FakeMatchModel extends Fake implements MatchModel {}
+class FakeMatchModel extends Fake implements MatchModel {
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return super.toString();
+  }
+}
 
 void main() {
   setUpAll(() {

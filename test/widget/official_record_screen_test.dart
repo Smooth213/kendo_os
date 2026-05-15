@@ -8,6 +8,13 @@ import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart
 import 'package:kendo_os/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/presentation/operate/screens/home_screen.dart' show customTeamNamesProvider;
+import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
+import 'package:kendo_os/domain/entities/settings_model.dart';
+
+class MockSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsModel build() => const SettingsModel(securityLevel: 1);
+}
 
 void main() {
   group('OfficialRecordScreen UI/Logic Tests', () {
@@ -26,6 +33,7 @@ void main() {
                 canChangeSettings: true, // ★ 追加
                 canDeleteData: true,     // ★ 追加
               )),
+          settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
         child: const MaterialApp(
           home: OfficialRecordScreen(tournamentId: testTournamentId),

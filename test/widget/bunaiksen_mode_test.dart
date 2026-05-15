@@ -9,6 +9,13 @@ import 'package:kendo_os/presentation/operate/screens/bunaiksen_official_record_
 import 'package:kendo_os/presentation/operate/screens/home_screen.dart' show customTeamNamesProvider;
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
+import 'package:kendo_os/domain/entities/settings_model.dart';
+
+class MockSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsModel build() => const SettingsModel(securityLevel: 1);
+}
 
 void main() {
   group('部内戦 成績一覧 UIの表示テスト (Widget Test)', () {
@@ -20,6 +27,7 @@ void main() {
           bunaiksenViewDateProvider.overrideWith((ref) => mockDate),
           matchListProvider.overrideWith((ref) => mockMatches),
           customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
+          settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
         child: const MaterialApp(
           home: BunaiksenOfficialRecordScreen(),

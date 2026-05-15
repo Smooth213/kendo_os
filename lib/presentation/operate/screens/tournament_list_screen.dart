@@ -6,6 +6,8 @@ import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import '../providers/sync_provider.dart'; 
 import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
+import '../../shared/widgets/liquid_background.dart';
+import '../providers/settings_provider.dart';
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -19,6 +21,7 @@ class TournamentListScreen extends ConsumerWidget {
     if (isArchive) ref.watch(archiveRefreshProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
 
     // iOS Native: イメージカラー「今日の大会(ブルー)」「過去の大会(グレー)」を完全復元
     final Color accentColor = isArchive 
@@ -30,22 +33,22 @@ class TournamentListScreen extends ConsumerWidget {
         : (isDark ? Colors.blue.withValues(alpha: 0.2) : Colors.blue.shade50);
         
     // iOS Native カラーパレット
-    final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final Color cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF636366);
     final Color separatorColor = isDark ? const Color(0xFF38383A) : const Color(0xFFC6C6C8);
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
-        // ★ 修正：白飛びして見えなくなっていた戻るボタンを、タイトルと同じ色で明示的に配置！
-        leading: IconButton(
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          // ★ 修正：白飛びして見えなくなっていた戻るボタンを、タイトルと同じ色で明示的に配置！
+          leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: accentColor, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(isArchive ? '過去の大会 (アーカイブ)' : '最近の大会', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        backgroundColor: Colors.transparent, // 透かしAppBar
+        backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
         elevation: 0,
         actions: const [
           // 全体の目次へ誘導
@@ -190,6 +193,6 @@ class TournamentListScreen extends ConsumerWidget {
           );
         },
       ),
-    );
+    ));
   }
 }

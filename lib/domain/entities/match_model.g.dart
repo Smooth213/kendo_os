@@ -32,7 +32,7 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
           ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
-  lastUpdatedAt: const TimestampConverter().fromJson(json['lastUpdatedAt']),
+  lastUpdatedAt: const SafeTimestampConverter().fromJson(json['lastUpdatedAt']),
   refereeNames:
       (json['refereeNames'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -40,7 +40,7 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
       const [],
   countForStandings: json['countForStandings'] as bool? ?? true,
   scorerId: json['scorerId'] as String?,
-  lockExpiresAt: const TimestampConverter().fromJson(json['lockExpiresAt']),
+  lockExpiresAt: const SafeTimestampConverter().fromJson(json['lockExpiresAt']),
   version: (json['version'] as num?)?.toInt() ?? 1,
   isAutoAssigned: json['isAutoAssigned'] as bool? ?? false,
   order: json['order'] == null
@@ -57,8 +57,10 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
   extensionTimeMinutes: (json['extensionTimeMinutes'] as num?)?.toInt(),
   extensionCount: (json['extensionCount'] as num?)?.toInt(),
   hasHantei: json['hasHantei'] as bool? ?? false,
-  timerStartedAt: const TimestampConverter().fromJson(json['timerStartedAt']),
-  timerPausedAt: const TimestampConverter().fromJson(json['timerPausedAt']),
+  timerStartedAt: const SafeTimestampConverter().fromJson(
+    json['timerStartedAt'],
+  ),
+  timerPausedAt: const SafeTimestampConverter().fromJson(json['timerPausedAt']),
   accumulatedPauseDurationMs:
       (json['accumulatedPauseDurationMs'] as num?)?.toInt() ?? 0,
   note: json['note'] as String? ?? '',
@@ -91,16 +93,14 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'snapshots': instance.snapshots.map((e) => e.toJson()).toList(),
       'syncState': _$SyncStateEnumMap[instance.syncState]!,
       'pendingEvents': instance.pendingEvents.map((e) => e.toJson()).toList(),
-      'lastUpdatedAt': _$JsonConverterToJson<dynamic, DateTime>(
+      'lastUpdatedAt': const SafeTimestampConverter().toJson(
         instance.lastUpdatedAt,
-        const TimestampConverter().toJson,
       ),
       'refereeNames': instance.refereeNames,
       'countForStandings': instance.countForStandings,
       'scorerId': instance.scorerId,
-      'lockExpiresAt': _$JsonConverterToJson<dynamic, DateTime>(
+      'lockExpiresAt': const SafeTimestampConverter().toJson(
         instance.lockExpiresAt,
-        const TimestampConverter().toJson,
       ),
       'version': instance.version,
       'isAutoAssigned': instance.isAutoAssigned,
@@ -116,13 +116,11 @@ Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
       'extensionTimeMinutes': instance.extensionTimeMinutes,
       'extensionCount': instance.extensionCount,
       'hasHantei': instance.hasHantei,
-      'timerStartedAt': _$JsonConverterToJson<dynamic, DateTime>(
+      'timerStartedAt': const SafeTimestampConverter().toJson(
         instance.timerStartedAt,
-        const TimestampConverter().toJson,
       ),
-      'timerPausedAt': _$JsonConverterToJson<dynamic, DateTime>(
+      'timerPausedAt': const SafeTimestampConverter().toJson(
         instance.timerPausedAt,
-        const TimestampConverter().toJson,
       ),
       'accumulatedPauseDurationMs': instance.accumulatedPauseDurationMs,
       'note': instance.note,
@@ -138,8 +136,3 @@ const _$SyncStateEnumMap = {
   SyncState.synced: 'synced',
   SyncState.conflict: 'conflict',
 };
-
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) => value == null ? null : toJson(value);

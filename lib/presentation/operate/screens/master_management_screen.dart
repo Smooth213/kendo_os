@@ -13,6 +13,9 @@ import 'package:kendo_os/core/utils/text_sanitizer.dart';
 import '../providers/team_name_history_provider.dart'; // ★ 新規追加
 import 'package:flutter/services.dart'; // ★ 長押し時のバイブレーション用
 import 'package:flutter_slidable/flutter_slidable.dart'; // ★ iPhoneライクなスワイプ用
+import '../../shared/widgets/liquid_background.dart';
+import '../../shared/widgets/glass_button.dart';
+import '../providers/settings_provider.dart';
 
 // 選手一覧のProvider
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
@@ -39,16 +42,17 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
     final playerListAsync = ref.watch(playerListProvider);
     final permissions = ref.watch(permissionProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
 
     final Color primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
-    final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final Color textColor = isDark ? Colors.white : Colors.black87;
 
-    return Scaffold(
-        backgroundColor: bgColor,
-        appBar: AppBar(
-        // ★ 修正1: 左側（Leading）の「✕」にキャンセル機能を割り当て
-        leading: _isSelectionMode
+    return LiquidBackground(
+      child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+          // ★ 修正1: 左側（Leading）の「✕」にキャンセル機能を割り当て
+          leading: _isSelectionMode
             ? IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () {
@@ -63,7 +67,7 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
           _isSelectionMode ? '${_selectedPlayerIds.length}人選択中' : '選手マスタ管理', 
           style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor, letterSpacing: 1.2)
         ),
-        backgroundColor: Colors.transparent, 
+        backgroundColor: enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
         elevation: 0,
         actions: _isSelectionMode
             ? [
@@ -79,23 +83,11 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
             : (permissions.isReadOnly 
                 ? [] 
                 : [
-                    // ★ 変更：チェックリスト（一括選択）ボタンを廃止し、スッキリさせる
-                    PopupMenuButton<String>(
-                      icon: Icon(Icons.more_vert, color: primaryColor),
-                      onSelected: (value) {
-                        if (value == 'cleanup') _showDataCleanupDialog(context, ref);
-                        if (value == 'promote') _showPromoteConfirmDialog(context, ref);
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'cleanup',
-                          child: Row(children: [Icon(Icons.cleaning_services, size: 20), SizedBox(width: 12), Text('データ掃除')]),
-                        ),
-                        const PopupMenuItem(
-                          value: 'promote',
-                          child: Row(children: [Icon(Icons.school, size: 20), SizedBox(width: 12), Text('新年度の一括進級')]),
-                        ),
-                      ],
+                    // ★ 変更：他画面と統一してボトムシートを呼び出すボタンへ変更
+                    IconButton(
+                      icon: Icon(Icons.more_horiz, color: primaryColor, size: 28),
+                      tooltip: 'マスタ管理メニュー',
+                      onPressed: () => _showMasterMenuBottomSheet(context, ref),
                     ),
                     ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md', color: primaryColor),
                     const SizedBox(width: 8),
@@ -115,16 +107,12 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                   const SizedBox(height: 12),
                   const Text('最初の選手を登録して、\n道場・学校の名簿を作りましょう！', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, height: 1.5, fontSize: 14)),
                   const SizedBox(height: 32),
-                  ElevatedButton.icon(
+                  GlassButton(
                     onPressed: () => _showPlayerBottomSheet(context, ref),
-                    icon: const Icon(Icons.person_add, color: Colors.white),
-                    label: const Text('最初の選手を登録する', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor, foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      elevation: 4,
-                    ),
+                    color: primaryColor,
+                    icon: Icons.person_add,
+                    label: '最初の選手を登録する',
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   ),
                 ],
               ),
@@ -259,6 +247,7 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
             icon: const Icon(Icons.person_add),
             label: const Text('選手を追加', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
+      ),
     );
   }
 
@@ -594,13 +583,12 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
                             }
                             if (context.mounted) Navigator.pop(context);
                           },
-                          icon: const Icon(Icons.save),
-                          label: const Text('保存して登録', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor, foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            backgroundColor: primaryColor,
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                           ),
+                          icon: const Icon(Icons.save),
+                          label: const Text('保存して登録'),
                         ),
                       ],
                     ),
@@ -626,6 +614,43 @@ class _MasterManagementScreenState extends ConsumerState<MasterManagementScreen>
         padding: const EdgeInsets.symmetric(vertical: 16),
       ),
       child: Column(children: [Icon(icon, size: 28, color: finalColor), const SizedBox(height: 8), Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: finalColor))]),
+    );
+  }
+
+  // ★ 追加：他画面と操作感を統一したマスタ管理用のボトムシートメニュー
+  void _showMasterMenuBottomSheet(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.only(top: 16, bottom: 56), // 下部の余白を増やして角丸との干渉を防ぐ
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10)))),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: CircleAvatar(backgroundColor: Colors.purple.withValues(alpha: 0.1), child: Icon(Icons.cleaning_services, color: Colors.purple.shade700)),
+              title: Text('データとストレージ管理', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+              subtitle: const Text('キャッシュクリアやデータのエクスポート・整理を行います', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              onTap: () { Navigator.pop(ctx); _showDataCleanupDialog(context, ref); },
+            ),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Divider(height: 1, color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            ListTile(
+              leading: CircleAvatar(backgroundColor: Colors.indigo.withValues(alpha: 0.1), child: Icon(Icons.school, color: Colors.indigo.shade700)),
+              title: Text('新年度の一括進級', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+              subtitle: const Text('すべての選手の学年を1つ繰り上げます', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              onTap: () { Navigator.pop(ctx); _showPromoteConfirmDialog(context, ref); },
+            ),
+          ],
+        ),
+      ),
     );
   }
 

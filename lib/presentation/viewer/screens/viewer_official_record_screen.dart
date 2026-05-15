@@ -6,6 +6,7 @@ import 'package:kendo_os/application/services/pdf_service.dart';
 import '../../operate/screens/home_screen.dart';
 import 'package:kendo_os/domain/services/standings_calculator.dart';
 import 'package:kendo_os/domain/services/team_match_calculator.dart';
+import '../../shared/widgets/liquid_background.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -52,15 +53,17 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
       ),
       data: (proj) {
         if (proj == null || proj.categoryToGroupKeys.isEmpty) {
-          return Scaffold(
-            backgroundColor: bgColor,
-            appBar: AppBar(
-              leading: IconButton(icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), onPressed: () => Navigator.pop(context)),
-              title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
-              backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-              elevation: 0,
+          return LiquidBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                leading: IconButton(icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), onPressed: () => Navigator.pop(context)),
+                title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
+                backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                elevation: 0,
+              ),
+              body: Center(child: Text('記録データがありません', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
             ),
-            body: Center(child: Text('記録データがありません', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
           );
         }
 
@@ -68,26 +71,27 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
         return DefaultTabController(
           length: categories.length,
-          child: Scaffold(
-            backgroundColor: bgColor, 
-            appBar: AppBar(
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), 
-                onPressed: () => Navigator.pop(context),
-              ),
+          child: LiquidBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent, 
+              appBar: AppBar(
+                leading: IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), 
+                  onPressed: () => Navigator.pop(context),
+                ),
               title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
               backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, 
               elevation: 0,
-          bottom: TabBar(
-            isScrollable: true,
-            labelColor: headerTextColor, 
-            unselectedLabelColor: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
-            indicatorColor: Colors.indigo.shade600,
-            tabs: categories.map((cat) => Tab(text: cat)).toList(),
-          ),
-        ),
-        body: TabBarView(
-          children: categories.map((cat) {
+              bottom: TabBar(
+                isScrollable: true,
+                labelColor: headerTextColor, 
+                unselectedLabelColor: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
+                indicatorColor: Colors.indigo.shade600,
+                tabs: categories.map((cat) => Tab(text: cat)).toList(),
+              ),
+            ),
+            body: TabBarView(
+              children: categories.map((cat) {
             final groupKeys = proj.categoryToGroupKeys[cat]!;
 
             final sortedGroupKeys = List<String>.from(groupKeys)..sort((a, b) {
@@ -326,8 +330,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
             );
           }).toList(),
         ),
-      ),
-    );
+      ), // Scaffold
+          ), // LiquidBackground
+        ); // DefaultTabController
       }
     );
   }

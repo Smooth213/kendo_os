@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
@@ -37,7 +38,12 @@ class MockUiMessageNotifier extends UiMessageNotifier {
   void showSuccess(String message) {}
 }
 
-class FakeMatchModel extends Fake implements MatchModel {}
+class FakeMatchModel extends Fake implements MatchModel {
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return super.toString();
+  }
+}
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override

@@ -210,7 +210,11 @@ class SyncEngine {
       debugPrint('🔄 [Sync Engine] ${pendingMatches.length}件を同期開始...');
 
       // 2. 1件ずつ慎重に、かつ高速に同期
-      for (final match in pendingMatches) {
+      for (final pendingMatch in pendingMatches) {
+        // ★ 修正: ループ処理中にローカルデータが更新されている可能性があるため、直前に再取得する
+        final match = await localRepo.getMatch(pendingMatch.id);
+        if (match == null) continue;
+
         final docRef = firestore.collection('matches').doc(match.id);
         
         // サーバー側の最新状態を確認（楽観的ロック）
@@ -262,7 +266,14 @@ class SyncEngine {
                 return a.timestamp.compareTo(b.timestamp);
               });
 
-            MatchModel rebuiltMatch = remoteMatch.copyWith(events: mergedEvents);
+            MatchModel rebuiltMatch = remoteMatch.copyWith(
+              events: mergedEvents,
+              // ★ 追加: タイマーの稼働状態や蓄積時間は、現在操作している端末（ローカル）が常に正しいので優先する
+              timerStartedAt: match.timerStartedAt,
+              timerPausedAt: match.timerPausedAt,
+              accumulatedPauseDurationMs: match.accumulatedPauseDurationMs,
+              status: match.status,
+            );
 
             // 3. ルールエンジンを通してスコアを再計算（真実の復元）
             try {
@@ -278,11 +289,11 @@ class SyncEngine {
             
             await docRef.set(uploadData);
 
-            // 🛡️ Phase 3 ガード: 同期中にユーザーが新しい技を入力していないか確認
+            // 🛡️ Phase 3 ガード: 同期中にユーザーが新しい技を入力したりタイマーを操作していないか確認
             final currentLocal = await localRepo.getMatch(match.id);
-            if (currentLocal != null && currentLocal.events.length > match.events.length) {
+            if (currentLocal != null && (currentLocal.events.length > match.events.length || currentLocal.lastUpdatedAt != match.lastUpdatedAt)) {
               _needsSyncAgain = true;
-              debugPrint('⚠️ [Sync Engine] CRDTマージ中に追加入力あり。ローカル上書きを回避し再同期します。');
+              debugPrint('⚠️ [Sync Engine] CRDTマージ中に状態変更あり。ローカル上書きを回避し再同期します。');
             } else {
               await localRepo.saveMatch(rebuiltMatch.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion));
             }
@@ -305,11 +316,11 @@ class SyncEngine {
           continue; // 失敗しても次の試合へ進み、エンジン全体が止まらないようにする
         }
         
-        // 🛡️ Phase 3 ガード: 通常同期中に追加入力がないか確認
+        // 🛡️ Phase 3 ガード: 通常同期中に追加入力やタイマー操作がないか確認
         final currentLocal = await localRepo.getMatch(match.id);
-        if (currentLocal != null && currentLocal.events.length > match.events.length) {
+        if (currentLocal != null && (currentLocal.events.length > match.events.length || currentLocal.lastUpdatedAt != match.lastUpdatedAt)) {
           _needsSyncAgain = true;
-          debugPrint('⚠️ [Sync Engine] 通常同期中に追加入力あり。未送信フラグを維持し再同期します。');
+          debugPrint('⚠️ [Sync Engine] 通常同期中に状態変更あり。未送信フラグを維持し再同期します。');
         } else {
           await localRepo.markAsSynced(match.id);
         }

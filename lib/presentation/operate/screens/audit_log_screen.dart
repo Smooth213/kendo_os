@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/audit_provider.dart';
 import '../../shared/widgets/manual_help_button.dart';
+import '../../shared/widgets/liquid_background.dart';
 
 // ★ Phase 5: Firestoreから監査ログをリアルタイム取得するProvider
 final auditLogsProvider = StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
@@ -30,19 +31,20 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
     final logsAsync = ref.watch(auditLogsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        title: const Text('システム監査ログ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        actions: const [
-          // ★ ログを見ている＝異常を疑っているため「緊急復旧ガイド」へ
-          ManualHelpButton(manualPath: 'docs/manuals/recovery/failure_catalog.md'),
-          SizedBox(width: 8),
-        ],
-      ),
-      body: Column(
-        children: [
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('システム監査ログ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          actions: const [
+            // ★ ログを見ている＝異常を疑っているため「緊急復旧ガイド」へ
+            ManualHelpButton(manualPath: 'docs/manuals/recovery/failure_catalog.md'),
+            SizedBox(width: 8),
+          ],
+        ),
+        body: Column(
+          children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -126,6 +128,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

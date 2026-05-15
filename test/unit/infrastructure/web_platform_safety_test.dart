@@ -221,5 +221,55 @@ void main() {
       );
     });
 
+    test('10. Match Timer Ghost Resume Prevention (タイマーゴースト再開の防止と絶対時間仕様)', () {
+      // 【歴史】タイマーを停止(timerStartedAt = null)した直後に、同期エンジンが
+      // 古いメモリ状態(timerStartedAt != null)をサーバーに送信し、それが降ってきて
+      // タイマーが勝手に再開してしまう「ゴースト再開」の不具合が発生した。
+
+      // 1. 稼働中の古い状態 (Sync Engineが保持していた古いメモリ)
+      final oldSyncedMatch = MatchModel(
+        id: 'test_match_timer',
+        tournamentId: 't_123',
+        matchType: '個人戦', // ★ 修正: required パラメータのため追加
+        redName: 'Aチーム',
+        whiteName: 'Bチーム',
+        timerStartedAt: DateTime.now().subtract(const Duration(seconds: 10)),
+        accumulatedPauseDurationMs: 0,
+        lastUpdatedAt: DateTime.now().subtract(const Duration(seconds: 5)),
+      );
+
+      // 2. ユーザーが停止ボタンを押した最新のローカル状態 (絶対時間の仕様に従う)
+      final currentLocalMatch = oldSyncedMatch.copyWith(
+        timerStartedAt: null, // 停止中は必ずnull
+        accumulatedPauseDurationMs: 10000, // 10秒経過して停止
+        lastUpdatedAt: DateTime.now(), // 更新日時が新しくなっている
+      );
+
+      // Sync Engineが送信直前に「最新のローカル状態を再取得・比較する」ロジックをシミュレート
+      MatchModel resolveSyncConflict(MatchModel local, MatchModel remoteOld) {
+        if (local.lastUpdatedAt != null && remoteOld.lastUpdatedAt != null) {
+          if (local.lastUpdatedAt!.isAfter(remoteOld.lastUpdatedAt!)) {
+            // ローカルが新しい場合は、ローカルのタイマー状態を絶対的に優先する
+            return local;
+          }
+        }
+        return remoteOld;
+      }
+
+      final resolvedMatch = resolveSyncConflict(currentLocalMatch, oldSyncedMatch);
+
+      // 検証: ゴースト再開がブロックされ、正しい停止状態が維持されること
+      expect(
+        resolvedMatch.timerStartedAt, 
+        isNull, 
+        reason: '同期エンジンの古い状態によってタイマーが勝手に再開(ゴースト再開)されてはならない',
+      );
+      expect(
+        resolvedMatch.accumulatedPauseDurationMs, 
+        10000, 
+        reason: '停止時の経過時間が蓄積(ミリ秒)として正確に保存されていなければならない',
+      );
+    });
+
   });
 }

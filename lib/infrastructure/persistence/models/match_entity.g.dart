@@ -17,113 +17,113 @@ const MatchEntitySchema = CollectionSchema(
   name: r'MatchEntity',
   id: 1961780345530759423,
   properties: {
-    r'category': PropertySchema(
+    r'accumulatedPauseDurationMs': PropertySchema(
       id: 0,
+      name: r'accumulatedPauseDurationMs',
+      type: IsarType.long,
+    ),
+    r'category': PropertySchema(
+      id: 1,
       name: r'category',
       type: IsarType.string,
     ),
     r'countForStandings': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'countForStandings',
       type: IsarType.bool,
     ),
     r'events': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'events',
       type: IsarType.objectList,
 
       target: r'ScoreEventEntity',
     ),
     r'extensionCount': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'extensionCount',
       type: IsarType.long,
     ),
     r'extensionTimeMinutes': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'extensionTimeMinutes',
       type: IsarType.long,
     ),
     r'firestoreId': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'firestoreId',
       type: IsarType.string,
     ),
     r'groupName': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'groupName',
       type: IsarType.string,
     ),
     r'hasExtension': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'hasExtension',
       type: IsarType.bool,
     ),
     r'hasHantei': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'hasHantei',
       type: IsarType.bool,
     ),
     r'isAutoAssigned': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'isAutoAssigned',
       type: IsarType.bool,
     ),
     r'isKachinuki': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'isKachinuki',
       type: IsarType.bool,
     ),
     r'isRunningTime': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'isRunningTime',
       type: IsarType.bool,
     ),
     r'lastUpdatedAt': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'lastUpdatedAt',
       type: IsarType.dateTime,
     ),
     r'matchOrder': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'matchOrder',
       type: IsarType.long,
     ),
     r'matchTimeMinutes': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'matchTimeMinutes',
       type: IsarType.long,
     ),
     r'matchType': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'matchType',
       type: IsarType.string,
     ),
-    r'note': PropertySchema(id: 16, name: r'note', type: IsarType.string),
-    r'order': PropertySchema(id: 17, name: r'order', type: IsarType.double),
+    r'note': PropertySchema(id: 17, name: r'note', type: IsarType.string),
+    r'order': PropertySchema(id: 18, name: r'order', type: IsarType.double),
     r'pendingEvents': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'pendingEvents',
       type: IsarType.objectList,
 
       target: r'ScoreEventEntity',
     ),
-    r'redName': PropertySchema(id: 19, name: r'redName', type: IsarType.string),
+    r'redName': PropertySchema(id: 20, name: r'redName', type: IsarType.string),
     r'redRemaining': PropertySchema(
-      id: 20,
+      id: 21,
       name: r'redRemaining',
       type: IsarType.stringList,
     ),
-    r'redScore': PropertySchema(id: 21, name: r'redScore', type: IsarType.long),
+    r'redScore': PropertySchema(id: 22, name: r'redScore', type: IsarType.long),
     r'refereeNames': PropertySchema(
-      id: 22,
+      id: 23,
       name: r'refereeNames',
       type: IsarType.stringList,
-    ),
-    r'remainingSeconds': PropertySchema(
-      id: 23,
-      name: r'remainingSeconds',
-      type: IsarType.long,
     ),
     r'ruleJson': PropertySchema(
       id: 24,
@@ -150,29 +150,34 @@ const MatchEntitySchema = CollectionSchema(
       type: IsarType.byte,
       enumMap: _MatchEntitysyncStateEnumValueMap,
     ),
-    r'timerIsRunning': PropertySchema(
+    r'timerPausedAt': PropertySchema(
       id: 30,
-      name: r'timerIsRunning',
-      type: IsarType.bool,
+      name: r'timerPausedAt',
+      type: IsarType.dateTime,
+    ),
+    r'timerStartedAt': PropertySchema(
+      id: 31,
+      name: r'timerStartedAt',
+      type: IsarType.dateTime,
     ),
     r'tournamentId': PropertySchema(
-      id: 31,
+      id: 32,
       name: r'tournamentId',
       type: IsarType.string,
     ),
-    r'version': PropertySchema(id: 32, name: r'version', type: IsarType.long),
+    r'version': PropertySchema(id: 33, name: r'version', type: IsarType.long),
     r'whiteName': PropertySchema(
-      id: 33,
+      id: 34,
       name: r'whiteName',
       type: IsarType.string,
     ),
     r'whiteRemaining': PropertySchema(
-      id: 34,
+      id: 35,
       name: r'whiteRemaining',
       type: IsarType.stringList,
     ),
     r'whiteScore': PropertySchema(
-      id: 35,
+      id: 36,
       name: r'whiteScore',
       type: IsarType.long,
     ),
@@ -319,40 +324,40 @@ void _matchEntitySerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.category);
-  writer.writeBool(offsets[1], object.countForStandings);
+  writer.writeLong(offsets[0], object.accumulatedPauseDurationMs);
+  writer.writeString(offsets[1], object.category);
+  writer.writeBool(offsets[2], object.countForStandings);
   writer.writeObjectList<ScoreEventEntity>(
-    offsets[2],
+    offsets[3],
     allOffsets,
     ScoreEventEntitySchema.serialize,
     object.events,
   );
-  writer.writeLong(offsets[3], object.extensionCount);
-  writer.writeLong(offsets[4], object.extensionTimeMinutes);
-  writer.writeString(offsets[5], object.firestoreId);
-  writer.writeString(offsets[6], object.groupName);
-  writer.writeBool(offsets[7], object.hasExtension);
-  writer.writeBool(offsets[8], object.hasHantei);
-  writer.writeBool(offsets[9], object.isAutoAssigned);
-  writer.writeBool(offsets[10], object.isKachinuki);
-  writer.writeBool(offsets[11], object.isRunningTime);
-  writer.writeDateTime(offsets[12], object.lastUpdatedAt);
-  writer.writeLong(offsets[13], object.matchOrder);
-  writer.writeLong(offsets[14], object.matchTimeMinutes);
-  writer.writeString(offsets[15], object.matchType);
-  writer.writeString(offsets[16], object.note);
-  writer.writeDouble(offsets[17], object.order);
+  writer.writeLong(offsets[4], object.extensionCount);
+  writer.writeLong(offsets[5], object.extensionTimeMinutes);
+  writer.writeString(offsets[6], object.firestoreId);
+  writer.writeString(offsets[7], object.groupName);
+  writer.writeBool(offsets[8], object.hasExtension);
+  writer.writeBool(offsets[9], object.hasHantei);
+  writer.writeBool(offsets[10], object.isAutoAssigned);
+  writer.writeBool(offsets[11], object.isKachinuki);
+  writer.writeBool(offsets[12], object.isRunningTime);
+  writer.writeDateTime(offsets[13], object.lastUpdatedAt);
+  writer.writeLong(offsets[14], object.matchOrder);
+  writer.writeLong(offsets[15], object.matchTimeMinutes);
+  writer.writeString(offsets[16], object.matchType);
+  writer.writeString(offsets[17], object.note);
+  writer.writeDouble(offsets[18], object.order);
   writer.writeObjectList<ScoreEventEntity>(
-    offsets[18],
+    offsets[19],
     allOffsets,
     ScoreEventEntitySchema.serialize,
     object.pendingEvents,
   );
-  writer.writeString(offsets[19], object.redName);
-  writer.writeStringList(offsets[20], object.redRemaining);
-  writer.writeLong(offsets[21], object.redScore);
-  writer.writeStringList(offsets[22], object.refereeNames);
-  writer.writeLong(offsets[23], object.remainingSeconds);
+  writer.writeString(offsets[20], object.redName);
+  writer.writeStringList(offsets[21], object.redRemaining);
+  writer.writeLong(offsets[22], object.redScore);
+  writer.writeStringList(offsets[23], object.refereeNames);
   writer.writeString(offsets[24], object.ruleJson);
   writer.writeString(offsets[25], object.scorerId);
   writer.writeObjectList<MatchSnapshotEntity>(
@@ -364,12 +369,13 @@ void _matchEntitySerialize(
   writer.writeString(offsets[27], object.source);
   writer.writeString(offsets[28], object.status);
   writer.writeByte(offsets[29], object.syncState.index);
-  writer.writeBool(offsets[30], object.timerIsRunning);
-  writer.writeString(offsets[31], object.tournamentId);
-  writer.writeLong(offsets[32], object.version);
-  writer.writeString(offsets[33], object.whiteName);
-  writer.writeStringList(offsets[34], object.whiteRemaining);
-  writer.writeLong(offsets[35], object.whiteScore);
+  writer.writeDateTime(offsets[30], object.timerPausedAt);
+  writer.writeDateTime(offsets[31], object.timerStartedAt);
+  writer.writeString(offsets[32], object.tournamentId);
+  writer.writeLong(offsets[33], object.version);
+  writer.writeString(offsets[34], object.whiteName);
+  writer.writeStringList(offsets[35], object.whiteRemaining);
+  writer.writeLong(offsets[36], object.whiteScore);
 }
 
 MatchEntity _matchEntityDeserialize(
@@ -379,45 +385,45 @@ MatchEntity _matchEntityDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = MatchEntity();
-  object.category = reader.readStringOrNull(offsets[0]);
-  object.countForStandings = reader.readBool(offsets[1]);
+  object.accumulatedPauseDurationMs = reader.readLong(offsets[0]);
+  object.category = reader.readStringOrNull(offsets[1]);
+  object.countForStandings = reader.readBool(offsets[2]);
   object.events =
       reader.readObjectList<ScoreEventEntity>(
-        offsets[2],
+        offsets[3],
         ScoreEventEntitySchema.deserialize,
         allOffsets,
         ScoreEventEntity(),
       ) ??
       [];
-  object.extensionCount = reader.readLongOrNull(offsets[3]);
-  object.extensionTimeMinutes = reader.readLongOrNull(offsets[4]);
-  object.firestoreId = reader.readString(offsets[5]);
-  object.groupName = reader.readStringOrNull(offsets[6]);
-  object.hasExtension = reader.readBool(offsets[7]);
-  object.hasHantei = reader.readBool(offsets[8]);
+  object.extensionCount = reader.readLongOrNull(offsets[4]);
+  object.extensionTimeMinutes = reader.readLongOrNull(offsets[5]);
+  object.firestoreId = reader.readString(offsets[6]);
+  object.groupName = reader.readStringOrNull(offsets[7]);
+  object.hasExtension = reader.readBool(offsets[8]);
+  object.hasHantei = reader.readBool(offsets[9]);
   object.id = id;
-  object.isAutoAssigned = reader.readBool(offsets[9]);
-  object.isKachinuki = reader.readBool(offsets[10]);
-  object.isRunningTime = reader.readBool(offsets[11]);
-  object.lastUpdatedAt = reader.readDateTimeOrNull(offsets[12]);
-  object.matchOrder = reader.readLongOrNull(offsets[13]);
-  object.matchTimeMinutes = reader.readLong(offsets[14]);
-  object.matchType = reader.readString(offsets[15]);
-  object.note = reader.readString(offsets[16]);
-  object.order = reader.readDouble(offsets[17]);
+  object.isAutoAssigned = reader.readBool(offsets[10]);
+  object.isKachinuki = reader.readBool(offsets[11]);
+  object.isRunningTime = reader.readBool(offsets[12]);
+  object.lastUpdatedAt = reader.readDateTimeOrNull(offsets[13]);
+  object.matchOrder = reader.readLongOrNull(offsets[14]);
+  object.matchTimeMinutes = reader.readLong(offsets[15]);
+  object.matchType = reader.readString(offsets[16]);
+  object.note = reader.readString(offsets[17]);
+  object.order = reader.readDouble(offsets[18]);
   object.pendingEvents =
       reader.readObjectList<ScoreEventEntity>(
-        offsets[18],
+        offsets[19],
         ScoreEventEntitySchema.deserialize,
         allOffsets,
         ScoreEventEntity(),
       ) ??
       [];
-  object.redName = reader.readString(offsets[19]);
-  object.redRemaining = reader.readStringList(offsets[20]) ?? [];
-  object.redScore = reader.readLong(offsets[21]);
-  object.refereeNames = reader.readStringList(offsets[22]) ?? [];
-  object.remainingSeconds = reader.readLong(offsets[23]);
+  object.redName = reader.readString(offsets[20]);
+  object.redRemaining = reader.readStringList(offsets[21]) ?? [];
+  object.redScore = reader.readLong(offsets[22]);
+  object.refereeNames = reader.readStringList(offsets[23]) ?? [];
   object.ruleJson = reader.readStringOrNull(offsets[24]);
   object.scorerId = reader.readStringOrNull(offsets[25]);
   object.snapshots =
@@ -433,12 +439,13 @@ MatchEntity _matchEntityDeserialize(
   object.syncState =
       _MatchEntitysyncStateValueEnumMap[reader.readByteOrNull(offsets[29])] ??
       SyncState.localOnly;
-  object.timerIsRunning = reader.readBool(offsets[30]);
-  object.tournamentId = reader.readStringOrNull(offsets[31]);
-  object.version = reader.readLong(offsets[32]);
-  object.whiteName = reader.readString(offsets[33]);
-  object.whiteRemaining = reader.readStringList(offsets[34]) ?? [];
-  object.whiteScore = reader.readLong(offsets[35]);
+  object.timerPausedAt = reader.readDateTimeOrNull(offsets[30]);
+  object.timerStartedAt = reader.readDateTimeOrNull(offsets[31]);
+  object.tournamentId = reader.readStringOrNull(offsets[32]);
+  object.version = reader.readLong(offsets[33]);
+  object.whiteName = reader.readString(offsets[34]);
+  object.whiteRemaining = reader.readStringList(offsets[35]) ?? [];
+  object.whiteScore = reader.readLong(offsets[36]);
   return object;
 }
 
@@ -450,10 +457,12 @@ P _matchEntityDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 1:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
+      return (reader.readBool(offset)) as P;
+    case 3:
       return (reader.readObjectList<ScoreEventEntity>(
                 offset,
                 ScoreEventEntitySchema.deserialize,
@@ -462,16 +471,14 @@ P _matchEntityDeserializeProp<P>(
               ) ??
               [])
           as P;
-    case 3:
-      return (reader.readLongOrNull(offset)) as P;
     case 4:
       return (reader.readLongOrNull(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 6:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
       return (reader.readBool(offset)) as P;
     case 9:
@@ -481,18 +488,20 @@ P _matchEntityDeserializeProp<P>(
     case 11:
       return (reader.readBool(offset)) as P;
     case 12:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 13:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 14:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 15:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 16:
       return (reader.readString(offset)) as P;
     case 17:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 18:
+      return (reader.readDouble(offset)) as P;
+    case 19:
       return (reader.readObjectList<ScoreEventEntity>(
                 offset,
                 ScoreEventEntitySchema.deserialize,
@@ -501,16 +510,14 @@ P _matchEntityDeserializeProp<P>(
               ) ??
               [])
           as P;
-    case 19:
-      return (reader.readString(offset)) as P;
     case 20:
-      return (reader.readStringList(offset) ?? []) as P;
+      return (reader.readString(offset)) as P;
     case 21:
-      return (reader.readLong(offset)) as P;
-    case 22:
       return (reader.readStringList(offset) ?? []) as P;
-    case 23:
+    case 22:
       return (reader.readLong(offset)) as P;
+    case 23:
+      return (reader.readStringList(offset) ?? []) as P;
     case 24:
       return (reader.readStringOrNull(offset)) as P;
     case 25:
@@ -535,16 +542,18 @@ P _matchEntityDeserializeProp<P>(
               SyncState.localOnly)
           as P;
     case 30:
-      return (reader.readBool(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 31:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 32:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 33:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 34:
-      return (reader.readStringList(offset) ?? []) as P;
+      return (reader.readString(offset)) as P;
     case 35:
+      return (reader.readStringList(offset) ?? []) as P;
+    case 36:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -779,6 +788,64 @@ extension MatchEntityQueryWhere
 
 extension MatchEntityQueryFilter
     on QueryBuilder<MatchEntity, MatchEntity, QFilterCondition> {
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  accumulatedPauseDurationMsEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'accumulatedPauseDurationMs',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  accumulatedPauseDurationMsGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'accumulatedPauseDurationMs',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  accumulatedPauseDurationMsLessThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'accumulatedPauseDurationMs',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  accumulatedPauseDurationMsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'accumulatedPauseDurationMs',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
   categoryIsNull() {
     return QueryBuilder.apply(this, (query) {
@@ -2764,61 +2831,6 @@ extension MatchEntityQueryFilter
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  remainingSecondsEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'remainingSeconds', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  remainingSecondsGreaterThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'remainingSeconds',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  remainingSecondsLessThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'remainingSeconds',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  remainingSecondsBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'remainingSeconds',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
   ruleJsonIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -3545,10 +3557,147 @@ extension MatchEntityQueryFilter
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  timerIsRunningEqualTo(bool value) {
+  timerPausedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'timerIsRunning', value: value),
+        const FilterCondition.isNull(property: r'timerPausedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerPausedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'timerPausedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerPausedAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'timerPausedAt', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerPausedAtGreaterThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'timerPausedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerPausedAtLessThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'timerPausedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerPausedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'timerPausedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerStartedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'timerStartedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerStartedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'timerStartedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerStartedAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'timerStartedAt', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerStartedAtGreaterThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'timerStartedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerStartedAtLessThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'timerStartedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  timerStartedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'timerStartedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
@@ -4190,6 +4339,20 @@ extension MatchEntityQueryLinks
 
 extension MatchEntityQuerySortBy
     on QueryBuilder<MatchEntity, MatchEntity, QSortBy> {
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
+  sortByAccumulatedPauseDurationMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'accumulatedPauseDurationMs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
+  sortByAccumulatedPauseDurationMsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'accumulatedPauseDurationMs', Sort.desc);
+    });
+  }
+
   QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> sortByCategory() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'category', Sort.asc);
@@ -4429,20 +4592,6 @@ extension MatchEntityQuerySortBy
     });
   }
 
-  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
-  sortByRemainingSeconds() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'remainingSeconds', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
-  sortByRemainingSecondsDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'remainingSeconds', Sort.desc);
-    });
-  }
-
   QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> sortByRuleJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ruleJson', Sort.asc);
@@ -4503,16 +4652,29 @@ extension MatchEntityQuerySortBy
     });
   }
 
-  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> sortByTimerIsRunning() {
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> sortByTimerPausedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timerIsRunning', Sort.asc);
+      return query.addSortBy(r'timerPausedAt', Sort.asc);
     });
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
-  sortByTimerIsRunningDesc() {
+  sortByTimerPausedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timerIsRunning', Sort.desc);
+      return query.addSortBy(r'timerPausedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> sortByTimerStartedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timerStartedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
+  sortByTimerStartedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timerStartedAt', Sort.desc);
     });
   }
 
@@ -4568,6 +4730,20 @@ extension MatchEntityQuerySortBy
 
 extension MatchEntityQuerySortThenBy
     on QueryBuilder<MatchEntity, MatchEntity, QSortThenBy> {
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
+  thenByAccumulatedPauseDurationMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'accumulatedPauseDurationMs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
+  thenByAccumulatedPauseDurationMsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'accumulatedPauseDurationMs', Sort.desc);
+    });
+  }
+
   QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> thenByCategory() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'category', Sort.asc);
@@ -4819,20 +4995,6 @@ extension MatchEntityQuerySortThenBy
     });
   }
 
-  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
-  thenByRemainingSeconds() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'remainingSeconds', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
-  thenByRemainingSecondsDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'remainingSeconds', Sort.desc);
-    });
-  }
-
   QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> thenByRuleJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ruleJson', Sort.asc);
@@ -4893,16 +5055,29 @@ extension MatchEntityQuerySortThenBy
     });
   }
 
-  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> thenByTimerIsRunning() {
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> thenByTimerPausedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timerIsRunning', Sort.asc);
+      return query.addSortBy(r'timerPausedAt', Sort.asc);
     });
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
-  thenByTimerIsRunningDesc() {
+  thenByTimerPausedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timerIsRunning', Sort.desc);
+      return query.addSortBy(r'timerPausedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy> thenByTimerStartedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timerStartedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterSortBy>
+  thenByTimerStartedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timerStartedAt', Sort.desc);
     });
   }
 
@@ -4958,6 +5133,13 @@ extension MatchEntityQuerySortThenBy
 
 extension MatchEntityQueryWhereDistinct
     on QueryBuilder<MatchEntity, MatchEntity, QDistinct> {
+  QueryBuilder<MatchEntity, MatchEntity, QDistinct>
+  distinctByAccumulatedPauseDurationMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'accumulatedPauseDurationMs');
+    });
+  }
+
   QueryBuilder<MatchEntity, MatchEntity, QDistinct> distinctByCategory({
     bool caseSensitive = true,
   }) {
@@ -5099,13 +5281,6 @@ extension MatchEntityQueryWhereDistinct
     });
   }
 
-  QueryBuilder<MatchEntity, MatchEntity, QDistinct>
-  distinctByRemainingSeconds() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'remainingSeconds');
-    });
-  }
-
   QueryBuilder<MatchEntity, MatchEntity, QDistinct> distinctByRuleJson({
     bool caseSensitive = true,
   }) {
@@ -5144,9 +5319,15 @@ extension MatchEntityQueryWhereDistinct
     });
   }
 
-  QueryBuilder<MatchEntity, MatchEntity, QDistinct> distinctByTimerIsRunning() {
+  QueryBuilder<MatchEntity, MatchEntity, QDistinct> distinctByTimerPausedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'timerIsRunning');
+      return query.addDistinctBy(r'timerPausedAt');
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QDistinct> distinctByTimerStartedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'timerStartedAt');
     });
   }
 
@@ -5190,6 +5371,13 @@ extension MatchEntityQueryProperty
   QueryBuilder<MatchEntity, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<MatchEntity, int, QQueryOperations>
+  accumulatedPauseDurationMsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'accumulatedPauseDurationMs');
     });
   }
 
@@ -5338,12 +5526,6 @@ extension MatchEntityQueryProperty
     });
   }
 
-  QueryBuilder<MatchEntity, int, QQueryOperations> remainingSecondsProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'remainingSeconds');
-    });
-  }
-
   QueryBuilder<MatchEntity, String?, QQueryOperations> ruleJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'ruleJson');
@@ -5381,9 +5563,17 @@ extension MatchEntityQueryProperty
     });
   }
 
-  QueryBuilder<MatchEntity, bool, QQueryOperations> timerIsRunningProperty() {
+  QueryBuilder<MatchEntity, DateTime?, QQueryOperations>
+  timerPausedAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'timerIsRunning');
+      return query.addPropertyName(r'timerPausedAt');
+    });
+  }
+
+  QueryBuilder<MatchEntity, DateTime?, QQueryOperations>
+  timerStartedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'timerStartedAt');
     });
   }
 

@@ -10,6 +10,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import '../providers/match_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
+import '../../shared/widgets/liquid_background.dart';
 
 class KachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;
@@ -30,28 +31,28 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     }).toList();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final appBarColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
     final activeTabColor = isDark ? Colors.indigoAccent.shade100 : Colors.indigo.shade700;
 
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        backgroundColor: bgColor,
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else if (teamMatchesModels.isNotEmpty && teamMatchesModels.first.tournamentId != null) {
-                context.go('/home/${teamMatchesModels.first.tournamentId}');
-              } else {
-                context.go('/');
-              }
-            },
-          ),
+      child: LiquidBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else if (teamMatchesModels.isNotEmpty && teamMatchesModels.first.tournamentId != null) {
+                  context.go('/home/${teamMatchesModels.first.tournamentId}');
+                } else {
+                  context.go('/');
+                }
+              },
+            ),
           title: Text('勝ち抜き戦 記録', style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
           backgroundColor: appBarColor,
           elevation: 0,
@@ -81,8 +82,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             _buildTimelineTab(context, ref, teamMatches, isDark),
           ],
         ),
-      ),
-    );
+        ), // Scaffold
+      ), // LiquidBackground
+    ); // DefaultTabController
   }
 
   Map<String, String> _parseName(String raw) {

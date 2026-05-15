@@ -91,8 +91,9 @@ class MatchEntity {
   int? extensionCount;
   bool hasHantei = false;
 
-  int remainingSeconds = 180;
-  bool timerIsRunning = false;
+  DateTime? timerStartedAt;
+  DateTime? timerPausedAt;
+  int accumulatedPauseDurationMs = 0;
   String note = '';
 
   bool isKachinuki = false;

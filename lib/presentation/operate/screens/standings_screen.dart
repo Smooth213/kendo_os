@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
+import '../../shared/widgets/liquid_background.dart';
+import '../providers/settings_provider.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -53,7 +55,7 @@ class StandingsScreen extends ConsumerWidget {
     
     // iOS Native: True Black & Elevation
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
     final subTextColor = isDark ? const Color(0xFF8E8E93) : Colors.grey.shade700;
@@ -62,18 +64,19 @@ class StandingsScreen extends ConsumerWidget {
 
     final playerListAsync = ref.watch(playerListProvider);
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20),
-          onPressed: () => Navigator.pop(context),
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text('成績・順位表', style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor)),
+          backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
+          elevation: 0,
         ),
-        title: Text('成績・順位表', style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor)),
-        backgroundColor: Colors.transparent, // 透かし
-        elevation: 0,
-      ),
-      body: playerListAsync.when(
+        body: playerListAsync.when(
         data: (players) {
           // ★ 追加：自チーム（選手マスタ）に登録されている選手名のリストを作成
           final masterPlayerNames = players.map((p) => p.name).toSet();
@@ -236,6 +239,7 @@ class StandingsScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(child: Text('エラーが発生しました: $e', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
+        ),
       ),
     );
   }

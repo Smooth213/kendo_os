@@ -16,6 +16,7 @@ import 'package:kendo_os/application/services/csv_service.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
+import '../../shared/widgets/liquid_background.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -35,7 +36,6 @@ class OfficialRecordScreen extends ConsumerWidget {
     final permissions = ref.watch(permissionProvider);
     final String screenTitle = permissions.isReadOnly ? '全試合スコア' : '大会 公式記録';
 
-    final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
 
@@ -53,19 +53,21 @@ class OfficialRecordScreen extends ConsumerWidget {
     }
 
     if (categoryGroups.isEmpty) {
-      return Scaffold(
-        backgroundColor: bgColor,
-        appBar: AppBar(
-          leading: IconButton(icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), onPressed: () => Navigator.pop(context)),
-          title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          elevation: 0,
-          actions: [
-            // ★ 記録の間違いに気づいた時のために「公式記録の直し方」へ直行
-            ManualHelpButton(manualPath: 'docs/manuals/operator/official_record.md', color: headerTextColor),
-          ],
+      return LiquidBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            leading: IconButton(icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), onPressed: () => Navigator.pop(context)),
+            title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
+            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            elevation: 0,
+            actions: [
+              // ★ 記録の間違いに気づいた時のために「公式記録の直し方」へ直行
+              ManualHelpButton(manualPath: 'docs/manuals/operator/official_record.md', color: headerTextColor),
+            ],
+          ),
+          body: Center(child: Text('記録データがありません', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
         ),
-        body: Center(child: Text('記録データがありません', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
       );
     }
 
@@ -73,13 +75,14 @@ class OfficialRecordScreen extends ConsumerWidget {
 
     return DefaultTabController(
       length: categories.length,
-      child: Scaffold(
-        backgroundColor: bgColor, 
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), 
-            onPressed: () => Navigator.pop(context),
-          ),
+      child: LiquidBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent, 
+          appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20), 
+              onPressed: () => Navigator.pop(context),
+            ),
           title: Text(screenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, 
           elevation: 0,
@@ -358,8 +361,8 @@ class OfficialRecordScreen extends ConsumerWidget {
             );
           }).toList(),
         ),
-      ),
-    );
+      ), // Scaffold
+    )); // LiquidBackground
   }
 
   DateTime _getLastTimestamp(List<MatchModel> ms) {

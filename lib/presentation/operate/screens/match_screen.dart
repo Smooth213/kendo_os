@@ -40,6 +40,8 @@ import '../providers/settings_provider.dart';
 import '../providers/last_used_settings_provider.dart'; // ★ 修正：直近ルールの読み込み用に追加
 import '../providers/bunaiksen_infinite_engine_provider.dart'; // ★ 追加: 無限勝ち抜きエンジン
 import '../providers/bunaiksen_provider.dart'; // ★ 追加: 無限勝ち抜き状態
+import '../../shared/widgets/liquid_background.dart';
+import '../../shared/widgets/glass_button.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -63,7 +65,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   @override
   void initState() {
     super.initState();
-    _myUserId = FirebaseAuth.instance.currentUser?.uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+    // ★ 修正: 画面を開き直すたびにランダムなIDが生成され「他人が操作中」と誤認され
+    // タイマーがロック（止められない状態）になってしまうバグを防ぐため、固定IDを使用します。
+    _myUserId = FirebaseAuth.instance.currentUser?.uid ?? 'local_user';
     
     // ★ Step 3-3: 画面全体のタイマー(Timer.periodic)を完全に削除し、
     // タイマーが動いている場合のみ、バックグラウンドの時計（MatchTimerProvider）を動かす指示を出す
@@ -211,9 +215,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       matchListProvider.select((list) => list.where((m) => m.id == widget.matchId).firstOrNull?.timerIsRunning),
       (previous, next) {
         if (previous != next && next != null) {
+          debugPrint('🕒 [MatchScreen] Provider listener detected timerIsRunning change: previous=$previous -> next=$next');
           if (next) {
+            debugPrint('🕒 [MatchScreen] -> Calling startLocalTicker from listener');
             ref.read(matchTimerProvider).startLocalTicker(widget.matchId);
           } else {
+            debugPrint('🕒 [MatchScreen] -> Calling stopLocalTicker from listener');
             ref.read(matchTimerProvider).stopLocalTicker(widget.matchId);
           }
         }
@@ -256,33 +263,34 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     });
 
     // ★ Phase 3 修正版: ナビゲーションの復旧と、競合しないスワイプUndoの完成
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.white, 
-      appBar: AppBar(
-        centerTitle: true,
-        // ★ 変更: 背景色を下部の「終了ボタン」と全く同じインディゴに設定
-        backgroundColor: Colors.indigo.shade600,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              (match.category != null && match.category!.isNotEmpty)
-                  ? '${match.category} - ${match.matchType}'
-                  : match.matchType,
-              // ★ 変更: タイトルを白抜き
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              '${match.redName} vs ${match.whiteName}',
-              // ★ 変更: サブタイトルは少し透過した白
-              style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w500),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-        actions: [
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent, 
+        appBar: AppBar(
+          centerTitle: true,
+          // ★ 変更: 背景色を下部の「終了ボタン」と全く同じインディゴに設定
+          backgroundColor: Colors.indigo.shade600,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                (match.category != null && match.category!.isNotEmpty)
+                    ? '${match.category} - ${match.matchType}'
+                    : match.matchType,
+                // ★ 変更: タイトルを白抜き
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                '${match.redName} vs ${match.whiteName}',
+                // ★ 変更: サブタイトルは少し透過した白
+                style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w500),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          actions: [
           // ★ 記録係が最も必要とする「1枚操作ガイド」へ直行させます
           const ManualHelpButton(manualPath: 'docs/manuals/quickstart/operator_1pager.md', color: Colors.white),
           // ★ 追加: 大会ホーム（試合一覧）に一気に戻るボタン
@@ -780,16 +788,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     const SizedBox(height: 32),
                     SizedBox(
                       width: 250,
-                      height: 60,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo.shade600,
-                          foregroundColor: Colors.white,
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                        ),
+                      child: GlassButton(
                         onPressed: () => _showDaihyoSelectDialog(match),
-                        child: const Text('代表者を選択する', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        color: Colors.indigo,
+                        label: '代表者を選択する',
+                        padding: const EdgeInsets.symmetric(vertical: 20),
                       ),
                     ),
                   ],
@@ -797,9 +800,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               ),
             ),
               ],
-            ),
-          ),
-        ],
+            ), // Stack
+          ), // Expanded
+        ], // Column children
+        ), // Scaffold
       ),
     );
   }
@@ -1115,17 +1119,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final isTimeUp = masterTime == 0;
     final isInputLocked = match.scorerId != null && match.scorerId != _myUserId;
 
-    return ElevatedButton.icon(
+    return GlassButton(
       onPressed: (isInputLocked || isTimeUp) ? null : () => _showNextMatchDialog(context, ref, match),
-      icon: const Icon(Icons.autorenew, size: 24),
-      label: const Text('次の対戦者を追加して継続', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal.shade600,
-        foregroundColor: Colors.white,
-        minimumSize: const Size(double.infinity, 54),
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
+      color: Colors.teal,
+      icon: Icons.autorenew,
+      label: '次の対戦者を追加して継続',
+      padding: const EdgeInsets.symmetric(vertical: 16),
     );
   }
 
@@ -1533,8 +1532,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
           ),
         ],
-      ),
-    );
+      ), // AlertDialog
+    ); // showDialog
   }
 
   // =========================================================================

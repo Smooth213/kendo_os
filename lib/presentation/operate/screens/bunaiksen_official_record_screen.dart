@@ -11,6 +11,8 @@ import '../providers/match_rule_provider.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/domain/entities/score_event.dart'; // Sideなどを利用
+import '../../shared/widgets/liquid_background.dart';
+import '../providers/settings_provider.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -24,11 +26,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final viewDate = ref.watch(bunaiksenViewDateProvider);
     final tournamentId = 'bunaiksen_${DateFormat('yyyyMMdd').format(viewDate)}';
 
     // デザイン定義
-    final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final bordeaux = const Color(0xFF8B0000);
     final headerTextColor = isDark ? Colors.white : bordeaux;
@@ -51,16 +53,18 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     }
 
     if (categoryGroups.isEmpty) {
-      return Scaffold(
-        backgroundColor: bgColor,
-        appBar: AppBar(
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          foregroundColor: headerTextColor,
-          title: const Text('成績一覧', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          elevation: 0,
-          centerTitle: true,
+      return LiquidBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
+            foregroundColor: headerTextColor,
+            title: const Text('成績一覧', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            elevation: 0,
+            centerTitle: true,
+          ),
+          body: const Center(child: Text('この日の記録データはありません', style: TextStyle(color: Colors.grey))),
         ),
-        body: const Center(child: Text('この日の記録データはありません', style: TextStyle(color: Colors.grey))),
       );
     }
 
@@ -68,13 +72,14 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
     return DefaultTabController(
       length: categories.length,
-      child: Scaffold(
-        backgroundColor: bgColor,
-        appBar: AppBar(
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          foregroundColor: headerTextColor,
-          title: Text('${DateFormat('yyyy/MM/dd').format(viewDate)} 成績', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          elevation: 0,
+      child: LiquidBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
+            foregroundColor: headerTextColor,
+            title: Text('${DateFormat('yyyy/MM/dd').format(viewDate)} 成績', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            elevation: 0,
           centerTitle: true,
           bottom: TabBar(
             isScrollable: true,
@@ -161,8 +166,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
             );
           }).toList(),
         ),
-      ),
-    );
+      ), // Scaffold
+    )); // LiquidBackground
   }
 
   // --- ヘルパーWidget ---

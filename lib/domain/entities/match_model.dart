@@ -5,9 +5,28 @@ import '../rules/match_rule.dart';
 import 'match_aggregate.dart'; // ★ 新しい構造のインポート
 import 'match_meta.dart';      // ★ 新しい構造のインポート
 import 'match_state.dart';     // ★ 追加: 真のFSM定義を読み込む
+import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint用
 
 part 'match_model.freezed.dart';
 part 'match_model.g.dart';
+
+// ★ 修正: json_converters.dart 内の TimestampConverter が null を DateTime.now() に
+// 誤変換してしまうバグを完全に遮断するための安全なラッパーコンバーターです。
+class SafeTimestampConverter implements JsonConverter<DateTime?, dynamic> {
+  const SafeTimestampConverter();
+
+  @override
+  DateTime? fromJson(dynamic json) {
+    if (json == null) return null; // 確実に null として扱う
+    return const TimestampConverter().fromJson(json);
+  }
+
+  @override
+  dynamic toJson(DateTime? object) {
+    if (object == null) return null;
+    return const TimestampConverter().toJson(object);
+  }
+}
 
 // ★ Phase 4-2: 同期ステータスの厳密化 (partディレクティブの下に配置)
 enum SyncState { localOnly, syncing, synced, conflict }
@@ -32,11 +51,11 @@ abstract class MatchModel with _$MatchModel {
     @Default(SyncState.synced) SyncState syncState,
     @Default([]) List<ScoreEvent> pendingEvents,
     
-    @TimestampConverter() DateTime? lastUpdatedAt, 
+    @SafeTimestampConverter() DateTime? lastUpdatedAt, 
     @Default([]) List<String> refereeNames,
     @Default(true) bool countForStandings,
     String? scorerId,
-    @TimestampConverter() DateTime? lockExpiresAt, 
+    @SafeTimestampConverter() DateTime? lockExpiresAt, 
     @Default(1) int version,
     @Default(false) bool isAutoAssigned,
     @DoubleConverter() @Default(0.0) double order,
@@ -53,8 +72,8 @@ abstract class MatchModel with _$MatchModel {
     int? extensionCount,
     @Default(false) bool hasHantei,
     // ★ Phase 2: Absolute Time化により、remainingSeconds と timerIsRunning はプロパティから削除
-    @TimestampConverter() DateTime? timerStartedAt,
-    @TimestampConverter() DateTime? timerPausedAt,
+    @SafeTimestampConverter() DateTime? timerStartedAt,
+    @SafeTimestampConverter() DateTime? timerPausedAt,
     @Default(0) int accumulatedPauseDurationMs,
     @Default('') String note,
     @Default(false) bool isKachinuki,
@@ -151,8 +170,12 @@ abstract class MatchModel with _$MatchModel {
     return remainingMs > 0 ? (remainingMs / 1000).ceil() : 0;
   }
 
-  // タイマーを手動修正した際に、絶対時間を逆算して再設定するヘルパー
-  MatchModel updateRemainingSeconds(int newSeconds) {
+  // ★ 修正: タイマーを手動修正した際に、絶対時間を逆算して再設定するヘルパー
+  // 重要: タイマーが停止状態でも timerIsRunning が true のままだと
+  // 計算時に timerStartedAt から現在時刻までの差分を再度加算してしまう問題があります。
+  // したがって、このメソッド呼び出し時点で既にタイマーが停止しているなら
+  // timerStartedAt は null にすべき。
+  MatchModel updateRemainingSeconds(int newSeconds, {bool isTimerStopping = false}) {
     final baseSeconds = matchTimeMinutes * 60;
     bool isUnlimited = matchType == '代表戦' || (matchType == '延長戦' && baseSeconds == 0);
     int newElapsedMs;
@@ -162,8 +185,22 @@ abstract class MatchModel with _$MatchModel {
        newElapsedMs = (baseSeconds - newSeconds) * 1000;
     }
     
+    int accMs = newElapsedMs > 0 ? newElapsedMs : 0;
+
+    // ★ 修正: 停止時(isTimerStopping=true)に稼働中フラグ(timerStartedAt)を確実に下ろすため、
+    // JSON経由の再生成をやめて素直に copyWith を使用します。
+    // （TimestampConverterがnullを現在時刻に変換してしまう副作用を完全に回避します）
+    if (isTimerStopping) {
+      final updated = copyWith(
+        accumulatedPauseDurationMs: accMs,
+        timerStartedAt: null,
+      );
+      debugPrint('🕒 [MatchModel] updateRemainingSeconds (isTimerStopping=true) => accMs: $accMs, new timerStartedAt: ${updated.timerStartedAt}');
+      return updated;
+    }
+
     return copyWith(
-      accumulatedPauseDurationMs: newElapsedMs > 0 ? newElapsedMs : 0,
+      accumulatedPauseDurationMs: accMs,
       timerStartedAt: timerIsRunning ? DateTime.now() : null,
     );
   }

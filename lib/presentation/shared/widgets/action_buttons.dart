@@ -56,15 +56,11 @@ class ScoreActionPanel extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 4), 
-            // ★ Phase 4: Undo(取り消し)を親指圏内・常時表示の特等席へ配置
-            // ★ Phase 4: Undo(取り消し)を親指圏内・常時表示の特等席へ配置
             Expanded(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildFoulBtn(context, ref, effectiveLocked, '反', PointType.hansoku),
-                  const SizedBox(width: 6),
-                  _buildUndoBtn(context, ref, effectiveLocked, '取消'), // ★ 追加: 常時Undo
                 ],
               ),
             ),
@@ -103,24 +99,6 @@ class ScoreActionPanel extends ConsumerWidget {
           isFoul: true,
           onConfirm: () {
             ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUndoBtn(BuildContext context, WidgetRef ref, bool effectiveLocked, String label) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: HoldConfirmButton(
-          label: label,
-          color: Colors.grey.shade700,
-          textColor: Colors.white,
-          disabled: effectiveLocked,
-          isFoul: false,
-          onConfirm: () {
-            ref.read(matchCommandProvider).undoLastEvent(matchId);
           },
         ),
       ),

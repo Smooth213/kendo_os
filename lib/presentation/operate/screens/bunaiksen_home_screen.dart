@@ -11,6 +11,8 @@ import '../providers/match_command_provider.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import '../../shared/widgets/liquid_background.dart';
+import '../providers/settings_provider.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -79,6 +81,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     
     // ★ 修正：今日ではなく「選択された日付」を基準にする
     final viewDate = ref.watch(bunaiksenViewDateProvider);
@@ -108,12 +111,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     // 無限勝ち抜きモードの試合が存在するかどうか
     final hasInfiniteKachinuki = matches.any((m) => m.isKachinuki && m.matchType == '無限勝ち抜き');
 
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        foregroundColor: isDark ? Colors.white : const Color(0xFF8B0000),
-        // ★ 修正：タイトルはシンプルにテキストのみ表示
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+          foregroundColor: isDark ? Colors.white : const Color(0xFF8B0000),
+          // ★ 修正：タイトルはシンプルにテキストのみ表示
         title: Text(isToday ? '今日の部内戦' : '$dateDisplay の記録', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         elevation: 0,
         centerTitle: true,
@@ -307,7 +311,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         onPressed: () => context.push('/bunaiksen-setup'),
-      ) : null, // ★ 今日以外を表示している時は作成ボタンを出さない
+        ) : null, // ★ 今日以外を表示している時は作成ボタンを出さない
+      ),
     );
   }
 

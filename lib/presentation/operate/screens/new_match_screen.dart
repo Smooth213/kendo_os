@@ -11,6 +11,8 @@ import 'package:kendo_os/infrastructure/repository/organization_repository.dart'
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
+import '../../shared/widgets/liquid_background.dart';
+import '../../shared/widgets/glass_button.dart';
 
 // 選手マスタ取得用プロバイダ
 final newMatchPlayerMasterProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
@@ -89,14 +91,15 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final combinedSuggestions = combinedSet.toList();
     combinedSuggestions.sort();
 
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
-      appBar: AppBar(title: const Text('新規試合作成・自動生成', style: TextStyle(fontWeight: FontWeight.bold))),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(title: const Text('新規試合作成・自動生成', style: TextStyle(fontWeight: FontWeight.bold))),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,21 +183,19 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   const SizedBox(height: 32),
                   
                   // 4. 実行（生成）ボタン
-                  ElevatedButton.icon(
+                  GlassButton(
                     onPressed: _submit,
-                    icon: const Icon(Icons.flash_on),
-                    label: Text('$_creationMode を実行', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50), 
-                      backgroundColor: Colors.redAccent, 
-                      foregroundColor: Colors.white
-                    ),
+                    color: Colors.redAccent,
+                    icon: Icons.flash_on,
+                    label: '$_creationMode を実行',
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                 ],
               ),
             ),
           ),
-        ), 
+      ),
+        ),
       ),
     );
   }

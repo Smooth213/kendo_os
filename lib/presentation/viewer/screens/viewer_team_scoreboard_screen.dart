@@ -7,6 +7,7 @@ import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/domain/services/team_match_calculator.dart';
 import 'viewer_kachinuki_scoreboard_screen.dart';
 import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
+import '../../shared/widgets/liquid_background.dart';
 
 // ※ TeamPointDisplay クラスは削除されました（Projectionに統合されたため）
 
@@ -45,27 +46,27 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         }
 
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
         final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
         final headerColor = isDark ? Colors.white : Colors.indigo.shade900;
         final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
 
-        return Scaffold(
-          backgroundColor: bgColor,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
-              onPressed: () => context.canPop() ? context.pop() : context.go('/viewer-home/$tournamentId'),
+        return LiquidBackground(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
+                onPressed: () => context.canPop() ? context.pop() : context.go('/viewer-home/$tournamentId'),
+              ),
+              title: Text('団体戦 スコア (観戦)', style: TextStyle(fontWeight: FontWeight.bold, color: headerColor, fontSize: 16)),
+              backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              elevation: 0,
+              actions: const [
+                // 観客向けのFAQ（点数や勝敗の見方）へ
+                ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md'),
+                SizedBox(width: 8),
+              ],
             ),
-            title: Text('団体戦 スコア (観戦)', style: TextStyle(fontWeight: FontWeight.bold, color: headerColor, fontSize: 16)),
-            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-            elevation: 0,
-            actions: const [
-              // 観客向けのFAQ（点数や勝敗の見方）へ
-              ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md'),
-              SizedBox(width: 8),
-            ],
-          ),
           body: SingleChildScrollView(
             child: Column(
               children: [
@@ -112,9 +113,10 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        );
+            ), // Column
+          ), // SingleChildScrollView
+        ), // Scaffold
+        ); // LiquidBackground
       }
     );
   }

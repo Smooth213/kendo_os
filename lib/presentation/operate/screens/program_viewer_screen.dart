@@ -8,6 +8,7 @@ import 'package:kendo_os/infrastructure/persistence/models/local_stroke_model.da
 import 'package:kendo_os/infrastructure/repository/stroke_repository.dart';
 import 'package:kendo_os/infrastructure/repository/local_stroke_repository.dart';
 import '../providers/role_provider.dart';
+import '../../shared/widgets/liquid_background.dart';
 
 class ProgramViewerScreen extends ConsumerStatefulWidget {
   final List<ProgramModel> programs;
@@ -89,18 +90,19 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     
     final programId = currentProgram.id.isNotEmpty ? currentProgram.id : currentProgram.fileUrl;
 
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.grey.shade200,
-      appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black87),
-        elevation: _isDrawingMode ? 0 : 1,
-        // ★ 検索モード時はタイトルをTextFieldに切り替える
-        title: _isSearchMode
-            ? TextField(
-                controller: _searchTextController,
-                autofocus: true,
-                decoration: const InputDecoration(hintText: '選手名・団体名を検索...', border: InputBorder.none),
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black87),
+          elevation: _isDrawingMode ? 0 : 1,
+          // ★ 検索モード時はタイトルをTextFieldに切り替える
+          title: _isSearchMode
+              ? TextField(
+                  controller: _searchTextController,
+                  autofocus: true,
+                  decoration: const InputDecoration(hintText: '選手名・団体名を検索...', border: InputBorder.none),
                 onSubmitted: (value) async {
                   if (value.isEmpty) {
                     setState(() {
@@ -484,6 +486,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

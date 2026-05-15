@@ -23,6 +23,7 @@ abstract class SettingsModel with _$SettingsModel {
     @Default(true) bool sleepPrevent,        // スリープ(画面消灯)防止
     @Default(false) bool leftHanded,         // 左利きモード（赤白反転）
     @Default('system') String themeMode,     // ★ ダークモード対応 ('system', 'light', 'dark')
+    @Default(true) bool enableLiquidGlass,   // ★ iOS風すりガラス効果 (Liquid Glass) のON/OFF
     
     // 【実験・内部機能 (Feature Flag)】 (Phase 0: 一般ユーザーから隠蔽するため)
     @Default(false) bool experimentalFeatures,

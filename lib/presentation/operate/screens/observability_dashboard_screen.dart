@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/metrics_provider.dart';
 import '../../shared/widgets/manual_help_button.dart';
+import '../../shared/widgets/liquid_background.dart';
 
 class ObservabilityDashboardScreen extends ConsumerWidget {
   const ObservabilityDashboardScreen({super.key});
@@ -11,17 +12,18 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
     final metrics = ref.watch(dashboardMetricsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        title: const Text('運用ダッシュボード (Observability)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        actions: const [
-          // ★ 異常時なので「復旧ガイド（トラブルシューティング）」へ直行
-          ManualHelpButton(manualPath: 'docs/manuals/recovery/failure_catalog.md'),
-          SizedBox(width: 8),
-        ],
-      ),
-      body: Padding(
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('運用ダッシュボード (Observability)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          actions: const [
+            // ★ 異常時なので「復旧ガイド（トラブルシューティング）」へ直行
+            ManualHelpButton(manualPath: 'docs/manuals/recovery/failure_catalog.md'),
+            SizedBox(width: 8),
+          ],
+        ),
+        body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
@@ -63,7 +65,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildMetricCard(String title, String value, IconData icon, Color color, bool isDark) {

@@ -10,6 +10,9 @@ import '../../operate/providers/match_list_provider.dart'; // ★ 追加
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
+import '../../shared/widgets/liquid_background.dart';
+import '../../shared/widgets/glass_button.dart';
+import '../../operate/providers/settings_provider.dart';
 
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
 final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
@@ -26,6 +29,7 @@ class ViewerHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
@@ -118,12 +122,13 @@ class ViewerHomeScreen extends ConsumerWidget {
         }
 
         return PopScope(
-      canPop: false, // 戻るスワイプをブロック
-      child: Scaffold(
-        backgroundColor: bgColor,
-        appBar: AppBar(
-          // ★ 修正1: 標準の戻るボタン（<）は消す
-          automaticallyImplyLeading: false, 
+          canPop: false, // 戻るスワイプをブロック
+          child: LiquidBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                // ★ 修正1: 標準の戻るボタン（<）は消す
+                automaticallyImplyLeading: false, 
           
           // ★ 修正2: 「管理者アプリから直接遷移してきた（戻る履歴がある）場合」のみ扉ボタンを出す
           leading: context.canPop() 
@@ -135,7 +140,7 @@ class ViewerHomeScreen extends ConsumerWidget {
               : null, // QRコードから直接来た一般客には何も表示しない（null）
 
           title: Text('大会ホーム (観客席)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
-          backgroundColor: Colors.transparent,
+          backgroundColor: enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
           elevation: 0,
           actions: [
             ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: isDark ? Colors.white : Colors.indigo.shade900),
@@ -183,7 +188,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                   // 高齢補助員向けの押しやすさを維持しつつ、パディングを減らし、サブタイトルを削除。
                   // アイコンとフォントサイズを小さくして高さを抑え、下の試合リストの領域を広げます。
                   // ==========================================
-                  _buildHugeMenuButton(context, Icons.print, '試合結果一覧 (PDF/CSV)', Colors.blueGrey, () => context.push('/official-record/$tournamentId')),
+                  _buildHugeMenuButton(context, enableLiquidGlass, Icons.print, '試合結果一覧 (PDF/CSV)', Colors.blueGrey, () => context.push('/official-record/$tournamentId')),
                   const SizedBox(height: 16),
                   
                   const SizedBox(height: 20),
@@ -840,8 +845,9 @@ class ViewerHomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      ), // Scaffoldの終わり
-    ); // PopScopeの終わり
+            ), // Scaffoldの終わり
+          ), // LiquidBackgroundの終わり
+        ); // PopScopeの終わり
     } catch (e, stack) {
       return Scaffold(
         backgroundColor: bgColor,
@@ -1173,40 +1179,14 @@ class ViewerHomeScreen extends ConsumerWidget {
   // 高齢補助員向けの押しやすさを維持しつつ、パディングを減らし、サブタイトルを削除.
   // アイコンとフォントサイズを小さくして高さを抑え、画面領域を効率的に使います。
   // ==========================================
-  Widget _buildHugeMenuButton(BuildContext context, IconData icon, String title, MaterialColor color, VoidCallback onTap) {
+  Widget _buildHugeMenuButton(BuildContext context, bool enableLiquidGlass, IconData icon, String title, MaterialColor color, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: double.infinity,
-        // パディングをsymmetricに減らす (20 -> horizontal: 16, vertical: 12)
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isDark ? color.shade900.withValues(alpha: 0.3) : color.shade50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isDark ? color.shade700 : color.shade200, width: 2),
-        ),
-        child: Row(
-          children: [
-            // アイコンサイズを小さくする (36 -> 24)
-            Icon(icon, size: 24, color: isDark ? color.shade300 : color.shade700),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // タイトルのフォントサイズを小さくする (18 -> 16)
-                  Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
-                  // ★ サブタイトル(subtitle)を削除
-                ],
-              ),
-            ),
-            // 右側の矢印も小さくする (16 -> 14)
-            Icon(Icons.arrow_forward_ios, size: 14, color: isDark ? color.shade500 : color.shade300),
-          ],
-        ),
-      ),
+    return GlassButton(
+      onPressed: onTap,
+      color: color,
+      icon: icon,
+      label: title,
+      trailing: Icon(Icons.arrow_forward_ios, size: 14, color: enableLiquidGlass ? (isDark ? color.shade500 : color.shade300) : Colors.white70),
     );
   }
 }

@@ -61,6 +61,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     bool? leftHanded,
     bool? showConfirmDialog,
     String? themeMode,
+    bool? enableLiquidGlass,
     bool? experimentalFeatures, // ★ 修正: この1行を引数に追加
     int? securityLevel,
     String? adminPasscode,
@@ -77,6 +78,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       leftHanded: leftHanded ?? state.leftHanded,
       showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog,
       themeMode: themeMode ?? state.themeMode,
+      enableLiquidGlass: enableLiquidGlass ?? state.enableLiquidGlass,
       experimentalFeatures: experimentalFeatures ?? state.experimentalFeatures, // ★ 修正: この1行を代入に追加
       securityLevel: securityLevel ?? state.securityLevel,
       adminPasscode: adminPasscode ?? state.adminPasscode,
@@ -118,6 +120,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
         confirmBehavior: 'long', isLocked: true, showConfirmDialog: true, 
         haptic: true, strikeVib: true, audioFeedbackMode: 'effect', ignoreMannerMode: true,
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
+        enableLiquidGlass: true,
         securityLevel: 2,
       ));
     } else if (presetName == 'renseikai') {
@@ -125,6 +128,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
         confirmBehavior: 'double', isLocked: false, showConfirmDialog: false, 
         haptic: true, strikeVib: true, audioFeedbackMode: 'off', ignoreMannerMode: true,
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
+        enableLiquidGlass: true,
         securityLevel: 1,
       ));
     } else if (presetName == 'practice') {
@@ -132,6 +136,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
         confirmBehavior: 'single', isLocked: false, showConfirmDialog: false, 
         haptic: false, strikeVib: false, audioFeedbackMode: 'off', ignoreMannerMode: false,
         sleepPrevent: true, leftHanded: false, themeMode: 'system',
+        enableLiquidGlass: true,
         securityLevel: 1,
       ));
     }

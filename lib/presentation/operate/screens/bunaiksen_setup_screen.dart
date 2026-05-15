@@ -11,6 +11,9 @@ import 'package:kendo_os/application/usecases/match_application_service.dart'; /
 import 'package:kendo_os/domain/entities/player_model.dart';
 import '../../shared/widgets/smart_player_input.dart';
 import '../../shared/widgets/multi_player_select_input.dart'; // ★追加: 複数選択ウィジェット
+import '../../shared/widgets/liquid_background.dart';
+import '../../shared/widgets/glass_button.dart';
+import '../providers/settings_provider.dart';
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
   const BunaiksenSetupScreen({super.key});
@@ -152,14 +155,16 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
   Widget build(BuildContext context) {
     final rule = ref.watch(bunaiksenRuleProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final masterPlayers = ref.watch(bunaiksenPlayerMasterProvider).value ?? [];
 
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, // ★ 修正：白背景
-        foregroundColor: isDark ? Colors.white : const Color(0xFF8B0000), // ★ 修正：ボルドー文字
-        title: const Text('試合セットアップ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+          foregroundColor: isDark ? Colors.white : const Color(0xFF8B0000), // ★ 修正：ボルドー文字
+          title: const Text('試合セットアップ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -302,7 +307,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
           ),
         ],
       ),
-    );
+    ));
   }
 
   // 🔴 タブ1：個人戦（即スタート）
@@ -339,15 +344,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
           const Spacer(),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.flash_on),
-              label: const Text('▶ 試合開始', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B0000), // ★ 修正
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+                child: GlassButton(
+                  icon: Icons.flash_on,
+                  label: '試合開始',
+                  color: const Color(0xFF8B0000),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  expandContent: false,
               onPressed: () async {
                 final redName = _redPlayerController.text.trim();
                 final whiteName = _whitePlayerController.text.trim();
@@ -597,14 +599,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.check_circle),
-              label: const Text('確定して対戦表を作成', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B0000), // ★ 修正
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+                child: GlassButton(
+                  icon: Icons.check_circle,
+                  label: '確定して対戦表を作成',
+                  color: const Color(0xFF8B0000),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  expandContent: false,
               onPressed: () async {
                 final rule = ref.read(bunaiksenRuleProvider);
                 final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(DateTime.now())}';
@@ -696,14 +696,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.grid_on),
-              label: Text('総当たり対戦表を作成（${_leagueParticipants.length}人）', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B0000), // ★ 修正
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+                child: GlassButton(
+                  icon: Icons.grid_on,
+                  label: '総当たり対戦表を作成（${_leagueParticipants.length}人）',
+                  color: const Color(0xFF8B0000),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  expandContent: false,
               onPressed: _leagueParticipants.length < 2 ? null : () async {
                 final rule = ref.read(bunaiksenRuleProvider);
                 final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(DateTime.now())}';
@@ -806,14 +804,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.local_fire_department),
-              label: const Text('🔥 無限稽古スタート', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B0000), // ★ 修正
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+                child: GlassButton(
+                  icon: Icons.local_fire_department,
+                  label: '無限稽古スタート',
+                  color: const Color(0xFF8B0000),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  expandContent: false,
               onPressed: queue.length < 2 ? null : () async {
                 final notifier = ref.read(bunaiksenInfiniteQueueProvider.notifier);
                 final p1 = notifier.popFirst();

@@ -95,11 +95,14 @@ void main() {
         ]
       );
 
+      final timerEngine = container.read(matchTimerProvider);
+      
       // ★ 新アーキテクチャのシミュレート: 
+      // 画面ロード時にタイマーが稼働中であればTickerが開始される状態を作る
+      timerEngine.startLocalTicker('match2', isImmediateStart: true);
+
       // ローカルのTickerが10秒間動いて、UIの表示秒数が「170秒」に更新されている状態を作る
       container.read(liveRemainingSecondsProvider('match2').notifier).state = 170;
-
-      final timerEngine = container.read(matchTimerProvider);
 
       // UIから「一時停止(Pause)」を指令
       await timerEngine.toggleTimer('match2');
@@ -133,6 +136,8 @@ void main() {
       );
 
       final timerEngine = container.read(matchTimerProvider);
+      // 画面ロード時にタイマーが稼働中であればTickerが開始される状態を作る
+      timerEngine.startLocalTicker('match3', isImmediateStart: true);
 
       // 審判の指示で、時計を手動で「60秒」に修正したと仮定
       await timerEngine.updateRemainingSeconds('match3', 60);

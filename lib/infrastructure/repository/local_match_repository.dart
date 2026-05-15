@@ -61,11 +61,11 @@ class LocalMatchRepository {
       final entity = await _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).findFirst();
       if (entity == null) return null;
 
-      // ★ Phase 7: カオス耐性 - データの整合性チェック
-      if (entity.status == 'in_progress' && entity.events.isEmpty) {
-        debugPrint('⚠️ [Chaos Recovery] 進行中の試合なのにイベントが空です。データの不整合を検知しました。');
-        // ここで必要に応じてサーバーからの再取得フラグを立てる等の処置が可能
-      }
+      // ★ 修正: タイマーをスタートした直後はイベントが空のまま in_progress になるのが正常な仕様のため、
+      // ここでの過剰な警告ログ（Chaos Recovery）を削除し、コンソールをクリーンに保ちます。
+      // if (entity.status == 'in_progress' && entity.events.isEmpty) {
+      //   debugPrint('⚠️ [Chaos Recovery] 進行中の試合なのにイベントが空です。データの不整合を検知しました。');
+      // }
 
       return _toModel(entity);
     } catch (e, stack) {
@@ -234,8 +234,10 @@ class LocalMatchRepository {
       ..extensionTimeMinutes = model.extensionTimeMinutes
       ..extensionCount = model.extensionCount
       ..hasHantei = model.hasHantei
-      ..remainingSeconds = model.remainingSeconds
-      ..timerIsRunning = model.timerIsRunning
+      // ★ 修正: タイマーの進行に必要な詳細プロパティも確実にローカルDBへ保存する
+      ..timerStartedAt = model.timerStartedAt
+      ..timerPausedAt = model.timerPausedAt
+      ..accumulatedPauseDurationMs = model.accumulatedPauseDurationMs
       ..note = model.note
       ..isKachinuki = model.isKachinuki
       // ★ 追加：複雑なルール箱を文字列(JSON)に圧縮してローカルDBにねじ込む！
@@ -307,6 +309,9 @@ class LocalMatchRepository {
       extensionTimeMinutes: entity.extensionTimeMinutes,
       extensionCount: entity.extensionCount,
       hasHantei: entity.hasHantei,
+      timerStartedAt: entity.timerStartedAt,
+      timerPausedAt: entity.timerPausedAt,
+      accumulatedPauseDurationMs: entity.accumulatedPauseDurationMs,
       note: entity.note,
       isKachinuki: entity.isKachinuki,
       // ★ 追加：文字列(JSON)から元のルール箱に解凍して復元する！

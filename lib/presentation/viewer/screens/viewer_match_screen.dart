@@ -8,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart'; // ★ Projectionの型とUIXを使うために追加
 import '../../shared/widgets/manual_help_button.dart';
+import '../../shared/widgets/liquid_background.dart';
 
 class ViewerMatchScreen extends ConsumerWidget {
   final String matchId;
@@ -24,26 +25,25 @@ class ViewerMatchScreen extends ConsumerWidget {
       error: (e, s) => Scaffold(body: Center(child: Text('エラーが発生しました: $e'))),
       data: (MatchProjection? projection) {
         if (projection == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
-        
-        final isDark = Theme.of(context).brightness == Brightness.dark;
 
-        return Scaffold(
-          backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
-          appBar: AppBar(
-            // ★ 修正: Webで直接開いた際にGoRouterが勝手に出す「トップ(start_screen)に戻るホームボタン」を強制消去
-            automaticallyImplyLeading: false,
-            title: const Text('試合状況 (観戦)', style: TextStyle(fontSize: 14)),
-            // ★ 修正: 誤って管理者ホーム(/home)に飛んでしまう扉ボタンを撤廃。
-            // 履歴がある場合（試合一覧から来た場合）は標準の「戻る」ボタンを表示し、
-            // 直リンクで来た場合は何も表示しない（ブラウザの戻るに委ねる）純粋なUXに統一。
-            leading: context.canPop()
-                ? IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                    tooltip: '戻る',
-                    onPressed: () => context.pop(),
-                  )
-                : null,
-            actions: [
+        return LiquidBackground(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              // ★ 修正: Webで直接開いた際にGoRouterが勝手に出す「トップ(start_screen)に戻るホームボタン」を強制消去
+              automaticallyImplyLeading: false,
+              title: const Text('試合状況 (観戦)', style: TextStyle(fontSize: 14)),
+              // ★ 修正: 誤って管理者ホーム(/home)に飛んでしまう扉ボタンを撤廃。
+              // 履歴がある場合（試合一覧から来た場合）は標準の「戻る」ボタンを表示し、
+              // 直リンクで来た場合は何も表示しない（ブラウザの戻るに委ねる）純粋なUXに統一。
+              leading: context.canPop()
+                  ? IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                      tooltip: '戻る',
+                      onPressed: () => context.pop(),
+                    )
+                  : null,
+              actions: [
               // ★ 追加：隣の人への共有用QR
               IconButton(
                 icon: const Icon(Icons.qr_code_2, color: Colors.white, size: 20),
@@ -69,8 +69,9 @@ class ViewerMatchScreen extends ConsumerWidget {
                 child: MatchScoreboard(matchId: matchId, myUserId: 'viewer', onNameTap: (side) {}),
               ),
             ],
-          ),
-        );
+          ), // Column
+        ), // Scaffold
+        ); // LiquidBackground
       },
     );
   }

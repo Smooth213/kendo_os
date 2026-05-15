@@ -10,6 +10,9 @@ import 'package:kendo_os/domain/entities/team_model.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
+import '../../shared/widgets/liquid_background.dart';
+import '../../shared/widgets/glass_button.dart';
+import '../providers/settings_provider.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
   return ['1回戦', '2回戦', '準決勝', '決勝', '第1試合', '第2コート'];
@@ -501,17 +504,16 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.grey.shade50;
 
     // ★ Phase 8-3: キーボードが開いているかを検知
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
-        title: const Text('対戦フォーマット設定', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        actions: const [
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('対戦フォーマット設定', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          actions: const [
           // 大会設定のマニュアルへ
           ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
           SizedBox(width: 8),
@@ -546,7 +548,7 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildPage1Category() {
@@ -1050,14 +1052,15 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
 
   Widget _buildStickyBottomAction() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isLastPage = _currentPage == 2;
     
     // iOS Native: ボトムバーの色と区切り線
-    final bottomColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+    final bottomColor = enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+    final borderColor = enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300);
 
     return Container(
-      padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: MediaQuery.of(context).padding.bottom + 16),
+      padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
       decoration: BoxDecoration(
         color: bottomColor,
         border: Border(top: BorderSide(color: borderColor, width: 0.5)),
@@ -1078,7 +1081,7 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
               ),
             ),
           Expanded(
-            child: ElevatedButton(
+            child: GlassButton(
               onPressed: () {
                 if (!isLastPage) {
                   if (_currentPage == 0 && _selectedTeamId == null) {
@@ -1173,12 +1176,11 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
                   context.push('/order-setup/${widget.tournamentId}');
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white, 
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0,
-              ),
-              child: Text(isLastPage ? 'このルールで枠を作成' : '次へ進む', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              color: Colors.teal.shade600,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              icon: isLastPage ? Icons.check_circle : Icons.navigate_next,
+              label: isLastPage ? 'このルールで枠を作成' : '次へ進む',
+              expandContent: false,
             ),
           ),
         ],

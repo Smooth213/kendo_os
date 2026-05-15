@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/infrastructure/repository/program_repository.dart';
 import 'package:kendo_os/domain/entities/program_model.dart';
+import '../../shared/widgets/liquid_background.dart';
 
 class ProgramManagementScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -342,20 +343,22 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
   Widget build(BuildContext context) {
     final repository = ref.watch(programRepositoryProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('プログラム管理'),
-        actions: [
-          // ★ グリッド/リストの切り替えボタンを追加
-          IconButton(
-            icon: Icon(_isGridView ? Icons.view_list_rounded : Icons.grid_view_rounded),
-            onPressed: () => setState(() => _isGridView = !_isGridView),
-            tooltip: _isGridView ? 'リスト表示にする' : 'グリッド表示にする',
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: StreamBuilder<List<ProgramModel>>(
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('プログラム管理'),
+          actions: [
+            // ★ グリッド/リストの切り替えボタンを追加
+            IconButton(
+              icon: Icon(_isGridView ? Icons.view_list_rounded : Icons.grid_view_rounded),
+              onPressed: () => setState(() => _isGridView = !_isGridView),
+              tooltip: _isGridView ? 'リスト表示にする' : 'グリッド表示にする',
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: StreamBuilder<List<ProgramModel>>(
         stream: repository.watchPrograms(widget.tournamentId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
@@ -444,6 +447,7 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
         onPressed: _isUploading ? null : _showPickerMenu,
         icon: const Icon(Icons.add_photo_alternate),
         label: const Text('プログラムを追加'),
+        ),
       ),
     );
   }

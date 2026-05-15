@@ -13,11 +13,11 @@ part of 'match_model.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$MatchModel {
+mixin _$MatchModel implements DiagnosticableTreeMixin {
 
  String get id; String get matchType; String get redName; String get whiteName; int get redScore; int get whiteScore; String get status; List<ScoreEvent> get events; List<MatchSnapshot> get snapshots;// ★ Phase 4: isDirtyを廃止し、厳密なSyncStateと差分キュー(pendingEvents)を導入
- SyncState get syncState; List<ScoreEvent> get pendingEvents;@TimestampConverter() DateTime? get lastUpdatedAt; List<String> get refereeNames; bool get countForStandings; String? get scorerId;@TimestampConverter() DateTime? get lockExpiresAt; int get version; bool get isAutoAssigned;@DoubleConverter() double get order; String get source; String? get tournamentId; String? get category; String? get groupName; int? get matchOrder; int get matchTimeMinutes; bool get isRunningTime; bool get hasExtension; int? get extensionTimeMinutes; int? get extensionCount; bool get hasHantei;// ★ Phase 2: Absolute Time化により、remainingSeconds と timerIsRunning はプロパティから削除
-@TimestampConverter() DateTime? get timerStartedAt;@TimestampConverter() DateTime? get timerPausedAt; int get accumulatedPauseDurationMs; String get note; bool get isKachinuki; MatchRule? get rule; List<String> get redRemaining; List<String> get whiteRemaining;
+ SyncState get syncState; List<ScoreEvent> get pendingEvents;@SafeTimestampConverter() DateTime? get lastUpdatedAt; List<String> get refereeNames; bool get countForStandings; String? get scorerId;@SafeTimestampConverter() DateTime? get lockExpiresAt; int get version; bool get isAutoAssigned;@DoubleConverter() double get order; String get source; String? get tournamentId; String? get category; String? get groupName; int? get matchOrder; int get matchTimeMinutes; bool get isRunningTime; bool get hasExtension; int? get extensionTimeMinutes; int? get extensionCount; bool get hasHantei;// ★ Phase 2: Absolute Time化により、remainingSeconds と timerIsRunning はプロパティから削除
+@SafeTimestampConverter() DateTime? get timerStartedAt;@SafeTimestampConverter() DateTime? get timerPausedAt; int get accumulatedPauseDurationMs; String get note; bool get isKachinuki; MatchRule? get rule; List<String> get redRemaining; List<String> get whiteRemaining;
 /// Create a copy of MatchModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,6 +27,12 @@ $MatchModelCopyWith<MatchModel> get copyWith => _$MatchModelCopyWithImpl<MatchMo
   /// Serializes this MatchModel to a JSON map.
   Map<String, dynamic> toJson();
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MatchModel'))
+    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('matchType', matchType))..add(DiagnosticsProperty('redName', redName))..add(DiagnosticsProperty('whiteName', whiteName))..add(DiagnosticsProperty('redScore', redScore))..add(DiagnosticsProperty('whiteScore', whiteScore))..add(DiagnosticsProperty('status', status))..add(DiagnosticsProperty('events', events))..add(DiagnosticsProperty('snapshots', snapshots))..add(DiagnosticsProperty('syncState', syncState))..add(DiagnosticsProperty('pendingEvents', pendingEvents))..add(DiagnosticsProperty('lastUpdatedAt', lastUpdatedAt))..add(DiagnosticsProperty('refereeNames', refereeNames))..add(DiagnosticsProperty('countForStandings', countForStandings))..add(DiagnosticsProperty('scorerId', scorerId))..add(DiagnosticsProperty('lockExpiresAt', lockExpiresAt))..add(DiagnosticsProperty('version', version))..add(DiagnosticsProperty('isAutoAssigned', isAutoAssigned))..add(DiagnosticsProperty('order', order))..add(DiagnosticsProperty('source', source))..add(DiagnosticsProperty('tournamentId', tournamentId))..add(DiagnosticsProperty('category', category))..add(DiagnosticsProperty('groupName', groupName))..add(DiagnosticsProperty('matchOrder', matchOrder))..add(DiagnosticsProperty('matchTimeMinutes', matchTimeMinutes))..add(DiagnosticsProperty('isRunningTime', isRunningTime))..add(DiagnosticsProperty('hasExtension', hasExtension))..add(DiagnosticsProperty('extensionTimeMinutes', extensionTimeMinutes))..add(DiagnosticsProperty('extensionCount', extensionCount))..add(DiagnosticsProperty('hasHantei', hasHantei))..add(DiagnosticsProperty('timerStartedAt', timerStartedAt))..add(DiagnosticsProperty('timerPausedAt', timerPausedAt))..add(DiagnosticsProperty('accumulatedPauseDurationMs', accumulatedPauseDurationMs))..add(DiagnosticsProperty('note', note))..add(DiagnosticsProperty('isKachinuki', isKachinuki))..add(DiagnosticsProperty('rule', rule))..add(DiagnosticsProperty('redRemaining', redRemaining))..add(DiagnosticsProperty('whiteRemaining', whiteRemaining));
+}
 
 @override
 bool operator ==(Object other) {
@@ -38,7 +44,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hashAll([runtimeType,id,matchType,redName,whiteName,redScore,whiteScore,status,const DeepCollectionEquality().hash(events),const DeepCollectionEquality().hash(snapshots),syncState,const DeepCollectionEquality().hash(pendingEvents),lastUpdatedAt,const DeepCollectionEquality().hash(refereeNames),countForStandings,scorerId,lockExpiresAt,version,isAutoAssigned,order,source,tournamentId,category,groupName,matchOrder,matchTimeMinutes,isRunningTime,hasExtension,extensionTimeMinutes,extensionCount,hasHantei,timerStartedAt,timerPausedAt,accumulatedPauseDurationMs,note,isKachinuki,rule,const DeepCollectionEquality().hash(redRemaining),const DeepCollectionEquality().hash(whiteRemaining)]);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MatchModel(id: $id, matchType: $matchType, redName: $redName, whiteName: $whiteName, redScore: $redScore, whiteScore: $whiteScore, status: $status, events: $events, snapshots: $snapshots, syncState: $syncState, pendingEvents: $pendingEvents, lastUpdatedAt: $lastUpdatedAt, refereeNames: $refereeNames, countForStandings: $countForStandings, scorerId: $scorerId, lockExpiresAt: $lockExpiresAt, version: $version, isAutoAssigned: $isAutoAssigned, order: $order, source: $source, tournamentId: $tournamentId, category: $category, groupName: $groupName, matchOrder: $matchOrder, matchTimeMinutes: $matchTimeMinutes, isRunningTime: $isRunningTime, hasExtension: $hasExtension, extensionTimeMinutes: $extensionTimeMinutes, extensionCount: $extensionCount, hasHantei: $hasHantei, timerStartedAt: $timerStartedAt, timerPausedAt: $timerPausedAt, accumulatedPauseDurationMs: $accumulatedPauseDurationMs, note: $note, isKachinuki: $isKachinuki, rule: $rule, redRemaining: $redRemaining, whiteRemaining: $whiteRemaining)';
 }
 
@@ -50,7 +56,7 @@ abstract mixin class $MatchModelCopyWith<$Res>  {
   factory $MatchModelCopyWith(MatchModel value, $Res Function(MatchModel) _then) = _$MatchModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String matchType, String redName, String whiteName, int redScore, int whiteScore, String status, List<ScoreEvent> events, List<MatchSnapshot> snapshots, SyncState syncState, List<ScoreEvent> pendingEvents,@TimestampConverter() DateTime? lastUpdatedAt, List<String> refereeNames, bool countForStandings, String? scorerId,@TimestampConverter() DateTime? lockExpiresAt, int version, bool isAutoAssigned,@DoubleConverter() double order, String source, String? tournamentId, String? category, String? groupName, int? matchOrder, int matchTimeMinutes, bool isRunningTime, bool hasExtension, int? extensionTimeMinutes, int? extensionCount, bool hasHantei,@TimestampConverter() DateTime? timerStartedAt,@TimestampConverter() DateTime? timerPausedAt, int accumulatedPauseDurationMs, String note, bool isKachinuki, MatchRule? rule, List<String> redRemaining, List<String> whiteRemaining
+ String id, String matchType, String redName, String whiteName, int redScore, int whiteScore, String status, List<ScoreEvent> events, List<MatchSnapshot> snapshots, SyncState syncState, List<ScoreEvent> pendingEvents,@SafeTimestampConverter() DateTime? lastUpdatedAt, List<String> refereeNames, bool countForStandings, String? scorerId,@SafeTimestampConverter() DateTime? lockExpiresAt, int version, bool isAutoAssigned,@DoubleConverter() double order, String source, String? tournamentId, String? category, String? groupName, int? matchOrder, int matchTimeMinutes, bool isRunningTime, bool hasExtension, int? extensionTimeMinutes, int? extensionCount, bool hasHantei,@SafeTimestampConverter() DateTime? timerStartedAt,@SafeTimestampConverter() DateTime? timerPausedAt, int accumulatedPauseDurationMs, String note, bool isKachinuki, MatchRule? rule, List<String> redRemaining, List<String> whiteRemaining
 });
 
 
@@ -204,7 +210,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String matchType,  String redName,  String whiteName,  int redScore,  int whiteScore,  String status,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  SyncState syncState,  List<ScoreEvent> pendingEvents, @TimestampConverter()  DateTime? lastUpdatedAt,  List<String> refereeNames,  bool countForStandings,  String? scorerId, @TimestampConverter()  DateTime? lockExpiresAt,  int version,  bool isAutoAssigned, @DoubleConverter()  double order,  String source,  String? tournamentId,  String? category,  String? groupName,  int? matchOrder,  int matchTimeMinutes,  bool isRunningTime,  bool hasExtension,  int? extensionTimeMinutes,  int? extensionCount,  bool hasHantei, @TimestampConverter()  DateTime? timerStartedAt, @TimestampConverter()  DateTime? timerPausedAt,  int accumulatedPauseDurationMs,  String note,  bool isKachinuki,  MatchRule? rule,  List<String> redRemaining,  List<String> whiteRemaining)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String matchType,  String redName,  String whiteName,  int redScore,  int whiteScore,  String status,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  SyncState syncState,  List<ScoreEvent> pendingEvents, @SafeTimestampConverter()  DateTime? lastUpdatedAt,  List<String> refereeNames,  bool countForStandings,  String? scorerId, @SafeTimestampConverter()  DateTime? lockExpiresAt,  int version,  bool isAutoAssigned, @DoubleConverter()  double order,  String source,  String? tournamentId,  String? category,  String? groupName,  int? matchOrder,  int matchTimeMinutes,  bool isRunningTime,  bool hasExtension,  int? extensionTimeMinutes,  int? extensionCount,  bool hasHantei, @SafeTimestampConverter()  DateTime? timerStartedAt, @SafeTimestampConverter()  DateTime? timerPausedAt,  int accumulatedPauseDurationMs,  String note,  bool isKachinuki,  MatchRule? rule,  List<String> redRemaining,  List<String> whiteRemaining)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MatchModel() when $default != null:
 return $default(_that.id,_that.matchType,_that.redName,_that.whiteName,_that.redScore,_that.whiteScore,_that.status,_that.events,_that.snapshots,_that.syncState,_that.pendingEvents,_that.lastUpdatedAt,_that.refereeNames,_that.countForStandings,_that.scorerId,_that.lockExpiresAt,_that.version,_that.isAutoAssigned,_that.order,_that.source,_that.tournamentId,_that.category,_that.groupName,_that.matchOrder,_that.matchTimeMinutes,_that.isRunningTime,_that.hasExtension,_that.extensionTimeMinutes,_that.extensionCount,_that.hasHantei,_that.timerStartedAt,_that.timerPausedAt,_that.accumulatedPauseDurationMs,_that.note,_that.isKachinuki,_that.rule,_that.redRemaining,_that.whiteRemaining);case _:
@@ -225,7 +231,7 @@ return $default(_that.id,_that.matchType,_that.redName,_that.whiteName,_that.red
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String matchType,  String redName,  String whiteName,  int redScore,  int whiteScore,  String status,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  SyncState syncState,  List<ScoreEvent> pendingEvents, @TimestampConverter()  DateTime? lastUpdatedAt,  List<String> refereeNames,  bool countForStandings,  String? scorerId, @TimestampConverter()  DateTime? lockExpiresAt,  int version,  bool isAutoAssigned, @DoubleConverter()  double order,  String source,  String? tournamentId,  String? category,  String? groupName,  int? matchOrder,  int matchTimeMinutes,  bool isRunningTime,  bool hasExtension,  int? extensionTimeMinutes,  int? extensionCount,  bool hasHantei, @TimestampConverter()  DateTime? timerStartedAt, @TimestampConverter()  DateTime? timerPausedAt,  int accumulatedPauseDurationMs,  String note,  bool isKachinuki,  MatchRule? rule,  List<String> redRemaining,  List<String> whiteRemaining)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String matchType,  String redName,  String whiteName,  int redScore,  int whiteScore,  String status,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  SyncState syncState,  List<ScoreEvent> pendingEvents, @SafeTimestampConverter()  DateTime? lastUpdatedAt,  List<String> refereeNames,  bool countForStandings,  String? scorerId, @SafeTimestampConverter()  DateTime? lockExpiresAt,  int version,  bool isAutoAssigned, @DoubleConverter()  double order,  String source,  String? tournamentId,  String? category,  String? groupName,  int? matchOrder,  int matchTimeMinutes,  bool isRunningTime,  bool hasExtension,  int? extensionTimeMinutes,  int? extensionCount,  bool hasHantei, @SafeTimestampConverter()  DateTime? timerStartedAt, @SafeTimestampConverter()  DateTime? timerPausedAt,  int accumulatedPauseDurationMs,  String note,  bool isKachinuki,  MatchRule? rule,  List<String> redRemaining,  List<String> whiteRemaining)  $default,) {final _that = this;
 switch (_that) {
 case _MatchModel():
 return $default(_that.id,_that.matchType,_that.redName,_that.whiteName,_that.redScore,_that.whiteScore,_that.status,_that.events,_that.snapshots,_that.syncState,_that.pendingEvents,_that.lastUpdatedAt,_that.refereeNames,_that.countForStandings,_that.scorerId,_that.lockExpiresAt,_that.version,_that.isAutoAssigned,_that.order,_that.source,_that.tournamentId,_that.category,_that.groupName,_that.matchOrder,_that.matchTimeMinutes,_that.isRunningTime,_that.hasExtension,_that.extensionTimeMinutes,_that.extensionCount,_that.hasHantei,_that.timerStartedAt,_that.timerPausedAt,_that.accumulatedPauseDurationMs,_that.note,_that.isKachinuki,_that.rule,_that.redRemaining,_that.whiteRemaining);case _:
@@ -245,7 +251,7 @@ return $default(_that.id,_that.matchType,_that.redName,_that.whiteName,_that.red
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String matchType,  String redName,  String whiteName,  int redScore,  int whiteScore,  String status,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  SyncState syncState,  List<ScoreEvent> pendingEvents, @TimestampConverter()  DateTime? lastUpdatedAt,  List<String> refereeNames,  bool countForStandings,  String? scorerId, @TimestampConverter()  DateTime? lockExpiresAt,  int version,  bool isAutoAssigned, @DoubleConverter()  double order,  String source,  String? tournamentId,  String? category,  String? groupName,  int? matchOrder,  int matchTimeMinutes,  bool isRunningTime,  bool hasExtension,  int? extensionTimeMinutes,  int? extensionCount,  bool hasHantei, @TimestampConverter()  DateTime? timerStartedAt, @TimestampConverter()  DateTime? timerPausedAt,  int accumulatedPauseDurationMs,  String note,  bool isKachinuki,  MatchRule? rule,  List<String> redRemaining,  List<String> whiteRemaining)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String matchType,  String redName,  String whiteName,  int redScore,  int whiteScore,  String status,  List<ScoreEvent> events,  List<MatchSnapshot> snapshots,  SyncState syncState,  List<ScoreEvent> pendingEvents, @SafeTimestampConverter()  DateTime? lastUpdatedAt,  List<String> refereeNames,  bool countForStandings,  String? scorerId, @SafeTimestampConverter()  DateTime? lockExpiresAt,  int version,  bool isAutoAssigned, @DoubleConverter()  double order,  String source,  String? tournamentId,  String? category,  String? groupName,  int? matchOrder,  int matchTimeMinutes,  bool isRunningTime,  bool hasExtension,  int? extensionTimeMinutes,  int? extensionCount,  bool hasHantei, @SafeTimestampConverter()  DateTime? timerStartedAt, @SafeTimestampConverter()  DateTime? timerPausedAt,  int accumulatedPauseDurationMs,  String note,  bool isKachinuki,  MatchRule? rule,  List<String> redRemaining,  List<String> whiteRemaining)?  $default,) {final _that = this;
 switch (_that) {
 case _MatchModel() when $default != null:
 return $default(_that.id,_that.matchType,_that.redName,_that.whiteName,_that.redScore,_that.whiteScore,_that.status,_that.events,_that.snapshots,_that.syncState,_that.pendingEvents,_that.lastUpdatedAt,_that.refereeNames,_that.countForStandings,_that.scorerId,_that.lockExpiresAt,_that.version,_that.isAutoAssigned,_that.order,_that.source,_that.tournamentId,_that.category,_that.groupName,_that.matchOrder,_that.matchTimeMinutes,_that.isRunningTime,_that.hasExtension,_that.extensionTimeMinutes,_that.extensionCount,_that.hasHantei,_that.timerStartedAt,_that.timerPausedAt,_that.accumulatedPauseDurationMs,_that.note,_that.isKachinuki,_that.rule,_that.redRemaining,_that.whiteRemaining);case _:
@@ -259,8 +265,8 @@ return $default(_that.id,_that.matchType,_that.redName,_that.whiteName,_that.red
 /// @nodoc
 @JsonSerializable()
 
-class _MatchModel extends MatchModel {
-  const _MatchModel({required this.id, required this.matchType, required this.redName, required this.whiteName, this.redScore = 0, this.whiteScore = 0, this.status = 'waiting', final  List<ScoreEvent> events = const [], final  List<MatchSnapshot> snapshots = const [], this.syncState = SyncState.synced, final  List<ScoreEvent> pendingEvents = const [], @TimestampConverter() this.lastUpdatedAt, final  List<String> refereeNames = const [], this.countForStandings = true, this.scorerId, @TimestampConverter() this.lockExpiresAt, this.version = 1, this.isAutoAssigned = false, @DoubleConverter() this.order = 0.0, this.source = 'manual', this.tournamentId, this.category, this.groupName, this.matchOrder, this.matchTimeMinutes = 3, this.isRunningTime = false, this.hasExtension = false, this.extensionTimeMinutes, this.extensionCount, this.hasHantei = false, @TimestampConverter() this.timerStartedAt, @TimestampConverter() this.timerPausedAt, this.accumulatedPauseDurationMs = 0, this.note = '', this.isKachinuki = false, this.rule, final  List<String> redRemaining = const [], final  List<String> whiteRemaining = const []}): _events = events,_snapshots = snapshots,_pendingEvents = pendingEvents,_refereeNames = refereeNames,_redRemaining = redRemaining,_whiteRemaining = whiteRemaining,super._();
+class _MatchModel extends MatchModel with DiagnosticableTreeMixin {
+  const _MatchModel({required this.id, required this.matchType, required this.redName, required this.whiteName, this.redScore = 0, this.whiteScore = 0, this.status = 'waiting', final  List<ScoreEvent> events = const [], final  List<MatchSnapshot> snapshots = const [], this.syncState = SyncState.synced, final  List<ScoreEvent> pendingEvents = const [], @SafeTimestampConverter() this.lastUpdatedAt, final  List<String> refereeNames = const [], this.countForStandings = true, this.scorerId, @SafeTimestampConverter() this.lockExpiresAt, this.version = 1, this.isAutoAssigned = false, @DoubleConverter() this.order = 0.0, this.source = 'manual', this.tournamentId, this.category, this.groupName, this.matchOrder, this.matchTimeMinutes = 3, this.isRunningTime = false, this.hasExtension = false, this.extensionTimeMinutes, this.extensionCount, this.hasHantei = false, @SafeTimestampConverter() this.timerStartedAt, @SafeTimestampConverter() this.timerPausedAt, this.accumulatedPauseDurationMs = 0, this.note = '', this.isKachinuki = false, this.rule, final  List<String> redRemaining = const [], final  List<String> whiteRemaining = const []}): _events = events,_snapshots = snapshots,_pendingEvents = pendingEvents,_refereeNames = refereeNames,_redRemaining = redRemaining,_whiteRemaining = whiteRemaining,super._();
   factory _MatchModel.fromJson(Map<String, dynamic> json) => _$MatchModelFromJson(json);
 
 @override final  String id;
@@ -293,7 +299,7 @@ class _MatchModel extends MatchModel {
   return EqualUnmodifiableListView(_pendingEvents);
 }
 
-@override@TimestampConverter() final  DateTime? lastUpdatedAt;
+@override@SafeTimestampConverter() final  DateTime? lastUpdatedAt;
  final  List<String> _refereeNames;
 @override@JsonKey() List<String> get refereeNames {
   if (_refereeNames is EqualUnmodifiableListView) return _refereeNames;
@@ -303,7 +309,7 @@ class _MatchModel extends MatchModel {
 
 @override@JsonKey() final  bool countForStandings;
 @override final  String? scorerId;
-@override@TimestampConverter() final  DateTime? lockExpiresAt;
+@override@SafeTimestampConverter() final  DateTime? lockExpiresAt;
 @override@JsonKey() final  int version;
 @override@JsonKey() final  bool isAutoAssigned;
 @override@JsonKey()@DoubleConverter() final  double order;
@@ -319,8 +325,8 @@ class _MatchModel extends MatchModel {
 @override final  int? extensionCount;
 @override@JsonKey() final  bool hasHantei;
 // ★ Phase 2: Absolute Time化により、remainingSeconds と timerIsRunning はプロパティから削除
-@override@TimestampConverter() final  DateTime? timerStartedAt;
-@override@TimestampConverter() final  DateTime? timerPausedAt;
+@override@SafeTimestampConverter() final  DateTime? timerStartedAt;
+@override@SafeTimestampConverter() final  DateTime? timerPausedAt;
 @override@JsonKey() final  int accumulatedPauseDurationMs;
 @override@JsonKey() final  String note;
 @override@JsonKey() final  bool isKachinuki;
@@ -350,6 +356,12 @@ _$MatchModelCopyWith<_MatchModel> get copyWith => __$MatchModelCopyWithImpl<_Mat
 Map<String, dynamic> toJson() {
   return _$MatchModelToJson(this, );
 }
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MatchModel'))
+    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('matchType', matchType))..add(DiagnosticsProperty('redName', redName))..add(DiagnosticsProperty('whiteName', whiteName))..add(DiagnosticsProperty('redScore', redScore))..add(DiagnosticsProperty('whiteScore', whiteScore))..add(DiagnosticsProperty('status', status))..add(DiagnosticsProperty('events', events))..add(DiagnosticsProperty('snapshots', snapshots))..add(DiagnosticsProperty('syncState', syncState))..add(DiagnosticsProperty('pendingEvents', pendingEvents))..add(DiagnosticsProperty('lastUpdatedAt', lastUpdatedAt))..add(DiagnosticsProperty('refereeNames', refereeNames))..add(DiagnosticsProperty('countForStandings', countForStandings))..add(DiagnosticsProperty('scorerId', scorerId))..add(DiagnosticsProperty('lockExpiresAt', lockExpiresAt))..add(DiagnosticsProperty('version', version))..add(DiagnosticsProperty('isAutoAssigned', isAutoAssigned))..add(DiagnosticsProperty('order', order))..add(DiagnosticsProperty('source', source))..add(DiagnosticsProperty('tournamentId', tournamentId))..add(DiagnosticsProperty('category', category))..add(DiagnosticsProperty('groupName', groupName))..add(DiagnosticsProperty('matchOrder', matchOrder))..add(DiagnosticsProperty('matchTimeMinutes', matchTimeMinutes))..add(DiagnosticsProperty('isRunningTime', isRunningTime))..add(DiagnosticsProperty('hasExtension', hasExtension))..add(DiagnosticsProperty('extensionTimeMinutes', extensionTimeMinutes))..add(DiagnosticsProperty('extensionCount', extensionCount))..add(DiagnosticsProperty('hasHantei', hasHantei))..add(DiagnosticsProperty('timerStartedAt', timerStartedAt))..add(DiagnosticsProperty('timerPausedAt', timerPausedAt))..add(DiagnosticsProperty('accumulatedPauseDurationMs', accumulatedPauseDurationMs))..add(DiagnosticsProperty('note', note))..add(DiagnosticsProperty('isKachinuki', isKachinuki))..add(DiagnosticsProperty('rule', rule))..add(DiagnosticsProperty('redRemaining', redRemaining))..add(DiagnosticsProperty('whiteRemaining', whiteRemaining));
+}
 
 @override
 bool operator ==(Object other) {
@@ -361,7 +373,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hashAll([runtimeType,id,matchType,redName,whiteName,redScore,whiteScore,status,const DeepCollectionEquality().hash(_events),const DeepCollectionEquality().hash(_snapshots),syncState,const DeepCollectionEquality().hash(_pendingEvents),lastUpdatedAt,const DeepCollectionEquality().hash(_refereeNames),countForStandings,scorerId,lockExpiresAt,version,isAutoAssigned,order,source,tournamentId,category,groupName,matchOrder,matchTimeMinutes,isRunningTime,hasExtension,extensionTimeMinutes,extensionCount,hasHantei,timerStartedAt,timerPausedAt,accumulatedPauseDurationMs,note,isKachinuki,rule,const DeepCollectionEquality().hash(_redRemaining),const DeepCollectionEquality().hash(_whiteRemaining)]);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MatchModel(id: $id, matchType: $matchType, redName: $redName, whiteName: $whiteName, redScore: $redScore, whiteScore: $whiteScore, status: $status, events: $events, snapshots: $snapshots, syncState: $syncState, pendingEvents: $pendingEvents, lastUpdatedAt: $lastUpdatedAt, refereeNames: $refereeNames, countForStandings: $countForStandings, scorerId: $scorerId, lockExpiresAt: $lockExpiresAt, version: $version, isAutoAssigned: $isAutoAssigned, order: $order, source: $source, tournamentId: $tournamentId, category: $category, groupName: $groupName, matchOrder: $matchOrder, matchTimeMinutes: $matchTimeMinutes, isRunningTime: $isRunningTime, hasExtension: $hasExtension, extensionTimeMinutes: $extensionTimeMinutes, extensionCount: $extensionCount, hasHantei: $hasHantei, timerStartedAt: $timerStartedAt, timerPausedAt: $timerPausedAt, accumulatedPauseDurationMs: $accumulatedPauseDurationMs, note: $note, isKachinuki: $isKachinuki, rule: $rule, redRemaining: $redRemaining, whiteRemaining: $whiteRemaining)';
 }
 
@@ -373,7 +385,7 @@ abstract mixin class _$MatchModelCopyWith<$Res> implements $MatchModelCopyWith<$
   factory _$MatchModelCopyWith(_MatchModel value, $Res Function(_MatchModel) _then) = __$MatchModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String matchType, String redName, String whiteName, int redScore, int whiteScore, String status, List<ScoreEvent> events, List<MatchSnapshot> snapshots, SyncState syncState, List<ScoreEvent> pendingEvents,@TimestampConverter() DateTime? lastUpdatedAt, List<String> refereeNames, bool countForStandings, String? scorerId,@TimestampConverter() DateTime? lockExpiresAt, int version, bool isAutoAssigned,@DoubleConverter() double order, String source, String? tournamentId, String? category, String? groupName, int? matchOrder, int matchTimeMinutes, bool isRunningTime, bool hasExtension, int? extensionTimeMinutes, int? extensionCount, bool hasHantei,@TimestampConverter() DateTime? timerStartedAt,@TimestampConverter() DateTime? timerPausedAt, int accumulatedPauseDurationMs, String note, bool isKachinuki, MatchRule? rule, List<String> redRemaining, List<String> whiteRemaining
+ String id, String matchType, String redName, String whiteName, int redScore, int whiteScore, String status, List<ScoreEvent> events, List<MatchSnapshot> snapshots, SyncState syncState, List<ScoreEvent> pendingEvents,@SafeTimestampConverter() DateTime? lastUpdatedAt, List<String> refereeNames, bool countForStandings, String? scorerId,@SafeTimestampConverter() DateTime? lockExpiresAt, int version, bool isAutoAssigned,@DoubleConverter() double order, String source, String? tournamentId, String? category, String? groupName, int? matchOrder, int matchTimeMinutes, bool isRunningTime, bool hasExtension, int? extensionTimeMinutes, int? extensionCount, bool hasHantei,@SafeTimestampConverter() DateTime? timerStartedAt,@SafeTimestampConverter() DateTime? timerPausedAt, int accumulatedPauseDurationMs, String note, bool isKachinuki, MatchRule? rule, List<String> redRemaining, List<String> whiteRemaining
 });
 
 

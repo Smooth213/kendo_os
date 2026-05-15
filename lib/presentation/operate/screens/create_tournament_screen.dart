@@ -6,6 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 import '../../shared/widgets/manual_help_button.dart';
+import '../../shared/widgets/liquid_background.dart';
+import '../../shared/widgets/glass_button.dart';
+import '../providers/settings_provider.dart';
 
 class CreateTournamentScreen extends ConsumerStatefulWidget {
   const CreateTournamentScreen({super.key});
@@ -138,17 +141,16 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
 
     // ★ Phase 8-3: キーボードが開いているかを検知
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    return Scaffold(
-      backgroundColor: bgColor, 
-      appBar: AppBar(
-        title: const Text('大会の新規作成', style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: const [
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent, 
+        appBar: AppBar(
+          title: const Text('大会の新規作成', style: TextStyle(fontWeight: FontWeight.bold)),
+          actions: const [
           // ★ 設定の意味を確認できるよう「設定マニュアル」へ
           ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
           SizedBox(width: 8),
@@ -189,7 +191,7 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildPage1() {
@@ -315,12 +317,13 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
 
   Widget _buildStickyBottomAction() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isLastPage = _currentPage == 1;
-    final Color bottomBarColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final Color separatorColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+    final Color bottomBarColor = enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+    final Color separatorColor = enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300);
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
       decoration: BoxDecoration(
         color: bottomBarColor,
         // iOS Native: 影の代わりに上部に細いBorderを引くのがモダンiOS風
@@ -342,7 +345,7 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
               ),
             ),
           Expanded(
-            child: ElevatedButton.icon(
+            child: GlassButton(
               onPressed: () async {
                 if (_currentPage == 0) {
                   if (_nameController.text.isEmpty) {
@@ -373,18 +376,11 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
                   }
                 }
               },
-              icon: Icon(isLastPage ? Icons.check_circle : Icons.navigate_next, color: Colors.white),
-              label: Text(
-                isLastPage ? '保存してチーム登録へ' : '次へ進む', 
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isDark ? Colors.teal.shade600 : Colors.teal.shade700,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // iOS標準の角丸
-                elevation: 0,
-              ),
+              color: Colors.teal,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              icon: isLastPage ? Icons.check_circle : Icons.navigate_next,
+              label: isLastPage ? '保存してチーム登録へ' : '次へ進む',
+              expandContent: false,
             ),
           ),
         ],
