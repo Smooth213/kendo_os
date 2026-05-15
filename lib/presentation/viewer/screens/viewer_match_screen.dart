@@ -9,6 +9,7 @@ import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart'; // ★ Projectionの型とUIXを使うために追加
 import '../../shared/widgets/manual_help_button.dart';
 import '../../shared/widgets/liquid_background.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ViewerMatchScreen extends ConsumerWidget {
   final String matchId;
@@ -110,18 +111,32 @@ class ViewerMatchScreen extends ConsumerWidget {
   }
 
   void _showShareDialog(BuildContext context, String tournamentId) {
-    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer';
+    final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
+    final String shareUrl = isBunaiksen
+        ? 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId'
+        : 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer';
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('大会観戦リンク', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('このリンクを共有すると、\nリアルタイムで観戦できます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
-            const SizedBox(height: 16),
-            Container(padding: const EdgeInsets.all(8), color: Colors.white, child: QrImageView(data: shareUrl, version: QrVersions.auto, size: 180.0)),
-          ],
+        title: Text(isBunaiksen ? '部内戦観戦リンク' : '大会観戦リンク', style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        content: SizedBox(
+          width: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('このリンクを共有すると、\nリアルタイムで観戦できます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+              const SizedBox(height: 16),
+              Container(padding: const EdgeInsets.all(8), color: Colors.white, child: QrImageView(data: shareUrl, version: QrVersions.auto, size: 200.0)),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => SharePlus.instance.share(ShareParams(text: '【剣道OS】進行状況をリアルタイムで観戦できます！\n$shareUrl')),
+                icon: const Icon(Icons.share),
+                label: const Text('LINEやSNSでURLを送る'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade700, foregroundColor: Colors.white, elevation: 0),
+              ),
+            ],
+          ),
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
       ),

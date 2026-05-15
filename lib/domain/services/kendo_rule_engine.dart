@@ -116,10 +116,10 @@ class KendoRuleEngine {
   }
 
   /// 2. 勝敗の決定ロジック (動的生成されたVictoryRuleに委譲)
-  MatchResultStatus decideResult(MatchContext ctx, [MatchRule? rule]) {
+  MatchResultStatus decideResult(MatchContext ctx, [MatchRule? rule, List<ScoreEvent> events = const []]) {
     final safeRule = rule ?? const MatchRule();
     final config = safeRule.toRuleConfig;
-    final ruleCtx = RuleContext(matchState: ctx, events: [], tournamentConfig: config, clock: 0);
+    final ruleCtx = RuleContext(matchState: ctx, events: events, tournamentConfig: config, clock: 0);
     final res = _getRuleSet(config).victory.apply(ruleCtx);
     return res.transition?.resultStatus ?? MatchResultStatus.inProgress;
   }
@@ -131,11 +131,27 @@ class KendoRuleEngine {
   }
 
   /// 4. 延長突入判定
-  bool shouldEnterEncho(MatchContext ctx, bool allowsEncho, [MatchRule? rule]) {
+  bool shouldEnterEncho(MatchContext ctx, bool allowsEncho, [MatchRule? rule, List<ScoreEvent> events = const []]) {
+    // ★ Phase 8: 明示的な決着イベント(判定・引き分け)がある場合、延長戦には絶対に入らない
+    for (var e in events) {
+      if (e.isCanceled) continue;
+      final eStr = e.toString().toLowerCase();
+      if (e.isHantei || eStr.contains('hantei') || eStr.contains('draw') || eStr.contains('hikiwake') || eStr.contains('tie')) {
+        return false; 
+      }
+    }
+
     return ctx.isTimeUp && 
            ctx.redIppon == ctx.whiteIppon && 
            allowsEncho && 
-           decideResult(ctx, rule) == MatchResultStatus.draw;
+           decideResult(ctx, rule, events) == MatchResultStatus.draw;
+  }
+
+  /// (New) イベント履歴を考慮した完全な勝敗判定メソッド (外部からの呼び出し推奨用)
+  MatchResultStatus decideResultFromMatch(MatchModel match) {
+    final analysis = analyzeHistory(match.events, match, match.rule);
+    final activeEvents = _filterActiveEvents(match.events);
+    return decideResult(analysis.context, match.rule, activeEvents);
   }
 
   /// 5. 入力バリデーション

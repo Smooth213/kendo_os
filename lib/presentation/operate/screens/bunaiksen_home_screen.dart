@@ -13,15 +13,17 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
 
   // ★ 究極版：記号化しつつ、区切り文字を「中央揃えのアイコン」で美しく表示するWidgetエンジン
-  Widget _buildScoreMarks(MatchModel match, bool isDark) {
-    final textColor = isDark ? Colors.white : Colors.black87;
+  Widget _buildScoreMarks(MatchModel match, bool isDark, {bool isFinished = true}) {
+    final textColor = isFinished ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500) : (isDark ? Colors.white : Colors.black87);
     // 区切り文字を少しグレーにして、スコア本体(メやコ)と明確に区別する
-    final iconColor = isDark ? Colors.grey.shade600 : Colors.grey.shade400;
+    final iconColor = isFinished ? (isDark ? Colors.grey.shade700 : Colors.grey.shade400) : (isDark ? Colors.grey.shade600 : Colors.grey.shade400);
 
     // 完全無得点の引き分け
     if (match.redScore == 0 && match.whiteScore == 0) {
@@ -90,9 +92,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     final isToday = DateFormat('yyyyMMdd').format(viewDate) == DateFormat('yyyyMMdd').format(DateTime.now());
 
     // 選択された日の部内戦のみ表示
-    final matches = ref.watch(matchListProvider)
-        .where((m) => m.tournamentId == dateId)
-        .toList()
+    // ★ 修正: Riverpodのリビルドを抑えるため、selectでフィルタリング
+    final matches = ref.watch(matchListProvider.select((list) => 
+        list.where((m) => m.tournamentId == dateId).toList()))
       ..sort((a, b) {
         final aFinished = a.status == 'finished' || a.status == 'approved';
         final bFinished = b.status == 'finished' || b.status == 'approved';
@@ -160,6 +162,16 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             },
           ),
           IconButton(
+            icon: const Icon(Icons.visibility),
+            tooltip: '観客席プレビュー',
+            onPressed: () => context.push('/bunaiksen-viewer-home/$dateId'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.qr_code_2),
+            tooltip: '観戦リンクを共有する',
+            onPressed: () => _showShareDialog(context, dateId, dateDisplay),
+          ),
+          IconButton(
             // ★ 修正：チェックマークから、成績や順位表を表す「リーダーボード」のアイコンに変更
             icon: const Icon(Icons.leaderboard_outlined),
             onPressed: () => context.push('/bunaiksen-record'),
@@ -225,7 +237,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final match = matches[index];
-                      final isFinished = match.status == 'finished' || match.status == 'approved';
+                      final hasScore = match.redScore > 0 || match.whiteScore > 0 || match.events.isNotEmpty;
+                      final isPlaying = match.status == 'in_progress';
+                      final isFinished = (match.status == 'finished' || match.status == 'approved' || hasScore) && !isPlaying;
+
+                      final Color bg = isFinished ? (isDark ? const Color(0xFF161618) : Colors.grey.shade50) : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+                      final Color textC = isFinished ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500) : (isDark ? Colors.white : Colors.black87);
+                      final Color noteC = isFinished ? (isDark ? Colors.grey.shade700 : Colors.grey.shade500) : Colors.grey;
 
                       // ★ 修正：一体化のため、外側のPaddingでリストの余白を管理
                       return Padding(
@@ -250,7 +268,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           child: Card(
                             elevation: 0,
                             margin: EdgeInsets.zero, // ★ 重要：ここをゼロにすることで隙間を消す
-                            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                            color: bg,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                               side: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
@@ -263,30 +281,48 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 child: Column(
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          match.note.isNotEmpty ? match.note : '部内稽古',
-                                          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                                        Flexible(
+                                          child: Text(
+                                            match.note.isNotEmpty ? match.note : '部内稽古',
+                                            style: TextStyle(fontSize: 11, color: noteC, fontWeight: FontWeight.bold),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                        // 存在しない orderDate を使わず、単に試合番号やテキストにする
+                                        const Spacer(),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          margin: const EdgeInsets.only(right: 8),
+                                          decoration: BoxDecoration(
+                                            color: isPlaying ? Colors.blue.shade600 : (isFinished ? (isDark ? Colors.grey.shade800 : Colors.grey.shade300) : (isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200)),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            isPlaying ? '進行中' : (isFinished ? '終了' : '待機中'),
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: isPlaying ? Colors.white : (isFinished ? (isDark ? Colors.grey.shade400 : Colors.grey.shade600) : (isDark ? Colors.grey.shade400 : Colors.grey.shade700)),
+                                            ),
+                                          ),
+                                        ),
                                         Text(
                                           '第${index + 1}試合',
-                                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                          style: TextStyle(fontSize: 11, color: noteC),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
                                       children: [
-                                        Expanded(child: Text(match.redName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87), textAlign: TextAlign.right, overflow: TextOverflow.ellipsis)),
+                                        Expanded(child: Text(match.redName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textC), textAlign: TextAlign.right, overflow: TextOverflow.ellipsis)),
                                         Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                                           child: isFinished 
-                                              ? _buildScoreMarks(match, isDark) 
-                                              : Text('VS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                                              ? _buildScoreMarks(match, isDark, isFinished: isFinished) 
+                                              : Text('VS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textC)),
                                         ),
-                                        Expanded(child: Text(match.whiteName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87), textAlign: TextAlign.left, overflow: TextOverflow.ellipsis)),
+                                        Expanded(child: Text(match.whiteName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textC), textAlign: TextAlign.left, overflow: TextOverflow.ellipsis)),
                                       ],
                                     ),
                                   ],
@@ -331,6 +367,47 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             },
             child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showShareDialog(BuildContext context, String tournamentId, String dateDisplay) {
+    final String shareUrl = 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId';
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('$dateDisplay 観戦リンク', style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        content: SizedBox(
+          width: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('この部内戦の全試合・スコアを\n観客用に安全に共有できます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(8),
+                color: Colors.white,
+                child: QrImageView(
+                  data: shareUrl,
+                  version: QrVersions.auto,
+                  size: 200.0,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => SharePlus.instance.share(ShareParams(text: '【剣道OS】部内戦の進行状況をリアルタイムで観戦できます！\n$shareUrl')),
+                icon: const Icon(Icons.share),
+                label: const Text('LINEやSNSでURLを送る'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade700, foregroundColor: Colors.white, elevation: 0),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる', style: TextStyle(color: Colors.grey))),
         ],
       ),
     );

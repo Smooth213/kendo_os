@@ -126,6 +126,26 @@ abstract class BaseVictoryRule implements VictoryRule {
     MatchResultStatus status = MatchResultStatus.inProgress;
     final state = context.matchState;
 
+    // ★ Phase 8: イベント履歴に明示的な勝敗決定（判定・引き分け）があれば最優先で適用する
+    for (var e in context.events) {
+      if (e.isCanceled) continue;
+      final eStr = e.toString().toLowerCase();
+      
+      // 判定勝ちイベントの評価
+      if (e.isHantei || eStr.contains('hantei')) {
+        if (e.side == Side.red) {
+          return RuleResult(allowed: true, transition: MatchTransition(updatedState: state, resultStatus: MatchResultStatus.redWin));
+        } else if (e.side == Side.white) {
+          return RuleResult(allowed: true, transition: MatchTransition(updatedState: state, resultStatus: MatchResultStatus.whiteWin));
+        }
+      }
+      
+      // 引き分けイベントの評価
+      if (eStr.contains('draw') || eStr.contains('hikiwake') || eStr.contains('tie')) {
+        return RuleResult(allowed: true, transition: MatchTransition(updatedState: state, resultStatus: MatchResultStatus.draw));
+      }
+    }
+
     if (state.redIppon >= state.targetIppon) {
       status = MatchResultStatus.redWin;
     } else if (state.whiteIppon >= state.targetIppon) {

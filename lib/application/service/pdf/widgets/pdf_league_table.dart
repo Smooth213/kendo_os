@@ -133,7 +133,7 @@ class PdfLeagueTable {
         canvas.lineTo(center.x - radius * 1.1, center.y - radius * 0.8);
         canvas.closePath();
       } else {
-        canvas.drawRect(center.x - radius * 0.8, center.y - radius * 0.8, radius * 1.6, radius * 1.6);
+        // 引き分けの背景は描画しない（四角で囲まれるのを防ぐ）
       }
       canvas.fillPath();
       
@@ -147,7 +147,11 @@ class PdfLeagueTable {
         canvas.lineTo(center.x - radius * 1.1, center.y - radius * 0.8);
         canvas.closePath();
       } else {
-        canvas.drawRect(center.x - radius * 0.8, center.y - radius * 0.8, radius * 1.6, radius * 1.6);
+        // 引き分け(✕)
+        canvas.moveTo(center.x - radius * 0.8, center.y - radius * 0.8);
+        canvas.lineTo(center.x + radius * 0.8, center.y + radius * 0.8);
+        canvas.moveTo(center.x + radius * 0.8, center.y - radius * 0.8);
+        canvas.lineTo(center.x - radius * 0.8, center.y + radius * 0.8);
       }
       canvas.strokePath();
     }

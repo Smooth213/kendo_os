@@ -51,6 +51,8 @@ import 'presentation/viewer/screens/viewer_home_screen.dart';
 import 'presentation/viewer/screens/viewer_official_record_screen.dart';
 import 'presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
 import 'presentation/viewer/screens/viewer_kachinuki_scoreboard_screen.dart';
+import 'presentation/viewer/screens/viewer_bunaiksen_home_screen.dart';
+import 'presentation/viewer/screens/viewer_bunaiksen_official_record_screen.dart';
 
 import 'presentation/operate/providers/role_provider.dart';
 import 'presentation/operate/providers/metrics_provider.dart'; // ★ 追加: グローバルエラーをメトリクスへ流す
@@ -357,6 +359,20 @@ final _router = GoRouter(
       GoRoute(
         path: '/bunaiksen-record',
         builder: (context, state) => const BunaiksenOfficialRecordScreen(),
+      ),
+      GoRoute(
+        path: '/bunaiksen-viewer-home/:tournamentId',
+        builder: (context, state) => RoleInjector(
+          roleStr: 'viewer', // ★強制的にViewer権限にダウングレード
+          child: ViewerBunaiksenHomeScreen(tournamentId: state.pathParameters['tournamentId']!),
+        ),
+      ),
+      GoRoute(
+        path: '/bunaiksen-viewer-record/:tournamentId',
+        builder: (context, state) => RoleInjector(
+          roleStr: 'viewer', // ★強制的にViewer権限にダウングレード
+          child: ViewerBunaiksenOfficialRecordScreen(tournamentId: state.pathParameters['tournamentId']!),
+        ),
       ),
     ],
   );

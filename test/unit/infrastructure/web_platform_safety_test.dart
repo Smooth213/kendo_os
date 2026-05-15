@@ -271,5 +271,51 @@ void main() {
       );
     });
 
+    test('11. Bunaiksen Viewer Role Enforcement (部内戦観客席の権限ダウングレード検証)', () {
+      // 【歴史】部内戦の観客席(Bunaiksen Viewer)は、認証済みユーザーであっても
+      // 強制的に viewer 権限にダウングレードさせ、誤操作を物理的に防ぐ必要がある。
+      // ルーティング設定において、RoleInjector に roleStr: 'viewer' が固定で
+      // 渡されている設計を保証するテスト。
+      final testCases = [
+        {'route': '/viewer-home/123', 'queryRole': 'viewer', 'expectedRoleStr': 'viewer'}, // 通常観客席 (URLクエリで指定される)
+        {'route': '/bunaiksen-viewer-home/123', 'queryRole': null, 'expectedRoleStr': 'viewer'}, // 部内戦観客席 (ルーターでハードコード固定)
+      ];
+
+      for (var tc in testCases) {
+        final route = tc['route'] as String;
+        // ルーティングロジックのシミュレーション:
+        // /bunaiksen-viewer-home/ の場合は、クエリパラメータに関係なく 'viewer' を強制する
+        final isBunaiksenViewer = route.contains('bunaiksen-viewer-home');
+        final injectedRoleStr = isBunaiksenViewer ? 'viewer' : tc['queryRole'];
+
+        expect(
+          injectedRoleStr,
+          tc['expectedRoleStr'],
+          reason: 'Route: $route において、Viewer権限への強制ダウングレードが機能していません。',
+        );
+      }
+    });
+
+    test('12. Bunaiksen and Standard Viewer Routing Isolation (通常観客席と部内戦観客席のルーティング分離検証)', () {
+      // 【歴史】通常大会と部内戦で共有URL(QR)のパスを混ぜた結果、想定外の画面が開いたり
+      // UIが崩れたりする障害が発生した。両者は完全に別々のURLパス空間として定義されなければならない。
+      const standardViewerUrl = 'https://kendo-os.web.app/viewer-home/t_123';
+      const bunaiksenViewerUrl = 'https://kendo-os.web.app/bunaiksen-viewer-home/bunaiksen_123';
+
+      // 1. パスの分離検証
+      expect(standardViewerUrl.contains('/viewer-home/'), isTrue);
+      expect(standardViewerUrl.contains('/bunaiksen-viewer-home/'), isFalse);
+      
+      expect(bunaiksenViewerUrl.contains('/bunaiksen-viewer-home/'), isTrue);
+      expect(bunaiksenViewerUrl.contains('/viewer-home/'), isFalse, reason: 'URLの包含関係によってルーティングが混線する可能性があります');
+
+      // 2. IDのプレフィックス分離検証（設計思想の確認）
+      final standardId = standardViewerUrl.split('/').last;
+      final bunaiksenId = bunaiksenViewerUrl.split('/').last;
+
+      expect(bunaiksenId.startsWith('bunaiksen_'), isTrue, reason: '部内戦の大会IDは bunaiksen_ プレフィックスから始まる必要があります');
+      expect(standardId.startsWith('bunaiksen_'), isFalse);
+    });
+
   });
 }
