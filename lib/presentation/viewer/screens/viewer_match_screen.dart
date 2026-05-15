@@ -26,19 +26,23 @@ class ViewerMatchScreen extends ConsumerWidget {
       data: (MatchProjection? projection) {
         if (projection == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final iconColor = isDark ? Colors.white : Colors.indigo.shade900;
+        final textColor = isDark ? Colors.white : Colors.black;
+
         return LiquidBackground(
           child: Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
               // ★ 修正: Webで直接開いた際にGoRouterが勝手に出す「トップ(start_screen)に戻るホームボタン」を強制消去
               automaticallyImplyLeading: false,
-              title: const Text('試合状況 (観戦)', style: TextStyle(fontSize: 14)),
+              title: Text('試合状況 (観戦)', style: TextStyle(fontSize: 14, color: textColor)),
               // ★ 修正: 誤って管理者ホーム(/home)に飛んでしまう扉ボタンを撤廃。
               // 履歴がある場合（試合一覧から来た場合）は標準の「戻る」ボタンを表示し、
               // 直リンクで来た場合は何も表示しない（ブラウザの戻るに委ねる）純粋なUXに統一。
               leading: context.canPop()
                   ? IconButton(
-                      icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                      icon: Icon(Icons.arrow_back_ios, color: iconColor, size: 20),
                       tooltip: '戻る',
                       onPressed: () => context.pop(),
                     )
@@ -46,11 +50,11 @@ class ViewerMatchScreen extends ConsumerWidget {
               actions: [
               // ★ 追加：隣の人への共有用QR
               IconButton(
-                icon: const Icon(Icons.qr_code_2, color: Colors.white, size: 20),
+                icon: Icon(Icons.qr_code_2, color: iconColor, size: 20),
                 onPressed: () => _showShareDialog(context, projection.tournamentId),
               ),
               // ★ 観客が最も不安になる「点数が変わらない」等のFAQへ直行
-              const ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: Colors.white),
+              ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: iconColor),
               const SizedBox(width: 8),
             ],
           ),

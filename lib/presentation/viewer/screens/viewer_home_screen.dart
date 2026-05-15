@@ -131,7 +131,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                 automaticallyImplyLeading: false, 
           
           // ★ 修正2: 「管理者アプリから直接遷移してきた（戻る履歴がある）場合」のみ扉ボタンを出す
-          leading: context.canPop() 
+          // 従来の context.canPop() だとWebブラウザでQRから直接アクセスした際に
+          // 暗黙の履歴によって true と誤判定されるため、GoRouterの canPop() を使用します。
+          leading: GoRouter.of(context).canPop() 
               ? IconButton(
                   icon: const Icon(Icons.exit_to_app, color: Colors.deepOrange),
                   tooltip: '管理画面に戻る',
@@ -144,6 +146,18 @@ class ViewerHomeScreen extends ConsumerWidget {
           elevation: 0,
           actions: [
             ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: isDark ? Colors.white : Colors.indigo.shade900),
+            IconButton(
+              icon: Icon(Icons.settings, color: isDark ? Colors.white : Colors.indigo.shade900),
+              tooltip: '表示設定',
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const ViewerSettingsBottomSheet(),
+                );
+              },
+            ),
             IconButton(
               icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
               tooltip: '大会を共有する',
@@ -1196,3 +1210,134 @@ final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref,
   final repo = ref.watch(tournamentRepositoryProvider);
   return repo.getTournamentStream(id);
 });
+
+// ============================================================================
+// ★ 観客用 表示設定ボトムシート (Liquid Glass & テーマ切り替え)
+// ============================================================================
+class ViewerSettingsBottomSheet extends ConsumerWidget {
+  const ViewerSettingsBottomSheet({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final notifier = ref.read(settingsProvider.notifier);
+
+    return Container(
+      padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 32),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Center(
+                child: Text(
+                  '表示設定',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  const Icon(Icons.palette_outlined),
+                  const SizedBox(width: 8),
+                  Text(
+                    'テーマの切り替え',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: settings.themeMode,
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down),
+                    items: const [
+                      DropdownMenuItem(value: 'system', child: Text('📱 システム設定に従う')),
+                      DropdownMenuItem(value: 'light', child: Text('☀️ ライトモード')),
+                      DropdownMenuItem(value: 'dark', child: Text('🌙 ダークモード')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+                        notifier.state = notifier.state.copyWith(themeMode: value);
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '・システム: お使いの端末の設定に自動で連動します。\n'
+                '・ライト: 明るく見やすい標準的なデザインです。\n'
+                '・ダーク: 暗い背景で目に優しく、バッテリー消費も抑えます。',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  const Icon(Icons.auto_awesome),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'すりガラス効果',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Switch(
+                    value: settings.enableLiquidGlass,
+                    onChanged: (value) {
+                      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+                      notifier.state = notifier.state.copyWith(enableLiquidGlass: value);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '・背景の試合状況が美しく透けて見えるモダンなデザインになります。\n'
+                '・動作が重く感じる場合や、古い端末をお使いの場合は「OFF」にするとパフォーマンスが向上します。',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
