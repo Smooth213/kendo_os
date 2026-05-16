@@ -10,6 +10,7 @@ import '../../shared/widgets/liquid_background.dart';
 import '../../operate/providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'viewer_home_screen.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   final String tournamentId;
@@ -126,6 +127,18 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                   )
                 : null, // ★ QR等直リンクの場合は何も表示しない
             actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                tooltip: '表示設定',
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => const ViewerSettingsBottomSheet(),
+                  );
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.qr_code_2),
                 tooltip: '観戦リンクを共有する',

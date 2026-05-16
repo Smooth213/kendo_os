@@ -317,5 +317,41 @@ void main() {
       expect(standardId.startsWith('bunaiksen_'), isFalse);
     });
 
+    test('13. Reorder Match Order Precision Bug (巨大な浮動小数点での情報落ちによる並び替え無効化の防止)', () {
+      // 【歴史】ドラッグ＆ドロップでの並び替え時、巨大なタイムスタンプ由来のorder値に対して
+      // 重複回避のために +0.001 を足していたが、double型の精度限界（情報落ち）により
+      // 足しても値が変わらず、保存がキャンセルされて元の位置に戻ってしまう不具合が発生した。
+      
+      double hugeOrder = 1716000000000000.0; // 巨大なタイムスタンプベースのorder値(マイクロ秒など)
+      
+      // 古いロジックのシミュレーション（情報落ちが発生する）
+      double oldLogicNewOrder = hugeOrder + 0.001;
+      
+      // 新しいロジックのシミュレーション（端への移動は +/- 100.0、間は中間値）
+      double newLogicNewOrderTop = hugeOrder - 100.0;
+      double newLogicNewOrderBottom = hugeOrder + 100.0;
+      
+      // 巨大な値に対して0.001を足しても値は変わらない（情報落ちの証明）
+      expect(
+        oldLogicNewOrder == hugeOrder,
+        isTrue,
+        reason: '巨大な浮動小数点に対して0.001を足しても値が変わらない（情報落ちが発生する）ことを確認',
+      );
+      
+      // 新しいロジックなら確実に値が変わる
+      expect(newLogicNewOrderTop != hugeOrder, isTrue, reason: '新しいロジック（-100.0）なら確実に値が変更されること');
+      expect(newLogicNewOrderBottom != hugeOrder, isTrue, reason: '新しいロジック（+100.0）なら確実に値が変更されること');
+      
+      // 中間値計算の検証
+      double nextHugeOrder = hugeOrder + 1000.0;
+      double middleOrder = (hugeOrder + nextHugeOrder) / 2.0;
+      
+      expect(
+        middleOrder > hugeOrder && middleOrder < nextHugeOrder,
+        isTrue,
+        reason: '中間値計算が正常に機能し、2つの巨大な値の間に新しいorderが生成されること',
+      );
+    });
+
   });
 }

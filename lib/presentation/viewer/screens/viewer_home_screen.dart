@@ -465,7 +465,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                             }
 
                             final sortedGroups = actualGroupedMatches.entries.toList()
-                              ..sort((a, b) => b.value.first.order.compareTo(a.value.first.order));
+                              ..sort((a, b) => a.value.first.order.compareTo(b.value.first.order));
                             final sortedPlayers = matchesByPlayer.entries.toList()
                               ..sort((a, b) => a.key.compareTo(b.key));
 

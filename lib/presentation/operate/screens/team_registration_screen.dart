@@ -864,6 +864,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   label: _currentPage == 2 ? (_editingTeamId != null ? '変更を保存' : '登録して続けて追加') : '次へ進む',
                   icon: _currentPage == 2 ? (_editingTeamId != null ? Icons.save : Icons.add_task) : null,
+                  expandContent: false,
                 ),
               ),
             ],
@@ -898,6 +899,7 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
               icon: Icons.check_circle,
               label: 'すべての登録を完了して大会画面へ',
               padding: const EdgeInsets.symmetric(vertical: 16),
+              expandContent: false,
             ),
           ]
         ],
