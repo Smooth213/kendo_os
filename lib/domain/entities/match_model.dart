@@ -6,6 +6,7 @@ import 'match_aggregate.dart'; // ★ 新しい構造のインポート
 import 'match_meta.dart';      // ★ 新しい構造のインポート
 import 'match_state.dart';     // ★ 追加: 真のFSM定義を読み込む
 import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint用
+import 'timeline_item.dart';   // ★ 追加: タイムライン統合インターフェース
 
 part 'match_model.freezed.dart';
 part 'match_model.g.dart';
@@ -32,7 +33,7 @@ class SafeTimestampConverter implements JsonConverter<DateTime?, dynamic> {
 enum SyncState { localOnly, syncing, synced, conflict }
 
 @freezed
-abstract class MatchModel with _$MatchModel {
+abstract class MatchModel with _$MatchModel implements TimelineItem {
   const MatchModel._(); 
 
   // ★ リカバリー: 既存のコードが壊れないように、コンストラクタは一旦元の状態を維持します。
@@ -111,6 +112,18 @@ abstract class MatchModel with _$MatchModel {
     countForStandings: countForStandings,
     isAutoAssigned: isAutoAssigned,
   );
+
+  // ==========================================
+  // ★ Phase 1: タイムラインインターフェースの実装
+  // ==========================================
+  @override
+  String get timelineId => id;
+  
+  @override
+  double get timelineOrder => order;
+  
+  @override
+  TimelineItemType get itemType => TimelineItemType.match;
 
   // ★ Phase 1 移行用: String status から enum への安全な橋渡し
   MatchLifecycleState get lifecycle {

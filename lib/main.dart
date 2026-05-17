@@ -44,6 +44,7 @@ import 'presentation/operate/providers/sync_provider.dart';
 import 'infrastructure/persistence/models/match_entity.dart';
 import 'infrastructure/repository/local_match_repository.dart';
 import 'infrastructure/persistence/models/local_stroke_model.dart'; // ★ これを追加
+import 'infrastructure/persistence/models/match_comment_entity.dart'; // ★ Phase 2: コメント専用エンティティ
 import 'presentation/operate/screens/bunaiksen_home_screen.dart';
 import 'presentation/operate/screens/bunaiksen_setup_screen.dart';
 import 'presentation/operate/screens/bunaiksen_official_record_screen.dart';
@@ -91,6 +92,7 @@ void main() async {
           MatchEntitySchema,
           MatchCommandEntitySchema, 
           LocalStrokeModelSchema, 
+          MatchCommentEntitySchema, // ★ Phase 2: コメント用スキーマ追加
         ],
         directory: dir.path,
       );

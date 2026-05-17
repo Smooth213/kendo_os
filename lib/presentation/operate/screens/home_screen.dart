@@ -24,6 +24,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../../shared/widgets/glass_button.dart';
 import '../providers/settings_provider.dart';
+import '../providers/timeline_provider.dart';
 
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
   final repo = ref.watch(tournamentRepositoryProvider);
@@ -52,6 +53,7 @@ class HomeScreen extends ConsumerWidget {
     final matches = ref.watch(matchListProvider.select((list) => 
       list.where((m) => m.tournamentId == tournamentId).toList()
     ));
+    final comments = ref.watch(commentStreamProvider(tournamentId)).value ?? [];
 
     matches.sort((a, b) => a.order.compareTo(b.order));
 
@@ -537,28 +539,66 @@ class HomeScreen extends ConsumerWidget {
                                         const SizedBox(width: 8),
                                         Expanded(child: Text(teamName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.indigo.shade900))),
                                         
-                                        if (!permissions.isReadOnly)
+                                        if (!permissions.isReadOnly) ...[
+                                          IconButton(
+                                            icon: Icon(Icons.add_comment, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade300, size: 20),
+                                            tooltip: '見出し（コメント）を追加',
+                                            onPressed: () => _showAddCommentDialog(context, ref, tournamentId, categoryName, teamName, sortedGroups.isEmpty ? 0.0 : sortedGroups.first.value.first.order - 100.0),
+                                          ),
                                           IconButton(
                                             icon: Icon(Icons.edit_note, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade300, size: 20),
                                             tooltip: 'チーム名を修正して統合',
                                             onPressed: () => _showRenameTeamSheet(context, ref, tournamentId, teamName),
                                           ),
+                                        ],
                                       ],
                                     ),
                                   ),
                                   
                                   const SizedBox(height: 8),
 
-                                  ReorderableListView(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    onReorder: (oldIndex, newIndex) => _onReorderGroups(sortedGroups, oldIndex, newIndex, ref),
-                                    children: (() {
-                                      String lastGroupLabel = ''; 
-                                      
-                                      return sortedGroups.map((entry) {
-                                        final groupList = entry.value;
-                                        final firstMatch = groupList.first;
+                                  Builder(builder: (context) {
+                                    final timelineItems = <ReorderableTimelineItem>[];
+                                    for (var entry in sortedGroups) {
+                                      timelineItems.add(MatchGroupTimelineItem(entry.key, entry.value));
+                                    }
+                                    final teamComments = comments.where((c) => c.category == categoryName && c.groupName == teamName).toList();
+                                    for (var c in teamComments) {
+                                      timelineItems.add(CommentTimelineItem(c));
+                                    }
+                                    timelineItems.sort((a, b) => a.order.compareTo(b.order));
+
+                                    return ReorderableListView(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      onReorder: (oldIndex, newIndex) => _onReorderTimeline(timelineItems, oldIndex, newIndex, ref),
+                                      children: (() {
+                                        String lastGroupLabel = ''; 
+                                        
+                                        return timelineItems.map((item) {
+                                          if (item is CommentTimelineItem) {
+                                            final c = item.comment;
+                                            return Container(
+                                              key: ValueKey('comment_${c.id}'),
+                                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                              decoration: BoxDecoration(
+                                                color: isDark ? Colors.indigo.shade900.withValues(alpha: 0.4) : Colors.indigo.shade50,
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: isDark ? Colors.indigo.shade700 : Colors.indigo.shade200),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.label_important, color: isDark ? Colors.indigo.shade300 : Colors.indigo.shade700, size: 20),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(child: Text(c.text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.indigo.shade900))),
+                                                ],
+                                              ),
+                                            );
+                                          } else if (item is MatchGroupTimelineItem) {
+                                            final entry = MapEntry(item.groupId, item.matches);
+                                            final groupList = entry.value;
+                                            final firstMatch = groupList.first;
                                         final label = getMatchLabel(firstMatch); 
                                         
                                         Widget? headerWidget;
@@ -1001,9 +1041,12 @@ class HomeScreen extends ConsumerWidget {
                                           ],
                                         ),
                                       );
-                                      }).toList();
-                                    })(),
-                                  ),
+                                          }
+                                          return const SizedBox.shrink();
+                                        }).toList();
+                                      })(),
+                                    );
+                                  }),
 
                                 // --- 👤 個人戦セクション ---
                                 if (sortedPlayers.isNotEmpty) ...[
@@ -2267,7 +2310,7 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  void _onReorderGroups(List<MapEntry<String, List<MatchModel>>> list, int oldIndex, int newIndex, WidgetRef ref) async {
+  void _onReorderTimeline(List<ReorderableTimelineItem> list, int oldIndex, int newIndex, WidgetRef ref) async {
     final permissions = ref.read(permissionProvider);
     if (permissions.isReadOnly) return;
 
@@ -2277,39 +2320,93 @@ class HomeScreen extends ConsumerWidget {
     
     if (oldIndex == newIndex) return;
     
-    // グループ移動時は、グループ内の全試合を新しい基準値（ベースオーダー）に合わせてシフトさせる
-    final targetGroup = list[oldIndex].value;
-    final currentBaseOrder = targetGroup.first.order;
+    final item = list[oldIndex];
     
-    double newBaseOrder;
+    double newOrder;
     if (newIndex == 0) {
-      newBaseOrder = list.first.value.first.order - 100.0;
+      newOrder = list.first.order - 100.0;
     } else if (newIndex == list.length - 1) {
-      newBaseOrder = list.last.value.first.order + 100.0;
+      newOrder = list.last.order + 100.0;
     } else {
-      final prevOrder = list[newIndex > oldIndex ? newIndex : newIndex - 1].value.first.order;
-      final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex].value.first.order;
-      newBaseOrder = (prevOrder + nextOrder) / 2.0;
+      final prevOrder = list[newIndex > oldIndex ? newIndex : newIndex - 1].order;
+      final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex].order;
+      newOrder = (prevOrder + nextOrder) / 2.0;
     }
     
-    if (newBaseOrder == list[newIndex].value.first.order) {
-      newBaseOrder += 0.001;
+    if (newOrder == list[newIndex].order) {
+      newOrder += 0.001;
     }
     
-    final updatedMatches = <MatchModel>[];
-    for (var m in targetGroup) {
-      final offset = m.order - currentBaseOrder;
-      updatedMatches.add(m.copyWith(order: newBaseOrder + offset));
+    if (item is CommentTimelineItem) {
+      try {
+        await ref.read(commentCommandProvider).updateCommentOrder(item.comment, newOrder);
+      } catch (e) {
+        debugPrint('コメント並び替え保存エラー: $e');
+      }
+    } else if (item is MatchGroupTimelineItem) {
+      final currentBaseOrder = item.order;
+      final offsetOrder = newOrder - currentBaseOrder;
+      
+      final updatedMatches = item.matches.map((m) => m.copyWith(order: m.order + offsetOrder)).toList();
+      
+      final appService = ref.read(matchApplicationServiceProvider);
+      try {
+        await appService.saveMatchesBulk(updatedMatches);
+      } catch (e) {
+        debugPrint('グループ並び替え保存エラー: $e');
+      }
     }
+  }
 
-    if (updatedMatches.isEmpty) return;
-
-    final appService = ref.read(matchApplicationServiceProvider);
-    try {
-      await appService.saveMatchesBulk(updatedMatches);
-    } catch (e) {
-      debugPrint('グループ並び替え保存エラー: $e');
-    }
+  void _showAddCommentDialog(BuildContext context, WidgetRef ref, String tournamentId, String category, String groupName, double order) {
+    final controller = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: Text('見出し（コメント）の追加', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          decoration: InputDecoration(
+            hintText: '見出しやコメントを入力',
+            hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+            filled: true,
+            fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.indigo.shade400)),
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final text = controller.text.trim();
+              if (text.isNotEmpty) {
+                await ref.read(commentCommandProvider).addComment(
+                  tournamentId: tournamentId,
+                  category: category,
+                  groupName: groupName,
+                  text: text,
+                  order: order,
+                );
+              }
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            child: const Text('追加', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showEditGroupNoteDialog(BuildContext context, WidgetRef ref, List<MatchModel> groupList) {
