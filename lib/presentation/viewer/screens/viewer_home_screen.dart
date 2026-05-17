@@ -939,6 +939,19 @@ class ViewerHomeScreen extends ConsumerWidget {
 
     final bool isIndividual = !match.isKachinuki && (match.matchType == '個人戦' || match.matchType == '選手');
 
+    // ★ 追加: 団体戦の子要素（アコーディオン内）では、親のヘッダーでコメントが表示されるため、
+    // 各行ではシステムタグ（[...]）以外の一般コメントを隠す。
+    String displayNote = match.note;
+    if (!isIndividual && match.groupName != null && match.groupName!.isNotEmpty) {
+      final regExp = RegExp(r'\[.*?\]');
+      final tagMatches = regExp.allMatches(match.note);
+      if (tagMatches.isNotEmpty) {
+        displayNote = tagMatches.map((m) => m.group(0)).join(' ');
+      } else {
+        displayNote = '';
+      }
+    }
+
     final Color bg = isFinished ? (isDark ? const Color(0xFF161618) : Colors.grey.shade50) : Colors.transparent;
     final Color textC = isFinished ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500) : (isDark ? Colors.white : Colors.black87);
     final Color noteC = isFinished ? (isDark ? Colors.grey.shade700 : Colors.grey.shade500) : Colors.grey.shade600;
@@ -961,8 +974,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                   child: Text.rich(
                     TextSpan(
                       children: [
-                        if (match.note.isNotEmpty) TextSpan(text: match.note),
-                        if (match.note.isNotEmpty && (match.matchType.isNotEmpty && match.matchType != '選手'))
+                        if (displayNote.isNotEmpty) TextSpan(text: displayNote),
+                        if (displayNote.isNotEmpty && (match.matchType.isNotEmpty && match.matchType != '選手'))
                           const TextSpan(text: ' '),
                         if (match.matchType.isNotEmpty && match.matchType != '選手')
                           TextSpan(text: '【${match.matchType}】'),

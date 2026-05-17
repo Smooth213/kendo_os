@@ -11,6 +11,7 @@ import '../providers/match_command_provider.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:kendo_os/application/usecases/match_application_service.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -255,6 +256,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             motion: const ScrollMotion(),
                             children: [
                               SlidableAction(
+                                onPressed: (context) => _showEditNoteDialog(context, ref, match),
+                                backgroundColor: Colors.blueAccent,
+                                foregroundColor: Colors.white,
+                                icon: Icons.edit,
+                                label: '編集',
+                              ),
+                              SlidableAction(
                                 onPressed: (context) => _confirmDeleteMatch(context, ref, match.id),
                                 backgroundColor: Colors.redAccent,
                                 foregroundColor: Colors.white,
@@ -366,6 +374,52 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               await ref.read(matchCommandProvider).deleteMatch(matchId);
             },
             child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditNoteDialog(BuildContext context, WidgetRef ref, MatchModel match) {
+    final controller = TextEditingController(text: match.note);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: Text('試合詳細（コメント）の編集', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          decoration: InputDecoration(
+            hintText: '試合に関するメモや詳細を入力',
+            hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+            filled: true,
+            fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: const Color(0xFF8B0000))),
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newNote = controller.text.trim();
+              if (newNote != match.note) {
+                final updatedMatch = match.copyWith(note: newNote);
+                await ref.read(matchApplicationServiceProvider).saveMatchesBulk([updatedMatch]);
+              }
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B0000), foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            child: const Text('保存', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

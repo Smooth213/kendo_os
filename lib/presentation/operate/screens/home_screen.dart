@@ -606,14 +606,56 @@ class HomeScreen extends ConsumerWidget {
                                             children: [
                                               // ignore: use_null_aware_elements
                                               if (headerWidget != null) headerWidget,
-                                              Container(
-                                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                                decoration: BoxDecoration(
-                                                  color: cardBg,
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
-                                                  boxShadow: hasInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
-                                                ),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                child: Slidable(
+                                                  key: ValueKey('group_${entry.key}'),
+                                                  enabled: !permissions.isReadOnly,
+                                                  endActionPane: ActionPane(
+                                                    motion: const ScrollMotion(),
+                                                    children: [
+                                                      SlidableAction(
+                                                        onPressed: (context) => _showEditGroupNoteDialog(context, ref, groupList),
+                                                        backgroundColor: Colors.blueAccent,
+                                                        foregroundColor: Colors.white,
+                                                        icon: Icons.edit,
+                                                        label: '編集',
+                                                      ),
+                                                      SlidableAction(
+                                                        onPressed: (context) async {
+                                                          final confirm = await showDialog<bool>(
+                                                            context: context,
+                                                            builder: (ctx) => AlertDialog(
+                                                              backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                                                              title: Text('試合グループの削除', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                                                              content: Text('このグループに含まれる全試合を\n削除しますか？\n(取り消せません)', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+                                                              actions: [
+                                                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+                                                                TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除する', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+                                                              ],
+                                                            ),
+                                                          );
+                                                          if (confirm == true) {
+                                                            for (var m in groupList) {
+                                                              await ref.read(matchCommandProvider).deleteMatch(m.id);
+                                                            }
+                                                          }
+                                                        },
+                                                        backgroundColor: Colors.redAccent,
+                                                        foregroundColor: Colors.white,
+                                                        icon: Icons.delete,
+                                                        label: '削除',
+                                                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      color: cardBg,
+                                                      borderRadius: BorderRadius.circular(12),
+                                                      border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
+                                                      boxShadow: hasInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
+                                                    ),
                                                 child: ClipRRect(
                                                   borderRadius: BorderRadius.circular(11),
                                                   child: ExpansionTile(
@@ -797,7 +839,7 @@ class HomeScreen extends ConsumerWidget {
                                                               shrinkWrap: true,
                                                               physics: const NeverScrollableScrollPhysics(),
                                                               onReorder: (oldIndex, newIndex) => _onReorderMatches(normalMatches, oldIndex, newIndex, ref),
-                                                              children: normalMatches.map((m) => Container(key: ValueKey(m.id), child: _buildMatchListTile(context, ref, m))).toList(),
+                                                              children: normalMatches.map((m) => Container(key: ValueKey(m.id), child: _buildMatchListTile(context, ref, m, isDeletable: true))).toList(),
                                                             )
                                                           );
                                                         } else {
@@ -915,7 +957,7 @@ class HomeScreen extends ConsumerWidget {
                                                                       ],
                                                                     ),
                                                                   ),
-                                                                  children: bouts.map((m) => _buildMatchListTile(context, ref, m)).toList(),
+                                                                  children: bouts.map((m) => _buildMatchListTile(context, ref, m, isDeletable: false)).toList(),
                                                                 ),
                                                               ),
                                                             ),
@@ -925,7 +967,7 @@ class HomeScreen extends ConsumerWidget {
                                                       } else {
                                                         // 【団体戦・勝ち抜き戦】中枠アコーディオンを省き、直接試合リストを表示
                                                         childrenWidgets.addAll(
-                                                          normalMatches.map((m) => _buildMatchListTile(context, ref, m)).toList()
+                                                          normalMatches.map((m) => _buildMatchListTile(context, ref, m, isDeletable: false)).toList()
                                                         );
                                                       }
 
@@ -939,12 +981,12 @@ class HomeScreen extends ConsumerWidget {
                                                               shrinkWrap: true,
                                                               physics: const NeverScrollableScrollPhysics(),
                                                               onReorder: (oldIndex, newIndex) => _onReorderMatches(tieBreakMatches, oldIndex, newIndex, ref),
-                                                              children: tieBreakMatches.map((m) => Container(key: ValueKey(m.id), child: _buildMatchListTile(context, ref, m))).toList(),
+                                                              children: tieBreakMatches.map((m) => Container(key: ValueKey(m.id), child: _buildMatchListTile(context, ref, m, isDeletable: true))).toList(),
                                                             )
                                                           );
                                                         } else {
                                                           childrenWidgets.addAll(
-                                                            tieBreakMatches.map((m) => _buildMatchListTile(context, ref, m)).toList()
+                                                            tieBreakMatches.map((m) => _buildMatchListTile(context, ref, m, isDeletable: false)).toList()
                                                           );
                                                         }
                                                       }
@@ -954,6 +996,8 @@ class HomeScreen extends ConsumerWidget {
                                                 ),
                                               ),
                                             ),
+                                            ), // ★ Slidable の閉じカッコ
+                                            ), // ★ Padding の閉じカッコ
                                           ],
                                         ),
                                       );
@@ -1258,13 +1302,26 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  Widget _buildMatchListTile(BuildContext context, WidgetRef ref, MatchModel match) {
+  Widget _buildMatchListTile(BuildContext context, WidgetRef ref, MatchModel match, {bool isDeletable = true}) {
     final permissions = ref.watch(permissionProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFinished = match.status == 'finished' || match.status == 'approved';
     final isPlaying = match.status == 'in_progress';
 
     final bool isIndividual = !match.isKachinuki && (match.matchType == '個人戦' || match.matchType == '選手');
+
+    // ★ 追加: 団体戦の子要素（アコーディオン内）では、親のヘッダーでコメントが表示されるため、
+    // 各行ではシステムタグ（[...]）以外の一般コメントを隠す。
+    String displayNote = match.note;
+    if (!isIndividual && match.groupName != null && match.groupName!.isNotEmpty) {
+      final regExp = RegExp(r'\[.*?\]');
+      final tagMatches = regExp.allMatches(match.note);
+      if (tagMatches.isNotEmpty) {
+        displayNote = tagMatches.map((m) => m.group(0)).join(' ');
+      } else {
+        displayNote = '';
+      }
+    }
 
     final Color bg = isFinished ? (isDark ? const Color(0xFF161618) : Colors.grey.shade50) : Colors.transparent;
     final Color textC = isFinished ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500) : (isDark ? Colors.white : Colors.black87);
@@ -1286,8 +1343,8 @@ class HomeScreen extends ConsumerWidget {
                   child: Text.rich(
                     TextSpan(
                       children: [
-                        if (match.note.isNotEmpty) TextSpan(text: match.note),
-                        if (match.note.isNotEmpty && (match.matchType.isNotEmpty && match.matchType != '選手'))
+                        if (displayNote.isNotEmpty) TextSpan(text: displayNote),
+                        if (displayNote.isNotEmpty && (match.matchType.isNotEmpty && match.matchType != '選手'))
                           const TextSpan(text: ' '),
                         if (match.matchType.isNotEmpty && match.matchType != '選手')
                           TextSpan(text: '【${match.matchType}】'),
@@ -1393,8 +1450,7 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
 
-    // ★ 修正：閲覧専用（Viewer）ならそのままタイルを返す。編集可能ならSlidableで包む。
-    if (permissions.isReadOnly) {
+    if (permissions.isReadOnly || !isDeletable) {
       return tile;
     }
 
@@ -1404,6 +1460,13 @@ class HomeScreen extends ConsumerWidget {
         // ★ 修正：選手マスタ画面と完全に同じ滑らかな物理エンジン（ScrollMotion）に統一
         motion: const ScrollMotion(),
         children: [
+          SlidableAction(
+            onPressed: (context) => _showEditNoteDialog(context, ref, match),
+            backgroundColor: Colors.blueAccent,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: '編集',
+          ),
           SlidableAction(
             onPressed: (context) async {
               final confirm = await showDialog<bool>(
@@ -2247,6 +2310,99 @@ class HomeScreen extends ConsumerWidget {
     } catch (e) {
       debugPrint('グループ並び替え保存エラー: $e');
     }
+  }
+
+  void _showEditGroupNoteDialog(BuildContext context, WidgetRef ref, List<MatchModel> groupList) {
+    final firstMatch = groupList.first;
+    final controller = TextEditingController(text: firstMatch.note);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: Text('グループ詳細（コメント）の編集', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          decoration: InputDecoration(
+            hintText: 'グループ全体に関するメモや詳細を入力',
+            hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+            filled: true,
+            fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.indigo.shade400)),
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newNote = controller.text.trim();
+              if (newNote != firstMatch.note) {
+                final updatedMatches = groupList.map((m) => m.copyWith(note: newNote)).toList();
+                await ref.read(matchApplicationServiceProvider).saveMatchesBulk(updatedMatches);
+              }
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            child: const Text('保存', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditNoteDialog(BuildContext context, WidgetRef ref, MatchModel match) {
+    final controller = TextEditingController(text: match.note);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: Text('試合詳細（コメント）の編集', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          decoration: InputDecoration(
+            hintText: '試合に関するメモや詳細を入力',
+            hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+            filled: true,
+            fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.indigo.shade400)),
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newNote = controller.text.trim();
+              if (newNote != match.note) {
+                final updatedMatch = match.copyWith(note: newNote);
+                await ref.read(matchApplicationServiceProvider).saveMatchesBulk([updatedMatch]);
+              }
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            child: const Text('保存', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   // ==========================================
