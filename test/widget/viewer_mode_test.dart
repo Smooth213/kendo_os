@@ -29,7 +29,7 @@ import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
-  SettingsModel build() => const SettingsModel(securityLevel: 1); // テスト用デフォルト
+  SettingsModel build() => const SettingsModel(securityLevel: 1, enableLiquidGlass: false); // CI(Linux)環境でのシェーダークラッシュや無限アニメーションタイムアウトを防止
 }
 
 class MockTournamentRepository implements TournamentRepository {
@@ -279,7 +279,16 @@ void main() {
     });
 
     testWidgets('1-2. No Edit buttons in ViewerHomeScreen', (WidgetTester tester) async {
+      // ★ CI環境でのRenderFlexオーバーフローを防ぐため、画面サイズを十分に確保
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(createTestableWidget(const ViewerHomeScreen(tournamentId: testTournamentId)));
+      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.text('この大会に試合を追加する'), findsNothing);
