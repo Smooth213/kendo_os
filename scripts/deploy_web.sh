@@ -20,7 +20,12 @@ echo -e "${YELLOW}[1/4] Webビルド用の一時的なID置換を実行中...${N
 cat << 'EOF' > temp_id_hack.dart
 import 'dart:io';
 void main() {
-  final files = ['lib/infrastructure/persistence/models/match_entity.g.dart', 'lib/infrastructure/persistence/models/local_stroke_model.g.dart'];
+  final files = [
+    'lib/infrastructure/persistence/models/match_entity.g.dart', 
+    'lib/infrastructure/persistence/models/local_stroke_model.g.dart',
+    'lib/infrastructure/persistence/models/match_comment_entity.g.dart',
+    'lib/infrastructure/persistence/models/match_command_entity.g.dart'
+  ];
   int counter = 100;
   final regex = RegExp(r'id:\s*-?\d{10,20}'); // 全ての巨大IDを対象にする
   for (final path in files) {

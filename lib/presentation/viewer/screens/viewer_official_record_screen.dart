@@ -7,6 +7,7 @@ import '../../operate/screens/home_screen.dart';
 import 'package:kendo_os/domain/services/standings_calculator.dart';
 import 'package:kendo_os/domain/services/team_match_calculator.dart';
 import '../../shared/widgets/liquid_background.dart';
+import '../painters/league_table_painters.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -813,9 +814,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  techs.isNotEmpty ? _buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
+                                  techs.isNotEmpty ? buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
                                   Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                  techs.length > 1 ? _buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
+                                  techs.length > 1 ? buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
                                 ],
                               )
                             else
@@ -1076,63 +1077,4 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     final suffix = isIndiv ? "$n人リーグ" : "$nチームリーグ";
     return "$selfInfo : $suffix（全$mCount試合）";
   }
-}
-
-class DiagonalLinePainter extends CustomPainter {
-  final Color color;
-  DiagonalLinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..strokeWidth = 1;
-    canvas.drawLine(const Offset(0, 0), Offset(size.width, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class ResultShapePainter extends CustomPainter {
-  final String result; // 'win', 'loss', 'draw'
-  final Color color;
-  ResultShapePainter({required this.result, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()..color = color.withValues(alpha: 0.1)..style = PaintingStyle.fill;
-    final strokePaint = Paint()..color = color..strokeWidth = 1.0..style = PaintingStyle.stroke;
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.42;
-
-    if (result == 'win') {
-      canvas.drawCircle(center, radius, bgPaint);
-      canvas.drawCircle(center, radius, strokePaint);
-    } else if (result == 'loss') {
-      final path = Path();
-      path.moveTo(center.dx, center.dy - radius);
-      path.lineTo(center.dx + radius * 1.1, center.dy + radius * 0.8);
-      path.lineTo(center.dx - radius * 1.1, center.dy + radius * 0.8);
-      path.close();
-      canvas.drawPath(path, bgPaint);
-      canvas.drawPath(path, strokePaint);
-    } else {
-      // 🌟 修正：◯（直径 radius * 2）や△と同等のボリューム感になるよう、サイズを拡大（1.8倍に調整）
-      final rect = Rect.fromCenter(center: center, width: radius * 1.8, height: radius * 1.8);
-      canvas.drawRect(rect, bgPaint);
-      canvas.drawRect(rect, strokePaint);
-    }
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
-  if (isFirst && tech != '◯' && tech != '反') {
-    return Container(
-      width: 14, height: 14, alignment: Alignment.center,
-      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
-      child: Text(tech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
-    );
-  }
-  return Text(tech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
 }

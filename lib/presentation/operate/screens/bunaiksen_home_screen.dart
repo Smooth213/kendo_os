@@ -16,6 +16,7 @@ import '../../shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import '../providers/match_view_model_provider.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -93,23 +94,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     final isToday = DateFormat('yyyyMMdd').format(viewDate) == DateFormat('yyyyMMdd').format(DateTime.now());
 
     // 選択された日の部内戦のみ表示
-    // ★ 修正: Riverpodのリビルドを抑えるため、selectでフィルタリング
-    final matches = ref.watch(matchListProvider.select((list) => 
-        list.where((m) => m.tournamentId == dateId).toList()))
-      ..sort((a, b) {
-        final aFinished = a.status == 'finished' || a.status == 'approved';
-        final bFinished = b.status == 'finished' || b.status == 'approved';
-        final aInProgress = a.status == 'in_progress';
-        final bInProgress = b.status == 'in_progress';
-        
-        if (aFinished && !bFinished) return 1;
-        if (!aFinished && bFinished) return -1;
-        
-        if (aInProgress && !bInProgress) return -1;
-        if (!aInProgress && bInProgress) return 1;
-        
-        return b.order.compareTo(a.order);
-      });
+    final matches = ref.watch(bunaiksenMatchesProvider(dateId));
 
     // 無限勝ち抜きモードの試合が存在するかどうか
     final hasInfiniteKachinuki = matches.any((m) => m.isKachinuki && m.matchType == '無限勝ち抜き');

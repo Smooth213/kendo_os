@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
-import '../../operate/providers/match_list_provider.dart';
 import '../../shared/widgets/infinite_streak_leaderboard.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
@@ -11,6 +10,7 @@ import '../../operate/providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'viewer_home_screen.dart';
+import '../../operate/providers/match_view_model_provider.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   final String tournamentId;
@@ -87,24 +87,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
       }
     }
 
-    // ★ 修正: リビルドを最小限に抑止するため、select であらかじめフィルタリングする
-    // Webバイパスストリーム（matchListProvider）から必要なデータだけを抽出
-    final matches = ref.watch(matchListProvider.select((list) => 
-        list.where((m) => m.tournamentId == tournamentId).toList()))
-      ..sort((a, b) {
-        final aFinished = a.status == 'finished' || a.status == 'approved';
-        final bFinished = b.status == 'finished' || b.status == 'approved';
-        final aInProgress = a.status == 'in_progress';
-        final bInProgress = b.status == 'in_progress';
-        
-        if (aFinished && !bFinished) return 1;
-        if (!aFinished && bFinished) return -1;
-        
-        if (aInProgress && !bInProgress) return -1;
-        if (!aInProgress && bInProgress) return 1;
-        
-        return b.order.compareTo(a.order);
-      });
+    final matches = ref.watch(bunaiksenMatchesProvider(tournamentId));
 
     final hasInfiniteKachinuki = matches.any((m) => m.isKachinuki && m.matchType == '無限勝ち抜き');
 

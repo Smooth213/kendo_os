@@ -13,6 +13,7 @@ import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../../shared/widgets/glass_button.dart';
 import '../../operate/providers/settings_provider.dart';
+import '../../operate/providers/match_view_model_provider.dart';
 
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
 final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
@@ -42,84 +43,16 @@ class ViewerHomeScreen extends ConsumerWidget {
       debugPrint('  [$i] ID: ${m.id}, TID: "${m.tournamentId}", Match: ${m.redName} vs ${m.whiteName}');
     }
 
-    // ★ 修正: Viewer用のProjectionの更新遅延をバイパスし、最新のFirestoreストリーム(MatchModel)を直接描画する
-    final matches = ref.watch(matchListProvider.select((list) => 
-      list.where((m) => m.tournamentId == tournamentId).toList()
-    ));
-    debugPrint('🔍 [Viewer Debug] Filtered matches (tournamentId=$tournamentId): ${matches.length}');
-    
-    matches.sort((a, b) => a.order.compareTo(b.order));
 
     try {
-        final uniqueInProgress = <MatchModel>[];
-        final uniqueWaiting = <MatchModel>[];
-        final seenGroups = <String>{};
-
-        for (var m in matches) {
-          final isGrouped = m.groupName != null && m.groupName!.isNotEmpty;
-
-          if (isGrouped) {
-            if (seenGroups.contains(m.groupName)) continue; 
-            seenGroups.add(m.groupName!);
-
-            final groupMatches = matches.where((gm) => gm.groupName == m.groupName).toList();
-            final allWaiting = groupMatches.every((gm) => gm.status == 'waiting');
-            final allDone = groupMatches.every((gm) => gm.status == 'finished' || gm.status == 'approved');
-
-            if (!allWaiting && !allDone) {
-              uniqueInProgress.add(m);
-            } else if (allWaiting) {
-              uniqueWaiting.add(m);
-            }
-          } else {
-            if (m.status == 'in_progress') {
-              uniqueInProgress.add(m);
-            } else if (m.status == 'waiting') {
-              uniqueWaiting.add(m);
-            }
-          }
-        }
+        final activeMatches = ref.watch(activeMatchesProvider(tournamentId));
+        final uniqueInProgress = activeMatches.inProgress;
+        final uniqueWaiting = activeMatches.waiting;
 
         final sanitizedQuery = ref.watch(searchQueryProvider).replaceAll(RegExp(r'\s+'), '').toLowerCase();
-        final matchedGroupNames = <String>{};
-        final matchedMatchIds = <String>{};
-
-        if (sanitizedQuery.isNotEmpty) {
-          for (var m in matches) {
-            String rTeam = m.redName.contains(':') ? m.redName.split(':').first : m.redName;
-            String wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first : m.whiteName;
-            String rPlayer = m.redName.contains(':') ? m.redName.split(':').last : m.redName;
-            String wPlayer = m.whiteName.contains(':') ? m.whiteName.split(':').last : m.whiteName;
-
-            bool teamHit = rTeam.replaceAll(RegExp(r'\s+'), '').toLowerCase().contains(sanitizedQuery) ||
-                           wTeam.replaceAll(RegExp(r'\s+'), '').toLowerCase().contains(sanitizedQuery);
-            
-            bool playerHit = rPlayer.replaceAll(RegExp(r'\s+'), '').toLowerCase().contains(sanitizedQuery) ||
-                             wPlayer.replaceAll(RegExp(r'\s+'), '').toLowerCase().contains(sanitizedQuery);
-
-            if (teamHit) {
-              if (m.groupName != null && m.groupName!.isNotEmpty) {
-                matchedGroupNames.add(m.groupName!);
-              } else {
-                matchedMatchIds.add(m.id);
-              }
-            }
-            if (playerHit) {
-              matchedMatchIds.add(m.id);
-            }
-          }
-        }
-
-        final matchesByCategory = <String, List<MatchModel>>{};
-        for (var m in matches) {
-          if (sanitizedQuery.isNotEmpty) {
-            final isMatchedGroup = m.groupName != null && matchedGroupNames.contains(m.groupName!);
-            final isMatchedMatch = matchedMatchIds.contains(m.id);
-            if (!isMatchedMatch && !isMatchedGroup) continue;
-          }
-          final cat = (m.category != null && m.category!.isNotEmpty) ? m.category! : 'カテゴリ未設定（全体）';
-          matchesByCategory.putIfAbsent(cat, () => []).add(m);
-        }
+        final timelineResult = ref.watch(timelineMatchesByCategoryProvider(tournamentId));
+        final matchedGroupNames = timelineResult.matchedGroupNames;
+        final matchedMatchIds = timelineResult.matchedMatchIds;
 
         return PopScope(
           canPop: false, // 戻るスワイプをブロック
@@ -299,7 +232,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  if (matchesByCategory.isEmpty && sanitizedQuery.isNotEmpty)
+                  if (timelineResult.entries.isEmpty && sanitizedQuery.isNotEmpty)
                     const Padding(
                       padding: EdgeInsets.all(32.0),
                       child: Center(
@@ -308,39 +241,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                     ),
                   
                   ...(() {
-                    if (matchesByCategory.isEmpty) return <Widget>[];
-                    final sortedEntries = matchesByCategory.entries.toList();
-                    final isAscending = ref.watch(categorySortProvider);
-                    
-                    int getWeight(String cat) {
-                      if (cat.contains('初心者')) return 10;
-                      if (cat.contains('幼年')) return 20;
-                      if (cat.contains('小学生')) {
-                        if (cat.contains('1年')) return 31;
-                        if (cat.contains('2年')) return 32;
-                        if (cat.contains('3年')) return 33;
-                        if (cat.contains('4年')) return 34;
-                        if (cat.contains('5年')) return 35;
-                        if (cat.contains('6年')) return 36;
-                        if (cat.contains('低学年')) return 38;
-                        if (cat.contains('高学年')) return 39;
-                        return 30;
-                      }
-                      if (cat.contains('中学生')) return 40;
-                      if (cat.contains('高校生')) return 50;
-                      if (cat.contains('大学') || cat.contains('一般') || cat.contains('シニア')) return 60;
-                      return 999;
-                    }
-
-                    sortedEntries.sort((a, b) {
-                      final weightA = getWeight(a.key);
-                      final weightB = getWeight(b.key);
-                      if (weightA != weightB) {
-                        return isAscending ? weightA.compareTo(weightB) : weightB.compareTo(weightA);
-                      }
-                      return isAscending ? a.key.compareTo(b.key) : b.key.compareTo(a.key);
-                    });
-
+                    if (timelineResult.entries.isEmpty) return <Widget>[];
+                    final sortedEntries = timelineResult.entries;
                     return sortedEntries.map<Widget>((catEntry) {
                       try {
                       final categoryName = catEntry.key;

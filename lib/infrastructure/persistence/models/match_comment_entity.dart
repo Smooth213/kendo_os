@@ -27,7 +27,8 @@ class MatchCommentEntity {
 
 /// Isar v3においてString IDを安全にId(int)に変換するための標準関数
 int fastHash(String string) {
-  var hash = 0xcbf29ce484222325;
+  // Webコンパイル時の JS Safe Integer エラーを回避するため、巨大Hexを文字列からパースする
+  var hash = BigInt.parse('cbf29ce484222325', radix: 16).toInt();
   int i = 0;
   while (i < string.length) {
     final codeUnit = string.codeUnitAt(i++);

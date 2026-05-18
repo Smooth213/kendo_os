@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
-import '../../operate/providers/match_list_provider.dart';
 import 'package:kendo_os/application/services/pdf_service.dart';
 import '../../operate/screens/kachinuki_scoreboard_screen.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
@@ -12,6 +11,8 @@ import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../../operate/providers/settings_provider.dart';
+import '../../operate/providers/match_view_model_provider.dart';
+import '../painters/league_table_painters.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -43,19 +44,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     final bordeaux = const Color(0xFF8B0000);
     final headerTextColor = isDark ? Colors.white : bordeaux;
 
-    // Webバイパスストリーム（matchListProvider）から必要なデータだけを抽出
-    final matches = ref.watch(matchListProvider.select((list) => 
-        list.where((m) => m.tournamentId == tournamentId).toList()));
-        
-    // カテゴリ（種目）ごとにグループ化（未設定なら「部内戦」）
-    final categoryGroups = <String, Map<String, List<MatchModel>>>{};
-    for (var m in matches) {
-      final cat = (m.category != null && m.category!.isNotEmpty) ? m.category! : '部内戦';
-      categoryGroups.putIfAbsent(cat, () => {});
-      
-      final groupKey = (m.groupName != null && m.groupName!.isNotEmpty) ? m.groupName! : '__default__';
-      categoryGroups[cat]!.putIfAbsent(groupKey, () => []).add(m);
-    }
+    final categoryGroups = ref.watch(bunaiksenRecordCategoryGroupsProvider(tournamentId));
 
     if (categoryGroups.isEmpty) {
       return LiquidBackground(
@@ -767,9 +756,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  techs.isNotEmpty ? _buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
+                                  techs.isNotEmpty ? buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
                                   Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                  techs.length > 1 ? _buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
+                                  techs.length > 1 ? buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
                                 ],
                               )
                             else
@@ -929,62 +918,4 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
       }
     }
   }
-}
-
-class DiagonalLinePainter extends CustomPainter {
-  final Color color;
-  DiagonalLinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..strokeWidth = 1;
-    canvas.drawLine(const Offset(0, 0), Offset(size.width, size.height), paint);
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class ResultShapePainter extends CustomPainter {
-  final String result; // 'win', 'loss', 'draw'
-  final Color color;
-  ResultShapePainter({required this.result, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()..color = color.withValues(alpha: 0.1)..style = PaintingStyle.fill;
-    final strokePaint = Paint()..color = color..strokeWidth = 1.5..style = PaintingStyle.stroke;
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.42;
-
-    if (result == 'win') {
-      canvas.drawCircle(center, radius, bgPaint);
-      canvas.drawCircle(center, radius, strokePaint);
-    } else if (result == 'loss') {
-      final path = Path();
-      path.moveTo(center.dx, center.dy - radius);
-      path.lineTo(center.dx + radius * 1.1, center.dy + radius * 0.8);
-      path.lineTo(center.dx - radius * 1.1, center.dy + radius * 0.8);
-      path.close();
-      canvas.drawPath(path, bgPaint);
-      canvas.drawPath(path, strokePaint);
-    } else {
-      final rect = Rect.fromCenter(center: center, width: radius * 1.8, height: radius * 1.8);
-      canvas.drawRect(rect, bgPaint);
-      canvas.drawRect(rect, strokePaint);
-    }
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
-  String displayTech = tech == '判定' ? '判' : tech;
-  if (isFirst && displayTech != '◯' && displayTech != '反') {
-    return Container(
-      width: 14, height: 14, alignment: Alignment.center,
-      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
-      child: Text(displayTech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
-    );
-  }
-  return Text(displayTech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
 }
