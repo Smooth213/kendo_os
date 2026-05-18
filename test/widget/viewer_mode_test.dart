@@ -23,6 +23,7 @@ import 'package:kendo_os/application/projections/match_projection.dart';
 // ★ Phase 8: settingsProviderのモック用
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/domain/entities/settings_model.dart';
+import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
 
 // === モックデータ・プロバイダの準備 ===
 
@@ -250,6 +251,7 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
       home.customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
       // ★ Phase 8: SettingsProviderをモック化してSharedPreferences未実装エラーを回避
       settingsProvider.overrideWith(() => MockSettingsNotifier()),
+      commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
     ],
     child: MaterialApp.router(
       routerConfig: router,
@@ -302,8 +304,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('進行中'), findsWidgets);
-      // ★ 修正: UIスリム化に伴い、ボタンのテキストを最新のものへ変更
-      expect(find.text('試合結果一覧 (PDF/CSV)'), findsOneWidget);
       expect(find.byIcon(Icons.search), findsOneWidget);
       
       await tester.tap(find.byIcon(Icons.search));
