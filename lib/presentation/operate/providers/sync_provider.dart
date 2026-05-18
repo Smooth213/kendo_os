@@ -109,13 +109,15 @@ class SyncEngine {
         if (match.events.isEmpty) continue; // イベントがない試合はスキップ
 
         // 過去のイベントから「正しい現在」を再計算（Projection Rebuild）
-        final rebuiltMatch = rebuilder.execute(match, rule);
+        MatchModel rebuiltMatch = rebuilder.execute(match, rule);
+        
+        // ★ 修正: リビルド処理がユーザーの明示的なステータス変更(finished等)を勝手に戻してしまうのを防ぐ
+        rebuiltMatch = rebuiltMatch.copyWith(status: match.status);
         
         // ★ Phase 2-4: Drift Monitor (ズレ検知)
         bool hasDrift = false;
         if (rebuiltMatch.redScore != match.redScore) hasDrift = true;
         if (rebuiltMatch.whiteScore != match.whiteScore) hasDrift = true;
-        if (rebuiltMatch.status != match.status) hasDrift = true;
 
         if (hasDrift) {
           driftCount++;
@@ -278,7 +280,10 @@ class SyncEngine {
             // 3. ルールエンジンを通してスコアを再計算（真実の復元）
             try {
               final rule = ref.read(matchRuleProvider);
+              final savedStatus = rebuiltMatch.status; // ★ 再計算前の正しいステータスを退避
               rebuiltMatch = ref.read(rebuildMatchFromEventsUseCaseProvider).execute(rebuiltMatch, rule);
+              // ★ 修正: リビルド処理が意図せずステータスを戻してしまうのを防ぐため、ステータスを復元
+              rebuiltMatch = rebuiltMatch.copyWith(status: savedStatus);
             } catch (e) {
               debugPrint('⚠️ 再計算ロジックに失敗しました。マージのみ実行します: $e');
             }
@@ -322,7 +327,14 @@ class SyncEngine {
           _needsSyncAgain = true;
           debugPrint('⚠️ [Sync Engine] 通常同期中に状態変更あり。未送信フラグを維持し再同期します。');
         } else {
-          await localRepo.markAsSynced(match.id);
+          // ★ 修正: Firestoreで採番された最新のversionをローカルにも適用して保存する
+          // これにより不要なCRDTマージ（バージョン不一致による競合誤検知）が走らなくなる
+          final syncedMatch = match.copyWith(
+            syncState: SyncState.synced,
+            pendingEvents: const [], // pendingEventsは空配列にする
+            version: targetVersion,
+          );
+          await localRepo.saveMatch(syncedMatch);
         }
       }
     } catch (e) {

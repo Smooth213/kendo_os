@@ -38,25 +38,12 @@ class ResultShapePainter extends CustomPainter {
       path.close();
       canvas.drawPath(path, bgPaint);
       canvas.drawPath(path, strokePaint);
-    } else { // □ 引き分け（星取り表）
-      final rect = Rect.fromCenter(center: center, width: radius * 1.8, height: radius * 1.8);
-      canvas.drawRect(rect, bgPaint);
-      canvas.drawRect(rect, strokePaint);
+    } else { // ✕ 引き分け
+      final offset = radius * 0.8;
+      canvas.drawLine(Offset(center.dx - offset, center.dy - offset), Offset(center.dx + offset, center.dy + offset), strokePaint);
+      canvas.drawLine(Offset(center.dx + offset, center.dy - offset), Offset(center.dx - offset, center.dy + offset), strokePaint);
     }
   }
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// 1本目だけ丸囲みする個人戦用ヘルパー
-Widget buildIndivSingle(String tech, bool isFirst, Color color) {
-  String displayTech = tech == '判定' ? '判' : tech;
-  if (isFirst && displayTech != '◯' && displayTech != '反') {
-    return Container(
-      width: 14, height: 14, alignment: Alignment.center,
-      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
-      child: Text(displayTech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
-    );
-  }
-  return Text(displayTech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
 }

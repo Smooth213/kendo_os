@@ -14,9 +14,16 @@ class PdfIndividualList {
     }
 
     final note = matches.first.note;
-    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
+    final isLeague = note.contains('リーグ戦');
     
-    String headerTitle = '【個人戦】';
+    // ★ 修正: デフォルト文言（［リーグ戦］リーグ戦 など）を綺麗にパースして空欄（コメントなし）として扱う
+    String cleanNote = note.replaceAll('[リーグ戦]', '').replaceAll('[', '').replaceAll(']', '').trim();
+    if (cleanNote == 'リーグ戦') {
+      cleanNote = '';
+    }
+    
+    // ★ 修正: リーグ戦か通常試合かでプレフィックスを切り替える
+    String headerTitle = isLeague ? '【リーグ個人戦】' : '【個人戦】';
     if (displayGroupName.isNotEmpty) {
       headerTitle += ' $displayGroupName';
     } else {
@@ -26,8 +33,13 @@ class PdfIndividualList {
         headerTitle += ' $rTeam vs $wTeam';
       }
     }
-    if (cleanNote.isNotEmpty && !cleanNote.contains('個人戦')) headerTitle += ' ($cleanNote)';
-
+    headerTitle += '対戦スコア詳細';
+    
+    // ★ 修正: パターンA（コメントがある時だけ括弧付きで結合、デフォルト時は括弧ごと消去）
+    if (cleanNote.isNotEmpty) {
+      headerTitle += '（$cleanNote）';
+    }
+ 
     final rows = <pw.Widget>[];
     for (int i = 0; i < matches.length; i++) {
       final m = matches[i];
@@ -63,7 +75,8 @@ class PdfIndividualList {
               ),
               pw.SizedBox(width: 8),
               PdfTeamTable.pdfPointBox(ptsMap['red']!, rWin, true, ttfBold),
-              pw.Padding(padding: const pw.EdgeInsets.symmetric(horizontal: 6), child: pw.Text(isDraw ? '✕' : '-', style: pw.TextStyle(font: ttf, fontSize: 12, color: PdfColors.grey500))),
+              // ★ 修正: 環境依存の「✕(U+2715)」を、標準フォントに含まれる「×(U+00D7)」に変更して豆腐文字を回避します
+              pw.Padding(padding: const pw.EdgeInsets.symmetric(horizontal: 6), child: pw.Text(isDraw ? '×' : '-', style: pw.TextStyle(font: ttf, fontSize: 16, color: PdfColors.grey500))),
               PdfTeamTable.pdfPointBox(ptsMap['white']!, wWin, false, ttfBold),
               pw.SizedBox(width: 8),
               pw.Expanded(

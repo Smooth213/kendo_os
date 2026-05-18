@@ -93,9 +93,15 @@ class OfficialRecordScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
               child: ElevatedButton.icon(
                 onPressed: () => context.go('/'),
-                icon: Icon(Icons.home, color: Colors.indigo.shade700, size: 16),
-                label: Text('トップへ', style: TextStyle(color: Colors.indigo.shade700, fontWeight: FontWeight.bold, fontSize: 12)),
-                style: ElevatedButton.styleFrom(backgroundColor: isDark ? Colors.indigo.shade900.withValues(alpha: 0.5) : Colors.indigo.shade50, elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 12)),
+
+                icon: Icon(Icons.home, color: isDark ? Colors.white : Colors.indigo.shade700, size: 16),
+                label: Text('トップへ', style: TextStyle(color: isDark ? Colors.white : Colors.indigo.shade700, fontWeight: FontWeight.bold, fontSize: 12)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.indigo.shade50,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
               ),
             ),
           ],
@@ -517,7 +523,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         color: m.matchType == '代表戦' ? daihyoBgColor : Colors.transparent,
                         child: Center(child: Padding(padding: const EdgeInsets.all(8), child: Text(m.matchType, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: m.matchType == '代表戦' ? (isDark ? Colors.red.shade400 : Colors.red.shade900) : (isDark ? Colors.grey.shade300 : Colors.grey.shade800))))),
                       )),
-                      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text('勝/本', style: TextStyle(fontSize: 10, color: headerTextColor)))),
+                      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text('本/勝', style: TextStyle(fontSize: 10, color: headerTextColor)))),
                     ],
                   ),
                   TableRow(children: [
@@ -593,8 +599,8 @@ class OfficialRecordScreen extends ConsumerWidget {
             else
               Column(
                 children: [
-                  Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? Colors.red.shade600 : textColor)))),
-                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? Colors.blue.shade600 : textColor)))),
+                  Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? (isDark ? Colors.red.shade400 : Colors.red.shade600) : textColor)))),
+                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? (isDark ? Colors.blue.shade400 : Colors.blue.shade600) : textColor)))),
                 ],
               ),
           ]
@@ -696,7 +702,7 @@ class OfficialRecordScreen extends ConsumerWidget {
   }
 
   Widget _buildPointBox(List<OfficialPointDisplay> pts, bool isWinner, bool isRed, bool isDark) {
-    final color = isRed ? Colors.red.shade700 : Colors.blue.shade700;
+    final color = isRed ? (isDark ? Colors.red.shade400 : Colors.red.shade700) : (isDark ? Colors.blue.shade400 : Colors.blue.shade700);
     return SizedBox(
       width: 36, height: 36,
       child: Stack(
@@ -734,7 +740,7 @@ class OfficialRecordScreen extends ConsumerWidget {
         wins++;
       }
     }
-    return Center(child: Text('$wins\n--\n$pts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
+    return Center(child: Text('$pts\n--\n$wins', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
   }
 
   // ★ 追加：印刷画面用のリーグ星取表描画メソッド
@@ -812,7 +818,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                     if (bouts.isEmpty) return const SizedBox(height: 65);
                     
                     int rWins = 0, cWins = 0, rPoints = 0, cPoints = 0, rWinners = 0, cWinners = 0;
-                    List<String> techs = [];
+                    List<OfficialPointDisplay> techs = [];
                     for (var m in bouts) {
                       final isRowRed = m.redName.split(':').first.trim() == rowTeam;
                       final rs = (m.redScore as num).toInt(); final ws = (m.whiteScore as num).toInt();
@@ -823,14 +829,14 @@ class OfficialRecordScreen extends ConsumerWidget {
                         final engine = KendoRuleEngine();
                         final analysis = engine.analyzeHistory(m.events, m, m.rule);
                         final displays = isRowRed ? analysis.displays[Side.red] : analysis.displays[Side.white];
-                        List<String> extracted = displays?.map((d) => d.mark).toList() ?? [];
+                        List<OfficialPointDisplay> extracted = displays?.map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint)).toList() ?? [];
                         
                         // 🌟 修正：既存の extracted があっても、SUMMARYタグがあれば記号を「◯」に統一する
                         final bool isSummary = m.note.contains('[SUMMARY]');
                         if (isSummary || extracted.isEmpty) {
                           extracted.clear();
                           for(int k=0; k<(isRowRed ? rs : ws); k++) {
-                            extracted.add('◯');
+                            extracted.add(OfficialPointDisplay('◯', false));
                           }
                         }
                         techs.addAll(extracted);
@@ -918,9 +924,9 @@ class OfficialRecordScreen extends ConsumerWidget {
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  techs.isNotEmpty ? _buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
+                                  techs.isNotEmpty ? _buildIndivSingle(techs[0], textColor) : const SizedBox(height: 12),
                                   Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                  techs.length > 1 ? _buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
+                                  techs.length > 1 ? _buildIndivSingle(techs[1], textColor) : const SizedBox(height: 12),
                                 ],
                               )
                             else
@@ -1199,9 +1205,9 @@ class ResultShapePainter extends CustomPainter {
 }
 
 // リーグ戦・個人戦表示用ヘルパー
-Widget _buildIndivSingle(String tech, bool isFirst, Color color) {
-  String displayTech = tech == '判定' ? '判' : tech;
-  if (isFirst && displayTech != '◯' && displayTech != '反') {
+Widget _buildIndivSingle(OfficialPointDisplay p, Color color) {
+  String displayTech = p.mark == '判定' ? '判' : p.mark;
+  if (p.isFirstMatchPoint && displayTech != '◯' && displayTech != '反') {
     return Container(
       width: 14, height: 14, alignment: Alignment.center,
       decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),

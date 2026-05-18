@@ -456,7 +456,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
       decoration: BoxDecoration(color: bg), 
       children: [
         const SizedBox.shrink(),
-        _cell('${result.redWins} / ${result.redPoints}', isH: true, color: isDark ? Colors.red.shade400 : Colors.red.shade700, fs: 18), 
+        _cell('${result.redPoints} / ${result.redWins}', isH: true, color: isDark ? Colors.red.shade400 : Colors.red.shade700, fs: 18), 
         
         TableCell(
           verticalAlignment: TableCellVerticalAlignment.middle,
@@ -490,7 +490,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
           ),
         ),
         
-        _cell('${result.whiteWins} / ${result.whitePoints}', isH: true, color: isDark ? Colors.grey.shade400 : Colors.blueGrey.shade800, fs: 18), 
+        _cell('${result.whitePoints} / ${result.whiteWins}', isH: true, color: isDark ? Colors.grey.shade400 : Colors.blueGrey.shade800, fs: 18), 
       ],
     );
   }

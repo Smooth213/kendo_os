@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/match_comment_model.dart';
 import '../../domain/entities/match_model.dart'; // SyncState
 import '../persistence/models/match_comment_entity.dart';
@@ -50,5 +51,12 @@ class LocalCommentRepository {
         await _isar.matchCommentEntitys.put(entity);
       });
     }
+  }
+
+  Future<void> deleteComment(String id) async {
+    await _isar.writeTxn(() async {
+      final success = await _isar.matchCommentEntitys.filter().idEqualTo(id).deleteAll();
+      debugPrint(success > 0 ? 'Comment $id deleted' : 'Comment $id not found');
+    });
   }
 }

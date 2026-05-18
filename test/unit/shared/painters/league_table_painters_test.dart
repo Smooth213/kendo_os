@@ -59,7 +59,7 @@ void main() {
       expect(find.byKey(const Key('painter_target')), findsOneWidget);
     });
 
-    testWidgets('4. ResultShapePainter [Draw] - 引き分け(□)が例外なく描画されること', (WidgetTester tester) async {
+    testWidgets('4. ResultShapePainter [Draw] - 引き分け(✕)が例外なく描画されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -77,30 +77,5 @@ void main() {
       final painter = ResultShapePainter(result: 'draw', color: Colors.green);
       expect(painter.shouldRepaint(painter), isFalse);
     });
-
-    testWidgets('5. buildIndivSingle - 1本目の丸囲みUIが正常に生成されること', (WidgetTester tester) async {
-      // isFirst = true, 技 = 'メ' の場合
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: buildIndivSingle('メ', true, Colors.red),
-          ),
-        ),
-      );
-      
-      // テキストが描画されていることを確認
-      expect(find.text('メ'), findsOneWidget);
-      
-      // 判定('判定')が省略形('判')に変換されるロジックの検証
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: buildIndivSingle('判定', true, Colors.blue),
-          ),
-        ),
-      );
-      expect(find.text('判'), findsOneWidget);
-    });
-
   });
 }

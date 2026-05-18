@@ -12,9 +12,8 @@ import '../providers/permission_provider.dart';
 import '../providers/settings_provider.dart';
 
 import '../../shared/widgets/liquid_background.dart';
-import '../components/home/operator_action_buttons.dart';
-import '../components/home/tournament_header_card.dart'; // ★ 新規作成したコンポーネント
 import '../components/home/match_timeline_list.dart'; // ★ 新規作成したコンポーネント
+import '../components/home/operator_action_buttons.dart';
 import '../providers/match_view_model_provider.dart';
 
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
@@ -81,15 +80,6 @@ class HomeScreen extends ConsumerWidget {
           ),
           body: Column(
             children: [
-              // --- ★ 抽出した大会ヘッダー ---
-              ref.watch(tournamentProvider(tournamentId)).when(
-                data: (tournament) => tournament != null 
-                  ? TournamentHeaderCard(tournament: tournament)
-                  : const SizedBox.shrink(),
-                loading: () => const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())),
-                error: (e, s) => Text('大会情報の読み込みに失敗しました: $e'),
-              ),
-
               // --- アクティブバナー ---
               if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
                 Container(
@@ -112,7 +102,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
 
-              // --- ★ 抽出したタイムラインリスト ---
+              // --- タイムラインリスト（スクロール領域） ---
               Expanded(
                 child: MatchTimelineList(tournamentId: tournamentId),
               ),
@@ -121,40 +111,6 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Widget _buildCallRow(String label, dynamic match, Color textColor) {
-    return Column(
-      children: [
-        if (match.note.isNotEmpty) Text(match.note, style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 12, fontWeight: FontWeight.bold)),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(label, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 12),
-            Flexible(child: Text(_getMatchTitle(match), style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  String _getMatchTitle(dynamic match) {
-    final isGrouped = match.groupName != null && match.groupName!.isNotEmpty;
-    final isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦');
-    if (isGrouped && !isIndividual) {
-      final rTeam = match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName;
-      final wTeam = match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName;
-      return '$rTeam vs $wTeam';
-    }
-    return '${match.redName} vs ${_reverseWhiteName(match.whiteName)}';
-  }
-
-  String _reverseWhiteName(String whiteName) {
-    if (!whiteName.contains(':')) return whiteName;
-    final parts = whiteName.split(':');
-    if (parts.length != 2) return whiteName;
-    return '${parts[1].trim()} : ${parts[0].trim()}';
   }
 
   void _showShareDialog(BuildContext context, String tournamentId) {
@@ -183,5 +139,28 @@ class HomeScreen extends ConsumerWidget {
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる', style: TextStyle(color: Colors.grey)))],
       ),
     );
+  }
+
+  Widget _buildCallRow(String label, dynamic match, Color textColor) {
+    return Column(
+      children: [
+        if (match.note.isNotEmpty) Text(match.note, style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 12, fontWeight: FontWeight.bold)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(label, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+            const SizedBox(width: 12),
+            Flexible(child: Text(_getMatchTitle(match), style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _getMatchTitle(dynamic match) {
+    final isGrouped = match.groupName != null && match.groupName!.isNotEmpty;
+    final isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦');
+    if (isGrouped && !isIndividual) return '${match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName} vs ${match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName}';
+    return '${match.redName} vs ${match.whiteName.contains(':') ? '${match.whiteName.split(':')[1].trim()} : ${match.whiteName.split(':')[0].trim()}' : match.whiteName}';
   }
 }

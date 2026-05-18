@@ -7,10 +7,10 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../domain/entities/match_model.dart';
-import '../service/pdf/painters/pdf_kachinuki_painter.dart';
-import '../service/pdf/widgets/pdf_league_table.dart';
-import '../service/pdf/widgets/pdf_individual_list.dart';
-import '../service/pdf/widgets/pdf_team_table.dart';
+import 'pdf/painters/pdf_kachinuki_painter.dart';
+import 'pdf/widgets/pdf_league_table.dart';
+import 'pdf/widgets/pdf_individual_list.dart';
+import 'pdf/widgets/pdf_team_table.dart';
 
 class PdfService {
   static Future<Uint8List> _generatePdfBytes(String categoryName, List<Map<String, dynamic>> groupDataList) async {

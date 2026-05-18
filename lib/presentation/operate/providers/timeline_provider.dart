@@ -55,6 +55,19 @@ class CommentCommandService {
     );
     await _repo.saveComment(updated);
   }
+
+  Future<void> updateComment(MatchCommentModel comment) async {
+    final updated = comment.copyWith(
+      syncState: SyncState.localOnly, 
+      lastUpdatedAt: DateTime.now()
+    );
+    await _repo.saveComment(updated);
+  }
+
+  Future<void> deleteComment(String id) async {
+    // LocalCommentRepository側にdeleteCommentメソッドがある前提
+    await _repo.deleteComment(id);
+  }
 }
 
 final commentCommandProvider = Provider<CommentCommandService>((ref) {

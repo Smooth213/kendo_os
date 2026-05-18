@@ -3,6 +3,7 @@ import 'package:pdf/widgets.dart' as pw;
 import '../../../../domain/services/kendo_rule_engine.dart';
 import '../../../../domain/rules/match_rule.dart';
 import '../models/pdf_view_model.dart';
+import '../models/pdf_point_data.dart';
 import '../../../../domain/entities/match_model.dart';
 
 class PdfLeagueTable {
@@ -17,8 +18,8 @@ class PdfLeagueTable {
     final stats = (first is MatchModel) ? KendoRuleEngine.calculateLeagueStandings(normalMatches.cast<MatchModel>(), rule) : [];
     
     final isIndiv = normalMatches.any((m) => 
-      m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦') ||
-      (!m.redName.contains(':') && !m.whiteName.contains(':'))
+      m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦') || // 個人戦系のキーワード
+      (!m.matchType.contains('団体') && !m.redName.contains(':') && !m.whiteName.contains(':')) // 「団体」を含まず、名前がコロン区切りでない場合
     );
     final allFinished = matches.every((m) => m.status.toString().contains('approved') || m.status.toString().contains('finished'));
     final hasMatchPoints = rule.isLeague;
@@ -53,7 +54,11 @@ class PdfLeagueTable {
           ]
         ),
         ...teamList.map((rowTeam) {
-          final stat = stats.isNotEmpty ? stats.firstWhere((s) => s.name == rowTeam, orElse: () => stats.first) : null;
+          dynamic stat;
+          if (stats.isNotEmpty) {
+            final found = stats.where((s) => s.name == rowTeam).toList();
+            stat = found.isNotEmpty ? found.first : stats.first;
+          }
           final rankStr = allFinished ? '${stats.indexWhere((s) => s.name == rowTeam) + 1}' : '-';
 
           final List<pw.Widget> cells = [];
@@ -100,21 +105,16 @@ class PdfLeagueTable {
   static pw.Widget _buildPdfLeagueCell(String teamA, String teamB, List<dynamic> pairMatches, bool isIndividual, pw.Font ttf, pw.Font ttfBold) {
     final hasStarted = pairMatches.any((m) => !m.status.toString().contains('waiting') || (m.runtimeType.toString() == 'MatchModel' && m.events.isNotEmpty));
     if (!hasStarted) return pw.Container(height: 40);
-    String result = 'draw'; int aWins = 0, bWins = 0, aPts = 0, bPts = 0; List<String> techs = [];
+    String result = 'draw'; int aWins = 0, bWins = 0, aPts = 0, bPts = 0; List<PdfPointData> techs = [];
     for (var m in pairMatches) {
       final isRedA = m.redName.split(':').first.trim() == teamA;
       final rs = (m.redScore as num).toInt(); final ws = (m.whiteScore as num).toInt();
       if (rs > ws) { isRedA ? aWins++ : bWins++; } else if (ws > rs) { isRedA ? bWins++ : aWins++; }
       aPts += isRedA ? rs : ws; bPts += isRedA ? ws : rs;
       if (isIndividual) {
-        if (m is MatchModel) {
-          techs.addAll(PdfViewModel.extractTechsForPdf(m.events, isRedA, isRedA ? rs : ws));
-        } else {
-          final marks = isRedA ? m.redPointMarks : m.whitePointMarks;
-          for (var mark in marks) {
-            techs.add(mark);
-          }
-        }
+        final ptsMap = PdfViewModel.calculatePointsRaw(m);
+        final pts = isRedA ? ptsMap['red'] : ptsMap['white'];
+        if (pts != null) techs.addAll(pts);
       }
     }
     PdfColor symbolColor = PdfColors.amber800; PdfColor bgColor = const PdfColor(1.0, 0.98, 0.95); 
@@ -127,15 +127,19 @@ class PdfLeagueTable {
       canvas.setFillColor(bgColor);
       if (result == 'win') {
         canvas.drawEllipse(center.x, center.y, radius, radius);
+        canvas.fillPath();
       } else if (result == 'loss') {
         canvas.moveTo(center.x, center.y + radius);
         canvas.lineTo(center.x + radius * 1.1, center.y - radius * 0.8);
         canvas.lineTo(center.x - radius * 1.1, center.y - radius * 0.8);
         canvas.closePath();
+        canvas.fillPath();
       } else {
-        // 引き分けの背景は描画しない（四角で囲まれるのを防ぐ）
+        // 引き分けの場合は四角形(□)の背景を描画する (円と同じくらいの視覚サイズにする)
+        final rectSize = radius * 1.9;
+        canvas.drawRect(center.x - rectSize / 2, center.y - rectSize / 2, rectSize, rectSize);
+        canvas.fillPath();
       }
-      canvas.fillPath();
       
       canvas.setStrokeColor(symbolColor);
       canvas.setLineWidth(0.7);
@@ -147,15 +151,56 @@ class PdfLeagueTable {
         canvas.lineTo(center.x - radius * 1.1, center.y - radius * 0.8);
         canvas.closePath();
       } else {
-        // 引き分け(✕)
-        canvas.moveTo(center.x - radius * 0.8, center.y - radius * 0.8);
-        canvas.lineTo(center.x + radius * 0.8, center.y + radius * 0.8);
-        canvas.moveTo(center.x + radius * 0.8, center.y - radius * 0.8);
-        canvas.lineTo(center.x - radius * 0.8, center.y + radius * 0.8);
+        // 引き分けの場合は四角形(□)の枠線を描画する (円と同じくらいの視覚サイズにする)
+        final rectSize = radius * 1.9;
+        canvas.drawRect(center.x - rectSize / 2, center.y - rectSize / 2, rectSize, rectSize);
       }
       canvas.strokePath();
     }
-    return pw.Container(height: 40, alignment: pw.Alignment.center, child: pw.Stack(alignment: pw.Alignment.center, children: [pw.CustomPaint(size: const PdfPoint(32, 32), painter: paintPdfShape), pw.Column(mainAxisAlignment: pw.MainAxisAlignment.center, children: [isIndividual ? (techs.isNotEmpty ? _pdfIndivSingle(techs[0], true, PdfColors.black, ttfBold) : pw.SizedBox(height: 10)) : pw.Text('$aPts', style: pw.TextStyle(font: ttfBold, fontSize: 9)), pw.Container(height: 0.5, width: 14, color: PdfColors.black, margin: const pw.EdgeInsets.symmetric(vertical: 1.5)), isIndividual ? (techs.length > 1 ? _pdfIndivSingle(techs[1], false, PdfColors.black, ttfBold) : pw.SizedBox(height: 10)) : pw.Text('$aWins', style: pw.TextStyle(font: ttfBold, fontSize: 9))])]));
+    pw.Widget buildTechMark(PdfPointData p) {
+      String displayTech = p.mark == '判定' ? '判' : p.mark;
+      if (p.isFirstOverall && displayTech != '◯' && displayTech != '反' && displayTech != '✕' && displayTech != '×') {
+        return pw.Container(
+          width: 10, height: 10, alignment: pw.Alignment.center,
+          decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(color: PdfColors.black, width: 0.5)),
+          child: pw.Text(displayTech, style: pw.TextStyle(font: ttfBold, fontSize: 6, color: PdfColors.black))
+        );
+      }
+      return pw.Text(displayTech, style: pw.TextStyle(font: ttfBold, fontSize: 8, color: PdfColors.black));
+    }
+    return pw.Container(
+      height: 40,
+      alignment: pw.Alignment.center,
+      child: pw.Stack(
+        alignment: pw.Alignment.center,
+        children: [
+          pw.CustomPaint(size: const PdfPoint(32, 32), painter: paintPdfShape), // win/lossの背景色と枠線
+
+          if (isIndividual)
+            pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              children: [
+                if (techs.isNotEmpty) ...[
+                  buildTechMark(techs[0]),
+                  pw.Container(height: 0.5, width: 8, color: PdfColors.black, margin: const pw.EdgeInsets.symmetric(vertical: 1)),
+                  if (techs.length > 1)
+                    buildTechMark(techs[1])
+                  else
+                    pw.SizedBox(height: 10, width: 10),
+                ],
+              ],
+            )
+          else
+            pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              children: [
+                pw.Text('$aPts', style: pw.TextStyle(font: ttfBold, fontSize: 9)),
+                pw.Container(height: 0.5, width: 14, color: PdfColors.black, margin: const pw.EdgeInsets.symmetric(vertical: 1.5)),
+                pw.Text('$aWins', style: pw.TextStyle(font: ttfBold, fontSize: 9))
+              ],
+            ),
+        ],
+      ),
+    );
   }
-  static pw.Widget _pdfIndivSingle(String tech, bool isFirst, PdfColor color, pw.Font fontBold) { return isFirst && tech != '◯' ? pw.Container(width: 10, height: 10, alignment: pw.Alignment.center, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(color: color, width: 0.5)), child: pw.Text(tech, style: pw.TextStyle(font: fontBold, fontSize: 6, color: color))) : pw.Text(tech, style: pw.TextStyle(font: fontBold, fontSize: 8, color: color)); }
 }

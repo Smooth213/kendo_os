@@ -12,7 +12,6 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../../operate/providers/settings_provider.dart';
 import '../../operate/providers/match_view_model_provider.dart';
-import '../painters/league_table_painters.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -255,17 +254,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     final note = matches.first.note;
     final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
 
-    final bool isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
-    final bool isIndividual = matches.length == 1 && (matches.first.matchType == '個人戦' || matches.first.matchType == 'individual');
-
     String headerRed, headerWhite;
-    if (isIndividual || isLeague) {
-      headerRed = matches.first.redName.contains(':') ? matches.first.redName.split(':').last.trim() : matches.first.redName;
-      headerWhite = matches.first.whiteName.contains(':') ? matches.first.whiteName.split(':').last.trim() : matches.first.whiteName;
-    } else {
-      headerRed = matches.first.redName.split(':').first.trim();
-      headerWhite = matches.first.whiteName.split(':').first.trim();
-    }
+    headerRed = matches.first.redName.contains(':') ? matches.first.redName.split(':').first.trim() : matches.first.redName;
+    headerWhite = matches.first.whiteName.contains(':') ? matches.first.whiteName.split(':').first.trim() : matches.first.whiteName;
 
     String sideLabelRed = '赤';
     String sideLabelWhite = '白';
@@ -359,7 +350,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                           )
                         )
                       )),
-                      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text('勝/本', style: TextStyle(fontSize: 10, color: headerTextColor)))),
+                      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text('本/勝', style: TextStyle(fontSize: 10, color: headerTextColor)))),
                     ],
                   ),
                   _buildTeamRow(matches, true, sideLabelRed, isDark),
@@ -416,8 +407,8 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
             else
               Column(
                 children: [
-                  Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? Colors.red.shade600 : textColor)))),
-                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? Colors.blue.shade600 : textColor)))),
+                  Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? (isDark ? Colors.red.shade400 : Colors.red.shade600) : textColor)))),
+                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? (isDark ? Colors.blue.shade400 : Colors.blue.shade600) : textColor)))),
                 ],
               ),
           ]
@@ -428,14 +419,31 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
 
   TableRow _buildTeamRow(List<MatchModel> matches, bool isRed, String teamName, bool isDark) {
     return TableRow(children: [
-      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text(teamName, style: TextStyle(color: isRed ? Colors.red.shade700 : Colors.blue.shade700, fontWeight: FontWeight.bold, fontSize: 11)))),
+      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text(teamName, style: TextStyle(color: isRed ? (isDark ? Colors.red.shade400 : Colors.red.shade700) : (isDark ? Colors.blue.shade400 : Colors.blue.shade700), fontWeight: FontWeight.bold, fontSize: 11)))),
       ...matches.map((m) {
         final name = isRed ? m.redName : m.whiteName;
-        final cleanName = name.contains(':') ? name.split(':').last.trim() : name;
         final isDaihyo = m.matchType == '代表戦';
+        
+        if (name.contains('欠員')) {
+          return Container(color: isDaihyo ? (isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50) : Colors.transparent);
+        }
+
+        final teamLastNames = matches.map((x) {
+          final xName = isRed ? x.redName : x.whiteName;
+          return BunaiksenHelper.parseName(xName)['last']!;
+        }).where((s) => s.isNotEmpty).toList();
+
+        final parsed = BunaiksenHelper.parseName(name);
+        final showInitial = teamLastNames.where((n) => n == parsed['last']).length > 1 && parsed['first']!.isNotEmpty;
+
         return Container(
           color: isDaihyo ? (isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50) : Colors.transparent,
-          child: Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: _buildVerticalName(cleanName, '', isDark)))
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              child: _buildVerticalName(parsed['last']!, showInitial ? parsed['first']!.substring(0, 1) : '', isDark),
+            )
+          )
         );
       }),
       _summaryCell(matches, isRed, isDark),
@@ -453,13 +461,22 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     
     final engine = KendoRuleEngine();
     final analysis = engine.analyzeHistory(m.events, m, m.rule);
+    final proj = MatchProjectionMapper.toProjection(m, analysis);
+    final bool rIsFirst = proj.firstPointSide == 'red';
+    final bool wIsFirst = proj.firstPointSide == 'white';
     
-    final redPts = (analysis.displays[Side.red] ?? [])
-        .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
-        .toList();
-    final whitePts = (analysis.displays[Side.white] ?? [])
-        .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
-        .toList();
+    final rDisplays = analysis.displays[Side.red] ?? [];
+    final wDisplays = analysis.displays[Side.white] ?? [];
+    
+    final redPts = <OfficialPointDisplay>[];
+    for (int i = 0; i < rDisplays.length; i++) {
+      redPts.add(OfficialPointDisplay(rDisplays[i].mark, i == 0 && rIsFirst));
+    }
+    
+    final whitePts = <OfficialPointDisplay>[];
+    for (int i = 0; i < wDisplays.length; i++) {
+      whitePts.add(OfficialPointDisplay(wDisplays[i].mark, i == 0 && wIsFirst));
+    }
 
     return Container(
       height: 70, alignment: Alignment.center,
@@ -485,7 +502,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
   }
 
   Widget _buildPointBox(List<OfficialPointDisplay> pts, bool isWinner, bool isRed, bool isDark) {
-    final color = isRed ? Colors.red.shade700 : Colors.blue.shade700;
+    final color = isRed ? (isDark ? Colors.red.shade400 : Colors.red.shade700) : (isDark ? Colors.blue.shade400 : Colors.blue.shade700);
     return SizedBox(
       width: 36, height: 36,
       child: Stack(
@@ -550,7 +567,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         wins++;
       }
     }
-    return Center(child: Text('$wins\n--\n$pts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
+    return Center(child: Text('$pts\n--\n$wins', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
   }
 
   Map<String, List<MatchModel>> _groupMatchesByMatchup(List<MatchModel> matches) {
@@ -647,7 +664,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                     }
                     
                     int rWins = 0, cWins = 0, rPoints = 0, cPoints = 0, rWinners = 0, cWinners = 0;
-                    List<String> techs = [];
+                    List<OfficialPointDisplay> techs = [];
                     for (var m in bouts) {
                       final isRowRed = m.redName.split(':').first.trim() == rowTeam;
                       final rs = (m.redScore as num).toInt(); final ws = (m.whiteScore as num).toInt();
@@ -657,13 +674,21 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                       if (isIndiv) {
                         final engine = KendoRuleEngine();
                         final analysis = engine.analyzeHistory(m.events, m, m.rule);
+                        final proj = MatchProjectionMapper.toProjection(m, analysis);
+                        final bool isRowFirst = (isRowRed && proj.firstPointSide == 'red') || (!isRowRed && proj.firstPointSide == 'white');
+
                         final displays = isRowRed ? analysis.displays[Side.red] : analysis.displays[Side.white];
-                        List<String> extracted = displays?.map((d) => d.mark).toList() ?? [];
+                        List<OfficialPointDisplay> extracted = [];
+                        if (displays != null) {
+                          for (int k = 0; k < displays.length; k++) {
+                            extracted.add(OfficialPointDisplay(displays[k].mark, k == 0 && isRowFirst));
+                          }
+                        }
                         
                         final bool isSummary = m.note.contains('[SUMMARY]');
                         if (isSummary || extracted.isEmpty) {
                           for(int k=0; k<(isRowRed ? rs : ws); k++) {
-                            extracted.add('◯');
+                            extracted.add(OfficialPointDisplay('◯', false));
                           }
                         }
                         techs.addAll(extracted);
@@ -674,14 +699,12 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                     Color symbolColor = isDark ? Colors.amber.shade300 : Colors.amber.shade700;
                     if (rWins > cWins) { result = 'win'; symbolColor = isDark ? Colors.red.shade300 : Colors.red.shade700; }
                     else if (cWins > rWins) { result = 'loss'; symbolColor = isDark ? Colors.blue.shade300 : Colors.indigo.shade700; }
-                    
-                    if (!bouts.every((m) {
-                      final hasScore = (m.redScore as num).toInt() > 0 || (m.whiteScore as num).toInt() > 0;
-                      final isOfficial = m.status == 'approved' || m.status == 'finished';
-                      return isOfficial || hasScore;
-                    })) {
-                      return const SizedBox(height: 65);
+                    else if (rPoints != cPoints) {
+                      if (rPoints > cPoints) { result = 'win'; symbolColor = isDark ? Colors.red.shade300 : Colors.red.shade700; }
+                      else { result = 'loss'; symbolColor = isDark ? Colors.blue.shade300 : Colors.indigo.shade700; }
                     }
+
+                    if (!bouts.every((m) => m.status == 'approved' || m.status == 'finished')) return const SizedBox(height: 65);
                     
                     final textColor = isDark ? Colors.white : Colors.black87;
 
@@ -756,9 +779,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  techs.isNotEmpty ? buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
+                                  techs.isNotEmpty ? _buildTechMark(techs[0], textColor) : const SizedBox(height: 12),
                                   Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                  techs.length > 1 ? buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
+                                  techs.length > 1 ? _buildTechMark(techs[1], textColor) : const SizedBox(height: 12),
                                 ],
                               )
                             else
@@ -808,7 +831,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
 
     final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
     String displayGroupName = groupName;
-    if (uuidRegex.hasMatch(groupName) || groupName.length > 20 || groupName == '__default__') {
+    if (uuidRegex.hasMatch(groupName) || groupName.length > 20 || groupName == '__default__' || groupName.contains(' vs ')) {
       displayGroupName = '';
     }
 
@@ -851,13 +874,22 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
 
               final engine = KendoRuleEngine();
               final analysis = engine.analyzeHistory(m.events, m, m.rule);
+              final proj = MatchProjectionMapper.toProjection(m, analysis);
+              final bool rIsFirst = proj.firstPointSide == 'red';
+              final bool wIsFirst = proj.firstPointSide == 'white';
               
-              final redPts = (analysis.displays[Side.red] ?? [])
-                  .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
-                  .toList();
-              final whitePts = (analysis.displays[Side.white] ?? [])
-                  .map((d) => OfficialPointDisplay(d.mark, d.isFirstMatchPoint))
-                  .toList();
+              final rDisplays = analysis.displays[Side.red] ?? [];
+              final wDisplays = analysis.displays[Side.white] ?? [];
+              
+              final redPts = <OfficialPointDisplay>[];
+              for (int i = 0; i < rDisplays.length; i++) {
+                redPts.add(OfficialPointDisplay(rDisplays[i].mark, i == 0 && rIsFirst));
+              }
+              
+              final whitePts = <OfficialPointDisplay>[];
+              for (int i = 0; i < wDisplays.length; i++) {
+                whitePts.add(OfficialPointDisplay(wDisplays[i].mark, i == 0 && wIsFirst));
+              }
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -918,4 +950,67 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
       }
     }
   }
+
+  Widget _buildTechMark(OfficialPointDisplay p, Color color) {
+    final displayTech = p.mark == '判定' ? '判' : p.mark;
+    if (p.isFirstMatchPoint && displayTech != '◯' && displayTech != '反') {
+      return Container(
+        width: 14, height: 14, alignment: Alignment.center,
+        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
+        child: Text(displayTech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
+      );
+    }
+    return Text(displayTech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
+  }
+}
+
+// ★ 追加：表の「自分自身」のセルに斜め線を引くためのクラス
+class DiagonalLinePainter extends CustomPainter {
+  final Color color;
+  DiagonalLinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color..strokeWidth = 1;
+    canvas.drawLine(const Offset(0, 0), Offset(size.width, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ★ ◯・△・□ を描画する究極のペインター
+class ResultShapePainter extends CustomPainter {
+  final String result; // 'win', 'loss', 'draw'
+  final Color color;
+  ResultShapePainter({required this.result, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bgPaint = Paint()..color = color.withValues(alpha: 0.1)..style = PaintingStyle.fill;
+    final strokePaint = Paint()..color = color..strokeWidth = 1.0..style = PaintingStyle.stroke;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width * 0.42;
+
+    if (result == 'win') {
+      canvas.drawCircle(center, radius, bgPaint);
+      canvas.drawCircle(center, radius, strokePaint);
+    } else if (result == 'loss') {
+      final path = Path();
+      path.moveTo(center.dx, center.dy - radius);
+      path.lineTo(center.dx + radius * 1.1, center.dy + radius * 0.8);
+      path.lineTo(center.dx - radius * 1.1, center.dy + radius * 0.8);
+      path.close();
+      canvas.drawPath(path, bgPaint);
+      canvas.drawPath(path, strokePaint);
+    } else {
+      // PDFと同様に四角形(□)を描画する (円と同じくらいの視覚サイズにする)
+      final rectSize = radius * 1.8;
+      final rect = Rect.fromCenter(center: center, width: rectSize, height: rectSize);
+      canvas.drawRect(rect, bgPaint);
+      canvas.drawRect(rect, strokePaint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

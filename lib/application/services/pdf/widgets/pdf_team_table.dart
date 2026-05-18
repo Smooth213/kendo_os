@@ -8,11 +8,22 @@ class PdfTeamTable {
     if (matches.isEmpty) return pw.SizedBox();
 
     final note = matches.first.note;
-    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
+    final isLeague = note.contains('リーグ戦');
+    
+    // ★ 修正: 団体戦でもデフォルトのリーグ戦文言を綺麗に消去する
+    String cleanNote = note.replaceAll('[リーグ戦]', '').replaceAll('[', '').replaceAll(']', '').trim();
+    if (cleanNote == 'リーグ戦') {
+      cleanNote = '';
+    }
 
     final redTeam = matches.first.redName.split(':').first;
     final whiteTeam = matches.first.whiteName.split(':').first;
 
+    // ★ 修正: 【リーグ団体戦】への切り替えと、パターンA（コメントがない時は括弧ごと消去）の適用
+    final prefix = isLeague ? '【リーグ団体戦】' : '【団体戦】';
+    final String titleText = cleanNote.isNotEmpty 
+        ? '$prefix対戦スコア詳細（$cleanNote）' 
+        : '$prefix対戦スコア詳細';
     Map<String, String> parse(String raw) {
       if (raw.contains('欠員')) return {'last': '', 'first': ''};
       String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
@@ -48,8 +59,6 @@ class PdfTeamTable {
       }
     }
 
-    final String titleText = cleanNote.isNotEmpty ? '【$cleanNote】 $redTeam vs $whiteTeam' : '$redTeam vs $whiteTeam';
-    
     final Map<int, pw.TableColumnWidth> columnWidths = {
       0: const pw.FlexColumnWidth(1.4), 
       for (int i = 1; i <= matches.length; i++) i: const pw.FlexColumnWidth(1.0),
@@ -72,7 +81,7 @@ class PdfTeamTable {
               children: [
                 pw.SizedBox(),
                 ...matches.map((m) => pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text(m.matchType, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, font: ttfBold))))),
-                pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text('勝/本', style: const pw.TextStyle(fontSize: 9)))),
+                pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text('本/勝', style: const pw.TextStyle(fontSize: 9)))),
               ],
             ),
             pw.TableRow(children: [
@@ -116,16 +125,28 @@ class PdfTeamTable {
     final isDone = m.status.toString().contains('finished') || m.status.toString().contains('approved');
     final rScore = (m.redScore as num).toInt(); final wScore = (m.whiteScore as num).toInt();
     final ptsMap = PdfViewModel.calculatePointsRaw(m);
-    return pw.Container(height: 60, alignment: pw.Alignment.center, child: pw.Stack(alignment: pw.Alignment.center, children: [pw.Divider(color: PdfColors.black, thickness: 1, height: 0), if (isDone && rScore == wScore) pw.Center(child: pw.Text('×', style: pw.TextStyle(fontSize: 32, color: PdfColors.red300, font: fontBold))), pw.Column(children: [pw.Expanded(child: pdfPointBox(ptsMap['red']!, isDone && rScore > wScore, true, fontBold)), pw.Expanded(child: pdfPointBox(ptsMap['white']!, isDone && wScore > rScore, false, fontBold))])]));
+    return pw.Container(height: 60, alignment: pw.Alignment.center, child: pw.Stack(alignment: pw.Alignment.center, children: [pw.Divider(color: PdfColors.black, thickness: 1, height: 0), if (isDone && rScore == wScore) pw.Container(padding: const pw.EdgeInsets.symmetric(horizontal: 2), child: pw.Text('×', style: pw.TextStyle(fontSize: 16, color: PdfColors.grey600, font: fontBold))), pw.Column(children: [pw.Expanded(child: pdfPointBox(ptsMap['red']!, isDone && rScore > wScore, true, fontBold)), pw.Expanded(child: pdfPointBox(ptsMap['white']!, isDone && wScore > rScore, false, fontBold))])]));
   }
 
   static pw.Widget pdfPointBox(List<PdfPointData> pts, bool isWinner, bool isRed, pw.Font fontBold) {
-    if (pts.isEmpty && !isWinner) return pw.SizedBox();
-    final color = isRed ? PdfColors.red : PdfColors.black;
-    if (pts.length == 2 && pts.every((p) => p.mark == '◯')) return pw.Container(width: 26, height: 26, child: pw.Stack(alignment: pw.Alignment.center, children: [if (isWinner) pw.Container(width: 26, height: 26, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(color: color, width: 0.8))), pw.Column(mainAxisAlignment: pw.MainAxisAlignment.center, children: [pw.Text('◯', style: pw.TextStyle(font: fontBold, fontSize: 10, color: color)), pw.Text('◯', style: pw.TextStyle(font: fontBold, fontSize: 10, color: color))])]));
+    if (pts.isEmpty) return pw.SizedBox(width: 26, height: 26);
+    final color = isRed ? PdfColors.red700 : PdfColors.black;
+    // ★ 修正: データソースが古い '✕' でも新しい '×' でも安全にマッチさせ、出力は標準の '×' に統一して豆腐文字を防ぐ
+    if (pts.length == 1 && (pts[0].mark == '✕' || pts[0].mark == '×')) return pw.Container(width: 26, height: 26, child: pw.Stack(alignment: pw.Alignment.center, children: [if (isWinner) pw.Container(width: 26, height: 26, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(color: color, width: 0.8))), pw.Text('×', style: pw.TextStyle(font: fontBold, fontSize: 10, color: color))]));
     return pw.Container(width: 26, height: 26, child: pw.Stack(alignment: pw.Alignment.center, children: [if (isWinner) pw.Container(width: 26, height: 26, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(color: color, width: 0.8))), pw.Stack(children: [if (pts.isNotEmpty) pw.Positioned(top: 4, left: 5, child: _pdfSingleMark(pts[0], color, fontBold)), if (pts.length > 1) pw.Positioned(bottom: 4, right: 5, child: _pdfSingleMark(pts[1], color, fontBold))])]));
   }
 
   static pw.Widget _pdfSingleMark(PdfPointData p, PdfColor color, pw.Font fontBold) { return p.isFirstOverall && p.mark != '◯' ? pw.Container(width: 10, height: 10, alignment: pw.Alignment.center, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(color: color, width: 0.8)), child: pw.Text(p.mark, style: pw.TextStyle(font: fontBold, fontSize: 6, color: color))) : pw.Text(p.mark, style: pw.TextStyle(font: fontBold, fontSize: 8, color: color)); }
-  static pw.Widget _pdfSummaryCell(List<dynamic> ms, bool isRed, pw.Font fontBold) { int wins = 0, pts = 0; for (var m in ms) { final r = (m.redScore as num).toInt(); final w = (m.whiteScore as num).toInt(); pts += isRed ? r : w; if (isRed && r > w) wins++; if (!isRed && w > r) wins++; } return pw.Center(child: pw.Text('$wins\nー\n$pts', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10), textAlign: pw.TextAlign.center)); }
+  
+  static pw.Widget _pdfSummaryCell(List<dynamic> ms, bool isRed, pw.Font fontBold) { 
+    int wins = 0, pts = 0; 
+    for (var m in ms) { 
+      final r = (m.redScore as num).toInt(); 
+      final w = (m.whiteScore as num).toInt(); 
+      pts += isRed ? r : w; 
+      if (isRed && r > w) wins++; 
+      if (!isRed && w > r) wins++; 
+    } 
+    return pw.Center(child: pw.Text('$pts\nー\n$wins', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10), textAlign: pw.TextAlign.center)); 
+  }
 }

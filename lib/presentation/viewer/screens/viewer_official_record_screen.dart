@@ -438,7 +438,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                         color: m.matchType == '代表戦' ? daihyoBgColor : Colors.transparent,
                         child: Center(child: Padding(padding: const EdgeInsets.all(8), child: Text(m.matchType, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: m.matchType == '代表戦' ? (isDark ? Colors.red.shade400 : Colors.red.shade900) : (isDark ? Colors.grey.shade300 : Colors.grey.shade800))))),
                       )),
-                      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text('勝/本', style: TextStyle(fontSize: 10, color: headerTextColor)))),
+                      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text('本/勝', style: TextStyle(fontSize: 10, color: headerTextColor)))),
                     ],
                   ),
                   TableRow(children: [
@@ -638,7 +638,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
   }
 
   Widget _summaryCell(int wins, int pts, bool isDark) {
-    return Center(child: Text('$wins\n--\n$pts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
+    return Center(child: Text('$pts\n--\n$wins', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
   }
 
   Widget _buildLeagueGridTable(BuildContext context, String groupName, List<MatchListProjection> matches, {Color? cardColor, required bool isDark, required WidgetRef ref, required List<LeagueTeamStat> stats, required bool isLeagueRule}) {
@@ -814,9 +814,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  techs.isNotEmpty ? buildIndivSingle(techs[0], true, textColor) : const SizedBox(height: 12),
+                                  techs.isNotEmpty ? _buildTechMark(techs[0], true, textColor) : const SizedBox(height: 12),
                                   Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                  techs.length > 1 ? buildIndivSingle(techs[1], false, textColor) : const SizedBox(height: 12),
+                                  techs.length > 1 ? _buildTechMark(techs[1], false, textColor) : const SizedBox(height: 12),
                                 ],
                               )
                             else
@@ -1076,5 +1076,17 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
     final suffix = isIndiv ? "$n人リーグ" : "$nチームリーグ";
     return "$selfInfo : $suffix（全$mCount試合）";
+  }
+
+  Widget _buildTechMark(String tech, bool isFirst, Color color) {
+    final displayTech = tech == '判定' ? '判' : tech;
+    if (isFirst && displayTech != '◯' && displayTech != '反') {
+      return Container(
+        width: 14, height: 14, alignment: Alignment.center,
+        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
+        child: Text(displayTech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
+      );
+    }
+    return Text(displayTech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
   }
 }

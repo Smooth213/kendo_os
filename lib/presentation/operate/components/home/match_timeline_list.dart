@@ -19,6 +19,7 @@ import '../../providers/match_view_model_provider.dart';
 
 import '../../screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import '../../screens/team_scoreboard_screen.dart';
+import 'tournament_header_card.dart';
 
 class MatchTimelineList extends ConsumerWidget {
   final String tournamentId;
@@ -39,6 +40,17 @@ class MatchTimelineList extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: 80),
       children: [
+        // ============================================================
+        // ★ 移設: 大会ヘッダー（HomeScreen から移動。リストと一緒にスクロールさせる）
+        // ============================================================
+        ref.watch(tournamentProvider(tournamentId)).when(
+          data: (tournament) => tournament != null 
+            ? TournamentHeaderCard(tournament: tournament)
+            : const SizedBox.shrink(),
+          loading: () => const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())),
+          error: (e, s) => Text('大会情報の読み込みに失敗しました: $e'),
+        ),
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Row(
@@ -291,9 +303,7 @@ class MatchTimelineList extends ConsumerWidget {
                               return timelineItems.map((item) {
                                 if (item is CommentTimelineItem) {
                                   final c = item.comment;
-                                  return Container(
-                                    key: ValueKey('comment_${c.id}'),
-                                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  final commentWidget = Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     decoration: BoxDecoration(
                                       color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
@@ -306,6 +316,59 @@ class MatchTimelineList extends ConsumerWidget {
                                         const SizedBox(width: 8),
                                         Expanded(child: Text(c.text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800))),
                                       ],
+                                    ),
+                                  );
+
+                                  if (permissions.isReadOnly) {
+                                    return Container(
+                                      key: ValueKey('comment_${c.id}'),
+                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      child: commentWidget,
+                                    );
+                                  }
+
+                                  return Container(
+                                    key: ValueKey('comment_${c.id}'),
+                                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    child: Slidable(
+                                      key: ValueKey('slidable_comment_${c.id}'),
+                                      endActionPane: ActionPane(
+                                        motion: const ScrollMotion(),
+                                        children: [
+                                          SlidableAction(
+                                            onPressed: (context) => _showEditCommentDialog(context, ref, c),
+                                            backgroundColor: Colors.blueAccent,
+                                            foregroundColor: Colors.white,
+                                            icon: Icons.edit,
+                                            label: '編集',
+                                          ),
+                                          SlidableAction(
+                                            onPressed: (context) async {
+                                              final confirm = await showDialog<bool>(
+                                                context: context,
+                                                builder: (ctx) => AlertDialog(
+                                                  backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                                                  title: Text('見出しの削除', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+                                                  content: Text('この見出しを削除しますか？\n(取り消せません)', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+                                                  actions: [
+                                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+                                                    TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+                                                  ],
+                                                ),
+                                              );
+                                              if (confirm == true) {
+                                                await ref.read(commentCommandProvider).deleteComment(c.id);
+                                              }
+                                            },
+                                            backgroundColor: Colors.redAccent,
+                                            foregroundColor: Colors.white,
+                                            icon: Icons.delete,
+                                            borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                                            label: '削除',
+                                          ),
+                                        ],
+                                      ),
+                                      child: commentWidget,
                                     ),
                                   );
                                 } else if (item is MatchGroupTimelineItem) {
@@ -1363,6 +1426,37 @@ class MatchTimelineList extends ConsumerWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
           ElevatedButton(onPressed: () async { final text = controller.text.trim(); if (text.isNotEmpty) { await ref.read(commentCommandProvider).addComment(tournamentId: tournamentId, category: category, groupName: groupName, text: text, order: order); } if (ctx.mounted) Navigator.pop(ctx); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0), child: const Text('追加', style: TextStyle(fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+  }
+
+  void _showEditCommentDialog(BuildContext context, WidgetRef ref, dynamic comment) {
+    final controller = TextEditingController(text: comment.text);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        title: Text('見出し（コメント）の編集', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
+        content: TextField(controller: controller, autofocus: true, style: TextStyle(color: isDark ? Colors.white : Colors.black87), decoration: InputDecoration(hintText: '見出しやコメントを入力', filled: true, fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50, border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none)), maxLines: 2),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            onPressed: () async {
+              final text = controller.text.trim();
+              if (text.isNotEmpty && text != comment.text) {
+                try {
+                  await ref.read(commentCommandProvider).updateComment(comment.copyWith(text: text));
+                } catch (e) {
+                  debugPrint('コメントの更新に失敗しました: $e');
+                }
+              }
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0),
+            child: const Text('保存', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
     );
