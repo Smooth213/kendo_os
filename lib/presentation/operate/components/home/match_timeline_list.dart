@@ -455,7 +455,6 @@ class MatchTimelineList extends ConsumerWidget {
                                             ),
                                             child: Container(
                                               decoration: BoxDecoration(
-                                                color: cardBg,
                                                 borderRadius: BorderRadius.circular(12),
                                                 border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
                                                 boxShadow: hasInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
@@ -463,7 +462,7 @@ class MatchTimelineList extends ConsumerWidget {
                                               child: ClipRRect(
                                                 borderRadius: BorderRadius.circular(11),
                                                 child: ExpansionTile(
-                                                  collapsedBackgroundColor: Colors.transparent, backgroundColor: Colors.transparent,
+                                                  collapsedBackgroundColor: cardBg, backgroundColor: cardBg,
                                                   title: Column(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
@@ -616,12 +615,13 @@ class MatchTimelineList extends ConsumerWidget {
 
                                                         return Container(
                                                           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                          decoration: BoxDecoration(color: mCardBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1), boxShadow: boutsInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))] : []),
+                                                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1), boxShadow: boutsInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))] : []),
                                                           child: ClipRRect(
                                                             borderRadius: BorderRadius.circular(7),
                                                             child: Theme(
                                                               data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                                                               child: ExpansionTile(
+                                                                collapsedBackgroundColor: mCardBg, backgroundColor: mCardBg,
                                                                 title: Wrap(
                                                                   crossAxisAlignment: WrapCrossAlignment.center,
                                                                   children: [
@@ -739,7 +739,6 @@ class MatchTimelineList extends ConsumerWidget {
                             return Container(
                               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                color: pCardBg,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
                                 boxShadow: pInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
@@ -747,7 +746,7 @@ class MatchTimelineList extends ConsumerWidget {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(11),
                                 child: ExpansionTile(
-                                  collapsedBackgroundColor: Colors.transparent, backgroundColor: Colors.transparent,
+                                  collapsedBackgroundColor: pCardBg, backgroundColor: pCardBg,
                                   leading: CircleAvatar(backgroundColor: pAllFinished ? (isDark ? Colors.grey.shade800 : Colors.grey.shade300) : Colors.orange.shade100, child: Text(playerName[0], style: TextStyle(color: pAllFinished ? (isDark ? Colors.grey.shade500 : Colors.grey.shade600) : Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold))),
                                   title: Text(playerName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: pTitleColor)),
                                   subtitle: Row(
@@ -810,8 +809,9 @@ class MatchTimelineList extends ConsumerWidget {
     final Color noteC = isFinished ? (isDark ? Colors.grey.shade700 : Colors.grey.shade500) : Colors.grey.shade600;
 
     final tile = Container(
-      decoration: BoxDecoration(color: bg, border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200, width: 0.5))),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200, width: 0.5))),
       child: ListTile(
+        tileColor: bg,
         contentPadding: const EdgeInsets.only(left: 16, right: 8),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
