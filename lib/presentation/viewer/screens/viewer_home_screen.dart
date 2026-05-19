@@ -457,6 +457,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                             child: Container(
                                               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                               decoration: BoxDecoration(
+                                                // ★ 修正: color: cardBg, を削除
                                                 borderRadius: BorderRadius.circular(12),
                                                 border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
                                                 boxShadow: hasInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
@@ -464,8 +465,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                               child: ClipRRect(
                                                 borderRadius: BorderRadius.circular(11),
                                                 child: ExpansionTile(
-                                                    collapsedBackgroundColor: cardBg,
-                                                    backgroundColor: cardBg,
+                                                  collapsedBackgroundColor: cardBg, backgroundColor: cardBg, // ★ 修正: 色をここで指定
                                                     title: Column(
                                                       crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
@@ -589,6 +589,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                           return Container(
                                                             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                             decoration: BoxDecoration(
+                                                              // ★ 修正: color: mCardBg, を削除
                                                               borderRadius: BorderRadius.circular(8),
                                                               border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
                                                               boxShadow: boutsInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))] : [],
@@ -598,8 +599,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                               child: Theme(
                                                                 data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                                                                 child: ExpansionTile(
-                                                                  collapsedBackgroundColor: mCardBg,
-                                                                  backgroundColor: mCardBg,
+                                                                  collapsedBackgroundColor: mCardBg, backgroundColor: mCardBg, // ★ 修正: 色をここで指定
                                                                   title: Wrap(
                                                                     crossAxisAlignment: WrapCrossAlignment.center,
                                                                     children: [
@@ -704,6 +704,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                     return Container(
                                       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                       decoration: BoxDecoration(
+                                        // ★ 修正: color: pCardBg, を削除
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
                                         boxShadow: pInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
@@ -711,7 +712,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(11),
                                         child: ExpansionTile(
-                                            collapsedBackgroundColor: pCardBg, backgroundColor: pCardBg,
+                                            collapsedBackgroundColor: pCardBg, backgroundColor: pCardBg, // ★ 修正: 色をここで指定
                                             leading: CircleAvatar(
                                               backgroundColor: pAllFinished ? (isDark ? Colors.grey.shade800 : Colors.grey.shade300) : Colors.orange.shade100, 
                                               child: Text(playerName[0], style: TextStyle(color: pAllFinished ? (isDark ? Colors.grey.shade500 : Colors.grey.shade600) : Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold))
@@ -859,12 +860,13 @@ class ViewerHomeScreen extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
+        // ★ 修正: color: bg, を削除
         border: Border(
           bottom: BorderSide(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200, width: 0.5),
         ),
       ),
       child: ListTile(
-        tileColor: bg,
+        tileColor: bg, // ★ 修正: 色をここで指定
         contentPadding: const EdgeInsets.only(left: 16, right: 8),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
