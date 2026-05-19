@@ -7,38 +7,21 @@ class PdfIndividualList {
   static pw.Widget build(String groupName, List<dynamic> matches, pw.Font ttf, pw.Font ttfBold) {
     if (matches.isEmpty) return pw.SizedBox();
 
-    final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
-    String displayGroupName = groupName;
-    if (uuidRegex.hasMatch(groupName) || groupName.length > 20 || groupName == 'matchup') {
-      displayGroupName = '';
-    }
-
     final note = matches.first.note;
     final isLeague = note.contains('リーグ戦');
     
-    // ★ 修正: デフォルト文言（［リーグ戦］リーグ戦 など）を綺麗にパースして空欄（コメントなし）として扱う
-    String cleanNote = note.replaceAll('[リーグ戦]', '').replaceAll('[', '').replaceAll(']', '').trim();
-    if (cleanNote == 'リーグ戦') {
-      cleanNote = '';
+    final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+    String displayGroupName = groupName;
+    if (uuidRegex.hasMatch(groupName) || groupName.length > 20 || groupName == '__default__' || groupName.contains(' vs ')) {
+      displayGroupName = '';
     }
-    
-    // ★ 修正: リーグ戦か通常試合かでプレフィックスを切り替える
-    String headerTitle = isLeague ? '【リーグ個人戦】' : '【個人戦】';
+
+    String headerTitle = '【個人戦】';
+    if (isLeague) headerTitle = '【リーグ個人戦】';
     if (displayGroupName.isNotEmpty) {
       headerTitle += ' $displayGroupName';
-    } else {
-      final rTeam = matches.first.redName.contains(':') ? matches.first.redName.split(':').first.trim() : '';
-      final wTeam = matches.first.whiteName.contains(':') ? matches.first.whiteName.split(':').first.trim() : '';
-      if (rTeam.isNotEmpty && wTeam.isNotEmpty && rTeam != wTeam) {
-        headerTitle += ' $rTeam vs $wTeam';
-      }
     }
-    headerTitle += '対戦スコア詳細';
-    
-    // ★ 修正: パターンA（コメントがある時だけ括弧付きで結合、デフォルト時は括弧ごと消去）
-    if (cleanNote.isNotEmpty) {
-      headerTitle += '（$cleanNote）';
-    }
+    // ★note抽出ロジックは削除完了
  
     final rows = <pw.Widget>[];
     for (int i = 0; i < matches.length; i++) {

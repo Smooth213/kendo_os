@@ -660,7 +660,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               await ref.read(matchApplicationServiceProvider).saveMatch(match.updateRemainingSeconds((extMins * 60).toInt()).copyWith( // ★ 修正
                                 timerStartedAt: null,
                                 note: match.note.isEmpty ? extStr : '${match.note} ($extStr)',
-                                extensionTimeMinutes: extMins.toInt(),
+                                extensionTimeMinutes: extMins,
                               ));
                               
                               if (!context.mounted) return;
@@ -1200,7 +1200,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               redName: newRed,
               whiteName: newWhite,
               status: 'waiting', 
-              matchTimeMinutes: exactMatchTime.toInt(),
+              matchTimeMinutes: exactMatchTime,
               isRunningTime: rule.isRunningTime,
               order: currentMatch.order + 0.1,
               note: currentMatch.note,

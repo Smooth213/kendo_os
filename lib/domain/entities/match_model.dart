@@ -66,10 +66,10 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
     String? groupName,
     int? matchOrder,
     
-    @Default(3) int matchTimeMinutes,
+    @Default(3.0) double matchTimeMinutes,
     @Default(false) bool isRunningTime,
     @Default(false) bool hasExtension,
-    int? extensionTimeMinutes,
+    double? extensionTimeMinutes,
     int? extensionCount,
     @Default(false) bool hasHantei,
     // ★ Phase 2: Absolute Time化により、remainingSeconds と timerIsRunning はプロパティから削除
@@ -168,7 +168,7 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
   bool get timerIsRunning => timerStartedAt != null;
 
   int get remainingSeconds {
-    final baseSeconds = matchTimeMinutes * 60;
+    final baseSeconds = (matchTimeMinutes * 60).toInt();
     int elapsedMs = accumulatedPauseDurationMs;
     if (timerStartedAt != null) {
       elapsedMs += DateTime.now().difference(timerStartedAt!).inMilliseconds;
@@ -189,7 +189,7 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
   // したがって、このメソッド呼び出し時点で既にタイマーが停止しているなら
   // timerStartedAt は null にすべき。
   MatchModel updateRemainingSeconds(int newSeconds, {bool isTimerStopping = false}) {
-    final baseSeconds = matchTimeMinutes * 60;
+    final baseSeconds = (matchTimeMinutes * 60).toInt();
     bool isUnlimited = matchType == '代表戦' || (matchType == '延長戦' && baseSeconds == 0);
     int newElapsedMs;
     if (isUnlimited) {

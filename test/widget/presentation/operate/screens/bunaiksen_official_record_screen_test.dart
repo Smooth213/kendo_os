@@ -299,4 +299,47 @@ void main() {
     expect(find.text('一'), findsNothing);
     expect(find.text('二'), findsNothing);
   });
+
+  testWidgets('BunaiksenOfficialRecordScreen should show and hide loading dialog on PDF export', (WidgetTester tester) async {
+    final matches = [
+      createMockMatch(
+        redName: 'チームRed:選手1',
+        whiteName: 'チームWhite:選手1',
+      ),
+    ];
+
+    final categoryGroups = {
+      '一般': {
+        '団体戦A': matches,
+      }
+    };
+
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const BunaiksenOfficialRecordScreen(),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bunaiksenViewDateProvider.overrideWith((ref) => testDate),
+          bunaiksenRecordCategoryGroupsProvider(testTournamentId).overrideWith((ref) => categoryGroups),
+          settingsProvider.overrideWith(() => MockSettingsNotifier()),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final pdfButton = find.text('PDF印刷').first;
+    await tester.tap(pdfButton);
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
 }

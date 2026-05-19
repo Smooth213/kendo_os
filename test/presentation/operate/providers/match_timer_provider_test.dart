@@ -26,7 +26,7 @@ class FakeMatchApplicationService implements MatchApplicationService {
 // 2. 試合データのスタブ生成ヘルパー
 MatchModel createDummyMatch({
   required String id,
-  int matchTimeMinutes = 3,
+  double matchTimeMinutes = 3.0,
   DateTime? timerStartedAt,
   DateTime? timerPausedAt,
   String status = 'not_started',
@@ -148,6 +148,58 @@ void main() {
       expect(savedMatch.timerStartedAt, isNotNull, reason: '稼働中なので、計算の起点が【今】にリセットされていること');
       expect(savedMatch.timerIsRunning, true, reason: 'タイマーが引き続き稼働していること');
 
+      container.dispose();
+    });
+
+    test('4. 試合時間の端数保持: 1.5分（90秒）の試合時間が切り捨てられずに正しく反映される', () {
+      // 1.5分（= 90秒）を設定。以前のバグではここで int に丸められて 1分（60秒）になっていた。
+      final dummyMatch = createDummyMatch(id: 'match4', matchTimeMinutes: 1.5);
+      
+      final container = ProviderContainer(
+        overrides: [
+          matchListProvider.overrideWith((ref) => [dummyMatch]),
+        ]
+      );
+
+      final initial = container.read(liveRemainingSecondsProvider('match4'));
+      expect(initial, 90, reason: '1.5分は90秒として正しく初期化されること');
+      
+      container.dispose();
+    });
+
+    test('5. 延長時間の端数保持: 延長戦で2.5分（150秒）の時間が正しく反映される', () {
+      // 延長戦のシミュレート: matchTypeを延長戦にして、matchTimeMinutesに2.5を設定
+      final dummyMatch = createDummyMatch(id: 'match5', matchTimeMinutes: 2.5).copyWith(
+        matchType: '延長戦',
+      );
+      
+      final container = ProviderContainer(
+        overrides: [
+          matchListProvider.overrideWith((ref) => [dummyMatch]),
+        ]
+      );
+
+      final initial = container.read(liveRemainingSecondsProvider('match5'));
+      expect(initial, 150, reason: '2.5分は150秒として正しく初期化されること');
+      
+      container.dispose();
+    });
+
+    test('6. 代表戦のタイマー設定: 時間が無制限（0.0分）のとき、初期値が0秒になること', () {
+      // 代表戦のシミュレート: matchTypeを代表戦にして、matchTimeMinutesに0.0を設定
+      final dummyMatch = createDummyMatch(id: 'match6', matchTimeMinutes: 0.0).copyWith(
+        matchType: '代表戦',
+      );
+      
+      final container = ProviderContainer(
+        overrides: [
+          matchListProvider.overrideWith((ref) => [dummyMatch]),
+        ]
+      );
+
+      final initial = container.read(liveRemainingSecondsProvider('match6'));
+      expect(initial, 0, reason: '無制限（0.0分）の場合は初期値が0秒であること');
+      
       container.dispose();
     });
   });

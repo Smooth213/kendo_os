@@ -31,10 +31,12 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     
     // tournamentId から日付をパース (例: bunaiksen_20241010)
     String dateDisplay = '部内戦';
+    String tDate = '';
     if (tournamentId.startsWith('bunaiksen_') && tournamentId.length == 18) {
       final dateStr = tournamentId.substring(10);
       if (dateStr.length == 8) {
         dateDisplay = '${dateStr.substring(0,4)}/${dateStr.substring(4,6)}/${dateStr.substring(6,8)}';
+        tDate = '${dateStr.substring(0,4)}年${dateStr.substring(4,6)}月${dateStr.substring(6,8)}日';
       }
     }
 
@@ -135,9 +137,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          Expanded(child: _buildActionButton(context, Icons.print, 'PDF印刷', Colors.grey.shade800, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: true))),
+                          Expanded(child: _buildActionButton(context, Icons.print, 'PDF印刷', Colors.grey.shade800, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: true, tName: '部内戦', tDate: tDate))),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildActionButton(context, Icons.share, '画像シェア', Colors.teal.shade600, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: false))),
+                          Expanded(child: _buildActionButton(context, Icons.share, '画像シェア', Colors.teal.shade600, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: false, tName: '部内戦', tDate: tDate))),
                         ],
                       ),
                     ),
@@ -835,11 +837,11 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
       displayGroupName = '';
     }
 
-    final note = matches.first.note;
-    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
     String headerTitle = '【個人戦】';
-    if (displayGroupName.isNotEmpty) headerTitle += ' $displayGroupName';
-    if (cleanNote.isNotEmpty && !cleanNote.contains('個人戦')) headerTitle += ' ($cleanNote)';
+    if (displayGroupName.isNotEmpty) {
+      headerTitle += ' $displayGroupName';
+    }
+    // ★note抽出ロジックは削除完了
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -935,18 +937,30 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _handleExport(BuildContext context, String cat, Map<String, List<MatchModel>> groupsMap, List<String> sortedGroupKeys, {required bool isPdf}) async {
+  Future<void> _handleExport(BuildContext context, String cat, Map<String, List<MatchModel>> groupsMap, List<String> sortedGroupKeys, {required bool isPdf, String? tName, String? tDate}) async {
     final groupDataList = sortedGroupKeys.map((key) => { 'groupName': key, 'matches': groupsMap[key]!..sort((a, b) => a.order.compareTo(b.order)) }).toList();
-    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    
+    BuildContext? dialogContext;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        dialogContext = ctx;
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+    
     try {
       if (isPdf) {
-        await PdfService.printOfficialRecord(cat, groupDataList);
+        await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate);
       } else {
-        await PdfService.shareOfficialRecordAsImage(cat, groupDataList);
+        await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate);
       }
     } finally {
-      if (context.mounted) {
-        Navigator.pop(context);
+      if (dialogContext != null && dialogContext!.mounted) {
+        Navigator.pop(dialogContext!);
+      } else if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
       }
     }
   }

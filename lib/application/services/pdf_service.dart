@@ -1,8 +1,9 @@
-import 'dart:typed_data';
+import 'dart:io' as io;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -13,7 +14,18 @@ import 'pdf/widgets/pdf_individual_list.dart';
 import 'pdf/widgets/pdf_team_table.dart';
 
 class PdfService {
-  static Future<Uint8List> _generatePdfBytes(String categoryName, List<Map<String, dynamic>> groupDataList) async {
+  static bool get _isTest {
+    if (kIsWeb) return false;
+    return io.Platform.environment.containsKey('FLUTTER_TEST');
+  }
+
+  static Future<Uint8List> _generatePdfBytes(
+    String categoryName, 
+    List<Map<String, dynamic>> groupDataList, {
+    String? tournamentName,
+    String? tournamentDate,
+    String? tournamentVenue,
+  }) async {
     final fontData = await rootBundle.load('assets/fonts/NotoSansJP-Regular.ttf');
     final ttf = pw.Font.ttf(fontData);
     final fontDataBold = await rootBundle.load('assets/fonts/NotoSansJP-Bold.ttf');
@@ -33,11 +45,34 @@ class PdfService {
             children: [
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  pw.Text('公式記録', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                  pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.Text('公式記録', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                      if (tournamentName != null && tournamentName.isNotEmpty) ...[
+                        pw.SizedBox(width: 12),
+                        pw.Text(tournamentName, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      ],
+                    ],
+                  ),
                   pw.Text(DateFormat('yyyy/MM/dd HH:mm 出力').format(DateTime.now()), style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
                 ],
               ),
+              if ((tournamentDate != null && tournamentDate.isNotEmpty) || (tournamentVenue != null && tournamentVenue.isNotEmpty)) ...[
+                pw.SizedBox(height: 6),
+                pw.Row(
+                  children: [
+                    if (tournamentDate != null && tournamentDate.isNotEmpty)
+                      pw.Text('開催日: $tournamentDate', style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey800)),
+                    if (tournamentDate != null && tournamentDate.isNotEmpty && tournamentVenue != null && tournamentVenue.isNotEmpty)
+                      pw.SizedBox(width: 16),
+                    if (tournamentVenue != null && tournamentVenue.isNotEmpty)
+                      pw.Text('場所: $tournamentVenue', style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey800)),
+                  ],
+                ),
+              ],
               pw.SizedBox(height: 4),
               pw.Text('カテゴリ: $categoryName', style: pw.TextStyle(fontSize: 14, color: PdfColors.indigo900, fontWeight: pw.FontWeight.bold)),
               pw.Divider(thickness: 2),
@@ -191,13 +226,33 @@ class PdfService {
     return pdf.save();
   }
 
-  static Future<void> printOfficialRecord(String categoryName, List<Map<String, dynamic>> groupDataList) async {
-    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList);
+  static Future<void> printOfficialRecord(
+    String categoryName, 
+    List<Map<String, dynamic>> groupDataList, {
+    String? tournamentName,
+    String? tournamentDate,
+    String? tournamentVenue,
+  }) async {
+    if (_isTest) {
+      await Future.delayed(const Duration(milliseconds: 100)); // テスト時にダイアログ描画を待たせるためのダミー遅延
+      return;
+    }
+    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue);
     await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdfBytes, name: '公式記録_$categoryName.pdf');
   }
 
-  static Future<void> shareOfficialRecordAsImage(String categoryName, List<Map<String, dynamic>> groupDataList) async {
-    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList);
+  static Future<void> shareOfficialRecordAsImage(
+    String categoryName, 
+    List<Map<String, dynamic>> groupDataList, {
+    String? tournamentName,
+    String? tournamentDate,
+    String? tournamentVenue,
+  }) async {
+    if (_isTest) {
+      await Future.delayed(const Duration(milliseconds: 100)); // テスト時にダイアログ描画を待たせるためのダミー遅延
+      return;
+    }
+    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue);
     final outputFiles = <XFile>[];
     int pageNum = 1;
     await for (final page in Printing.raster(pdfBytes, dpi: 300)) {

@@ -916,10 +916,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     status: (isStartNow && pIndex == 0) ? 'in_progress' : 'waiting', refereeNames: [],
                                     
                                     // ★ 全て rule からもらう
-                                    matchTimeMinutes: rule.matchTimeMinutes.toInt(), 
+                                    matchTimeMinutes: rule.matchTimeMinutes, 
                                     isRunningTime: rule.isRunningTime, 
                                     hasExtension: rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited, 
-                                    extensionTimeMinutes: rule.enchoTimeMinutes.toInt(), 
+                                    extensionTimeMinutes: rule.enchoTimeMinutes, 
                                     extensionCount: rule.enchoCount, 
                                     hasHantei: rule.hasHantei, 
                                     
@@ -970,10 +970,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       status: (isStartNow && isFirstMatchOfAll) ? 'in_progress' : 'waiting', refereeNames: [],
                                       
                                       // ★ 修正：すべて完璧な状態の「rule」から直接もらう！
-                                      matchTimeMinutes: rule.matchTimeMinutes.toInt(), 
+                                      matchTimeMinutes: rule.matchTimeMinutes, 
                                       isRunningTime: rule.isRunningTime, 
                                       hasExtension: rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited || posName.contains('代表'),
-                                      extensionTimeMinutes: rule.enchoTimeMinutes.toInt(), 
+                                      extensionTimeMinutes: rule.enchoTimeMinutes, 
                                       extensionCount: rule.enchoCount, 
                                       hasHantei: rule.hasHantei, 
                                       

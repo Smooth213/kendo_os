@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart'; 
+import 'package:intl/intl.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import '../providers/match_list_provider.dart';
@@ -35,6 +36,11 @@ class OfficialRecordScreen extends ConsumerWidget {
     // ★ Phase 7: 権限プロバイダから取得
     final permissions = ref.watch(permissionProvider);
     final String screenTitle = permissions.isReadOnly ? '全試合スコア' : '大会 公式記録';
+
+    final tournamentAsync = ref.watch(tournamentProvider(tournamentId));
+    final tName = tournamentAsync.value?.name;
+    final tDate = tournamentAsync.value != null ? DateFormat('yyyy年MM月dd日').format(tournamentAsync.value!.date) : null;
+    final tVenue = tournamentAsync.value?.venue;
 
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
@@ -163,7 +169,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         icon: Icons.print,
                         label: 'PDF',
                         color: Colors.grey.shade800,
-                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'pdf'),
+                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'pdf', tName: tName, tDate: tDate, tVenue: tVenue),
                       ),
                       const SizedBox(width: 8),
                       // 2. 画像出力
@@ -171,7 +177,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         icon: Icons.share,
                         label: '画像',
                         color: Colors.teal.shade600,
-                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'image'),
+                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'image', tName: tName, tDate: tDate, tVenue: tVenue),
                       ),
                       const SizedBox(width: 8),
                       // 3. ★新規: CSV出力
@@ -179,7 +185,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         icon: Icons.table_chart,
                         label: 'CSV',
                         color: Colors.indigo.shade600,
-                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'csv'),
+                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'csv', tName: tName, tDate: tDate, tVenue: tVenue),
                       ),
                     ],
                   ),
@@ -400,23 +406,35 @@ class OfficialRecordScreen extends ConsumerWidget {
   }
 
   // 出力処理の共通ハンドラ
-  Future<void> _handleExport(BuildContext context, List<String> sortedGroupKeys, Map<String, List<MatchModel>> mergedGroups, String cat, String type) async {
+  Future<void> _handleExport(BuildContext context, List<String> sortedGroupKeys, Map<String, List<MatchModel>> mergedGroups, String cat, String type, {String? tName, String? tDate, String? tVenue}) async {
     final groupDataList = sortedGroupKeys.map((key) => {
       'groupName': key,
       'matches': mergedGroups[key]!..sort((a, b) => a.order.compareTo(b.order)),
     }).toList();
 
-    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    BuildContext? dialogContext;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        dialogContext = ctx;
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
 
     try {
-      if (type == 'pdf') await PdfService.printOfficialRecord(cat, groupDataList);
-      if (type == 'image') await PdfService.shareOfficialRecordAsImage(cat, groupDataList);
+      if (type == 'pdf') await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue);
+      if (type == 'image') await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue);
       // ★ CSVサービスを呼び出し
       if (type == 'csv') await CsvService.shareOfficialRecordAsCsv(cat, groupDataList);
     } catch (e) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
     } finally {
-      if (context.mounted) Navigator.pop(context);
+      if (dialogContext != null && dialogContext!.mounted) {
+        Navigator.pop(dialogContext!);
+      } else if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
     }
   }
 
@@ -1022,15 +1040,15 @@ class OfficialRecordScreen extends ConsumerWidget {
     // ヘッダー名からシステムID（英数字とハイフンの羅列）を隠す処理
     final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
     String displayGroupName = groupName;
-    if (uuidRegex.hasMatch(groupName) || groupName.length > 20) {
+    if (uuidRegex.hasMatch(groupName) || groupName.length > 20 || groupName == '__default__' || groupName.contains(' vs ')) {
       displayGroupName = '';
     }
 
-    final note = matches.first.note;
-    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
     String headerTitle = '【個人戦】';
-    if (displayGroupName.isNotEmpty) headerTitle += ' $displayGroupName';
-    if (cleanNote.isNotEmpty && !cleanNote.contains('個人戦')) headerTitle += ' ($cleanNote)';
+    if (displayGroupName.isNotEmpty) {
+      headerTitle += ' $displayGroupName';
+    }
+    // ★note抽出ロジックは削除完了
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),

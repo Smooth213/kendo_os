@@ -107,6 +107,7 @@ void main() {
       expect(headerText2, '【リーグ団体戦】対戦スコア詳細（決勝トーナメント）');
     });
 
+
     test('欠員の場合、選手名のセルは空欄で表示されるべき', () {
       final matches = [
         createMockMatch(

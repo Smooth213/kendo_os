@@ -7,6 +7,8 @@ import 'package:uuid/uuid.dart';
 
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/entities/timeline_item.dart';
+import 'package:kendo_os/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
@@ -269,7 +271,16 @@ class MatchTimelineList extends ConsumerWidget {
                                 IconButton(
                                   icon: Icon(Icons.add_comment, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade300, size: 20),
                                   tooltip: '見出し（コメント）を追加',
-                                  onPressed: () => _showAddCommentDialog(context, ref, tournamentId, categoryName, teamName, sortedGroups.isEmpty ? 0.0 : sortedGroups.first.value.first.order - 100.0),
+                                  onPressed: () {
+                                    double topOrder = 0.0;
+                                    double groupMin = sortedGroups.isEmpty ? double.infinity : sortedGroups.first.value.first.order;
+                                    double playerMin = sortedPlayers.isEmpty ? double.infinity : sortedPlayers.first.value.first.order;
+                                    double minOrder = groupMin < playerMin ? groupMin : playerMin;
+                                    if (minOrder != double.infinity) {
+                                      topOrder = minOrder - 100.0;
+                                    }
+                                    _showAddCommentDialog(context, ref, tournamentId, categoryName, teamName, topOrder);
+                                  },
                                 ),
                                 IconButton(
                                   icon: Icon(Icons.edit_note, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade300, size: 20),
@@ -286,9 +297,11 @@ class MatchTimelineList extends ConsumerWidget {
                         Builder(builder: (context) {
                           final timelineItems = <ReorderableTimelineItem>[];
                           for (var entry in sortedGroups) {
-                            timelineItems.add(MatchGroupTimelineItem(entry.key, entry.value));
+                            final groupComments = comments.where((c) => c.category == categoryName && c.groupName == teamName && c.matchGroupId == entry.key).toList();
+                            timelineItems.add(MatchGroupTimelineItem(entry.key, entry.value, groupComments));
                           }
-                          final teamComments = comments.where((c) => c.category == categoryName && c.groupName == teamName).toList();
+                          // ★ 修正: アコーディオン内に属さない（matchGroupId == null）コメントだけをチーム全体のタイムラインに配置する
+                          final teamComments = comments.where((c) => c.category == categoryName && c.groupName == teamName && c.matchGroupId == null).toList();
                           for (var c in teamComments) {
                             timelineItems.add(CommentTimelineItem(c));
                           }
@@ -534,7 +547,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                 style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: titleColor.withValues(alpha: 0.3), width: 1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
                                                               ),
                                                             ),
-                                                          ]
+                                                          ],
                                                         ],
                                                       ),
                                                     ],
@@ -544,6 +557,10 @@ class MatchTimelineList extends ConsumerWidget {
                                                     final List<Widget> childrenWidgets = [];
                                                     final normalMatches = groupList.where((m) => !m.note.contains('[順位決定戦]')).toList();
                                                     final tieBreakMatches = groupList.where((m) => m.note.contains('[順位決定戦]')).toList();
+                                                    final normalItems = item.sortedInnerItems.where((i) {
+                                                      if (i is MatchModel) return !i.note.contains('[順位決定戦]');
+                                                      return true;
+                                                    }).toList();
 
                                                     if (label.contains('リーグ戦') && allFinished && !label.contains('個人戦') && tieBreakMatches.isEmpty) {
                                                       final rule = firstMatch.rule ?? ref.read(matchRuleProvider);
@@ -592,8 +609,15 @@ class MatchTimelineList extends ConsumerWidget {
                                                           ReorderableListView(
                                                             shrinkWrap: true,
                                                             physics: const NeverScrollableScrollPhysics(),
-                                                            onReorder: (oldIndex, newIndex) => _onReorderMatches(normalMatches, oldIndex, newIndex, ref),
-                                                            children: normalMatches.map((m) => Container(key: ValueKey(m.id), child: _buildMatchListTile(context, ref, m, isDeletable: true))).toList(),
+                                                            onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
+                                                            children: normalItems.map((i) {
+                                                              if (i is MatchModel) {
+                                                                return Container(key: ValueKey(i.id), child: _buildMatchListTile(context, ref, i, isDeletable: true));
+                                                              } else if (i is MatchCommentModel) {
+                                                                return Container(key: ValueKey('inner_comment_${i.id}'), child: _buildInnerCommentWidget(context, ref, i, permissions, isDark));
+                                                              }
+                                                              return const SizedBox.shrink();
+                                                            }).toList(),
                                                           )
                                                         );
                                                       } else {
@@ -605,86 +629,125 @@ class MatchTimelineList extends ConsumerWidget {
                                                           boutsByMatchup[matchupName]!.add(m);
                                                         }
 
-                                                        childrenWidgets.addAll(matchupOrder.map((name) {
-                                                        final bouts = boutsByMatchup[name]!;
-                                                        final bool boutsInProgress = bouts.any((m) => m.status == 'in_progress');
-                                                        final bool boutsAllFinished = bouts.every((m) => m.status == 'finished' || m.status == 'approved');
-                                                        final t1 = name.split(' vs ')[0];
-                                                        final t2 = name.split(' vs ')[1];
-                                                        final Color mCardBg = boutsAllFinished ? (isDark ? const Color(0xFF161618) : Colors.grey.shade100) : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
-                                                        final Color mTitleColor = boutsAllFinished ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500) : (isDark ? Colors.white : Colors.black87);
+                                                        final combinedItems = <dynamic>[];
+                                                        for (var name in matchupOrder) {
+                                                          combinedItems.add({'type': 'matchup', 'name': name, 'matches': boutsByMatchup[name]!, 'order': boutsByMatchup[name]!.first.order});
+                                                        }
+                                                        for (var i in normalItems) {
+                                                          if (i is MatchCommentModel) {
+                                                            combinedItems.add({'type': 'comment', 'comment': i, 'order': i.order});
+                                                          }
+                                                        }
+                                                        combinedItems.sort((a, b) => (a['order'] as double).compareTo(b['order'] as double));
 
-                                                        return Container(
-                                                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                          decoration: BoxDecoration(
-                                                            // ★ 修正: color: mCardBg, を削除
-                                                            borderRadius: BorderRadius.circular(8),
-                                                            border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
-                                                            boxShadow: boutsInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))] : []
-                                                          ),
-                                                          child: ClipRRect(
-                                                            borderRadius: BorderRadius.circular(7),
-                                                            child: Theme(
-                                                              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                                                              child: ExpansionTile(
-                                                                collapsedBackgroundColor: mCardBg, backgroundColor: mCardBg, // ★ 修正: 色をここで指定
-                                                                title: Wrap(
-                                                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                                                  children: [
-                                                                    _buildTeamHighlight(t1, true, ownTeams.contains(t1) || t1.contains('自チーム'), isDark, mTitleColor, isFinished: boutsAllFinished),
-                                                                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text('vs', style: TextStyle(fontSize: 12, color: isDark ? Colors.grey.shade600 : Colors.grey.shade400, fontWeight: FontWeight.bold))),
-                                                                    _buildTeamHighlight(t2, false, ownTeams.contains(t2) || t2.contains('自チーム'), isDark, mTitleColor, isFinished: boutsAllFinished),
-                                                                  ],
+                                                        childrenWidgets.add(
+                                                          ReorderableListView(
+                                                            shrinkWrap: true,
+                                                            physics: const NeverScrollableScrollPhysics(),
+                                                            onReorder: (oldIndex, newIndex) {
+                                                              _onReorderCombinedItems(combinedItems, oldIndex, newIndex, ref);
+                                                            },
+                                                            children: combinedItems.map((cItem) {
+                                                              if (cItem['type'] == 'comment') {
+                                                                final c = cItem['comment'] as MatchCommentModel;
+                                                                return Container(key: ValueKey('inner_comment_${c.id}'), child: _buildInnerCommentWidget(context, ref, c, permissions, isDark));
+                                                              }
+                                                              final name = cItem['name'] as String;
+                                                              final bouts = cItem['matches'] as List<MatchModel>;
+                                                              final bool boutsInProgress = bouts.any((m) => m.status == 'in_progress');
+                                                              final bool boutsAllFinished = bouts.every((m) => m.status == 'finished' || m.status == 'approved');
+                                                              final t1 = name.split(' vs ')[0];
+                                                              final t2 = name.split(' vs ')[1];
+                                                              final Color mCardBg = boutsAllFinished ? (isDark ? const Color(0xFF161618) : Colors.grey.shade100) : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+                                                              final Color mTitleColor = boutsAllFinished ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500) : (isDark ? Colors.white : Colors.black87);
+
+                                                              return Container(
+                                                                key: ValueKey('league_team_$name'),
+                                                                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                                decoration: BoxDecoration(
+                                                                  borderRadius: BorderRadius.circular(8),
+                                                                  border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
+                                                                  boxShadow: boutsInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))] : []
                                                                 ),
-                                                                subtitle: Padding(
-                                                                  padding: const EdgeInsets.only(top: 4.0),
-                                                                  child: Wrap(
-                                                                    crossAxisAlignment: WrapCrossAlignment.center,
-                                                                    spacing: 8, runSpacing: 4,
-                                                                    children: [
-                                                                      Text('${bouts.length}ポジション', style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                                                                      Container(
-                                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                                        decoration: BoxDecoration(color: boutsInProgress ? Colors.blue.shade600 : (boutsAllFinished ? (isDark ? Colors.grey.shade800 : Colors.grey.shade300) : (isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200)), borderRadius: BorderRadius.circular(4)),
-                                                                        child: Text(boutsInProgress ? '進行中' : (boutsAllFinished ? '終了' : '待機中'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: boutsInProgress ? Colors.white : (boutsAllFinished ? (isDark ? Colors.grey.shade400 : Colors.grey.shade600) : (isDark ? Colors.grey.shade400 : Colors.grey.shade700)))),
+                                                                child: ClipRRect(
+                                                                  borderRadius: BorderRadius.circular(7),
+                                                                  child: Theme(
+                                                                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                                                                    child: ExpansionTile(
+                                                                      collapsedBackgroundColor: mCardBg, backgroundColor: mCardBg,
+                                                                      title: Wrap(
+                                                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                                                        children: [
+                                                                          _buildTeamHighlight(t1, true, ownTeams.contains(t1) || t1.contains('自チーム'), isDark, mTitleColor, isFinished: boutsAllFinished),
+                                                                          Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Text('vs', style: TextStyle(fontSize: 12, color: isDark ? Colors.grey.shade600 : Colors.grey.shade400, fontWeight: FontWeight.bold))),
+                                                                          _buildTeamHighlight(t2, false, ownTeams.contains(t2) || t2.contains('自チーム'), isDark, mTitleColor, isFinished: boutsAllFinished),
+                                                                        ],
                                                                       ),
-                                                                      SizedBox(
-                                                                        height: 24,
-                                                                        child: OutlinedButton(
-                                                                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TeamScoreboardScreen(groupName: bouts.first.groupName, matches: bouts))),
-                                                                          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: mTitleColor.withValues(alpha: 0.3), width: 1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
-                                                                          child: Text('スコア', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mTitleColor)),
+                                                                      subtitle: Padding(
+                                                                        padding: const EdgeInsets.only(top: 4.0),
+                                                                        child: Wrap(
+                                                                          crossAxisAlignment: WrapCrossAlignment.center,
+                                                                          spacing: 8, runSpacing: 4,
+                                                                          children: [
+                                                                            Text('${bouts.length}ポジション', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                                                            Container(
+                                                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                                              decoration: BoxDecoration(color: boutsInProgress ? Colors.blue.shade600 : (boutsAllFinished ? (isDark ? Colors.grey.shade800 : Colors.grey.shade300) : (isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200)), borderRadius: BorderRadius.circular(4)),
+                                                                              child: Text(boutsInProgress ? '進行中' : (boutsAllFinished ? '終了' : '待機中'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: boutsInProgress ? Colors.white : (boutsAllFinished ? (isDark ? Colors.grey.shade400 : Colors.grey.shade600) : (isDark ? Colors.grey.shade400 : Colors.grey.shade700)))),
+                                                                            ),
+                                                                            SizedBox(
+                                                                              height: 24,
+                                                                              child: OutlinedButton(
+                                                                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TeamScoreboardScreen(groupName: bouts.first.groupName, matches: bouts))),
+                                                                                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: mTitleColor.withValues(alpha: 0.3), width: 1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+                                                                                child: Text('スコア', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mTitleColor)),
+                                                                              ),
+                                                                            ),
+                                                                            Builder(builder: (context) {
+                                                                              final ownT = ref.read(customTeamNamesProvider).value ?? [];
+                                                                              final rT = bouts.first.redName.split(':').first.trim();
+                                                                              final wT = bouts.first.whiteName.split(':').first.trim();
+                                                                              if (!permissions.isReadOnly && !boutsAllFinished && !(ownT.contains(rT) || bouts.first.redName.contains('自チーム')) && !(ownT.contains(wT) || bouts.first.whiteName.contains('自チーム'))) {
+                                                                                return SizedBox(
+                                                                                  height: 24,
+                                                                                  child: OutlinedButton.icon(
+                                                                                    onPressed: () => _showSummaryInputDialog(context, ref, bouts),
+                                                                                    icon: Icon(Icons.flash_on, size: 12, color: Colors.amber.shade700),
+                                                                                    label: Text('簡易入力', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mTitleColor)),
+                                                                                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: mTitleColor.withValues(alpha: 0.3), width: 1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+                                                                                  ),
+                                                                                );
+                                                                              }
+                                                                              return const SizedBox.shrink();
+                                                                            }),
+                                                                          ],
                                                                         ),
                                                                       ),
-                                                                      Builder(builder: (context) {
-                                                                        final ownT = ref.read(customTeamNamesProvider).value ?? [];
-                                                                        final rT = bouts.first.redName.split(':').first.trim();
-                                                                        final wT = bouts.first.whiteName.split(':').first.trim();
-                                                                        if (!permissions.isReadOnly && !boutsAllFinished && !(ownT.contains(rT) || bouts.first.redName.contains('自チーム')) && !(ownT.contains(wT) || bouts.first.whiteName.contains('自チーム'))) {
-                                                                          return SizedBox(
-                                                                            height: 24,
-                                                                            child: OutlinedButton.icon(
-                                                                              onPressed: () => _showSummaryInputDialog(context, ref, bouts),
-                                                                              icon: Icon(Icons.flash_on, size: 12, color: Colors.amber.shade700),
-                                                                              label: Text('簡易入力', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mTitleColor)),
-                                                                              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: mTitleColor.withValues(alpha: 0.3), width: 1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
-                                                                            ),
-                                                                          );
-                                                                        }
-                                                                        return const SizedBox.shrink();
-                                                                      }),
-                                                                    ],
+                                                                      children: bouts.map((m) => _buildMatchListTile(context, ref, m, isDeletable: false)).toList(),
+                                                                    ),
                                                                   ),
                                                                 ),
-                                                                children: bouts.map((m) => _buildMatchListTile(context, ref, m, isDeletable: false)).toList(),
-                                                              ),
-                                                            ),
-                                                          ),
+                                                              );
+                                                            }).toList(),
+                                                          )
                                                         );
-                                                        }));
                                                       }
                                                     } else {
-                                                      childrenWidgets.addAll(normalMatches.map((m) => _buildMatchListTile(context, ref, m, isDeletable: false)).toList());
+                                                      childrenWidgets.add(
+                                                        ReorderableListView(
+                                                          shrinkWrap: true,
+                                                          physics: const NeverScrollableScrollPhysics(),
+                                                          onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
+                                                          children: normalItems.map((i) {
+                                                            if (i is MatchModel) {
+                                                              return Container(key: ValueKey(i.id), child: _buildMatchListTile(context, ref, i, isDeletable: false));
+                                                            } else if (i is MatchCommentModel) {
+                                                              return Container(key: ValueKey('inner_comment_${i.id}'), child: _buildInnerCommentWidget(context, ref, i, permissions, isDark));
+                                                            }
+                                                            return const SizedBox.shrink();
+                                                          }).toList(),
+                                                        )
+                                                      );
                                                     }
 
                                                     if (tieBreakMatches.isNotEmpty) {
@@ -700,7 +763,27 @@ class MatchTimelineList extends ConsumerWidget {
                                                           )
                                                         );
                                                       } else {
-                                                        childrenWidgets.addAll(tieBreakMatches.map((m) => _buildMatchListTile(context, ref, m, isDeletable: false)).toList());
+                                                        final tieBoutsByMatchup = <String, List<MatchModel>>{};
+                                                        final tieMatchupOrder = <String>[];
+                                                        for (var m in tieBreakMatches) {
+                                                          final matchupName = '${m.redName.split(':').first.trim()} vs ${m.whiteName.split(':').first.trim()}';
+                                                          if (!tieBoutsByMatchup.containsKey(matchupName)) { tieMatchupOrder.add(matchupName); tieBoutsByMatchup[matchupName] = []; }
+                                                          tieBoutsByMatchup[matchupName]!.add(m);
+                                                        }
+                                                        childrenWidgets.add(
+                                                          ReorderableListView(
+                                                            shrinkWrap: true,
+                                                            physics: const NeverScrollableScrollPhysics(),
+                                                            onReorder: (oldIndex, newIndex) {
+                                                              final groups = tieMatchupOrder.map((name) => tieBoutsByMatchup[name]!).toList();
+                                                              _onReorderMatchGroups(groups, oldIndex, newIndex, ref);
+                                                            },
+                                                            children: tieMatchupOrder.map((name) {
+                                                              final bouts = tieBoutsByMatchup[name]!;
+                                                              return Container(key: ValueKey('tie_$name'), child: Column(children: bouts.map((m) => _buildMatchListTile(context, ref, m, isDeletable: false)).toList()));
+                                                            }).toList(),
+                                                          )
+                                                        );
                                                       }
                                                     }
                                                     return childrenWidgets;
@@ -734,6 +817,12 @@ class MatchTimelineList extends ConsumerWidget {
                           ...sortedPlayers.map((playerEntry) {
                             final playerName = playerEntry.key;
                             final playerMatches = playerEntry.value;
+
+                            // ★ 追加: 個人戦アコーディオン内部のコメントを取得し、試合と統合・ソートする
+                            final playerComments = comments.where((c) => c.category == categoryName && c.groupName == teamName && c.matchGroupId == playerName).toList();
+                            final playerMixedItems = <TimelineItem>[...playerMatches, ...playerComments];
+                            playerMixedItems.sort((a, b) => a.timelineOrder.compareTo(b.timelineOrder));
+
                             final firstMatch = playerMatches.first;
                             final label = (!firstMatch.isKachinuki && (firstMatch.matchType == 'individual' || firstMatch.matchType == '選手')) ? (firstMatch.note.contains('[リーグ戦]') ? '個人戦/リーグ戦' : '個人戦') : (firstMatch.isKachinuki ? '団体戦/勝ち抜き戦' : (firstMatch.note.contains('[リーグ戦]') ? '団体戦/リーグ戦' : '団体戦'));
                             final bool pInProgress = playerMatches.any((m) => m.status == 'in_progress');
@@ -745,7 +834,6 @@ class MatchTimelineList extends ConsumerWidget {
                             return Container(
                               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                  // ★ 修正: color: pCardBg, を削除
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
                                 boxShadow: pInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
@@ -753,7 +841,7 @@ class MatchTimelineList extends ConsumerWidget {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(11),
                                 child: ExpansionTile(
-                                    collapsedBackgroundColor: pCardBg, backgroundColor: pCardBg, // ★ 修正: 色をここで指定
+                                  collapsedBackgroundColor: pCardBg, backgroundColor: pCardBg,
                                   leading: CircleAvatar(backgroundColor: pAllFinished ? (isDark ? Colors.grey.shade800 : Colors.grey.shade300) : Colors.orange.shade100, child: Text(playerName[0], style: TextStyle(color: pAllFinished ? (isDark ? Colors.grey.shade500 : Colors.grey.shade600) : Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold))),
                                   title: Text(playerName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: pTitleColor)),
                                   subtitle: Row(
@@ -768,11 +856,19 @@ class MatchTimelineList extends ConsumerWidget {
                                     ],
                                   ),
                                   children: [
+                                    // ★ 修正: playerMatches のみのリストから、playerMixedItems（コメント混在リスト）に変更し、_onReorderInnerTimeline に接続
                                     ReorderableListView(
                                       shrinkWrap: true,
                                       physics: const NeverScrollableScrollPhysics(),
-                                      onReorder: (oldIndex, newIndex) => _onReorderMatches(playerMatches, oldIndex, newIndex, ref),
-                                      children: playerMatches.map((match) => Container(key: ValueKey(match.id), child: _buildMatchListTile(context, ref, match))).toList(),
+                                      onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(playerMixedItems, oldIndex, newIndex, ref),
+                                      children: playerMixedItems.map((i) {
+                                        if (i is MatchModel) {
+                                          return Container(key: ValueKey(i.id), child: _buildMatchListTile(context, ref, i));
+                                        } else if (i is MatchCommentModel) {
+                                          return Container(key: ValueKey('inner_comment_${i.id}'), child: _buildInnerCommentWidget(context, ref, i, permissions, isDark));
+                                        }
+                                        return const SizedBox.shrink();
+                                      }).toList(),
                                     )
                                   ],
                                 ),
@@ -1253,7 +1349,7 @@ class MatchTimelineList extends ConsumerWidget {
           final String mId = 'tiebreak_${DateTime.now().millisecondsSinceEpoch}_${i}_$p';
           firstMatchId ??= mId;
           final newMatch = MatchModel(
-            id: mId, tournamentId: firstMatch.tournamentId, category: firstMatch.category, groupName: firstMatch.groupName, redName: '${matchups[i]['red']} : 選手', whiteName: '${matchups[i]['white']} : 選手', matchType: isDaihyo ? '代表戦' : '順位決定戦', status: 'waiting', order: 999.0 + (i * 10) + p, note: '[順位決定戦] ${isDaihyo ? "代表戦" : "再試合"}', matchTimeMinutes: isDaihyo ? 0 : baseRule.matchTimeMinutes.toInt(), hasExtension: true, rule: baseRule.copyWith(positions: [positions[p]], isKachinuki: false, isLeague: false),
+            id: mId, tournamentId: firstMatch.tournamentId, category: firstMatch.category, groupName: firstMatch.groupName, redName: '${matchups[i]['red']} : 選手', whiteName: '${matchups[i]['white']} : 選手', matchType: isDaihyo ? '代表戦' : '順位決定戦', status: 'waiting', order: 999.0 + (i * 10) + p, note: '[順位決定戦] ${isDaihyo ? "代表戦" : "再試合"}', matchTimeMinutes: isDaihyo ? 0.0 : baseRule.matchTimeMinutes.toDouble(), hasExtension: true, rule: baseRule.copyWith(positions: [positions[p]], isKachinuki: false, isLeague: false),
           );
           await ref.read(matchCommandProvider).addMatch(newMatch);
         }
@@ -1382,6 +1478,52 @@ class MatchTimelineList extends ConsumerWidget {
     );
   }
 
+  void _onReorderInnerTimeline(List<TimelineItem> list, int oldIndex, int newIndex, WidgetRef ref) async {
+    final permissions = ref.read(permissionProvider);
+    if (permissions.isReadOnly) return;
+    if (oldIndex < newIndex) newIndex -= 1;
+    if (oldIndex == newIndex) return;
+    
+    final item = list[oldIndex];
+    double newOrder;
+    if (newIndex == 0) { newOrder = list.first.timelineOrder - 100.0; } else if (newIndex == list.length - 1) { newOrder = list.last.timelineOrder + 100.0; } else {
+      final prevOrder = list[newIndex > oldIndex ? newIndex : newIndex - 1].timelineOrder;
+      final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex].timelineOrder;
+      newOrder = (prevOrder + nextOrder) / 2.0;
+    }
+    if (newOrder == list[newIndex].timelineOrder) newOrder += 0.001;
+    
+    if (item is MatchCommentModel) {
+      try { await ref.read(commentCommandProvider).updateCommentOrder(item, newOrder); } catch (e) { debugPrint('コメント並び替え保存エラー: $e'); }
+    } else if (item is MatchModel) {
+      try { await ref.read(matchApplicationServiceProvider).saveMatchesBulk([item.copyWith(order: newOrder)]); } catch (e) { debugPrint('試合並び替え保存エラー: $e'); }
+    }
+  }
+
+  void _onReorderCombinedItems(List<dynamic> list, int oldIndex, int newIndex, WidgetRef ref) async {
+    final permissions = ref.read(permissionProvider);
+    if (permissions.isReadOnly) return;
+    if (oldIndex < newIndex) newIndex -= 1;
+    if (oldIndex == newIndex) return;
+    
+    final item = list[oldIndex];
+    double newOrder;
+    if (newIndex == 0) { newOrder = (list.first['order'] as double) - 100.0; } else if (newIndex == list.length - 1) { newOrder = (list.last['order'] as double) + 100.0; } else {
+      final prevOrder = list[newIndex > oldIndex ? newIndex : newIndex - 1]['order'] as double;
+      final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex]['order'] as double;
+      newOrder = (prevOrder + nextOrder) / 2.0;
+    }
+    if (newOrder == list[newIndex]['order'] as double) newOrder += 0.001;
+    
+    if (item['type'] == 'comment') {
+      try { await ref.read(commentCommandProvider).updateCommentOrder(item['comment'] as MatchCommentModel, newOrder); } catch (e) { debugPrint('コメント並び替え保存エラー: $e'); }
+    } else if (item['type'] == 'matchup') {
+      final offsetOrder = newOrder - (item['order'] as double);
+      final updatedMatches = (item['matches'] as List<MatchModel>).map((m) => m.copyWith(order: m.order + offsetOrder)).toList();
+      try { await ref.read(matchApplicationServiceProvider).saveMatchesBulk(updatedMatches); } catch (e) { debugPrint('グループ並び替え保存エラー: $e'); }
+    }
+  }
+
   void _onReorderMatches(List<MatchModel> list, int oldIndex, int newIndex, WidgetRef ref) async {
     final permissions = ref.read(permissionProvider);
     if (permissions.isReadOnly) return;
@@ -1424,7 +1566,37 @@ class MatchTimelineList extends ConsumerWidget {
     }
   }
 
-  void _showAddCommentDialog(BuildContext context, WidgetRef ref, String tournamentId, String category, String groupName, double order) {
+  void _onReorderMatchGroups(List<List<MatchModel>> groups, int oldIndex, int newIndex, WidgetRef ref) async {
+    final permissions = ref.read(permissionProvider);
+    if (permissions.isReadOnly) return;
+    if (oldIndex < newIndex) newIndex -= 1;
+    if (oldIndex == newIndex) return;
+    
+    final targetGroup = groups[oldIndex];
+    double newOrderBase;
+    
+    if (newIndex == 0) { 
+      newOrderBase = groups.first.first.order - 100.0; 
+    } else if (newIndex == groups.length - 1) { 
+      newOrderBase = groups.last.first.order + 100.0; 
+    } else {
+      final prevOrder = groups[newIndex > oldIndex ? newIndex : newIndex - 1].first.order;
+      final nextOrder = groups[newIndex > oldIndex ? newIndex + 1 : newIndex].first.order;
+      newOrderBase = (prevOrder + nextOrder) / 2.0;
+    }
+    
+    if (newOrderBase == groups[newIndex].first.order) newOrderBase += 0.001;
+    
+    final offsetOrder = newOrderBase - targetGroup.first.order;
+    final updatedMatches = targetGroup.map((m) => m.copyWith(order: m.order + offsetOrder)).toList();
+    try { 
+      await ref.read(matchApplicationServiceProvider).saveMatchesBulk(updatedMatches); 
+    } catch (e) { 
+      debugPrint('グループ並び替え保存エラー: $e'); 
+    }
+  }
+
+  void _showAddCommentDialog(BuildContext context, WidgetRef ref, String tournamentId, String category, String groupName, double order, {String? matchGroupId}) {
     final controller = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
@@ -1435,7 +1607,7 @@ class MatchTimelineList extends ConsumerWidget {
         content: TextField(controller: controller, autofocus: true, style: TextStyle(color: isDark ? Colors.white : Colors.black87), decoration: InputDecoration(hintText: '見出しやコメントを入力', hintStyle: const TextStyle(color: Colors.grey, fontSize: 13), filled: true, fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50, border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none)), maxLines: 2),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
-          ElevatedButton(onPressed: () async { final text = controller.text.trim(); if (text.isNotEmpty) { await ref.read(commentCommandProvider).addComment(tournamentId: tournamentId, category: category, groupName: groupName, text: text, order: order); } if (ctx.mounted) Navigator.pop(ctx); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0), child: const Text('追加', style: TextStyle(fontWeight: FontWeight.bold))),
+          ElevatedButton(onPressed: () async { final text = controller.text.trim(); if (text.isNotEmpty) { await ref.read(commentCommandProvider).addComment(tournamentId: tournamentId, category: category, groupName: groupName, matchGroupId: matchGroupId, text: text, order: order); } if (ctx.mounted) Navigator.pop(ctx); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0), child: const Text('追加', style: TextStyle(fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -1503,6 +1675,55 @@ class MatchTimelineList extends ConsumerWidget {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))),
           ElevatedButton(onPressed: () async { final newNote = controller.text.trim(); if (newNote != match.note) { await ref.read(matchApplicationServiceProvider).saveMatchesBulk([match.copyWith(note: newNote)]); } if (ctx.mounted) Navigator.pop(ctx); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0), child: const Text('保存', style: TextStyle(fontWeight: FontWeight.bold))),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInnerCommentWidget(BuildContext context, WidgetRef ref, MatchCommentModel c, AppPermissions permissions, bool isDark) {
+    final commentWidget = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.label_outline, color: isDark ? Colors.grey.shade500 : Colors.grey.shade600, size: 16),
+          const SizedBox(width: 8),
+          Expanded(child: Text(c.text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800))),
+        ],
+      ),
+    );
+
+    if (permissions.isReadOnly) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: commentWidget,
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Slidable(
+        key: ValueKey('slidable_inner_comment_${c.id}'),
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          children: [
+            SlidableAction(onPressed: (context) => _showEditCommentDialog(context, ref, c), backgroundColor: Colors.blueAccent, foregroundColor: Colors.white, icon: Icons.edit, label: '編集'),
+            SlidableAction(
+              onPressed: (context) async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, title: Text('内部見出しの削除', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)), content: Text('この見出しを削除しますか？\n(取り消せません)', style: TextStyle(color: isDark ? Colors.white : Colors.black87)), actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル', style: TextStyle(color: Colors.grey))), TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('削除', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)))]),
+                );
+                if (confirm == true) await ref.read(commentCommandProvider).deleteComment(c.id);
+              },
+              backgroundColor: Colors.redAccent, foregroundColor: Colors.white, icon: Icons.delete, borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)), label: '削除',
+            ),
+          ],
+        ),
+        child: commentWidget,
       ),
     );
   }

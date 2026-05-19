@@ -29,6 +29,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final viewDate = ref.watch(bunaiksenViewDateProvider);
     final tournamentId = 'bunaiksen_${DateFormat('yyyyMMdd').format(viewDate)}';
+    final tName = '部内戦';
+    final tDate = DateFormat('yyyy年MM月dd日').format(viewDate);
 
     // デザイン定義
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
@@ -113,9 +115,9 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      Expanded(child: _buildActionButton(context, Icons.print, 'PDF印刷', Colors.grey.shade800, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: true))),
+                      Expanded(child: _buildActionButton(context, Icons.print, 'PDF印刷', Colors.grey.shade800, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: true, tName: tName, tDate: tDate))),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildActionButton(context, Icons.share, '画像シェア', Colors.teal.shade600, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: false))),
+                      Expanded(child: _buildActionButton(context, Icons.share, '画像シェア', Colors.teal.shade600, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: false, tName: tName, tDate: tDate))),
                     ],
                   ),
                 ),
@@ -834,11 +836,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       displayGroupName = '';
     }
 
-    final note = matches.first.note;
-    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
     String headerTitle = '【個人戦】';
-    if (displayGroupName.isNotEmpty) headerTitle += ' $displayGroupName';
-    if (cleanNote.isNotEmpty && !cleanNote.contains('個人戦')) headerTitle += ' ($cleanNote)';
+    if (displayGroupName.isNotEmpty) {
+      headerTitle += ' $displayGroupName';
+    }
+    // ★note抽出ロジックは削除完了
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -934,18 +936,30 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   }
 
   // エクスポート処理
-  Future<void> _handleExport(BuildContext context, String cat, Map<String, List<MatchModel>> groupsMap, List<String> sortedGroupKeys, {required bool isPdf}) async {
+  Future<void> _handleExport(BuildContext context, String cat, Map<String, List<MatchModel>> groupsMap, List<String> sortedGroupKeys, {required bool isPdf, String? tName, String? tDate}) async {
     final groupDataList = sortedGroupKeys.map((key) => { 'groupName': key, 'matches': groupsMap[key]!..sort((a, b) => a.order.compareTo(b.order)) }).toList();
-    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    
+    BuildContext? dialogContext;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        dialogContext = ctx;
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+    
     try {
       if (isPdf) {
-        await PdfService.printOfficialRecord(cat, groupDataList);
+        await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate);
       } else {
-        await PdfService.shareOfficialRecordAsImage(cat, groupDataList);
+        await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate);
       }
     } finally {
-      if (context.mounted) {
-        Navigator.pop(context);
+      if (dialogContext != null && dialogContext!.mounted) {
+        Navigator.pop(dialogContext!);
+      } else if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
       }
     }
   }

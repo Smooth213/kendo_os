@@ -51,10 +51,10 @@ _MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
   category: json['category'] as String?,
   groupName: json['groupName'] as String?,
   matchOrder: (json['matchOrder'] as num?)?.toInt(),
-  matchTimeMinutes: (json['matchTimeMinutes'] as num?)?.toInt() ?? 3,
+  matchTimeMinutes: (json['matchTimeMinutes'] as num?)?.toDouble() ?? 3.0,
   isRunningTime: json['isRunningTime'] as bool? ?? false,
   hasExtension: json['hasExtension'] as bool? ?? false,
-  extensionTimeMinutes: (json['extensionTimeMinutes'] as num?)?.toInt(),
+  extensionTimeMinutes: (json['extensionTimeMinutes'] as num?)?.toDouble(),
   extensionCount: (json['extensionCount'] as num?)?.toInt(),
   hasHantei: json['hasHantei'] as bool? ?? false,
   timerStartedAt: const SafeTimestampConverter().fromJson(

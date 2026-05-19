@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/services/pdf_service.dart';
@@ -28,6 +29,11 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
+
+    final tournamentAsync = ref.watch(tournamentProvider(tournamentId));
+    final tName = tournamentAsync.value?.name;
+    final tDate = tournamentAsync.value != null ? DateFormat('yyyy年MM月dd日').format(tournamentAsync.value!.date) : null;
+    final tVenue = tournamentAsync.value?.venue;
 
     final asyncProj = ref.watch(viewerTournamentProjectionProvider(tournamentId));
     
@@ -121,14 +127,26 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               'matches': List<MatchListProjection>.from(proj.teamMatches[key]!.matches)..sort((a, b) => a.order.compareTo(b.order)),
                             }).toList();
 
-                            showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+                            BuildContext? dialogContext;
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (ctx) {
+                                dialogContext = ctx;
+                                return const Center(child: CircularProgressIndicator());
+                              },
+                            );
 
                             try {
-                              await PdfService.printOfficialRecord(cat, groupDataList);
+                              await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue);
                             } catch (e) {
                               if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
                             } finally {
-                              if (context.mounted) Navigator.pop(context);
+                              if (dialogContext != null && dialogContext!.mounted) {
+                                Navigator.pop(dialogContext!);
+                              } else if (context.mounted) {
+                                Navigator.of(context, rootNavigator: true).pop();
+                              }
                             }
                           },
                           icon: const Icon(Icons.print),
@@ -145,14 +163,26 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               'matches': List<MatchListProjection>.from(proj.teamMatches[key]!.matches)..sort((a, b) => a.order.compareTo(b.order)),
                             }).toList();
 
-                            showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+                            BuildContext? dialogContext;
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (ctx) {
+                                dialogContext = ctx;
+                                return const Center(child: CircularProgressIndicator());
+                              },
+                            );
 
                             try {
-                              await PdfService.shareOfficialRecordAsImage(cat, groupDataList);
+                              await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue);
                             } catch (e) {
                               if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
                             } finally {
-                              if (context.mounted) Navigator.pop(context);
+                              if (dialogContext != null && dialogContext!.mounted) {
+                                Navigator.pop(dialogContext!);
+                              } else if (context.mounted) {
+                                Navigator.of(context, rootNavigator: true).pop();
+                              }
                             }
                           },
                           icon: const Icon(Icons.share),
@@ -912,15 +942,15 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     // ヘッダー名からシステムID（英数字とハイフンの羅列）を隠す処理
     final uuidRegex = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
     String displayGroupName = groupName;
-    if (uuidRegex.hasMatch(groupName) || groupName.length > 20) {
+    if (uuidRegex.hasMatch(groupName) || groupName.length > 20 || groupName == '__default__' || groupName.contains(' vs ')) {
       displayGroupName = '';
     }
 
-    final note = matches.first.note;
-    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
     String headerTitle = '【個人戦】';
-    if (displayGroupName.isNotEmpty) headerTitle += ' $displayGroupName';
-    if (cleanNote.isNotEmpty && !cleanNote.contains('個人戦')) headerTitle += ' ($cleanNote)';
+    if (displayGroupName.isNotEmpty) {
+      headerTitle += ' $displayGroupName';
+    }
+    // ★note抽出ロジックは削除完了
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),

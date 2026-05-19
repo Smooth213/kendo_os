@@ -7,7 +7,7 @@ import 'package:kendo_os/presentation/operate/screens/official_record_screen.dar
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart' show customTeamNamesProvider;
+import 'package:kendo_os/presentation/operate/screens/home_screen.dart' show customTeamNamesProvider, tournamentProvider;
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/domain/entities/settings_model.dart';
@@ -41,6 +41,7 @@ void main() {
                 canChangeSettings: true, canDeleteData: true,
               )),
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
+          tournamentProvider(tournamentId).overrideWith((ref) => Stream.value(null)),
         ],
         child: MaterialApp.router(
           routerConfig: router,
@@ -181,6 +182,40 @@ void main() {
 
       expect(find.text('一'), findsNothing);
       expect(find.text('二'), findsNothing);
+    });
+
+    testWidgets('5. PDF出力ボタンをタップした際、ローディングが表示され最終的に閉じられること', (WidgetTester tester) async {
+      final matches = [
+        const MatchModel(
+          id: 'm1',
+          tournamentId: testTournamentId,
+          groupName: testGroupId,
+          matchType: '個人戦',
+          redName: 'チームA:山田太郎',
+          whiteName: 'チームB:佐藤一郎',
+          status: 'finished',
+        ),
+      ];
+
+      await tester.pumpWidget(createTestableWidget(matches));
+      await tester.pumpAndSettle();
+
+      // PDFボタンを探す
+      final pdfButton = find.text('PDF').first;
+      expect(pdfButton, findsOneWidget);
+
+      // タップする
+      await tester.tap(pdfButton);
+      await tester.pump(); // ダイアログ表示アニメーションへ
+
+      // CircularProgressIndicator が表示されていることを確認
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      // 非同期処理が完了するまで待機（SnackBar等が出た場合も消えるまで待機）
+      await tester.pumpAndSettle();
+
+      // ダイアログが消えていることを確認（dialogContext の修正が効いているか）
+      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
   });
 }

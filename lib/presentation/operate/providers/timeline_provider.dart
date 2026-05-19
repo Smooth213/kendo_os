@@ -3,6 +3,7 @@ import 'package:kendo_os/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/infrastructure/repository/local_comment_repository.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/domain/entities/timeline_item.dart';
 import 'package:uuid/uuid.dart';
 
 // ==========================================
@@ -33,6 +34,7 @@ class CommentCommandService {
     required String tournamentId,
     required String category,
     required String groupName, // 所属先のチーム名など
+    String? matchGroupId, // ★ 追加: アコーディオン内部に属する場合のグループID
     required String text,
     required double order,
   }) async {
@@ -41,6 +43,7 @@ class CommentCommandService {
       tournamentId: tournamentId,
       category: category,
       groupName: groupName,
+      matchGroupId: matchGroupId, // ★ 追加
       text: text,
       order: order,
     );
@@ -85,13 +88,28 @@ abstract class ReorderableTimelineItem {
 class MatchGroupTimelineItem implements ReorderableTimelineItem {
   final String groupId;
   final List<MatchModel> matches;
-  MatchGroupTimelineItem(this.groupId, this.matches);
+  final List<MatchCommentModel> comments; // ★ 追加: グループ内のコメント
+
+  MatchGroupTimelineItem(this.groupId, this.matches, [this.comments = const []]); // ★ 修正
 
   @override
   String get id => groupId;
 
   @override
-  double get order => matches.first.order;
+  double get order {
+
+    final mOrder = matches.fold<double>(double.infinity, (min, m) => m.order < min ? m.order : min);
+    final cOrder = comments.fold<double>(double.infinity, (min, c) => c.order < min ? c.order : min);
+    final minVal = mOrder < cOrder ? mOrder : cOrder;
+    return minVal == double.infinity ? 0.0 : minVal;
+  }
+
+  // ★ 追加: アコーディオン内部で混在描画するためのソート済み統合リスト
+  List<TimelineItem> get sortedInnerItems {
+    final list = <TimelineItem>[...matches, ...comments];
+    list.sort((a, b) => a.timelineOrder.compareTo(b.timelineOrder));
+    return list;
+  }
 }
 
 class MatchIndividualTimelineItem implements ReorderableTimelineItem {

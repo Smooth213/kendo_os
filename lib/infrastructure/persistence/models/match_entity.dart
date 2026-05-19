@@ -84,10 +84,10 @@ class MatchEntity {
   String? groupName;
   int? matchOrder;
 
-  int matchTimeMinutes = 3;
+  double matchTimeMinutes = 3.0;
   bool isRunningTime = false;
   bool hasExtension = false;
-  int? extensionTimeMinutes;
+  double? extensionTimeMinutes;
   int? extensionCount;
   bool hasHantei = false;
 

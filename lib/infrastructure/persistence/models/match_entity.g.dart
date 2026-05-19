@@ -47,7 +47,7 @@ const MatchEntitySchema = CollectionSchema(
     r'extensionTimeMinutes': PropertySchema(
       id: 5,
       name: r'extensionTimeMinutes',
-      type: IsarType.long,
+      type: IsarType.double,
     ),
     r'firestoreId': PropertySchema(
       id: 6,
@@ -97,7 +97,7 @@ const MatchEntitySchema = CollectionSchema(
     r'matchTimeMinutes': PropertySchema(
       id: 15,
       name: r'matchTimeMinutes',
-      type: IsarType.long,
+      type: IsarType.double,
     ),
     r'matchType': PropertySchema(
       id: 16,
@@ -334,7 +334,7 @@ void _matchEntitySerialize(
     object.events,
   );
   writer.writeLong(offsets[4], object.extensionCount);
-  writer.writeLong(offsets[5], object.extensionTimeMinutes);
+  writer.writeDouble(offsets[5], object.extensionTimeMinutes);
   writer.writeString(offsets[6], object.firestoreId);
   writer.writeString(offsets[7], object.groupName);
   writer.writeBool(offsets[8], object.hasExtension);
@@ -344,7 +344,7 @@ void _matchEntitySerialize(
   writer.writeBool(offsets[12], object.isRunningTime);
   writer.writeDateTime(offsets[13], object.lastUpdatedAt);
   writer.writeLong(offsets[14], object.matchOrder);
-  writer.writeLong(offsets[15], object.matchTimeMinutes);
+  writer.writeDouble(offsets[15], object.matchTimeMinutes);
   writer.writeString(offsets[16], object.matchType);
   writer.writeString(offsets[17], object.note);
   writer.writeDouble(offsets[18], object.order);
@@ -397,7 +397,7 @@ MatchEntity _matchEntityDeserialize(
       ) ??
       [];
   object.extensionCount = reader.readLongOrNull(offsets[4]);
-  object.extensionTimeMinutes = reader.readLongOrNull(offsets[5]);
+  object.extensionTimeMinutes = reader.readDoubleOrNull(offsets[5]);
   object.firestoreId = reader.readString(offsets[6]);
   object.groupName = reader.readStringOrNull(offsets[7]);
   object.hasExtension = reader.readBool(offsets[8]);
@@ -408,7 +408,7 @@ MatchEntity _matchEntityDeserialize(
   object.isRunningTime = reader.readBool(offsets[12]);
   object.lastUpdatedAt = reader.readDateTimeOrNull(offsets[13]);
   object.matchOrder = reader.readLongOrNull(offsets[14]);
-  object.matchTimeMinutes = reader.readLong(offsets[15]);
+  object.matchTimeMinutes = reader.readDouble(offsets[15]);
   object.matchType = reader.readString(offsets[16]);
   object.note = reader.readString(offsets[17]);
   object.order = reader.readDouble(offsets[18]);
@@ -474,7 +474,7 @@ P _matchEntityDeserializeProp<P>(
     case 4:
       return (reader.readLongOrNull(offset)) as P;
     case 5:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
@@ -494,7 +494,7 @@ P _matchEntityDeserializeProp<P>(
     case 14:
       return (reader.readLongOrNull(offset)) as P;
     case 15:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 16:
       return (reader.readString(offset)) as P;
     case 17:
@@ -1162,38 +1162,52 @@ extension MatchEntityQueryFilter
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  extensionTimeMinutesEqualTo(int? value) {
+  extensionTimeMinutesEqualTo(double? value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(
           property: r'extensionTimeMinutes',
           value: value,
+
+          epsilon: epsilon,
         ),
       );
     });
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  extensionTimeMinutesGreaterThan(int? value, {bool include = false}) {
+  extensionTimeMinutesGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
           property: r'extensionTimeMinutes',
           value: value,
+
+          epsilon: epsilon,
         ),
       );
     });
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  extensionTimeMinutesLessThan(int? value, {bool include = false}) {
+  extensionTimeMinutesLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
           property: r'extensionTimeMinutes',
           value: value,
+
+          epsilon: epsilon,
         ),
       );
     });
@@ -1201,10 +1215,11 @@ extension MatchEntityQueryFilter
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
   extensionTimeMinutesBetween(
-    int? lower,
-    int? upper, {
+    double? lower,
+    double? upper, {
     bool includeLower = true,
     bool includeUpper = true,
+    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1214,6 +1229,8 @@ extension MatchEntityQueryFilter
           includeLower: includeLower,
           upper: upper,
           includeUpper: includeUpper,
+
+          epsilon: epsilon,
         ),
       );
     });
@@ -1770,35 +1787,52 @@ extension MatchEntityQueryFilter
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  matchTimeMinutesEqualTo(int value) {
+  matchTimeMinutesEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'matchTimeMinutes', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  matchTimeMinutesGreaterThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
+        FilterCondition.equalTo(
           property: r'matchTimeMinutes',
           value: value,
+
+          epsilon: epsilon,
         ),
       );
     });
   }
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
-  matchTimeMinutesLessThan(int value, {bool include = false}) {
+  matchTimeMinutesGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'matchTimeMinutes',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
+  matchTimeMinutesLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
           property: r'matchTimeMinutes',
           value: value,
+
+          epsilon: epsilon,
         ),
       );
     });
@@ -1806,10 +1840,11 @@ extension MatchEntityQueryFilter
 
   QueryBuilder<MatchEntity, MatchEntity, QAfterFilterCondition>
   matchTimeMinutesBetween(
-    int lower,
-    int upper, {
+    double lower,
+    double upper, {
     bool includeLower = true,
     bool includeUpper = true,
+    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1819,6 +1854,8 @@ extension MatchEntityQueryFilter
           includeLower: includeLower,
           upper: upper,
           includeUpper: includeUpper,
+
+          epsilon: epsilon,
         ),
       );
     });
@@ -5407,7 +5444,7 @@ extension MatchEntityQueryProperty
     });
   }
 
-  QueryBuilder<MatchEntity, int?, QQueryOperations>
+  QueryBuilder<MatchEntity, double?, QQueryOperations>
   extensionTimeMinutesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'extensionTimeMinutes');
@@ -5469,7 +5506,8 @@ extension MatchEntityQueryProperty
     });
   }
 
-  QueryBuilder<MatchEntity, int, QQueryOperations> matchTimeMinutesProperty() {
+  QueryBuilder<MatchEntity, double, QQueryOperations>
+  matchTimeMinutesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'matchTimeMinutes');
     });

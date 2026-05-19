@@ -14,6 +14,7 @@ class MatchCommentEntity {
   
   String? category;
   String? groupName;
+  String? matchGroupId; // ★ 追加: アコーディオン内部のグループID
   
   late String text;
   

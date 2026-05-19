@@ -15,6 +15,7 @@ class LocalCommentRepository {
       ..tournamentId = comment.tournamentId
       ..category = comment.category
       ..groupName = comment.groupName
+      ..matchGroupId = comment.matchGroupId // ★ 追加
       ..text = comment.text
       ..order = comment.order
       ..syncState = comment.syncState
@@ -36,6 +37,7 @@ class LocalCommentRepository {
               tournamentId: e.tournamentId,
               category: e.category,
               groupName: e.groupName,
+              matchGroupId: e.matchGroupId, // ★ 追加
               text: e.text,
               order: e.order,
               syncState: e.syncState,

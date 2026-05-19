@@ -84,14 +84,14 @@ void main() {
       final result1 = PdfIndividualList.build('個人戦グループA', matches1, ttf, ttfBold) as pw.Container;
       final header1 = (result1.child as pw.Column).children.first as pw.Container;
       final headerText1 = (header1.child as pw.Text).text.toPlainText();
-      expect(headerText1, '【個人戦】 個人戦グループA対戦スコア詳細');
+      expect(headerText1, '【個人戦】 個人戦グループA');
 
       // Case 2: League match with note
       final matches2 = [createMockMatch(id: 'm2', redName: '選手C', whiteName: '選手D', note: '[リーグ戦] 予選')];
       final result2 = PdfIndividualList.build('リーグA', matches2, ttf, ttfBold) as pw.Container;
       final header2 = (result2.child as pw.Column).children.first as pw.Container;
       final headerText2 = (header2.child as pw.Text).text.toPlainText();
-      expect(headerText2, '【リーグ個人戦】 リーグA対戦スコア詳細（予選）');
+      expect(headerText2, '【リーグ個人戦】 リーグA');
     });
   });
 }

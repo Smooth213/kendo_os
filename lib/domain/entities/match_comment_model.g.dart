@@ -12,6 +12,7 @@ _MatchCommentModel _$MatchCommentModelFromJson(Map<String, dynamic> json) =>
       tournamentId: json['tournamentId'] as String?,
       category: json['category'] as String?,
       groupName: json['groupName'] as String?,
+      matchGroupId: json['matchGroupId'] as String?,
       text: json['text'] as String,
       order: json['order'] == null
           ? 0.0
@@ -30,6 +31,7 @@ Map<String, dynamic> _$MatchCommentModelToJson(_MatchCommentModel instance) =>
       'tournamentId': instance.tournamentId,
       'category': instance.category,
       'groupName': instance.groupName,
+      'matchGroupId': instance.matchGroupId,
       'text': instance.text,
       'order': const DoubleConverter().toJson(instance.order),
       'syncState': _$SyncStateEnumMap[instance.syncState]!,

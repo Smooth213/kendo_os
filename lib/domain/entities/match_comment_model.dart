@@ -16,6 +16,7 @@ abstract class MatchCommentModel with _$MatchCommentModel implements TimelineIte
     String? tournamentId,
     String? category,
     String? groupName,
+    String? matchGroupId, // ★ 追加: アコーディオン内部に属する場合のグループID
     required String text,
     @DoubleConverter() @Default(0.0) double order,
     @Default(SyncState.synced) SyncState syncState,

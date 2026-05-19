@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MatchCommentModel implements DiagnosticableTreeMixin {
 
- String get id; String? get tournamentId; String? get category; String? get groupName; String get text;@DoubleConverter() double get order; SyncState get syncState;@SafeTimestampConverter() DateTime? get lastUpdatedAt;
+ String get id; String? get tournamentId; String? get category; String? get groupName; String? get matchGroupId;// ★ 追加: アコーディオン内部に属する場合のグループID
+ String get text;@DoubleConverter() double get order; SyncState get syncState;@SafeTimestampConverter() DateTime? get lastUpdatedAt;
 /// Create a copy of MatchCommentModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,21 +30,21 @@ $MatchCommentModelCopyWith<MatchCommentModel> get copyWith => _$MatchCommentMode
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'MatchCommentModel'))
-    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('tournamentId', tournamentId))..add(DiagnosticsProperty('category', category))..add(DiagnosticsProperty('groupName', groupName))..add(DiagnosticsProperty('text', text))..add(DiagnosticsProperty('order', order))..add(DiagnosticsProperty('syncState', syncState))..add(DiagnosticsProperty('lastUpdatedAt', lastUpdatedAt));
+    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('tournamentId', tournamentId))..add(DiagnosticsProperty('category', category))..add(DiagnosticsProperty('groupName', groupName))..add(DiagnosticsProperty('matchGroupId', matchGroupId))..add(DiagnosticsProperty('text', text))..add(DiagnosticsProperty('order', order))..add(DiagnosticsProperty('syncState', syncState))..add(DiagnosticsProperty('lastUpdatedAt', lastUpdatedAt));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchCommentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.category, category) || other.category == category)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.text, text) || other.text == text)&&(identical(other.order, order) || other.order == order)&&(identical(other.syncState, syncState) || other.syncState == syncState)&&(identical(other.lastUpdatedAt, lastUpdatedAt) || other.lastUpdatedAt == lastUpdatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MatchCommentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.category, category) || other.category == category)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.matchGroupId, matchGroupId) || other.matchGroupId == matchGroupId)&&(identical(other.text, text) || other.text == text)&&(identical(other.order, order) || other.order == order)&&(identical(other.syncState, syncState) || other.syncState == syncState)&&(identical(other.lastUpdatedAt, lastUpdatedAt) || other.lastUpdatedAt == lastUpdatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tournamentId,category,groupName,text,order,syncState,lastUpdatedAt);
+int get hashCode => Object.hash(runtimeType,id,tournamentId,category,groupName,matchGroupId,text,order,syncState,lastUpdatedAt);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'MatchCommentModel(id: $id, tournamentId: $tournamentId, category: $category, groupName: $groupName, text: $text, order: $order, syncState: $syncState, lastUpdatedAt: $lastUpdatedAt)';
+  return 'MatchCommentModel(id: $id, tournamentId: $tournamentId, category: $category, groupName: $groupName, matchGroupId: $matchGroupId, text: $text, order: $order, syncState: $syncState, lastUpdatedAt: $lastUpdatedAt)';
 }
 
 
@@ -54,7 +55,7 @@ abstract mixin class $MatchCommentModelCopyWith<$Res>  {
   factory $MatchCommentModelCopyWith(MatchCommentModel value, $Res Function(MatchCommentModel) _then) = _$MatchCommentModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String? tournamentId, String? category, String? groupName, String text,@DoubleConverter() double order, SyncState syncState,@SafeTimestampConverter() DateTime? lastUpdatedAt
+ String id, String? tournamentId, String? category, String? groupName, String? matchGroupId, String text,@DoubleConverter() double order, SyncState syncState,@SafeTimestampConverter() DateTime? lastUpdatedAt
 });
 
 
@@ -71,12 +72,13 @@ class _$MatchCommentModelCopyWithImpl<$Res>
 
 /// Create a copy of MatchCommentModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tournamentId = freezed,Object? category = freezed,Object? groupName = freezed,Object? text = null,Object? order = null,Object? syncState = null,Object? lastUpdatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tournamentId = freezed,Object? category = freezed,Object? groupName = freezed,Object? matchGroupId = freezed,Object? text = null,Object? order = null,Object? syncState = null,Object? lastUpdatedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tournamentId: freezed == tournamentId ? _self.tournamentId : tournamentId // ignore: cast_nullable_to_non_nullable
 as String?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String?,groupName: freezed == groupName ? _self.groupName : groupName // ignore: cast_nullable_to_non_nullable
+as String?,matchGroupId: freezed == matchGroupId ? _self.matchGroupId : matchGroupId // ignore: cast_nullable_to_non_nullable
 as String?,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as double,syncState: null == syncState ? _self.syncState : syncState // ignore: cast_nullable_to_non_nullable
@@ -166,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? tournamentId,  String? category,  String? groupName,  String text, @DoubleConverter()  double order,  SyncState syncState, @SafeTimestampConverter()  DateTime? lastUpdatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? tournamentId,  String? category,  String? groupName,  String? matchGroupId,  String text, @DoubleConverter()  double order,  SyncState syncState, @SafeTimestampConverter()  DateTime? lastUpdatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MatchCommentModel() when $default != null:
-return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that.text,_that.order,_that.syncState,_that.lastUpdatedAt);case _:
+return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that.matchGroupId,_that.text,_that.order,_that.syncState,_that.lastUpdatedAt);case _:
   return orElse();
 
 }
@@ -187,10 +189,10 @@ return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? tournamentId,  String? category,  String? groupName,  String text, @DoubleConverter()  double order,  SyncState syncState, @SafeTimestampConverter()  DateTime? lastUpdatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? tournamentId,  String? category,  String? groupName,  String? matchGroupId,  String text, @DoubleConverter()  double order,  SyncState syncState, @SafeTimestampConverter()  DateTime? lastUpdatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _MatchCommentModel():
-return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that.text,_that.order,_that.syncState,_that.lastUpdatedAt);case _:
+return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that.matchGroupId,_that.text,_that.order,_that.syncState,_that.lastUpdatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +209,10 @@ return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? tournamentId,  String? category,  String? groupName,  String text, @DoubleConverter()  double order,  SyncState syncState, @SafeTimestampConverter()  DateTime? lastUpdatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? tournamentId,  String? category,  String? groupName,  String? matchGroupId,  String text, @DoubleConverter()  double order,  SyncState syncState, @SafeTimestampConverter()  DateTime? lastUpdatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _MatchCommentModel() when $default != null:
-return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that.text,_that.order,_that.syncState,_that.lastUpdatedAt);case _:
+return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that.matchGroupId,_that.text,_that.order,_that.syncState,_that.lastUpdatedAt);case _:
   return null;
 
 }
@@ -222,13 +224,15 @@ return $default(_that.id,_that.tournamentId,_that.category,_that.groupName,_that
 @JsonSerializable()
 
 class _MatchCommentModel extends MatchCommentModel with DiagnosticableTreeMixin {
-  const _MatchCommentModel({required this.id, this.tournamentId, this.category, this.groupName, required this.text, @DoubleConverter() this.order = 0.0, this.syncState = SyncState.synced, @SafeTimestampConverter() this.lastUpdatedAt}): super._();
+  const _MatchCommentModel({required this.id, this.tournamentId, this.category, this.groupName, this.matchGroupId, required this.text, @DoubleConverter() this.order = 0.0, this.syncState = SyncState.synced, @SafeTimestampConverter() this.lastUpdatedAt}): super._();
   factory _MatchCommentModel.fromJson(Map<String, dynamic> json) => _$MatchCommentModelFromJson(json);
 
 @override final  String id;
 @override final  String? tournamentId;
 @override final  String? category;
 @override final  String? groupName;
+@override final  String? matchGroupId;
+// ★ 追加: アコーディオン内部に属する場合のグループID
 @override final  String text;
 @override@JsonKey()@DoubleConverter() final  double order;
 @override@JsonKey() final  SyncState syncState;
@@ -248,21 +252,21 @@ Map<String, dynamic> toJson() {
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'MatchCommentModel'))
-    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('tournamentId', tournamentId))..add(DiagnosticsProperty('category', category))..add(DiagnosticsProperty('groupName', groupName))..add(DiagnosticsProperty('text', text))..add(DiagnosticsProperty('order', order))..add(DiagnosticsProperty('syncState', syncState))..add(DiagnosticsProperty('lastUpdatedAt', lastUpdatedAt));
+    ..add(DiagnosticsProperty('id', id))..add(DiagnosticsProperty('tournamentId', tournamentId))..add(DiagnosticsProperty('category', category))..add(DiagnosticsProperty('groupName', groupName))..add(DiagnosticsProperty('matchGroupId', matchGroupId))..add(DiagnosticsProperty('text', text))..add(DiagnosticsProperty('order', order))..add(DiagnosticsProperty('syncState', syncState))..add(DiagnosticsProperty('lastUpdatedAt', lastUpdatedAt));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchCommentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.category, category) || other.category == category)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.text, text) || other.text == text)&&(identical(other.order, order) || other.order == order)&&(identical(other.syncState, syncState) || other.syncState == syncState)&&(identical(other.lastUpdatedAt, lastUpdatedAt) || other.lastUpdatedAt == lastUpdatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MatchCommentModel&&(identical(other.id, id) || other.id == id)&&(identical(other.tournamentId, tournamentId) || other.tournamentId == tournamentId)&&(identical(other.category, category) || other.category == category)&&(identical(other.groupName, groupName) || other.groupName == groupName)&&(identical(other.matchGroupId, matchGroupId) || other.matchGroupId == matchGroupId)&&(identical(other.text, text) || other.text == text)&&(identical(other.order, order) || other.order == order)&&(identical(other.syncState, syncState) || other.syncState == syncState)&&(identical(other.lastUpdatedAt, lastUpdatedAt) || other.lastUpdatedAt == lastUpdatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tournamentId,category,groupName,text,order,syncState,lastUpdatedAt);
+int get hashCode => Object.hash(runtimeType,id,tournamentId,category,groupName,matchGroupId,text,order,syncState,lastUpdatedAt);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'MatchCommentModel(id: $id, tournamentId: $tournamentId, category: $category, groupName: $groupName, text: $text, order: $order, syncState: $syncState, lastUpdatedAt: $lastUpdatedAt)';
+  return 'MatchCommentModel(id: $id, tournamentId: $tournamentId, category: $category, groupName: $groupName, matchGroupId: $matchGroupId, text: $text, order: $order, syncState: $syncState, lastUpdatedAt: $lastUpdatedAt)';
 }
 
 
@@ -273,7 +277,7 @@ abstract mixin class _$MatchCommentModelCopyWith<$Res> implements $MatchCommentM
   factory _$MatchCommentModelCopyWith(_MatchCommentModel value, $Res Function(_MatchCommentModel) _then) = __$MatchCommentModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String? tournamentId, String? category, String? groupName, String text,@DoubleConverter() double order, SyncState syncState,@SafeTimestampConverter() DateTime? lastUpdatedAt
+ String id, String? tournamentId, String? category, String? groupName, String? matchGroupId, String text,@DoubleConverter() double order, SyncState syncState,@SafeTimestampConverter() DateTime? lastUpdatedAt
 });
 
 
@@ -290,12 +294,13 @@ class __$MatchCommentModelCopyWithImpl<$Res>
 
 /// Create a copy of MatchCommentModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tournamentId = freezed,Object? category = freezed,Object? groupName = freezed,Object? text = null,Object? order = null,Object? syncState = null,Object? lastUpdatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tournamentId = freezed,Object? category = freezed,Object? groupName = freezed,Object? matchGroupId = freezed,Object? text = null,Object? order = null,Object? syncState = null,Object? lastUpdatedAt = freezed,}) {
   return _then(_MatchCommentModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tournamentId: freezed == tournamentId ? _self.tournamentId : tournamentId // ignore: cast_nullable_to_non_nullable
 as String?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String?,groupName: freezed == groupName ? _self.groupName : groupName // ignore: cast_nullable_to_non_nullable
+as String?,matchGroupId: freezed == matchGroupId ? _self.matchGroupId : matchGroupId // ignore: cast_nullable_to_non_nullable
 as String?,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as double,syncState: null == syncState ? _self.syncState : syncState // ignore: cast_nullable_to_non_nullable

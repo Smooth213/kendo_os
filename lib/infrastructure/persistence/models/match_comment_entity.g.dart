@@ -34,16 +34,21 @@ const MatchCommentEntitySchema = CollectionSchema(
       name: r'lastUpdatedAt',
       type: IsarType.dateTime,
     ),
-    r'order': PropertySchema(id: 4, name: r'order', type: IsarType.double),
+    r'matchGroupId': PropertySchema(
+      id: 4,
+      name: r'matchGroupId',
+      type: IsarType.string,
+    ),
+    r'order': PropertySchema(id: 5, name: r'order', type: IsarType.double),
     r'syncState': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'syncState',
       type: IsarType.byte,
       enumMap: _MatchCommentEntitysyncStateEnumValueMap,
     ),
-    r'text': PropertySchema(id: 6, name: r'text', type: IsarType.string),
+    r'text': PropertySchema(id: 7, name: r'text', type: IsarType.string),
     r'tournamentId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'tournamentId',
       type: IsarType.string,
     ),
@@ -97,6 +102,12 @@ int _matchCommentEntityEstimateSize(
     }
   }
   bytesCount += 3 + object.id.length * 3;
+  {
+    final value = object.matchGroupId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.text.length * 3;
   {
     final value = object.tournamentId;
@@ -117,10 +128,11 @@ void _matchCommentEntitySerialize(
   writer.writeString(offsets[1], object.groupName);
   writer.writeString(offsets[2], object.id);
   writer.writeDateTime(offsets[3], object.lastUpdatedAt);
-  writer.writeDouble(offsets[4], object.order);
-  writer.writeByte(offsets[5], object.syncState.index);
-  writer.writeString(offsets[6], object.text);
-  writer.writeString(offsets[7], object.tournamentId);
+  writer.writeString(offsets[4], object.matchGroupId);
+  writer.writeDouble(offsets[5], object.order);
+  writer.writeByte(offsets[6], object.syncState.index);
+  writer.writeString(offsets[7], object.text);
+  writer.writeString(offsets[8], object.tournamentId);
 }
 
 MatchCommentEntity _matchCommentEntityDeserialize(
@@ -134,14 +146,15 @@ MatchCommentEntity _matchCommentEntityDeserialize(
   object.groupName = reader.readStringOrNull(offsets[1]);
   object.id = reader.readString(offsets[2]);
   object.lastUpdatedAt = reader.readDateTimeOrNull(offsets[3]);
-  object.order = reader.readDouble(offsets[4]);
+  object.matchGroupId = reader.readStringOrNull(offsets[4]);
+  object.order = reader.readDouble(offsets[5]);
   object.syncState =
       _MatchCommentEntitysyncStateValueEnumMap[reader.readByteOrNull(
-        offsets[5],
+        offsets[6],
       )] ??
       SyncState.localOnly;
-  object.text = reader.readString(offsets[6]);
-  object.tournamentId = reader.readStringOrNull(offsets[7]);
+  object.text = reader.readString(offsets[7]);
+  object.tournamentId = reader.readStringOrNull(offsets[8]);
   return object;
 }
 
@@ -161,16 +174,18 @@ P _matchCommentEntityDeserializeProp<P>(
     case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 5:
+      return (reader.readDouble(offset)) as P;
+    case 6:
       return (_MatchCommentEntitysyncStateValueEnumMap[reader.readByteOrNull(
                 offset,
               )] ??
               SyncState.localOnly)
           as P;
-    case 6:
-      return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readString(offset)) as P;
+    case 8:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -952,6 +967,165 @@ extension MatchCommentEntityQueryFilter
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'matchGroupId'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'matchGroupId'),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'matchGroupId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'matchGroupId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'matchGroupId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'matchGroupId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'matchGroupId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'matchGroupId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'matchGroupId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'matchGroupId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'matchGroupId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  matchGroupIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'matchGroupId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
   orderEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1447,6 +1621,20 @@ extension MatchCommentEntityQuerySortBy
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
+  sortByMatchGroupId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'matchGroupId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
+  sortByMatchGroupIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'matchGroupId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
   sortByOrder() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'order', Sort.asc);
@@ -1576,6 +1764,20 @@ extension MatchCommentEntityQuerySortThenBy
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
+  thenByMatchGroupId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'matchGroupId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
+  thenByMatchGroupIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'matchGroupId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
   thenByOrder() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'order', Sort.asc);
@@ -1664,6 +1866,13 @@ extension MatchCommentEntityQueryWhereDistinct
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QDistinct>
+  distinctByMatchGroupId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'matchGroupId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QDistinct>
   distinctByOrder() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'order');
@@ -1724,6 +1933,13 @@ extension MatchCommentEntityQueryProperty
   lastUpdatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastUpdatedAt');
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, String?, QQueryOperations>
+  matchGroupIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'matchGroupId');
     });
   }
 
