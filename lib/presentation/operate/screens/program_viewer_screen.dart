@@ -8,6 +8,7 @@ import 'package:kendo_os/infrastructure/persistence/models/local_stroke_model.da
 import 'package:kendo_os/infrastructure/repository/stroke_repository.dart';
 import 'package:kendo_os/infrastructure/repository/local_stroke_repository.dart';
 import '../providers/role_provider.dart';
+import '../providers/permission_provider.dart'; // ★ 追加: 閲覧専用権限を識別するためのインポート
 import '../../shared/widgets/liquid_background.dart';
 
 class ProgramViewerScreen extends ConsumerStatefulWidget {
@@ -76,6 +77,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ★ Phase 3: 閲覧専用ガードの取得
+    final permissions = ref.watch(permissionProvider);
+    
     // ★ role_providerから「現在の有効な役割」を取得し、共有ペンが使えるか判定
     final currentRole = ref.watch(activeRoleProvider);
     final canUseSharedPen = currentRole == Role.admin || currentRole == Role.scorer || currentRole == Role.editor;
@@ -179,22 +183,24 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           ],
 
           // ★ 書き込むボタン（検索モードでも常に見えるように外に出しました！）
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: ElevatedButton.icon(
-              onPressed: () => setState(() {
-                _isDrawingMode = !_isDrawingMode;
-                // 注意: ここにあった `_isSearchMode = false;` を削除したことで共存が可能になりました！
-              }),
-              icon: Icon(_isDrawingMode ? Icons.check : Icons.edit, size: 18),
-              label: Text(_isDrawingMode ? '完了' : '書き込む'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isDrawingMode ? activePenColor : (isDark ? Colors.grey.shade800 : Colors.grey.shade200),
-                foregroundColor: _isDrawingMode ? Colors.white : (isDark ? Colors.white : Colors.black87),
-                elevation: 0,
+          // ★ 修正: 閲覧専用権限（保護者）の時は、ボタンを物理的に非表示にして「書けない・見るだけ」を徹底保証
+          if (!permissions.isReadOnly)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ElevatedButton.icon(
+                onPressed: () => setState(() {
+                  _isDrawingMode = !_isDrawingMode;
+                  // 注意: ここにあった `_isSearchMode = false;` を削除したことで共存が可能になりました！
+                }),
+                icon: Icon(_isDrawingMode ? Icons.check : Icons.edit, size: 18),
+                label: Text(_isDrawingMode ? '完了' : '書き込む'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isDrawingMode ? activePenColor : (isDark ? Colors.grey.shade800 : Colors.grey.shade200),
+                  foregroundColor: _isDrawingMode ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                  elevation: 0,
+                ),
               ),
             ),
-          ),
         ],
       ),
       // ★ body全体をColumnで包み、上にツールバー、下に画像を配置する

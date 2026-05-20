@@ -178,11 +178,26 @@ class MatchGroupTimelineItem implements ReorderableTimelineItem {
 
   @override
   double get order {
+    // ★ 修正: double.infinity がシステム外部や Projection（toInt()など）へ漏れ出すのを完全に防ぐ防壁を構築
+    if (matches.isEmpty && comments.isEmpty) {
+      return 0.0;
+    }
 
-    final mOrder = matches.fold<double>(double.infinity, (min, m) => m.order < min ? m.order : min);
-    final cOrder = comments.fold<double>(double.infinity, (min, c) => c.order < min ? c.order : min);
+    final mOrder = matches.isEmpty 
+        ? double.maxFinite 
+        : matches.fold<double>(double.maxFinite, (min, m) => m.order < min ? m.order : min);
+        
+    final cOrder = comments.isEmpty 
+        ? double.maxFinite 
+        : comments.fold<double>(double.maxFinite, (min, c) => c.order < min ? c.order : min);
+        
     final minVal = mOrder < cOrder ? mOrder : cOrder;
-    return minVal == double.infinity ? 0.0 : minVal;
+    
+    // システムの最大値を超えている、または infinity に近い場合は安全に 0.0 へフォールバック
+    if (minVal >= double.maxFinite || minVal.isInfinite || minVal.isNaN) {
+      return 0.0;
+    }
+    return minVal;
   }
 
   // ★ 追加: アコーディオン内部で混在描画するためのソート済み統合リスト

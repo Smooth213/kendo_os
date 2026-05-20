@@ -39,6 +39,7 @@ class MatchCommandService {
   String? _lastScoreKey;
   
   bool _isUndoing = false; // ★ 追加: Undo連打防止用フラグ
+  DateTime? _lastUndoTime; // ★ 追加: Phase 4-1 Undo専用のデバウンス時間管理
 
   // ==========================================
   // ★ Phase 1-Step 5: API境界の固定（Zero Trust）
@@ -179,6 +180,15 @@ class MatchCommandService {
 
   Future<void> undoLastEvent(String matchId) async {
     debugPrint('🔙 [Undo Start] matchId=$matchId');
+    final now = DateTime.now();
+    
+    // ★ Phase 4-1, 4-3: 100連続Undoやチャタリング（連打）による状態破綻を物理的に防ぐための厳格ガード
+    if (_lastUndoTime != null && now.difference(_lastUndoTime!) < const Duration(milliseconds: 300)) {
+      ref.read(matchCommandErrorProvider.notifier).state = '🛡️ 履歴保護：過度な連続Undoをブロックしました';
+      return;
+    }
+    _lastUndoTime = now;
+
     if (_isUndoing) return;
     if (ref.read(isMatchCommandProcessingProvider)) return;
 
@@ -186,9 +196,11 @@ class MatchCommandService {
     ref.read(isMatchCommandProcessingProvider.notifier).state = true;
     
     try {
+      // キューシステム経由、またはダイレクトUseCase経由で安全に非破壊ロールバックを実行
       await ref.read(matchApplicationServiceProvider).undo(matchId);
     } catch (e) {
       debugPrint('🔥 [Command Error] undoLastEvent: $e');
+      ref.read(matchCommandErrorProvider.notifier).state = '履歴の取り消しに失敗しました: $e';
     } finally {
       _isUndoing = false;
       ref.read(isMatchCommandProcessingProvider.notifier).state = false;

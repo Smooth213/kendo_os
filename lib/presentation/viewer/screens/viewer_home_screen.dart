@@ -45,9 +45,41 @@ class ViewerHomeScreen extends ConsumerWidget {
 
 
     try {
-        final activeMatches = ref.watch(activeMatchesProvider(tournamentId));
-        final uniqueInProgress = activeMatches.inProgress;
-        final uniqueWaiting = activeMatches.waiting;
+        // ★ 修正: activeMatchesProvider だとリーグ戦や勝ち抜き戦で最初の試合が終了すると
+        // グループ全体がバナーから消えてしまう不具合があるため、専用の抽出ロジックに置き換え
+        final allMatchesList = allMatches.where((m) => m.tournamentId == tournamentId).toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
+
+        final uniqueInProgress = <MatchModel>[];
+        final uniqueWaiting = <MatchModel>[];
+        final seenMatchups = <String>{};
+
+        for (var match in allMatchesList) {
+          if (match.status == 'finished' || match.status == 'approved') continue;
+          
+          String key;
+          if (match.note.contains('[リーグ戦]')) {
+            final t1 = match.redName.split(':').first.trim();
+            final t2 = match.whiteName.split(':').first.trim();
+            final sortedTeams = [t1, t2]..sort();
+            key = 'league_${match.groupName}_${sortedTeams.join("_")}';
+          } else if (match.isKachinuki) {
+            key = 'kachinuki_${match.groupName}';
+          } else if (match.groupName != null && match.groupName!.isNotEmpty) {
+            key = 'group_${match.groupName}';
+          } else {
+            key = 'match_${match.id}';
+          }
+
+          if (!seenMatchups.contains(key)) {
+            seenMatchups.add(key);
+            if (match.status == 'in_progress') {
+              uniqueInProgress.add(match);
+            } else if (match.status == 'waiting') {
+              uniqueWaiting.add(match);
+            }
+          }
+        }
 
         final sanitizedQuery = ref.watch(searchQueryProvider).replaceAll(RegExp(r'\s+'), '').toLowerCase();
         final timelineResult = ref.watch(timelineMatchesByCategoryProvider(tournamentId));
@@ -136,9 +168,27 @@ class ViewerHomeScreen extends ConsumerWidget {
                   // アイコンとフォントサイズを小さくして高さを抑え、下の試合リストの領域を広げます。
                   // ==========================================
                   _buildHugeMenuButton(context, enableLiquidGlass, Icons.print, '試合結果一覧 (PDF/CSV)', Colors.blueGrey, () => context.push('/official-record/$tournamentId')),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12), // 🌟 縦幅を節約するため12に微調整
                   
-                  const SizedBox(height: 20),
+                  // ★ 修正: 観客・保護者用のホーム画面（ViewerHome）にも、大会プログラムを「見るだけ」で閲覧できる安全なボタンを追加
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      // 🌟 修正: 遷移先URLに ?role=viewer を確実に付与し、移動先での権限先祖返りを100%防止
+                      onPressed: () => context.push('/tournament/$tournamentId/programs?role=viewer'),
+                      icon: Icon(Icons.picture_as_pdf, size: 20, color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600),
+                      label: Text(
+                        '大会プログラムを見る（閲覧専用）', 
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300), 
+                        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, 
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1063,7 +1113,12 @@ class ViewerHomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => SharePlus.instance.share(ShareParams(text: '【剣道OS】大会の進行状況をリアルタイムで観戦できます！\n$shareUrl')),
+                // ★ Phase 9最適化: 名称から「AI/OS」を排し、現場に寄り添った文言へブラッシュアップ
+                onPressed: () => SharePlus.instance.share(ShareParams(text: 
+                  '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
+                  'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
+                  'リンク: $shareUrl'
+                )),
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade700, foregroundColor: Colors.white, elevation: 0),

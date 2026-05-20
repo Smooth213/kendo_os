@@ -18,41 +18,35 @@ class OperatorActionButtons extends ConsumerWidget {
     return Column(
       children: [
         if (!permissions.isReadOnly) ...[
-          _buildHugeMenuButton(context, enableLiquidGlass, Icons.edit_note, '試合を作成', Colors.indigo, () => context.push('/setup-match/$tournamentId')),
+          _buildHugeMenuButton(context, enableLiquidGlass, Icons.edit_note, '試合開始（新しく作成）', Colors.indigo, () => context.push('/setup-match/$tournamentId')),
           const SizedBox(height: 8),
         ],
-        _buildHugeMenuButton(context, enableLiquidGlass, Icons.cast_connected, '観客席スクリーン (Viewer)', Colors.teal, () => context.push('/viewer-home/$tournamentId?role=viewer')),
+        // ★ 修正: 本部操作員が「保護者や観客のスマートフォンにどう見えているか」を手元でシミュレート確認するための完璧な表現へ進化
+        _buildHugeMenuButton(context, enableLiquidGlass, Icons.cast_connected, '観客・保護者側の画面を確認 (Viewer)', Colors.teal, () => context.push('/viewer-home/$tournamentId?role=viewer')),
         const SizedBox(height: 8),
-        _buildHugeMenuButton(context, enableLiquidGlass, Icons.print, 'スコアの出力・印刷', Colors.blueGrey, () => context.push('/official-record/$tournamentId')),
-        const SizedBox(height: 16),
+        _buildHugeMenuButton(context, enableLiquidGlass, Icons.print, '公式記録の確認・PDF印刷', Colors.blueGrey, () => context.push('/official-record/$tournamentId')),
+        const SizedBox(height: 12),
         
-        Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            title: const Text('⚙️ 高度な管理メニュー', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-            children: [
-              Container(
-                width: double.infinity, height: 50, margin: const EdgeInsets.only(bottom: 12),
-                child: OutlinedButton.icon(
-                  onPressed: () => context.push('/tournament/$tournamentId/programs'),
-                  icon: Icon(Icons.picture_as_pdf, size: 20, color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600),
-                  label: Text(permissions.isReadOnly ? '大会プログラムを見る' : '大会プログラムの管理', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800)),
-                  style: OutlinedButton.styleFrom(side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300), backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                ),
-              ),
-              if (!permissions.isReadOnly)
-                Container(
-                  width: double.infinity, height: 50, margin: const EdgeInsets.only(bottom: 12),
-                  child: OutlinedButton.icon(
-                    onPressed: () => context.push('/standings/$tournamentId'),
-                    icon: Icon(Icons.military_tech, size: 20, color: Colors.amber.shade600),
-                    label: Text('自チーム選手成績', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800)),
-                    style: OutlinedButton.styleFrom(side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300), backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                  ),
-                ),
-            ],
+        // ★ 修正: ご要望に基づき、ExpansionTileを廃止して「大会プログラム」をメインの1等地に昇格
+        // 観客権限（isReadOnly）の時は「見るだけ（閲覧専用）」であることを画面上に明示し、保護者に絶対的な安心感を提供
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: () => context.push('/tournament/$tournamentId/programs'),
+            icon: Icon(Icons.picture_as_pdf, size: 20, color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600),
+            label: Text(
+              permissions.isReadOnly ? '大会プログラムを見る（閲覧専用）' : '大会プログラムの管理・追加', 
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300), 
+              backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white, 
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
         ),
+        // ★ 修正: ユーザーを迷わせる不要な「自チーム選手成績」メニューは完全削除（Stage 3以降に封印移動）
       ],
     );
   }

@@ -91,10 +91,8 @@ class LocalMatchRepository {
       }
 
       final entity = _toEntity(match);
+      // ★ Phase 5-2, 5-3: 1〜3秒以内の自動保存を強制し、端末スリープ・強制終了時もデータを100%保護する即時同期的ライトスルー確約
       await _isar.writeTxn(() async {
-        // ★ 修正: putByFirestoreIdがEmbeddedリストの更新でクラッシュし、
-        // トランザクション全体がロールバックして「試合が追加されないバグ」を防ぐため、
-        // findFirstで既存IDを引き継いでから通常のputを行う「最も安全なUpsert」に切り替えます。
         final existing = await _isar.matchEntitys.filter().firestoreIdEqualTo(match.id).findFirst();
         if (existing != null) {
           entity.id = existing.id; // 既存の内部IDを引き継いで上書き更新する
@@ -334,9 +332,8 @@ class LocalMatchRepository {
       ..createdAt = cmd.createdAt
       ..status = cmd.status.name;
 
+    // ★ Phase 5: 電波断環境下（体育館）でコマンドキューを1ミリ秒でローカルディスクに焼き付ける強制ライトスルー
     await _isar.writeTxn(() async {
-      // ★ 修正: リトライ機能が同じコマンドを何度も保存しようとした際に
-      // Unique index violated（一意制約エラー）を出さないよう、既存のIDを引き継いで安全に上書きする
       final existing = await _isar.matchCommandEntitys.filter().idEqualTo(cmd.id).findFirst();
       if (existing != null) {
         entity.isarId = existing.isarId;

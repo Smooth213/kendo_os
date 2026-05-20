@@ -302,7 +302,12 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => SharePlus.instance.share(ShareParams(text: '【剣道OS】部内戦の進行状況をリアルタイムで観戦できます！\n$shareUrl')),
+                // ★ Phase 9最適化: 名称から「AI/OS」を排し、現場に寄り添った文言へブラッシュアップ
+                onPressed: () => SharePlus.instance.share(ShareParams(text: 
+                  '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
+                  'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
+                  'リンク: $shareUrl'
+                )),
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade700, foregroundColor: Colors.white, elevation: 0),

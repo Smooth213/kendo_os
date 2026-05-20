@@ -52,6 +52,7 @@ class ViewerMatchScreen extends ConsumerWidget {
               // ★ 追加：隣の人への共有用QR
               IconButton(
                 icon: Icon(Icons.qr_code_2, color: iconColor, size: 20),
+                tooltip: 'この試合の観戦QRコード・リンクを共有', // ★ コメント・ツールチップのブラッシュアップ
                 onPressed: () => _showShareDialog(context, projection.tournamentId),
               ),
               // ★ 観客が最も不安になる「点数が変わらない」等のFAQへ直行
@@ -130,7 +131,12 @@ class ViewerMatchScreen extends ConsumerWidget {
               Container(padding: const EdgeInsets.all(8), color: Colors.white, child: QrImageView(data: shareUrl, version: QrVersions.auto, size: 200.0)),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => SharePlus.instance.share(ShareParams(text: '【剣道OS】進行状況をリアルタイムで観戦できます！\n$shareUrl')),
+                // ★ Phase 9最適化: 特定試合の速報共有も、保護者目線の分かりやすい表現へブラッシュアップ
+                onPressed: () => SharePlus.instance.share(ShareParams(text: 
+                  '【剣道リアルタイムViewer共有】この試合（コート）のリアルタイム打突一本速報・タイマー状態をその場で確認できます！\n'
+                  'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
+                  '試合速報リンク: $shareUrl'
+                )),
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade700, foregroundColor: Colors.white, elevation: 0),

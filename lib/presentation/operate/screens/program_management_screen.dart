@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/infrastructure/repository/program_repository.dart';
 import 'package:kendo_os/domain/entities/program_model.dart';
+import '../providers/permission_provider.dart';
 import '../../shared/widgets/liquid_background.dart';
 
 class ProgramManagementScreen extends ConsumerStatefulWidget {
@@ -342,6 +343,7 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
   @override
   Widget build(BuildContext context) {
     final repository = ref.watch(programRepositoryProvider);
+    final permissions = ref.watch(permissionProvider);
 
     return LiquidBackground(
       child: Scaffold(
@@ -366,7 +368,14 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
           
           final programs = snapshot.data ?? [];
           if (programs.isEmpty) {
-            return const Center(child: Text('登録されたプログラムはありません。\n右下のボタンから追加してください。', textAlign: TextAlign.center));
+            // 🌟 修正: 閲覧専用権限、またはURLのクエリパラメータが viewer の時は案内文をシンプルに切り替え
+            final bool isViewerMode = permissions.isReadOnly || GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
+            return Center(
+              child: Text(
+                isViewerMode ? '登録されたプログラムはありません。' : '登録されたプログラムはありません。\n右下のボタンから追加してください。', 
+                textAlign: TextAlign.center
+              ),
+            );
           }
 
           // ★ グリッド表示モード
@@ -443,11 +452,14 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isUploading ? null : _showPickerMenu,
-        icon: const Icon(Icons.add_photo_alternate),
-        label: const Text('プログラムを追加'),
-        ),
+      // ★ 修正: 閲覧専用権限、またはURLクエリパラメータが viewer の時は、右下の追加ボタンを「確実に」非表示化して完全ガード
+      floatingActionButton: (permissions.isReadOnly || GoRouterState.of(context).uri.queryParameters['role'] == 'viewer') 
+          ? null 
+          : FloatingActionButton.extended(
+              onPressed: _isUploading ? null : _showPickerMenu,
+              icon: const Icon(Icons.add_photo_alternate),
+              label: const Text('プログラムを追加'),
+            ),
       ),
     );
   }

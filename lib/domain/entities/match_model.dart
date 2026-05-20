@@ -176,6 +176,11 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
   // ★ CQRS/EventSourcing の不変性を保つため、外部から DateTime now を注入する形に変更
   // これにより、過去の任意時点でのリプレイ再生においてタイマー秒数が狂う Replay Drift を防止します。
   int calculateRemainingSeconds(DateTime now) {
+    // ★ 修正: Unsupported operation: Infinity or NaN toInt を完全に根絶する防壁
+    if (matchTimeMinutes.isInfinite || matchTimeMinutes.isNaN) {
+      return 0; // 異常値時は安全に0秒（タイムアップ状態）として扱い、システムクラッシュを防止
+    }
+
     final baseSeconds = (matchTimeMinutes * 60).toInt();
     int elapsedMs = accumulatedPauseDurationMs;
     if (timerStartedAt != null) {
@@ -197,6 +202,11 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
   // したがって、このメソッド呼び出し時点で既にタイマーが停止しているなら
   // timerStartedAt は null にすべき。
   MatchModel updateRemainingSeconds(int newSeconds, DateTime now, {bool isTimerStopping = false}) {
+    // ★ 修正: こちらも同様に異常値を検知した場合はシステムクラッシュを防止して安全に処理を抜ける
+    if (matchTimeMinutes.isInfinite || matchTimeMinutes.isNaN) {
+      return this;
+    }
+
     final baseSeconds = (matchTimeMinutes * 60).toInt();
     bool isUnlimited = matchType == '代表戦' || (matchType == '延長戦' && baseSeconds == 0);
     int newElapsedMs;

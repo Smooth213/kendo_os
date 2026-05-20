@@ -45,6 +45,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         appBar: AppBar(
           title: GestureDetector(
             onTap: () {
+              // ★ Phase 1-1: 内部ガバナンスモードへの裏ルートを完全に封印（到達不能化）
+              if (!ref.read(settingsProvider).experimentalFeatures) {
+                return; 
+              }
               _tapCount++;
               if (_tapCount >= 7) {
                 _tapCount = 0;
@@ -76,23 +80,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                 children: [
                   // ==========================================
-                  // 1. プリセット（一括設定）セクション
-                  // ==========================================
-                  _buildSectionHeader(context, '用途に合わせて一括セット'),
-                  Row(
-                    children: [
-                      _buildPresetCard('公式大会', 'official', Icons.emoji_events, settings.confirmBehavior == 'long' && settings.isLocked, notifier),
-                      const SizedBox(width: 8),
-                      // ★ 修正：audioFeedbackMode が 'off' かどうかで判定
-                      _buildPresetCard('大会・錬成会', 'renseikai', null, settings.confirmBehavior == 'double' && settings.audioFeedbackMode == 'off', notifier, customAsset: 'assets/kendo_icon.png'),
-                      const SizedBox(width: 8),
-                      _buildPresetCard('練習・道場', 'practice', Icons.home, settings.confirmBehavior == 'single' && !settings.haptic, notifier),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-  
-                  // ==========================================
-                  // 2. 表示と画面
+                  // 1. 表示と画面
                   // ==========================================
                   _buildSectionHeader(context, '表示と画面'),
                   _buildSettingsBlock(context, [
@@ -118,7 +106,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     _buildSwitchTile(context, 'スリープ(画面消灯)防止', settings.sleepPrevent, (val) => notifier.updateField(sleepPrevent: val),
                       icon: Icons.lightbulb, iconBgColor: Colors.orange,
                     ),
-                    // ★ 追加: Liquid Glass (すりガラス) モード
                     _buildSwitchTile(context, 'iOS風すりガラス効果 (Liquid Glass)', settings.enableLiquidGlass, (val) => notifier.updateField(enableLiquidGlass: val),
                       icon: Icons.blur_on, iconBgColor: Colors.tealAccent.shade400,
                     ),
@@ -127,42 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 24),
   
                   // ==========================================
-                  // 3. 試合の操作・UI
-                  // ==========================================
-                  _buildSectionHeader(context, '試合の操作・UI'),
-                  _buildSettingsBlock(context, [
-                    _buildSwitchTile(context, '左利きモード (赤白ボタン反転)', settings.leftHanded, (val) => notifier.updateField(leftHanded: val),
-                      icon: Icons.pan_tool, iconBgColor: Colors.indigo,
-                    ),
-                    _buildListTile(context,
-                      title: '確定ボタンの挙動',
-                      icon: Icons.touch_app, iconBgColor: Colors.teal,
-                      trailing: DropdownButton<String>(
-                        value: settings.confirmBehavior,
-                        underline: const SizedBox(),
-                        borderRadius: BorderRadius.circular(12),
-                        icon: Icon(Icons.arrow_drop_down, color: dynamicTextColor),
-                        style: TextStyle(color: dynamicTextColor, fontWeight: FontWeight.bold, fontSize: 14),
-                        items: const [
-                          DropdownMenuItem(value: 'single', child: Text('通常タップ')),
-                          DropdownMenuItem(value: 'double', child: Text('ダブルタップ')),
-                          DropdownMenuItem(value: 'long', child: Text('長押し (推奨)')),
-                        ],
-                        onChanged: (val) => notifier.updateField(confirmBehavior: val),
-                      ),
-                    ),
-                    _buildSwitchTile(context, '最終確定時の確認ダイアログ', settings.showConfirmDialog, (val) => notifier.updateField(showConfirmDialog: val),
-                      icon: Icons.domain_verification, iconBgColor: Colors.green,
-                    ),
-                    _buildSwitchTile(context, '記録確定後の修正ロック', settings.isLocked, (val) => notifier.updateField(isLocked: val),
-                      icon: Icons.lock, iconBgColor: Colors.redAccent,
-                    ),
-                  ]),
-                  _buildSectionFooter(context, '左利きモードにすると赤白の入力ボタンが反転します。確定ボタンを長押しやダブルタップにすることで誤操作を防ぎます。記録をロックすると後からスコアを修正できなくなります。'),
-                  const SizedBox(height: 24),
-  
-                  // ==========================================
-                  // 4. 音と振動・フィードバック
+                  // 2. 音と振動・フィードバック
                   // ==========================================
                   _buildSectionHeader(context, '音と振動・フィードバック'),
                   _buildSettingsBlock(context, [
@@ -194,29 +146,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.sports_martial_arts, iconBgColor: Colors.deepPurple,
                     ),
                   ]),
-                  _buildSectionFooter(context, 'ポイント入力時や試合終了時に音や振動で知らせます。マナーモード時も強制的に音を鳴らす設定は、大会本部のiPad等で周りに音を響かせたい場合に便利です。'),
+                  _buildSectionFooter(context, 'ポイント入力時や試合終了時に音や振動で知らせます。'),
+                  const SizedBox(height: 24),
+
+                  // ==========================================
+                  // 3. ローカル保存と保護
+                  // ==========================================
+                  _buildSectionHeader(context, 'ローカル保存と保護'),
+                  _buildSettingsBlock(context, [
+                    _buildSwitchTile(context, '記録確定後の修正ロック', settings.isLocked, (val) => notifier.updateField(isLocked: val),
+                      icon: Icons.lock, iconBgColor: Colors.redAccent,
+                    ),
+                  ]),
+                  _buildSectionFooter(context, '記録をロックすると後からスコアを修正できなくなり、ローカル保存されたデータの安全性を高めます。'),
                   const SizedBox(height: 24),
   
                   // ==========================================
-                  // 5. セキュリティ・権限セクション
+                  // 4. セキュリティ・Viewer共有
                   // ==========================================
-                  _buildSectionHeader(context, 'セキュリティ・権限管理'),
+                  _buildSectionHeader(context, 'セキュリティ・Viewer共有'),
                   _buildSettingsBlock(context, [
-                    _buildListTile(context,
-                      title: 'セキュリティレベル',
-                      icon: Icons.security, iconBgColor: Colors.blueGrey,
-                      trailing: DropdownButton<int>(
-                        value: settings.securityLevel,
-                        underline: const SizedBox(),
-                        borderRadius: BorderRadius.circular(12),
-                        items: const [
-                          DropdownMenuItem(value: 1, child: Text('Lv.1 自由')),
-                          DropdownMenuItem(value: 2, child: Text('Lv.2 標準')),
-                          DropdownMenuItem(value: 3, child: Text('Lv.3 厳格')),
-                        ],
-                        onChanged: (val) => _handleSecurityChange(context, ref, val!),
-                      ),
-                    ),
                     _buildListTile(context,
                       title: '端末の役割設定',
                       subtitle: '現在の設定: ${ref.watch(persistentRoleProvider).label}',
@@ -225,56 +174,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       onTap: () => _handleRoleSwitch(context, ref),
                     ),
                   ]),
-                  _buildSectionFooter(context, 
-                    'パスコードを設定することで、一般ユーザーによる設定の変更を制限できます。\n\n'
-                    '・Lv.1 (自由): パスコードなしで誰でも端末の役割を変更できます。\n'
-                    '・Lv.2 (標準): 「記録係」から「管理者」に変更する際にパスコードを要求します。\n'
-                    '・Lv.3 (厳格): アプリの重要な設定を変更する際など、より厳格にパスコードを要求します。'
-                  ),
-                  
-                  // ==========================================
-                  // ★ Phase 6: Stage 2 限定化
-                  // 内部監査・ガバナンスメニューへの導線を一般UIから完全に削除します。
-                  // (将来の Stage 3 で Advanced Menu として復活させます)
-                  // ==========================================
-                  /*
-                  if (ref.watch(persistentRoleProvider) == Role.admin && settings.experimentalFeatures) ...[
-                    const SizedBox(height: 24),
-                    _buildSectionHeader(context, '管理者・内部統治メニュー'),
-                    _buildSettingsBlock(context, [
-                      _buildListTile(context,
-                        title: 'システム監査ログ',
-                        subtitle: '誰が・いつ・何を変更したかを追跡します',
-                        icon: Icons.policy, iconBgColor: Colors.grey,
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                        onTap: () => context.push('/audit-log'),
-                      ),
-                    ]),
-                    _buildSectionFooter(context, 'システムの詳細な操作履歴（監査ログ）を確認できます。'),
-                  ],
-                  */
-                  
-                  // ==========================================
-                  // 6. アカウントセクション
-                  // ==========================================
-                  const SizedBox(height: 24),
-                  _buildSectionHeader(context, 'アカウント'),
-                  _buildSettingsBlock(context, [
-                    // ★ 追加: ログイン中のアカウント表示
-                    _buildListTile(context,
-                      title: 'ログイン中のアカウント',
-                      subtitle: FirebaseAuth.instance.currentUser?.email ?? '取得できませんでした',
-                      icon: Icons.account_circle, iconBgColor: Colors.blueAccent,
-                      trailing: const SizedBox.shrink(), // タップアクションがないため空のウィジェット
-                    ),
-                    _buildListTile(context,
-                      title: 'ログアウト',
-                      icon: Icons.logout, iconBgColor: Colors.red,
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                      onTap: () => _showLogoutConfirmation(context, ref),
-                    ),
-                  ]),
-                  _buildSectionFooter(context, '現在ログインしているアカウントからサインアウトします。'),
+                  _buildSectionFooter(context, '端末の役割を「記録係」や「管理者」に切り替えることで、リアルタイムViewer共有の配信元を制御します。'),
                   const SizedBox(height: 48), // 下部に十分な余白を確保
                 ],
               ),
@@ -367,7 +267,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // --- UI構築用ヘルパーメソッド ---
 
-  Widget _buildPresetCard(String title, String presetKey, IconData? icon, bool isActive, SettingsNotifier notifier, {String? customAsset}) {
+  // ignore: unused_element
+  Widget _buildPresetCard(String title, String preset, IconData? icon, bool isActive, SettingsNotifier notifier, {String? customAsset}) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color dynamicTextColor = isDark ? Colors.white : textIndigo;
     final Color dynamicCardColor = isDark ? const Color(0xFF161B22) : Colors.white;
@@ -375,8 +276,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          HapticFeedback.lightImpact();
-          notifier.applyPreset(presetKey);
+          HapticFeedback.lightImpact(); // ignore: deprecated_member_use
+          notifier.applyPreset(preset);
           setState(() => _testMessage = 'プリセットを変更しました');
         },
         child: AnimatedContainer(
@@ -548,8 +449,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  // セキュリティレベル変更時のガード
-  void _handleSecurityChange(BuildContext context, WidgetRef ref, int newLevel) {
+  // ignore: unused_element
+  void _handleSecurityChange(BuildContext context, WidgetRef ref, int newLevel) async {
     final settings = ref.read(settingsProvider);
     // すでにパスコードが設定されている場合のみガード
     if (settings.adminPasscode != null && settings.adminPasscode!.isNotEmpty) {
@@ -650,6 +551,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   // ログアウト確認ダイアログ
+  // ignore: unused_element
   void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,

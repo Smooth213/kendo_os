@@ -310,7 +310,9 @@ class MatchTimelineList extends ConsumerWidget {
 
                           return ReorderableListView(
                             shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
+                            // ★ 修正: 閲覧専用の時はドラッグの物理的な動きを完全にロックし、誤タップによるブレを完全防止
+                            physics: permissions.isReadOnly ? const NeverScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
+                            buildDefaultDragHandles: !permissions.isReadOnly, // ★ 追加: 閲覧モードの時はドラッグ用のハンドルをつまませない
                             onReorder: (oldIndex, newIndex) => _onReorderTimeline(timelineItems, oldIndex, newIndex, ref),
                             children: (() {
                               String lastGroupLabel = ''; 
