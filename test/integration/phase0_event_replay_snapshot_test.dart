@@ -8,14 +8,16 @@ import 'package:kendo_os/domain/entities/role_permission.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import '../helpers/test_match_factory.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 void main() {
   group('📼 Phase 0-3: Event Replay Snapshot (履歴の完全再生比較)', () {
     test('100試合のランダムイベントを処理し、最終状態のチェックサムが一致すること', () {
       final engine = KendoRuleEngine();
       final permission = PermissionService();
-      final addScoreUseCase = AddScoreUseCase(engine, permission);
-      final undoScoreUseCase = UndoScoreUseCase(engine, permission);
+      final timeSource = SystemTimeSource();
+      final addScoreUseCase = AddScoreUseCase(engine, permission, timeSource);
+      final undoScoreUseCase = UndoScoreUseCase(engine, permission, timeSource);
       final testUser = const User(id: 'snapshot_user', role: Role.admin, organizationId: 'test_org');
       final rule = const MatchRule();
 
@@ -69,7 +71,8 @@ void main() {
     test('0-2: Rule JSON Snapshot (入力イベントと期待される結果の固定化)', () {
       final engine = KendoRuleEngine();
       final permission = PermissionService();
-      final addScoreUseCase = AddScoreUseCase(engine, permission);
+      final timeSource = SystemTimeSource();
+      final addScoreUseCase = AddScoreUseCase(engine, permission, timeSource);
       final testUser = const User(id: 'json_user', role: Role.admin, organizationId: 'test_org');
       final rule = const MatchRule();
 

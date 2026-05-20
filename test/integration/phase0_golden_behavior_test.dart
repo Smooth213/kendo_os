@@ -12,6 +12,7 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import '../helpers/test_match_factory.dart';
 import '../helpers/event_factory.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 void main() {
   group('🔒 Phase 0-2: Golden Behavior Snapshot (現状挙動の凍結)', () {
@@ -23,9 +24,10 @@ void main() {
     setUp(() {
       final engine = KendoRuleEngine();
       final permission = PermissionService();
-      addScoreUseCase = AddScoreUseCase(engine, permission);
-      undoScoreUseCase = UndoScoreUseCase(engine, permission);
-      timeUpUseCase = TimeUpUseCase(engine, permission);
+      final timeSource = SystemTimeSource();
+      addScoreUseCase = AddScoreUseCase(engine, permission, timeSource);
+      undoScoreUseCase = UndoScoreUseCase(engine, permission, timeSource);
+      timeUpUseCase = TimeUpUseCase(engine, permission, timeSource);
     });
 
     test('1. 二本勝ちのGolden Snapshot', () {

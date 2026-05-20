@@ -28,12 +28,15 @@ import 'package:kendo_os/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/domain/services/match_strategy.dart'; // ★ Phase 5: 戦略ファクトリの読み込み
 import 'package:kendo_os/application/services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; // ★ 追加: KendoRuleEngineを使用するため
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加: TimeSource
 
 // ★ Phase 3: 分割したWidget群
 import '../../shared/widgets/timer_widget.dart';
 import '../../shared/widgets/action_buttons.dart';
 import '../../shared/widgets/scoreboard.dart';
 import '../../shared/widgets/manual_help_button.dart';
+import '../../shared/widgets/corrupted_match_banner.dart';
+import 'package:kendo_os/domain/entities/match_state.dart';
 
 // ★ 追加：システム設定プロバイダの読み込み
 import '../providers/settings_provider.dart';
@@ -80,6 +83,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         
         final match = ref.read(matchListProvider).where((m) => m.id == widget.matchId).firstOrNull;
         if (match != null) {
+          if (match.status == 'corrupted' || MatchLifecycleStateLegacyExt.fromLegacyString(match.status) == MatchLifecycleState.corrupted) {
+            // 自動リカバリーを実施
+            ref.read(matchCommandProvider).rebuildMatchSnapshot(widget.matchId);
+          }
           _checkFusenOrFinish(match);
           if (match.timerIsRunning) {
             ref.read(matchTimerProvider).startLocalTicker(widget.matchId);
@@ -339,6 +346,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               builder: (context, constraints) {
                 final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
                 final isTabletLandscape = isLandscape && constraints.maxWidth > 600;
+
+                final isCorrupted = match.status == 'corrupted' || MatchLifecycleStateLegacyExt.fromLegacyString(match.status) == MatchLifecycleState.corrupted;
+                final corruptedBanner = isCorrupted
+                  ? CorruptedMatchBanner(matchId: match.id)
+                  : const SizedBox.shrink();
 
                 final viewOnlyBanner = (isViewOnly && !isApproved) 
                   ? Container(
@@ -657,7 +669,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               final int currentExtCount = '延長'.allMatches(match.note).length;
                               final extStr = '延長${currentExtCount + 1}回目';
                               
-                              await ref.read(matchApplicationServiceProvider).saveMatch(match.updateRemainingSeconds((extMins * 60).toInt()).copyWith( // ★ 修正
+                              final currentTime = ref.read(timeSourceProvider).now();
+                              await ref.read(matchApplicationServiceProvider).saveMatch(match.updateRemainingSeconds((extMins * 60).toInt(), currentTime).copyWith( // ★ 修正
                                 timerStartedAt: null,
                                 note: match.note.isEmpty ? extStr : '${match.note} ($extStr)',
                                 extensionTimeMinutes: extMins,
@@ -722,6 +735,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 if (isTabletLandscape) {
                   return Column(
                     children: [
+                      corruptedBanner,
                       viewOnlyBanner,
                       Expanded(
                         child: Row(
@@ -756,6 +770,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 } else {
                   return Column(
                     children: [
+                      corruptedBanner,
                       viewOnlyBanner,
                       timerPart,
                       groupButtonPart,
@@ -1096,7 +1111,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         final updatedMatch = match.copyWith(
                           redName: newRed, 
                           whiteName: newWhite, 
-                        ).updateRemainingSeconds(0).copyWith(timerStartedAt: null); // ★ 修正
+                        ).updateRemainingSeconds(0, ref.read(timeSourceProvider).now()).copyWith(timerStartedAt: null);
                         
                         await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch); // ★ 修正
                         if (ctx.mounted) Navigator.pop(ctx);
@@ -1516,7 +1531,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 'matchId': match.id,
                                 'version': eventIndex + 1, // 有効なイベントの中で、タップしたもの「まで」を残す（残すべき有効イベント数）
                               },
-                              createdAt: DateTime.now(),
+                          createdAt: ref.read(timeSourceProvider).now(),
                             ),
                           );
                           if (ctx.mounted) Navigator.pop(ctx);
@@ -1548,7 +1563,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final finishedMatch = currentMatch.copyWith(
       status: 'finished',
       timerStartedAt: null,
-    ).updateRemainingSeconds(0); // ★ 修正
+    ).updateRemainingSeconds(0, ref.read(timeSourceProvider).now());
     await ref.read(matchApplicationServiceProvider).saveMatch(finishedMatch); // ★ 修正
 
     final engine = ref.read(bunaiksenInfiniteEngineProvider);

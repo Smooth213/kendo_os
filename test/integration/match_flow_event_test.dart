@@ -6,6 +6,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ 追加
 import '../helpers/event_factory.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 void main() {
   group('Event Driven Match Flow Integration', () {
@@ -17,8 +18,9 @@ void main() {
     setUp(() {
       engine = KendoRuleEngine();
       final permission = PermissionService(); // ★ 関所を追加
-      addScoreUsecase = AddScoreUseCase(engine, permission); // ★ 引数追加
-      undoUsecase = UndoScoreUseCase(engine, permission); // ★ 引数追加
+      final timeSource = SystemTimeSource();
+      addScoreUsecase = AddScoreUseCase(engine, permission, timeSource); // ★ 引数追加
+      undoUsecase = UndoScoreUseCase(engine, permission, timeSource); // ★ 引数追加
       testUser = const User(id: 'test_user', role: Role.admin, organizationId: 'test_org'); 
     });
 

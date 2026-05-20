@@ -4,7 +4,9 @@ import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/infrastructure/repository/local_comment_repository.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/domain/entities/timeline_item.dart';
+import 'package:kendo_os/domain/entities/comment_event.dart';
 import 'package:uuid/uuid.dart';
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 // ==========================================
 // 1. Local Repository Provider
@@ -28,53 +30,131 @@ final commentStreamProvider = StreamProvider.family<List<MatchCommentModel>, Str
 // ==========================================
 class CommentCommandService {
   final LocalCommentRepository _repo;
-  CommentCommandService(this._repo);
+  final TimeSource _timeSource;
+  final List<CommentEvent> _eventStore = []; // ★ Phase 4: Append-only Event Store
+
+  CommentCommandService(this._repo, this._timeSource);
 
   Future<void> addComment({
     required String tournamentId,
     required String category,
-    required String groupName, // 所属先のチーム名など
-    String? matchGroupId, // ★ 追加: アコーディオン内部に属する場合のグループID
+    required String groupName,
+    String? matchGroupId,
     required String text,
     required double order,
   }) async {
-    final comment = MatchCommentModel(
+    final commentId = const Uuid().v4();
+    final event = CommentEvent(
       id: const Uuid().v4(),
+      commentId: commentId,
+      type: CommentEventType.added,
       tournamentId: tournamentId,
       category: category,
       groupName: groupName,
-      matchGroupId: matchGroupId, // ★ 追加
+      matchGroupId: matchGroupId,
       text: text,
       order: order,
+      timestamp: _timeSource.now(),
+      userId: 'system',
+      logicalClock: _timeSource.now().millisecondsSinceEpoch,
     );
-    await _repo.saveComment(comment);
+    
+    _eventStore.add(event); // Append-only
+    final comment = _rebuildSingle(commentId);
+    if (comment != null) {
+      await _repo.saveComment(comment);
+    }
   }
 
   Future<void> updateCommentOrder(MatchCommentModel comment, double newOrder) async {
-    final updated = comment.copyWith(
-      order: newOrder, 
-      syncState: SyncState.localOnly, 
-      lastUpdatedAt: DateTime.now()
+    final event = CommentEvent(
+      id: const Uuid().v4(),
+      commentId: comment.id,
+      type: CommentEventType.updated,
+      order: newOrder,
+      timestamp: _timeSource.now(),
+      userId: 'system',
+      logicalClock: _timeSource.now().millisecondsSinceEpoch,
     );
-    await _repo.saveComment(updated);
+    
+    _eventStore.add(event);
+    final updated = _rebuildSingle(comment.id);
+    if (updated != null) {
+      final withSync = updated.copyWith(syncState: SyncState.localOnly);
+      await _repo.saveComment(withSync);
+    }
   }
 
   Future<void> updateComment(MatchCommentModel comment) async {
-    final updated = comment.copyWith(
-      syncState: SyncState.localOnly, 
-      lastUpdatedAt: DateTime.now()
+    final event = CommentEvent(
+      id: const Uuid().v4(),
+      commentId: comment.id,
+      type: CommentEventType.updated,
+      text: comment.text,
+      timestamp: _timeSource.now(),
+      userId: 'system',
+      logicalClock: _timeSource.now().millisecondsSinceEpoch,
     );
-    await _repo.saveComment(updated);
+    
+    _eventStore.add(event);
+    final updated = _rebuildSingle(comment.id);
+    if (updated != null) {
+      final withSync = updated.copyWith(syncState: SyncState.localOnly);
+      await _repo.saveComment(withSync);
+    }
   }
 
   Future<void> deleteComment(String id) async {
-    // LocalCommentRepository側にdeleteCommentメソッドがある前提
+    final event = CommentEvent(
+      id: const Uuid().v4(),
+      commentId: id,
+      type: CommentEventType.deleted,
+      timestamp: _timeSource.now(),
+      userId: 'system',
+      logicalClock: _timeSource.now().millisecondsSinceEpoch,
+    );
+    
+    _eventStore.add(event);
     await _repo.deleteComment(id);
+  }
+  
+  // ★ Phase 4: timeline replay rebuild
+  MatchCommentModel? _rebuildSingle(String commentId) {
+    final events = _eventStore.where((e) => e.commentId == commentId).toList();
+    events.sort((a, b) => a.compareTo(b));
+    
+    MatchCommentModel? state;
+    for (var e in events) {
+      if (e.type == CommentEventType.added) {
+        state = MatchCommentModel(
+          id: e.commentId,
+          tournamentId: e.tournamentId,
+          category: e.category,
+          groupName: e.groupName,
+          matchGroupId: e.matchGroupId,
+          text: e.text,
+          order: e.order,
+          lastUpdatedAt: e.timestamp,
+        );
+      } else if (e.type == CommentEventType.updated && state != null) {
+        state = state.copyWith(
+          text: e.text.isNotEmpty ? e.text : state.text,
+          order: e.order != 0.0 ? e.order : state.order,
+          lastUpdatedAt: e.timestamp,
+        );
+      } else if (e.type == CommentEventType.deleted) {
+        state = null;
+      }
+    }
+    return state;
   }
 }
 
 final commentCommandProvider = Provider<CommentCommandService>((ref) {
-  return CommentCommandService(ref.watch(localCommentRepositoryProvider));
+  return CommentCommandService(
+    ref.watch(localCommentRepositoryProvider),
+    ref.watch(timeSourceProvider), // ★ 追加
+  );
 });
 
 // ==========================================
@@ -83,6 +163,7 @@ final commentCommandProvider = Provider<CommentCommandService>((ref) {
 abstract class ReorderableTimelineItem {
   String get id;
   double get order;
+  String get rebuildHash;
 }
 
 class MatchGroupTimelineItem implements ReorderableTimelineItem {
@@ -110,6 +191,13 @@ class MatchGroupTimelineItem implements ReorderableTimelineItem {
     list.sort((a, b) => a.timelineOrder.compareTo(b.timelineOrder));
     return list;
   }
+
+  @override
+  String get rebuildHash {
+    final mHash = matches.map((m) => m.rebuildHash).join(',');
+    final cHash = comments.map((c) => c.rebuildHash).join(',');
+    return 'group|$groupId|$mHash|$cHash';
+  }
 }
 
 class MatchIndividualTimelineItem implements ReorderableTimelineItem {
@@ -121,6 +209,9 @@ class MatchIndividualTimelineItem implements ReorderableTimelineItem {
 
   @override
   double get order => match.order;
+
+  @override
+  String get rebuildHash => match.rebuildHash;
 }
 
 class CommentTimelineItem implements ReorderableTimelineItem {
@@ -132,4 +223,7 @@ class CommentTimelineItem implements ReorderableTimelineItem {
 
   @override
   double get order => comment.order;
+
+  @override
+  String get rebuildHash => comment.rebuildHash;
 }

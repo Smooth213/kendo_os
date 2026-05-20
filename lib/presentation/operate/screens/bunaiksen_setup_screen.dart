@@ -14,6 +14,7 @@ import '../../shared/widgets/multi_player_select_input.dart'; // ★追加: 複�
 import '../../shared/widgets/liquid_background.dart';
 import '../../shared/widgets/glass_button.dart';
 import '../providers/settings_provider.dart';
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
   const BunaiksenSetupScreen({super.key});
@@ -361,7 +362,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
 
                 final rule = ref.read(bunaiksenRuleProvider);
                 final matchId = const Uuid().v4();
-                final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(DateTime.now())}';
+                final now = ref.read(timeSourceProvider).now();
+                final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(now)}';
 
                 final newMatch = MatchModel(
                   id: matchId,
@@ -374,7 +376,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                   hasExtension: rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited,
                   extensionTimeMinutes: rule.enchoTimeMinutes,
                   status: 'in_progress',
-                  order: DateTime.now().millisecondsSinceEpoch.toDouble(),
+                  order: now.millisecondsSinceEpoch.toDouble(),
                   rule: rule,
                   note: '部内戦',
                 );
@@ -607,9 +609,10 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                   expandContent: false,
               onPressed: () async {
                 final rule = ref.read(bunaiksenRuleProvider);
-                final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(DateTime.now())}';
+            final now = ref.read(timeSourceProvider).now();
+            final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(now)}';
                 final groupId = const Uuid().v4();
-                final baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
+            final baseOrder = now.millisecondsSinceEpoch.toDouble();
 
                 List<MatchModel> matchesToSave = [];
                 for (int i = 0; i < _teamSize; i++) {
@@ -704,9 +707,10 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                   expandContent: false,
               onPressed: _leagueParticipants.length < 2 ? null : () async {
                 final rule = ref.read(bunaiksenRuleProvider);
-                final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(DateTime.now())}';
+            final now = ref.read(timeSourceProvider).now();
+            final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(now)}';
                 final groupId = const Uuid().v4();
-                final baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
+            final baseOrder = now.millisecondsSinceEpoch.toDouble();
 
                 List<MatchModel> matchesToSave = [];
                 int matchCount = 0;
@@ -817,8 +821,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                 if (p1 == null || p2 == null) return;
 
                 final rule = ref.read(bunaiksenRuleProvider);
-                final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(DateTime.now())}';
-                final groupId = 'infinite_${DateFormat('yyyyMMdd').format(DateTime.now())}';
+                final now = ref.read(timeSourceProvider).now();
+                final todayId = 'bunaiksen_${DateFormat('yyyyMMdd').format(now)}';
+                final groupId = 'infinite_${DateFormat('yyyyMMdd').format(now)}';
                 final matchId = const Uuid().v4();
 
                 final newMatch = MatchModel(
@@ -832,7 +837,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                   hasExtension: false,
                   extensionTimeMinutes: 0.0,
                   status: 'in_progress',
-                  order: DateTime.now().millisecondsSinceEpoch.toDouble(),
+                  order: now.millisecondsSinceEpoch.toDouble(),
                   rule: rule,
                   note: '無限勝ち抜き',
                   isKachinuki: true,

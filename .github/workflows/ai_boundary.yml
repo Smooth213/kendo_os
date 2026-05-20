@@ -1,0 +1,39 @@
+name: AI Boundary Governance (Phase 5)
+
+on:
+  pull_request:
+    branches: [ main, develop, "ai/sandbox/*" ]
+
+jobs:
+  forbidden-ast-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: "📂 Identify changed files"
+        id: changed-files
+        uses: tj-actions/changed-files@v39
+        with:
+          files: |
+            lib/**/*.dart
+            test/**/*.dart
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: "📦 Install dependencies"
+        run: flutter pub get
+
+      - name: "🔍 Run AST Forbidden Pattern Detector"
+        run: |
+          if [ -n "${{ steps.changed-files.outputs.all_changed_files }}" ]; then
+            dart run tools/governance_lint/forbidden_ast_detector.dart ${{ steps.changed-files.outputs.all_changed_files }}
+          else
+            echo "No Dart files changed. Skipping AST check."
+          fi
+
+      - name: "🧪 Run Hallucination & Attack Simulation Tests"
+        run: flutter test test/ai/forbidden_pattern_test.dart

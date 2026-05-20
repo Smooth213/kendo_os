@@ -13,6 +13,7 @@ import 'package:kendo_os/domain/entities/score_event.dart'; // Sideなどを利�
 import '../../shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 import '../providers/match_view_model_provider.dart';
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 class OfficialPointDisplay {
   final String mark;
@@ -99,6 +100,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
             // 統合された個人戦がある場合、特殊なキーで登録
             if (individualMergedList.isNotEmpty) {
+              // ★ 修正: 部内戦用の個人戦タイムライン並び替え順(order)を完全保持
+              individualMergedList.sort((a, b) => a.order.compareTo(b.order));
               mergedGroups['__merged_individual__'] = individualMergedList;
             }
 
@@ -115,9 +118,9 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      Expanded(child: _buildActionButton(context, Icons.print, 'PDF印刷', Colors.grey.shade800, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: true, tName: tName, tDate: tDate))),
+                      Expanded(child: _buildActionButton(context, Icons.print, 'PDF印刷', Colors.grey.shade800, () => _handleExport(context, ref, cat, mergedGroups, sortedGroupKeys, isPdf: true, tName: tName, tDate: tDate))),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildActionButton(context, Icons.share, '画像シェア', Colors.teal.shade600, () => _handleExport(context, cat, mergedGroups, sortedGroupKeys, isPdf: false, tName: tName, tDate: tDate))),
+                      Expanded(child: _buildActionButton(context, Icons.share, '画像シェア', Colors.teal.shade600, () => _handleExport(context, ref, cat, mergedGroups, sortedGroupKeys, isPdf: false, tName: tName, tDate: tDate))),
                     ],
                   ),
                 ),
@@ -936,7 +939,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   }
 
   // エクスポート処理
-  Future<void> _handleExport(BuildContext context, String cat, Map<String, List<MatchModel>> groupsMap, List<String> sortedGroupKeys, {required bool isPdf, String? tName, String? tDate}) async {
+  Future<void> _handleExport(BuildContext context, WidgetRef ref, String cat, Map<String, List<MatchModel>> groupsMap, List<String> sortedGroupKeys, {required bool isPdf, String? tName, String? tDate}) async {
     final groupDataList = sortedGroupKeys.map((key) => { 'groupName': key, 'matches': groupsMap[key]!..sort((a, b) => a.order.compareTo(b.order)) }).toList();
     
     BuildContext? dialogContext;
@@ -950,10 +953,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     );
     
     try {
+      final now = ref.read(timeSourceProvider).now();
       if (isPdf) {
-        await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate);
+        await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, outputTime: now);
       } else {
-        await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate);
+        await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, outputTime: now);
       }
     } finally {
       if (dialogContext != null && dialogContext!.mounted) {

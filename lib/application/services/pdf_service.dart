@@ -25,6 +25,7 @@ class PdfService {
     String? tournamentName,
     String? tournamentDate,
     String? tournamentVenue,
+    required DateTime outputTime,
   }) async {
     final fontData = await rootBundle.load('assets/fonts/NotoSansJP-Regular.ttf');
     final ttf = pw.Font.ttf(fontData);
@@ -57,7 +58,7 @@ class PdfService {
                       ],
                     ],
                   ),
-                  pw.Text(DateFormat('yyyy/MM/dd HH:mm 出力').format(DateTime.now()), style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                  pw.Text(DateFormat('yyyy/MM/dd HH:mm 出力').format(outputTime), style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
                 ],
               ),
               if ((tournamentDate != null && tournamentDate.isNotEmpty) || (tournamentVenue != null && tournamentVenue.isNotEmpty)) ...[
@@ -232,12 +233,13 @@ class PdfService {
     String? tournamentName,
     String? tournamentDate,
     String? tournamentVenue,
+    required DateTime outputTime,
   }) async {
     if (_isTest) {
       await Future.delayed(const Duration(milliseconds: 100)); // テスト時にダイアログ描画を待たせるためのダミー遅延
       return;
     }
-    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue);
+    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue, outputTime: outputTime);
     await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdfBytes, name: '公式記録_$categoryName.pdf');
   }
 
@@ -247,12 +249,13 @@ class PdfService {
     String? tournamentName,
     String? tournamentDate,
     String? tournamentVenue,
+    required DateTime outputTime,
   }) async {
     if (_isTest) {
       await Future.delayed(const Duration(milliseconds: 100)); // テスト時にダイアログ描画を待たせるためのダミー遅延
       return;
     }
-    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue);
+    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue, outputTime: outputTime);
     final outputFiles = <XFile>[];
     int pageNum = 1;
     await for (final page in Printing.raster(pdfBytes, dpi: 300)) {

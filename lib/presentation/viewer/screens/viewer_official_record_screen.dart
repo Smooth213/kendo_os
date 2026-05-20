@@ -9,6 +9,7 @@ import 'package:kendo_os/domain/services/standings_calculator.dart';
 import 'package:kendo_os/domain/services/team_match_calculator.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../painters/league_table_painters.dart';
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 class OfficialPointDisplay {
   final String mark;
@@ -138,7 +139,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                             );
 
                             try {
-                              await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue);
+                              final now = ref.read(timeSourceProvider).now();
+                              await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue, outputTime: now);
                             } catch (e) {
                               if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
                             } finally {
@@ -174,7 +176,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                             );
 
                             try {
-                              await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue);
+                              final now = ref.read(timeSourceProvider).now();
+                              await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue, outputTime: now);
                             } catch (e) {
                               if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
                             } finally {
@@ -348,6 +351,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                           ],
                         );
                       } else if (matches.isNotEmpty && matches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'))) {
+                        // ★ 修正: 表示前のタイミングで、本部によるドラッグ並び替え順を強制固定
+                        matches.sort((a, b) => a.order.compareTo(b.order));
                         // 👇 追加: 個人戦の場合は、専用の縦並びリスト形式で描画する
                         return _buildIndividualMatchesList(groupName, matches, cardColor: cardColor, isDark: isDark, ref: ref, applySort: true);
                       } else {

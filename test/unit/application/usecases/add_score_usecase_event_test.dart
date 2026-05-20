@@ -7,6 +7,7 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart';
 // ★ 修正: 古いヘルパーの代わりに、正しいSequenceを付与できるアダプターを使用する
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 void main() {
   group('AddScoreUseCase - Event Driven Update', () {
@@ -17,7 +18,7 @@ void main() {
     setUp(() {
       engine = KendoRuleEngine();
       final permission = PermissionService(); // ★ 関所を追加
-      usecase = AddScoreUseCase(engine, permission); // ★ 引数追加
+      usecase = AddScoreUseCase(engine, permission, SystemTimeSource()); // ★ 引数追加
       testUser = const User(id: 'test_user', role: Role.admin, organizationId: 'test_org'); 
     });
 

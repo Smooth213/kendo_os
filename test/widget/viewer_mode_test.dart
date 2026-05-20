@@ -24,6 +24,7 @@ import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/domain/entities/settings_model.dart';
 import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 // === モックデータ・プロバイダの準備 ===
 
@@ -223,7 +224,7 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
       firstPointSide: '',
       redPointMarks: const [],
       whitePointMarks: const [],
-      remainingSeconds: m.remainingSeconds,
+      remainingSeconds: m.calculateRemainingSeconds(SystemTimeSource().now()),
       timerIsRunning: m.timerIsRunning,
       note: m.note,
     );

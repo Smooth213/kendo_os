@@ -10,6 +10,7 @@ import '../helpers/event_factory.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart'; // ★ Adapterのimport追加
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ 追加
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
@@ -121,7 +122,7 @@ void main() {
         id: 'fusen',
         side: Side.red,
         isFusen: true,
-        timestamp: DateTime.now(),
+        timestamp: SystemTimeSource().now(),
       );
 
       match = addScoreUseCase.execute(testUser, match, fusenEvent, rule); // ★ 変更
@@ -164,20 +165,20 @@ void main() {
 
     test('PHASE 8: 勝敗確定後にUndoして技を入れても、残り時間が0秒にリセットされず維持されること', () {
       final rule = const MatchRule();
-      var match = dummyMatch.copyWith(events: <ScoreEvent>[]).updateRemainingSeconds(45);
+      var match = dummyMatch.copyWith(events: <ScoreEvent>[]).updateRemainingSeconds(45, SystemTimeSource().now());
 
       match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
       match = addScoreUseCase.execute(testUser, match, kote(Side.red), rule); // ★ 変更
       expect(match.status, 'finished');
-      expect(match.remainingSeconds, 45, reason: '残り時間は0にリセットされないべき');
+      expect(match.calculateRemainingSeconds(SystemTimeSource().now()), 45, reason: '残り時間は0にリセットされないべき');
 
       match = undoScoreUseCase.execute(testUser, match, rule); // ★ 変更
       expect(match.status, 'in_progress');
-      expect(match.remainingSeconds, 45);
+      expect(match.calculateRemainingSeconds(SystemTimeSource().now()), 45);
 
       match = addScoreUseCase.execute(testUser, match, dou(Side.white), rule); // ★ 変更
       expect(match.status, 'in_progress', reason: '時間切れではないため進行中であるべき');
-      expect(match.remainingSeconds, 45);
+      expect(match.calculateRemainingSeconds(SystemTimeSource().now()), 45);
     });
   });
 
@@ -190,8 +191,9 @@ void main() {
     setUp(() {
       engine = KendoRuleEngine();
       final permission = PermissionService(); // ★ 関所を追加
-      addScoreUseCase = AddScoreUseCase(engine, permission); // ★ 引数追加
-      undoScoreUseCase = UndoScoreUseCase(engine, permission); // ★ 引数追加
+      final timeSource = SystemTimeSource();
+      addScoreUseCase = AddScoreUseCase(engine, permission, timeSource); // ★ 引数追加
+      undoScoreUseCase = UndoScoreUseCase(engine, permission, timeSource); // ★ 引数追加
       dummyMatch = const MatchModel(
         id: 'test_regression',
         tournamentId: 't1',
@@ -212,7 +214,7 @@ void main() {
       expect(match.status, 'in_progress');
 
       final finishMarker = ScoreEventLegacyAdapter.fromLegacy(
-        id: 'marker-1', type: PointType.hantei, side: Side.none, timestamp: DateTime.now(),
+        id: 'marker-1', type: PointType.hantei, side: Side.none, timestamp: SystemTimeSource().now(),
       );
       match = addScoreUseCase.execute(testUser, match, finishMarker, rule); // ★ 変更
       match = match.copyWith(status: 'finished'); 
@@ -226,10 +228,10 @@ void main() {
 
     test('終了ステータスからでも判定(hantei)を入力でき、スコアに反映されて終了状態を維持すること', () {
       final rule = MatchRule(hasHantei: true);
-      var match = dummyMatch.copyWith(events: <ScoreEvent>[], status: 'finished').updateRemainingSeconds(0); 
+      var match = dummyMatch.copyWith(events: <ScoreEvent>[], status: 'finished').updateRemainingSeconds(0, SystemTimeSource().now()); 
 
       final hanteiEvent = ScoreEventLegacyAdapter.fromLegacy(
-        id: 'hantei-1', type: PointType.hantei, side: Side.white, timestamp: DateTime.now(),
+        id: 'hantei-1', type: PointType.hantei, side: Side.white, timestamp: SystemTimeSource().now(),
       );
 
       match = addScoreUseCase.execute(testUser, match, hanteiEvent, rule); // ★ 変更
@@ -271,7 +273,7 @@ void main() {
         id: 'hantei-1',
         type: PointType.hantei,
         side: Side.red,
-        timestamp: DateTime.now(),
+        timestamp: SystemTimeSource().now(),
       );
 
       match = match.copyWith(

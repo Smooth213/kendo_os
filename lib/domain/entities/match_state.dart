@@ -10,6 +10,7 @@ enum MatchLifecycleState {
   completed,
   canceled,
   fusen,
+  corrupted,
 }
 
 /// 状態を変化させるトリガーとなるイベント
@@ -91,6 +92,7 @@ class MatchStateMachine {
         break;
 
       case MatchLifecycleState.canceled:
+      case MatchLifecycleState.corrupted:
         break;
     }
 
@@ -118,6 +120,8 @@ extension MatchLifecycleStateLegacyExt on MatchLifecycleState {
       case MatchLifecycleState.fusen:
       case MatchLifecycleState.canceled:
         return 'finished';
+      case MatchLifecycleState.corrupted:
+        return 'corrupted';
     }
   }
 
@@ -126,7 +130,9 @@ extension MatchLifecycleStateLegacyExt on MatchLifecycleState {
       case 'waiting': return MatchLifecycleState.ready;
       case 'in_progress': return MatchLifecycleState.inProgress;
       case 'finished': return MatchLifecycleState.completed;
-      default: return MatchLifecycleState.ready;
+      case 'approved': return MatchLifecycleState.completed;
+      case 'corrupted': return MatchLifecycleState.corrupted;
+      default: return MatchLifecycleState.corrupted; // silent fallback を禁止
     }
   }
 }

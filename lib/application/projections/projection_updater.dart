@@ -8,6 +8,7 @@ import 'package:kendo_os/domain/repositories/projection_store.dart';
 import 'package:kendo_os/infrastructure/repository/match_aggregate_repository.dart';
 import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
+import 'package:kendo_os/domain/entities/score_event.dart';
 
 final projectionUpdaterProvider = Provider<ProjectionUpdater>((ref) {
   return ProjectionUpdater(
@@ -36,16 +37,19 @@ class ProjectionUpdater {
     if (_subscriptions.containsKey(matchId)) return; // 既に監視中なら何もしない
 
     _subscriptions[matchId] = eventStore.watch(matchId).listen((events) async {
+      // ★ Step 2-1: Event ordering固定 (ソートして決定性を保証)
+      final sortedEvents = List<ScoreEvent>.from(events)..sort((a, b) => a.compareTo(b));
+
       // 1. 真実のドメイン状態（Aggregate）を再構築
-      final updatedAggregate = baseAggregate.copyWith(events: events);
+      final updatedAggregate = baseAggregate.copyWith(events: sortedEvents);
       
       // 2. 共通の計算エンジン（RuleEngine）で解析
       final engine = KendoRuleEngine();
       final mergedModel = baseModel.copyWith(
-        events: events,
+        events: sortedEvents,
         status: updatedAggregate.status,
       );
-      final analysis = engine.analyzeHistory(events, mergedModel, mergedModel.rule);
+      final analysis = engine.analyzeHistory(sortedEvents, mergedModel, mergedModel.rule);
 
       // 3. ★ Phase 5-1: 用途別に異なる3種類のProjectionを同時に生成
       final richProjection = MatchProjectionMapper.toMatchProjection(mergedModel, analysis);

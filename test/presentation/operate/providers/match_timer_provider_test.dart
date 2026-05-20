@@ -4,6 +4,7 @@ import 'package:kendo_os/domain/entities/match_model.dart';
 import 'package:kendo_os/presentation/operate/providers/match_timer_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 // ============================================================================
 // ★ UI・状態管理層 (Provider) 専用の要塞テスト
@@ -84,7 +85,7 @@ void main() {
       final dummyMatch = createDummyMatch(
         id: 'match2',
         matchTimeMinutes: 3, // 初期の残り時間
-        timerStartedAt: DateTime.now().subtract(const Duration(seconds: 10)),
+        timerStartedAt: SystemTimeSource().now().subtract(const Duration(seconds: 10)),
         status: 'in_progress',
       );
 
@@ -115,7 +116,7 @@ void main() {
       expect(savedMatch.timerPausedAt, isNotNull, reason: '停止時刻が記録されていること');
 
       // ★ 検証: DBの計算ではなく、「UIに見えていた170秒」がそのまま正確にDBへ保存されていること
-      expect(savedMatch.remainingSeconds, 170, reason: '画面上の秒数がそのまま記録されること');
+      expect(savedMatch.calculateRemainingSeconds(SystemTimeSource().now()), 170, reason: '画面上の秒数がそのまま記録されること');
 
       container.dispose();
     });
@@ -124,7 +125,7 @@ void main() {
       final dummyMatch = createDummyMatch(
         id: 'match3',
         matchTimeMinutes: 2,
-        timerStartedAt: DateTime.now().subtract(const Duration(seconds: 5)),
+        timerStartedAt: SystemTimeSource().now().subtract(const Duration(seconds: 5)),
         status: 'in_progress',
       );
 
@@ -144,7 +145,7 @@ void main() {
 
       final savedMatch = fakeService.lastSavedMatch;
       expect(savedMatch, isNotNull);
-      expect(savedMatch!.remainingSeconds, 60, reason: '秒数が強制的に60に上書きされていること');
+      expect(savedMatch!.calculateRemainingSeconds(SystemTimeSource().now()), 60, reason: '秒数が強制的に60に上書きされていること');
       expect(savedMatch.timerStartedAt, isNotNull, reason: '稼働中なので、計算の起点が【今】にリセットされていること');
       expect(savedMatch.timerIsRunning, true, reason: 'タイマーが引き続き稼働していること');
 

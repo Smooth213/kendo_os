@@ -5,6 +5,7 @@ import 'package:kendo_os/domain/entities/match_context.dart';
 import 'package:kendo_os/domain/services/match_strategy.dart';
 import 'package:kendo_os/domain/rules/rule_factory.dart';
 import 'package:kendo_os/domain/rules/tournament_rule_config.dart'; // ★ Phase 5
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 // ★ 追加: 新しく切り出した集計ロジックを読み込み、外部(UI)へ横流しする
 import 'package:kendo_os/domain/services/standings_calculator.dart';
@@ -77,12 +78,12 @@ class KendoRuleEngine {
     );
 
     // 1. Scoring Rule 適用
-    var ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.remainingSeconds.toDouble());
+    var ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.calculateRemainingSeconds(SystemTimeSource().now()).toDouble());
     var res = ruleSet.scoring.apply(ruleCtx);
     if (res.transition != null) currentContext = res.transition!.updatedState;
 
     // 2. Hansoku Rule 適用
-    ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.remainingSeconds.toDouble());
+    ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.calculateRemainingSeconds(SystemTimeSource().now()).toDouble());
     res = ruleSet.hansoku.apply(ruleCtx);
     if (res.transition != null) currentContext = res.transition!.updatedState;
     
@@ -103,7 +104,7 @@ class KendoRuleEngine {
     }
 
     // 3. Time Rule 適用
-    ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.remainingSeconds.toDouble());
+    ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.calculateRemainingSeconds(SystemTimeSource().now()).toDouble());
     res = ruleSet.time.apply(ruleCtx);
     if (res.transition != null) currentContext = res.transition!.updatedState;
 

@@ -217,5 +217,41 @@ void main() {
       // ダイアログが消えていることを確認（dialogContext の修正が効いているか）
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
+
+    testWidgets('6. 試合が order プロパティの昇順にソートされて表示されること', (WidgetTester tester) async {
+      // order が逆順になっているモックデータを作成
+      final mockMatches = [
+        const MatchModel(
+          id: 'm2',
+          tournamentId: testTournamentId,
+          groupName: testGroupId,
+          matchType: '大将',
+          redName: 'Aチーム: 赤大将',
+          whiteName: 'Bチーム: 白大将',
+          order: 2.0, // order が大きい
+        ),
+        const MatchModel(
+          id: 'm1',
+          tournamentId: testTournamentId,
+          groupName: testGroupId,
+          matchType: '先鋒',
+          redName: 'Aチーム: 赤先鋒',
+          whiteName: 'Bチーム: 白先鋒',
+          order: 1.0, // order が小さい
+        ),
+      ];
+
+      await tester.pumpWidget(createTestableWidget(mockMatches));
+      await tester.pumpAndSettle();
+
+      final tableWidget = tester.widget<Table>(find.byType(Table).first);
+      final headerRow = tableWidget.children[0];
+      
+      final firstMatchText = (((headerRow.children[1] as Container).child as Center).child as Padding).child as Text;
+      final secondMatchText = (((headerRow.children[2] as Container).child as Center).child as Padding).child as Text;
+
+      expect(firstMatchText.data, '先鋒');
+      expect(secondMatchText.data, '大将');
+    });
   });
 }

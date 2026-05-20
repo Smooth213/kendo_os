@@ -6,6 +6,7 @@ import 'package:kendo_os/domain/entities/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 // テスト用のMatchModelを簡単に作成するためのヘルパー関数
 MatchModel createMockMatch({
@@ -37,18 +38,18 @@ MatchModel createMockMatch({
             ...List.generate(
                 redScore,
                 (i) => ScoreEventLegacyAdapter.fromLegacy(
-                    id: 'r$i', type: PointType.men, side: Side.red, timestamp: DateTime.now().add(Duration(seconds: i)))),
+                    id: 'r$i', type: PointType.men, side: Side.red, timestamp: SystemTimeSource().now().add(Duration(seconds: i)))),
             ...List.generate(
                 whiteScore,
                 (i) => ScoreEventLegacyAdapter.fromLegacy(
-                    id: 'w$i', type: PointType.kote, side: Side.white, timestamp: DateTime.now().add(Duration(seconds: 10 + i)))),
+                    id: 'w$i', type: PointType.kote, side: Side.white, timestamp: SystemTimeSource().now().add(Duration(seconds: 10 + i)))),
           ]
         : eventsData
             .map((e) => ScoreEventLegacyAdapter.fromLegacy(
                   id: e['id']?.toString() ?? 'temp_id',
                   type: e['type'] == 'men' ? PointType.men : PointType.kote,
                   side: e['side'] == 'red' ? Side.red : Side.white,
-                  timestamp: (e['isFirstOverall'] as bool? ?? false) ? DateTime.now() : DateTime.now().add(const Duration(seconds: 1)),
+                  timestamp: (e['isFirstOverall'] as bool? ?? false) ? SystemTimeSource().now() : SystemTimeSource().now().add(const Duration(seconds: 1)),
                 ))
             .toList(),
     rule: rule ?? const MatchRule(isLeague: true),

@@ -9,6 +9,7 @@ import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import '../helpers/test_match_factory.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 // 永続化層のモック（実際にデータを保持し、疑似的にクラッシュをシミュレートする）
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {
@@ -36,7 +37,7 @@ void main() {
       final user = const User(id: 'scorer_1', role: Role.scorer, organizationId: 'org1');
 
       // ユースケースの準備（UIを使わずに直接ビジネスロジックを叩く）
-      final addScoreUseCase = AddScoreUseCase(KendoRuleEngine(), PermissionService());
+      final addScoreUseCase = AddScoreUseCase(KendoRuleEngine(), PermissionService(), SystemTimeSource());
 
       // 2. 試合進行（赤にメンが入る）
       final event1 = ScoreEventLegacyAdapter.fromLegacy(

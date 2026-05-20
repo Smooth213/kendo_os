@@ -6,6 +6,7 @@ import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ 追加
 import '../../../helpers/event_factory.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 void main() {
   group('MatchUseCase - イベント駆動版テスト', () {
@@ -19,9 +20,10 @@ void main() {
     setUp(() {
       engine = KendoRuleEngine();
       final permission = PermissionService(); // ★ 関所を追加
-      addScoreUseCase = AddScoreUseCase(engine, permission); // ★ 引数追加
-      undoScoreUseCase = UndoScoreUseCase(engine, permission); // ★ 引数追加
-      rebuildUseCase = RebuildMatchFromEventsUseCase(engine);
+      final timeSource = SystemTimeSource();
+      addScoreUseCase = AddScoreUseCase(engine, permission, timeSource); // ★ 引数追加
+      undoScoreUseCase = UndoScoreUseCase(engine, permission, timeSource); // ★ 引数追加
+      rebuildUseCase = RebuildMatchFromEventsUseCase(engine, timeSource);
       dummyMatch = MatchModel( 
         id: 'test_m1', tournamentId: 't1', matchOrder: 1,
         redName: 'Red', whiteName: 'White',

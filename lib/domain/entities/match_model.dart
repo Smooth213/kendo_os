@@ -125,6 +125,9 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
   @override
   TimelineItemType get itemType => TimelineItemType.match;
 
+  @override
+  String get rebuildHash => '$id|$status|$redScore|$whiteScore|$order';
+
   // ★ Phase 1 移行用: String status から enum への安全な橋渡し
   MatchLifecycleState get lifecycle {
     switch (status) {
@@ -157,6 +160,9 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
       case MatchLifecycleState.fusen:
         nextStatus = 'finished';
         break;
+      case MatchLifecycleState.corrupted:
+        nextStatus = 'corrupted';
+        break;
     }
     return copyWith(status: nextStatus);
   }
@@ -167,11 +173,13 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
   // ★ Phase 2: Absolute Time 化によるStrangler Figパターン（参照エラー回避用の魔法）
   bool get timerIsRunning => timerStartedAt != null;
 
-  int get remainingSeconds {
+  // ★ CQRS/EventSourcing の不変性を保つため、外部から DateTime now を注入する形に変更
+  // これにより、過去の任意時点でのリプレイ再生においてタイマー秒数が狂う Replay Drift を防止します。
+  int calculateRemainingSeconds(DateTime now) {
     final baseSeconds = (matchTimeMinutes * 60).toInt();
     int elapsedMs = accumulatedPauseDurationMs;
     if (timerStartedAt != null) {
-      elapsedMs += DateTime.now().difference(timerStartedAt!).inMilliseconds;
+      elapsedMs += now.difference(timerStartedAt!).inMilliseconds;
     }
     
     bool isUnlimited = matchType == '代表戦' || (matchType == '延長戦' && baseSeconds == 0);
@@ -182,13 +190,13 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
     final remainingMs = (baseSeconds * 1000) - elapsedMs;
     return remainingMs > 0 ? (remainingMs / 1000).ceil() : 0;
   }
-
+  
   // ★ 修正: タイマーを手動修正した際に、絶対時間を逆算して再設定するヘルパー
   // 重要: タイマーが停止状態でも timerIsRunning が true のままだと
   // 計算時に timerStartedAt から現在時刻までの差分を再度加算してしまう問題があります。
   // したがって、このメソッド呼び出し時点で既にタイマーが停止しているなら
   // timerStartedAt は null にすべき。
-  MatchModel updateRemainingSeconds(int newSeconds, {bool isTimerStopping = false}) {
+  MatchModel updateRemainingSeconds(int newSeconds, DateTime now, {bool isTimerStopping = false}) {
     final baseSeconds = (matchTimeMinutes * 60).toInt();
     bool isUnlimited = matchType == '代表戦' || (matchType == '延長戦' && baseSeconds == 0);
     int newElapsedMs;
@@ -214,7 +222,7 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
 
     return copyWith(
       accumulatedPauseDurationMs: accMs,
-      timerStartedAt: timerIsRunning ? DateTime.now() : null,
+      timerStartedAt: timerIsRunning ? now : null,
     );
   }
 }

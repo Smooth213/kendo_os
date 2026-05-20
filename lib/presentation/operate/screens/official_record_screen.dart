@@ -18,6 +18,7 @@ import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // ★ 追加: 
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 class OfficialPointDisplay {
   final String mark;
@@ -142,6 +143,8 @@ class OfficialRecordScreen extends ConsumerWidget {
 
             // 統合された個人戦がある場合、特殊なキーで登録
             if (individualMergedList.isNotEmpty) {
+              // ★ 修正: match_screenでの並び替え順(order)を公式記録画面とPDFに100%反映するソートを強制
+              individualMergedList.sort((a, b) => a.order.compareTo(b.order));
               mergedGroups['__merged_individual__'] = individualMergedList;
             }
 
@@ -169,7 +172,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         icon: Icons.print,
                         label: 'PDF',
                         color: Colors.grey.shade800,
-                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'pdf', tName: tName, tDate: tDate, tVenue: tVenue),
+                        onPressed: () => _handleExport(context, ref, sortedGroupKeys, mergedGroups, cat, 'pdf', tName: tName, tDate: tDate, tVenue: tVenue),
                       ),
                       const SizedBox(width: 8),
                       // 2. 画像出力
@@ -177,7 +180,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         icon: Icons.share,
                         label: '画像',
                         color: Colors.teal.shade600,
-                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'image', tName: tName, tDate: tDate, tVenue: tVenue),
+                        onPressed: () => _handleExport(context, ref, sortedGroupKeys, mergedGroups, cat, 'image', tName: tName, tDate: tDate, tVenue: tVenue),
                       ),
                       const SizedBox(width: 8),
                       // 3. ★新規: CSV出力
@@ -185,7 +188,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         icon: Icons.table_chart,
                         label: 'CSV',
                         color: Colors.indigo.shade600,
-                        onPressed: () => _handleExport(context, sortedGroupKeys, mergedGroups, cat, 'csv', tName: tName, tDate: tDate, tVenue: tVenue),
+                        onPressed: () => _handleExport(context, ref, sortedGroupKeys, mergedGroups, cat, 'csv', tName: tName, tDate: tDate, tVenue: tVenue),
                       ),
                     ],
                   ),
@@ -406,7 +409,7 @@ class OfficialRecordScreen extends ConsumerWidget {
   }
 
   // 出力処理の共通ハンドラ
-  Future<void> _handleExport(BuildContext context, List<String> sortedGroupKeys, Map<String, List<MatchModel>> mergedGroups, String cat, String type, {String? tName, String? tDate, String? tVenue}) async {
+  Future<void> _handleExport(BuildContext context, WidgetRef ref, List<String> sortedGroupKeys, Map<String, List<MatchModel>> mergedGroups, String cat, String type, {String? tName, String? tDate, String? tVenue}) async {
     final groupDataList = sortedGroupKeys.map((key) => {
       'groupName': key,
       'matches': mergedGroups[key]!..sort((a, b) => a.order.compareTo(b.order)),
@@ -423,8 +426,9 @@ class OfficialRecordScreen extends ConsumerWidget {
     );
 
     try {
-      if (type == 'pdf') await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue);
-      if (type == 'image') await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue);
+      final now = ref.read(timeSourceProvider).now();
+      if (type == 'pdf') await PdfService.printOfficialRecord(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue, outputTime: now);
+      if (type == 'image') await PdfService.shareOfficialRecordAsImage(cat, groupDataList, tournamentName: tName, tournamentDate: tDate, tournamentVenue: tVenue, outputTime: now);
       // ★ CSVサービスを呼び出し
       if (type == 'csv') await CsvService.shareOfficialRecordAsCsv(cat, groupDataList);
     } catch (e) {

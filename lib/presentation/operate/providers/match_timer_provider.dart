@@ -5,15 +5,16 @@ import 'match_list_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
 import 'package:kendo_os/domain/entities/match_state.dart'; // ★ Phase 1 & 3: FSM連携用
 import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint用
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 // ★ 修正1: 監視(watch)ではなく、画面を開いた時の初期値の読み取り(read)に変更。
 // これにより、通信のたびに秒数がリセットされるバグが消滅します。
 final liveRemainingSecondsProvider = StateProvider.family<int, String>((ref, matchId) {
-  final initialSeconds = ref.read(matchListProvider.select((list) {
-    final match = list.where((m) => m.id == matchId).firstOrNull;
-    return match?.remainingSeconds ?? 0;
+  final match = ref.read(matchListProvider.select((list) {
+    return list.where((m) => m.id == matchId).firstOrNull;
   }));
-  return initialSeconds;
+  final now = ref.read(timeSourceProvider).now();
+  return match?.calculateRemainingSeconds(now) ?? 0;
 });
 
 final renseikaiMasterTimerProvider = StateProvider.family<int, String>((ref, groupName) => -1);
@@ -34,7 +35,7 @@ class MatchTimer {
   void startLocalTicker(String matchId, {bool isImmediateStart = false}) {
     debugPrint('🕒 [MatchTimer] startLocalTicker requested. matchId=$matchId, immediate=$isImmediateStart');
     // ★ 修正: 手動操作の直後（2秒以内）にクラウドの古いデータによる自動再開（ゴースト再起動）を完全に防ぐ
-    final diff = DateTime.now().difference(_lastToggledAt).inSeconds;
+    final diff = ref.read(timeSourceProvider).now().difference(_lastToggledAt).inSeconds;
     if (!isImmediateStart && diff < 2) {
       debugPrint('🕒 [MatchTimer] startLocalTicker BLOCKED (ghost restart prevention). diff=$diff sec');
       return;
@@ -50,7 +51,7 @@ class MatchTimer {
 
     debugPrint('🕒 [MatchTimer] startLocalTicker: Ticker STARTED.');
     _ticker?.cancel();
-    final fallbackStartedAt = DateTime.now(); 
+    final fallbackStartedAt = ref.read(timeSourceProvider).now(); 
 
     _ticker = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!_expectedIsRunning) {
@@ -70,7 +71,8 @@ class MatchTimer {
           ? match.copyWith(timerStartedAt: fallbackStartedAt)
           : match;
 
-      int currentDerived = effectiveMatch.remainingSeconds;
+      final now = ref.read(timeSourceProvider).now();
+      int currentDerived = effectiveMatch.calculateRemainingSeconds(now);
       
       final currentUiState = ref.read(liveRemainingSecondsProvider(matchId));
 
@@ -89,7 +91,7 @@ class MatchTimer {
   void stopLocalTicker(String matchId) {
     debugPrint('🕒 [MatchTimer] stopLocalTicker requested. matchId=$matchId');
     // ★ 修正: 手動操作直後に、クラウドの古いデータで強制停止されるのを防ぐ
-    if (DateTime.now().difference(_lastToggledAt).inSeconds < 2) {
+    if (ref.read(timeSourceProvider).now().difference(_lastToggledAt).inSeconds < 2) {
       debugPrint('🕒 [MatchTimer] stopLocalTicker BLOCKED (ghost stop prevention).');
       return;
     }
@@ -102,10 +104,10 @@ class MatchTimer {
     if (match == null) return;
 
     final newIsRunning = !_expectedIsRunning;
-    if (newIsRunning && match.remainingSeconds <= 0 && match.matchType != '代表戦') return;
+    final now = ref.read(timeSourceProvider).now();
+    if (newIsRunning && match.calculateRemainingSeconds(now) <= 0 && match.matchType != '代表戦') return;
 
     debugPrint('🕒 [MatchTimer] toggleTimer: Toggling timer to isRunning=$newIsRunning');
-    final now = DateTime.now();
     _lastToggledAt = now;
     _expectedIsRunning = newIsRunning;
     
@@ -154,7 +156,7 @@ class MatchTimer {
       updatedMatch = match.copyWith(
         status: currentState.toLegacyString(),
         timerPausedAt: now,
-      ).updateRemainingSeconds(currentSeconds, isTimerStopping: true);
+      ).updateRemainingSeconds(currentSeconds, ref.read(timeSourceProvider).now(), isTimerStopping: true);
 
       debugPrint('🕒 [MatchTimer] toggleTimer(STOP): regenerated match.timerStartedAt=${updatedMatch.timerStartedAt}, isRunning=${updatedMatch.timerIsRunning}');
 
@@ -173,6 +175,7 @@ class MatchTimer {
     // ★ 修正: タイムアップ時は isTimerStopping=true を指定
     MatchModel updatedMatch = match.updateRemainingSeconds(
       seconds < 0 ? 0 : seconds,
+      ref.read(timeSourceProvider).now(),
       isTimerStopping: isTimeUp,
     );
     
@@ -180,7 +183,7 @@ class MatchTimer {
       // ★ 修正: タイムアップ時も確実にステータスを一時停止状態にし、裏で回り続けるのを防ぐ
       updatedMatch = updatedMatch.copyWith(
         status: MatchLifecycleState.paused.toLegacyString(),
-        timerPausedAt: DateTime.now(),
+        timerPausedAt: ref.read(timeSourceProvider).now(),
         timerStartedAt: null, // ★ タイムアップ時も確実に null にする
       );
       _expectedIsRunning = false;

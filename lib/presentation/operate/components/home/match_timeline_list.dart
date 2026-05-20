@@ -18,6 +18,7 @@ import '../../providers/timeline_provider.dart';
 import '../../providers/permission_provider.dart';
 import '../../providers/match_rule_provider.dart';
 import '../../providers/match_view_model_provider.dart';
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 import '../../screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import '../../screens/team_scoreboard_screen.dart';
@@ -1451,12 +1452,13 @@ class MatchTimelineList extends ConsumerWidget {
                     for (var m in normalMatches) {
                       List<ScoreEvent> events = [];
                       int matchRedScore = 0; int matchWhiteScore = 0;
+                      final now = ref.read(timeSourceProvider).now();
                       if (rw > 0) {
                         rw--; int p = (rp > rw) ? 2 : 1; if (p > rp) p = rp; rp -= p; matchRedScore = p;
-                        for(int i=0; i<p; i++) { events.add(ScoreEventLegacyAdapter.fromLegacy(id: const Uuid().v4(), type: PointType.fusen, side: Side.red, timestamp: DateTime.now())); }
+                        for(int i=0; i<p; i++) { events.add(ScoreEventLegacyAdapter.fromLegacy(id: const Uuid().v4(), type: PointType.fusen, side: Side.red, timestamp: now)); }
                       } else if (ww > 0) {
                         ww--; int p = (wp > ww) ? 2 : 1; if (p > wp) p = wp; wp -= p; matchWhiteScore = p;
-                        for(int i=0; i<p; i++) { events.add(ScoreEventLegacyAdapter.fromLegacy(id: const Uuid().v4(), type: PointType.fusen, side: Side.white, timestamp: DateTime.now())); }
+                        for(int i=0; i<p; i++) { events.add(ScoreEventLegacyAdapter.fromLegacy(id: const Uuid().v4(), type: PointType.fusen, side: Side.white, timestamp: now)); }
                       }
                       final String newNote = m.note.contains('[SUMMARY]') ? m.note : '${m.note} [SUMMARY]'.trim();
                       final updated = m.copyWith(status: 'approved', note: newNote, events: events, redScore: matchRedScore, whiteScore: matchWhiteScore);

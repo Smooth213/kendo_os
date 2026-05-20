@@ -11,6 +11,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'kachinuki_scoreboard_screen.dart'; // ★ 追加：勝ち抜き画面への誘導用
 import '../../shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
+import 'package:kendo_os/core/time/time_source.dart';
 
 class TeamPointDisplay {
   final String mark;
@@ -212,7 +213,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
             child: ElevatedButton.icon(
               onPressed: () async {
                 final first = teamMatches.first;
-                final nextMatchId = 'match_${DateTime.now().millisecondsSinceEpoch}';
+                final now = ref.read(timeSourceProvider).now();
+                final nextMatchId = 'match_${now.millisecondsSinceEpoch}';
                 final newMatch = first.copyWith(
                   id: nextMatchId,
                   order: teamMatches.last.order + 1,

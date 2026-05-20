@@ -90,4 +90,15 @@ abstract class ScoreEvent with _$ScoreEvent {
   bool get isKote => strikeType == StrikeType.kote;
   bool get isDou => strikeType == StrikeType.dou;
   bool get isTsuki => strikeType == StrikeType.tsuki;
+
+  // ★ Step 2-1: Event ordering固定 (1. logicalClock -> 2. timestamp -> 3. eventId)
+  int compareTo(ScoreEvent other) {
+    int clockCmp = logicalClock.compareTo(other.logicalClock);
+    if (clockCmp != 0) return clockCmp;
+    
+    int timeCmp = timestamp.compareTo(other.timestamp);
+    if (timeCmp != 0) return timeCmp;
+    
+    return id.compareTo(other.id);
+  }
 }

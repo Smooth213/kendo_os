@@ -43,6 +43,7 @@ abstract class MatchListProjection with _$MatchListProjection {
 /// ③ 試合詳細Viewer用のリッチProjection (アニメーションや詳細軌跡を含む)
 @freezed
 abstract class MatchProjection with _$MatchProjection {
+
   const factory MatchProjection({
     required String id,
     required String tournamentId,
@@ -125,5 +126,14 @@ extension MatchProjectionUIX on MatchProjection {
     if (status == 'finished') return '試合が終了しました';
     if (status == 'in_progress') return '試合が進行中です';
     return '';
+  }
+
+  // ★ Step 2-2: Projection rebuild hash導入
+  // 完全に決定論的なハッシュを生成し、リプレイによる再構築結果が100%同一であることを証明する
+  String get rebuildHash {
+    final displaysRed = redDisplays.map((d) => '${d.mark}:${d.isFirstMatchPoint}').join(',');
+    final displaysWhite = whiteDisplays.map((d) => '${d.mark}:${d.isFirstMatchPoint}').join(',');
+    final tLine = timeline.map((t) => '${t.id}:${t.side}:${t.actionName}').join(',');
+    return '$id|$status|$redScore|$whiteScore|$displaysRed|$displaysWhite|$tLine|${momentum.toStringAsFixed(4)}';
   }
 }

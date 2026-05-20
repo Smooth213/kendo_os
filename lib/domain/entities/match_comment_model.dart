@@ -33,4 +33,7 @@ abstract class MatchCommentModel with _$MatchCommentModel implements TimelineIte
   
   @override
   TimelineItemType get itemType => TimelineItemType.comment;
+
+  @override
+  String get rebuildHash => '$id|$text|$order';
 }

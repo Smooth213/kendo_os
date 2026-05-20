@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/domain/entities/match_model.dart';
 import '../../operate/providers/match_timer_provider.dart';
 import '../../operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
+import 'package:kendo_os/core/time/time_source.dart';
 
 class TimerWidget extends ConsumerWidget {
   final String matchId;
@@ -21,8 +22,9 @@ class TimerWidget extends ConsumerWidget {
   }
 
   void _showTimerEditDialog(BuildContext context, WidgetRef ref, MatchModel match) {
-    int m = (match.remainingSeconds / 60).floor();
-    int s = match.remainingSeconds % 60;
+    final remainingSeconds = match.calculateRemainingSeconds(ref.read(timeSourceProvider).now());
+    int m = (remainingSeconds / 60).floor();
+    int s = remainingSeconds % 60;
     
     // iOS Native カラー
     final isDark = Theme.of(context).brightness == Brightness.dark;

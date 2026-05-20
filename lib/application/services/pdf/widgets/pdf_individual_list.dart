@@ -21,6 +21,7 @@ class PdfIndividualList {
     if (displayGroupName.isNotEmpty) {
       headerTitle += ' $displayGroupName';
     }
+
     // ★note抽出ロジックは削除完了
  
     final rows = <pw.Widget>[];

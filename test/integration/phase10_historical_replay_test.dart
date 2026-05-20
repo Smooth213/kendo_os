@@ -4,6 +4,7 @@ import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/score_event.dart';
 import '../helpers/test_match_factory.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 // ==========================================
 // ★ Phase 10: Event/Replayer整合
@@ -13,7 +14,7 @@ void main() {
   group('⏪ Phase 10: Historical Replay 保証 (歴史改変防止)', () {
     test('1本勝負(v1)で終了した過去の試合を、3本勝負(v2)の現在ルールでリプレイしても、1本勝ちのまま終了状態が維持されること', () {
       final engine = KendoRuleEngine();
-      final useCase = RebuildMatchFromEventsUseCase(engine);
+      final useCase = RebuildMatchFromEventsUseCase(engine, SystemTimeSource());
 
       // 【過去の事実】1本勝負(v1)のルールで行われ、赤が1本取って終了した試合
       final historicalRule = const MatchRule(isIpponShobu: true); // Schema Version 1相当
@@ -24,7 +25,7 @@ void main() {
         ruleVersion: 1, // ★ 当時は v1 だった
         side: Side.red,
         strikeType: StrikeType.men,
-        timestamp: DateTime.now().subtract(const Duration(days: 1)),
+        timestamp: SystemTimeSource().now().subtract(const Duration(days: 1)),
       );
 
       final pastMatch = TestMatchFactory.createIndividualMatch(id: 'past-match').copyWith(

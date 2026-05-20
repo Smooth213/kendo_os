@@ -7,6 +7,7 @@ import 'package:kendo_os/domain/entities/match_context.dart';
 import 'package:kendo_os/presentation/operate/providers/match_provider.dart'; 
 import 'package:kendo_os/domain/entities/role_permission.dart';
 import 'package:kendo_os/domain/entities/match_state.dart'; // ★ Phase 1: FSMのインポート
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 // ==========================================
 // ★ ② UseCaseの役割明確化：「1 UseCase = 1 責務」
@@ -17,8 +18,9 @@ import 'package:kendo_os/domain/entities/match_state.dart'; // ★ Phase 1: FSM�
 class AddScoreUseCase {
   final KendoRuleEngine _engine;
   final PermissionService _permission; // ★ 関所を追加
+  final TimeSource _timeSource;
   
-  AddScoreUseCase(this._engine, this._permission);
+  AddScoreUseCase(this._engine, this._permission, this._timeSource);
 
   MatchModel execute(User user, MatchModel currentMatch, ScoreEvent newEvent, MatchRule rule) {
     // 認可チェック
@@ -79,7 +81,7 @@ class AddScoreUseCase {
     // ★ Phase 2: 通し(Running)以外のモードでスコアが入った時は、ストップ(Pause)処理を行う
     MatchModel updatedMatch = currentMatch;
     if (!isRunningTimerMode && currentMatch.timerIsRunning) {
-        final elapsed = DateTime.now().difference(currentMatch.timerStartedAt!).inMilliseconds;
+        final elapsed = _timeSource.now().difference(currentMatch.timerStartedAt!).inMilliseconds;
         updatedMatch = currentMatch.copyWith(
           timerStartedAt: null,
           accumulatedPauseDurationMs: currentMatch.accumulatedPauseDurationMs + elapsed,
@@ -95,7 +97,7 @@ class AddScoreUseCase {
       status: currentState.toLegacyString(),
       syncState: SyncState.localOnly, 
       pendingEvents: updatedPendingEvents, 
-      lastUpdatedAt: DateTime.now(),
+      lastUpdatedAt: _timeSource.now(),
     );
   }
 }
@@ -104,8 +106,9 @@ class AddScoreUseCase {
 class UndoScoreUseCase {
   final KendoRuleEngine _engine;
   final PermissionService _permission;
+  final TimeSource _timeSource;
   
-  UndoScoreUseCase(this._engine, this._permission);
+  UndoScoreUseCase(this._engine, this._permission, this._timeSource);
 
   MatchModel execute(User user, MatchModel currentMatch, MatchRule rule) {
     if (!_permission.canUndo(user)) {
@@ -120,14 +123,15 @@ class UndoScoreUseCase {
     final newSequence = currentMatch.events.isEmpty ? 1 : currentMatch.events.last.sequence + 1;
     
     final undoEvent = ScoreEvent(
-      id: 'undo-${DateTime.now().microsecondsSinceEpoch}',
+      id: 'undo-${_timeSource.now().microsecondsSinceEpoch}',
       schemaVersion: 2,
       side: Side.none,
       strikeType: StrikeType.none,
       isUndo: true,
       targetId: targetEventId, // ★ Phase 3: 相殺対象を記録
-      timestamp: DateTime.now(),
+      timestamp: _timeSource.now(),
       sequence: newSequence,
+      logicalClock: newSequence,
       userId: user.id,
       ruleVersion: rule.toRuleConfig.schemaVersion,
     );
@@ -150,7 +154,7 @@ class UndoScoreUseCase {
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
       syncState: SyncState.localOnly,
-      lastUpdatedAt: DateTime.now(),
+      lastUpdatedAt: _timeSource.now(),
     );
   }
 }
@@ -159,8 +163,9 @@ class UndoScoreUseCase {
 class RedoScoreUseCase {
   final KendoRuleEngine _engine;
   final PermissionService _permission;
+  final TimeSource _timeSource;
   
-  RedoScoreUseCase(this._engine, this._permission);
+  RedoScoreUseCase(this._engine, this._permission, this._timeSource);
 
   MatchModel execute(User user, MatchModel currentMatch, MatchRule rule) {
     if (!_permission.canUndo(user)) { 
@@ -172,14 +177,15 @@ class RedoScoreUseCase {
     final newSequence = currentMatch.events.last.sequence + 1;
     
     final redoEvent = ScoreEvent(
-      id: 'redo-${DateTime.now().microsecondsSinceEpoch}',
+      id: 'redo-${_timeSource.now().microsecondsSinceEpoch}',
       schemaVersion: 2,
       side: Side.none,
       strikeType: StrikeType.none,
       isRestore: true, 
       // targetId を省略した場合は、直近にUndoされたものが自動で復元される（KendoRuleEngineの機能）
-      timestamp: DateTime.now(),
+      timestamp: _timeSource.now(),
       sequence: newSequence,
+      logicalClock: newSequence,
       userId: user.id,
       ruleVersion: rule.toRuleConfig.schemaVersion,
     );
@@ -210,7 +216,7 @@ class RedoScoreUseCase {
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
       syncState: SyncState.localOnly,
-      lastUpdatedAt: DateTime.now(),
+      lastUpdatedAt: _timeSource.now(),
     );
   }
 }
@@ -219,8 +225,9 @@ class RedoScoreUseCase {
 class TimeUpUseCase {
   final KendoRuleEngine _engine;
   final PermissionService _permission; // ★ 関所を追加
+  final TimeSource _timeSource;
   
-  TimeUpUseCase(this._engine, this._permission);
+  TimeUpUseCase(this._engine, this._permission, this._timeSource);
 
   MatchModel execute(User user, MatchModel currentMatch, bool isEnchoEnabled, MatchRule rule) {
     if (!_permission.canTimeUp(user)) {
@@ -244,18 +251,18 @@ class TimeUpUseCase {
       
       MatchModel updated = currentMatch.copyWith(
         matchType: '延長戦', note: newNote, 
-        syncState: SyncState.localOnly, lastUpdatedAt: DateTime.now(),
+        syncState: SyncState.localOnly, lastUpdatedAt: _timeSource.now(),
         status: currentState.toLegacyString(),
       );
       
       // ★ 修正: 延長戦の時間を絶対時間エンジンにセットし直す
-      updated = updated.updateRemainingSeconds(enchoSeconds).copyWith(timerStartedAt: null);
+      updated = updated.updateRemainingSeconds(enchoSeconds, _timeSource.now()).copyWith(timerStartedAt: null);
       return updated;
     } else {
       currentState = MatchStateMachine.transition(currentState, StateTransitionEvent.timeUp);
       return currentMatch.copyWith(
         status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
-        syncState: SyncState.localOnly, lastUpdatedAt: DateTime.now()
+        syncState: SyncState.localOnly, lastUpdatedAt: _timeSource.now()
       );
     }
   }
@@ -264,7 +271,8 @@ class TimeUpUseCase {
 /// ④ イベント履歴からの再構築 UseCase (読み取り専用なので関所不要)
 class RebuildMatchFromEventsUseCase {
   final KendoRuleEngine _engine;
-  RebuildMatchFromEventsUseCase(this._engine);
+  final TimeSource _timeSource;
+  RebuildMatchFromEventsUseCase(this._engine, this._timeSource);
 
   MatchModel execute(MatchModel baseMatch, MatchRule currentSystemRule) {
     // ==========================================
@@ -316,7 +324,7 @@ class RebuildMatchFromEventsUseCase {
       whiteScore: analysis.context.whiteIppon,
       status: currentState.toLegacyString(),
       syncState: SyncState.localOnly,
-      lastUpdatedAt: DateTime.now(),
+      lastUpdatedAt: _timeSource.now(),
     );
   }
 }
@@ -334,10 +342,10 @@ class CalculatePointDisplaysUseCase {
 // ★ DI 用のプロバイダ定義
 final permissionServiceProvider = Provider((ref) => PermissionService()); // ★ 追加
 
-final addScoreUseCaseProvider = Provider((ref) => AddScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
-final undoScoreUseCaseProvider = Provider((ref) => UndoScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
-final redoScoreUseCaseProvider = Provider((ref) => RedoScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
-final timeUpUseCaseProvider = Provider((ref) => TimeUpUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider)));
+final addScoreUseCaseProvider = Provider((ref) => AddScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider), ref.watch(timeSourceProvider)));
+final undoScoreUseCaseProvider = Provider((ref) => UndoScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider), ref.watch(timeSourceProvider)));
+final redoScoreUseCaseProvider = Provider((ref) => RedoScoreUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider), ref.watch(timeSourceProvider)));
+final timeUpUseCaseProvider = Provider((ref) => TimeUpUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(permissionServiceProvider), ref.watch(timeSourceProvider)));
 
-final rebuildMatchFromEventsUseCaseProvider = Provider((ref) => RebuildMatchFromEventsUseCase(ref.watch(kendoRuleEngineProvider)));
+final rebuildMatchFromEventsUseCaseProvider = Provider((ref) => RebuildMatchFromEventsUseCase(ref.watch(kendoRuleEngineProvider), ref.watch(timeSourceProvider)));
 final calculatePointDisplaysUseCaseProvider = Provider((ref) => CalculatePointDisplaysUseCase(ref.watch(kendoRuleEngineProvider)));

@@ -20,6 +20,7 @@ import 'package:kendo_os/application/usecases/match_application_service.dart';
 // ★ 追加: テスト用のモック追加
 import 'package:kendo_os/presentation/operate/providers/ui_message_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/core/time/system_time_source.dart';
 
 class MockMatchRepository extends Mock implements MatchRepository {}
 class MockAuditService extends Mock implements AuditService {}
@@ -242,14 +243,15 @@ void main() {
 
   group('MatchApplicationService - 修正事項の回帰テスト', () {
     test('finishMatch を呼び出した際、残り時間が0秒にリセットされないこと', () async {
-      final match = TestMatchFactory.createIndividualMatch(id: 'match-time-test').updateRemainingSeconds(45);
+      final now = SystemTimeSource().now();
+      final match = TestMatchFactory.createIndividualMatch(id: 'match-time-test').updateRemainingSeconds(45, now);
       container.read(mockMatchListProvider.notifier).state = [match];
       
       final appService = container.read(matchApplicationServiceProvider);
       await appService.finishMatch(match.id);
       await Future.delayed(Duration.zero);
 
-      verify(() => mockLocalRepo.saveMatch(any(that: isA<MatchModel>().having((m) => m.remainingSeconds, 'remainingSeconds', 45).having((m) => m.status, 'status', 'finished')))).called(1);
+      verify(() => mockLocalRepo.saveMatch(any(that: isA<MatchModel>().having((m) => m.calculateRemainingSeconds(now), 'remainingSeconds', 45).having((m) => m.status, 'status', 'finished')))).called(1);
     });
 
     test('addIppon を呼び出した際、DB保存(saveMatch)が1回しか呼ばれないこと（二重保存の防止）', () async {

@@ -18,4 +18,7 @@ abstract class TimelineItem {
 
   /// 要素の型 (Match か Comment かを描き分けるため)
   TimelineItemType get itemType;
+
+  /// ★ Phase 4: timeline replay rebuild
+  String get rebuildHash;
 }

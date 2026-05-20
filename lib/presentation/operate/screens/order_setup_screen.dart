@@ -14,6 +14,7 @@ import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
 import '../../shared/widgets/liquid_background.dart';
 import '../../shared/widgets/glass_button.dart';
 import '../providers/settings_provider.dart';
+import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -830,7 +831,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           try {
                             // ★ 修正：不要になった古い変数を綺麗にお掃除
                             String senpoMatchId = '';
-                            double baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
+                            double baseOrder = ref.read(timeSourceProvider).now().millisecondsSinceEpoch.toDouble();
                             List<MatchModel> matchesToSave = []; 
                             
                             // ★ 追加：リーグ戦であることを明示するタグを生成し、後で全試合のnoteに付与する
