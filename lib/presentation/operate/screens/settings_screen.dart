@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../providers/settings_provider.dart';
-import '../providers/role_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // ★ 追加: ログアウト処理用
 import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 import '../../shared/widgets/liquid_background.dart'; // ★ 追加
@@ -17,7 +16,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _testMessage = '下のボタンをタップしてテスト';
-  int _tapCount = 0; // ★ Phase 0: イースターエッグ用のタップカウンタ
+  // ★ Phase 6-2修正: 未使用となった _tapCount フィールドを完全にパージ（クリーンアップ）
   
   // ★ カラーパレットの定義（目立ちすぎない、上品で落ち着いたローズピンクへ調整）
   static const Color accentPink = Color(0xFFE06287); 
@@ -44,22 +43,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         backgroundColor: Colors.transparent, // ★ 背景を透明にして下の光のオーブを透かす
         appBar: AppBar(
           title: GestureDetector(
-            onTap: () {
-              // ★ Phase 1-1: 内部ガバナンスモードへの裏ルートを完全に封印（到達不能化）
-              if (!ref.read(settingsProvider).experimentalFeatures) {
-                return; 
-              }
-              _tapCount++;
-              if (_tapCount >= 7) {
-                _tapCount = 0;
-                final current = settings.experimentalFeatures;
-                ref.read(settingsProvider.notifier).updateField(experimentalFeatures: !current);
-                HapticFeedback.heavyImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(!current ? '🛠️ 内部ガバナンスモードが解放されました' : '🔒 内部モードをロックしました')),
-                );
-              }
-            },
+            // ★ Phase 6-2: 内部ガバナンスモードへの裏ルート・タップ連打ギミックを完全に物理消滅化
+            onTap: null,
             child: Text('システム設定', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2, color: headerTextColor)),
           ),
           backgroundColor: enableLiquidGlass ? Colors.transparent : dynamicCardColor,
@@ -159,23 +144,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ]),
                   _buildSectionFooter(context, '記録をロックすると後からスコアを修正できなくなり、ローカル保存されたデータの安全性を高めます。'),
-                  const SizedBox(height: 24),
-  
-                  // ==========================================
-                  // 4. セキュリティ・Viewer共有
-                  // ==========================================
-                  _buildSectionHeader(context, 'セキュリティ・Viewer共有'),
-                  _buildSettingsBlock(context, [
-                    _buildListTile(context,
-                      title: '端末の役割設定',
-                      subtitle: '現在の設定: ${ref.watch(persistentRoleProvider).label}',
-                      icon: Icons.person, iconBgColor: Colors.blueGrey,
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                      onTap: () => _handleRoleSwitch(context, ref),
-                    ),
-                  ]),
-                  _buildSectionFooter(context, '端末の役割を「記録係」や「管理者」に切り替えることで、リアルタイムViewer共有の配信元を制御します。'),
-                  const SizedBox(height: 48), // 下部に十分な余白を確保
+                  const SizedBox(height: 48), // ★ 役割設定ブロックを完全削除（縮退）し、末尾に綺麗な余白を設定
                 ],
               ),
             ),
@@ -423,133 +392,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Divider(height: 1, thickness: 0.5, color: isDark ? const Color(0xFF38383A) : const Color(0xFFC6C6C8), indent: 56, endIndent: 0);
   }
 
-  // ★ Phase 8: 英数混在8文字以上のバリデーション
-  bool _isValidPasscode(String code) {
-    final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(code);
-    final hasDigit = RegExp(r'[0-9]').hasMatch(code);
-    return code.length >= 8 && hasLetter && hasDigit;
-  }
-
-  // 立場（Role）を切り替える際のガード処理
-  void _handleRoleSwitch(BuildContext context, WidgetRef ref) {
-    final settings = ref.read(settingsProvider);
-    final currentRole = ref.read(persistentRoleProvider);
-
-    // すでに管理者なら、記録係へのダウングレードは自由
-    if (currentRole == Role.admin) {
-      _showRolePicker(context, ref);
-      return;
-    }
-
-    // 記録係から管理者へ昇格する場合
-    if (settings.securityLevel >= 2) {
-      _showPasscodeDialog(context, ref, onSuccess: () => _showRolePicker(context, ref));
-    } else {
-      _showRolePicker(context, ref);
-    }
-  }
-
-  // ignore: unused_element
-  void _handleSecurityChange(BuildContext context, WidgetRef ref, int newLevel) async {
-    final settings = ref.read(settingsProvider);
-    // すでにパスコードが設定されている場合のみガード
-    if (settings.adminPasscode != null && settings.adminPasscode!.isNotEmpty) {
-      _showPasscodeDialog(context, ref, onSuccess: () {
-        ref.read(settingsProvider.notifier).updateField(securityLevel: newLevel);
-      });
-    } else {
-      // 初回設定時（Lv.1 -> Lv.2等）はパスコード作成へ
-      _showPasscodeCreationDialog(context, ref, newLevel);
-    }
-  }
-
-  void _showPasscodeDialog(BuildContext context, WidgetRef ref, {required VoidCallback onSuccess}) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('管理者パスコードを入力'),
-        content: TextField(controller: controller, obscureText: true, decoration: const InputDecoration(hintText: '英数8文字以上')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
-          ElevatedButton(
-            onPressed: () {
-              if (controller.text == ref.read(settingsProvider).adminPasscode) {
-                Navigator.pop(ctx);
-                onSuccess();
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('パスコードが正しくありません')));
-              }
-            },
-            child: const Text('照合'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showPasscodeCreationDialog(BuildContext context, WidgetRef ref, int targetLevel) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('新規パスコードの設定'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('英字と数字を両方含む、8文字以上で設定してください。', style: TextStyle(fontSize: 12)),
-            TextField(controller: controller, obscureText: true, decoration: const InputDecoration(hintText: '英数8文字以上')),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              if (_isValidPasscode(controller.text)) {
-                ref.read(settingsProvider.notifier).updateField(securityLevel: targetLevel, adminPasscode: controller.text);
-                Navigator.pop(ctx);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ルール（英数8文字以上）に合致しません')));
-              }
-            },
-            child: const Text('保存'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showRolePicker(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.admin_panel_settings, color: Colors.indigo),
-              title: const Text('管理者（すべて）'),
-              onTap: () {
-                // ★ persistentRoleProvider を更新して永続化させる
-                ref.read(persistentRoleProvider.notifier).state = Role.admin;
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit_note, color: Colors.teal),
-              title: const Text('記録係（入力）'),
-              onTap: () {
-                ref.read(persistentRoleProvider.notifier).state = Role.scorer;
-                Navigator.pop(ctx);
-              },
-            ),
-            const SizedBox(height: 16), // 下部に余白を追加
-          ],
-        ),
-      ),
-    );
-  }
-
   // ログアウト確認ダイアログ
   // ignore: unused_element
   void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
@@ -576,4 +418,5 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
+  // ★ Phase 6-2修正: どこからも参照されなくなった _handleRoleSwitch メソッドセクションを安全に完全に削除（縮退）
 }

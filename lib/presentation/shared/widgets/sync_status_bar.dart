@@ -51,61 +51,43 @@ class SyncStatusBar extends ConsumerWidget {
                 style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
               ),
               
-              // 2. 右側：同期ステータス
+              // 2. 右側：同期ステータス（★ Phase 3-2: ロードマップ指定の4つの安心表現へ完全縮退）
               Row(
                 children: [
                   if (!isOnline) ...[
                     const Icon(Icons.cloud_off, color: Colors.white70, size: 12),
                     const SizedBox(width: 4),
-                    const Text('オフライン動作中', style: TextStyle(color: Colors.white70, fontSize: 10)),
-                  ] else ...[
-                    // ① システム全体の同期状態
-                    Icon(
-                      Icons.sync, 
-                      size: 12, 
-                      color: isGlobalSyncing ? Colors.blue.shade200 : Colors.white54
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      isGlobalSyncing ? '同期中' : '正常',
-                      style: TextStyle(fontSize: 10, color: isGlobalSyncing ? Colors.blue.shade100 : Colors.white70),
-                    ),
-                    
-                    const SizedBox(width: 12),
-                    
-                    // ② デッドレター（エラー）または通常の未送信状態
+                    const Text('オフライン', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ] else if (deadLetterCount > 0 || matchStatus == SyncStatus.syncing || isGlobalSyncing) ...[
                     GestureDetector(
-                      onTap: (deadLetterCount > 0 || matchStatus == SyncStatus.pending)
-                          ? () => _showErrorQueueSheet(context, ref)
-                          : null,
+                      onTap: () => _showErrorQueueSheet(context, ref),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                         color: Colors.transparent,
                         child: Row(
                           children: [
+                            _buildMatchSyncIcon(matchStatus),
+                            const SizedBox(width: 4),
+                            Text(
+                              deadLetterCount > 0 ? '再接続中' : '同期中',
+                              style: TextStyle(
+                                fontSize: 10, 
+                                fontWeight: FontWeight.bold,
+                                color: deadLetterCount > 0 ? Colors.yellowAccent : Colors.blue.shade100
+                              ),
+                            ),
                             if (deadLetterCount > 0) ...[
-                              const Icon(Icons.warning_amber_rounded, color: Colors.yellowAccent, size: 14),
                               const SizedBox(width: 4),
-                              Text(
-                                '$deadLetterCount件の送信エラー',
-                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.yellowAccent),
-                              ),
-                            ] else ...[
-                              _buildMatchSyncIcon(matchStatus),
-                              const SizedBox(width: 4),
-                              Text(
-                                matchStatus == SyncStatus.pending ? '未送信あり' : '同期済み',
-                                style: TextStyle(
-                                  fontSize: 10, 
-                                  fontWeight: FontWeight.bold,
-                                  color: matchStatus == SyncStatus.pending ? Colors.orange.shade300 : Colors.greenAccent
-                                ),
-                              ),
+                              Text('($deadLetterCount)', style: const TextStyle(fontSize: 10, color: Colors.yellowAccent)),
                             ],
                           ],
                         ),
                       ),
                     ),
+                  ] else ...[
+                    // 送信待ちがなく、ネットワークも健全で同期が完了している状態
+                    const Icon(Icons.cloud_done_outlined, color: Colors.greenAccent, size: 12),
+                    const SizedBox(width: 4),
+                    const Text('保存済み', style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
                   ]
                 ],
               ),
@@ -198,7 +180,13 @@ class SyncStatusBar extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            const Expanded(child: Text('通信が3回失敗したため、以下の操作が退避されました。手動で再送か破棄を選んでください。', style: TextStyle(fontSize: 12))),
+                            // ★ Phase 3-2: 操作員を動揺させない、現場FAQマニュアルと完全に一貫した優しい日本語への洗練マージ
+                            const Expanded(
+                              child: Text(
+                                '電波のズレ等により一時的に保留された操作があります。右側のボタンで「再送」を押すか、お急ぎの場合は「データ更新」マニュアルをご確認ください。', 
+                                style: TextStyle(fontSize: 11, height: 1.3)
+                              ),
+                            ),
                           ],
                         ),
                       ),

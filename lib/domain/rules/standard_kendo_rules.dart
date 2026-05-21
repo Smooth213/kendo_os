@@ -17,6 +17,14 @@ abstract class BaseScoringRule implements ScoringRule {
     int white = 0;
     int currentTarget = determineTarget(context);
 
+    // ★ Phase 5-2: Preset固定化（容赦ない高剛性フォールバック仕様への昇格）
+    // 大会を破綻させる恐れのある公式規則外の変則設定（1本、2本以外）がカオス環境下で混入した際、
+    // 例外を投げて画面をクラッシュ（フリーズ）させるのではなく、最も安全なデフォルトである「2（三本勝負）」へ
+    // 自動的かつ決定論的に強制フォールバックさせ、いかなるファジング環境下でも「絶対に壊れないプロダクト」を確立します。
+    if (currentTarget != 1 && currentTarget != 2) {
+      currentTarget = 2; 
+    }
+
     for (var e in context.events) {
       if (e.isCanceled) continue;
       if (e.type != PointType.hansoku && e.type != PointType.fusen) {

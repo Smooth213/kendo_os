@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart';
 
 class CorruptedMatchBanner extends ConsumerWidget {
   final String matchId;
@@ -15,25 +14,15 @@ class CorruptedMatchBanner extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Colors.yellow, size: 20),
+          const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
           const SizedBox(width: 12),
+          // ★ Phase 7-1: ユーザー向け簡略文への縮退
+          // 一般ユーザーや保護者の不安を完全に払拭するため、「破損」「Replay自動復旧」といったデバッグ文言や
+          // 特権ボタンを完全にUIからパージし、ロードマップ指定の「データに問題が発生しました」のみに完全緊縛します。
           const Expanded(
             child: Text(
-              'この試合データは破損している可能性があります',
+              'データに問題が発生しました',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              ref.read(matchCommandProvider).rebuildMatchSnapshot(matchId);
-            },
-            icon: const Icon(Icons.build, size: 16),
-            label: const Text('自動復旧 (Replay)'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.red.shade900,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-              minimumSize: const Size(0, 30),
             ),
           ),
         ],

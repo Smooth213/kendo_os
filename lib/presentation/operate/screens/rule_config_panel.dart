@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/match_rule_provider.dart';
 import 'package:kendo_os/domain/rules/rule_preset.dart'; // ★ プリセットをインポート
+import 'package:kendo_os/core/config/beta_feature_flags.dart';
 
 // ==========================================
 // ★ Phase 7: UI Rule Builder (Basic/Advanced分離)
@@ -12,6 +13,11 @@ class RuleConfigPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ★ Phase 5-1: Rule Config UI削除（Stage2 β環境における編集パネルの完全隠蔽）
+    if (!BetaFeatureFlags.showRuleDslEditor) {
+      return const SizedBox.shrink(); // UI上からパネルの存在を完全に消滅させます
+    }
+
     final rule = ref.watch(matchRuleProvider);
     final summary = ref.watch(ruleSummaryProvider);
     final notifier = ref.read(matchRuleProvider.notifier);

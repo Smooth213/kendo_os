@@ -13,11 +13,20 @@ class MatchRouter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ Phase 1-2: Feature Flagによる未解放機能・画面のガード制御
-    if (!BetaFeatureFlags.enableReplayTools && matchId.startsWith('sys_')) {
-      return const Scaffold(
-        body: Center(child: Text('この機能はβ版では制限されています')),
-      );
+    // ★ Phase 1-2 & 1-3: ロードマップ指定のFeature Flag（showObservability等）による全特権画面・ルートの物理封鎖
+    // フラグがOFFの時は、画面をレンダリングせず、ディープリンクや不正なURL直打ちを即座に完全拒否（404・アクセス制限画面へ誘導）
+    if (!BetaFeatureFlags.showObservability || !BetaFeatureFlags.showReplayTools) {
+      if (matchId.startsWith('sys_') || matchId == 'observability-dashboard' || matchId == 'audit-log' || matchId == 'rule-config') {
+        return const Scaffold(
+          body: Center(
+            child: Text(
+              '🔒 アクセス制限：この機能は開発者専用モード（Internal Mode）でのみ利用可能です。',
+              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      }
     }
 
     // 🌟 Phase 6-2: ゼロトラストURLガードのインジェクション

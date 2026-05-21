@@ -13,6 +13,11 @@ jobs:
         with:
           fetch-depth: 0 # 全履歴を取得してDiff解析を正確にする
 
+      # ★ Phase 2-4: Stage2 β環境（またはリリースブランチ）での不要な特権監査ステップの条件付きスキップ（skip）制御
+      - name: Run Governance Lint (Skip in stage2-beta branch)
+        if: github.ref != 'refs/heads/stage2-beta'
+        run: flutter test test/governance/
+
       # --- CRITICAL: Identify changed files first to provide context for subsequent steps ---
       - name: "📂 Step 1: Identify changed files"
         id: changed-files

@@ -1,4 +1,5 @@
 import 'package:kendo_os/domain/rules/tournament_rule_config.dart';
+import 'package:kendo_os/core/config/beta_feature_flags.dart';
 
 // ==========================================
 // ★ Phase 12: DSL準備 (Domain-Specific Language)
@@ -63,5 +64,13 @@ abstract class RuleDslMapper {
     buffer.writeln('  }');
     buffer.writeln('}');
     return buffer.toString();
+  }
+
+  /// ★ Phase 5-3: DSL Import禁止プロトコル
+  /// 外部スクリプトや不正なテキストパースを媒介とした、実行時のルール動的改ざん（Import）を100%完全拒否・封鎖します。
+  static void importFromDsl(String dsl) {
+    if (!BetaFeatureFlags.showRuleDslEditor) {
+      throw UnsupportedError('🔒 DSL Import Violation: 外部DSLからのルール動的上書きは、一般のStage2 β環境では完全に禁止されています。');
+    }
   }
 }

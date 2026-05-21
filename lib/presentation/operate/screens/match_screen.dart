@@ -312,12 +312,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               }
             },
           ),
-          // 👇 ここから追加：一時的なViewer確認用ボタン
-          IconButton(
-            icon: const Icon(Icons.remove_red_eye, color: Colors.amber),
-            onPressed: () => context.push('/viewer/${match.id}'),
-          ),
-          // 👆 ここまで追加
+          // ★ Phase 6-4: 開発検証用の目のアイコン（一時的なViewer確認ボタン）を安全にパージ
           IconButton(
             // ★ 変更: 歯車アイコンも白
             icon: const Icon(Icons.settings_outlined, color: Colors.white),
