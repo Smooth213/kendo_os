@@ -199,6 +199,27 @@ class MatchTimer {
     }
   }
 
+  /// ★ Step 3-2: バックグラウンド復帰・再開時対策プロトコル
+  /// アプリがバックグラウンドから復帰した際、あるいは通信復旧時に古いUI状態（stale state）を破棄し、
+  /// タイムソースの絶対真実に基づいて残り秒数を決定論的に再プロジェクション（再計算）します。
+  void syncOnAppResume(String matchId) {
+    debugPrint('🕒 [MatchTimer] syncOnAppResume triggered. matchId=$matchId');
+    final match = _getMatch(matchId);
+    if (match == null) return;
+
+    final now = ref.read(timeSourceProvider).now();
+    // 蓄積された遅延や不確定なUIキャッシュを完全破棄し、ドメインモデルから現在の残り時間を厳格に再計算
+    final derivedSeconds = match.calculateRemainingSeconds(now);
+    
+    ref.read(liveRemainingSecondsProvider(matchId).notifier).state = derivedSeconds;
+    
+    // タイマーが本来稼働中であるべき（timerIsRunning == true）かつローカルの ticker が停止している場合は自動復旧
+    if (match.timerIsRunning && (_ticker == null || !_ticker!.isActive)) {
+      debugPrint('🕒 [MatchTimer] syncOnAppResume: Auto-restarting local ticker for running match.');
+      startLocalTicker(matchId, isImmediateStart: true);
+    }
+  }
+
   MatchModel? _getMatch(String id) {
     final matches = ref.read(matchListProvider);
     return matches.where((m) => m.id == id).firstOrNull;

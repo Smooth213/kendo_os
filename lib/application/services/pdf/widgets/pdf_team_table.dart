@@ -59,49 +59,60 @@ class PdfTeamTable {
       }
     }
 
+    // ★ Phase 6-1: A4横幅最適化ガード
+    // 7人制や9人制など、試合数（列数）が極端に多くなった場合でも、文字が重なってA4の印刷可能幅から
+    // はみ出るのを物理的に防ぐため、列数に応じてフォントサイズとタイトルサイズを決定論的に自動縮小（スケール）させます。
+    final double dynamicFontSize = matches.length > 5 ? 7.5 : 9.0;
+    final double dynamicTitleSize = matches.length > 5 ? 9.5 : 11.0;
+
     final Map<int, pw.TableColumnWidth> columnWidths = {
       0: const pw.FlexColumnWidth(1.4), 
       for (int i = 1; i <= matches.length; i++) i: const pw.FlexColumnWidth(1.0),
       matches.length + 1: const pw.FlexColumnWidth(1.0), 
     };
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Container(
-          padding: const pw.EdgeInsets.all(6), color: PdfColors.grey200, width: double.infinity,
-          child: pw.Text(titleText, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: ttfBold, fontSize: 11)),
-        ),
-        pw.Table(
-          border: pw.TableBorder.all(color: PdfColors.black, width: 1),
-          columnWidths: columnWidths,
-          children: [
-            pw.TableRow(
-              decoration: const pw.BoxDecoration(color: PdfColors.grey100),
-              children: [
+    // ★ Phase 6-1: 改ページ崩れの完全封鎖（pw.Container）
+    // 1つの対戦表がページの最下部で不自然に真っ二つに分断されるのを100%防止するため、
+    // 表のひとかたまりを pw.Container で包み、ページ内に収まらない場合は自動で次のページへ安全に送出します。
+    return pw.Container(
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Container(
+            padding: const pw.EdgeInsets.all(6), color: PdfColors.grey200, width: double.infinity,
+            child: pw.Text(titleText, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: ttfBold, fontSize: dynamicTitleSize)),
+          ),
+          pw.Table(
+            border: pw.TableBorder.all(color: PdfColors.black, width: 1),
+            columnWidths: columnWidths,
+            children: [
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                children: [
+                  pw.SizedBox(),
+                  ...matches.map((m) => pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text(m.matchType, style: pw.TextStyle(fontSize: dynamicFontSize, fontWeight: pw.FontWeight.bold, font: ttfBold))))),
+                  pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text('本/勝', style: pw.TextStyle(fontSize: dynamicFontSize, font: ttfBold)))),
+                ],
+              ),
+              pw.TableRow(children: [
+                _pdfTeamCell(redTeam, PdfColors.red900, ttfBold),
+                ...matches.map((m) => _pdfNameCell(m.redName, rLasts, ttf)),
+                _pdfSummaryCell(matches, true, ttfBold),
+              ]),
+              pw.TableRow(children: [
                 pw.SizedBox(),
-                ...matches.map((m) => pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text(m.matchType, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, font: ttfBold))))),
-                pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text('本/勝', style: const pw.TextStyle(fontSize: 9)))),
-              ],
-            ),
-            pw.TableRow(children: [
-              _pdfTeamCell(redTeam, PdfColors.red900, ttfBold),
-              ...matches.map((m) => _pdfNameCell(m.redName, rLasts, ttf)),
-              _pdfSummaryCell(matches, true, ttfBold),
-            ]),
-            pw.TableRow(children: [
-              pw.SizedBox(),
-              ...matches.map((m) => _pdfScoreCell(m, ttfBold)),
-              _pdfTeamResultCell(teamWinner, ttfBold),
-            ]),
-            pw.TableRow(children: [
-              _pdfTeamCell(whiteTeam, PdfColors.black, ttfBold),
-              ...matches.map((m) => _pdfNameCell(m.whiteName, wLasts, ttf)),
-              _pdfSummaryCell(matches, false, ttfBold),
-            ]),
-          ],
-        ),
-      ],
+                ...matches.map((m) => _pdfScoreCell(m, ttfBold)),
+                _pdfTeamResultCell(teamWinner, ttfBold),
+              ]),
+              pw.TableRow(children: [
+                _pdfTeamCell(whiteTeam, PdfColors.black, ttfBold),
+                ...matches.map((m) => _pdfNameCell(m.whiteName, wLasts, ttf)),
+                _pdfSummaryCell(matches, false, ttfBold),
+              ]),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

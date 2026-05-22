@@ -41,6 +41,9 @@ class PdfIndividualList {
 
       final ptsMap = PdfViewModel.calculatePointsRaw(m);
 
+      // ★ Phase 6-1: 選手名テキストの Overflow 防壁化
+      // 非常に長い道場名やフルネームが入り込んだ場合でも、テキストの自動折り返しによって行の高さが想定を超えて膨らみ、
+      // ページの境界ボックスを突き破って pdf レンダラが無限ループ（Cannot fit some widgets）を起こすのを100%防止します。
       rows.add(
         pw.Container(
           padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
@@ -52,14 +55,13 @@ class PdfIndividualList {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
-                    if (rTeam.isNotEmpty) pw.Text(rTeam, style: pw.TextStyle(font: ttf, fontSize: 7, color: PdfColors.grey600)),
-                    pw.Text(rName, style: pw.TextStyle(font: ttfBold, fontSize: 10, color: rWin ? PdfColors.red700 : PdfColors.black)),
+                    if (rTeam.isNotEmpty) pw.Text(rTeam, style: pw.TextStyle(font: ttf, fontSize: 7, color: PdfColors.grey600), maxLines: 1, overflow: pw.TextOverflow.clip),
+                    pw.Text(rName, style: pw.TextStyle(font: ttfBold, fontSize: 10, color: rWin ? PdfColors.red700 : PdfColors.black), maxLines: 1, overflow: pw.TextOverflow.clip),
                   ],
                 ),
               ),
               pw.SizedBox(width: 8),
               PdfTeamTable.pdfPointBox(ptsMap['red']!, rWin, true, ttfBold),
-              // ★ 修正: 環境依存の「✕(U+2715)」を、標準フォントに含まれる「×(U+00D7)」に変更して豆腐文字を回避します
               pw.Padding(padding: const pw.EdgeInsets.symmetric(horizontal: 6), child: pw.Text(isDraw ? '×' : '-', style: pw.TextStyle(font: ttf, fontSize: 16, color: PdfColors.grey500))),
               PdfTeamTable.pdfPointBox(ptsMap['white']!, wWin, false, ttfBold),
               pw.SizedBox(width: 8),
@@ -67,16 +69,28 @@ class PdfIndividualList {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    if (wTeam.isNotEmpty) pw.Text(wTeam, style: pw.TextStyle(font: ttf, fontSize: 7, color: PdfColors.grey600)),
-                    pw.Text(wName, style: pw.TextStyle(font: ttfBold, fontSize: 10, color: wWin ? PdfColors.red700 : PdfColors.black)),
+                    if (wTeam.isNotEmpty) pw.Text(wTeam, style: pw.TextStyle(font: ttf, fontSize: 7, color: PdfColors.grey600), maxLines: 1, overflow: pw.TextOverflow.clip),
+                    pw.Text(wName, style: pw.TextStyle(font: ttfBold, fontSize: 10, color: wWin ? PdfColors.red700 : PdfColors.black), maxLines: 1, overflow: pw.TextOverflow.clip),
                   ],
                 ),
               ),
             ],
           ),
-        )
+        ),
       );
     }
-    return pw.Container(margin: const pw.EdgeInsets.symmetric(vertical: 4), decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey500, width: 0.5)), child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [pw.Container(padding: const pw.EdgeInsets.all(6), color: PdfColors.grey200, width: double.infinity, child: pw.Text(headerTitle, style: pw.TextStyle(font: ttfBold, fontSize: 10))), ...rows]));
+
+    // 個人戦の1ブロックを安全な外枠コンテナとしてラップして返却します
+    return pw.Container(
+      margin: const pw.EdgeInsets.symmetric(vertical: 4), 
+      decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey500, width: 0.5)), 
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start, 
+        children: [
+          pw.Container(padding: const pw.EdgeInsets.all(6), color: PdfColors.grey200, width: double.infinity, child: pw.Text(headerTitle, style: pw.TextStyle(font: ttfBold, fontSize: 10))), 
+          ...rows,
+        ],
+      ),
+    );
   }
 }

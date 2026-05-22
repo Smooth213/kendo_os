@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/entities/comment_event.dart';
+import 'package:kendo_os/domain/events/comment_event.dart'; // ★ 修正: 一本化された events 側の正しいパスへ完全同期
 import 'package:kendo_os/domain/entities/match_comment_model.dart';
 
 void main() {

@@ -65,7 +65,9 @@ void main() {
       ];
 
       final result = PdfTeamTable.build('団体戦', matches, ttf, ttfBold);
-      final table = (result as pw.Column).children[1] as pw.Table;
+      // ★ 適合補正: Container から内包される Column を安全に取り出してキャスト
+      final column = (result as pw.Container).child as pw.Column;
+      final table = column.children[1] as pw.Table;
       final scoreRow = table.children[2]; // 0: header, 1: red row, 2: score row
       final scoreCell = scoreRow.children[1] as pw.Container;
       final stack = scoreCell.child as pw.Stack;
@@ -94,15 +96,17 @@ void main() {
     test('ヘッダータイトルが正しく生成されるべき', () {
       // Case 1: Normal team match
       final matches1 = [createMockMatch(id: 'm1', redName: 'チームA:選手', whiteName: 'チームB:選手')];
-      final result1 = PdfTeamTable.build('団体戦グループA', matches1, ttf, ttfBold) as pw.Column;
-      final header1 = result1.children.first as pw.Container;
+      final result1 = PdfTeamTable.build('団体戦グループA', matches1, ttf, ttfBold);
+      final column1 = (result1 as pw.Container).child as pw.Column;
+      final header1 = column1.children.first as pw.Container;
       final headerText1 = (header1.child as pw.Text).text.toPlainText();
       expect(headerText1, '【団体戦】対戦スコア詳細');
 
       // Case 2: League match with note
       final matches2 = [createMockMatch(id: 'm2', redName: 'チームC:選手', whiteName: 'チームD:選手', note: '[リーグ戦] 決勝トーナメント')];
-      final result2 = PdfTeamTable.build('リーグA', matches2, ttf, ttfBold) as pw.Column;
-      final header2 = result2.children.first as pw.Container;
+      final result2 = PdfTeamTable.build('リーグA', matches2, ttf, ttfBold);
+      final column2 = (result2 as pw.Container).child as pw.Column;
+      final header2 = column2.children.first as pw.Container;
       final headerText2 = (header2.child as pw.Text).text.toPlainText();
       expect(headerText2, '【リーグ団体戦】対戦スコア詳細（決勝トーナメント）');
     });
@@ -118,7 +122,8 @@ void main() {
       ];
 
       final result = PdfTeamTable.build('団体戦', matches, ttf, ttfBold);
-      final table = (result as pw.Column).children[1] as pw.Table;
+      final column = (result as pw.Container).child as pw.Column;
+      final table = column.children[1] as pw.Table;
       final whiteNameRow = table.children[3]; // 0:header, 1:red, 2:score, 3:white
       final nameCell = whiteNameRow.children[1];
 
@@ -141,7 +146,8 @@ void main() {
       ];
 
       final result = PdfTeamTable.build('団体戦', matches, ttf, ttfBold);
-      final table = (result as pw.Column).children[1] as pw.Table;
+      final column = (result as pw.Container).child as pw.Column;
+      final table = column.children[1] as pw.Table;
       
       // Red team names
       final redNameRow = table.children[1];
