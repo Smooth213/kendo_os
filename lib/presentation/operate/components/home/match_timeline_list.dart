@@ -1707,11 +1707,14 @@ class MatchListTileCard extends ConsumerWidget {
         border: Border.all(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300, width: 1.2),
         boxShadow: isPlaying ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))] : [],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      // ★ 適合修正: ListTile が Material のエフェクトを正しく描画できるよう、Material で包囲する
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // 🔼 【1行目】: 運営ステータス＆ボタン一元集約
             Row(
               children: [
@@ -1911,6 +1914,7 @@ class MatchListTileCard extends ConsumerWidget {
           ],
         ),
         onTap: () => context.push('/match/${match.id}'),
+        ),
       ),
     );
 

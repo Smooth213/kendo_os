@@ -43,7 +43,7 @@ echo -e "${GREEN}✅ 一時置換完了${NC}"
 
 # 2. Webビルド
 echo -e "${YELLOW}[2/4] Flutter Web ビルド中...${NC}"
-flutter build web --release
+flutter build web --release --pwa-strategy none
 BUILD_RESULT=$?
 
 if [ $BUILD_RESULT -ne 0 ]; then
