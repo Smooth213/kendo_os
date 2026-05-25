@@ -2,9 +2,9 @@ name: Flutter Test CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, stage2-beta ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, stage2-beta ]
 
 jobs:
   test:
