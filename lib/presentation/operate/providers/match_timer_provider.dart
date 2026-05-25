@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'match_list_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
-import 'package:kendo_os/domain/entities/match_state.dart'; // ★ Phase 1 & 3: FSM連携用
+import 'package:kendo_os/domain/match/match_state.dart'; // ★ Phase 1 & 3: FSM連携用
 import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint用
 import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 

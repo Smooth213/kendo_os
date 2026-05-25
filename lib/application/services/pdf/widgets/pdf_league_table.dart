@@ -4,7 +4,7 @@ import '../../../../domain/services/kendo_rule_engine.dart';
 import '../../../../domain/rules/match_rule.dart';
 import '../models/pdf_view_model.dart';
 import '../models/pdf_point_data.dart';
-import '../../../../domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 
 class PdfLeagueTable {
   static pw.Widget build(String groupName, List<dynamic> matches, pw.Font ttf, pw.Font ttfBold) {

@@ -1,7 +1,7 @@
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // 姓名分割用
 
 class CsvService {

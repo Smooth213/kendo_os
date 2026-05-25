@@ -32,6 +32,7 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
+  web: ^1.0.0
   crypto: ^3.0.3
   flutter_riverpod: ^2.5.1
   google_fonts: ^6.2.1
@@ -41,6 +42,8 @@ dependencies:
   firebase_core: ^4.6.0
   firebase_crashlytics: ^5.2.0 # ★ 修正: Firebaseの他のパッケージと足並みを揃える
   freezed_annotation: ^3.1.0
+  documentation_runtime:
+    path: packages/documentation_runtime
   json_annotation: ^4.11.0
   cloud_firestore: ^6.2.0
   isar_community: ^3.3.2
@@ -73,6 +76,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  replay_engine:
+    path: packages/replay_engine
   integration_test:
     sdk: flutter
   analyzer: any
@@ -108,12 +113,6 @@ flutter:
     - assets/kendo_icon.png
     # ★ Phase 4: 音源フォルダの読み込み設定をここに追加
     - assets/sounds/
-    - docs/manuals/ # ★ Phase 5: Markdownファイルをアセットとして同梱
-    - docs/manuals/operator/
-    - docs/manuals/viewer/
-    - docs/manuals/recovery/
-    - docs/manuals/quickstart/
-    - docs/manuals/faq/
     - assets/manual_embeddings/ # ★ Phase 6: AI検索用インデックスデータの同梱
 
   # To add assets to your application, add an assets section, like this:

@@ -47,8 +47,6 @@ class OperatorActionButtons extends ConsumerWidget {
           ),
         ),
         // ★ 修正: ユーザーを迷わせる不要な「自チーム選手成績」メニューは完全削除（Stage 3以降に封印移動）
-        const SizedBox(height: 8),
-        _buildGovernancePanel(context),
       ],
     );
   }
@@ -62,12 +60,5 @@ class OperatorActionButtons extends ConsumerWidget {
       label: title,
       trailing: Icon(Icons.arrow_forward_ios, size: 14, color: enableLiquidGlass ? (isDark ? color.shade500 : color.shade300) : Colors.white70),
     );
-  }
-
-  // ★ Phase 2-1: Governance Menu 削除
-  // Stage2 βロードマップに従い、Runtime Version、Governance、Replay Dashboard、Constitution 等の
-  // 一般ユーザーを混乱させるデバッグパネルを物理的に削除し、常に空の Widget を返す（または表示を完全にクローズ）ように完全に縮退。
-  Widget _buildGovernancePanel(BuildContext context) {
-    return const SizedBox.shrink(); // ★ 完全に隠蔽・消滅
   }
 }

@@ -1,5 +1,7 @@
 class PlayerModel {
   final String id;
+  /// ★ 新・同期空間統治キー：名簿データが所属する固有の道場ID
+  final String organizationId;
   final String lastName; 
   final String firstName; 
   final String lastNameKana;  // ★ 追加：名字のよみがな
@@ -11,6 +13,7 @@ class PlayerModel {
 
   PlayerModel({
     required this.id,
+    this.organizationId = 'default_org',
     required this.lastName,
     required this.firstName,
     required this.lastNameKana,

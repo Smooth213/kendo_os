@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/entities/match_context.dart';
+import 'package:kendo_os/domain/match/match_context.dart';
 import 'package:kendo_os/presentation/operate/providers/match_provider.dart'; 
 import 'package:kendo_os/domain/entities/role_permission.dart';
-import 'package:kendo_os/domain/entities/match_state.dart'; // ★ Phase 1: FSMのインポート
+import 'package:kendo_os/domain/match/match_state.dart'; // ★ Phase 1: FSMのインポート
 import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 // ==========================================

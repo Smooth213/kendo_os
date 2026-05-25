@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/stroke_model.dart';
+import 'package:kendo_os/domain/score/stroke_model.dart';
 
 final strokeRepositoryProvider = Provider((ref) => StrokeRepository());
 

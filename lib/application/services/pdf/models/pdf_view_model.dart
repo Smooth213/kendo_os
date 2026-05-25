@@ -1,5 +1,5 @@
-import '../../../../domain/entities/score_event.dart';
-import '../../../../domain/entities/match_model.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'pdf_point_data.dart';
 
 class PdfViewModel {

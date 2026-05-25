@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:kendo_os/presentation/operate/providers/metrics_provider.dart';
+import 'package:kendo_os/presentation/providers/internal/metrics_provider.dart';
 
 // モッククラス
 class MockAlertService extends Mock implements AlertService {}

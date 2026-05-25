@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import '../providers/match_provider.dart';

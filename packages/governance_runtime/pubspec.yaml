@@ -1,0 +1,15 @@
+name: governance_runtime
+description: "Dedicated governance runtime package for kendo_os to police system constraints."
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: '^3.0.0'
+
+dependencies:
+  meta: ^1.9.0
+  analyzer: any
+  crypto: any
+
+dev_dependencies:
+  test: ^1.24.0

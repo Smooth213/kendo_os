@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/entities/match_context.dart';
+import 'package:kendo_os/domain/match/match_context.dart';
 
 // ==========================================
 // ★ Phase 2: Rule Interface統一 - Base Interface

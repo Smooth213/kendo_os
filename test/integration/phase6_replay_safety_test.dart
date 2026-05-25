@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/domain/entities/match_context.dart';
+import 'package:kendo_os/domain/match/match_context.dart';
 import '../helpers/test_match_factory.dart';
 import '../golden/historic_events_archive.dart';
 

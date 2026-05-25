@@ -18,6 +18,8 @@ enum AuditAction {
 abstract class AuditLog with _$AuditLog {
   const factory AuditLog({
     required String id,
+    /// ★ 新・同期空間統治キー：監査ログおよびタイムラインが帰属する最上位道場キー
+    @Default('default_org') String organizationId,
     required String matchId,
     required String userId,
     required AuditAction action,

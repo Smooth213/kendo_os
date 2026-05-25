@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 
 class BunaiksenHelper {

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/repositories/event_store.dart';
 
 /// 楽観的ロック（Optimistic Concurrency Control）失敗時の例外

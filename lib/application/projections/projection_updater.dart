@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/entities/match_aggregate.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_aggregate.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/repositories/event_store.dart';
 import 'package:kendo_os/domain/repositories/projection_store.dart';
 import 'package:kendo_os/infrastructure/repository/match_aggregate_repository.dart';
 import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 
 final projectionUpdaterProvider = Provider<ProjectionUpdater>((ref) {
   return ProjectionUpdater(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart'; // ★ 追加: UseCaseの参照
 import '../../operate/providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照

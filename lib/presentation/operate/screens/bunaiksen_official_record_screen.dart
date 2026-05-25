@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import '../providers/bunaiksen_provider.dart';
 import 'package:kendo_os/application/services/pdf_service.dart';
 import 'kachinuki_scoreboard_screen.dart'; // 勝ち抜き戦描画用
@@ -9,7 +9,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import '../providers/match_rule_provider.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
-import 'package:kendo_os/domain/entities/score_event.dart'; // Sideなどを利用
+import 'package:kendo_os/domain/score/score_event.dart'; // Sideなどを利用
 import '../../shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 import '../providers/match_view_model_provider.dart';

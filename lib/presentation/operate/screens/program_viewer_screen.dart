@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:kendo_os/domain/entities/program_model.dart' hide StrokeModel;
-import 'package:kendo_os/domain/entities/stroke_model.dart';
+import 'package:kendo_os/domain/score/stroke_model.dart';
 import 'package:kendo_os/infrastructure/persistence/models/local_stroke_model.dart';
 import 'package:kendo_os/infrastructure/repository/stroke_repository.dart';
 import 'package:kendo_os/infrastructure/repository/local_stroke_repository.dart';

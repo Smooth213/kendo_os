@@ -2,16 +2,16 @@ import 'package:flutter/foundation.dart'; // ★ 追加: debugPrintを使うた�
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User; // ★ Firebase側のUserを隠し、自作のUserとの衝突を防ぐ
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/entities/audit_log.dart';
-import 'package:kendo_os/domain/entities/score_event.dart'; 
-import 'package:kendo_os/domain/entities/match_context.dart'; 
+import 'package:kendo_os/domain/score/score_event.dart'; 
+import 'package:kendo_os/domain/match/match_context.dart'; 
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ Userモデル用に追加
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; 
-import 'package:kendo_os/domain/entities/match_aggregate.dart';
+import 'package:kendo_os/domain/match/match_aggregate.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart'; 
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/match_rule_provider.dart';
@@ -19,12 +19,12 @@ import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 // ★ match_command_provider.dart のインポートを削除 (相互依存エラー解消のため)
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
-import 'package:kendo_os/presentation/operate/providers/audit_provider.dart';
+import 'package:kendo_os/presentation/providers/internal/audit_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/ui_message_provider.dart'; // ★ 追加: 通知司令塔
 import 'package:kendo_os/application/services/sound_service.dart';
 import 'package:kendo_os/domain/services/match_domain_service.dart'; // ★ 追加
 import 'package:kendo_os/presentation/operate/providers/sync_provider.dart'; // ★ 追加: 同期エンジン
-import 'package:kendo_os/presentation/operate/providers/metrics_provider.dart'; // ★ 追加: メトリクス基盤
+import 'package:kendo_os/presentation/providers/internal/metrics_provider.dart'; // ★ 追加: メトリクス基盤
 import 'package:kendo_os/infrastructure/repository/match_repository.dart';
 
 // ==========================================
@@ -120,6 +120,11 @@ class MatchApplicationService {
         logicalClock: maxClock + 1, // ★ 追加: CRDT同期時にイベント順序が過去にワープするのを防ぐ
       );
 
+      final permissionService = _ref.read(permissionServiceProvider);
+      if (!permissionService.canAppend(currentUser, event)) {
+        throw Exception('スコアを追加する権限がありません。');
+      }
+
       // ★ UseCaseに主体を渡す
       final updatedMatch = _addScore.execute(currentUser, match, event, rule);
 
@@ -173,6 +178,11 @@ class MatchApplicationService {
       // ★ 修正
       final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
       final currentUser = _getCurrentUser(); // ★ 主体を取得
+
+      final permissionService = _ref.read(permissionServiceProvider);
+      if (!permissionService.canUndo(currentUser)) {
+        throw Exception('操作を取り消す権限がありません。');
+      }
 
       int maxClock = match.events.isEmpty ? 0 : match.events.map((e) => e.logicalClock).reduce((a, b) => a > b ? a : b);
 
@@ -245,6 +255,11 @@ class MatchApplicationService {
       final currentUser = _getCurrentUser();
       final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
       
+      final permissionService = _ref.read(permissionServiceProvider);
+      if (!permissionService.canUndo(currentUser)) {
+        throw Exception('データを巻き戻す権限がありません。');
+      }
+
       // 超高速ループでも絶対に被らないタイムスタンプID
       final String syncSeed = DateTime.now().microsecondsSinceEpoch.toString();
 
@@ -317,6 +332,11 @@ class MatchApplicationService {
       // ★ 修正
       final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
       final currentUser = _getCurrentUser(); // ★ 主体を取得
+
+      final permissionService = _ref.read(permissionServiceProvider);
+      if (!permissionService.canTimeUp(currentUser)) {
+        throw Exception('時間切れ処理を実行する権限がありません。');
+      }
 
       final canExtend = rule.isEnchoUnlimited || rule.enchoCount > 0;
       
@@ -497,6 +517,11 @@ class MatchApplicationService {
         sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
         logicalClock: maxClock + 1, // ★ 追加: 判定イベント順序保証
       );
+
+      final permissionService = _ref.read(permissionServiceProvider);
+      if (!permissionService.canAppend(currentUser, event)) {
+        throw Exception('判定を入力する権限がありません。');
+      }
 
       // 2. スコアの追加計算（判定勝ちなら得点が入る）
       // ★ UseCaseに主体を渡す

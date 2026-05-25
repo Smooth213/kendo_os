@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import '../../shared/widgets/infinite_streak_leaderboard.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../../operate/providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
-import 'viewer_home_screen.dart';
+import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart';
 import '../../operate/providers/match_view_model_provider.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
@@ -200,14 +200,16 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
                             child: Card(
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               elevation: 0,
-                              margin: EdgeInsets.zero, // ★ Slidable削除による余白調整
                               color: bg,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 side: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
                               ),
                               child: InkWell(
+                                // ★ STEP 1, 5, 9：ウィジェット内部の構造変更に左右されない安定したテスト Keys 規約の適用
+                                key: Key('viewer_match_card_${match.id}'),
                                 borderRadius: BorderRadius.circular(16),
                                 onTap: () => context.push('/viewer/${match.id}'), // ★ Viewer用の試合画面へ
                                 child: Padding(

@@ -357,6 +357,7 @@ class _CreateTournamentScreenState extends ConsumerState<CreateTournamentScreen>
                   if (_formKey.currentState!.validate()) {
                     final newTournament = TournamentModel(
                       id: '',
+                      organizationId: ref.read(settingsProvider).organizationId,
                       name: _nameController.text,
                       date: _selectedDate,
                       venue: _venueController.text,

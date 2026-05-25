@@ -23,12 +23,16 @@ const MatchCommentEntitySchema = CollectionSchema(
       name: r'category',
       type: IsarType.string,
     ),
-    r'groupName': PropertySchema(
+    r'commentId': PropertySchema(
       id: 1,
+      name: r'commentId',
+      type: IsarType.string,
+    ),
+    r'groupName': PropertySchema(
+      id: 2,
       name: r'groupName',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(id: 2, name: r'id', type: IsarType.string),
     r'lastUpdatedAt': PropertySchema(
       id: 3,
       name: r'lastUpdatedAt',
@@ -58,8 +62,21 @@ const MatchCommentEntitySchema = CollectionSchema(
   serialize: _matchCommentEntitySerialize,
   deserialize: _matchCommentEntityDeserialize,
   deserializeProp: _matchCommentEntityDeserializeProp,
-  idName: r'isarId',
+  idName: r'id',
   indexes: {
+    r'commentId': IndexSchema(
+      id: 3609824276468662262,
+      name: r'commentId',
+      unique: true,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'commentId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
+    ),
     r'tournamentId': IndexSchema(
       id: -716810079468899455,
       name: r'tournamentId',
@@ -95,13 +112,13 @@ int _matchCommentEntityEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.commentId.length * 3;
   {
     final value = object.groupName;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
-  bytesCount += 3 + object.id.length * 3;
   {
     final value = object.matchGroupId;
     if (value != null) {
@@ -125,8 +142,8 @@ void _matchCommentEntitySerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.category);
-  writer.writeString(offsets[1], object.groupName);
-  writer.writeString(offsets[2], object.id);
+  writer.writeString(offsets[1], object.commentId);
+  writer.writeString(offsets[2], object.groupName);
   writer.writeDateTime(offsets[3], object.lastUpdatedAt);
   writer.writeString(offsets[4], object.matchGroupId);
   writer.writeDouble(offsets[5], object.order);
@@ -143,8 +160,9 @@ MatchCommentEntity _matchCommentEntityDeserialize(
 ) {
   final object = MatchCommentEntity();
   object.category = reader.readStringOrNull(offsets[0]);
-  object.groupName = reader.readStringOrNull(offsets[1]);
-  object.id = reader.readString(offsets[2]);
+  object.commentId = reader.readString(offsets[1]);
+  object.groupName = reader.readStringOrNull(offsets[2]);
+  object.id = id;
   object.lastUpdatedAt = reader.readDateTimeOrNull(offsets[3]);
   object.matchGroupId = reader.readStringOrNull(offsets[4]);
   object.order = reader.readDouble(offsets[5]);
@@ -168,9 +186,9 @@ P _matchCommentEntityDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
-    case 2:
       return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
@@ -206,7 +224,7 @@ const _MatchCommentEntitysyncStateValueEnumMap = {
 };
 
 Id _matchCommentEntityGetId(MatchCommentEntity object) {
-  return object.isarId;
+  return object.id;
 }
 
 List<IsarLinkBase<dynamic>> _matchCommentEntityGetLinks(
@@ -219,12 +237,74 @@ void _matchCommentEntityAttach(
   IsarCollection<dynamic> col,
   Id id,
   MatchCommentEntity object,
-) {}
+) {
+  object.id = id;
+}
+
+extension MatchCommentEntityByIndex on IsarCollection<MatchCommentEntity> {
+  Future<MatchCommentEntity?> getByCommentId(String commentId) {
+    return getByIndex(r'commentId', [commentId]);
+  }
+
+  MatchCommentEntity? getByCommentIdSync(String commentId) {
+    return getByIndexSync(r'commentId', [commentId]);
+  }
+
+  Future<bool> deleteByCommentId(String commentId) {
+    return deleteByIndex(r'commentId', [commentId]);
+  }
+
+  bool deleteByCommentIdSync(String commentId) {
+    return deleteByIndexSync(r'commentId', [commentId]);
+  }
+
+  Future<List<MatchCommentEntity?>> getAllByCommentId(
+    List<String> commentIdValues,
+  ) {
+    final values = commentIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'commentId', values);
+  }
+
+  List<MatchCommentEntity?> getAllByCommentIdSync(
+    List<String> commentIdValues,
+  ) {
+    final values = commentIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'commentId', values);
+  }
+
+  Future<int> deleteAllByCommentId(List<String> commentIdValues) {
+    final values = commentIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'commentId', values);
+  }
+
+  int deleteAllByCommentIdSync(List<String> commentIdValues) {
+    final values = commentIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'commentId', values);
+  }
+
+  Future<Id> putByCommentId(MatchCommentEntity object) {
+    return putByIndex(r'commentId', object);
+  }
+
+  Id putByCommentIdSync(MatchCommentEntity object, {bool saveLinks = true}) {
+    return putByIndexSync(r'commentId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByCommentId(List<MatchCommentEntity> objects) {
+    return putAllByIndex(r'commentId', objects);
+  }
+
+  List<Id> putAllByCommentIdSync(
+    List<MatchCommentEntity> objects, {
+    bool saveLinks = true,
+  }) {
+    return putAllByIndexSync(r'commentId', objects, saveLinks: saveLinks);
+  }
+}
 
 extension MatchCommentEntityQueryWhereSort
     on QueryBuilder<MatchCommentEntity, MatchCommentEntity, QWhere> {
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhere>
-  anyIsarId() {
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -234,71 +314,121 @@ extension MatchCommentEntityQueryWhereSort
 extension MatchCommentEntityQueryWhere
     on QueryBuilder<MatchCommentEntity, MatchCommentEntity, QWhereClause> {
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhereClause>
-  isarIdEqualTo(Id isarId) {
+  idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(lower: isarId, upper: isarId),
-      );
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhereClause>
-  isarIdNotEqualTo(Id isarId) {
+  idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             )
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             );
       } else {
         return query
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             )
             .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             );
       }
     });
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhereClause>
-  isarIdGreaterThan(Id isarId, {bool include = false}) {
+  idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
       );
     });
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhereClause>
-  isarIdLessThan(Id isarId, {bool include = false}) {
+  idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
       );
     });
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhereClause>
-  isarIdBetween(
-    Id lowerIsarId,
-    Id upperIsarId, {
+  idBetween(
+    Id lowerId,
+    Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.between(
-          lower: lowerIsarId,
+          lower: lowerId,
           includeLower: includeLower,
-          upper: upperIsarId,
+          upper: upperId,
           includeUpper: includeUpper,
         ),
       );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhereClause>
+  commentIdEqualTo(String commentId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'commentId', value: [commentId]),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterWhereClause>
+  commentIdNotEqualTo(String commentId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'commentId',
+                lower: [],
+                upper: [commentId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'commentId',
+                lower: [commentId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'commentId',
+                lower: [commentId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'commentId',
+                lower: [],
+                upper: [commentId],
+                includeUpper: false,
+              ),
+            );
+      }
     });
   }
 
@@ -543,6 +673,147 @@ extension MatchCommentEntityQueryFilter
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'commentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'commentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'commentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'commentId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'commentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'commentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'commentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'commentId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'commentId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
+  commentIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'commentId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
   groupNameIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -702,45 +973,35 @@ extension MatchCommentEntityQueryFilter
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idEqualTo(String value, {bool caseSensitive = true}) {
+  idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'id', value: value),
       );
     });
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
           property: r'id',
           value: value,
-          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idLessThan(String value, {bool include = false, bool caseSensitive = true}) {
+  idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
           property: r'id',
           value: value,
-          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -748,133 +1009,6 @@ extension MatchCommentEntityQueryFilter
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
   idBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'id',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idStartsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idEndsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'id',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  idIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'id', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  isarIdEqualTo(Id value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isarId', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  isarIdGreaterThan(Id value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'isarId',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  isarIdLessThan(Id value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'isarId',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterFilterCondition>
-  isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -883,7 +1017,7 @@ extension MatchCommentEntityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'isarId',
+          property: r'id',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -1579,6 +1713,20 @@ extension MatchCommentEntityQuerySortBy
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
+  sortByCommentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'commentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
+  sortByCommentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'commentId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
   sortByGroupName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.asc);
@@ -1589,20 +1737,6 @@ extension MatchCommentEntityQuerySortBy
   sortByGroupNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.desc);
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
-  sortById() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
-  sortByIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
     });
   }
 
@@ -1708,6 +1842,20 @@ extension MatchCommentEntityQuerySortThenBy
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
+  thenByCommentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'commentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
+  thenByCommentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'commentId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
   thenByGroupName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupName', Sort.asc);
@@ -1732,20 +1880,6 @@ extension MatchCommentEntityQuerySortThenBy
   thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
-  thenByIsarId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QAfterSortBy>
-  thenByIsarIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.desc);
     });
   }
 
@@ -1844,17 +1978,16 @@ extension MatchCommentEntityQueryWhereDistinct
   }
 
   QueryBuilder<MatchCommentEntity, MatchCommentEntity, QDistinct>
-  distinctByGroupName({bool caseSensitive = true}) {
+  distinctByCommentId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'groupName', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'commentId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QDistinct> distinctById({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<MatchCommentEntity, MatchCommentEntity, QDistinct>
+  distinctByGroupName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'groupName', caseSensitive: caseSensitive);
     });
   }
 
@@ -1903,9 +2036,9 @@ extension MatchCommentEntityQueryWhereDistinct
 
 extension MatchCommentEntityQueryProperty
     on QueryBuilder<MatchCommentEntity, MatchCommentEntity, QQueryProperty> {
-  QueryBuilder<MatchCommentEntity, int, QQueryOperations> isarIdProperty() {
+  QueryBuilder<MatchCommentEntity, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isarId');
+      return query.addPropertyName(r'id');
     });
   }
 
@@ -1916,16 +2049,17 @@ extension MatchCommentEntityQueryProperty
     });
   }
 
+  QueryBuilder<MatchCommentEntity, String, QQueryOperations>
+  commentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'commentId');
+    });
+  }
+
   QueryBuilder<MatchCommentEntity, String?, QQueryOperations>
   groupNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'groupName');
-    });
-  }
-
-  QueryBuilder<MatchCommentEntity, String, QQueryOperations> idProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
     });
   }
 

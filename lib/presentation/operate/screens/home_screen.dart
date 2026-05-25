@@ -8,14 +8,19 @@ import 'package:kendo_os/domain/entities/tournament_model.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 
-import '../providers/permission_provider.dart';
+// ★ 古い permission_provider を排除し、新セキュリティ一元管理システムを導入
+import '../../../core/security/feature_gate.dart';
+import '../../../domain/entities/user_role.dart';
+import '../../shared/providers/current_user_role_provider.dart';
+import '../../shared/providers/security_level_provider.dart';
 import '../providers/settings_provider.dart';
 
 import '../../shared/widgets/liquid_background.dart';
-import '../components/home/match_timeline_list.dart'; // ★ 新規作成したコンポーネント
+import '../components/home/match_timeline_list.dart'; 
 import '../components/home/operator_action_buttons.dart';
 import '../providers/match_list_provider.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart';
 
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
   final repo = ref.watch(tournamentRepositoryProvider);
@@ -36,13 +41,22 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ★ 状態を監視：現在のロールを取得
+    final currentRole = ref.watch(currentUserRoleProvider);
+
+    // ★ 核心: Viewerモードで入った場合は、自動的にViewer専用の美しい画面へルーティングする
+    if (currentRole == UserRole.viewer) {
+      return ViewerHomeScreen(tournamentId: tournamentId);
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
-    final permissions = ref.watch(permissionProvider);
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;    
+    final currentLevel = ref.watch(securityLevelProvider);
+    // FeatureGate を用いて、この画面で行う各操作権限を決定論的に割り出す
+    final bool canCreate = FeatureGate.canCreateMatch(currentRole, currentLevel);
+    final bool isReadOnly = (currentRole == UserRole.viewer);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
-    // ★ 修正: activeMatchesProvider だとリーグ戦や勝ち抜き戦で最初の試合が終了すると
-    // グループ全体がバナーから消えてしまう不具合があるため、専用の抽出ロジックに置き換え
     final allMatchesList = ref.watch(matchListProvider).where((m) => m.tournamentId == tournamentId).toList()
       ..sort((a, b) => a.order.compareTo(b.order));
 
@@ -78,18 +92,18 @@ class HomeScreen extends ConsumerWidget {
     }
 
     return PopScope(
-      canPop: !permissions.isReadOnly,
+      canPop: !isReadOnly,
       child: LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent, 
           appBar: AppBar(
-            automaticallyImplyLeading: !permissions.isReadOnly, 
+            automaticallyImplyLeading: !isReadOnly, 
             title: Text('大会ホーム', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
             backgroundColor: enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
             elevation: 0,
             iconTheme: IconThemeData(color: textColor),
             actions: [
-              if (!permissions.isReadOnly)
+              if (!isReadOnly)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   child: ElevatedButton.icon(
@@ -128,17 +142,15 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
 
-              // --- 操作メニュー ---
-              Padding(
-                // 🌟 修正: 縦の余白を 4.0 から 2.0 に微調整してボタンの押しやすさはそのままに縦幅を節約
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
-                child: OperatorActionButtons(tournamentId: tournamentId),
-              ),
-              // 🌟 修正: 不要な隙間（SizedBox(height: 8)）を削除し、タイムラインの開始位置を上部へ引き上げる
+              // --- 操作メニュー（権限に応じて表示自体を動的に制御するガードを適用） ---
+              if (canCreate)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
+                  child: OperatorActionButtons(tournamentId: tournamentId),
+                ),
 
               // --- タイムラインリスト（スクロール領域） ---
               Expanded(
-                flex: 2, // ★ 修正: 明示的にflex比率を設定し、次の試合カード出現時でも画面の下3分の2（約66%以上）が確実に一覧表示エリアになるよう要塞化
                 child: MatchTimelineList(tournamentId: tournamentId),
               ),
             ],
@@ -159,13 +171,11 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-            // ★ 修正: 同期技術の誇示ではなく「安心して見守れる」情緒的価値を主役にブラッシュアップ
             const Text('離れた場所にいる保護者や仲間も、\n試合状況をリアルタイムで安心して見守れます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
               const SizedBox(height: 16),
               Container(padding: const EdgeInsets.all(8), color: Colors.white, child: QrImageView(data: shareUrl, version: QrVersions.auto, size: 200.0, backgroundColor: Colors.white)),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                // ★ Phase 9最適化: 名称から「AI/OS」を排し、現場に寄り添った文言へブラッシュアップ
                 onPressed: () => SharePlus.instance.share(ShareParams(text: 
                   '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
                   'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'

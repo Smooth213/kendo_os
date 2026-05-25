@@ -2,7 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/foundation.dart';
 import '../../infrastructure/persistence/converters/json_converters.dart';
 import 'timeline_item.dart';
-import 'match_model.dart'; // SyncState, コンバーター等の共有
+import 'package:kendo_os/domain/match/match_model.dart'; // SyncState, コンバーター等の共有
 
 part 'match_comment_model.freezed.dart';
 part 'match_comment_model.g.dart';

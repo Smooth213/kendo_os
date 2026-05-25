@@ -5659,12 +5659,16 @@ const MatchCommandEntitySchema = CollectionSchema(
   name: r'MatchCommandEntity',
   id: 3650304974403129038,
   properties: {
-    r'createdAt': PropertySchema(
+    r'commandId': PropertySchema(
       id: 0,
+      name: r'commandId',
+      type: IsarType.string,
+    ),
+    r'createdAt': PropertySchema(
+      id: 1,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'id': PropertySchema(id: 1, name: r'id', type: IsarType.string),
     r'payloadJson': PropertySchema(
       id: 2,
       name: r'payloadJson',
@@ -5678,16 +5682,16 @@ const MatchCommandEntitySchema = CollectionSchema(
   serialize: _matchCommandEntitySerialize,
   deserialize: _matchCommandEntityDeserialize,
   deserializeProp: _matchCommandEntityDeserializeProp,
-  idName: r'isarId',
+  idName: r'id',
   indexes: {
-    r'id': IndexSchema(
-      id: -3268401673993471357,
-      name: r'id',
+    r'commandId': IndexSchema(
+      id: -4064098501468219660,
+      name: r'commandId',
       unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'id',
+          name: r'commandId',
           type: IndexType.hash,
           caseSensitive: true,
         ),
@@ -5709,7 +5713,7 @@ int _matchCommandEntityEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.id.length * 3;
+  bytesCount += 3 + object.commandId.length * 3;
   bytesCount += 3 + object.payloadJson.length * 3;
   bytesCount += 3 + object.status.length * 3;
   bytesCount += 3 + object.type.length * 3;
@@ -5722,8 +5726,8 @@ void _matchCommandEntitySerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeString(offsets[1], object.id);
+  writer.writeString(offsets[0], object.commandId);
+  writer.writeDateTime(offsets[1], object.createdAt);
   writer.writeString(offsets[2], object.payloadJson);
   writer.writeString(offsets[3], object.status);
   writer.writeString(offsets[4], object.type);
@@ -5736,9 +5740,9 @@ MatchCommandEntity _matchCommandEntityDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = MatchCommandEntity();
-  object.createdAt = reader.readDateTime(offsets[0]);
-  object.id = reader.readString(offsets[1]);
-  object.isarId = id;
+  object.commandId = reader.readString(offsets[0]);
+  object.createdAt = reader.readDateTime(offsets[1]);
+  object.id = id;
   object.payloadJson = reader.readString(offsets[2]);
   object.status = reader.readString(offsets[3]);
   object.type = reader.readString(offsets[4]);
@@ -5753,9 +5757,9 @@ P _matchCommandEntityDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTime(offset)) as P;
-    case 1:
       return (reader.readString(offset)) as P;
+    case 1:
+      return (reader.readDateTime(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
@@ -5768,7 +5772,7 @@ P _matchCommandEntityDeserializeProp<P>(
 }
 
 Id _matchCommandEntityGetId(MatchCommandEntity object) {
-  return object.isarId;
+  return object.id;
 }
 
 List<IsarLinkBase<dynamic>> _matchCommandEntityGetLinks(
@@ -5782,70 +5786,73 @@ void _matchCommandEntityAttach(
   Id id,
   MatchCommandEntity object,
 ) {
-  object.isarId = id;
+  object.id = id;
 }
 
 extension MatchCommandEntityByIndex on IsarCollection<MatchCommandEntity> {
-  Future<MatchCommandEntity?> getById(String id) {
-    return getByIndex(r'id', [id]);
+  Future<MatchCommandEntity?> getByCommandId(String commandId) {
+    return getByIndex(r'commandId', [commandId]);
   }
 
-  MatchCommandEntity? getByIdSync(String id) {
-    return getByIndexSync(r'id', [id]);
+  MatchCommandEntity? getByCommandIdSync(String commandId) {
+    return getByIndexSync(r'commandId', [commandId]);
   }
 
-  Future<bool> deleteById(String id) {
-    return deleteByIndex(r'id', [id]);
+  Future<bool> deleteByCommandId(String commandId) {
+    return deleteByIndex(r'commandId', [commandId]);
   }
 
-  bool deleteByIdSync(String id) {
-    return deleteByIndexSync(r'id', [id]);
+  bool deleteByCommandIdSync(String commandId) {
+    return deleteByIndexSync(r'commandId', [commandId]);
   }
 
-  Future<List<MatchCommandEntity?>> getAllById(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return getAllByIndex(r'id', values);
+  Future<List<MatchCommandEntity?>> getAllByCommandId(
+    List<String> commandIdValues,
+  ) {
+    final values = commandIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'commandId', values);
   }
 
-  List<MatchCommandEntity?> getAllByIdSync(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'id', values);
+  List<MatchCommandEntity?> getAllByCommandIdSync(
+    List<String> commandIdValues,
+  ) {
+    final values = commandIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'commandId', values);
   }
 
-  Future<int> deleteAllById(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'id', values);
+  Future<int> deleteAllByCommandId(List<String> commandIdValues) {
+    final values = commandIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'commandId', values);
   }
 
-  int deleteAllByIdSync(List<String> idValues) {
-    final values = idValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'id', values);
+  int deleteAllByCommandIdSync(List<String> commandIdValues) {
+    final values = commandIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'commandId', values);
   }
 
-  Future<Id> putById(MatchCommandEntity object) {
-    return putByIndex(r'id', object);
+  Future<Id> putByCommandId(MatchCommandEntity object) {
+    return putByIndex(r'commandId', object);
   }
 
-  Id putByIdSync(MatchCommandEntity object, {bool saveLinks = true}) {
-    return putByIndexSync(r'id', object, saveLinks: saveLinks);
+  Id putByCommandIdSync(MatchCommandEntity object, {bool saveLinks = true}) {
+    return putByIndexSync(r'commandId', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllById(List<MatchCommandEntity> objects) {
-    return putAllByIndex(r'id', objects);
+  Future<List<Id>> putAllByCommandId(List<MatchCommandEntity> objects) {
+    return putAllByIndex(r'commandId', objects);
   }
 
-  List<Id> putAllByIdSync(
+  List<Id> putAllByCommandIdSync(
     List<MatchCommandEntity> objects, {
     bool saveLinks = true,
   }) {
-    return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
+    return putAllByIndexSync(r'commandId', objects, saveLinks: saveLinks);
   }
 }
 
 extension MatchCommandEntityQueryWhereSort
     on QueryBuilder<MatchCommandEntity, MatchCommandEntity, QWhere> {
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhere>
-  anyIsarId() {
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -5855,68 +5862,66 @@ extension MatchCommandEntityQueryWhereSort
 extension MatchCommandEntityQueryWhere
     on QueryBuilder<MatchCommandEntity, MatchCommandEntity, QWhereClause> {
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhereClause>
-  isarIdEqualTo(Id isarId) {
+  idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(lower: isarId, upper: isarId),
-      );
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhereClause>
-  isarIdNotEqualTo(Id isarId) {
+  idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             )
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             );
       } else {
         return query
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             )
             .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             );
       }
     });
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhereClause>
-  isarIdGreaterThan(Id isarId, {bool include = false}) {
+  idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
       );
     });
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhereClause>
-  isarIdLessThan(Id isarId, {bool include = false}) {
+  idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
       );
     });
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhereClause>
-  isarIdBetween(
-    Id lowerIsarId,
-    Id upperIsarId, {
+  idBetween(
+    Id lowerId,
+    Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.between(
-          lower: lowerIsarId,
+          lower: lowerId,
           includeLower: includeLower,
-          upper: upperIsarId,
+          upper: upperId,
           includeUpper: includeUpper,
         ),
       );
@@ -5924,31 +5929,31 @@ extension MatchCommandEntityQueryWhere
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhereClause>
-  idEqualTo(String id) {
+  commandIdEqualTo(String commandId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'id', value: [id]),
+        IndexWhereClause.equalTo(indexName: r'commandId', value: [commandId]),
       );
     });
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterWhereClause>
-  idNotEqualTo(String id) {
+  commandIdNotEqualTo(String commandId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'id',
+                indexName: r'commandId',
                 lower: [],
-                upper: [id],
+                upper: [commandId],
                 includeUpper: false,
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'id',
-                lower: [id],
+                indexName: r'commandId',
+                lower: [commandId],
                 includeLower: false,
                 upper: [],
               ),
@@ -5957,17 +5962,17 @@ extension MatchCommandEntityQueryWhere
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'id',
-                lower: [id],
+                indexName: r'commandId',
+                lower: [commandId],
                 includeLower: false,
                 upper: [],
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'id',
+                indexName: r'commandId',
                 lower: [],
-                upper: [id],
+                upper: [commandId],
                 includeUpper: false,
               ),
             );
@@ -5978,6 +5983,147 @@ extension MatchCommandEntityQueryWhere
 
 extension MatchCommandEntityQueryFilter
     on QueryBuilder<MatchCommandEntity, MatchCommandEntity, QFilterCondition> {
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'commandId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'commandId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'commandId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'commandId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'commandId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'commandId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'commandId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'commandId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'commandId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
+  commandIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'commandId', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
   createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -6034,45 +6180,35 @@ extension MatchCommandEntityQueryFilter
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idEqualTo(String value, {bool caseSensitive = true}) {
+  idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'id', value: value),
       );
     });
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
           property: r'id',
           value: value,
-          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idLessThan(String value, {bool include = false, bool caseSensitive = true}) {
+  idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
           property: r'id',
           value: value,
-          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -6080,133 +6216,6 @@ extension MatchCommandEntityQueryFilter
 
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
   idBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'id',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idStartsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idEndsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'id',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'id',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  idIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'id', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  isarIdEqualTo(Id value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'isarId', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  isarIdGreaterThan(Id value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'isarId',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  isarIdLessThan(Id value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'isarId',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterFilterCondition>
-  isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -6215,7 +6224,7 @@ extension MatchCommandEntityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'isarId',
+          property: r'id',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -6658,6 +6667,20 @@ extension MatchCommandEntityQueryLinks
 extension MatchCommandEntityQuerySortBy
     on QueryBuilder<MatchCommandEntity, MatchCommandEntity, QSortBy> {
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
+  sortByCommandId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'commandId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
+  sortByCommandIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'commandId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
   sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -6668,20 +6691,6 @@ extension MatchCommandEntityQuerySortBy
   sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
-  sortById() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
-  sortByIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
     });
   }
 
@@ -6731,6 +6740,20 @@ extension MatchCommandEntityQuerySortBy
 extension MatchCommandEntityQuerySortThenBy
     on QueryBuilder<MatchCommandEntity, MatchCommandEntity, QSortThenBy> {
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
+  thenByCommandId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'commandId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
+  thenByCommandIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'commandId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
   thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -6755,20 +6778,6 @@ extension MatchCommandEntityQuerySortThenBy
   thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
-  thenByIsarId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QAfterSortBy>
-  thenByIsarIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.desc);
     });
   }
 
@@ -6818,17 +6827,16 @@ extension MatchCommandEntityQuerySortThenBy
 extension MatchCommandEntityQueryWhereDistinct
     on QueryBuilder<MatchCommandEntity, MatchCommandEntity, QDistinct> {
   QueryBuilder<MatchCommandEntity, MatchCommandEntity, QDistinct>
-  distinctByCreatedAt() {
+  distinctByCommandId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'createdAt');
+      return query.addDistinctBy(r'commandId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QDistinct> distinctById({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<MatchCommandEntity, MatchCommandEntity, QDistinct>
+  distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'createdAt');
     });
   }
 
@@ -6856,9 +6864,16 @@ extension MatchCommandEntityQueryWhereDistinct
 
 extension MatchCommandEntityQueryProperty
     on QueryBuilder<MatchCommandEntity, MatchCommandEntity, QQueryProperty> {
-  QueryBuilder<MatchCommandEntity, int, QQueryOperations> isarIdProperty() {
+  QueryBuilder<MatchCommandEntity, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isarId');
+      return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<MatchCommandEntity, String, QQueryOperations>
+  commandIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'commandId');
     });
   }
 
@@ -6866,12 +6881,6 @@ extension MatchCommandEntityQueryProperty
   createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
-    });
-  }
-
-  QueryBuilder<MatchCommandEntity, String, QQueryOperations> idProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
     });
   }
 

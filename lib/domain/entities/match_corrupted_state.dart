@@ -1,5 +1,5 @@
-import 'package:kendo_os/domain/entities/match_model.dart';
-import 'package:kendo_os/domain/entities/match_state.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/domain/match/match_state.dart';
 
 class MatchCorruptedState {
   final MatchModel match;

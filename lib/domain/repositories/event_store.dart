@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 
 abstract class EventStore {
   /// イベントをストリームの末尾に追加します

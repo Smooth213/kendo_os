@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // ★ Phase 9-3: インポート追加
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart'; 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,51 +13,47 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart'; 
 import 'package:flutter_web_plugins/url_strategy.dart'; // ★ 追加: URLの#を消すためのプラグイン
 
-import 'firebase_options.dart';
-import 'presentation/operate/screens/team_registration_screen.dart'; 
-import 'presentation/operate/screens/start_screen.dart';
-import 'presentation/operate/screens/home_screen.dart';
-import 'presentation/operate/screens/program_management_screen.dart';
-import 'presentation/operate/screens/program_viewer_screen.dart';
-import 'domain/entities/program_model.dart';
-import 'presentation/operate/screens/tournament_list_screen.dart'; 
-import 'presentation/match_router.dart'; // ★ Phase 5: ルーターを追加
-import 'presentation/viewer/screens/viewer_match_screen.dart';
-// ==========================================
-// ★ Phase 6: Stage 2 限定化
-// リリース版に不要な高度機能(内部監査等)を物理的に切断(パージ)します。
-// ==========================================
-import 'presentation/operate/screens/master_management_screen.dart'; // ★ 復旧: マスタ画面へのインポートを再開通
-// import 'presentation/operate/screens/audit_log_screen.dart'; 
-// import 'presentation/operate/screens/observability_dashboard_screen.dart'; 
-import 'presentation/operate/screens/create_tournament_screen.dart';
-import 'presentation/operate/screens/setup_match_format_screen.dart';
-import 'presentation/operate/screens/order_setup_screen.dart'; 
-import 'presentation/operate/screens/team_scoreboard_screen.dart'; 
-import 'presentation/operate/screens/kachinuki_scoreboard_screen.dart'; // ★ Phase 6: 勝ち抜き戦のルーティング用に追加
-import 'presentation/operate/screens/login_screen.dart'; // ★ 復旧: Zero Trust Routerで再び使用
-import 'presentation/operate/screens/settings_screen.dart'; 
-import 'presentation/operate/screens/standings_screen.dart'; // ★ 追加: Phase 8-3 自チーム成績画面
-import 'presentation/operate/screens/official_record_screen.dart'; // ★ 追加: Phase 8-3 出力用スコア画面
-import 'presentation/operate/providers/auth_provider.dart';
-import 'presentation/operate/providers/settings_provider.dart'; 
-import 'presentation/operate/providers/sync_provider.dart'; 
-import 'infrastructure/persistence/models/match_entity.dart';
-import 'infrastructure/repository/local_match_repository.dart';
-import 'infrastructure/persistence/models/local_stroke_model.dart'; // ★ これを追加
-import 'infrastructure/persistence/models/match_comment_entity.dart'; // ★ Phase 2: コメント専用エンティティ
-import 'presentation/operate/screens/bunaiksen_home_screen.dart';
-import 'presentation/operate/screens/bunaiksen_setup_screen.dart';
-import 'presentation/operate/screens/bunaiksen_official_record_screen.dart';
-import 'presentation/viewer/screens/viewer_home_screen.dart';
-import 'presentation/viewer/screens/viewer_official_record_screen.dart';
-import 'presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
-import 'presentation/viewer/screens/viewer_kachinuki_scoreboard_screen.dart';
-import 'presentation/viewer/screens/viewer_bunaiksen_home_screen.dart';
-import 'presentation/viewer/screens/viewer_bunaiksen_official_record_screen.dart';
-
-import 'presentation/operate/providers/role_provider.dart';
-import 'presentation/operate/providers/metrics_provider.dart'; // ★ 追加: グローバルエラーをメトリクスへ流す
+import 'package:kendo_os/firebase_options.dart';
+import 'package:kendo_os/presentation/operate/screens/team_registration_screen.dart'; 
+import 'package:kendo_os/presentation/operate/screens/start_screen.dart';
+import 'package:kendo_os/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/presentation/operate/screens/program_management_screen.dart';
+import 'package:kendo_os/presentation/operate/screens/program_viewer_screen.dart';
+import 'package:kendo_os/domain/entities/program_model.dart';
+import 'package:kendo_os/presentation/operate/screens/tournament_list_screen.dart'; 
+import 'package:kendo_os/presentation/match_router.dart'; 
+import 'package:kendo_os/presentation/public/viewer/viewer_match_screen.dart';
+import 'package:kendo_os/presentation/internal/master_management_screen.dart'; 
+import 'package:kendo_os/presentation/operate/screens/create_tournament_screen.dart';
+import 'package:kendo_os/presentation/operate/screens/setup_match_format_screen.dart';
+import 'package:kendo_os/presentation/operate/screens/order_setup_screen.dart'; 
+import 'package:kendo_os/presentation/public/operator/team_scoreboard_screen.dart'; 
+import 'package:kendo_os/presentation/operate/screens/kachinuki_scoreboard_screen.dart'; 
+import 'package:kendo_os/presentation/operate/screens/login_screen.dart'; 
+import 'package:kendo_os/presentation/public/operator/settings_screen.dart'; 
+import 'package:kendo_os/presentation/operate/screens/standings_screen.dart'; 
+import 'package:kendo_os/presentation/public/operator/official_record_screen.dart'; 
+import 'package:kendo_os/presentation/operate/providers/auth_provider.dart';
+import 'package:kendo_os/presentation/operate/providers/settings_provider.dart'; 
+import 'package:kendo_os/presentation/operate/providers/sync_provider.dart'; 
+import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
+import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/infrastructure/persistence/models/local_stroke_model.dart'; 
+import 'package:kendo_os/infrastructure/persistence/models/match_comment_entity.dart'; 
+import 'package:kendo_os/presentation/operate/screens/bunaiksen_home_screen.dart';
+import 'package:kendo_os/presentation/operate/screens/bunaiksen_setup_screen.dart';
+import 'package:kendo_os/presentation/operate/screens/bunaiksen_official_record_screen.dart';
+import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart';
+import 'package:kendo_os/presentation/viewer/screens/viewer_official_record_screen.dart';
+import 'package:kendo_os/presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
+import 'package:kendo_os/presentation/viewer/screens/viewer_kachinuki_scoreboard_screen.dart';
+import 'package:kendo_os/presentation/viewer/screens/viewer_bunaiksen_home_screen.dart';
+import 'package:kendo_os/presentation/viewer/screens/viewer_bunaiksen_official_record_screen.dart';
+import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/presentation/providers/internal/metrics_provider.dart';
+import 'package:kendo_os/domain/entities/user_role.dart';
+import 'package:kendo_os/presentation/auth/screens/role_select_screen.dart';
+import 'package:kendo_os/presentation/auth/screens/pin_auth_screen.dart';
 
 // ★ 追加: 画面のNavigatorをどこからでも取得するためのグローバルキー
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -74,6 +71,14 @@ void main() async {
   try {
     // Firebaseの初期化
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+    // =========================================================================
+    // 🛡️ STEP 5-1 要件：体育館などの電波障害・オフライン環境に耐えるための
+    // Firestore ローカルディスク永続化キャッシュキャッシュプロトコルを活性化
+    // =========================================================================
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+    );
 
     // ★ 修正：SharedPreferences のインスタンスをここで確実に取得する
     final prefs = await SharedPreferences.getInstance();
@@ -231,7 +236,7 @@ class AuthGuard extends ConsumerWidget {
 // ==========================================
 final _router = GoRouter(
     navigatorKey: rootNavigatorKey, // ★ 追加: ルーターキーを登録
-    initialLocation: '/',
+    initialLocation: '/role-select', // ★ 初期ルートをロール選択へ固定してViewer固定問題を完全解決
     // ★ 存在しないURLやルーティングエラー時に真っ白になるのを防ぐ（ホワイトアウト対策3）
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -247,13 +252,26 @@ final _router = GoRouter(
         // ★ 管理者ホームは AuthGuard で守る（未ログインならURLは/のままLoginScreenが出る）
         builder: (context, state) => const AuthGuard(child: StartScreen()),
       ),
+      GoRoute(
+        path: '/role-select',
+        builder: (context, state) => const RoleSelectScreen(),
+      ),
+      GoRoute(
+        path: '/pin-auth',
+        builder: (context, state) {
+          final roleStr = state.uri.queryParameters['role'] ?? 'viewer';
+          final role = UserRole.values.firstWhere((e) => e.name == roleStr, orElse: () => UserRole.viewer);
+          return PinAuthScreen(role: role);
+        },
+      ),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()), // ★ Phase 2: 設定画面へのルート
       
       // ==========================================
-      // ★ Phase 6: Stage 2 限定化 (ルーティングの切断)
+      // ★ Phase 9: Hidden Feature 完全隔離
       // ==========================================
-      // GoRoute(path: '/audit-log', builder: (context, state) => const AuditLogScreen()), 
-      // GoRoute(path: '/dashboard', builder: (context, state) => const ObservabilityDashboardScreen()), 
+      // 以下の開発者専用ルートは、一般ユーザーがディープリンク等で不正アクセスすることを
+      // 防ぐため、Stage2 βルーティングテーブルから完全に排除されました。
+      // (ObservabilityDashboardScreen, ReplayConsole, ChaosDrill へのパスを物理除去)
       
       // ★ 復旧: 選手マスタ管理画面へのルートを再開通
       GoRoute(path: '/master', builder: (context, state) => const MasterManagementScreen()),

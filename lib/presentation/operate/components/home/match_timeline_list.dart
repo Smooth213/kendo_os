@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:kendo_os/domain/entities/match_model.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/entities/timeline_item.dart';
 import 'package:kendo_os/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
@@ -24,7 +24,7 @@ import '../../providers/match_list_provider.dart';
 import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 
 import '../../screens/home_screen.dart'; // 検索プロバイダなどを参照するため
-import '../../screens/team_scoreboard_screen.dart';
+import 'package:kendo_os/presentation/public/operator/team_scoreboard_screen.dart';
 import 'tournament_header_card.dart';
 
 class MatchTimelineList extends ConsumerWidget {
@@ -286,11 +286,12 @@ class MatchTimelineList extends ConsumerWidget {
                                     _showAddCommentDialog(context, ref, tournamentId, categoryName, teamName, topOrder);
                                   },
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.edit_note, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade300, size: 20),
-                                  tooltip: 'チーム名を修正して統合',
-                                  onPressed: () => _showRenameTeamSheet(context, ref, tournamentId, teamName),
-                                ),
+                                  if (permissions.canManageTournament)
+                                    IconButton(
+                                      icon: Icon(Icons.edit_note, color: isDark ? Colors.indigo.shade400 : Colors.indigo.shade300, size: 20),
+                                      tooltip: 'チーム名を修正して統合',
+                                      onPressed: () => _showRenameTeamSheet(context, ref, tournamentId, teamName),
+                                    ),
                               ],
                             ],
                           ),
@@ -338,7 +339,7 @@ class MatchTimelineList extends ConsumerWidget {
                                     ),
                                   );
 
-                                  if (permissions.isReadOnly) {
+                                  if (!permissions.canManageTournament) {
                                     return Container(
                                       key: ValueKey('comment_${c.id}'),
                                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -431,7 +432,7 @@ class MatchTimelineList extends ConsumerWidget {
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                           child: Slidable(
                                             key: ValueKey('group_${entry.key}'),
-                                            enabled: !permissions.isReadOnly,
+                                            enabled: permissions.canManageTournament,
                                             endActionPane: ActionPane(
                                               motion: const ScrollMotion(),
                                               children: [
@@ -1608,7 +1609,7 @@ class MatchTimelineList extends ConsumerWidget {
       ),
     );
 
-    if (permissions.isReadOnly) {
+    if (!permissions.canManageTournament) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: commentWidget,
@@ -1711,6 +1712,7 @@ class MatchListTileCard extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: ListTile(
+          key: Key('viewer_match_card_${match.id}'),
           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1918,7 +1920,7 @@ class MatchListTileCard extends ConsumerWidget {
       ),
     );
 
-    if (permissions.isReadOnly || !isDeletable) return tile;
+    if (!permissions.canManageTournament || !isDeletable) return tile;
 
     return Slidable(
       key: ValueKey(match.id),

@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/entities/match_aggregate.dart';
+import 'package:kendo_os/domain/match/match_aggregate.dart';
 
 // ==========================================
 // ★ Phase 2-Step 2: SnapshotStoreの定義

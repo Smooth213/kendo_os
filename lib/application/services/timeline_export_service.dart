@@ -1,5 +1,5 @@
-import 'package:kendo_os/domain/entities/match_model.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 
 /// ★ Phase 4-3: Timeline Export Service
 /// 大会終了後にそのまま道場や保護者へ配れる、Excel / Googleスプレッドシート完全互換の

@@ -8,6 +8,8 @@ part 'tournament_model.g.dart';
 abstract class TournamentModel with _$TournamentModel {
   const factory TournamentModel({
     required String id,
+    /// ★ 新・同期空間統治キー：この大会がどの道場/所属に帰属するかを指し示す最上位キー
+    required String organizationId,
     required String name,
     @TimestampConverter() required DateTime date, 
     required String venue,

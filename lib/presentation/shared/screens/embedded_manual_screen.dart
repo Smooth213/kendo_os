@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../manual/manual_routes.dart';
+import 'package:documentation_runtime/manual_routes.dart';
 
 // ============================================================================
 // Phase 5 & 6: Embedded Documentation Viewer

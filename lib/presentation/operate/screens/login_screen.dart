@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../infrastructure/repository/auth_repository.dart';
 
 class LoginScreen extends ConsumerWidget {
@@ -78,25 +79,38 @@ class LoginScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.login, color: buttonTextColor, size: 24), // ★ ボタン用テキスト色
+                  icon: const Icon(Icons.login, color: buttonTextColor, size: 24),
                   label: const Text(
-                    'Googleアカウントでログイン', 
+                    'Googleでログイン',
                     style: TextStyle(
                       fontSize: 16, 
                       fontWeight: FontWeight.bold, 
-                      color: buttonTextColor, // ★ ボタン用テキスト色
+                      color: buttonTextColor,
                       letterSpacing: 1.1,
                     )
                   ),
-                  onPressed: () => ref.read(authRepositoryProvider).signInWithGoogle(),
+                  onPressed: () async {
+                    try {
+                      debugPrint("🔘 [LoginScreen] ログインボタン押下");
+                      await ref.read(authRepositoryProvider).signInWithGoogle();
+                      if (!context.mounted) return;
+                      context.go('/');
+                    } catch (e) {
+                      debugPrint("❌ [LoginScreen] ログインエラー: $e");
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('ログインに失敗しました: ${e.toString()}')),
+                      );
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: buttonColor,
-                    foregroundColor: buttonTextColor, // ★ ボタン用テキスト色
-                    minimumSize: const Size(double.infinity, 60), // 横幅いっぱい＆タップしやすい高さ
-                    elevation: 6,
-                    shadowColor: buttonColor.withValues(alpha: 0.5), // ピンクの影で浮き上がらせる
+                    backgroundColor: buttonColor.withValues(alpha: 0.6),
+                    foregroundColor: buttonTextColor,
+                    minimumSize: const Size(double.infinity, 60),
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16), // 他の画面のボタンと角丸(16px)を統一
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                 ),

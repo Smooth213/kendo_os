@@ -5,7 +5,7 @@ import 'package:kendo_os/domain/rules/rule_config_validator.dart';
 import 'package:kendo_os/domain/rules/rule_factory.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import '../helpers/test_match_factory.dart';
 
 // ==========================================

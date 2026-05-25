@@ -1,5 +1,5 @@
-import 'package:kendo_os/domain/entities/match_context.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_context.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule_interface.dart';
 
 // ==========================================

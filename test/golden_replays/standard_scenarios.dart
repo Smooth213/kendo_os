@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 
 // Step 3-1: Golden Replay Dataset

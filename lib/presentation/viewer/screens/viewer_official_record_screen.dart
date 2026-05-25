@@ -95,7 +95,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                 labelColor: headerTextColor, 
                 unselectedLabelColor: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
                 indicatorColor: Colors.indigo.shade600,
-                tabs: categories.map((cat) => Tab(text: cat)).toList(),
+                tabs: categories.map((cat) => Tab(key: Key('viewer_tab_$cat'), text: cat)).toList(),
               ),
             ),
             body: TabBarView(
@@ -122,6 +122,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
+                          // ★ STEP 2：テストコード側から、ボタン内のテキストや配置に依存せず一撃で Finder 捕捉可能にする不変 Key
+                          key: const Key('viewer_export_pdf_button'),
                           onPressed: () async {
                             final groupDataList = sortedGroupKeys.map((key) => {
                               'groupName': key,
@@ -159,6 +161,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
+                          key: const Key('viewer_export_image_button'),
                           onPressed: () async {
                             final groupDataList = sortedGroupKeys.map((key) => {
                               'groupName': key,
@@ -209,6 +212,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       
                       final matches = List<MatchListProjection>.from(teamProj.matches)..sort((a, b) => a.order.compareTo(b.order));
                       
+                      // ★ STEP 4/6: matchesが空の場合に matches.first が呼ばれて Bad state で落ちるのを完全に防ぐ防波堤
+                      if (matches.isEmpty) return const SizedBox.shrink();
+                      
                       if (matches.isNotEmpty && teamProj.isKachinuki) {
                         final firstMatch = matches.first;
                         final note = firstMatch.note;
@@ -227,20 +233,23 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
                         final canvasWidth = 60.0 + (totalCols * 60.0) + 120.0;
                         
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
-                          clipBehavior: Clip.antiAlias,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                color: isDark ? Colors.indigo.shade900.withValues(alpha: 0.4) : Colors.indigo.shade50,
-                                width: double.infinity,
-                                child: Text(titleText, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.indigo.shade100 : Colors.indigo.shade900)),
-                              ),
+                        return InkWell(
+                          key: Key('viewer_match_card_$groupName'),
+                          onTap: () {}, // Widget Test のタップイベント吸収用ダミー
+                          child: Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  color: isDark ? Colors.indigo.shade900.withValues(alpha: 0.4) : Colors.indigo.shade50,
+                                  width: double.infinity,
+                                  child: Text(titleText, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.indigo.shade100 : Colors.indigo.shade900)),
+                                ),
                               SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Container(
@@ -259,6 +268,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
+                        ),
                         );
                       } else if (matches.isNotEmpty && teamProj.isLeague) {
                         final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
@@ -442,18 +452,21 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
     final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4), 
-      elevation: 0,
-      color: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12), color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100, width: double.infinity,
+    return InkWell(
+      key: Key('viewer_match_card_$groupName'),
+      onTap: () {}, // Widget Test のタップイベント吸収用ダミー
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4), 
+        elevation: 0,
+        color: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12), color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100, width: double.infinity,
                 // 先ほど生成した headerTitle を使用する
                 child: Text(headerTitle, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800)),
               ),
@@ -524,6 +537,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
             ),
         ],
       ),
+    ),
     );
   }
 
@@ -697,17 +711,20 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        elevation: 0,
-        color: cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: borderColor)),
-        clipBehavior: Clip.antiAlias,
-        child: Table(
-          border: TableBorder.all(color: borderColor, width: 1),
-          columnWidths: {
-            0: const FixedColumnWidth(100), 
-            for (int i = 1; i <= teamList.length; i++) i: const FixedColumnWidth(65), 
+      child: InkWell(
+        key: Key('viewer_match_card_$groupName'),
+        onTap: () {}, // Widget Test のタップイベント吸収用ダミー
+        child: Card(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          elevation: 0,
+          color: cardColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: borderColor)),
+          clipBehavior: Clip.antiAlias,
+          child: Table(
+            border: TableBorder.all(color: borderColor, width: 1),
+            columnWidths: {
+              0: const FixedColumnWidth(100), 
+              for (int i = 1; i <= teamList.length; i++) i: const FixedColumnWidth(65), 
             teamList.length + 1: const FixedColumnWidth(45), 
             teamList.length + 2: const FixedColumnWidth(45), 
             teamList.length + 3: const FixedColumnWidth(45), 
@@ -879,6 +896,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
           ]
         )
       ),
+      ),
     );
   }
 
@@ -957,18 +975,21 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     }
     // ★note抽出ロジックは削除完了
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      elevation: 0,
-      color: cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12), color: headerBgColor, width: double.infinity,
-            child: Text(headerTitle, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800)),
-          ),
+    return InkWell(
+      key: Key('viewer_match_card_$groupName'),
+      onTap: () {}, // Widget Test のタップイベント吸収用ダミー
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        elevation: 0,
+        color: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12), color: headerBgColor, width: double.infinity,
+              child: Text(headerTitle, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800)),
+            ),
               ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -1077,6 +1098,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
           ),
         ],
       ),
+    ),
     );
   }
 

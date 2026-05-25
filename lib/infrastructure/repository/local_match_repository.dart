@@ -3,13 +3,13 @@ import 'package:isar_community/isar.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
-import 'package:kendo_os/domain/entities/score_event.dart'; // ★ ScoreEventの型認識のため追加
+import 'package:kendo_os/domain/score/score_event.dart'; // ★ ScoreEventの型認識のため追加
 import 'dart:convert'; // ★ 追加: Ruleを文字列に圧縮・解凍するための道具
 import 'package:kendo_os/domain/rules/match_rule.dart'; // ★ 追加: MatchRuleの型を認識させるため
 import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart'; // ★ 追加: MatchCommandModel等の型を認識させるため
-import 'package:kendo_os/domain/entities/match_aggregate.dart'; // ★ 追加
+import 'package:kendo_os/domain/match/match_aggregate.dart'; // ★ 追加
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint
 import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // ★ 追加: クラッシュレポート用
@@ -197,7 +197,6 @@ class LocalMatchRepository {
   // --- 翻訳機（マッパー関数） ---
   MatchEntity _toEntity(MatchModel model) {
     return MatchEntity()
-      ..id = Isar.autoIncrement // ★ ハッシュ関数を捨て、Isarの自動採番に完全に任せる
       ..firestoreId = model.id
       ..matchType = model.matchType
       ..redName = model.redName
@@ -309,7 +308,9 @@ class LocalMatchRepository {
       hasHantei: entity.hasHantei,
       timerStartedAt: entity.timerStartedAt,
       timerPausedAt: entity.timerPausedAt,
-      accumulatedPauseDurationMs: entity.accumulatedPauseDurationMs,
+      // ★ 防衛サニタイズ: 過去のバグや時刻変更等で負の数がDBに入っていた場合、
+      // ドメインアサーションクラッシュを避けるため、一律で安全な「0」に最大値制御（丸め）を行います。
+      accumulatedPauseDurationMs: (entity.accumulatedPauseDurationMs < 0) ? 0 : entity.accumulatedPauseDurationMs,
       note: entity.note,
       isKachinuki: entity.isKachinuki,
       // ★ 追加：文字列(JSON)から元のルール箱に解凍して復元する！
@@ -326,7 +327,7 @@ class LocalMatchRepository {
   Future<void> savePendingCommand(MatchCommandModel cmd) async {
     if (_isar == null) return;
     final entity = MatchCommandEntity()
-      ..id = cmd.id
+      ..commandId = cmd.id
       ..type = cmd.type.name
       ..payloadJson = jsonEncode(cmd.payload)
       ..createdAt = cmd.createdAt
@@ -334,9 +335,9 @@ class LocalMatchRepository {
 
     // ★ Phase 5: 電波断環境下（体育館）でコマンドキューを1ミリ秒でローカルディスクに焼き付ける強制ライトスルー
     await _isar.writeTxn(() async {
-      final existing = await _isar.matchCommandEntitys.filter().idEqualTo(cmd.id).findFirst();
+      final existing = await _isar.matchCommandEntitys.filter().commandIdEqualTo(cmd.id).findFirst();
       if (existing != null) {
-        entity.isarId = existing.isarId;
+        entity.id = existing.id;
       }
       await _isar.matchCommandEntitys.put(entity);
     });
@@ -345,7 +346,7 @@ class LocalMatchRepository {
   Future<void> deleteCommand(String id) async {
     if (_isar == null) return;
     await _isar.writeTxn(() async {
-      await _isar.matchCommandEntitys.filter().idEqualTo(id).deleteAll();
+      await _isar.matchCommandEntitys.filter().commandIdEqualTo(id).deleteAll();
     });
   }
 
@@ -358,7 +359,7 @@ class LocalMatchRepository {
         .findAll();
 
     return entities.map((e) => MatchCommandModel(
-      id: e.id,
+      id: e.commandId,
       type: CommandType.values.byName(e.type),
       payload: jsonDecode(e.payloadJson),
       createdAt: e.createdAt,

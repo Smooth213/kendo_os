@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart'; // ★ クリップボード操作用
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 
 // ★ Phase 3: アプリ全体から呼び出せる共有機能の合鍵
 final shareProvider = Provider((ref) => ShareService(ref));

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/application/services/pdf_service.dart';
 import '../../operate/screens/kachinuki_scoreboard_screen.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import '../../operate/providers/match_rule_provider.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../../operate/providers/settings_provider.dart';
 import '../../operate/providers/match_view_model_provider.dart';

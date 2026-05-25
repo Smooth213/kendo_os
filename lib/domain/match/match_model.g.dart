@@ -1,0 +1,140 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'match_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_MatchModel _$MatchModelFromJson(Map<String, dynamic> json) => _MatchModel(
+  id: json['id'] as String,
+  organizationId: json['organizationId'] as String? ?? 'default_org',
+  matchType: json['matchType'] as String,
+  redName: json['redName'] as String,
+  whiteName: json['whiteName'] as String,
+  redScore: (json['redScore'] as num?)?.toInt() ?? 0,
+  whiteScore: (json['whiteScore'] as num?)?.toInt() ?? 0,
+  status: json['status'] as String? ?? 'waiting',
+  events:
+      (json['events'] as List<dynamic>?)
+          ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  snapshots:
+      (json['snapshots'] as List<dynamic>?)
+          ?.map((e) => MatchSnapshot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  syncState:
+      $enumDecodeNullable(_$SyncStateEnumMap, json['syncState']) ??
+      SyncState.synced,
+  pendingEvents:
+      (json['pendingEvents'] as List<dynamic>?)
+          ?.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  lastUpdatedAt: const SafeTimestampConverter().fromJson(json['lastUpdatedAt']),
+  refereeNames:
+      (json['refereeNames'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  countForStandings: json['countForStandings'] as bool? ?? true,
+  scorerId: json['scorerId'] as String?,
+  lockExpiresAt: const SafeTimestampConverter().fromJson(json['lockExpiresAt']),
+  version: (json['version'] as num?)?.toInt() ?? 1,
+  isAutoAssigned: json['isAutoAssigned'] as bool? ?? false,
+  order: json['order'] == null
+      ? 0.0
+      : const DoubleConverter().fromJson(json['order']),
+  source: json['source'] as String? ?? 'manual',
+  tournamentId: json['tournamentId'] as String?,
+  category: json['category'] as String?,
+  groupName: json['groupName'] as String?,
+  matchOrder: (json['matchOrder'] as num?)?.toInt(),
+  matchTimeMinutes: (json['matchTimeMinutes'] as num?)?.toDouble() ?? 3.0,
+  isRunningTime: json['isRunningTime'] as bool? ?? false,
+  hasExtension: json['hasExtension'] as bool? ?? false,
+  extensionTimeMinutes: (json['extensionTimeMinutes'] as num?)?.toDouble(),
+  extensionCount: (json['extensionCount'] as num?)?.toInt(),
+  hasHantei: json['hasHantei'] as bool? ?? false,
+  timerStartedAt: const SafeTimestampConverter().fromJson(
+    json['timerStartedAt'],
+  ),
+  timerPausedAt: const SafeTimestampConverter().fromJson(json['timerPausedAt']),
+  accumulatedPauseDurationMs:
+      (json['accumulatedPauseDurationMs'] as num?)?.toInt() ?? 0,
+  note: json['note'] as String? ?? '',
+  isKachinuki: json['isKachinuki'] as bool? ?? false,
+  rule: json['rule'] == null
+      ? null
+      : MatchRule.fromJson(json['rule'] as Map<String, dynamic>),
+  redRemaining:
+      (json['redRemaining'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  whiteRemaining:
+      (json['whiteRemaining'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+);
+
+Map<String, dynamic> _$MatchModelToJson(_MatchModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'organizationId': instance.organizationId,
+      'matchType': instance.matchType,
+      'redName': instance.redName,
+      'whiteName': instance.whiteName,
+      'redScore': instance.redScore,
+      'whiteScore': instance.whiteScore,
+      'status': instance.status,
+      'events': instance.events.map((e) => e.toJson()).toList(),
+      'snapshots': instance.snapshots.map((e) => e.toJson()).toList(),
+      'syncState': _$SyncStateEnumMap[instance.syncState]!,
+      'pendingEvents': instance.pendingEvents.map((e) => e.toJson()).toList(),
+      'lastUpdatedAt': const SafeTimestampConverter().toJson(
+        instance.lastUpdatedAt,
+      ),
+      'refereeNames': instance.refereeNames,
+      'countForStandings': instance.countForStandings,
+      'scorerId': instance.scorerId,
+      'lockExpiresAt': const SafeTimestampConverter().toJson(
+        instance.lockExpiresAt,
+      ),
+      'version': instance.version,
+      'isAutoAssigned': instance.isAutoAssigned,
+      'order': const DoubleConverter().toJson(instance.order),
+      'source': instance.source,
+      'tournamentId': instance.tournamentId,
+      'category': instance.category,
+      'groupName': instance.groupName,
+      'matchOrder': instance.matchOrder,
+      'matchTimeMinutes': instance.matchTimeMinutes,
+      'isRunningTime': instance.isRunningTime,
+      'hasExtension': instance.hasExtension,
+      'extensionTimeMinutes': instance.extensionTimeMinutes,
+      'extensionCount': instance.extensionCount,
+      'hasHantei': instance.hasHantei,
+      'timerStartedAt': const SafeTimestampConverter().toJson(
+        instance.timerStartedAt,
+      ),
+      'timerPausedAt': const SafeTimestampConverter().toJson(
+        instance.timerPausedAt,
+      ),
+      'accumulatedPauseDurationMs': instance.accumulatedPauseDurationMs,
+      'note': instance.note,
+      'isKachinuki': instance.isKachinuki,
+      'rule': instance.rule?.toJson(),
+      'redRemaining': instance.redRemaining,
+      'whiteRemaining': instance.whiteRemaining,
+    };
+
+const _$SyncStateEnumMap = {
+  SyncState.localOnly: 'localOnly',
+  SyncState.syncing: 'syncing',
+  SyncState.synced: 'synced',
+  SyncState.conflict: 'conflict',
+};

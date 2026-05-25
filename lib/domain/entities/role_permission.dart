@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/entities/score_event.dart'; // ★ PermissionServiceで参照するため追加
+import 'package:kendo_os/domain/score/score_event.dart'; // ★ PermissionServiceで参照するため追加
 
 // ★ フェーズ①: ドメイン定義（モード・役割・権限）
 

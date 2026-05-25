@@ -1,13 +1,14 @@
 import 'package:isar_community/isar.dart';
-import '../../../../domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 
 part 'match_comment_entity.g.dart';
 
 @collection
 class MatchCommentEntity {
-  Id get isarId => fastHash(id);
-
-  late String id;
+  Id id = Isar.autoIncrement;
+  
+  @Index(unique: true)
+  late String commentId;
   
   @Index()
   String? tournamentId;
@@ -24,19 +25,4 @@ class MatchCommentEntity {
   late SyncState syncState;
   
   DateTime? lastUpdatedAt;
-}
-
-/// Isar v3においてString IDを安全にId(int)に変換するための標準関数
-int fastHash(String string) {
-  // Webコンパイル時の JS Safe Integer エラーを回避するため、巨大Hexを文字列からパースする
-  var hash = BigInt.parse('cbf29ce484222325', radix: 16).toInt();
-  int i = 0;
-  while (i < string.length) {
-    final codeUnit = string.codeUnitAt(i++);
-    hash ^= codeUnit >> 8;
-    hash *= 0x100000001b3;
-    hash ^= codeUnit & 0xFF;
-    hash *= 0x100000001b3;
-  }
-  return hash;
 }

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import '../providers/bunaiksen_provider.dart';
 import '../providers/match_command_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加

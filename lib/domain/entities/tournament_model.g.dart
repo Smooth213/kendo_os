@@ -9,6 +9,7 @@ part of 'tournament_model.dart';
 _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
     _TournamentModel(
       id: json['id'] as String,
+      organizationId: json['organizationId'] as String,
       name: json['name'] as String,
       date: const TimestampConverter().fromJson(json['date']),
       venue: json['venue'] as String,
@@ -25,6 +26,7 @@ _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'organizationId': instance.organizationId,
       'name': instance.name,
       'date': const TimestampConverter().toJson(instance.date),
       'venue': instance.venue,

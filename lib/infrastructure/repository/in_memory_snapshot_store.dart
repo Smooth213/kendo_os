@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/entities/match_aggregate.dart';
+import 'package:kendo_os/domain/match/match_aggregate.dart';
 import 'package:kendo_os/domain/repositories/snapshot_store.dart';
 
 // ==========================================

@@ -1,7 +1,7 @@
 
 import 'package:isar_community/isar.dart'; 
-import '../../../domain/entities/score_event.dart';
-import '../../../domain/entities/match_model.dart'; // ★ SyncStateを使うため追加
+import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart'; // ★ SyncStateを使うため追加
 
 part 'match_entity.g.dart';
 
@@ -44,12 +44,10 @@ class MatchSnapshotEntity {
 // ★ Step 1-2: 試合データの保存用テーブル（Collection）
 @collection
 class MatchEntity {
-  // Isar が内部で使う高速検索用の自動採番ID
   Id id = Isar.autoIncrement;
 
-  // Firestore で使っていた文字列の ID (検索キーにするため Index を貼る)
   @Index(unique: true, replace: true)
-  late String firestoreId;
+  late String firestoreId; // ここに元の大きなIDを保持
 
   late String matchType;
   late String redName;
@@ -106,10 +104,10 @@ class MatchEntity {
 // アプリがクラッシュしても、キューに残っていた「未処理の操作」をここから復元します
 @collection
 class MatchCommandEntity {
-  Id isarId = Isar.autoIncrement;
+  Id id = Isar.autoIncrement; // Isar内部管理用
 
   @Index(unique: true)
-  late String id; // UUID
+  late String commandId; // ここに元のIDを保持
 
   late String type; // CommandType.name
   late String payloadJson; // MapをJSON化

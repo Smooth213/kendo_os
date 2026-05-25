@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import 'package:uuid/uuid.dart';

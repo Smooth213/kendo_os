@@ -1,4 +1,4 @@
-import 'match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 
 // ==========================================
 // ★ Phase 6: TournamentAggregate導入

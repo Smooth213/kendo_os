@@ -1,7 +1,7 @@
-import 'package:kendo_os/domain/entities/match_model.dart'; 
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart'; 
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/domain/entities/match_context.dart';
+import 'package:kendo_os/domain/match/match_context.dart';
 import 'package:kendo_os/domain/services/match_strategy.dart';
 import 'package:kendo_os/domain/rules/rule_factory.dart';
 import 'package:kendo_os/domain/rules/tournament_rule_config.dart'; // ★ Phase 5

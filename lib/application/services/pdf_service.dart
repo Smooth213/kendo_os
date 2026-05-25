@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'pdf/painters/pdf_kachinuki_painter.dart';
 import 'pdf/widgets/pdf_league_table.dart';
 import 'pdf/widgets/pdf_individual_list.dart';

@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
-import '../entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import '../rules/match_rule.dart';
-import '../entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 
 /// 剣道の試合進行に関する純粋なドメインルールをカプセル化するサービス
 class MatchDomainService {

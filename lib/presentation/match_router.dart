@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
-import 'operate/screens/match_screen.dart'; 
-import 'viewer/screens/viewer_match_screen.dart'; 
-import 'operate/providers/permission_provider.dart';
+
+import 'package:kendo_os/presentation/public/operator/match_screen.dart';
+import 'package:kendo_os/presentation/public/viewer/viewer_match_screen.dart';
+import '../core/security/feature_gate.dart';
+import 'shared/providers/current_user_role_provider.dart';
+import 'shared/providers/security_level_provider.dart';
+import '../domain/entities/user_role.dart'; // UserRole.viewer の評価のために追加
 
 class MatchRouter extends ConsumerWidget {
   final String matchId;
@@ -12,12 +15,15 @@ class MatchRouter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ Phase 1-2: 最新の FeatureFlag および FeatureGate に基づく特権画面への進入完全ブロック
-    if (matchId.startsWith('sys_') || matchId == 'observability-dashboard' || matchId == 'audit-log' || matchId == 'rule-config') {
+    // 🔒 Phase 9: 内部開発画面へのディープリンク・直接進入の完全物理隔離
+    if (matchId.startsWith('sys_') || 
+        matchId == 'observability-dashboard' || 
+        matchId == 'audit-log' || 
+        matchId == 'rule-config') {
       return const Scaffold(
         body: Center(
           child: Text(
-            '🔒 アクセス制限：この機能はStage2 βリリースでは完全に封鎖されています。',
+            '🔒 アクセス制限：指定されたページへアクセスする権限がありません。',
             style: TextStyle(fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
@@ -25,16 +31,17 @@ class MatchRouter extends ConsumerWidget {
       );
     }
 
-    // 🌟 Phase 1-3: Viewer専用境界の完全固定ガード
-    // 状態管理の初期化ラグを狙った特権昇格を防ぐため、URLパラメータに viewer 属性がある場合は物理的に記録画面への進入路を断絶します
-    final bool isUrlViewer = GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
-    final permissions = ref.watch(permissionProvider);
+    final currentRole = ref.watch(currentUserRoleProvider);
+    final currentLevel = ref.watch(securityLevelProvider);
 
-    if (permissions.isReadOnly || isUrlViewer) {
-      // 閲覧専用権限、または観客URLからのアクセスの場合は、入力ロジックが1ミリも存在しない安全な Viewer画面 へ完全隔離
+    // 🌟 修正版：FeatureGate の動的判定を最優先にする
+    final bool canOperate = FeatureGate.canOperateMatch(currentRole, currentLevel);
+    final bool isUrlViewer = GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
+
+    // 動的に権限（canOperate）がない、または初期状態でURLがviewerの場合のみ隔離
+    if (!canOperate || (isUrlViewer && currentRole == UserRole.viewer)) {
       return ViewerMatchScreen(matchId: matchId);
     } else {
-      // 本部スタッフかつ入力権限がある場合のみ、最速入力に特化した Scorer画面（MatchScreen）へ到達可能
       return MatchScreen(matchId: matchId);
     }
   }

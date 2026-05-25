@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart'; // ★ debugPrintを使うために追加
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 
 final matchRepositoryProvider = Provider<MatchRepository>((ref) {
   return MatchRepository(FirebaseFirestore.instance);

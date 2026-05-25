@@ -2,37 +2,48 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. 大会のセキュリティレベルを取得する関数
-    function getSecurityLevel(tournamentId) {
-      // tournamentIdが無い試合(単発の練習など)は標準(Lv.2)として扱う
-      return tournamentId == null 
-        ? 2 
-        : get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.securityLevel;
-    }
-
-    // 2. 試合(matches)コレクションの保護ルール
-    match /matches/{matchId} {
-      // 読み込み、新規作成、削除はアプリ側のUIで制御するためFirestore側は許可
-      allow read, create, delete: if true; 
+    // 道場スペース配下の全セキュリティ統治ルール
+    match /organizations/{dojoId} {
       
-      // 更新(上書き)に対する強固な防弾ルール
-      allow update: if 
-        // 【Lv.1 自由 & Lv.2 標準】
-        // アプリ側のロック機構(scorerId)に判断を委ねるため、Firestore側は許可
-        getSecurityLevel(resource.data.tournamentId) <= 2 
-        ||
-        // 【Lv.3 厳格】公式大会モード
-        // 試合が終了(finished)している場合、いかなる理由があっても上書きさせない
-        // ※進行中の試合(waiting, in_progress)のみ更新可能
-        (
-          getSecurityLevel(resource.data.tournamentId) == 3 
-          && resource.data.status != 'finished'
-        );
-    }
+      // ★ 現場安全弁要件：ルームIDがすでに誰かに使われているか（被っているか）を
+      // ログインユーザーが水際で安全に存在確認（get）できるように許可します
+      allow get: if request.auth != null;
+      
+      // 内部ヘルパー関数：認証されたユーザーのロールを判定する（フェーズ3のメンバーコレクションと連動）
+      function getUserRole() {
+        return get(/databases/$(database)/documents/organizations/$(dojoId)/members/$(request.auth.uid)).data.role;
+      }
+      
+      // 1. 環境設定・組織定義
+      match /settings/{document} {
+        allow read: if request.auth != null; // 全員閲覧可能
+        allow write: if request.auth != null && getUserRole() == 'admin'; // 最高管理者のみ変更可能
+      }
 
-    // 3. その他のコレクション（tournaments, players等）は基本許可
-    match /{document=**} {
-      allow read, write: if true;
+      // 2. 選手名簿マスタ
+      match /players/{playerId} {
+        allow read: if request.auth != null; // 全員閲覧可能
+        allow write: if request.auth != null && getUserRole() == 'admin'; // 誤編集防止のためAdminのみ追加・変更・削除可能
+      }
+
+      // 3. 大会・リーグ設定
+      match /tournaments/{tournamentId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (getUserRole() == 'admin' || getUserRole() == 'operator'); // 運営者以上が作成可能
+      }
+
+      // 4. 試合スコア・進行状態
+      match /matches/{matchId} {
+        allow read: if request.auth != null;
+        // 試合進行・スコア入力・Undoは記録者、運営者、管理者に許可（Viewerは厳格にブロック）
+        allow write: if request.auth != null && (getUserRole() == 'admin' || getUserRole() == 'operator' || getUserRole() == 'recorder');
+      }
+
+      // 5. 監査ログ
+      match /auditLogs/{logId} {
+        allow read: if request.auth != null && getUserRole() == 'admin'; // 監査ログの閲覧はAdmin限定
+        allow create: if request.auth != null; // ログの書き込み自体は全操作端末に許可
+      }
     }
   }
 }

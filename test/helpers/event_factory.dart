@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 
 // ★ 古いテスト用に、sequence を 0 (フリーパス) で生成する近代化工場

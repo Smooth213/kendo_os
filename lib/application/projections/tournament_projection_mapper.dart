@@ -1,5 +1,5 @@
 import 'package:kendo_os/domain/entities/tournament_model.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/application/projections/tournament_projection.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';

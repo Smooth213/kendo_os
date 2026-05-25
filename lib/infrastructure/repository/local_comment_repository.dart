@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/match_comment_model.dart';
-import '../../domain/entities/match_model.dart'; // SyncState
+import 'package:kendo_os/domain/match/match_model.dart'; // SyncState
 import '../persistence/models/match_comment_entity.dart';
 
 class LocalCommentRepository {
@@ -11,7 +11,7 @@ class LocalCommentRepository {
 
   Future<void> saveComment(MatchCommentModel comment) async {
     final entity = MatchCommentEntity()
-      ..id = comment.id
+      ..commentId = comment.id
       ..tournamentId = comment.tournamentId
       ..category = comment.category
       ..groupName = comment.groupName
@@ -33,7 +33,7 @@ class LocalCommentRepository {
         .build()
         .watch(fireImmediately: true)
         .map((entities) => entities.map((e) => MatchCommentModel(
-              id: e.id,
+              id: e.commentId,
               tournamentId: e.tournamentId,
               category: e.category,
               groupName: e.groupName,
@@ -46,7 +46,7 @@ class LocalCommentRepository {
   }
 
   Future<void> markAsSynced(String id) async {
-    final entity = await _isar.matchCommentEntitys.filter().idEqualTo(id).findFirst();
+    final entity = await _isar.matchCommentEntitys.filter().commentIdEqualTo(id).findFirst();
     if (entity != null) {
       entity.syncState = SyncState.synced;
       await _isar.writeTxn(() async {
@@ -57,7 +57,7 @@ class LocalCommentRepository {
 
   Future<void> deleteComment(String id) async {
     await _isar.writeTxn(() async {
-      final success = await _isar.matchCommentEntitys.filter().idEqualTo(id).deleteAll();
+      final success = await _isar.matchCommentEntitys.filter().commentIdEqualTo(id).deleteAll();
       debugPrint(success > 0 ? 'Comment $id deleted' : 'Comment $id not found');
     });
   }

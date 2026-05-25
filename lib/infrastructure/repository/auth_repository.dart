@@ -4,36 +4,50 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(
-    FirebaseAuth.instance,
-    GoogleSignIn(), // ★ 余計な古い鍵を削除！これでXcodeの正しい鍵を自動で読み込みます
-  );
+  return AuthRepository();
 });
 
 class AuthRepository {
-  final FirebaseAuth _auth;
-  final GoogleSignIn _googleSignIn;
-
-  AuthRepository(this._auth, this._googleSignIn);
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  // ★ 提供されたWebクライアントIDで初期化を確実化
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: '164010781926-62n3ne0oal1jov5qpa26htp4q9ele8pa.apps.googleusercontent.com',
+  );
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  Future<UserCredential?> signInWithGoogle() async {
+  // ★ 匿名認証の実装を追加
+  Future<void> signInAnonymously() async {
     try {
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+      await _auth.signInAnonymously();
+    } catch (e) {
+      debugPrint("匿名ログインエラー: $e");
+      rethrow; // ★ これを追加！エラーを呼び出し元（LoginScreen）に伝える
+    }
+  }
 
-      final googleAuth = await googleUser.authentication;
+  // ★ 監査官による復元: Googleログイン
+  Future<void> signInWithGoogle() async {
+    try {
+      debugPrint("🔍 [Auth] Googleサインイン開始...");
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        debugPrint("⚠️ [Auth] ユーザーがサインインをキャンセルしました");
+        return;
+      }
 
-      final OAuthCredential credential = GoogleAuthProvider.credential(
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      return await _auth.signInWithCredential(credential);
-    } catch (e) {
-      debugPrint('Google SignIn Error: $e');
-      return null;
+      await _auth.signInWithCredential(credential);
+      debugPrint("✅ [Auth] Googleログイン成功");
+    } catch (e, stack) {
+      debugPrint("🔥 [Auth] Googleログイン失敗: $e\n$stack");
+      rethrow; 
     }
   }
 

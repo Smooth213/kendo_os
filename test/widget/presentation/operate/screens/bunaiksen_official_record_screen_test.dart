@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';

@@ -1,6 +1,6 @@
 import 'dart:convert'; // ★ 署名生成（ハッシュ化）用に追加
 import 'package:uuid/uuid.dart';
-import '../../domain/entities/score_event.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 
 class ScoreEventLegacyAdapter {
   // ==========================================

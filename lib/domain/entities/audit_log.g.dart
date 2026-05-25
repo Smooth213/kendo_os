@@ -8,6 +8,7 @@ part of 'audit_log.dart';
 
 _AuditLog _$AuditLogFromJson(Map<String, dynamic> json) => _AuditLog(
   id: json['id'] as String,
+  organizationId: json['organizationId'] as String? ?? 'default_org',
   matchId: json['matchId'] as String,
   userId: json['userId'] as String,
   action: $enumDecode(_$AuditActionEnumMap, json['action']),
@@ -19,6 +20,7 @@ _AuditLog _$AuditLogFromJson(Map<String, dynamic> json) => _AuditLog(
 
 Map<String, dynamic> _$AuditLogToJson(_AuditLog instance) => <String, dynamic>{
   'id': instance.id,
+  'organizationId': instance.organizationId,
   'matchId': instance.matchId,
   'userId': instance.userId,
   'action': _$AuditActionEnumMap[instance.action]!,

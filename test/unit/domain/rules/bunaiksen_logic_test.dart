@@ -2,13 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // ※ プロジェクトの実際のパスに合わせてインポートを調整してください
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart';
 // ★ 追加：本番環境のヘルパークラスをインポート
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
-import 'package:kendo_os/domain/entities/match_context.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/domain/match/match_context.dart';
 
 // ============================================================================
 // 【単体テスト（Unit Test）実行部】

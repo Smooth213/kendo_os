@@ -17,6 +17,14 @@
     "/^flutter analyze lib/application/usecases/match_application_service\\.dart lib/presentation/operate/screens/new_match_screen\\.dart lib/presentation/operate/providers/match_generator_provider\\.dart$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^flutter test test/integration/route_guard_test\\.dart$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^flutter test test/widget/viewer_mode_test\\.dart$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   },
   "yaml.schemas": {

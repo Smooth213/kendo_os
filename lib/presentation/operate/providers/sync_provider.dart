@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'match_list_provider.dart'; 
-import 'package:kendo_os/domain/entities/match_model.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart';
 import 'match_rule_provider.dart';
 

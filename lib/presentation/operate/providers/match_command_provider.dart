@@ -1,14 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'match_list_provider.dart';
 // ★ kendo_rule_engine.dart のインポートを削除 (未使用のため)
 import 'match_rule_provider.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart'; // ★ Firestore版からIsar版に差し替え
 import 'sync_provider.dart'; // ★ 追加: クラウド同期ワーカー
-import 'package:kendo_os/domain/entities/match_aggregate.dart'; // ★ 追加
+import 'package:kendo_os/domain/match/match_aggregate.dart'; // ★ 追加
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart'; // ★ 追加: UseCaseの参照
 import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ CQRSルーター用

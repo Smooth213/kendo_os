@@ -1,4 +1,4 @@
-import '../entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import '../rules/match_rule.dart';
 import 'kendo_rule_engine.dart';
 

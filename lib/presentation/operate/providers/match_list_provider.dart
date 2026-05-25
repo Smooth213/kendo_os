@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/presentation/operate/providers/match_rule_provider.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/infrastructure/repository/match_repository.dart';
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';

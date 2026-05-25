@@ -6,7 +6,7 @@ part 'local_stroke_model.g.dart';
 /// 自分だけのメモ（青ペンなど）をローカル保存するためのIsar用モデル
 @collection
 class LocalStrokeModel {
-  Id id = Isar.autoIncrement; // Isarが自動で割り当てる内部ID
+  Id id = Isar.autoIncrement;
 
   @Index(type: IndexType.hash)
   late String programId; // どのプログラム（画像/PDF）に引かれた線か

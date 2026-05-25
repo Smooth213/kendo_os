@@ -6,6 +6,8 @@ part 'settings_model.g.dart';
 @freezed
 abstract class SettingsModel with _$SettingsModel {
   const factory SettingsModel({
+    /// ★ 新・同期空間統治キー：この環境設定が適用される道場ルームのID
+    @Default('default_org') String organizationId,
     // 【操作・安全設定】
     // ★ アプリの初期状態を「大会・錬成会」プリセットに完全統一
     @Default('double') String confirmBehavior, 

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/permission_provider.dart';
-import '../../shared/widgets/liquid_background.dart'; // ★ 追加
+
+// ★ 旧 permissionProvider を完全撤廃し、新設計の RolePermissions に一元結合
+import '../../../domain/entities/user_role.dart';
+import '../../../core/security/role_permissions.dart';
+import '../../shared/providers/current_user_role_provider.dart';
+import '../../shared/providers/auth_session_provider.dart';
+
+import '../../shared/widgets/liquid_background.dart'; 
 import '../../shared/widgets/glass_button.dart';
 
-// ★ シンプルなConsumerWidgetに戻りました（波紋アニメーションはFlutter標準に任せます）
 class StartScreen extends ConsumerWidget {
   const StartScreen({super.key});
 
-  // ★ 内部画面の「カード」と同じデザイン言語で作られたアクションボタン
   Widget _buildActionCard(BuildContext context, {
     required IconData icon,
     required String title,
@@ -17,7 +21,6 @@ class StartScreen extends ConsumerWidget {
     required Color color,
     required VoidCallback onTap,
   }) {
-    // iOS Native: ダークモード時の色調整
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     final subTextColor = isDark ? const Color(0xFF8E8E93) : Colors.grey.shade600;
@@ -25,8 +28,8 @@ class StartScreen extends ConsumerWidget {
     return GlassButton.custom(
       onPressed: onTap,
       color: color,
-      surfaceColor: Colors.white, // 背景のベースを白にする
-      glassAlpha: isDark ? 0.08 : 0.5, // ライトモード時は白を強めに、ダークモード時はうっすらと白を入れる
+      surfaceColor: Colors.white, 
+      glassAlpha: isDark ? 0.08 : 0.5, 
       child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
           child: Column(
@@ -35,7 +38,7 @@ class StartScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: isDark ? 0.2 : 0.1), // ダーク時は少しアイコン背景を明るくして視認性を上げる
+                  color: color.withValues(alpha: isDark ? 0.2 : 0.1), 
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, size: 36, color: color),
@@ -52,24 +55,43 @@ class StartScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final permissions = ref.watch(permissionProvider);
+    // ★ 核心：現在のロール状態をリアルタイムに監視
+    final currentRole = ref.watch(currentUserRoleProvider);
+
+    // 一元管理クラス RolePermissions からボタンの表示条件を正確に算出
+    final bool showCreateTournament = RolePermissions.canCreateTournament(currentRole);
+    final bool showPlayerMaster = RolePermissions.canAccessPlayerMaster(currentRole);
+    
+    // ユーザーにわかりやすい日本語の権限名に変換
+    String roleDisplayName;
+    switch (currentRole) {
+      case UserRole.admin:
+        roleDisplayName = '管理者 (Admin)';
+        break;
+      case UserRole.operator:
+        roleDisplayName = '大会運営者 (Operator)';
+        break;
+      case UserRole.recorder:
+        roleDisplayName = '試合記録者 (Recorder)';
+        break;
+      case UserRole.viewer:
+        roleDisplayName = '閲覧専用 (Viewer)';
+        break;
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // iOS Native: ダークモード時はヘッダーのグラデーションを深みのある色に
     final headerStartColor = isDark ? Colors.indigo.shade900 : Colors.indigo.shade700;
     final headerEndColor = isDark ? const Color(0xFF1A237E) : Colors.blue.shade500;
 
-    return LiquidBackground( // ★ 全体をLiquidBackgroundでラップ
+    return LiquidBackground( 
       child: Scaffold(
-        backgroundColor: Colors.transparent, // ★ 背景を透明にして下の光のオーブを透かす
+        backgroundColor: Colors.transparent, 
         body: Column(
           children: [
-            // ★ 内部画面（home_screen等）のAppBarと完全にリンクする、美しいグラデーションの巨大ヘッダー
             Container(
               width: double.infinity,
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 32, // ノッチやステータスバーを避ける
+                top: MediaQuery.of(context).padding.top + 32, 
                 bottom: 48,
                 left: 24,
                 right: 24,
@@ -92,18 +114,29 @@ class StartScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Kendo Sync', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.0)),
-                      // ★ 設定アイコンはここに配置
-                      IconButton(
-                        icon: const Icon(Icons.settings_outlined, color: Colors.white70),
-                        onPressed: () {
-                          context.push('/settings');
-                        },
+                      Row(
+                        children: [
+                          if (RolePermissions.canAccessSettings(currentRole))
+                            IconButton(
+                              icon: const Icon(Icons.settings, color: Colors.white70, size: 22),
+                              tooltip: 'システム設定',
+                              onPressed: () => context.push('/settings'),
+                            ),
+                          IconButton(
+                            icon: const Icon(Icons.logout_outlined, color: Colors.white70, size: 22),
+                            tooltip: '権限を変更（ログアウト）',
+                            onPressed: () {
+                              // 最初のロール選択画面へ戻る導線を確保
+                              ref.read(authSessionProvider.notifier).logout();
+                              context.go('/role-select');
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text('大会の作成・管理をここから始めましょう', style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.9), fontWeight: FontWeight.w500)),
-                  // ★ 追加：部内戦・申し合わせへの特急ガラスボタン（ホーム画面を経由）
+                  Text('現在の権限: $roleDisplayName', style: const TextStyle(fontSize: 12, color: Colors.orangeAccent, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -124,11 +157,10 @@ class StartScreen extends ConsumerWidget {
               ),
             ),
   
-            // ★ 2x2の美しいカードグリッドと、余白を引き締めるアンカー（フッター）
             Expanded(
               child: Transform.translate(
-                offset: const Offset(0, -24), // 上に24pxずらして重ねる
-                child: CustomScrollView( // ★ ListViewからCustomScrollViewへ変更し、余白を完全に制御
+                offset: const Offset(0, -24), 
+                child: CustomScrollView( 
                   slivers: [
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -136,10 +168,9 @@ class StartScreen extends ConsumerWidget {
                         delegate: SliverChildListDelegate([
                           Row(
                             children: [
-                              // ★ Phase 8: 記録係（Scorer）には大会作成ボタンを見せない
-                              if (permissions.canManageTournament) ...[
+                              // ★ 仕様準拠: ViewerやRecorderには、ボタン自体を「非表示」にして誤操作を完全撲滅
+                              if (showCreateTournament) ...[
                                 Expanded(
-                                  // ★ 直感UX改修：オレンジから「Emerald Green (Teal)」へ変更し、ウィザードへの入り口を色彩でリンクさせる
                                   child: _buildActionCard(context, icon: Icons.add_circle, title: '新しい大会\nを作る', subtitle: '大会・錬成会', color: Colors.teal.shade600, onTap: () => context.push('/create-tournament')),
                                 ),
                                 const SizedBox(width: 16),
@@ -155,21 +186,22 @@ class StartScreen extends ConsumerWidget {
                               Expanded(
                                 child: _buildActionCard(context, icon: Icons.history, title: '過去の大会\nを見る', subtitle: 'アーカイブ', color: Colors.blueGrey.shade600, onTap: () => context.push('/tournament-list', extra: true)),
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _buildActionCard(context, icon: Icons.manage_accounts, title: '選手名簿\n(マスタ) 管理', subtitle: '道場生データ', color: Colors.purple.shade600, onTap: () => context.push('/master')),
-                              ),
+                              if (showPlayerMaster) ...[
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildActionCard(context, icon: Icons.manage_accounts, title: '選手名簿\n(マスタ) 管理', subtitle: '道場生データ', color: Colors.purple.shade600, onTap: () => context.push('/master')),
+                                ),
+                              ],
                             ],
                           ),
                         ]),
                       ),
                     ),
-                    // ★ 修正：LayoutBuilderの複雑な計算を廃止し、確実に描画される安全な固定サイズ＋フレックス余白を採用
                     SliverFillRemaining(
                       hasScrollBody: false,
                       fillOverscroll: true,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 32, bottom: 48), // Transformのズレを吸収するために下部余白を厚めにする
+                        padding: const EdgeInsets.only(top: 32, bottom: 48), 
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

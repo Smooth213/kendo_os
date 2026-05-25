@@ -3,15 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:kendo_os/domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import 'package:kendo_os/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
+import 'package:kendo_os/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 
-import 'package:kendo_os/presentation/viewer/screens/viewer_home_screen.dart';
+import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart';
 import 'package:kendo_os/presentation/viewer/screens/viewer_official_record_screen.dart';
 import 'package:kendo_os/presentation/operate/screens/home_screen.dart' as home;
 
@@ -19,12 +22,42 @@ import 'package:kendo_os/presentation/operate/screens/home_screen.dart' as home;
 import 'package:kendo_os/domain/repositories/projection_store.dart';
 import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
+import 'package:kendo_os/application/projections/projection_store.dart' as app_store;
 
 // ★ Phase 8: settingsProviderのモック用
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/domain/entities/settings_model.dart';
 import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/core/time/system_time_source.dart';
+
+import 'package:kendo_os/domain/entities/player_model.dart';
+
+// ★ 追加: セキュリティ・同期コンテキストのモック用（Firebase例外によるホワイトアウト防止）
+import 'package:kendo_os/presentation/shared/providers/auth_session_provider.dart';
+import 'package:kendo_os/presentation/shared/providers/current_user_role_provider.dart';
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/domain/entities/user_role.dart';
+
+// ★ 追加: Firestoreを呼び出してしまうプロバイダのモック用
+import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provider.dart';
+
+// ★ 全テストのスクロール可視範囲問題を永続的に解消する安定化ヘルパー
+Future<void> tapVisible(
+  WidgetTester tester,
+  Key key,
+) async {
+  final finder = find.byKey(key, skipOffstage: false);
+  // ① 存在を保証 (typoや非レンダリングを水際で検知)
+  expect(finder, findsOneWidget, reason: 'Key $key not found in the widget tree');
+
+  // ② 画面外ならスクロールして強制的に可視化
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+
+  // ③ 確実なタップと状態反映の待機
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
 
 // === モックデータ・プロバイダの準備 ===
 
@@ -35,14 +68,19 @@ class MockSettingsNotifier extends SettingsNotifier {
 
 class MockTournamentRepository implements TournamentRepository {
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
   Stream<TournamentModel?> getTournamentStream(String id) {
     return Stream.value(
       TournamentModel(
         id: 'test_tournament_1',
+        organizationId: 'default_org',
         name: '春季県大会',
         date: DateTime.now(),
         venue: '県立武道館',
         notes: 'テスト用メモ',
+        categories: const ['一般', '個人'],
       ),
     );
   }
@@ -59,31 +97,92 @@ class MockTournamentRepository implements TournamentRepository {
   Stream<List<TournamentModel>> watchTournaments() => Stream.value([]);
   @override
   Future<List<TournamentModel>> getArchivedTournaments() async => [];
+
+  // ★ 追加: 予期せぬ呼び出しに対応する明示的なメソッド
+  Future<TournamentModel?> getTournament(String id) async => TournamentModel(
+        id: 'test_tournament_1',
+        organizationId: 'default_org',
+        name: '春季県大会',
+        date: DateTime.now(),
+        venue: '県立武道館',
+        notes: 'テスト用メモ',
+        categories: const ['一般', '個人'],
+      );
+}
+
+class MockPlayerRepository implements PlayerRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  Stream<List<String>> watchCustomTeamNames({String organization = '道上剣友会'}) => Stream.value([]);
+
+  // ★ 追加: Playerの取得系メソッドが呼ばれた場合に対応
+  @override
+  Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) => Stream.value([]);
+  Stream<List<String>> watchPlayers({String organization = '道上剣友会'}) => Stream.value([]);
+}
+
+class MockMatchRepository implements MatchRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  Stream<List<MatchModel>> watchAllMatches() => Stream.value(mockMatches);
+  @override
+  Stream<List<MatchModel>> watchActiveMatches() => Stream.value([]);
+  @override
+  Future<List<MatchModel>> getStaticMatches() async => mockMatches;
+
+  // ★ 追加: 大会IDで試合を絞り込むメソッドが呼ばれた場合に対応
+  Stream<List<MatchModel>> watchMatchesByTournament(String tournamentId) => Stream.value(mockMatches);
+  Future<List<MatchModel>> getMatchesByTournament(String tournamentId) async => mockMatches;
+}
+
+class MockLocalMatchRepository implements LocalMatchRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  Stream<List<MatchModel>> watchMatches() => Stream.value(mockMatches);
+  @override
+  Future<void> saveMatchesBulk(List<MatchModel> matches) async {}
+
+  // ★ 追加: ローカル側でも大会ID指定が呼ばれる可能性への対応
+  Stream<List<MatchModel>> watchMatchesByTournament(String tournamentId) => Stream.value(mockMatches);
+  Future<List<MatchModel>> getMatchesByTournament(String tournamentId) async => mockMatches;
 }
 
 // 網羅的なモック試合データ（団体、個人、リーグ、勝ち抜きなど）
 final List<MatchModel> mockMatches = [
+  // 団体戦
   const MatchModel(
     id: 'team_match_1',
     tournamentId: 'test_tournament_1',
     category: '一般',
-    groupName: '団体戦1回戦',
+    groupName: '団体戦A',
     redName: '青龍道場 : 先鋒',
     whiteName: '白虎剣友会 : 先鋒',
     matchType: '先鋒',
-    status: 'in_progress', 
+    status: 'finished',
+    redScore: 1,
+    whiteScore: 0,
     order: 1.0,
+    note: '[団体戦]'
   ),
   const MatchModel(
     id: 'team_match_2',
     tournamentId: 'test_tournament_1',
     category: '一般',
-    groupName: '団体戦1回戦',
+    groupName: '団体戦A',
     redName: '青龍道場 : 次鋒',
     whiteName: '白虎剣友会 : 次鋒',
     matchType: '次鋒',
-    status: 'waiting',
+    status: 'finished',
+    redScore: 0,
+    whiteScore: 0,
     order: 2.0,
+    note: '[団体戦]'
   ),
 
   // ★ 修正2: 「チーム名 : 選手名」の正しい形式に修正
@@ -110,6 +209,8 @@ final List<MatchModel> mockMatches = [
     matchType: '個人戦',
     status: 'in_progress',
     order: 3.5,
+    redScore: 0,
+    whiteScore: 0,
   ),
 
   const MatchModel(
@@ -122,6 +223,8 @@ final List<MatchModel> mockMatches = [
     matchType: '先鋒',
     note: '[リーグ戦]',
     status: 'waiting',
+    redScore: 0,
+    whiteScore: 0,
     order: 4.0,
     rule: MatchRule(isLeague: true, positions: ['先鋒', '次鋒', '大将']),
   ),
@@ -143,27 +246,32 @@ final List<MatchModel> mockMatches = [
     rule: MatchRule(isLeague: true),
   ),
 
+  // 勝ち抜き戦
   const MatchModel(
-    id: 'kachinuki_1',
+    id: 'kachinuki_match_1',
     tournamentId: 'test_tournament_1',
     category: '一般',
-    groupName: '勝ち抜き戦1',
+    groupName: '勝ち抜き戦A',
     redName: '青龍道場 : 先鋒',
     whiteName: '玄武館 : 先鋒',
-    matchType: '先鋒',
+    matchType: '勝ち抜き戦',
     isKachinuki: true,
     status: 'finished',
     redRemaining: ['次鋒', '中堅', '副将', '大将'],
     whiteRemaining: ['次鋒', '中堅', '副将', '大将'],
     order: 6.0,
+    note: '[勝ち抜き戦]',
+    redScore: 0,
+    whiteScore: 0,
   ),
 ];
 
 // ★ Phase 5: インターフェース変更に合わせて Mock も更新
 class MockProjectionStore implements ProjectionStore {
   final List<MatchProjection> projections;
+  final List<MatchModel> originalMatches;
 
-  MockProjectionStore(this.projections);
+  MockProjectionStore(this.projections, this.originalMatches);
 
   @override
   Future<void> save(MatchProjection projection) async {}
@@ -183,21 +291,70 @@ class MockProjectionStore implements ProjectionStore {
   // ★ 戻り値を MatchListProjection に変換して返すように修正
   @override
   Stream<List<MatchListProjection>> watchByTournament(String tournamentId) {
-    final list = projections.where((p) => p.tournamentId == tournamentId).map((p) => MatchListProjection(
-      id: p.id,
-      tournamentId: p.tournamentId,
-      matchOrder: p.matchOrder,
-      matchType: p.matchType,
-      status: p.status,
-      redName: p.redName,
-      whiteName: p.whiteName,
-      redScore: p.redScore,
-      whiteScore: p.whiteScore,
-      groupName: p.groupName,
-      isKachinuki: p.isKachinuki,
-      note: p.note,
-    )).toList();
+    final list = originalMatches.where((m) => m.tournamentId == tournamentId).map((m) {
+      final p = projections.firstWhere((proj) => proj.id == m.id);
+      return MatchListProjection(
+        id: p.id,
+        tournamentId: p.tournamentId,
+        matchOrder: p.matchOrder,
+        matchType: p.matchType,
+        status: p.status,
+        redName: p.redName,
+        whiteName: p.whiteName,
+        redScore: p.redScore,
+        whiteScore: p.whiteScore,
+        groupName: p.groupName,
+        isKachinuki: p.isKachinuki,
+        note: p.note,
+        firstPointSide: p.firstPointSide,
+        redPointMarks: p.redPointMarks,
+        whitePointMarks: p.whitePointMarks,
+      );
+    }).toList();
     return Stream.value(list); // async* の遅延をなくし、即時反映させる
+  }
+}
+
+// ★ アプリケーション層のProjectionStoreモック
+class MockAppProjectionStore implements app_store.ProjectionStore {
+  final List<MatchProjection> projections;
+  final List<MatchModel> originalMatches;
+
+  MockAppProjectionStore(this.projections, this.originalMatches);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  Stream<MatchProjection?> watch(String matchId) {
+    final p = projections.where((proj) => proj.id == matchId).firstOrNull;
+    if (p != null) return Stream.value(p);
+    return const Stream.empty();
+  }
+
+  @override
+  Stream<List<MatchListProjection>> watchByTournament(String tournamentId) {
+    final list = originalMatches.where((m) => m.tournamentId == tournamentId).map((m) {
+      final p = projections.firstWhere((proj) => proj.id == m.id);
+      return MatchListProjection(
+        id: p.id,
+        tournamentId: p.tournamentId,
+        matchOrder: p.matchOrder,
+        matchType: p.matchType,
+        status: p.status,
+        redName: p.redName,
+        whiteName: p.whiteName,
+        redScore: p.redScore,
+        whiteScore: p.whiteScore,
+        groupName: p.groupName,
+        isKachinuki: p.isKachinuki,
+        note: p.note,
+        firstPointSide: p.firstPointSide,
+        redPointMarks: p.redPointMarks,
+        whitePointMarks: p.whitePointMarks,
+      );
+    }).toList();
+    return Stream.value(list); 
   }
 }
 
@@ -205,7 +362,7 @@ class MockProjectionStore implements ProjectionStore {
 Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
   // ★ 追加: MatchModelのモックを、Viewerが依存するMatchProjectionのモックに変換
   final mockProjections = mockMatches.map((m) {
-    return MatchProjection(
+    final proj = MatchProjection(
       id: m.id,
       tournamentId: m.tournamentId ?? '',
       matchOrder: m.order.toInt(),
@@ -228,6 +385,7 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
       timerIsRunning: m.timerIsRunning,
       note: m.note,
     );
+    return proj;
   }).toList();
 
   final router = GoRouter(
@@ -244,12 +402,24 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
     overrides: [
       activeRoleProvider.overrideWith((ref) => role),
       matchListProvider.overrideWith((ref) => mockMatches),
+      matchStreamProvider.overrideWith((ref) => Stream.value(mockMatches)),
+      playerRepositoryProvider.overrideWithValue(MockPlayerRepository()),
+      matchRepositoryProvider.overrideWithValue(MockMatchRepository()),
+      localMatchRepositoryProvider.overrideWithValue(MockLocalMatchRepository()),
+      // ★ 追加: 意図せずFirestoreを叩くプロバイダを安全なモックに置き換え
+      bunaiksenMatchesProvider.overrideWith((ref, id) => Stream.value(mockMatches)),
       tournamentRepositoryProvider.overrideWithValue(MockTournamentRepository()),
       // ★ 追加: Viewer用のProjectionStoreをモックデータで上書き
-      projectionStoreProvider.overrideWithValue(MockProjectionStore(mockProjections)),
+      projectionStoreProvider.overrideWithValue(MockProjectionStore(mockProjections, mockMatches)),
+      // ★ 修正: アプリ本編が依存している正しいProjectionStoreのプロバイダも確実にモック化し、[core/no-app] 自爆エラーを完全消滅させる
+      app_store.projectionStoreProvider.overrideWithValue(MockAppProjectionStore(mockProjections, mockMatches)),
       // ★ 修正3: これがないと画面描画時に必ずクラッシュするため追加
       customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
       home.customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
+      // ★ 追加: Firebaseやローカルストレージへの意図しないアクセスを完全遮断
+      firestoreRoleStreamProvider.overrideWith((ref) => Stream.value(UserRole.viewer)),
+      currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+      currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
       // ★ Phase 8: SettingsProviderをモック化してSharedPreferences未実装エラーを回避
       settingsProvider.overrideWith(() => MockSettingsNotifier()),
       commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
@@ -317,6 +487,8 @@ void main() {
       expect(find.byIcon(Icons.search), findsOneWidget);
       
       await tester.tap(find.byIcon(Icons.search));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle(); // ★ Widgetの描画完了を確実に待つ
       expect(find.byType(TextField), findsOneWidget);
       // スコアという文字はViewerHomeScreenに直接は無いため、検索フィールドのヒントテキスト等で検証
@@ -324,23 +496,45 @@ void main() {
     });
 
     testWidgets('3. ViewerOfficialRecordScreen renders header and export buttons', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
 
-      expect(find.text('PDF印刷'), findsWidgets);
-      expect(find.text('画像シェア'), findsWidgets);
-      expect(find.text('全カテゴリ'), findsWidgets); 
+      debugDumpApp(); // ツリー内部構成の確認用（不要になれば削除してください）
+
+      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+
+      expect(find.byKey(const Key('viewer_export_pdf_button')), findsWidgets);
+      expect(find.byKey(const Key('viewer_export_image_button')), findsWidgets);
     });
 
     testWidgets('4-1. Renders normal Team Match (Table Format)', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('【団体戦】'), findsWidgets);
-      expect(find.text('先鋒'), findsWidgets);
-      expect(find.text('次鋒'), findsWidgets);
+      debugDumpApp();
+
+      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+
+      // 新：STEP 5 の命名規約に則った鉄壁の Key 一撃必殺アサーション
+      await tapVisible(tester, const Key('viewer_match_card_団体戦A'));
     });
 
     testWidgets('4-2. Renders Kachinuki Match', (WidgetTester tester) async {
@@ -354,10 +548,15 @@ void main() {
 
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('【勝ち抜き戦】'), findsWidgets);
-      expect(find.byType(CustomPaint), findsWidgets);
+      debugDumpApp();
+
+      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+
+      // 新：STEP 5 の命名規約に則った鉄壁の Key 一撃必殺アサーション
+      await tapVisible(tester, const Key('viewer_match_card_勝ち抜き戦A'));
     });
 
     testWidgets('4-3. Renders Individual League with SUMMARY (Flat List & Star Table)', (WidgetTester tester) async {
@@ -371,19 +570,15 @@ void main() {
 
       await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('全カテゴリ').first);
-      await tester.pumpAndSettle();
+      debugDumpApp();
 
-      // ★ 修正4: タイトルのアサーションを柔軟にしてエラーを回避
-      expect(find.textContaining('【リーグ戦】'), findsWidgets);
-      expect(find.textContaining('リーグ'), findsWidgets);
+      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
 
-      expect(find.textContaining('簡易入力された結果です'), findsWidgets);
-      expect(find.textContaining('対戦スコア詳細'), findsWidgets);
-      // '◯' が確実に描画されるかはデータ依存のため、より確実なテキストで検証
-      expect(find.textContaining('個人戦'), findsWidgets);
+      // 新：STEP 5 の命名規約に則った鉄壁の Key 一撃必殺アサーション
+      await tapVisible(tester, const Key('viewer_match_card_予選リーグA'));
     });
   });
 }

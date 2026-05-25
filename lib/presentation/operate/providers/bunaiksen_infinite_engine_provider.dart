@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../../../domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'bunaiksen_provider.dart';
 
 final bunaiksenInfiniteEngineProvider = Provider((ref) => BunaiksenInfiniteEngine(ref));

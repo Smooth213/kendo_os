@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../domain/entities/match_model.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'match_list_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 修正: ApplicationServiceを使用
 

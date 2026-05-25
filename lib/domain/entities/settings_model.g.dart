@@ -8,6 +8,7 @@ part of 'settings_model.dart';
 
 _SettingsModel _$SettingsModelFromJson(Map<String, dynamic> json) =>
     _SettingsModel(
+      organizationId: json['organizationId'] as String? ?? 'default_org',
       confirmBehavior: json['confirmBehavior'] as String? ?? 'double',
       isLocked: json['isLocked'] as bool? ?? false,
       showConfirmDialog: json['showConfirmDialog'] as bool? ?? false,
@@ -26,6 +27,7 @@ _SettingsModel _$SettingsModelFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$SettingsModelToJson(_SettingsModel instance) =>
     <String, dynamic>{
+      'organizationId': instance.organizationId,
       'confirmBehavior': instance.confirmBehavior,
       'isLocked': instance.isLocked,
       'showConfirmDialog': instance.showConfirmDialog,

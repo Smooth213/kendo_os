@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart'; // UUID生成用に追加
-import 'package:kendo_os/domain/entities/match_aggregate.dart';
-import 'package:kendo_os/domain/entities/match_model.dart'; // BaseModel生成用に追加
-import 'package:kendo_os/domain/entities/score_event.dart';
+import 'package:kendo_os/domain/match/match_aggregate.dart';
+import 'package:kendo_os/domain/match/match_model.dart'; // BaseModel生成用に追加
+import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/repositories/event_store.dart';
 import 'package:kendo_os/domain/repositories/snapshot_store.dart';
