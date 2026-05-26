@@ -5,9 +5,12 @@ import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/infrastructure/repository/sync_engine.dart' as new_sync;
+import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart';
 
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 class MockSyncEngine extends Mock implements SyncEngine {}
+class MockNewSyncEngine extends Mock implements new_sync.SyncEngine {}
 
 // ==========================================
 // 🛡️ Phase 8: Web Platform Safety & Historical Bug Regression Tests
@@ -170,14 +173,18 @@ void main() {
       // ★ 修正: シミュレーションではなく、実際の Service とモック DB を結合してテストする
       final mockLocalRepo = MockLocalMatchRepository();
       final mockSyncEngine = MockSyncEngine();
+      final mockNewSyncEngine = MockNewSyncEngine();
       
       when(() => mockLocalRepo.saveMatchesBulk(any())).thenAnswer((_) async {});
+      when(() => mockLocalRepo.getPendingCommands()).thenAnswer((_) async => <MatchCommandModel>[]);
       when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
+      when(() => mockNewSyncEngine.processQueue()).thenAnswer((_) async {});
 
       final container = ProviderContainer(
         overrides: [
           localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
           syncEngineProvider.overrideWithValue(mockSyncEngine),
+          new_sync.syncEngineProvider.overrideWithValue(mockNewSyncEngine),
         ]
       );
       

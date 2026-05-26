@@ -24,7 +24,8 @@ void main() {
     'lib/infrastructure/persistence/models/match_entity.g.dart', 
     'lib/infrastructure/persistence/models/local_stroke_model.g.dart',
     'lib/infrastructure/persistence/models/match_comment_entity.g.dart',
-    'lib/infrastructure/persistence/models/match_command_entity.g.dart'
+    'lib/infrastructure/persistence/models/match_command_entity.g.dart',
+    'lib/infrastructure/persistence/models/match_projection_entity.g.dart'
   ];
   int counter = 100;
   final regex = RegExp(r'id:\s*-?\d{10,20}'); // 全ての巨大IDを対象にする
@@ -43,7 +44,7 @@ echo -e "${GREEN}✅ 一時置換完了${NC}"
 
 # 2. Webビルド
 echo -e "${YELLOW}[2/4] Flutter Web ビルド中...${NC}"
-flutter build web --release --pwa-strategy none
+flutter build web --release
 BUILD_RESULT=$?
 
 if [ $BUILD_RESULT -ne 0 ]; then

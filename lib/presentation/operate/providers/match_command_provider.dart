@@ -13,6 +13,13 @@ import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart'; // ★ 追加: UseCaseの参照
 import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ CQRSルーター用
 
+// =========================================================================
+// 🛡️ Phase 1 - STEP 1-1 要件：SyncAction (Local First Command) の定義
+// すでに実装されている MatchCommandModel を SyncAction として完全エイリアス化し、
+// ロードマップの思想（ID, Type, Payload, CreatedAt）と100%の互換性を確立します。
+// =========================================================================
+typedef SyncAction = MatchCommandModel;
+
 // ★ 修正: キューシステム導入に伴い、役割を明確にするため MatchCommandService にリネーム
 final matchCommandServiceProvider = Provider<MatchCommandService>((ref) {
   return MatchCommandService(ref);
@@ -293,7 +300,7 @@ class MatchCommandService {
 // ★【Phase 1: 堅牢化】オフラインファースト・キューシステムの基盤
 // ============================================================================
 
-enum CommandType { addScore, undoLastEvent, approveMatch, rewindTo } // ★ rewindTo を追加
+enum CommandType { addScore, undoLastEvent, approveMatch, rewindTo, updateMatch } // ★ rewindTo, updateMatch を追加
 enum CommandStatus { pending, done, failed }
 
 // 1. 操作の意図をパッキングするデータクラス (名前の競合を避けるため Model を付与)
@@ -475,6 +482,9 @@ class MatchCommandQueue {
       case CommandType.rewindTo:
         final version = cmd.payload['version'] as int;
         await appService.rewindTo(matchId, version);
+        break;
+      case CommandType.updateMatch:
+        // クラウド同期(SyncEngine)専用のコマンドなため、ここでは何もしない
         break;
     }
   }

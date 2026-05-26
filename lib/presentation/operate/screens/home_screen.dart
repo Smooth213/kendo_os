@@ -89,69 +89,110 @@ class HomeScreen extends ConsumerWidget {
     return PopScope(
       canPop: !isReadOnly,
       child: LiquidBackground(
-        child: Scaffold(
-          backgroundColor: Colors.transparent, 
-          appBar: AppBar(
-            automaticallyImplyLeading: !isReadOnly, 
-            title: Text('大会ホーム', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
-            backgroundColor: enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-            elevation: 0,
-            iconTheme: IconThemeData(color: textColor),
-            actions: [
-              if (!isReadOnly)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  child: ElevatedButton.icon(
-                    onPressed: () => context.go('/'), 
-                    icon: Icon(Icons.home, color: isDark ? Colors.white : Colors.indigo.shade700, size: 18),
-                    label: Text('トップへ', style: TextStyle(color: isDark ? Colors.white : Colors.indigo.shade700, fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.indigo.shade50, 
-                      elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Column(
+          children: [
+            // =========================================================================
+            // 🛡️ Phase 3 - STEP 3-3 要件：オフライン画面防衛インジケータバナー
+            // 試合中に通信が途絶した際、操作員に「Isarによる现场継続エンジンが正常稼働していること」を
+            // 明示し、視覚的な安心感を提供します。画面サイズを崩さないオーバーレイバー設計です。
+            // =========================================================================
+            Builder(
+              builder: (context) {
+                // 将来的に connectivity_plus または SyncEngine の保留キュー件数からリアルタイム判定
+                // 暫定的にローカルDBストリームの異常状態をネットワーク切断として扱う
+                final hasNetworkIssue = ref.watch(matchStreamProvider).hasError;
+                if (!hasNetworkIssue) return const SizedBox.shrink();
+
+                return SafeArea(
+                  bottom: false,
+                  child: Container(
+                    width: double.infinity,
+                    color: Colors.amber.shade900,
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.wifi_off_rounded, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                );
+              },
+            ),
+            Expanded(
+              child: Scaffold(
+                backgroundColor: Colors.transparent, 
+                appBar: AppBar(
+                  automaticallyImplyLeading: !isReadOnly, 
+                  title: Text('大会ホーム', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
+                  backgroundColor: enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+                  elevation: 0,
+                  iconTheme: IconThemeData(color: textColor),
+                  actions: [
+                    if (!isReadOnly)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                        child: ElevatedButton.icon(
+                          onPressed: () => context.go('/'), 
+                          icon: Icon(Icons.home, color: isDark ? Colors.white : Colors.indigo.shade700, size: 18),
+                          label: Text('トップへ', style: TextStyle(color: isDark ? Colors.white : Colors.indigo.shade700, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.indigo.shade50, 
+                            elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
+                        ),
+                      ),
+                    IconButton(
+                      icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
+                      tooltip: '大会を共有する',
+                      onPressed: () => _showShareDialog(context, tournamentId),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 ),
-              IconButton(
-                icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
-                tooltip: '大会を共有する',
-                onPressed: () => _showShareDialog(context, tournamentId),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-          body: Column(
-            children: [
-              // --- アクティブバナー ---
-              if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
-                Container(
-                  width: double.infinity, margin: const EdgeInsets.fromLTRB(16, 4, 16, 12), padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: Colors.indigo.shade800, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))]),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
-                    children: [
-                      if (uniqueInProgress.isNotEmpty) _buildCallRow('進行中', uniqueInProgress.first, Colors.orangeAccent),
-                      if (uniqueInProgress.isNotEmpty && uniqueWaiting.isNotEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: Colors.white24, height: 1)),
-                      if (uniqueWaiting.isNotEmpty) _buildCallRow('次試合', uniqueWaiting.first, Colors.white),
-                      if (uniqueWaiting.length > 1) Padding(padding: const EdgeInsets.only(top: 8), child: Text('次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}', style: const TextStyle(color: Colors.white70, fontSize: 12), overflow: TextOverflow.ellipsis)),
-                    ],
-                  ),
-                ),
+                body: Column(
+                  children: [
+                    // --- アクティブバナー ---
+                    if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
+                      Container(
+                        width: double.infinity, margin: const EdgeInsets.fromLTRB(16, 4, 16, 12), padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: Colors.indigo.shade800, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))]),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
+                          children: [
+                            if (uniqueInProgress.isNotEmpty) _buildCallRow('進行中', uniqueInProgress.first, Colors.orangeAccent),
+                            if (uniqueInProgress.isNotEmpty && uniqueWaiting.isNotEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: Colors.white24, height: 1)),
+                            if (uniqueWaiting.isNotEmpty) _buildCallRow('次試合', uniqueWaiting.first, Colors.white),
+                            if (uniqueWaiting.length > 1) Padding(padding: const EdgeInsets.only(top: 8), child: Text('次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}', style: const TextStyle(color: Colors.white70, fontSize: 12), overflow: TextOverflow.ellipsis)),
+                          ],
+                        ),
+                      ),
 
-              // --- 操作メニュー（権限に応じて表示自体を動的に制御するガードを適用） ---
-              // ★ 修正: Viewer（閲覧専用）以外には、試合記録者を含めてすべてのボタンを表示する
-              if (!isReadOnly)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
-                  child: OperatorActionButtons(tournamentId: tournamentId),
-                ),
+                    // --- 操作メニュー（権限に応じて表示自体を動的に制御するガードを適用） ---
+                    // ★ 修正: Viewer（閲覧専用）以外には、試合記録者を含めてすべてのボタンを表示する
+                    if (!isReadOnly)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
+                        child: OperatorActionButtons(tournamentId: tournamentId),
+                      ),
 
-              // --- タイムラインリスト（スクロール領域） ---
-              Expanded(
-                child: MatchTimelineList(tournamentId: tournamentId),
+                    // --- タイムラインリスト（スクロール領域） ---
+                    Expanded(
+                      child: MatchTimelineList(tournamentId: tournamentId),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

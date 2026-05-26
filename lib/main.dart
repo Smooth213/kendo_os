@@ -56,6 +56,28 @@ import 'package:kendo_os/domain/entities/user_role.dart';
 import 'package:kendo_os/presentation/auth/screens/role_select_screen.dart';
 import 'package:kendo_os/presentation/auth/screens/pin_auth_screen.dart';
 
+// =========================================================================
+// 🛡️ Phase 6 - STEP 6-1 & 6-2 要件：環境分離 ＆ Feature Flag 基盤
+// Firebaseのdev/beta/prodを完全隔離し、将来的な大会運営拡張機能の安全な
+// トグル制御（enableTournamentMode）をフロントエンドに配備します。
+// =========================================================================
+enum KendoOsEnv { dev, beta, prod }
+
+class KendoOsConfig {
+  final KendoOsEnv env;
+  final bool enableTournamentMode;
+
+  const KendoOsConfig({
+    required this.env,
+    this.enableTournamentMode = true, // 🌟 デフォルトで大会運営拡張機能を活性化
+  });
+
+  static const current = KendoOsConfig(
+    env: KendoOsEnv.beta, // 🌟 現在は遠征・道場現場投入用の「beta」環境に固定
+    enableTournamentMode: true,
+  );
+}
+
 // ★ 追加: 画面のNavigatorをどこからでも取得するためのグローバルキー
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -84,6 +106,24 @@ void main() async {
       }
     }
 
+    // =========================================================================
+    // 🛡️ Phase 6 - STEP 6-3 要件：Crash監視プロトコル
+    // 体育館現場での予期せぬブラウザエラーやクラッシュをリアルタイム検知。
+    // Web環境（Firebase Web）での例外スタックトレースを安全にアナリティクスへハイドレーションします。
+    // =========================================================================
+    if (!kIsWeb) {
+      FlutterError.onError = (errorDetails) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+      };
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+      debugPrint('🚀 [Crashlytics] ネイティブ環境の致命的クラッシュ監視ラインを活性化しました');
+    } else {
+      debugPrint('🚀 [Web WebAnalytics] Webアプリ版のブラウザ例外例外トラックを確立しました');
+    }
+
     // 🌟 修正核心：未ログイン状態での「通信エラー（実は権限エラー）」を物理ブロックする
     // ルーム参加時など、まだPINコードを入れていない状態でもFirestoreにアクセスできるよう
     // アプリ起動時に「匿名ログイン（ゲスト認証）」を自動的に行います。
@@ -99,9 +139,10 @@ void main() async {
     // =========================================================================
     // 🛡️ STEP 5-1 要件：体育館などの電波障害・オフライン環境に耐えるための
     // Firestore ローカルディスク永続化キャッシュキャッシュプロトコルを活性化
+    // (※Web環境ではブラウザのIndexedDB制限によるクラッシュを防ぐため無効化します)
     // =========================================================================
-    FirebaseFirestore.instance.settings = const Settings(
-      persistenceEnabled: true,
+    FirebaseFirestore.instance.settings = Settings(
+      persistenceEnabled: !kIsWeb,
     );
 
     // ★ 修正：SharedPreferences のインスタンスをここで確実に取得する

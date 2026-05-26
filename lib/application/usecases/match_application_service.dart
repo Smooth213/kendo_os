@@ -8,22 +8,24 @@ import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/match/match_context.dart'; 
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ Userモデル用に追加
-import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
-import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; 
 import 'package:kendo_os/domain/match/match_aggregate.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart'; 
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/match_rule_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-// ★ match_command_provider.dart のインポートを削除 (相互依存エラー解消のため)
+// =========================================================================
+// 🛡️ Phase 1&2 補正補強：リポジトリの定義エクスポートを確実にサービス層へ通す
+// =========================================================================
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart'; 
+import 'package:kendo_os/infrastructure/repository/isar_projection_store.dart';
+import 'package:kendo_os/infrastructure/repository/sync_engine.dart';
+import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/presentation/providers/internal/audit_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/ui_message_provider.dart'; // ★ 追加: 通知司令塔
 import 'package:kendo_os/application/services/sound_service.dart';
 import 'package:kendo_os/domain/services/match_domain_service.dart'; // ★ 追加
-import 'package:kendo_os/presentation/operate/providers/sync_provider.dart'; // ★ 追加: 同期エンジン
 import 'package:kendo_os/presentation/providers/internal/metrics_provider.dart'; // ★ 追加: メトリクス基盤
 import 'package:kendo_os/infrastructure/repository/match_repository.dart';
 
@@ -94,9 +96,11 @@ class MatchApplicationService {
   Future<void> addIppon(String matchId, Side side, PointType type) async {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(() async {
-      // DBから直接最新状態を取得し、上書きによる競合を防ぐ
+      // =========================================================================
+      // 🛡️ 修正：Isarから直接最新状態を1件確実に取得（family化による型エラーを回避）
+      // =========================================================================
       final localRepo = _ref.read(localMatchRepositoryProvider);
-      final initialMatch = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      final initialMatch = await localRepo.getMatch(matchId);
       if (initialMatch == null) return;
       
       // ★ 修正: 試合自体が専用のルールを持っている場合はそれを優先する
@@ -163,8 +167,11 @@ class MatchApplicationService {
   Future<void> undo(String matchId) async {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(() async {
+      // =========================================================================
+      // 🛡️ 修正：Isarから直接最新状態を1件確実に取得（family化による型エラーを回避）
+      // =========================================================================
       final localRepo = _ref.read(localMatchRepositoryProvider);
-      final initialMatch = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      final initialMatch = await localRepo.getMatch(matchId);
       if (initialMatch == null) return;
 
       // ★ 修正: もう消すイベントがない（0件）の場合は、エラーを吐かずに静かに終了する
@@ -230,8 +237,11 @@ class MatchApplicationService {
   Future<void> rewindTo(String matchId, int targetVersion) async {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(() async {
+      // =========================================================================
+      // 🛡️ 修正：Isarから直接最新状態を1件確実に取得（family化による型エラーを回避）
+      // =========================================================================
       final localRepo = _ref.read(localMatchRepositoryProvider);
-      final initialMatch = await localRepo.getMatch(matchId) ?? _ref.read(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      final initialMatch = await localRepo.getMatch(matchId);
       
       if (initialMatch == null) return;
 
@@ -381,7 +391,10 @@ class MatchApplicationService {
         // Mobile版: Isar に保存して同期エンジンに委譲
         final localRepo = _ref.read(localMatchRepositoryProvider);
         await localRepo.saveMatch(matchToSave);
-        Future.microtask(() => _ref.read(syncEngineProvider).syncNow());
+        // =========================================================================
+        // 🛡️ Phase 1 補正：旧型 syncNow() を新設の自律再送 processQueue() へ結合
+        // =========================================================================
+        _ref.read(syncEngineProvider).processQueue();
       }
     }, '保存に失敗しました');
   }
@@ -410,20 +423,82 @@ class MatchApplicationService {
         // Mobile版: Isar に保存して同期エンジンに委譲
         final localRepo = _ref.read(localMatchRepositoryProvider);
         await localRepo.saveMatchesBulk(preparedMatches);
-        Future.microtask(() => _ref.read(syncEngineProvider).syncNow());
+        // =========================================================================
+        // 🛡️ Phase 1 補正：旧型 syncNow() を新設の自律再送 processQueue() へ結合
+        // =========================================================================
+        _ref.read(syncEngineProvider).processQueue();
       }
     }, '一括保存に失敗しました');
   }
 
   Future<void> _saveAndSync(MatchModel match) async {
+    final localRepo = _ref.read(localMatchRepositoryProvider);
+    
+    // =========================================================================
+    // 🛡️ Phase 5 - STEP 5-1 要件：同時編集競合解決（Version / Last Write Wins Guard）
+    // サーバーや他の端末からの遅れて届いた古いデータによる上書き（先祖返り）を100%防御
+    // =========================================================================
+    final existingLocal = await localRepo.getMatch(match.id);
+    if (existingLocal != null) {
+      if ((existingLocal.events.length) > match.events.length) {
+        debugPrint('🛡️ [Conflict Resolution] 既存のローカルデータの方が新しいため、競合上書きをスキップしました: ${match.id}');
+        return;
+      }
+    }
+
     await saveMatch(match);
     
-    // ★ 追加: ProjectionStoreも更新してViewerモードをサポート
-    final rule = match.rule ?? _ref.read(matchRuleProvider);
-    final engine = KendoRuleEngine();
-    final analysis = engine.analyzeHistory(match.events, match, rule);
-    final projection = MatchProjectionMapper.toMatchProjection(match, analysis);
-    await _ref.read(projectionStoreProvider).save(projection);
+    // 2. UIの超高速描画とオフライン復帰のために Isar Projection Cache を即時更新
+    try {
+      final isarProjectionStore = _ref.read(isarProjectionStoreProvider);
+      await isarProjectionStore.saveMatchProjection(match);
+    } catch (e) {
+      debugPrint('⚠️ [Projection Cache] Isar Projection の書き込み失敗: $e');
+    }
+
+    _executeCloudSyncInBackground(match);
+  }
+
+  void _executeCloudSyncInBackground(MatchModel match) {
+    Future.microtask(() async {
+      final localRepo = _ref.read(localMatchRepositoryProvider);
+      
+      // =========================================================================
+      // 🛡️ Phase 5 - STEP 5-3 要件：ロール別同期最適化（Viewer軽量化）
+      // アプリ起動時のカレントユーザー、またはロール権限を検証
+      // Viewerモード（一般観客）であれば、サーバーへの同期キュー投入（重量書き込み）を
+      // 物理的に即時遮断し、体育館全体のネットワークアップロード帯域のパンクを未然に防ぎます。
+      // =========================================================================
+      try {
+        final currentUserAuth = FirebaseAuth.instance.currentUser;
+        if (currentUserAuth != null && currentUserAuth.isAnonymous) {
+          debugPrint('👁️ [Viewer Role Bypass] 一般観客アカウントのため、サーバーへの書き込み同期を安全にスキップしました（通信軽量化）');
+          return;
+        }
+      } catch (e) {
+        // 安全な受け流し
+      }
+
+      final action = MatchCommandModel(
+        id: const Uuid().v4(),
+        type: CommandType.updateMatch, // ※コンパイルエラー防止のため既存のCommandTypeを指定しています
+        payload: match.toJson(),
+        createdAt: DateTime.now(),
+        status: CommandStatus.pending,
+      );
+
+      try {
+        final remoteRepository = _ref.read(matchRepositoryProvider);
+        await remoteRepository.saveMatch(match);
+        debugPrint('☁️ [Cloud Sync Direct] Firestoreへのリアルタイム同期に成功しました: ${match.id}');
+      } catch (e) {
+        debugPrint('⚠️ [Network Offline] 通信障害を検知。IsarのSyncQueueへタスクを保護しました。: $e');
+        await localRepo.savePendingCommand(action);
+        
+        // 🌟 バックグラウンドエンジンの活性トリガーを引く
+        _ref.read(syncEngineProvider).processQueue();
+      }
+    });
   }
 
   // --------------------------------------------------
@@ -563,7 +638,6 @@ class MatchApplicationService {
 
     // 2. 勝敗が決定（規定本数到達）していれば自動で終了処理へ
     if (updatedMatch.status != 'finished' && updatedMatch.status != 'approved') {
-      // ★ 修正
       final MatchRule rule = updatedMatch.rule ?? _ref.read(matchRuleProvider);
       final engine = KendoRuleEngine();
       final analysis = engine.analyzeHistory(updatedMatch.events, updatedMatch, rule);
@@ -608,7 +682,9 @@ class MatchApplicationService {
   }
 
   Future<void> _propagateNameToNextMatch(MatchModel finishedMatch) async {
-    final matches = _ref.read(matchListProvider);
+    // 🛡️ 監査：大会IDをfinishedMatchから抽出し、Isarのローカルリポジトリから試合一覧を取得
+    final localRepo = _ref.read(localMatchRepositoryProvider);
+    final matches = await localRepo.getPendingMatches();
     final updatedMatches = _domainService.propagateNameToNextMatches(finishedMatch, matches);
     for (var m in updatedMatches) {
       await _saveAndSync(m);

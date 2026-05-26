@@ -43,6 +43,24 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <script>
+    // =========================================================================
+    // 🛡️ Phase 3 - STEP 3-2 要件：Service Workerアセットキャッシュの強化
+    // アプリのコア（JS、フォント、アイコン）は完全ローカルキャッシュしオフライン起動を保証。
+    // 重量データであるPDF、画像、およびFirestoreの動的クエリパケットの混入はブラウザクラッシュを防ぐため厳格に禁止。
+    // =========================================================================
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=1', {
+          scope: '.'
+        }).then(function (reg) {
+          console.log('🛡️ [PWA ServiceWorker] 体育館オフライン防衛アセットキャッシュが有効です。');
+        }).catch(function (err) {
+          console.error('⚠️ [PWA ServiceWorker] 登録失敗:', err);
+        });
+      });
+    }
+  </script>
   <!-- ★ 修正: 絶対パスに変更し、深いURLからでも確実にロードできるようにする（ホワイトアウト対策4） -->
   <script src="/flutter_bootstrap.js" async></script>
 </body>

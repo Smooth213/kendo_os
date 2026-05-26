@@ -20,6 +20,7 @@ import 'package:kendo_os/application/usecases/match_application_service.dart';
 // ★ 追加: テスト用のモック追加
 import 'package:kendo_os/presentation/operate/providers/ui_message_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/infrastructure/repository/sync_engine.dart' as new_sync;
 import 'package:kendo_os/core/time/system_time_source.dart';
 
 class MockMatchRepository extends Mock implements MatchRepository {}
@@ -28,6 +29,7 @@ class MockSoundService extends Mock implements SoundService {}
 class MockMatchCommand extends Mock implements MatchCommandService {}
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 class MockSyncEngine extends Mock implements SyncEngine {} // ★ 追加
+class MockNewSyncEngine extends Mock implements new_sync.SyncEngine {} // ★ 追加
 
 // ★ 追加: UiMessageNotifier のモック
 class MockUiMessageNotifier extends UiMessageNotifier {
@@ -45,6 +47,8 @@ class FakeMatchModel extends Fake implements MatchModel {
     return super.toString();
   }
 }
+
+class FakeMatchCommandModel extends Fake implements MatchCommandModel {}
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
@@ -64,10 +68,12 @@ void main() {
   late MockMatchCommand mockCommand;
   late MockLocalMatchRepository mockLocalRepo;
   late MockSyncEngine mockSyncEngine;
+  late MockNewSyncEngine mockNewSyncEngine;
 
   setUp(() {
     registerFallbackValue(FakeMatchModel());
     registerFallbackValue(AuditAction.addScore); 
+    registerFallbackValue(FakeMatchCommandModel());
 
     mockRepository = MockMatchRepository();
     mockAudit = MockAuditService();
@@ -75,11 +81,21 @@ void main() {
     mockCommand = MockMatchCommand();
     mockLocalRepo = MockLocalMatchRepository();
     mockSyncEngine = MockSyncEngine();
+    mockNewSyncEngine = MockNewSyncEngine();
 
-    when(() => mockLocalRepo.getMatch(any())).thenAnswer((_) async => null);
-    when(() => mockLocalRepo.saveMatch(any())).thenAnswer((_) async => {});
+    // 試合が見つからないと処理が中断されるため、モックプロバイダから試合を返すように設定
+    when(() => mockLocalRepo.getMatch(any())).thenAnswer((inv) async {
+      final id = inv.positionalArguments[0] as String;
+      return container.read(mockMatchListProvider).where((m) => m.id == id).firstOrNull;
+    });
+    when(() => mockLocalRepo.saveMatch(any())).thenAnswer((_) async {});
+    when(() => mockLocalRepo.getPendingMatches()).thenAnswer((_) async => <MatchModel>[]);
+    when(() => mockLocalRepo.savePendingCommand(any())).thenAnswer((_) async {});
+    when(() => mockLocalRepo.getPendingCommands()).thenAnswer((_) async => <MatchCommandModel>[]);
+    when(() => mockRepository.saveMatch(any())).thenAnswer((_) async {});
     // ★ 修正: 同期エンジンが呼ばれたら何もしない（テストをパスさせる）
-    when(() => mockSyncEngine.syncNow()).thenAnswer((_) async => {});
+    when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
+    when(() => mockNewSyncEngine.processQueue()).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
@@ -89,6 +105,7 @@ void main() {
         soundServiceProvider.overrideWithValue(mockSound),
         matchCommandProvider.overrideWithValue(mockCommand),
         syncEngineProvider.overrideWithValue(mockSyncEngine), // ★ モックを追加
+        new_sync.syncEngineProvider.overrideWithValue(mockNewSyncEngine), // ★ モックを追加
         uiMessageProvider.overrideWith(() => MockUiMessageNotifier()), // ★ モックを追加
         settingsProvider.overrideWith(() => MockSettingsNotifier()),
         matchListProvider.overrideWith((ref) => ref.watch(mockMatchListProvider)), 

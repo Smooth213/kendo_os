@@ -31,6 +31,12 @@ class MockLocalMatchRepository extends Mock implements LocalMatchRepository {
   
   @override
   Future<void> saveMatchesBulk(List<MatchModel> matches) => super.noSuchMethod(Invocation.method(#saveMatchesBulk, [matches]), returnValue: Future.value());
+
+  @override
+  Stream<List<MatchModel>> watchAllLocalMatches() => super.noSuchMethod(
+    Invocation.method(#watchAllLocalMatches, []), 
+    returnValue: Stream<List<MatchModel>>.empty(),
+  );
 }
 
 void main() {
@@ -65,6 +71,7 @@ void main() {
       when(mockRemote.watchActiveMatches()).thenAnswer((_) => Stream<List<MatchModel>>.empty());
       when(mockRemote.getStaticMatches()).thenAnswer((_) async => <MatchModel>[]);
       when(mockLocal.watchMatches()).thenAnswer((_) => Stream.value(mockMatches));
+      when(mockLocal.watchAllLocalMatches()).thenAnswer((_) => Stream.value(mockMatches));
 
       // matchStreamProviderはStreamProviderなので .future で値を取得可能
       final result = await container.read(matchStreamProvider.future);

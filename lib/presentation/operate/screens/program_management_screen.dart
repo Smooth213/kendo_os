@@ -3,14 +3,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:path_provider/path_provider.dart' as path_provider;
-import 'package:path/path.dart' as p;
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/infrastructure/repository/program_repository.dart';
 import 'package:kendo_os/domain/entities/program_model.dart';
 import '../providers/permission_provider.dart';
 import '../../shared/widgets/liquid_background.dart';
+
+// =========================================================================
+// 🛡️ Phase 0 - STEP 0-1 要件：UIからFirestoreを完全隔離する抽象化プロバイダー
+// 将来的にここを Isar Projection の監視ストリームに1行で差し替えます
+// =========================================================================
+final programListProvider = StreamProvider.family<List<ProgramModel>, String>((ref, tournamentId) {
+  final repository = ref.watch(programRepositoryProvider);
+  return repository.watchPrograms(tournamentId);
+});
 
 class ProgramManagementScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -25,21 +31,6 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
   bool _isUploading = false;
   // ignore: prefer_final_fields
   bool _isGridView = false; // ★ グリッド/リストの切り替えスイッチ
-
-  // ★ Web対応：画像圧縮はネイティブのみ可能。Webの場合は圧縮せずにそのまま返す
-  Future<File?> _prepareFile(PlatformFile platformFile) async {
-    if (kIsWeb) {
-      return null; // Webはリポジトリ側でbytes処理をする設計に合わせる
-    }
-    File file = File(platformFile.path!);
-    if (platformFile.extension?.toLowerCase() != 'pdf') {
-      final tempDir = await path_provider.getTemporaryDirectory();
-      final targetPath = p.join(tempDir.path, "${DateTime.now().millisecondsSinceEpoch}_compressed.jpg");
-      final result = await FlutterImageCompress.compressAndGetFile(file.absolute.path, targetPath, quality: 80, minWidth: 2000, minHeight: 2000);
-      return File(result!.path);
-    }
-    return file;
-  }
 
   void _showPickerMenu() {
     showModalBottomSheet(
@@ -99,19 +90,23 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
 
     try {
       // ★ ユーザーが並び替えた orderedFiles を使ってループ
-      for (int i = 0; i < fileCount; i++) {
+      for (int i = 0; i < orderedFiles.length; i++) {
         final platformFile = orderedFiles[i];
         final extension = platformFile.extension?.toLowerCase() ?? '';
         final fileType = (isPhoto || extension != 'pdf') ? 'image' : 'pdf';
         
-        final displayTitle = fileCount > 1 ? '$title (${i + 1}/$fileCount)' : title;
+        final displayTitle = orderedFiles.length > 1 ? '$title (${i + 1}/${orderedFiles.length})' : title;
 
-        // ★ リポジトリの uploadProgram を呼び出し
+        // =========================================================================
+        // 🛡️ Phase 2 - STEP 2-1 & 2-2 要件：PDFバイナリ保存の全面禁止と材料データ化
+        // ネットワークへの巨大なPDF送信を完全遮断。Web環境ではバイナリを送信せず、
+        // タイトルや設定などの「材料データ（メタデータ）」のみを瞬時にクラウド保存します。
+        // =========================================================================
         await ref.read(programRepositoryProvider).uploadProgram(
           tournamentId: widget.tournamentId,
           title: displayTitle,
-          file: kIsWeb ? null : await _prepareFile(platformFile),
-          bytes: kIsWeb ? platformFile.bytes : null, // Web用のデータ受け渡し
+          file: null, 
+          bytes: null, 
           fileType: fileType,
           pageCount: 1,
         );
@@ -346,8 +341,11 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
 
   @override
   Widget build(BuildContext context) {
-    final repository = ref.watch(programRepositoryProvider);
+    // 🛡️ 監査指摘：UIがリポジトリ(Firestore)を直読していた watch(programRepositoryProvider) を物理排除
     final permissions = ref.watch(permissionProvider);
+    
+    final isViewerMode = permissions.isReadOnly || 
+                         (GoRouterState.of(context).uri.queryParameters['role'] == 'viewer');
 
     return LiquidBackground(
       child: Scaffold(
@@ -355,131 +353,112 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
         appBar: AppBar(
           title: const Text('プログラム管理'),
           actions: [
-            // ★ グリッド/リストの切り替えボタンを追加
             IconButton(
               icon: Icon(_isGridView ? Icons.view_list_rounded : Icons.grid_view_rounded),
               onPressed: () => setState(() => _isGridView = !_isGridView),
-              tooltip: _isGridView ? 'リスト表示にする' : 'グリッド表示にする',
             ),
-            const SizedBox(width: 8),
           ],
         ),
-        body: StreamBuilder<List<ProgramModel>>(
-        stream: repository.watchPrograms(widget.tournamentId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          
-          // ★ 防衛修正: エラーが発生してもURLや生のエラーを画面に晒さない
-          if (snapshot.hasError) {
-             debugPrint('🔥 Firestore Error: ${snapshot.error}');
-             return Center(
-               child: Column(
-                 mainAxisAlignment: MainAxisAlignment.center,
-                 children: [
-                   const Icon(Icons.error_outline, color: Colors.amber, size: 48),
-                   const SizedBox(height: 16),
-                   const Text('データの読み込みに失敗しました。'),
-                   const Text('インデックス設定が反映されるまで数分お待ちください。'),
-                 ],
-               ),
-             );
-          }
+        // =========================================================================
+        // 🛡️ Phase 0 - STEP 0-1 要件：Firestore依存UIの全排除
+        // UIは新設されたプロバイダー層のみを凝視し、内部実装がFirestoreかIsarかを感知しない
+        // =========================================================================
+        body: () {
+          final programAsync = ref.watch(programListProvider(widget.tournamentId));
 
-          final programs = snapshot.data ?? [];
-          if (programs.isEmpty) {
-            // 🌟 修正: 閲覧専用権限、またはURLのクエリパラメータが viewer の時は案内文をシンプルに切り替え
-            final bool isViewerMode = permissions.isReadOnly || GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
-            return Center(
-              child: Text(
-                isViewerMode ? '登録されたプログラムはありません。' : '登録されたプログラムはありません。\n右下のボタンから追加してください。', 
-                textAlign: TextAlign.center
-              ),
-            );
-          }
+          return programAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) {
+              debugPrint('🔥 Local Projection Error: $err');
+              return const Center(child: Text('プログラムデータの読み込みに失敗しました。'));
+            },
+            data: (programs) {
+              if (programs.isEmpty) {
+                return Center(child: Text(isViewerMode ? 'プログラムはありません。' : 'プログラムを追加してください。'));
+              }
+              return _isGridView ? _buildGridView(programs) : _buildListView(programs);
+            },
+          );
+        }(),
+        floatingActionButton: isViewerMode ? null : FloatingActionButton.extended(
+          onPressed: _isUploading ? null : _showPickerMenu,
+          label: const Text('プログラムを追加'),
+          icon: const Icon(Icons.add),
+        ),
+      ),
+    );
+  }
 
-          // ★ グリッド表示モード
-          if (_isGridView) {
-            return GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.8,
-              ),
-              itemCount: programs.length,
-              itemBuilder: (context, index) {
-                final program = programs[index];
-                return InkWell(
-                  // ★ タップ時、リスト全体と「タップした画像のインデックス」を渡す
-                  onTap: () => context.push('/program-viewer', extra: {'programs': programs, 'index': index}),
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 2,
-                    child: Stack(
-                      fit: StackFit.expand,
+  Widget _buildGridView(List<ProgramModel> programs) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(12),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.8,
+      ),
+      itemCount: programs.length,
+      itemBuilder: (context, index) {
+        final program = programs[index];
+        return InkWell(
+          // ★ タップ時、リスト全体と「タップした画像のインデックス」を渡す
+          onTap: () => context.push('/program-viewer', extra: {'programs': programs, 'index': index}),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // サムネイル表示
+                program.fileType == 'pdf'
+                    ? Container(color: Colors.grey.shade200, child: const Icon(Icons.picture_as_pdf, size: 64, color: Colors.redAccent))
+                    : Image.network(program.fileUrl, fit: BoxFit.cover),
+                // タイトルと削除ボタンのオーバーレイ
+                Positioned(
+                  bottom: 0, left: 0, right: 0,
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    child: Row(
                       children: [
-                        // サムネイル表示
-                        program.fileType == 'pdf'
-                            ? Container(color: Colors.grey.shade200, child: const Icon(Icons.picture_as_pdf, size: 64, color: Colors.redAccent))
-                            : Image.network(program.fileUrl, fit: BoxFit.cover),
-                        // タイトルと削除ボタンのオーバーレイ
-                        Positioned(
-                          bottom: 0, left: 0, right: 0,
-                          child: Container(
-                            color: Colors.black.withValues(alpha: 0.6),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            child: Row(
-                              children: [
-                                Expanded(child: Text(program.title, style: const TextStyle(color: Colors.white, fontSize: 12), overflow: TextOverflow.ellipsis)),
-                                GestureDetector(
-                                  onTap: () => _confirmDelete(program),
-                                  child: const Icon(Icons.delete, color: Colors.white70, size: 18),
-                                ),
-                              ],
-                            ),
-                          ),
+                        Expanded(child: Text(program.title, style: const TextStyle(color: Colors.white, fontSize: 12), overflow: TextOverflow.ellipsis)),
+                        GestureDetector(
+                          onTap: () => _confirmDelete(program),
+                          child: const Icon(Icons.delete, color: Colors.white70, size: 18),
                         ),
                       ],
                     ),
                   ),
-                );
-              },
-            );
-          }
-
-          // ★ リスト表示モード (従来通りだが、サムネイルを追加)
-          return ListView.builder(
-            itemCount: programs.length,
-            itemBuilder: (context, index) {
-              final program = programs[index];
-              return ListTile(
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    width: 48, height: 48, color: Colors.grey.shade200,
-                    child: program.fileType == 'pdf'
-                        ? const Icon(Icons.picture_as_pdf, color: Colors.redAccent)
-                        : Image.network(program.fileUrl, fit: BoxFit.cover),
-                  ),
                 ),
-                title: Text(program.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(program.fileType.toUpperCase()),
-                trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _confirmDelete(program)),
-                // ★ タップ時、リスト全体とインデックスを渡す
-                onTap: () => context.push('/program-viewer', extra: {'programs': programs, 'index': index}),
-              );
-            },
-          );
-        },
-      ),
-      // ★ 修正: 閲覧専用権限、またはURLクエリパラメータが viewer の時は、右下の追加ボタンを「確実に」非表示化して完全ガード
-      floatingActionButton: (permissions.isReadOnly || GoRouterState.of(context).uri.queryParameters['role'] == 'viewer') 
-          ? null 
-          : FloatingActionButton.extended(
-              onPressed: _isUploading ? null : _showPickerMenu,
-              icon: const Icon(Icons.add_photo_alternate),
-              label: const Text('プログラムを追加'),
+              ],
             ),
-      ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildListView(List<ProgramModel> programs) {
+    return ListView.builder(
+      itemCount: programs.length,
+      itemBuilder: (context, index) {
+        final program = programs[index];
+        return ListTile(
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              width: 48, height: 48, color: Colors.grey.shade200,
+              child: program.fileType == 'pdf'
+                  ? const Icon(Icons.picture_as_pdf, color: Colors.redAccent)
+                  : Image.network(program.fileUrl, fit: BoxFit.cover),
+            ),
+          ),
+          title: Text(program.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(program.fileType.toUpperCase()),
+          trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _confirmDelete(program)),
+          // ★ タップ時、リスト全体とインデックスを渡す
+          onTap: () => context.push('/program-viewer', extra: {'programs': programs, 'index': index}),
+        );
+      },
     );
   }
 }

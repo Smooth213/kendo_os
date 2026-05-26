@@ -366,4 +366,48 @@ class LocalMatchRepository {
       status: CommandStatus.values.byName(e.status),
     )).toList();
   }
+
+  // =========================================================================
+  // 🛡️ Phase 0 - STEP 0-1 要件：UIのためのIsar直読リアルタイムストリーム
+  // UIはFirestoreを見ず、このIsarローカルキャッシュストリームのみを凝視する
+  // =========================================================================
+  Stream<List<MatchModel>> watchLocalMatches(String tournamentId) {
+    if (_isar == null) {
+      debugPrint('⚠️ [Isar] Warning: Isar is null, fallback to empty stream');
+      return Stream.value([]);
+    }
+    
+    // Isarのコレクション変更を検知してリアルタイムにドメインモデルに変換して流す
+    return _isar.matchEntitys
+        .filter()
+        .tournamentIdEqualTo(tournamentId)
+        .sortByOrder() // 試合順にソート
+        .watch(fireImmediately: true)
+        // =========================================================================
+        // 🛡️ 修正：MatchEntity には toDomain() が定義されていないため、
+        // 既存の正しいプライベートマッパー関数である `_toModel(entity)` を使用して変換する
+        // =========================================================================
+        .map((entities) {
+          return entities.map((entity) => _toModel(entity)).toList();
+        });
+  }
+
+  // =========================================================================
+  // 🛡️ Phase 0 - STEP 0-1 要件：引数なしの既存呼び出し（テスト含む）を完全救済する
+  // Isar直読用全試合リアルタイムストリーム
+  // =========================================================================
+  Stream<List<MatchModel>> watchAllLocalMatches() {
+    if (_isar == null) {
+      debugPrint('⚠️ [Isar] Warning: Isar is null, fallback to empty stream');
+      return Stream.value([]);
+    }
+    
+    return _isar.matchEntitys
+        .where()
+        .sortByOrder()
+        .watch(fireImmediately: true)
+        .map((entities) {
+          return entities.map((entity) => _toModel(entity)).toList();
+        });
+  }
 }
