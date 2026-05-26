@@ -36,7 +36,6 @@ import 'package:kendo_os/presentation/operate/screens/standings_screen.dart';
 import 'package:kendo_os/presentation/public/operator/official_record_screen.dart'; 
 import 'package:kendo_os/presentation/operate/providers/auth_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart'; 
-import 'package:kendo_os/presentation/operate/providers/sync_provider.dart'; 
 import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/infrastructure/persistence/models/local_stroke_model.dart'; 
@@ -55,6 +54,8 @@ import 'package:kendo_os/presentation/providers/internal/metrics_provider.dart';
 import 'package:kendo_os/domain/entities/user_role.dart';
 import 'package:kendo_os/presentation/auth/screens/role_select_screen.dart';
 import 'package:kendo_os/presentation/auth/screens/pin_auth_screen.dart';
+
+import 'package:kendo_os/infrastructure/repository/sync_engine.dart';
 
 // =========================================================================
 // 🛡️ Phase 6 - STEP 6-1 & 6-2 要件：環境分離 ＆ Feature Flag 基盤
@@ -508,8 +509,10 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp> with WidgetsBindingObse
     // アプリがバックグラウンドに回った（スリープ、ホーム画面に戻る等）瞬間
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。未送信データの強制同期を試行します...');
-      // SyncEngineの syncNow() を呼び出して残った仕事を終わらせる
-      ref.read(syncEngineProvider).syncNow();
+      // =========================================================================
+      // 🛡️ 補正：残存していた旧式 syncNow() を、新設した processQueue() へ完全統合
+      // =========================================================================
+      ref.read(syncEngineProvider).processQueue();
     }
   }
 
