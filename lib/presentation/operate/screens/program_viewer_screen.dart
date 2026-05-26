@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -38,6 +39,14 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   Color _selectedPenColor = Colors.redAccent; // ★ 4色を管理
   bool get _isSharedPen => _selectedPenColor == Colors.redAccent || _selectedPenColor == Colors.amber;
   List<Offset> _currentPoints = [];
+
+  // ★ 追加：環境に応じてリポジトリを安全に切り替える調停メソッド
+  dynamic _getActiveRepository(WidgetRef ref) {
+    if (kIsWeb) {
+      return ref.read(localStrokeRepositoryProvider); // Web版はメモリ版を使用
+    }
+    return ref.read(strokeRepositoryProvider); // iOS/Android版はIsar版を使用
+  }
 
   @override
   void initState() {
@@ -259,7 +268,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     tooltip: '1つ戻す',
                     onPressed: () {
                       if (activeIsShared) {
-                        ref.read(strokeRepositoryProvider).undoLastStroke(programId);
+                      _getActiveRepository(ref).undoLastStroke(programId);
                       } else {
                         ref.read(localStrokeRepositoryProvider).undoLastStroke(programId);
                       }
@@ -308,7 +317,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       // ★ ダイアログで「消去する(true)」が選ばれた時だけ、本当に削除する
                       if (shouldDelete == true) {
                         if (activeIsShared) {
-                          ref.read(strokeRepositoryProvider).clearStrokes(programId);
+                          _getActiveRepository(ref).clearStrokes(programId);
                         } else {
                           ref.read(localStrokeRepositoryProvider).clearStrokes(programId);
                         }
@@ -385,7 +394,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                     color: activePenColor,
                                     strokeWidth: penWidth,
                                   );
-                                  await ref.read(strokeRepositoryProvider).addStroke(newStroke);
+                                  await _getActiveRepository(ref).addStroke(newStroke);
                                 } else {
                                   final newLocalStroke = LocalStrokeModel()
                                     ..programId = programId
@@ -425,13 +434,17 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                   Positioned.fill(
                                     // ★ 最適化：PDFの再描画をブロックし、ペン入力時の負荷を激減させる
                                     child: RepaintBoundary(
-                                      child: SfPdfViewer.network(
-                                        program.fileUrl,
-                                        key: ValueKey(program.fileUrl),
-                                        controller: _pdfViewerController,
-                                        canShowScrollHead: false,
-                                        enableDoubleTapZooming: false,
-                                        enableTextSelection: false,
+                                      // ★ 修正案：Web版特有のレイアウト崩れを防止するコンテナ
+                                      child: SizedBox(
+                                        height: MediaQuery.of(context).size.height * 0.8, // 画面高さの80%に固定
+                                        child: SfPdfViewer.network(
+                                          program.fileUrl,
+                                          key: ValueKey(program.fileUrl),
+                                          controller: _pdfViewerController,
+                                          canShowScrollHead: false,
+                                          enableDoubleTapZooming: false,
+                                          enableTextSelection: false,
+                                        ),
                                       ),
                                     ),
                                   ),

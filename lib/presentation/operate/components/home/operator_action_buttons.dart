@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/permission_provider.dart';
 import '../../../shared/widgets/glass_button.dart';
 import '../../providers/settings_provider.dart';
+import '../../../../domain/entities/user_role.dart';
+import '../../../shared/providers/current_user_role_provider.dart';
 
 class OperatorActionButtons extends ConsumerWidget {
   final String tournamentId;
@@ -11,13 +12,15 @@ class OperatorActionButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final permissions = ref.watch(permissionProvider);
+    // ★ 修正: 古い permissionProvider を廃止し、最新のユーザーロールで判定
+    final currentRole = ref.watch(currentUserRoleProvider);
+    final isReadOnly = currentRole == UserRole.viewer;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       children: [
-        if (!permissions.isReadOnly) ...[
+        if (!isReadOnly) ...[
           _buildHugeMenuButton(context, enableLiquidGlass, Icons.edit_note, '試合開始（新しく作成）', Colors.indigo, () => context.push('/setup-match/$tournamentId')),
           const SizedBox(height: 8),
         ],
@@ -36,7 +39,7 @@ class OperatorActionButtons extends ConsumerWidget {
             onPressed: () => context.push('/tournament/$tournamentId/programs'),
             icon: Icon(Icons.picture_as_pdf, size: 20, color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600),
             label: Text(
-              permissions.isReadOnly ? '大会プログラムを見る（閲覧専用）' : '大会プログラムの管理・追加', 
+              isReadOnly ? '大会プログラムを見る（閲覧専用）' : '大会プログラムの管理・追加', 
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.grey.shade800),
             ),
             style: OutlinedButton.styleFrom(

@@ -5,11 +5,14 @@ import 'package:kendo_os/domain/match/match_model.dart'; // SyncState
 import '../persistence/models/match_comment_entity.dart';
 
 class LocalCommentRepository {
-  final Isar _isar;
+  final Isar? _isar; // ★ Web環境を考慮しNullableに変更
 
   LocalCommentRepository(this._isar);
 
   Future<void> saveComment(MatchCommentModel comment) async {
+    // ★ Web環境ではIsarが無効なため処理をスキップ
+    if (kIsWeb || _isar == null) return;
+
     final entity = MatchCommentEntity()
       ..commentId = comment.id
       ..tournamentId = comment.tournamentId
@@ -27,6 +30,9 @@ class LocalCommentRepository {
   }
 
   Stream<List<MatchCommentModel>> watchComments(String tournamentId) {
+    // ★ Web環境ではIsarが無効なため空のストリームを返す
+    if (kIsWeb || _isar == null) return Stream.value([]);
+
     return _isar.matchCommentEntitys
         .filter()
         .tournamentIdEqualTo(tournamentId)
@@ -46,6 +52,9 @@ class LocalCommentRepository {
   }
 
   Future<void> markAsSynced(String id) async {
+    // ★ Web環境ではIsarが無効なため処理をスキップ
+    if (kIsWeb || _isar == null) return;
+
     final entity = await _isar.matchCommentEntitys.filter().commentIdEqualTo(id).findFirst();
     if (entity != null) {
       entity.syncState = SyncState.synced;
@@ -56,6 +65,9 @@ class LocalCommentRepository {
   }
 
   Future<void> deleteComment(String id) async {
+    // ★ Web環境ではIsarが無効なため処理をスキップ
+    if (kIsWeb || _isar == null) return;
+
     await _isar.writeTxn(() async {
       final success = await _isar.matchCommentEntitys.filter().commentIdEqualTo(id).deleteAll();
       debugPrint(success > 0 ? 'Comment $id deleted' : 'Comment $id not found');

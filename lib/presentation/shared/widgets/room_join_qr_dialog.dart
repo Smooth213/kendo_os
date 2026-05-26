@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -98,36 +99,71 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     showDialog(
       context: parentContext,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF161B26),
-          title: const Row(
-            children: [
-              Icon(Icons.report_problem_rounded, color: Colors.amberAccent),
-              SizedBox(width: 8),
-              Text('⚠️ ID重複・既存部屋の検知', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          content: Text(
-            'ルームID [ $code ] は、クラウド上にすでに存在しています。\n\n'
-            'これは、他の道場がすでにこの名前を使用しているか、あるいは過去に作成された部屋です。'
-            'このまま接続して上書き（共有）しますか？\n'
-            '※新規で部屋を作りたい場合は、キャンセルして別のID（例: 地域名や年数を追加）に決めてください。',
-            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(), // 閉じて別の名前の入力を促す
-              child: const Text('キャンセル（名前を変える）', style: TextStyle(color: Colors.white60)),
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final cardBgColor = isDark 
+            ? const Color(0xFF1C1C1E).withValues(alpha: 0.4) 
+            : Colors.white.withValues(alpha: 0.6);
+        final textColor = isDark ? Colors.white : const Color(0xFF1A237E);
+        final subTextColor = isDark ? Colors.white70 : Colors.black87;
+        final borderColor = isDark 
+            ? Colors.white.withValues(alpha: 0.2) 
+            : Colors.white.withValues(alpha: 0.7);
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: cardBgColor,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderColor, width: 1.5),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.report_problem_rounded, color: Colors.amber),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text('⚠️ ID重複・既存の部屋', style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold))),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'ルームID [ $code ] はすでに存在しています。\n\n'
+                      '他の道場が使用中か、過去に作成された部屋です。このまま接続して共有しますか？\n'
+                      '※新規で作りたい場合はキャンセルし、別のIDに変更してください。',
+                      style: TextStyle(color: subTextColor, fontSize: 13, height: 1.5),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(), // 閉じて別の名前の入力を促す
+                          child: const Text('キャンセル（変更する）', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, elevation: 0),
+                          onPressed: () {
+                            Navigator.of(context).pop(); // 警告を閉じる
+                            _executeFinalConnection(code); // 既存の部屋として接続を承認
+                          },
+                          child: const Text('このまま接続', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-              onPressed: () {
-                Navigator.of(context).pop(); // 警告を閉じる
-                _executeFinalConnection(code); // 既存の部屋として接続を承認
-              },
-              child: const Text('このまま接続（既存に参加）', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -153,75 +189,101 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBgColor = isDark 
+        ? const Color(0xFF1C1C1E).withValues(alpha: 0.4) 
+        : Colors.white.withValues(alpha: 0.6);
+    final textColor = isDark ? Colors.white : const Color(0xFF1A237E);
+    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final borderColor = isDark 
+        ? Colors.white.withValues(alpha: 0.2) 
+        : Colors.white.withValues(alpha: 0.7);
+    final inputBgColor = isDark 
+        ? Colors.white.withValues(alpha: 0.05) 
+        : Colors.black.withValues(alpha: 0.05);
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: const Color(0xFF161B26).withValues(alpha: 0.95),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              '道場ルームへの参加',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: cardBgColor,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: borderColor, width: 1.5),
             ),
-            const SizedBox(height: 16),
-            Container(
-              width: 130,
-              height: 130,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-              child: const Icon(Icons.qr_code_2, size: 110, color: Color(0xFF161B26)),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              '会場のQRコードをスキャンするか\n「道場ルームコード」を入力してください',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.white60),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _codeController,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: '例: tokyo_dojo_2026',
-                hintStyle: const TextStyle(color: Colors.white30),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.05),
-                errorText: _errorMessage,
-                errorStyle: const TextStyle(color: Colors.orangeAccent),
-                // ★ 修正：存在しない white50 を標準の white54 へ修正し、const 定数としての評価を正常化します
-                prefixIcon: const Icon(Icons.meeting_room, color: Colors.white54),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white30)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.teal)),
-              ),
-              onSubmitted: _handleJoin,
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                TextButton(
-                  onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-                  child: const Text('キャンセル', style: TextStyle(color: Colors.white60)),
+                Text(
+                  '道場ルームへの参加',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
                 ),
-                const SizedBox(width: 12),
-                _isLoading
-                    ? const CircularProgressIndicator(color: Colors.teal)
-                    : ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () => _handleJoin(_codeController.text),
-                        child: const Text('接続開始', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      ),
+                const SizedBox(height: 16),
+                Container(
+                  width: 130,
+                  height: 130,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                  child: const Icon(Icons.qr_code_2, size: 110, color: Color(0xFF161B26)),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '会場のQRコードをスキャンするか\n「道場ルームコード」を入力してください',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: subTextColor),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _codeController,
+                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                  decoration: InputDecoration(
+                    hintText: '例: tokyo_dojo_2026',
+                    hintStyle: TextStyle(color: subTextColor),
+                    filled: true,
+                    fillColor: inputBgColor,
+                    errorText: _errorMessage,
+                    errorStyle: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold),
+                    prefixIcon: Icon(Icons.meeting_room, color: subTextColor),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.teal)),
+                  ),
+                  onSubmitted: _handleJoin,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '※ 使用可能な文字: 半角英数字、ハイフン(-)、アンダーバー(_)',
+                  style: TextStyle(fontSize: 11, color: subTextColor),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                      child: Text('キャンセル', style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 12),
+                    _isLoading
+                        ? const CircularProgressIndicator(color: Colors.teal)
+                        : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: () => _handleJoin(_codeController.text),
+                            child: const Text('接続開始', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                  ],
+                )
               ],
-            )
-          ],
+            ),
+          ),
         ),
       ),
     );

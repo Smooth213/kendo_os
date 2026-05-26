@@ -6,13 +6,19 @@ import '../../../domain/entities/user_role.dart';
 import '../../shared/providers/current_sync_context_provider.dart';
 import '../../shared/widgets/liquid_background.dart';
 import '../../shared/widgets/room_join_qr_dialog.dart';
+import '../../shared/providers/dojo_room_sync_provider.dart';
 
-class RoleSelectScreen extends StatelessWidget {
+class RoleSelectScreen extends ConsumerWidget {
   const RoleSelectScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // 🌟 換装核心：アプリの最上位ゲートで一括同期サービスを常時リッスン。
+    // これにより、端末が管理者であろうが観客であろうが、同じ道場IDに入った全端末間で
+    // 双方向のリアルタイム通信が全自動で完全開通します。
+    ref.watch(dojoRoomSyncProvider);
     
     // ★ アプリ全体と統一した iOS 風 (Liquid Glass) のガラス背景
     final cardBgColor = isDark 

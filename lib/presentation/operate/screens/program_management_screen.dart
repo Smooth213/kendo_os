@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
@@ -25,14 +26,19 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
   // ignore: prefer_final_fields
   bool _isGridView = false; // ★ グリッド/リストの切り替えスイッチ
 
-  Future<File> _compressImage(File file) async {
-    final tempDir = await path_provider.getTemporaryDirectory();
-    final targetPath = p.join(tempDir.path, "${DateTime.now().millisecondsSinceEpoch}_compressed.jpg");
-
-    final result = await FlutterImageCompress.compressAndGetFile(
-      file.absolute.path, targetPath, quality: 80, minWidth: 2000, minHeight: 2000,
-    );
-    return File(result!.path);
+  // ★ Web対応：画像圧縮はネイティブのみ可能。Webの場合は圧縮せずにそのまま返す
+  Future<File?> _prepareFile(PlatformFile platformFile) async {
+    if (kIsWeb) {
+      return null; // Webはリポジトリ側でbytes処理をする設計に合わせる
+    }
+    File file = File(platformFile.path!);
+    if (platformFile.extension?.toLowerCase() != 'pdf') {
+      final tempDir = await path_provider.getTemporaryDirectory();
+      final targetPath = p.join(tempDir.path, "${DateTime.now().millisecondsSinceEpoch}_compressed.jpg");
+      final result = await FlutterImageCompress.compressAndGetFile(file.absolute.path, targetPath, quality: 80, minWidth: 2000, minHeight: 2000);
+      return File(result!.path);
+    }
+    return file;
   }
 
   void _showPickerMenu() {
@@ -76,6 +82,7 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
       type: isPhoto ? FileType.image : FileType.custom,
       allowedExtensions: isPhoto ? null : ['pdf'],
       allowMultiple: true, 
+      withData: kIsWeb, // ★ Webはバイナリデータを取得する必要がある
     );
 
     if (result == null || result.files.isEmpty) return;
@@ -94,22 +101,17 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
       // ★ ユーザーが並び替えた orderedFiles を使ってループ
       for (int i = 0; i < fileCount; i++) {
         final platformFile = orderedFiles[i];
-        if (platformFile.path == null) continue;
-
-        File file = File(platformFile.path!);
         final extension = platformFile.extension?.toLowerCase() ?? '';
         final fileType = (isPhoto || extension != 'pdf') ? 'image' : 'pdf';
         
         final displayTitle = fileCount > 1 ? '$title (${i + 1}/$fileCount)' : title;
 
-        if (fileType == 'image') {
-          file = await _compressImage(file);
-        }
-
+        // ★ リポジトリの uploadProgram を呼び出し
         await ref.read(programRepositoryProvider).uploadProgram(
           tournamentId: widget.tournamentId,
           title: displayTitle,
-          file: file,
+          file: kIsWeb ? null : await _prepareFile(platformFile),
+          bytes: kIsWeb ? platformFile.bytes : null, // Web用のデータ受け渡し
           fileType: fileType,
           pageCount: 1,
         );
@@ -172,7 +174,9 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
                                                 textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 12)),
                                           ],
                                         )
-                                      : Image.file(File(file.path!), fit: BoxFit.contain),
+                                      : (kIsWeb && file.bytes != null)
+                                          ? Image.memory(file.bytes!, fit: BoxFit.contain)
+                                          : Image.file(File(file.path!), fit: BoxFit.contain),
                                 ),
                               );
                             },
@@ -364,8 +368,23 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
         stream: repository.watchPrograms(widget.tournamentId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError) return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
           
+          // ★ 防衛修正: エラーが発生してもURLや生のエラーを画面に晒さない
+          if (snapshot.hasError) {
+             debugPrint('🔥 Firestore Error: ${snapshot.error}');
+             return Center(
+               child: Column(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+                   const Icon(Icons.error_outline, color: Colors.amber, size: 48),
+                   const SizedBox(height: 16),
+                   const Text('データの読み込みに失敗しました。'),
+                   const Text('インデックス設定が反映されるまで数分お待ちください。'),
+                 ],
+               ),
+             );
+          }
+
           final programs = snapshot.data ?? [];
           if (programs.isEmpty) {
             // 🌟 修正: 閲覧専用権限、またはURLのクエリパラメータが viewer の時は案内文をシンプルに切り替え

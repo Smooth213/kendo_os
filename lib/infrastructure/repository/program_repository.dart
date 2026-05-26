@@ -16,7 +16,8 @@ class ProgramRepository {
   Future<String> uploadProgram({
     required String tournamentId,
     required String title,
-    required File file,
+    File? file, // ★ Web対応のため Nullable に変更
+    Uint8List? bytes, // ★ Web用のバイナリデータを受け取る引数を追加
     required String fileType,
     required int pageCount,
   }) async {
@@ -37,11 +38,29 @@ class ProgramRepository {
     await docRef.set(program.toJson());
 
     // 3. Storageにアップロード（ここでAIが裏で走り始める）
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+    final String fileName;
+    if (file != null) {
+      fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+    } else {
+      // Webの場合はファイルパスがないため、ダミーのファイル名を生成
+      final ext = fileType == 'pdf' ? 'pdf' : 'jpg';
+      fileName = '${DateTime.now().millisecondsSinceEpoch}_web_upload.$ext';
+    }
+    
     final storageRef = _storage.ref().child('programs/$programId/$fileName');
     
-    final uploadTask = await storageRef.putFile(file);
-    final downloadUrl = await uploadTask.ref.getDownloadURL();
+    String downloadUrl;
+    if (kIsWeb && bytes != null) {
+      // ★ Webの場合：bytes（バイナリ）を使って直接アップロード
+      final uploadTask = await storageRef.putData(bytes);
+      downloadUrl = await uploadTask.ref.getDownloadURL();
+    } else if (file != null) {
+      // ★ モバイルの場合：Fileを使ってアップロード
+      final uploadTask = await storageRef.putFile(file);
+      downloadUrl = await uploadTask.ref.getDownloadURL();
+    } else {
+      throw Exception('アップロードするデータがありません。');
+    }
 
     // 4. URLが取得できたら、仮データに画像URLを「追記（update）」する
     await docRef.update({'fileUrl': downloadUrl});

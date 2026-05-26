@@ -106,12 +106,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // 🚨 アサーション1：無断での上書き接続はされず、画面に重複警告ポップアップが出現していることを証明
-      expect(find.text('⚠️ ID重複・既存部屋の検知'), findsOneWidget);
-      expect(find.textContaining('は、クラウド上にすでに存在しています。'), findsOneWidget);
+      expect(find.text('⚠️ ID重複・既存の部屋'), findsOneWidget);
+      expect(find.textContaining('はすでに存在しています。'), findsOneWidget);
 
       // 4. 行動分岐：ユーザーが「このまま接続（既存に参加）」を承認した場合
       await tester.runAsync(() async {
-        await tester.tap(find.text('このまま接続（既存に参加）'));
+        await tester.tap(find.text('このまま接続'));
         await Future.delayed(const Duration(milliseconds: 50));
       });
       

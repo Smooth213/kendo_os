@@ -17,6 +17,11 @@ class ProjectionStore {
 
   ProjectionStore(this.ref);
 
+  /// クラウドから降ってきた最新のプロジェクションを直接ストアへ反映する
+  void updateProjectionDirectly(MatchProjection projection) {
+    // 必要に応じてインメモリキャッシュ層への反映処理を実装する
+  }
+
   /// 1試合のデータをリアルタイム監視し、MatchProjectionへと変換する
   Stream<MatchProjection?> watch(String matchId) {
     final dojoId = ref.read(currentDojoIdProvider);

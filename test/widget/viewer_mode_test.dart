@@ -37,6 +37,7 @@ import 'package:kendo_os/presentation/shared/providers/auth_session_provider.dar
 import 'package:kendo_os/presentation/shared/providers/current_user_role_provider.dart';
 import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/domain/entities/user_role.dart';
+import 'package:kendo_os/presentation/shared/providers/dojo_room_sync_provider.dart';
 
 // ★ 追加: Firestoreを呼び出してしまうプロバイダのモック用
 import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provider.dart';
@@ -420,6 +421,7 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
       firestoreRoleStreamProvider.overrideWith((ref) => Stream.value(UserRole.viewer)),
       currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
       currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+      dojoRoomSyncProvider.overrideWith((ref) {}), // ★ 追加: FirebaseFirestore.instance の直接呼び出しをテスト環境で物理的に遮断
       // ★ Phase 8: SettingsProviderをモック化してSharedPreferences未実装エラーを回避
       settingsProvider.overrideWith(() => MockSettingsNotifier()),
       commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
@@ -578,7 +580,7 @@ void main() {
       await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
 
       // 新：STEP 5 の命名規約に則った鉄壁の Key 一撃必殺アサーション
-      await tapVisible(tester, const Key('viewer_match_card_予選リーグA'));
+      await tapVisible(tester, const Key('viewer_match_card_個人リーグA'));
     });
   });
 }

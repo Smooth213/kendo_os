@@ -13,7 +13,7 @@ import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
 // ==========================================
 final localCommentRepositoryProvider = Provider<LocalCommentRepository>((ref) {
   final isar = ref.watch(isarProvider);
-  if (isar == null) throw Exception('Isar is not initialized (Web mode does not support local comments yet)');
+  // ★ Webではisarがnullになりますが、LocalCommentRepository側で安全にスキップされるため例外を投げずに渡す
   return LocalCommentRepository(isar);
 });
 

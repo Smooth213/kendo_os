@@ -9,10 +9,8 @@ import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 
 // ★ 古い permission_provider を排除し、新セキュリティ一元管理システムを導入
-import '../../../core/security/feature_gate.dart';
 import '../../../domain/entities/user_role.dart';
 import '../../shared/providers/current_user_role_provider.dart';
-import '../../shared/providers/security_level_provider.dart';
 import '../providers/settings_provider.dart';
 
 import '../../shared/widgets/liquid_background.dart';
@@ -51,9 +49,6 @@ class HomeScreen extends ConsumerWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;    
-    final currentLevel = ref.watch(securityLevelProvider);
-    // FeatureGate を用いて、この画面で行う各操作権限を決定論的に割り出す
-    final bool canCreate = FeatureGate.canCreateMatch(currentRole, currentLevel);
     final bool isReadOnly = (currentRole == UserRole.viewer);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
@@ -133,6 +128,7 @@ class HomeScreen extends ConsumerWidget {
                   width: double.infinity, margin: const EdgeInsets.fromLTRB(16, 4, 16, 12), padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(color: Colors.indigo.shade800, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))]),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
                     children: [
                       if (uniqueInProgress.isNotEmpty) _buildCallRow('進行中', uniqueInProgress.first, Colors.orangeAccent),
                       if (uniqueInProgress.isNotEmpty && uniqueWaiting.isNotEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: Colors.white24, height: 1)),
@@ -143,7 +139,8 @@ class HomeScreen extends ConsumerWidget {
                 ),
 
               // --- 操作メニュー（権限に応じて表示自体を動的に制御するガードを適用） ---
-              if (canCreate)
+              // ★ 修正: Viewer（閲覧専用）以外には、試合記録者を含めてすべてのボタンを表示する
+              if (!isReadOnly)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
                   child: OperatorActionButtons(tournamentId: tournamentId),
@@ -194,6 +191,7 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildCallRow(String label, dynamic match, Color textColor) {
     return Column(
+      mainAxisSize: MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
       children: [
         if (match.note.isNotEmpty) Text(match.note, style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 12, fontWeight: FontWeight.bold)),
         Row(

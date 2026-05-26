@@ -3,40 +3,33 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/application/projections/tournament_projection.dart';
 import 'package:kendo_os/application/projections/tournament_projection_mapper.dart';
-import 'package:kendo_os/domain/entities/tournament_model.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
-import 'package:kendo_os/application/projections/projection_store.dart';
+import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart'; 
+import 'package:kendo_os/domain/entities/tournament_model.dart';
 import '../../shared/providers/current_sync_context_provider.dart';
-
-/// ★ テスト救済の核心：Firebase App 未初期化例外を100%封殺するための環境隔離プロバイダー。
-/// 本番Webでは通常のインスタンスを返し、ウィジェットテスト空間では安全にモックへ差し替え可能にします。
-final firestoreInstanceProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
+import '../../shared/providers/dojo_room_sync_provider.dart';
+import 'package:kendo_os/domain/match/match_model.dart';
 
 // =========================================================================
-// ★ B-4: 真のCQRS - Viewerは安定した ProjectionStore のみを常時リッスンする
+// ★ 真のCQRS調停：画面は中央のストアのみを素直にリッスンし、
+// 裏側でのクラウド同期（dojoRoomSyncProvider）の血液をそのまま美しく表示する
 // =========================================================================
 
 /// 1. 試合のプロジェクション（1試合単位）のリアルタイム監視
-/// 存在しない `fromJson` のパースを排除し、道場空間の変更（currentDojoIdProvider）を
-/// リアクティブグラフに組み込んだ上で、既存のストアから完璧に安全なストリームを返却します。
 final viewerMatchProjectionProvider = StreamProvider.family<MatchProjection?, String>((ref, matchId) {
-  ref.watch(currentDojoIdProvider);
+  // バックグラウンド同期マネージャーを常時稼働（リッスン状態の維持）
+  ref.watch(dojoRoomSyncProvider);
   return ref.watch(projectionStoreProvider).watch(matchId);
 });
 
-// =========================================================================
-// ★ Phase 5-3: Rebuild最適化 (Selectors)
-// =========================================================================
-
-/// 試合の基本ステータス（進行中・終了など）だけを監視する
+/// 試合の基本ステータスだけを監視する
 final viewerMatchStatusProvider = Provider.family<AsyncValue<String>, String>((ref, matchId) {
   return ref.watch(viewerMatchProjectionProvider(matchId).select(
     (async) => async.whenData((p) => p?.status ?? 'waiting')
   ));
 });
 
-/// モメンタム（勢い）だけを監視する（高頻度更新用）
+/// モメンタム（勢い）だけを監視する
 final viewerMatchMomentumProvider = Provider.family<AsyncValue<double>, String>((ref, matchId) {
   return ref.watch(viewerMatchProjectionProvider(matchId).select(
     (async) => async.whenData((p) => p?.momentum ?? 0.0)
@@ -51,16 +44,13 @@ final viewerMatchTimelineProvider = Provider.family<AsyncValue<List<TimelineEven
 });
 
 
-// --- 大会全体を監視するための内部Provider ---
-
+// --- 大会全体を監視するためのストリームチェーン ---
 final _tournamentModelStreamProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
   return ref.watch(tournamentRepositoryProvider).getTournamentStream(id);
 });
 
-/// ★ 修正：型定義のない JSON パースを排除し、元のインメモリプロジェクションストアの
-/// リアルタイム型安全チェーン（watchByTournament）へと安全に復旧マージします。
 final _tournamentProjectionsStreamProvider = StreamProvider.family<List<MatchListProjection>, String>((ref, id) {
-  ref.watch(currentDojoIdProvider);
+  ref.watch(dojoRoomSyncProvider);
   return ref.watch(projectionStoreProvider).watchByTournament(id);
 });
 
@@ -84,26 +74,22 @@ final viewerTournamentProjectionProvider = Provider.family<AsyncValue<Tournament
 
   if (tournament == null) return const AsyncValue.data(null);
 
-  // 双方の最新データを使ってProjectionを生成
   final projection = TournamentProjectionMapper.fromProjections(tournament, projections);
   return AsyncValue.data(projection);
 });
 
-/// 🌟 部内戦画面等が使用する、特定の大会IDに紐づく試合一覧を抽出する Firestore ストリーム
-/// 隔離した `firestoreInstanceProvider` を経由させることで、テスト空間での自爆を完全にブロック。
+/// 🌟 部内戦画面が使用する試合一覧ストリーム
 final bunaiksenMatchesProvider = StreamProvider.family<List<MatchModel>, String>((ref, tournamentId) {
   final dojoId = ref.watch(currentDojoIdProvider);
-  final firestore = ref.watch(firestoreInstanceProvider);
+  ref.watch(dojoRoomSyncProvider);
 
-  return firestore
+  return FirebaseFirestore.instance
       .collection('organizations')
       .doc(dojoId)
       .collection('matches')
       .where('tournamentId', isEqualTo: tournamentId)
       .snapshots()
       .map((snapshot) {
-        return snapshot.docs.map((doc) {
-          return MatchModel.fromJson(doc.data());
-        }).toList();
+        return snapshot.docs.map((doc) => MatchModel.fromJson(doc.data())).toList();
       });
 });

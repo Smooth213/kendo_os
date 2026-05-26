@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // ★ Phase 9-3: インポート追加
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // ★ 追加: 未ログイン時の通信エラー回避用
 import 'package:shared_preferences/shared_preferences.dart'; 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
@@ -69,8 +70,31 @@ void main() async {
   usePathUrlStrategy();
   
   try {
-    // Firebaseの初期化
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    // 🌟 修正核心：Firebase初期化の重複呼び出しを物理ブロック＆エラーの握り潰し
+    if (Firebase.apps.isEmpty) {
+      try {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      } catch (e) {
+        // 重複呼び出し（duplicate-app）エラーが発生した場合は安全に無視して続行
+        if (!e.toString().contains('duplicate-app')) {
+          rethrow;
+        }
+      }
+    }
+
+    // 🌟 修正核心：未ログイン状態での「通信エラー（実は権限エラー）」を物理ブロックする
+    // ルーム参加時など、まだPINコードを入れていない状態でもFirestoreにアクセスできるよう
+    // アプリ起動時に「匿名ログイン（ゲスト認証）」を自動的に行います。
+    try {
+      if (FirebaseAuth.instance.currentUser == null) {
+        await FirebaseAuth.instance.signInAnonymously();
+        debugPrint('🛡️ [Auth] 匿名ゲスト認証を自動確立しました（ルーム参加準備完了）');
+      }
+    } catch (e) {
+      debugPrint('⚠️ [Auth] 匿名認証に失敗: $e');
+    }
 
     // =========================================================================
     // 🛡️ STEP 5-1 要件：体育館などの電波障害・オフライン環境に耐えるための

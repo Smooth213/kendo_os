@@ -7,11 +7,15 @@ import 'package:kendo_os/domain/entities/settings_model.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/presentation/viewer/screens/viewer_bunaiksen_official_record_screen.dart';
 import 'package:kendo_os/presentation/operate/providers/match_view_model_provider.dart';
+import 'package:kendo_os/presentation/shared/providers/dojo_room_sync_provider.dart';
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/presentation/shared/providers/current_user_role_provider.dart';
+import 'package:kendo_os/domain/entities/user_role.dart';
 
 // モック用のSettingsNotifier
 class MockSettingsNotifier extends SettingsNotifier {
   @override
-  SettingsModel build() => const SettingsModel(securityLevel: 1);
+  SettingsModel build() => const SettingsModel(securityLevel: 1, enableLiquidGlass: false);
 }
 
 // Mock MatchModel creator
@@ -50,6 +54,12 @@ void main() {
   const testTournamentId = 'bunaiksen_20250101';
 
   testWidgets('ViewerBunaiksenOfficialRecordScreen team score table should display "赤" and "白"', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
     final matches = [
       createMockMatch(
         redName: 'チームRed:選手1',
@@ -78,6 +88,9 @@ void main() {
         overrides: [
           bunaiksenRecordCategoryGroupsProvider(testTournamentId).overrideWith((ref) => categoryGroups),
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
+          dojoRoomSyncProvider.overrideWith((ref) {}),
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+          currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
         ],
         child: MaterialApp.router(
           routerConfig: router,
@@ -100,6 +113,12 @@ void main() {
   });
 
   testWidgets('ViewerBunaiksenOfficialRecordScreen should display empty cell for "欠員"', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
     final matches = [
       createMockMatch(
         redName: 'チームA:山田太郎',
@@ -128,6 +147,9 @@ void main() {
         overrides: [
           bunaiksenRecordCategoryGroupsProvider(testTournamentId).overrideWith((ref) => categoryGroups),
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
+          dojoRoomSyncProvider.overrideWith((ref) {}),
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+          currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
         ],
         child: MaterialApp.router(
           routerConfig: router,
@@ -146,6 +168,12 @@ void main() {
   });
 
   testWidgets('ViewerBunaiksenOfficialRecordScreen should display initial for same last names', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
     final matches = [
       createMockMatch(
         id: 'm1',
@@ -183,6 +211,9 @@ void main() {
         overrides: [
           bunaiksenRecordCategoryGroupsProvider(testTournamentId).overrideWith((ref) => categoryGroups),
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
+          dojoRoomSyncProvider.overrideWith((ref) {}),
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+          currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
         ],
         child: MaterialApp.router(
           routerConfig: router,
@@ -209,6 +240,12 @@ void main() {
   });
 
   testWidgets('ViewerBunaiksenOfficialRecordScreen should show and hide loading dialog on PDF export', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
     final matches = [
       createMockMatch(
         redName: 'チームRed:選手1',
@@ -236,6 +273,9 @@ void main() {
         overrides: [
           bunaiksenRecordCategoryGroupsProvider(testTournamentId).overrideWith((ref) => categoryGroups),
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
+          dojoRoomSyncProvider.overrideWith((ref) {}),
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+          currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
         ],
         child: MaterialApp.router(routerConfig: router),
       ),

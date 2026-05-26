@@ -3,23 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>779304236953-h8v7msrenmfut67fl1kkcj24qv0q0fcv.apps.googleusercontent.com</string>
+	<string>164010781926-edhio21bgkije5lhoj4s6vh1tcso82sp.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.779304236953-h8v7msrenmfut67fl1kkcj24qv0q0fcv</string>
-	<key>ANDROID_CLIENT_ID</key>
-	<string>779304236953-1n10veviag63fi0dgm73i7cf6o2r1uim.apps.googleusercontent.com</string>
+	<string>com.googleusercontent.apps.164010781926-edhio21bgkije5lhoj4s6vh1tcso82sp</string>
 	<key>API_KEY</key>
-	<string>AIzaSyDb716n_0IomzzeCnsQSjMB31AdXyOzNO4</string>
+	<string>AIzaSyCXXpcYc_FcusnRzQSstW7u6c4STw9Nm4s</string>
 	<key>GCM_SENDER_ID</key>
-	<string>779304236953</string>
+	<string>164010781926</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.example.kendoOs</string>
 	<key>PROJECT_ID</key>
-	<string>kendo-os</string>
+	<string>kendo-os-beta</string>
 	<key>STORAGE_BUCKET</key>
-	<string>kendo-os.firebasestorage.app</string>
+	<string>kendo-os-beta.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:779304236953:ios:ff3ce534b071263d404508</string>
+	<string>1:164010781926:ios:26d0f7b6e99b918d0d5f27</string>
 </dict>
 </plist>
