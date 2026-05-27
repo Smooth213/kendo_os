@@ -173,7 +173,7 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.order, 10.0 - 100.0);
     });
 
-    testWidgets('4. リーグ団体戦の並び替え (_onReorderCombinedItems)', (WidgetTester tester) async {
+    testWidgets('4. リーグ団体戦の並び替え不可仕様の確認 (Column固定)', (WidgetTester tester) async {
       final matches = [
         createMockMatch(id: 'm1_1', category: '一般', groupName: 'league1', matchType: '先鋒', note: '[リーグ戦]', order: 10.0, redName: 'Aチーム: 赤', whiteName: 'Bチーム: 白'),
         createMockMatch(id: 'm1_2', category: '一般', groupName: 'league1', matchType: '大将', note: '[リーグ戦]', order: 11.0, redName: 'Aチーム: 赤', whiteName: 'Bチーム: 白'),
@@ -192,21 +192,13 @@ void main() {
       await tester.tap(expansionTile);
       await tester.pumpAndSettle();
 
+      // ★ 団体戦およびリーグ団体戦では並び替えができない仕様（Column固定）になったため、ReorderableListView が存在しないことを確認する
       final innerListViewFinder = find.descendant(
         of: find.byType(ExpansionTile),
         matching: find.byType(ReorderableListView),
-      ).first;
-      final innerReorderable = tester.widget<ReorderableListView>(innerListViewFinder);
+      );
       
-      // Move index 2 (m3_x) to index 1 (between m1_x and m2_x)
-      // ignore: invalid_null_aware_operator
-      innerReorderable.onReorder?.call(2, 1);
-      await tester.pump();
-
-      expect(fakeMatchAppService.savedMatches, isNotNull);
-      expect(fakeMatchAppService.savedMatches!.first.id, 'm3_1');
-      // Should be between 10.0 and 20.0 => 15.0
-      expect(fakeMatchAppService.savedMatches!.first.order, 15.0);
+      expect(innerListViewFinder, findsNothing);
     });
   });
 }

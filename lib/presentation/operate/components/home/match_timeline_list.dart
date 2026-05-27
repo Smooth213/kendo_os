@@ -487,8 +487,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                       Row(
                                                         children: [
                                                           if (firstMatch.note.isNotEmpty)
-                                                            Flexible(child: Padding(padding: const EdgeInsets.only(right: 6), child: Text(firstMatch.note, style: TextStyle(fontSize: 11, color: subTitleColor, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis, maxLines: 1))),
-                                                          const Spacer(),
+                                                            Expanded(child: Padding(padding: const EdgeInsets.only(right: 6), child: Text(firstMatch.note, style: TextStyle(fontSize: 11, color: subTitleColor, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis, maxLines: 2)))
+                                                          else
+                                                            const Spacer(),
                                                           // 簡易入力ボタン
                                                           if (!permissions.isReadOnly && !allFinished && !label.contains('個人戦') && !label.contains('勝ち抜き戦') && !label.contains('リーグ戦') &&
                                                               !(ref.read(customTeamNamesProvider).value ?? []).contains(groupList.first.redName.split(':').first.trim()) &&
@@ -699,13 +700,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                         combinedItems.sort((a, b) => (a['order'] as double).compareTo(b['order'] as double));
 
                                                         childrenWidgets.add(
-                                                          ReorderableListView(
-                                                            shrinkWrap: true,
-                                                            physics: const NeverScrollableScrollPhysics(),
-                                                            onReorder: (oldIndex, newIndex) {
-                                                              _onReorderCombinedItems(combinedItems, oldIndex, newIndex, ref);
-                                                            },
-                                                            children: combinedItems.map((cItem) {
+                                                          Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                            children: combinedItems.map<Widget>((cItem) {
                                                               if (cItem['type'] == 'comment') {
                                                                 final c = cItem['comment'] as MatchCommentModel;
                                                                 return Container(key: ValueKey('inner_comment_${c.id}'), child: _buildInnerCommentWidget(context, ref, c, permissions, isDark));
@@ -838,22 +835,38 @@ class MatchTimelineList extends ConsumerWidget {
                                                         );
                                                       }
                                                     } else {
-                                                      childrenWidgets.add(
-                                                        ReorderableListView(
-                                                          shrinkWrap: true,
-                                                          physics: const NeverScrollableScrollPhysics(),
-                                                          onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
-                                                          children: normalItems.map((i) {
-                                                            if (i is MatchModel) {
-                                                              // ★関数から独立型Widgetカードクラスへ100%完全同期置換
-                                                              return Container(key: ValueKey(i.id), child: MatchListTileCard(initialMatch: i, isDeletable: false));
-                                                            } else if (i is MatchCommentModel) {
-                                                              return Container(key: ValueKey('inner_comment_${i.id}'), child: _buildInnerCommentWidget(context, ref, i, permissions, isDark));
-                                                            }
-                                                            return const SizedBox.shrink();
-                                                          }).toList(),
-                                                        )
-                                                      );
+                                                      if (label.contains('個人戦') || label.contains('選手')) {
+                                                        childrenWidgets.add(
+                                                          ReorderableListView(
+                                                            shrinkWrap: true,
+                                                            physics: const NeverScrollableScrollPhysics(),
+                                                            onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
+                                                            children: normalItems.map((i) {
+                                                              if (i is MatchModel) {
+                                                                // ★関数から独立型Widgetカードクラスへ100%完全同期置換
+                                                                return Container(key: ValueKey(i.id), child: MatchListTileCard(initialMatch: i, isDeletable: false));
+                                                              } else if (i is MatchCommentModel) {
+                                                                return Container(key: ValueKey('inner_comment_${i.id}'), child: _buildInnerCommentWidget(context, ref, i, permissions, isDark));
+                                                              }
+                                                              return const SizedBox.shrink();
+                                                            }).toList(),
+                                                          )
+                                                        );
+                                                      } else {
+                                                        childrenWidgets.add(
+                                                          Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                            children: normalItems.map<Widget>((i) {
+                                                              if (i is MatchModel) {
+                                                                return Container(key: ValueKey(i.id), child: MatchListTileCard(initialMatch: i, isDeletable: false));
+                                                              } else if (i is MatchCommentModel) {
+                                                                return Container(key: ValueKey('inner_comment_${i.id}'), child: _buildInnerCommentWidget(context, ref, i, permissions, isDark));
+                                                              }
+                                                              return const SizedBox.shrink();
+                                                            }).toList(),
+                                                          )
+                                                        );
+                                                      }
                                                     }
 
                                                     if (tieBreakMatches.isNotEmpty) {
@@ -878,14 +891,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                           tieBoutsByMatchup[matchupName]!.add(m);
                                                         }
                                                         childrenWidgets.add(
-                                                          ReorderableListView(
-                                                            shrinkWrap: true,
-                                                            physics: const NeverScrollableScrollPhysics(),
-                                                            onReorder: (oldIndex, newIndex) {
-                                                              final groups = tieMatchupOrder.map((name) => tieBoutsByMatchup[name]!).toList();
-                                                              _onReorderMatchGroups(groups, oldIndex, newIndex, ref);
-                                                            },
-                                                            children: tieMatchupOrder.map((name) {
+                                                          Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                            children: tieMatchupOrder.map<Widget>((name) {
                                                               final bouts = tieBoutsByMatchup[name]!;
                                                               // ★関数から独立型Widgetカードクラスへ100%完全同期置換
                                                               return Container(key: ValueKey('tie_$name'), child: Column(children: bouts.map((m) => MatchListTileCard(initialMatch: m, isDeletable: false)).toList()));
@@ -1430,30 +1438,6 @@ class MatchTimelineList extends ConsumerWidget {
     }
   }
 
-  void _onReorderCombinedItems(List<dynamic> list, int oldIndex, int newIndex, WidgetRef ref) async {
-    final permissions = ref.read(permissionProvider);
-    if (permissions.isReadOnly) return;
-    if (oldIndex < newIndex) newIndex -= 1;
-    if (oldIndex == newIndex) return;
-    
-    final item = list[oldIndex];
-    double newOrder;
-    if (newIndex == 0) { newOrder = (list.first['order'] as double) - 100.0; } else if (newIndex == list.length - 1) { newOrder = (list.last['order'] as double) + 100.0; } else {
-      final prevOrder = list[newIndex > oldIndex ? newIndex : newIndex - 1]['order'] as double;
-      final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex]['order'] as double;
-      newOrder = (prevOrder + nextOrder) / 2.0;
-    }
-    if (newOrder == list[newIndex]['order'] as double) newOrder += 0.001;
-    
-    if (item['type'] == 'comment') {
-      try { await ref.read(commentCommandProvider).updateCommentOrder(item['comment'] as MatchCommentModel, newOrder); } catch (e) { debugPrint('コメント並び替え保存エラー: $e'); }
-    } else if (item['type'] == 'matchup') {
-      final offsetOrder = newOrder - (item['order'] as double);
-      final updatedMatches = (item['matches'] as List<MatchModel>).map((m) => m.copyWith(order: m.order + offsetOrder)).toList();
-      try { await ref.read(matchApplicationServiceProvider).saveMatchesBulk(updatedMatches); } catch (e) { debugPrint('グループ並び替え保存エラー: $e'); }
-    }
-  }
-
   void _onReorderMatches(List<MatchModel> list, int oldIndex, int newIndex, WidgetRef ref) async {
     final permissions = ref.read(permissionProvider);
     if (permissions.isReadOnly) return;
@@ -1493,36 +1477,6 @@ class MatchTimelineList extends ConsumerWidget {
       final offsetOrder = newOrder - item.order;
       final updatedMatches = item.matches.map((m) => m.copyWith(order: m.order + offsetOrder)).toList();
       try { await ref.read(matchApplicationServiceProvider).saveMatchesBulk(updatedMatches); } catch (e) { debugPrint('グループ並び替え保存エラー: $e'); }
-    }
-  }
-
-  void _onReorderMatchGroups(List<List<MatchModel>> groups, int oldIndex, int newIndex, WidgetRef ref) async {
-    final permissions = ref.read(permissionProvider);
-    if (permissions.isReadOnly) return;
-    if (oldIndex < newIndex) newIndex -= 1;
-    if (oldIndex == newIndex) return;
-    
-    final targetGroup = groups[oldIndex];
-    double newOrderBase;
-    
-    if (newIndex == 0) { 
-      newOrderBase = groups.first.first.order - 100.0; 
-    } else if (newIndex == groups.length - 1) { 
-      newOrderBase = groups.last.first.order + 100.0; 
-    } else {
-      final prevOrder = groups[newIndex > oldIndex ? newIndex : newIndex - 1].first.order;
-      final nextOrder = groups[newIndex > oldIndex ? newIndex + 1 : newIndex].first.order;
-      newOrderBase = (prevOrder + nextOrder) / 2.0;
-    }
-    
-    if (newOrderBase == groups[newIndex].first.order) newOrderBase += 0.001;
-    
-    final offsetOrder = newOrderBase - targetGroup.first.order;
-    final updatedMatches = targetGroup.map((m) => m.copyWith(order: m.order + offsetOrder)).toList();
-    try { 
-      await ref.read(matchApplicationServiceProvider).saveMatchesBulk(updatedMatches); 
-    } catch (e) { 
-      debugPrint('グループ並び替え保存エラー: $e'); 
     }
   }
 
@@ -1721,21 +1675,25 @@ class MatchListTileCard extends ConsumerWidget {
             Row(
               children: [
                 if (displayNote.isNotEmpty || match.matchType.isNotEmpty)
-                  Flexible(
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          if (displayNote.isNotEmpty) TextSpan(text: displayNote),
-                          if (displayNote.isNotEmpty && (match.matchType.isNotEmpty && match.matchType != '選手')) const TextSpan(text: ' '),
-                          if (match.matchType.isNotEmpty && match.matchType != '選手') TextSpan(text: '【${match.matchType}】'),
-                        ],
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            if (displayNote.isNotEmpty) TextSpan(text: displayNote),
+                            if (displayNote.isNotEmpty && (match.matchType.isNotEmpty && match.matchType != '選手')) const TextSpan(text: ' '),
+                            if (match.matchType.isNotEmpty && match.matchType != '選手') TextSpan(text: '【${match.matchType}】'),
+                          ],
+                        ),
+                        style: TextStyle(fontSize: 11, color: noteC, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
-                      style: TextStyle(fontSize: 11, color: noteC, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
                     ),
-                  ),
-                const Spacer(),
+                  )
+                else
+                  const Spacer(),
                 // 簡易入力ボタン
                 Builder(builder: (context) {
                   final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];

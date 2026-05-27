@@ -871,35 +871,38 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
           ),
           if (_currentPage == 2) ...[
             const SizedBox(height: 12),
-            GlassButton(
-              onPressed: () async {
-                // ★ 自動保存機能
-                if (_teamNameController.text.trim().isNotEmpty) {
-                  try {
-                    final cleanTeamName = TextSanitizer.clean(_teamNameController.text);
-                    await ref.read(teamRepositoryProvider).saveTeam(TeamModel(
-                      id: _editingTeamId ?? '',
-                      tournamentId: widget.tournamentId,
-                      category: _selectedCategory,
-                      teamName: cleanTeamName,
-                      matchType: _matchType,
-                      playerNames: List.generate(playerCount, (i) => _tempSelectedPlayers[i] ?? ''),
-                    ));
-                    // ★ 履歴に保存
-                    ref.read(teamNameHistoryProvider.notifier).addHistory(_teamNameController.text.trim());
-                  } catch (e) {
-                    debugPrint('チーム自動保存エラー: $e');
+            SizedBox(
+              width: double.infinity,
+              child: GlassButton(
+                onPressed: () async {
+                  // ★ 自動保存機能
+                  if (_teamNameController.text.trim().isNotEmpty) {
+                    try {
+                      final cleanTeamName = TextSanitizer.clean(_teamNameController.text);
+                      await ref.read(teamRepositoryProvider).saveTeam(TeamModel(
+                        id: _editingTeamId ?? '',
+                        tournamentId: widget.tournamentId,
+                        category: _selectedCategory,
+                        teamName: cleanTeamName,
+                        matchType: _matchType,
+                        playerNames: List.generate(playerCount, (i) => _tempSelectedPlayers[i] ?? ''),
+                      ));
+                      // ★ 履歴に保存
+                      ref.read(teamNameHistoryProvider.notifier).addHistory(_teamNameController.text.trim());
+                    } catch (e) {
+                      debugPrint('チーム自動保存エラー: $e');
+                    }
                   }
-                }
-                
-                if (!mounted) return;
-                context.go('/home/${widget.tournamentId}');
-              },
-              color: Colors.teal,
-              icon: Icons.check_circle,
-              label: 'すべての登録を完了して大会画面へ',
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              expandContent: false,
+                  
+                  if (!mounted) return;
+                  context.go('/home/${widget.tournamentId}');
+                },
+                color: Colors.teal,
+                icon: Icons.check_circle,
+                label: 'すべての登録を完了して大会画面へ',
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                expandContent: false,
+              ),
             ),
           ]
         ],

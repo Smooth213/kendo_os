@@ -141,14 +141,15 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                       style: TextStyle(color: subTextColor, fontSize: 13, height: 1.5),
                     ),
                     const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                    Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(), // 閉じて別の名前の入力を促す
                           child: const Text('キャンセル（変更する）', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                         ),
-                        const SizedBox(width: 8),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, elevation: 0),
                           onPressed: () {
@@ -259,14 +260,15 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                   style: TextStyle(fontSize: 11, color: subTextColor),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     TextButton(
                       onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
                       child: Text('キャンセル', style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold)),
                     ),
-                    const SizedBox(width: 12),
                     _isLoading
                         ? const CircularProgressIndicator(color: Colors.teal)
                         : ElevatedButton(

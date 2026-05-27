@@ -10,14 +10,27 @@ import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
 
 // =========================================================================
-// 🛡️ Phase 4 - STEP 4-1 & 4-2 要件：全ProjectionのIsar最優先・起動時復元ストリーム
-// ネットが繋がっていなくても、Safariが再読込されても、iPadがスリープ復帰しても、
-// Firestoreの応答を1ミリ秒も待たずに、Isarから前回状態を即座に復元してUIを表示させます。
+// 🛡️ Webアプリ表示不具合修正パッチ（ロードマップメソッド完全維持）
+// Flutter Web環境（Isarが非活性）のときはストリームを沈黙させず、
+// 即座に安全な空配列（またはFirestoreの読み込み側）をUIへ射出してフリーズを完全回避します。
 // =========================================================================
 final matchStreamProvider = StreamProvider<List<MatchModel>>((ref) {
+  // Webブラウザ環境（kIsWeb == true）のとき、Isarディスク監視を安全にバイパス
+  if (kIsWeb) {
+    debugPrint('🌐 [Web Environment Detected] Isarの代わりにメモリ/クラウド監視ラインを確立します');
+    // 必要に応じて、Firestore側のコレクションスナップショットを安全にバインドするか、
+    // 起動時の白画面フリーズを防ぐために、即座にクリーンな初期状態を供給します。
+    final firestore = ref.watch(firestoreProvider);
+    return firestore
+        .collection('matches')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => MatchModel.fromJson({...doc.data(), 'id': doc.id}))
+            .toList());
+  }
+
+  // 🍏 ネイティブ環境（シミュレータ・iPad実機アプリ）はこれまでの強力なIsar最優先監視を100%継続
   final localRepository = ref.watch(localMatchRepositoryProvider);
-  
-  // 1. Isarの全ローカル試合（Projectionの実体）の変更を完全凝視（fireImmediately: true で瞬時に画面復元）
   return localRepository.watchAllLocalMatches().map((matches) {
     if (matches.isEmpty) {
       debugPrint('⏳ [Startup Restore] Isar内にローカルキャッシュがありません。クラウド同期をバックグラウンドで待機します。');
