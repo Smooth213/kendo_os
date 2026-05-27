@@ -17,6 +17,10 @@ echo -e "${BLUE}==========================================${NC}"
 
 # 1. 強制IDハック (Webビルドを通すためだけの「嘘」)
 echo -e "${YELLOW}[1/4] Webビルド用の一時的なID置換を実行中...${NC}"
+# 🛡️ 補正：build_runnerによる復元不具合を物理断絶するため、確実に生ファイルをバックアップします
+mkdir -p .backup_g_dart
+cp lib/infrastructure/persistence/models/*.g.dart .backup_g_dart/
+
 cat << 'EOF' > temp_id_hack.dart
 import 'dart:io';
 void main() {
@@ -55,16 +59,19 @@ else
   firebase deploy --only hosting
 fi
 
-# 4. ID復元 (build_runnerによる再生成)
-echo -e "${YELLOW}[4/4] 設計図を本物の状態へ復元中 (build_runner)...${NC}"
-dart run build_runner clean
-dart run build_runner build --delete-conflicting-outputs
+# 4. ID復元 (物理バックアップからの確実な復元)
+echo -e "${YELLOW}[4/4] 設計図を本物の状態へ復元中 (Backup Restore)...${NC}"
+# 🛡️ 補正：build_runnerへの依存を全廃し、0秒で完全な元の状態（巨大ID）へロールバックします
+cp .backup_g_dart/*.g.dart lib/infrastructure/persistence/models/
+rm -rf .backup_g_dart
+echo -e "${GREEN}✅ 物理復元完了${NC}"
 
 if [ $BUILD_RESULT -ne 0 ]; then
-  echo -e "${RED}❌ デプロイは中断されましたが、設計図は復元されました。${NC}"
+  echo -e "${RED}❌ デプロイは中断されましたが、設計図は正常に復元されました。${NC}"
   exit 1
 fi
 
 echo -e "${GREEN}==========================================${NC}"
-echo -e "${GREEN} 🎉 Webデプロイ成功！開発環境も完全に正常です。${NC}"
+echo -e "${GREEN} 🎉 Webデプロイ成功 ＆ 設計図の完全復元が完了しました！${NC}"
+echo -e "${GREEN}    これで安全に git push origin stage2-beta を実行できます。${NC}"
 echo -e "${GREEN}==========================================${NC}"

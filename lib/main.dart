@@ -40,6 +40,7 @@ import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/infrastructure/persistence/models/local_stroke_model.dart'; 
 import 'package:kendo_os/infrastructure/persistence/models/match_comment_entity.dart'; 
+import 'package:kendo_os/infrastructure/persistence/models/match_projection_entity.dart'; // ★ 追加
 import 'package:kendo_os/presentation/operate/screens/bunaiksen_home_screen.dart';
 import 'package:kendo_os/presentation/operate/screens/bunaiksen_setup_screen.dart';
 import 'package:kendo_os/presentation/operate/screens/bunaiksen_official_record_screen.dart';
@@ -164,6 +165,7 @@ void main() async {
           MatchCommandEntitySchema, 
           LocalStrokeModelSchema, 
           MatchCommentEntitySchema, // ★ Phase 2: コメント用スキーマ追加
+          MatchProjectionEntitySchema, // ★ Phase 8: 投影モデル用スキーマ追加
         ],
         directory: dir.path,
       );
