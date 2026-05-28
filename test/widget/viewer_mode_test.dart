@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
@@ -16,7 +17,8 @@ import 'package:kendo_os/domain/rules/match_rule.dart';
 
 import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart';
 import 'package:kendo_os/presentation/viewer/screens/viewer_official_record_screen.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart' as home;
+import 'package:kendo_os/presentation/public/viewer/viewer_match_screen.dart';
+import 'package:kendo_os/presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
 
 // ★ 追加：Projectionをモックするために必要なimport
 import 'package:kendo_os/domain/repositories/projection_store.dart';
@@ -41,6 +43,7 @@ import 'package:kendo_os/presentation/shared/providers/dojo_room_sync_provider.d
 
 // ★ 追加: Firestoreを呼び出してしまうプロバイダのモック用
 import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provider.dart';
+import 'package:kendo_os/presentation/operate/providers/match_view_state_provider.dart';
 
 // ★ 全テストのスクロール可視範囲問題を永続的に解消する安定化ヘルパー
 Future<void> tapVisible(
@@ -360,7 +363,7 @@ class MockAppProjectionStore implements app_store.ProjectionStore {
 }
 
 // テスト用ユーティリティ：ProviderScopeでラップしてマウントする
-Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
+Widget createTestableWidget(Widget child, {Role role = Role.viewer, List<Override> overrides = const [], GoRouter? customRouter}) {
   // ★ 追加: MatchModelのモックを、Viewerが依存するMatchProjectionのモックに変換
   final mockProjections = mockMatches.map((m) {
     final proj = MatchProjection(
@@ -389,7 +392,7 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
     return proj;
   }).toList();
 
-  final router = GoRouter(
+  final router = customRouter ?? GoRouter(
     initialLocation: '/',
     routes: [
       GoRoute(
@@ -402,7 +405,10 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
   return ProviderScope(
     overrides: [
       activeRoleProvider.overrideWith((ref) => role),
-      matchListProvider.overrideWith((ref) => mockMatches),
+      // ★ 修正: 多くのWidgetが依存する `matchListProvider` と `matchListByTournamentProvider` の両方をモック化
+      matchListProvider.overrideWithValue(mockMatches),
+      matchListByTournamentProvider.overrideWith((ref, tournamentId) => Stream.value(mockMatches)),
+      isarProvider.overrideWithValue(null), // ★ Isar未初期化エラーを解決
       matchStreamProvider.overrideWith((ref) => Stream.value(mockMatches)),
       playerRepositoryProvider.overrideWithValue(MockPlayerRepository()),
       matchRepositoryProvider.overrideWithValue(MockMatchRepository()),
@@ -416,7 +422,6 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
       app_store.projectionStoreProvider.overrideWithValue(MockAppProjectionStore(mockProjections, mockMatches)),
       // ★ 修正3: これがないと画面描画時に必ずクラッシュするため追加
       customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
-      home.customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
       // ★ 追加: Firebaseやローカルストレージへの意図しないアクセスを完全遮断
       firestoreRoleStreamProvider.overrideWith((ref) => Stream.value(UserRole.viewer)),
       currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
@@ -425,6 +430,9 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer}) {
       // ★ Phase 8: SettingsProviderをモック化してSharedPreferences未実装エラーを回避
       settingsProvider.overrideWith(() => MockSettingsNotifier()),
       commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
+      // ★ 追加: MatchScoreboard内部のFirebaseAuthアクセスを遮断
+      matchViewStateUserIdProvider.overrideWith((ref) => 'test_user_id'),
+      ...overrides,
     ],
     child: MaterialApp.router(
       routerConfig: router,
@@ -535,8 +543,8 @@ void main() {
 
       await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
 
-      // 新：STEP 5 の命名規約に則った鉄壁の Key 一撃必殺アサーション
-      await tapVisible(tester, const Key('viewer_match_card_団体戦A'));
+      // UI改善によりgroupNameではなくチーム名・選手名が表示されるようになったため、チーム名の存在を確認
+      expect(find.textContaining('青龍道場', skipOffstage: false), findsWidgets);
     });
 
     testWidgets('4-2. Renders Kachinuki Match', (WidgetTester tester) async {
@@ -557,8 +565,7 @@ void main() {
 
       await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
 
-      // 新：STEP 5 の命名規約に則った鉄壁の Key 一撃必殺アサーション
-      await tapVisible(tester, const Key('viewer_match_card_勝ち抜き戦A'));
+      expect(find.textContaining('玄武館', skipOffstage: false), findsWidgets);
     });
 
     testWidgets('4-3. Renders Individual League with SUMMARY (Flat List & Star Table)', (WidgetTester tester) async {
@@ -579,8 +586,101 @@ void main() {
 
       await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
 
-      // 新：STEP 5 の命名規約に則った鉄壁の Key 一撃必殺アサーション
-      await tapVisible(tester, const Key('viewer_match_card_個人リーグA'));
+      expect(find.textContaining('朱雀会', skipOffstage: false), findsWidgets);
+    });
+
+    testWidgets('5. ViewerMatchScreen fallback renders UI when projection is loading', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerMatchScreen(matchId: 'indiv_match_1'),
+          overrides: [
+            viewerMatchProjectionProvider.overrideWith((ref, id) {
+              final controller = StreamController<MatchProjection?>();
+              ref.onDispose(controller.close); // テスト終了時に安全にストリームを閉じてメモリリークを防止
+              return controller.stream;
+            }),
+          ],
+        ),
+      );
+
+      await tester.pump();
+
+      // ローディング状態であっても、キャッシュにデータがあるためUIがフォールバック描画されることを確認
+      expect(find.text('試合状況 (観戦)'), findsOneWidget);
+      expect(find.text('運営モードへ切替'), findsOneWidget);
+    });
+
+    testWidgets('6. ViewerMatchListTileCard correctly navigates to Scoreboard when "スコア" button is tapped', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      // ★ 遷移を完全に再現するため、ViewerHome と TeamScoreboard を繋ぐ専用ルーターを構築
+      final router = GoRouter(
+        initialLocation: '/viewer-home/$testTournamentId',
+        routes: [
+          GoRoute(
+            path: '/viewer-home/:tournamentId',
+            builder: (context, state) => ViewerHomeScreen(tournamentId: state.pathParameters['tournamentId']!),
+          ),
+          GoRoute(
+            path: '/viewer-team/:groupName',
+            builder: (context, state) => ViewerTeamScoreboardScreen(groupName: state.pathParameters['groupName']!),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(createTestableWidget(const SizedBox(), customRouter: router));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // "スコア" ボタンが表示されていることを確認
+      final scoreButtonFinder = find.widgetWithText(OutlinedButton, 'スコア', skipOffstage: false);
+      expect(scoreButtonFinder, findsWidgets);
+
+      // 画面内に見えている最初のスコアボタン（団体戦等）を確実に見つけてタップ
+      await tester.ensureVisible(scoreButtonFinder.first);
+      await tester.pumpAndSettle();
+      await tester.tap(scoreButtonFinder.first);
+      await tester.pumpAndSettle();
+
+      // 遷移先の ViewerTeamScoreboardScreen がエラーなく表示され、タイトルが出ていることを確認
+      // （以前のバグではここで大会IDが取得できず「大会情報がありません」等のエラーやホワイトアウトになっていた）
+      expect(find.text('団体戦 スコア (観戦)'), findsOneWidget);
+    });
+
+    testWidgets('7. ViewerTeamScoreboardScreen resolves groupName or matchId to tournamentId without errors', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      // 直接 groupName ('団体戦A') を指定して画面を開く
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerTeamScoreboardScreen(groupName: '団体戦A'),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 団体戦のスコア表示画面が正しくプロジェクションからデータを拾い上げて描画されることを確認
+      expect(find.text('団体戦 スコア (観戦)'), findsOneWidget);
+      expect(find.text('青龍道場'), findsWidgets);
+      expect(find.text('白虎剣友会'), findsWidgets);
     });
   });
 }

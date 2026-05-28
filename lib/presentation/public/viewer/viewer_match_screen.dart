@@ -9,6 +9,9 @@ import '../../shared/widgets/manual_help_button.dart';
 import '../../shared/widgets/liquid_background.dart';
 import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
+import '../../operate/providers/match_list_provider.dart';
+import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
+import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 
 // ★ Phase 10: 運営モードへの最速復帰用プロバイダーとロール定義のインポート
 import '../../../domain/entities/user_role.dart';
@@ -23,53 +26,76 @@ class ViewerMatchScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewStateAsync = ref.watch(viewerMatchProjectionProvider(matchId));
 
+    // 🌟 ずっとクルクルする（無限ローディング）不具合修正パッチ
+    // Projectionストリームの初回パケットを待機中で loading に陥っている場合でも、
+    // ローカルキャッシュ(matchListProvider)から即座に状態を生成して表示を点火し、
+    // 画面のフリーズを完全回避する最強のフォールバック防衛線。
+    MatchProjection? fallbackProjection;
+    if (viewStateAsync.isLoading || viewStateAsync.value == null) {
+      final match = ref.watch(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      if (match != null) {
+        try {
+          final engine = KendoRuleEngine();
+          final analysis = engine.analyzeHistory(match.events, match, match.rule);
+          fallbackProjection = MatchProjectionMapper.toProjection(match, analysis);
+        } catch (_) {}
+      }
+    }
+
     return viewStateAsync.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () {
+        if (fallbackProjection != null) return _buildScreen(context, ref, fallbackProjection);
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
       error: (e, s) => Scaffold(body: Center(child: Text('エラーが発生しました: $e'))),
       data: (MatchProjection? projection) {
-        if (projection == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
-
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final iconColor = isDark ? Colors.white : Colors.indigo.shade900;
-        final textColor = isDark ? Colors.white : Colors.black;
-
-        return LiquidBackground(
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              title: Text('試合状況 (観戦)', style: TextStyle(fontSize: 14, color: textColor)),
-              leading: context.canPop()
-                  ? IconButton(
-                      icon: Icon(Icons.arrow_back_ios, color: iconColor, size: 20),
-                      tooltip: '戻る',
-                      onPressed: () => context.pop(),
-                    )
-                  : null,
-              actions: [
-                IconButton(
-                  icon: Icon(Icons.qr_code_2, color: iconColor, size: 20),
-                  tooltip: 'この試合の観戦QRコード・リンクを共有',
-                  onPressed: () => _showShareDialog(context, projection.tournamentId),
-                ),
-                ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: iconColor),
-                const SizedBox(width: 8),
-              ],
-            ),
-            body: Column(
-              children: [
-                // ★ 1. ステータスバー（Phase 10 クイックモード切替導線を統合）
-                _buildStatusBar(context, ref, projection),
-
-                // 2. スコアボード
-                Expanded(
-                  child: MatchScoreboard(matchId: matchId, myUserId: 'viewer', onNameTap: (side) {}),
-                ),
-              ],
-            ),
-          ),
-        );
+        final target = projection ?? fallbackProjection;
+        if (target == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
+        return _buildScreen(context, ref, target);
       },
+    );
+  }
+
+  Widget _buildScreen(BuildContext context, WidgetRef ref, MatchProjection projection) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = isDark ? Colors.white : Colors.indigo.shade900;
+    final textColor = isDark ? Colors.white : Colors.black;
+
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Text('試合状況 (観戦)', style: TextStyle(fontSize: 14, color: textColor)),
+          leading: context.canPop()
+              ? IconButton(
+                  icon: Icon(Icons.arrow_back_ios, color: iconColor, size: 20),
+                  tooltip: '戻る',
+                  onPressed: () => context.pop(),
+                )
+              : null,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.qr_code_2, color: iconColor, size: 20),
+              tooltip: 'この試合の観戦QRコード・リンクを共有',
+              onPressed: () => _showShareDialog(context, projection.tournamentId),
+            ),
+            ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: iconColor),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: Column(
+          children: [
+            // ★ 1. ステータスバー（Phase 10 クイックモード切替導線を統合）
+            _buildStatusBar(context, ref, projection),
+
+            // 2. スコアボード
+            Expanded(
+              child: MatchScoreboard(matchId: matchId, myUserId: 'viewer', onNameTap: (side) {}),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

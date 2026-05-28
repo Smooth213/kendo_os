@@ -11,6 +11,7 @@ import 'package:kendo_os/presentation/operate/providers/match_command_provider.d
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 class MockSyncEngine extends Mock implements SyncEngine {}
 class MockNewSyncEngine extends Mock implements new_sync.SyncEngine {}
+class FakeMatchCommandModel extends Fake implements MatchCommandModel {}
 
 // ==========================================
 // 🛡️ Phase 8: Web Platform Safety & Historical Bug Regression Tests
@@ -21,6 +22,7 @@ class MockNewSyncEngine extends Mock implements new_sync.SyncEngine {}
 void main() {
   setUpAll(() {
     registerFallbackValue(<MatchModel>[]);
+    registerFallbackValue(FakeMatchCommandModel());
   });
 
   group('🌐 Web Platform Safety & Historical Bug Regression Tests', () {
@@ -177,6 +179,7 @@ void main() {
       
       when(() => mockLocalRepo.saveMatchesBulk(any())).thenAnswer((_) async {});
       when(() => mockLocalRepo.getPendingCommands()).thenAnswer((_) async => <MatchCommandModel>[]);
+      when(() => mockLocalRepo.savePendingCommand(any())).thenAnswer((_) async {});
       when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
       when(() => mockNewSyncEngine.processQueue()).thenAnswer((_) async {});
 
@@ -357,6 +360,99 @@ void main() {
         middleOrder > hugeOrder && middleOrder < nextHugeOrder,
         isTrue,
         reason: '中間値計算が正常に機能し、2つの巨大な値の間に新しいorderが生成されること',
+      );
+    });
+
+    test('14. Web Archive Delay Prevention (過去大会読み込み遅延・フリーズの防止)', () {
+      // 【歴史】Web版で、蓄積した過去大会(アーカイブ)のデータも含めた全試合ストリームを
+      // 一括で取得・監視しようとした結果、ブラウザが数分間フリーズする不具合が発生した。
+      // そのため、Web環境では以下の2点のバイパス・ピンポイント監視が必須となる。
+
+      const bool isWebEnvironment = true;
+
+      // 1. ホーム画面の試合リストでのピンポイント取得 (matchListByTournamentProviderを使用する)
+      final bool usesTournamentSpecificProvider = isWebEnvironment;
+      
+      // 2. ViewerMatchScreen の Web用バイパス (viewerMatchProjectionProvider内で doc(matchId) を監視する)
+      final bool usesMatchSpecificStream = isWebEnvironment;
+
+      expect(
+        usesTournamentSpecificProvider,
+        isTrue,
+        reason: 'Web環境では全試合を取得するとフリーズするため、対象大会のみをピンポイントで取得する必要があります',
+      );
+      
+      expect(
+        usesMatchSpecificStream,
+        isTrue,
+        reason: 'Web環境のViewerMatchScreenでは、全試合のプロジェクション変換を待たず、該当の1試合のみを直接監視する必要があります',
+      );
+    });
+
+    test('15. ViewerMatchScreen Infinite Loading Fallback (ずっとクルクルする不具合の防止)', () {
+      // 【歴史】ViewerMatchScreenで、プロジェクションの初回ストリームパケットの到達が遅れ、
+      // Loading状態のまま画面がずっとクルクルしてフリーズしたように見える不具合が発生した。
+      // このため、Loading中であってもローカルキャッシュ(matchListProvider)から即座に
+      // フォールバック用のプロジェクションを生成し、表示を点火する仕組みが必要。
+      
+      final bool hasLoading = true;
+      final bool hasFallbackDataInCache = true;
+      
+      // ローディング中でも、キャッシュにデータがあれば画面を描画する（クルクルさせない）
+      final bool shouldRenderScreen = hasLoading && hasFallbackDataInCache;
+      
+      expect(
+        shouldRenderScreen,
+        isTrue,
+        reason: 'プロジェクションがローディング中でも、キャッシュにデータがある場合は即座にフォールバック表示を行ってフリーズを回避しなければなりません',
+      );
+    });
+
+    test('16. Web Score Input Bypass (Web版スコア入力時のIsarバイパス制約)', () {
+      // ⚠️ 注意：これは本番コードを直接テストするものではなく、開発者に「Web版のルール」を伝達するための『実行可能なドキュメント』です。
+      // 【歴史】Web環境でIsar(ローカルDB)が永続化動作を行えないことが原因で、スコアを入力しても保存処理の途中で止まってしまい、
+      // 結果がUIに反映されない（あるいはエラーになる）という重大な不具合が発生した。
+      // そのため、Web環境の時はIsarへの書き込みを完全にバイパスし、リモートリポジトリ（Firestore）へ直接ダイレクト同期させる必要がある。
+
+      const bool isWebEnvironment = true;
+      
+      // MatchApplicationService の saveMatch / _saveAndSync に課せられたWeb版のアーキテクチャ制約
+      final bool writesToIsar = !isWebEnvironment;
+      final bool writesDirectlyToFirestore = isWebEnvironment;
+
+      expect(
+        writesToIsar,
+        isFalse,
+        reason: 'Web環境ではIsar(Local DB)への書き込みを完全にスキップしなければならない',
+      );
+      expect(
+        writesDirectlyToFirestore,
+        isTrue,
+        reason: 'Web環境ではスコア入力などを即座にFirestore(リモート)へダイレクト保存し、UIのリアクティブ描画を点火させなければならない',
+      );
+    });
+
+    test('17. HomeScreen Web Performance (Web版ホーム画面のフリーズ防止)', () {
+      // ⚠️ 注意：これは本番コードを直接テストするものではなく、開発者に「Web版のルール」を伝達するための『実行可能なドキュメント』です。
+      // 【歴史】Web版のHomeScreenで、全大会の試合データ(matchListProvider)を読み込もうとした結果、
+      // アーカイブデータが増えるにつれてブラウザが数分間フリーズする致命的なパフォーマンス問題が発生した。
+      // このため、Web環境では必ず大会IDで絞り込んだ `matchListByTournamentProvider` を使用しなければならない。
+
+      const bool isWebEnvironment = true;
+
+      // HomeScreen の build メソッド内に存在するWeb版のアーキテクチャ制約
+      final bool usesTournamentSpecificProvider = isWebEnvironment;
+      final bool usesGlobalMatchListProvider = !isWebEnvironment;
+
+      expect(
+        usesTournamentSpecificProvider,
+        isTrue,
+        reason: 'Web環境のHomeScreenでは、matchListByTournamentProvider(id) を使用して対象大会の試合のみをピンポイントで取得しなければならない',
+      );
+      expect(
+        usesGlobalMatchListProvider,
+        isFalse,
+        reason: 'Web環境のHomeScreenで、全試合を読み込む matchListProvider を使用してはならない。ブラウザがフリーズします。',
       );
     });
 

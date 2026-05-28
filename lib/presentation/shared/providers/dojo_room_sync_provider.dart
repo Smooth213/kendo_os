@@ -6,6 +6,30 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/application/projections/projection_store.dart';
 import 'current_sync_context_provider.dart';
 
+Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
+  final Map<String, dynamic> result = {};
+  data.forEach((key, value) {
+    if (value is Timestamp) {
+      result[key] = value.toDate().toIso8601String();
+    } else if (value is Map<String, dynamic>) {
+      result[key] = _sanitizeFirestoreData(value);
+    } else if (value is List) {
+      result[key] = value.map((e) {
+        if (e is Map<String, dynamic>) return _sanitizeFirestoreData(e);
+        if (e is Timestamp) return e.toDate().toIso8601String();
+        return e;
+      }).toList();
+    } else if ((key == 'order' || key == 'matchTimeMinutes' || key == 'extensionTimeMinutes' || key == 'enchoTimeMinutes') && value is num) {
+      result[key] = value.toDouble();
+    } else if ((key == 'redScore' || key == 'whiteScore' || key == 'matchOrder') && value is num) {
+      result[key] = value.toInt();
+    } else {
+      result[key] = value;
+    }
+  });
+  return result;
+}
+
 /// 🌟 核心：すべての画面（Admin/Recorder/Viewer）の裏側でFirestore Streamを常時リッスンし、
 /// 他端末が更新したスコアやイベントパケットを、自端末のローカルストアへ0秒で強制マージする中央同期プロバイダー。
 final dojoRoomSyncProvider = Provider<void>((ref) {
@@ -26,7 +50,8 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
 
         try {
           // クラウドから届いた最新の試合データを復元し、プロジェクションへ変換
-          final match = MatchModel.fromJson(data);
+          final convertedData = _sanitizeFirestoreData(data);
+          final match = MatchModel.fromJson(convertedData);
           final engine = KendoRuleEngine();
           final analysis = engine.analyzeHistory(match.events, match, match.rule);
           final cloudProj = MatchProjectionMapper.toProjection(match, analysis);

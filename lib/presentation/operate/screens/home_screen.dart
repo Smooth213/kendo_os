@@ -52,7 +52,10 @@ class HomeScreen extends ConsumerWidget {
     final bool isReadOnly = (currentRole == UserRole.viewer);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
-    final allMatchesList = ref.watch(matchListProvider).where((m) => m.tournamentId == tournamentId).toList()
+    // 🌟 全環境共通：アーカイブデータ蓄積時のIsar全件監視ストールを防ぎ、試合リストが消失する不具合を解決。
+    // 常に「対象大会のみ」をピンポイントで取得する専用プロバイダを使用して爆速化・安定化させます。
+    final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
+    final allMatchesList = List<MatchModel>.from(asyncMatches.value ?? [])
       ..sort((a, b) => a.order.compareTo(b.order));
 
     final uniqueInProgress = <MatchModel>[];

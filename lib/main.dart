@@ -143,8 +143,10 @@ void main() async {
     // Firestore ローカルディスク永続化キャッシュキャッシュプロトコルを活性化
     // (※Web環境ではブラウザのIndexedDB制限によるクラッシュを防ぐため無効化します)
     // =========================================================================
-    FirebaseFirestore.instance.settings = Settings(
-      persistenceEnabled: !kIsWeb,
+    // ★ 修正: Web環境でのオフライン通信切断時（ERR_INTERNET_DISCONNECTED）のホワイトアウトを防ぎ、
+    // オフライン状態でもローカル作成した試合が画面に即時反映されるよう Web でもキャッシュを有効化
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
     );
 
     // ★ 修正：SharedPreferences のインスタンスをここで確実に取得する
@@ -162,7 +164,6 @@ void main() async {
       isar = await Isar.open(
         [
           MatchEntitySchema,
-          MatchCommandEntitySchema, 
           LocalStrokeModelSchema, 
           MatchCommentEntitySchema, // ★ Phase 2: コメント用スキーマ追加
           MatchProjectionEntitySchema, // ★ Phase 8: 投影モデル用スキーマ追加
@@ -183,14 +184,18 @@ void main() async {
     // ★ 1. 描画やUI関連のエラーをキャッチしてフリーズを防ぐ
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
-      FirebaseCrashlytics.instance.recordFlutterFatalError(details); // ★ Phase 9-3: 致命的なUIエラーをFirebaseへ送信
+      if (!kIsWeb) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(details); // ★ Phase 9-3: 致命的なUIエラーをFirebaseへ送信
+      }
       container.read(metricsProvider).recordError(); // ★ UIエラーをメトリクスのエラー率に加算
       debugPrint('⚠️ UIエラー: ${details.exception}');
     };
 
     // ★ 2. 非同期処理や裏側のエラーをキャッチしてアプリのクラッシュを防ぐ
     PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true); // ★ Phase 9-3: 裏側のクラッシュもFirebaseへ送信
+      if (!kIsWeb) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true); // ★ Phase 9-3: 裏側のクラッシュもFirebaseへ送信
+      }
       container.read(metricsProvider).recordError(); // ★ 裏側エラーをメトリクスのエラー率に加算
       debugPrint('⚠️ 裏側エラー: $error');
       return true; 

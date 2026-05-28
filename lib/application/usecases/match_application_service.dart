@@ -386,11 +386,31 @@ class MatchApplicationService {
       // ★ Web版と Mobile版で異なる保存先を使い分ける
       if (kIsWeb) {
         // Web版: Firestore に直接保存
+        debugPrint('🌐 [MatchApplicationService] Webモード: Firestoreへ直接保存します (matchId: ${matchToSave.id})');
         await _ref.read(matchRepositoryProvider).saveMatch(matchToSave);
+        debugPrint('🌐 [MatchApplicationService] Webモード: Firestore直接保存完了');
       } else {
         // Mobile版: Isar に保存して同期エンジンに委譲
         final localRepo = _ref.read(localMatchRepositoryProvider);
         await localRepo.saveMatch(matchToSave);
+        
+        bool isViewer = false;
+        try {
+          final currentUserAuth = FirebaseAuth.instance.currentUser;
+          if (currentUserAuth != null && currentUserAuth.isAnonymous) isViewer = true;
+        } catch (_) {}
+
+        if (!isViewer) {
+          final action = MatchCommandModel(
+            id: const Uuid().v4(),
+            type: CommandType.updateMatch,
+            payload: matchToSave.toJson(),
+            createdAt: DateTime.now(),
+            status: CommandStatus.pending,
+          );
+          await localRepo.savePendingCommand(action);
+        }
+
         // =========================================================================
         // 🛡️ Phase 1 補正：旧型 syncNow() を新設の自律再送 processQueue() へ結合
         // =========================================================================
@@ -416,13 +436,35 @@ class MatchApplicationService {
       // ★ Web版と Mobile版で異なる保存先を使い分ける
       if (kIsWeb) {
         // Web版: Firestore に直接一括保存
+        debugPrint('🌐 [MatchApplicationService] Webモード: Firestoreへ一括保存します (${preparedMatches.length}件)');
         for (final m in preparedMatches) {
           await _ref.read(matchRepositoryProvider).saveMatch(m);
         }
+        debugPrint('🌐 [MatchApplicationService] Webモード: Firestore一括保存完了');
       } else {
         // Mobile版: Isar に保存して同期エンジンに委譲
         final localRepo = _ref.read(localMatchRepositoryProvider);
         await localRepo.saveMatchesBulk(preparedMatches);
+        
+        bool isViewer = false;
+        try {
+          final currentUserAuth = FirebaseAuth.instance.currentUser;
+          if (currentUserAuth != null && currentUserAuth.isAnonymous) isViewer = true;
+        } catch (_) {}
+
+        if (!isViewer) {
+          for (final m in preparedMatches) {
+            final action = MatchCommandModel(
+              id: const Uuid().v4(),
+              type: CommandType.updateMatch,
+              payload: m.toJson(),
+              createdAt: DateTime.now(),
+              status: CommandStatus.pending,
+            );
+            await localRepo.savePendingCommand(action);
+          }
+        }
+
         // =========================================================================
         // 🛡️ Phase 1 補正：旧型 syncNow() を新設の自律再送 processQueue() へ結合
         // =========================================================================
@@ -467,50 +509,6 @@ class MatchApplicationService {
     } catch (e) {
       debugPrint('⚠️ [Projection Cache] Isar Projection の書き込み失敗: $e');
     }
-
-    _executeCloudSyncInBackground(match);
-  }
-
-  void _executeCloudSyncInBackground(MatchModel match) {
-    Future.microtask(() async {
-      final localRepo = _ref.read(localMatchRepositoryProvider);
-      
-      // =========================================================================
-      // 🛡️ Phase 5 - STEP 5-3 要件：ロール別同期最適化（Viewer軽量化）
-      // アプリ起動時のカレントユーザー、またはロール権限を検証
-      // Viewerモード（一般観客）であれば、サーバーへの同期キュー投入（重量書き込み）を
-      // 物理的に即時遮断し、体育館全体のネットワークアップロード帯域のパンクを未然に防ぎます。
-      // =========================================================================
-      try {
-        final currentUserAuth = FirebaseAuth.instance.currentUser;
-        if (currentUserAuth != null && currentUserAuth.isAnonymous) {
-          debugPrint('👁️ [Viewer Role Bypass] 一般観客アカウントのため、サーバーへの書き込み同期を安全にスキップしました（通信軽量化）');
-          return;
-        }
-      } catch (e) {
-        // 安全な受け流し
-      }
-
-      final action = MatchCommandModel(
-        id: const Uuid().v4(),
-        type: CommandType.updateMatch, // ※コンパイルエラー防止のため既存のCommandTypeを指定しています
-        payload: match.toJson(),
-        createdAt: DateTime.now(),
-        status: CommandStatus.pending,
-      );
-
-      try {
-        final remoteRepository = _ref.read(matchRepositoryProvider);
-        await remoteRepository.saveMatch(match);
-        debugPrint('☁️ [Cloud Sync Direct] Firestoreへのリアルタイム同期に成功しました: ${match.id}');
-      } catch (e) {
-        debugPrint('⚠️ [Network Offline] 通信障害を検知。IsarのSyncQueueへタスクを保護しました。: $e');
-        await localRepo.savePendingCommand(action);
-        
-        // 🌟 バックグラウンドエンジンの活性トリガーを引く
-        _ref.read(syncEngineProvider).processQueue();
-      }
-    });
   }
 
   // --------------------------------------------------

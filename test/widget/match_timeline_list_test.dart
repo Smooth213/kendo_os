@@ -9,6 +9,7 @@ import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/presentation/operate/screens/home_screen.dart' show tournamentProvider, customTeamNamesProvider, searchQueryProvider, isSearchVisibleProvider;
+import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 
 class FakeMatchApplicationService implements MatchApplicationService {
   List<MatchModel>? savedMatches;
@@ -60,13 +61,15 @@ void main() {
   Widget buildTestableWidget(List<MatchModel> matches, {List<String> customTeamNames = const []}) {
     return ProviderScope(
       overrides: [
-        matchListProvider.overrideWith((ref) => matches),
+        // ★ 修正: MatchTimelineListが依存する `matchListByTournamentProvider` をオーバーライドし、Isarへの依存を断ち切る
+        matchListByTournamentProvider.overrideWith((ref, id) => Stream.value(matches)),
         matchApplicationServiceProvider.overrideWithValue(fakeMatchAppService),
         permissionProvider.overrideWith((ref) => const AppPermissions(
           canCreateMatch: true, canManageTournament: true, isReadOnly: false, canChangeSettings: true, canDeleteData: true,
         )),
         commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
-        tournamentProvider('t1').overrideWith((ref) => Stream.value(null)),
+        tournamentProvider.overrideWith((ref, id) => Stream.value(null)),
+        isarProvider.overrideWithValue(null), // ★ Isar未初期化エラーを解決
         customTeamNamesProvider.overrideWith((ref) => Stream.value(customTeamNames)),
         searchQueryProvider.overrideWith((ref) => ''),
         isSearchVisibleProvider.overrideWith((ref) => false),
@@ -94,6 +97,7 @@ void main() {
 
       // Expand the ExpansionTile for the player name ('選手A')
       final expansionTileFinder = find.byType(ExpansionTile).first;
+      await tester.ensureVisible(expansionTileFinder);
       await tester.tap(expansionTileFinder);
       await tester.pumpAndSettle();
 
@@ -154,6 +158,7 @@ void main() {
 
       // ExpansionTile を展開する
       final expansionTile = find.byType(ExpansionTile).first;
+      await tester.ensureVisible(expansionTile);
       await tester.tap(expansionTile);
       await tester.pumpAndSettle();
 
@@ -189,6 +194,7 @@ void main() {
 
       // ExpansionTile を展開する
       final expansionTile = find.byType(ExpansionTile).first;
+      await tester.ensureVisible(expansionTile);
       await tester.tap(expansionTile);
       await tester.pumpAndSettle();
 

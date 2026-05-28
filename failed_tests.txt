@@ -1,0 +1,17 @@
+00:19 +240 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/providers/startup_restore_test.dart: 🛡️ [Governance Quality Assurance] Isar Startup Restore Test 1. 回線ゼロ（Firestore応答なし）の状態でも、Isarキャッシュから即座に前回状態が復元されること
+00:19 +240 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/providers/safe_timeline_provider_test.dart: safeTimelineProvider Tests データ取得エラー時に安全にエラー状態を反映すること
+🚨 [safeTimelineProvider] エラーを検知しました: Exception: Network Error
+00:19 +241 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/providers/safe_timeline_provider_test.dart: safeTimelineProvider Tests データ取得エラー時に安全にエラー状態を反映すること
+00:19 +242 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/providers/safe_timeline_provider_test.dart: safeTimelineProvider Tests データ取得エラー時に安全にエラー状態を反映すること
+00:19 +243 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/current_user_role_provider_test.dart: 🛡️ currentUserRoleProvider 完全ハイブリッド同期検証テスト 【バグ修正検証】PIN入力等でローカルセッションがAdminに昇格した場合、クラウド側がViewerの初期パケットを流してきてもAdminを死守すること
+00:19 +244 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/current_user_role_provider_test.dart: 🛡️ currentUserRoleProvider 完全ハイブリッド同期検証テスト 【同期検証】手動セッションがない、または一般状態の時のみ、クラウド側の権限パケットに自動追従すること
+00:19 +245 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/observability_test.dart: 🔍 Observability (可観測性) Tests 1. メトリクス記録時に traceId が付与されること
+00:19 +246 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/observability_test.dart: 🔍 Observability (可観測性) Tests 2. 画面反映(Projection)が2000msを超えた場合、HighProjectionLagアラートが発行されること
+00:19 +247 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/observability_test.dart: 🔍 Observability (可観測性) Tests 3. エラー率が1%を超えた場合、HighErrorRateアラートが発行されること
+00:19 +248 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/observability_test.dart: 🔍 Observability (可観測性) Tests 4. ダッシュボード用の状態(State)が正しく更新されること
+00:19 +249 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/operate/observability_test.dart: 🔍 Observability (可観測性) Tests 【二次災害防止】UI描画サイクル中にエラーを検知(recordError)しても、状態更新によるクラッシュ(StateError)を引き起こさないこと
+00:20 +250 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/components/home/match_timeline_ui_test.dart: 🛡️ [Phase 4-V3] 掲示板式3行UI＆4大不具合完全防止・回帰テスト要塞 1. 【文字切れ防止】 チーム名が1行目（2行目）に独立し、選手名と分離した全3行構造が正しくレンダリングされること
+--
+00:20 +254 -1: /Users/saradafumiaki/Documents/Apps/kendo_os/test/presentation/components/home/match_timeline_ui_test.dart: 🛡️ [Phase 4-V3] 掲示板式3行UI＆4大不具合完全防止・回帰テスト要塞 5. 【全自動合計スコア集約】 団体戦グループ内の各ポジションのスコアが、親アコーディオンのヘッダーへ自動的に 3(5) - 1(2) の形式で正確に合算・表示されること
+📊 [safeTimelineProvider] 試合リスト抽出完了: 5 件
+00:21 +255 -1: Some tests failed.

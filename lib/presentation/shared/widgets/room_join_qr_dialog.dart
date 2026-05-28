@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/current_sync_context_provider.dart';
 import '../../../../core/security/pwa_storage_bridge.dart';
+import '../providers/dojo_room_history_provider.dart';
 
 // ★ テスト時にモック（FakeFirestore）を安全に注入するための専用Provider
 final roomFirestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
@@ -27,12 +28,14 @@ class RoomJoinQrDialog extends ConsumerStatefulWidget {
 
 class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
   final _codeController = TextEditingController();
+  final _focusNode = FocusNode();
   String? _errorMessage;
   bool _isLoading = false;
 
   @override
   void dispose() {
     _codeController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -177,6 +180,9 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
       PwaStorage.setItem('kendo_os_active_dojo_id', code);
     } catch (_) {}
 
+    // ★ 接続に成功したIDを履歴に保存
+    ref.read(dojoRoomHistoryProvider.notifier).addHistory(code);
+
     // ダイアログを閉じる
     Navigator.of(context).pop();
     
@@ -238,21 +244,77 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                   style: TextStyle(fontSize: 12, color: subTextColor),
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  controller: _codeController,
-                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-                  decoration: InputDecoration(
-                    hintText: '例: tokyo_dojo_2026',
-                    hintStyle: TextStyle(color: subTextColor),
-                    filled: true,
-                    fillColor: inputBgColor,
-                    errorText: _errorMessage,
-                    errorStyle: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold),
-                    prefixIcon: Icon(Icons.meeting_room, color: subTextColor),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.teal)),
-                  ),
-                  onSubmitted: _handleJoin,
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return RawAutocomplete<String>(
+                      textEditingController: _codeController,
+                      focusNode: _focusNode,
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        final text = textEditingValue.text.toLowerCase();
+                        final history = ref.read(dojoRoomHistoryProvider);
+                        if (text.isEmpty) return history;
+                        return history.where((option) => option.toLowerCase().contains(text));
+                      },
+                      fieldViewBuilder: (context, fieldController, focusNode, onFieldSubmitted) {
+                        return TextField(
+                          controller: fieldController,
+                          focusNode: focusNode,
+                          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                          decoration: InputDecoration(
+                            hintText: '例: tokyo_dojo_2026',
+                            hintStyle: TextStyle(color: subTextColor),
+                            filled: true,
+                            fillColor: inputBgColor,
+                            errorText: _errorMessage,
+                            errorStyle: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold),
+                            prefixIcon: Icon(Icons.meeting_room, color: subTextColor),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.teal)),
+                          ),
+                          onSubmitted: _handleJoin,
+                        );
+                      },
+                      optionsViewBuilder: (context, onSelected, options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 8.0,
+                            borderRadius: BorderRadius.circular(12),
+                            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: 200, maxWidth: constraints.maxWidth),
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                itemBuilder: (context, index) {
+                                  final option = options.elementAt(index);
+                                  return ListTile(
+                                    leading: Icon(Icons.history, color: subTextColor, size: 20),
+                                    title: Text(option, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                                    trailing: IconButton(
+                                      icon: const Icon(Icons.close, color: Colors.grey, size: 18),
+                                      onPressed: () {
+                                        ref.read(dojoRoomHistoryProvider.notifier).removeHistory(option);
+                                        // リストを再描画するためテキストを同値で再セットするハック
+                                        final selection = _codeController.selection;
+                                        _codeController.text = _codeController.text;
+                                        _codeController.selection = selection;
+                                      },
+                                    ),
+                                    onTap: () {
+                                      onSelected(option);
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
                 ),
                 const SizedBox(height: 8),
                 Text(

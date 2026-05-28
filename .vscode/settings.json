@@ -25,6 +25,10 @@
     "/^flutter test test/widget/viewer_mode_test\\.dart$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^flutter test 2>&1 \\| grep -i -E -B 2 -A 10 \"failed\\|exception\\|expected\\|actual\" \\| tee failed_tests\\.txt$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   },
   "yaml.schemas": {

@@ -4,6 +4,7 @@ import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/application/services/sound_service.dart'; // ★ 追加
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:flutter/services.dart';
 
 // モッククラスの定義
 class MockSharedPreferences extends Mock implements SharedPreferences {}
@@ -12,6 +13,31 @@ class MockSoundService extends Mock implements SoundService {} // ★ 追加：�
 void main() {
   // ★ 重要：プラットフォーム機能（Wakelock等）をテストで使うための初期化
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    // ★ 追加: WakelockPlusのネイティブ通信(Pigeon)を生のバイナリレベルでモックする
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    const codec = StandardMessageCodec();
+
+    // 1. toggle (戻り値なし) の通信モック
+    messenger.setMockMessageHandler(
+      'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle',
+      (ByteData? message) async {
+        // Pigeonの void 成功レスポンスは [null] となるため手動エンコード
+        return codec.encodeMessage(<Object?>[null]);
+      },
+    );
+
+    // 2. isEnabled (戻り値あり) の通信モック
+    Future<ByteData?> isEnabledHandler(ByteData? message) async {
+      // Pigeonの戻り値(IsEnabledMessage) は [false] のようなリストになり、さらにレスポンスのリストで包まれる
+      return codec.encodeMessage(<Object?>[
+        <Object?>[false]
+      ]);
+    }
+    messenger.setMockMessageHandler('dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.isEnabled', isEnabledHandler);
+    messenger.setMockMessageHandler('dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.enabled', isEnabledHandler);
+  });
 
   late ProviderContainer container;
   late MockSharedPreferences mockPrefs;

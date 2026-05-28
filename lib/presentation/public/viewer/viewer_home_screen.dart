@@ -14,7 +14,6 @@ import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 // プロバイダ層
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_view_model_provider.dart';
 import 'package:kendo_os/application/services/pdf/models/pdf_view_model.dart';
 
 // 共通シェアUIコンポーネント・ウィジェット層（★ パスを正しい座標へ完全適合）
@@ -29,6 +28,82 @@ final isSearchVisibleProvider = StateProvider.autoDispose<bool>((ref) => false);
 
 final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
   return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
+});
+
+// =========================================================================
+// 🛡️ Webアプリ・リスト消失バグ完全修正パッチ
+// 全件取得(matchListProvider)に依存していた timelineMatchesByCategoryProvider が
+// Web環境でフリーズ・空配列になる問題を回避するため、対象大会のみを直接取得する
+// 安全な専用プロバイダーを定義し、UI側へ供給します。
+// =========================================================================
+// ★ 修正: Record 型に hasError と errorMessage を追加
+typedef _SafeViewerTimelineResult = ({List<MapEntry<String, List<MatchModel>>> entries, Set<String> matchedGroupNames, Set<String> matchedMatchIds, bool isLoading, bool hasError, String? errorMessage});
+
+final safeViewerTimelineProvider = Provider.family.autoDispose<_SafeViewerTimelineResult, String>((ref, String tournamentId) {
+  final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
+  
+  final bool hasError = asyncMatches.hasError;
+  final String? errorMessage = asyncMatches.error?.toString();
+
+  if (hasError) {
+    debugPrint('🚨 [safeViewerTimelineProvider] エラーを検知しました: $errorMessage');
+  } else if (!asyncMatches.isLoading) {
+    debugPrint('📊 [safeViewerTimelineProvider] 試合リスト抽出完了: ${asyncMatches.value?.length ?? 0} 件');
+    if ((asyncMatches.value?.length ?? 0) == 0) {
+      debugPrint('🤔 [safeViewerTimelineProvider] 試合が0件です。クラウド側でデータが作成されていないか、検索クエリ・大会IDの不一致の可能性があります。');
+    }
+  }
+
+  final matches = List<MatchModel>.from(asyncMatches.value ?? [])
+    ..sort((a, b) => a.order.compareTo(b.order));
+      
+  final searchQuery = ref.watch(searchQueryProvider).replaceAll(RegExp(r'\s+'), '').toLowerCase();
+  final isSortAscending = ref.watch(categorySortProvider);
+
+  final matchedGroupNames = <String>{};
+  final matchedMatchIds = <String>{};
+
+  if (searchQuery.isNotEmpty) {
+    for (var m in matches) {
+      final rName = m.redName.replaceAll(RegExp(r'\s+'), '').toLowerCase();
+      final wName = m.whiteName.replaceAll(RegExp(r'\s+'), '').toLowerCase();
+      if (rName.contains(searchQuery) || wName.contains(searchQuery)) {
+        matchedMatchIds.add(m.id);
+        if (m.groupName != null && m.groupName!.isNotEmpty) {
+          matchedGroupNames.add(m.groupName!);
+        }
+      }
+    }
+  }
+
+  final categoryMap = <String, List<MatchModel>>{};
+  for (var m in matches) {
+    if (searchQuery.isNotEmpty) {
+      bool isMatch = matchedMatchIds.contains(m.id) || 
+                     (m.groupName != null && matchedGroupNames.contains(m.groupName!));
+      if (!isMatch) continue;
+    }
+    final cat = (m.category != null && m.category!.isNotEmpty) ? m.category! : '未分類';
+    categoryMap.putIfAbsent(cat, () => []).add(m);
+  }
+
+  final entries = categoryMap.entries.toList();
+  entries.sort((a, b) {
+    if (isSortAscending) {
+      return a.key.compareTo(b.key);
+    } else {
+      return b.key.compareTo(a.key);
+    }
+  });
+
+  return (
+    entries: entries,
+    matchedGroupNames: matchedGroupNames,
+    matchedMatchIds: matchedMatchIds,
+    isLoading: asyncMatches.isLoading,
+    hasError: hasError,
+    errorMessage: errorMessage,
+  );
 });
 
 /// ★ Phase 5-1: Viewer導線単純化（クローズド固定仕様）
@@ -46,20 +121,11 @@ class ViewerHomeScreen extends ConsumerWidget {
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
-    // ★ デバッグ: フィルタリング前後の試合数を確認
-    final allMatches = ref.watch(matchListProvider);
-    debugPrint('🔍 [Viewer Debug] tournamentId param: "$tournamentId"');
-    debugPrint('🔍 [Viewer Debug] Total matches from provider: ${allMatches.length}');
-    for (int i = 0; i < allMatches.length && i < 5; i++) {
-      final m = allMatches[i];
-      debugPrint('  [$i] ID: ${m.id}, TID: "${m.tournamentId}", Match: ${m.redName} vs ${m.whiteName}');
-    }
-
-
     try {
         // ★ 修正: activeMatchesProvider だとリーグ戦や勝ち抜き戦で最初の試合が終了すると
         // グループ全体がバナーから消えてしまう不具合があるため、専用の抽出ロジックに置き換え
-        final allMatchesList = allMatches.where((m) => m.tournamentId == tournamentId).toList()
+        final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
+        final allMatchesList = List<MatchModel>.from(asyncMatches.value ?? [])
           ..sort((a, b) => a.order.compareTo(b.order));
 
         final uniqueInProgress = <MatchModel>[];
@@ -94,7 +160,7 @@ class ViewerHomeScreen extends ConsumerWidget {
         }
 
         final sanitizedQuery = ref.watch(searchQueryProvider).replaceAll(RegExp(r'\s+'), '').toLowerCase();
-        final timelineResult = ref.watch(timelineMatchesByCategoryProvider(tournamentId));
+        final timelineResult = ref.watch(safeViewerTimelineProvider(tournamentId));
         final matchedGroupNames = timelineResult.matchedGroupNames;
         final matchedMatchIds = timelineResult.matchedMatchIds;
 
@@ -294,12 +360,34 @@ class ViewerHomeScreen extends ConsumerWidget {
                     ),
                   ),
 
+                  if (timelineResult.hasError)
+                    Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                            const SizedBox(height: 16),
+                            Text('データの取得に失敗しました', style: TextStyle(color: isDark ? Colors.red.shade300 : Colors.red, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            Text(timelineResult.errorMessage ?? '通信状況を確認してください', style: const TextStyle(color: Colors.grey, fontSize: 12), textAlign: TextAlign.center),
+                          ],
+                        ),
+                      ),
+                    ),
+
                   if (timelineResult.entries.isEmpty && sanitizedQuery.isNotEmpty)
                     const Padding(
                       padding: EdgeInsets.all(32.0),
                       child: Center(
                         child: Text('該当する試合が見つかりません', style: TextStyle(color: Colors.grey)),
                       ),
+                    ),
+                  
+                  if (timelineResult.entries.isEmpty && timelineResult.isLoading)
+                    const Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Center(child: CircularProgressIndicator()),
                     ),
                   
                   ...(() {
@@ -542,7 +630,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                               height: 26,
                                                               child: OutlinedButton(
                                                                 onPressed: () {
-                                                                  context.push(firstMatch.isKachinuki ? '/viewer-kachinuki/${firstMatch.groupName}' : '/viewer-team/${firstMatch.groupName}');
+                                                                  final encodedGroupName = Uri.encodeComponent(firstMatch.groupName ?? '');
+                                                                  context.push(firstMatch.isKachinuki ? '/viewer-kachinuki/\u0000$encodedGroupName' : '/viewer-team/$encodedGroupName');
                                                                 },
                                                                 style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: titleColor.withValues(alpha: 0.2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
                                                                 child: Text('スコア', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: titleColor)),
@@ -697,7 +786,10 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               child: SizedBox(
                                                                                 height: 24,
                                                                                 child: OutlinedButton(
-                                                                                  onPressed: () => context.push('/viewer-team/${bouts.first.groupName}'),
+                                                                                  onPressed: () {
+                                                                                    final encodedGroupName = Uri.encodeComponent(bouts.first.groupName ?? '');
+                                                                                  context.push('/viewer-team/$encodedGroupName');
+                                                                                  },
                                                                                   style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: mTitleColor.withValues(alpha: 0.2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
                                                                                   child: Text('スコア', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mTitleColor)),
                                                                                 ),
@@ -1053,7 +1145,10 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                     child: SizedBox(
                       height: 26,
                       child: OutlinedButton(
-                        onPressed: () => context.push('/viewer-team/${match.groupName}'),
+                        onPressed: () {
+                          final encodedGroupName = Uri.encodeComponent(match.groupName ?? '');
+                          context.push('/viewer-team/$encodedGroupName');
+                        },
                         style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: textC.withValues(alpha: 0.2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
                         child: Text('スコア', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textC)),
                       ),

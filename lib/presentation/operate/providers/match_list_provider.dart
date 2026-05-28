@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
 
 // =========================================================================
 // 🛡️ 補正：プロジェクト全域でUndefinedエラーを吐いている firestoreProvider をここで安全に定義
@@ -18,15 +20,10 @@ final matchStreamProvider = StreamProvider<List<MatchModel>>((ref) {
   // Webブラウザ環境（kIsWeb == true）のとき、Isarディスク監視を安全にバイパス
   if (kIsWeb) {
     debugPrint('🌐 [Web Environment Detected] Isarの代わりにメモリ/クラウド監視ラインを確立します');
-    // 必要に応じて、Firestore側のコレクションスナップショットを安全にバインドするか、
-    // 起動時の白画面フリーズを防ぐために、即座にクリーンな初期状態を供給します。
-    final firestore = ref.watch(firestoreProvider);
-    return firestore
-        .collection('matches')
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => MatchModel.fromJson({...doc.data(), 'id': doc.id}))
-            .toList());
+    // 🌟 Webアプリ表示不具合修正パッチ（アーカイブフリーズ完全防止）
+    // 全試合の snapshots() はアーカイブが増大するとブラウザを数分間フリーズさせるため、
+    // ここでは安全に空のストリームを返し、画面側では必ず matchListByTournamentProvider を使用させます。
+    return Stream.value([]);
   }
 
   // 🍏 ネイティブ環境（シミュレータ・iPad実機アプリ）はこれまでの強力なIsar最優先監視を100%継続
@@ -46,12 +43,119 @@ final matchStreamProvider = StreamProvider<List<MatchModel>>((ref) {
 // 呼び出し側には同期的で扱いやすい List<MatchModel> を返しつつ、
 // その実態は Isar のリアルタイムストリーム（matchStreamProvider）を凝視する、完璧なブリッジ構造です。
 // =========================================================================
+
+Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
+  final Map<String, dynamic> result = {};
+  data.forEach((key, value) {
+    if (value is Timestamp) {
+      result[key] = value.toDate().toIso8601String();
+    } else if (value is Map) {
+      result[key] = _sanitizeFirestoreData(Map<String, dynamic>.from(value));
+    } else if (value is List) {
+      result[key] = value.map((e) {
+        if (e is Map) return _sanitizeFirestoreData(Map<String, dynamic>.from(e));
+        if (e is Timestamp) return e.toDate().toIso8601String();
+        return e;
+      }).toList();
+    } else if ((key == 'order' || key == 'timelineOrder' || key == 'matchTimeMinutes' || key == 'extensionTimeMinutes' || key == 'enchoTimeMinutes') && value is num) {
+      // Firestoreからintで返ってきた場合のdoubleキャストエラー（Web特有のリスト消失バグ）を防ぐ
+      result[key] = value.toDouble();
+    } else if ((key == 'redScore' || key == 'whiteScore' || key == 'matchOrder') && value is num) {
+      result[key] = value.toInt();
+    } else {
+      result[key] = value;
+    }
+  });
+  return result;
+}
+
 final matchListProvider = Provider<List<MatchModel>>((ref) {
   return ref.watch(matchStreamProvider).value ?? const [];
 });
 
 // 💡 特定の大会IDで厳密に絞り込みたい画面のための family 版も別名で安全に維持
 final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, String>((ref, tournamentId) {
+  // 🌟 Webアプリ表示不具合修正パッチ（アーカイブ遅延対策）
+  // Webブラウザ環境のとき、Isarの代わりにFirestoreから特定の大会の試合のみをピンポイントで取得し、
+  // アーカイブデータ増大による読み込み遅延とフリーズを完全に防ぎます。
+  if (kIsWeb) {
+    final firestore = ref.watch(firestoreProvider);
+    final dojoId = ref.watch(currentDojoIdProvider);
+
+    debugPrint('🌐 [matchListByTournamentProvider] Webモード監視開始 - dojoId: "$dojoId", tournamentId: "$tournamentId"');
+
+    // ★ Web環境のリスト消失完全対策：
+    // collectionGroup クエリは手動で複合インデックスを作成しないと、キャッシュ（0件）のみを返して通信エラーをサイレントに握り潰す特性があります。
+    // これを回避するため、Firestoreが自動でインデックスを作成する「通常のコレクション検索」を網羅的に並行監視し、
+    // どこか1つのパスでもデータが取得できたら即座にUIへ反映する最強のフォールバック・ストリームを構築します。
+    final controller = StreamController<List<MatchModel>>();
+    final List<StreamSubscription> subs = [];
+    final Map<String, List<MatchModel>> cache = {'root': [], 'sub': [], 'org': []};
+
+    void emitBestMatches() {
+      if (controller.isClosed) return;
+      // 取得できたデータ件数が最も多いパスのデータを正として採用
+      final bestMatches = cache.values.reduce((a, b) => a.length > b.length ? a : b);
+      controller.add(bestMatches);
+    }
+
+    MatchModel? parseMatch(DocumentSnapshot<Map<String, dynamic>> doc) {
+      try {
+        final data = _sanitizeFirestoreData(doc.data() ?? {});
+        return MatchModel.fromJson({...data, 'id': doc.id});
+      } catch (e) {
+        debugPrint('🚨 [Parse Error] ID:${doc.id} -> $e');
+        return null;
+      }
+    }
+
+    controller.onListen = () {
+      // 1. ルートコレクション (単一フィールド検索のため自動インデックスで必ず動作)
+      subs.add(firestore.collection('matches').where('tournamentId', isEqualTo: tournamentId).snapshots().listen(
+        (snap) {
+          cache['root'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
+          emitBestMatches();
+        },
+        onError: (e) => debugPrint('🚨 [Match Query Error] root: $e'),
+      ));
+
+      // 2. 大会サブコレクション (検索条件すら不要のためインデックス完全不要)
+      subs.add(firestore.collection('tournaments').doc(tournamentId).collection('matches').snapshots().listen(
+        (snap) {
+          cache['sub'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
+          emitBestMatches();
+        },
+        onError: (e) => debugPrint('🚨 [Match Query Error] sub: $e'),
+      ));
+
+      // 3. 道場サブコレクション
+      if (dojoId.isNotEmpty) {
+        subs.add(firestore.collection('organizations').doc(dojoId).collection('matches').where('tournamentId', isEqualTo: tournamentId).snapshots().listen(
+          (snap) {
+            cache['org'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
+            emitBestMatches();
+          },
+          onError: (e) => debugPrint('🚨 [Match Query Error] org: $e'),
+        ));
+      }
+    };
+
+    void cleanup() {
+      for (var s in subs) {
+        s.cancel();
+      }
+      subs.clear();
+      if (!controller.isClosed) {
+        controller.close();
+      }
+    }
+
+    controller.onCancel = cleanup;
+    ref.onDispose(cleanup);
+
+    return controller.stream;
+  }
+
   final localRepository = ref.watch(localMatchRepositoryProvider);
   return localRepository.watchLocalMatches(tournamentId);
 });
