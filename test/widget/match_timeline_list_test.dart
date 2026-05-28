@@ -207,4 +207,45 @@ void main() {
       expect(innerListViewFinder, findsNothing);
     });
   });
+
+  group('MatchTimelineList Grouping Tests (リーグ戦分割不具合の回帰テスト)', () {
+    testWidgets('1. 自チームを含まないリーグ戦が分割されず、1つのグループにまとまること', (WidgetTester tester) async {
+      final leagueMatches = [
+        createMockMatch(id: 'league_a_1', category: '一般', groupName: '男子リーグA', matchType: 'リーグ戦', note: '[リーグ戦]', order: 10.0, redName: '赤龍館', whiteName: '青龍会'),
+        createMockMatch(id: 'league_a_2', category: '一般', groupName: '男子リーグA', matchType: 'リーグ戦', note: '[リーグ戦]', order: 20.0, redName: '赤龍館', whiteName: '緑道場'),
+        createMockMatch(id: 'league_a_3', category: '一般', groupName: '男子リーグA', matchType: 'リーグ戦', note: '[リーグ戦]', order: 30.0, redName: '青龍会', whiteName: '緑道場'),
+      ];
+
+      // 自チーム設定が空の状態でウィジェットをビルド
+      await tester.pumpWidget(buildTestableWidget(leagueMatches, customTeamNames: []));
+      await tester.pumpAndSettle();
+
+      // リーグ戦全体でExpansionTileが1つだけ生成されることを確認
+      // これが複数(findsWidgets)になると、不具合が再発していることを意味する
+      expect(find.byType(ExpansionTile), findsOneWidget);
+
+      // そのExpansionTileのタイトルが、リーグの最初のチーム名（代表チーム）になっていることを確認
+      expect(find.text('赤龍館'), findsOneWidget);
+      // 2番目以降のチーム名はヘッダーには出ないはず
+      expect(find.text('青龍会'), findsNothing);
+    });
+
+    testWidgets('2. 自チームを含むリーグ戦が1つのグループにまとまること', (WidgetTester tester) async {
+      final leagueMatches = [
+        createMockMatch(id: 'league_a_1', category: '一般', groupName: '男子リーグA', matchType: 'リーグ戦', note: '[リーグ戦]', order: 10.0, redName: '赤龍館', whiteName: '青龍会'),
+        createMockMatch(id: 'league_a_2', category: '一般', groupName: '男子リーグA', matchType: 'リーグ戦', note: '[リーグ戦]', order: 20.0, redName: '赤龍館', whiteName: '緑道場'),
+        createMockMatch(id: 'league_a_3', category: '一般', groupName: '男子リーグA', matchType: 'リーグ戦', note: '[リーグ戦]', order: 30.0, redName: '青龍会', whiteName: '緑道場'),
+      ];
+
+      // 「赤龍館」を自チームとして設定
+      await tester.pumpWidget(buildTestableWidget(leagueMatches, customTeamNames: ['赤龍館']));
+      await tester.pumpAndSettle();
+
+      // この場合も、リーグ戦全体でExpansionTileが1つだけであることを確認
+      expect(find.byType(ExpansionTile), findsOneWidget);
+
+      // そのExpansionTileのタイトルが、自チーム名になっていることを確認
+      expect(find.text('赤龍館'), findsOneWidget);
+    });
+  });
 }

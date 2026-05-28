@@ -12,6 +12,11 @@ import 'package:kendo_os/presentation/shared/providers/current_sync_context_prov
 final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
 
 // =========================================================================
+// ★ 追加: Web環境で特定の大会を読み込んだ際、グローバルにキャッシュを保持するプロバイダ
+// =========================================================================
+final webCurrentTournamentMatchesProvider = StateProvider<List<MatchModel>>((ref) => []);
+
+// =========================================================================
 // 🛡️ Webアプリ表示不具合修正パッチ（ロードマップメソッド完全維持）
 // Flutter Web環境（Isarが非活性）のときはストリームを沈黙させず、
 // 即座に安全な空配列（またはFirestoreの読み込み側）をUIへ射出してフリーズを完全回避します。
@@ -70,6 +75,11 @@ Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
 }
 
 final matchListProvider = Provider<List<MatchModel>>((ref) {
+  if (kIsWeb) {
+    // ★ 修正: Web環境の場合は、現在開いている大会の最新キャッシュを返す
+    // これにより、遷移先のスコア画面（運営・観戦問わず）で matchListProvider を参照した際にも対象の試合が見つかり、フリーズしません。
+    return ref.watch(webCurrentTournamentMatchesProvider);
+  }
   return ref.watch(matchStreamProvider).value ?? const [];
 });
 
@@ -97,6 +107,13 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
       // 取得できたデータ件数が最も多いパスのデータを正として採用
       final bestMatches = cache.values.reduce((a, b) => a.length > b.length ? a : b);
       controller.add(bestMatches);
+
+      // ★ 追加: メモリ上のグローバルキャッシュにも最新データを保存し、スコア画面などでの迷子を防止
+      Future.microtask(() {
+        try {
+          ref.read(webCurrentTournamentMatchesProvider.notifier).state = bestMatches;
+        } catch (_) {}
+      });
     }
 
     MatchModel? parseMatch(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -116,7 +133,10 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
           cache['root'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
           emitBestMatches();
         },
-        onError: (e) => debugPrint('🚨 [Match Query Error] root: $e'),
+        onError: (e) {
+          debugPrint('🚨 [Match Query Error] root: $e');
+          emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
+        },
       ));
 
       // 2. 大会サブコレクション (検索条件すら不要のためインデックス完全不要)
@@ -125,7 +145,10 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
           cache['sub'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
           emitBestMatches();
         },
-        onError: (e) => debugPrint('🚨 [Match Query Error] sub: $e'),
+        onError: (e) {
+          debugPrint('🚨 [Match Query Error] sub: $e');
+          emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
+        },
       ));
 
       // 3. 道場サブコレクション
@@ -135,7 +158,10 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
             cache['org'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
             emitBestMatches();
           },
-          onError: (e) => debugPrint('🚨 [Match Query Error] org: $e'),
+          onError: (e) {
+            debugPrint('🚨 [Match Query Error] org: $e');
+            emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
+          },
         ));
       }
     };

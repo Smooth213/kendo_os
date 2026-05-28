@@ -29,22 +29,36 @@ final _webTournamentIdSearchProvider = FutureProvider.family<String?, String>((r
     }
 
     final firestore = FirebaseFirestore.instance;
-    final dojoId = ref.read(currentDojoIdProvider);
-    // 1. groupName と一致する試合を探す
-    var snapshot = await firestore
-        .collection('organizations').doc(dojoId).collection('matches')
-        .where('groupName', isEqualTo: groupName)
-        .limit(1)
-        .get();
-        
-    // 2. もし見つからなければ、groupNameの代わりに試合ID(match.id)が渡されたと見なして直接検索
-    if (snapshot.docs.isEmpty) {
-      final docSnapshot = await firestore.collection('organizations').doc(dojoId).collection('matches').doc(groupName).get();
-      if (docSnapshot.exists) return docSnapshot.data()?['tournamentId'] as String?;
+
+    // ★ 追加: ルートコレクションから直接 groupName や id を検索して確実に特定する
+    try {
+      var rootGroupSnap = await firestore.collection('matches').where('groupName', isEqualTo: groupName).limit(1).get();
+      if (rootGroupSnap.docs.isNotEmpty) return rootGroupSnap.docs.first.data()['tournamentId'] as String?;
+
+      var rootIdSnap = await firestore.collection('matches').doc(groupName).get();
+      if (rootIdSnap.exists) return rootIdSnap.data()?['tournamentId'] as String?;
+    } catch (e) {
+      debugPrint('🚨 [Root Matches Query Error] $e');
     }
 
-    if (snapshot.docs.isNotEmpty) {
-      return snapshot.docs.first.data()['tournamentId'] as String?;
+    final dojoId = ref.read(currentDojoIdProvider);
+    if (dojoId.isNotEmpty) {
+      // 1. groupName と一致する試合を探す
+      var snapshot = await firestore
+          .collection('organizations').doc(dojoId).collection('matches')
+          .where('groupName', isEqualTo: groupName)
+          .limit(1)
+          .get();
+          
+      // 2. もし見つからなければ、groupNameの代わりに試合ID(match.id)が渡されたと見なして直接検索
+      if (snapshot.docs.isEmpty) {
+        final docSnapshot = await firestore.collection('organizations').doc(dojoId).collection('matches').doc(groupName).get();
+        if (docSnapshot.exists) return docSnapshot.data()?['tournamentId'] as String?;
+      }
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.data()['tournamentId'] as String?;
+      }
     }
     
     // それでも取得できない場合はローカルの有効な試合データから抽出
@@ -108,10 +122,13 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
 
     String? tournamentId;
 
+    // ★ URLから直接 tournamentId を取得（あれば最優先）
+    final urlTournamentId = GoRouterState.of(context).uri.queryParameters['tournamentId'];
+
     // 最優先で現在メモリに乗っている試合データから対象の大会IDを特定する
     final allMatches = ref.watch(matchListProvider);
     final targetMatch = allMatches.where((m) => m.groupName == decodedGroupName || m.id == decodedGroupName).firstOrNull;
-    tournamentId = targetMatch?.tournamentId;
+    tournamentId = urlTournamentId ?? targetMatch?.tournamentId;
 
     if (tournamentId == null && kIsWeb) {
       final asyncTourId = ref.watch(_webTournamentIdSearchProvider(decodedGroupName));

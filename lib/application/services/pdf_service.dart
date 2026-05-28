@@ -240,7 +240,15 @@ class PdfService {
       return;
     }
     final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue, outputTime: outputTime);
-    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdfBytes, name: '公式記録_$categoryName.pdf');
+    
+    if (kIsWeb) {
+      // Web/PWAの場合はポップアップブロックを回避し、共有ダイアログ経由でPDFを渡す（メニューから「プリント」も可能）
+      final pdfFile = XFile.fromData(pdfBytes, mimeType: 'application/pdf', name: '公式記録_$categoryName.pdf');
+      await SharePlus.instance.share(ShareParams(files: [pdfFile], text: '【$categoryName】の公式記録(PDF)です。'));
+    } else {
+      // ネイティブアプリ（iOS/Android実機）の場合は直接印刷プレビューを開く
+      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdfBytes, name: '公式記録_$categoryName.pdf');
+    }
   }
 
   static Future<void> shareOfficialRecordAsImage(

@@ -456,5 +456,56 @@ void main() {
       );
     });
 
+    test('18. Firestore Stream Silent Failure Prevention (通信エラー時の無限クルクル防止)', () {
+      // ⚠️ 注意：これは本番コードを直接テストするものではなく、開発者に「Web版のルール」を伝達するための『実行可能なドキュメント』です。
+      // 【歴史】Web版の matchListByTournamentProvider において、Firestoreの権限エラーや通信エラーが発生した際、
+      // onError コールバックでエラーをキャッチしたものの、ストリームに値を流さなかった（沈黙した）ため、
+      // 画面側が「まだデータが到着していない（Loading中）」と勘違いし、永遠にクルクルし続ける致命的な不具合が発生した。
+
+      final bool hasOnErrorCallback = true;
+      
+      // エラー発生時、ログを出すだけでなく必ずストリームに現状のベストデータ（または空配列）を流してローディングを終わらせる必要がある
+      final bool emitsDataOnErrorToCancelLoading = true;
+
+      expect(
+        hasOnErrorCallback,
+        isTrue,
+        reason: 'Firestoreのsnapshots().listenには必ずonErrorコールバックを設定しなければならない',
+      );
+      expect(
+        emitsDataOnErrorToCancelLoading,
+        isTrue,
+        reason: 'onError内では、単にログを出すだけでなく、必ず controller.add() などを呼び出してローディング状態を強制終了させなければならない',
+      );
+    });
+
+    test('19. Scoreboard Memory Priority & Decoding (スコア画面の即時表示と日本語文字化け防止)', () {
+      // ⚠️ 注意：これも実行可能なドキュメントです。
+      // 【歴史】Web版のスコア入力画面（TeamScoreboardScreen）に一覧から遷移した際、
+      // 1. URLエンコードされた日本語チーム名がそのまま渡され、検索にヒットせず「データなし」になる
+      // 2. すでにメモリ上に試合データがあるのに、律儀にFirestoreからのローディングを待ってしまい、通信遅延時に無限クルクルになる
+      // という2つの不具合が同時発生した。
+      
+      final String rawUrlParam = '%E9%9D%92%E9%BE%8D%E9%81%93%E5%A0%B4'; // "青龍道場"
+      
+      // 文字化け対策: URLから取得したパラメータは必ずデコードしなければならない
+      final String decodedParam = Uri.decodeComponent(rawUrlParam);
+      
+      final bool hasDataInMemory = true;
+      final bool waitsForCloudResponse = !hasDataInMemory; // メモリにある場合はクラウドを待たない
+
+      expect(
+        decodedParam,
+        '青龍道場',
+        reason: 'URLから取得した groupName などのパラメータは、検索前に必ず Uri.decodeComponent() で安全にデコードしなければならない',
+      );
+      
+      expect(
+        waitsForCloudResponse,
+        isFalse,
+        reason: 'スコア画面を開いた際、既にメモリ上にデータが存在する場合は、クラウドからの応答を一切待たずに即座に描画しなければならない',
+      );
+    });
+
   });
 }

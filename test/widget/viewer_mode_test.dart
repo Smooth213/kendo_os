@@ -589,6 +589,27 @@ void main() {
       expect(find.textContaining('朱雀会', skipOffstage: false), findsWidgets);
     });
 
+    testWidgets('4-4. 【リーグ個人戦表記】 星取表のヘッダーがチーム名ではなく選手名で描画されること', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      // モックテスト環境の仕様に合わせて「全カテゴリ」タブをタップ
+      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+
+      // 個人戦リーグの星取表（クロス表）に、チーム名ではなく「山田」「佐藤」といった個人名が描画されていることを検証
+      expect(find.text('山田', skipOffstage: false), findsWidgets);
+      expect(find.text('佐藤', skipOffstage: false), findsWidgets);
+    });
+
     testWidgets('5. ViewerMatchScreen fallback renders UI when projection is loading', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;

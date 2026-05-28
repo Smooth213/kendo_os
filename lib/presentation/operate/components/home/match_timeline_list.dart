@@ -246,12 +246,19 @@ class MatchTimelineList extends ConsumerWidget {
             final matchesByTeam = <String, List<MatchModel>>{};
             
             final groupToOwnTeams = <String, Set<String>>{};
+            final groupToRepresentativeTeam = <String, String>{};
+            
             for (var m in catMatches) {
               if (m.groupName != null && m.groupName!.isNotEmpty) {
                 String rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : m.redName;
                 String wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : m.whiteName;
                 if (ownTeams.contains(rTeam)) groupToOwnTeams.putIfAbsent(m.groupName!, () => {}).add(rTeam);
                 if (ownTeams.contains(wTeam)) groupToOwnTeams.putIfAbsent(m.groupName!, () => {}).add(wTeam);
+                
+                // ★ 追加: グループの代表チームを決定し、同じリーグが引き裂かれるのを防ぐ
+                if (!groupToRepresentativeTeam.containsKey(m.groupName!)) {
+                   groupToRepresentativeTeam[m.groupName!] = rTeam.isNotEmpty && !rTeam.contains('代表') ? rTeam : (wTeam.isNotEmpty && !wTeam.contains('代表') ? wTeam : '設定なし');
+                }
               }
             }
 
@@ -262,9 +269,15 @@ class MatchTimelineList extends ConsumerWidget {
               bool isRedOwn = ownTeams.contains(rTeam);
               bool isWhiteOwn = ownTeams.contains(wTeam);
 
-              if (m.groupName != null && m.groupName!.isNotEmpty && groupToOwnTeams.containsKey(m.groupName!)) {
-                for (String team in groupToOwnTeams[m.groupName!]!) {
-                  matchesByTeam.putIfAbsent(team, () => []).add(m);
+              if (m.groupName != null && m.groupName!.isNotEmpty) {
+                if (groupToOwnTeams.containsKey(m.groupName!)) {
+                  for (String team in groupToOwnTeams[m.groupName!]!) {
+                    matchesByTeam.putIfAbsent(team, () => []).add(m);
+                  }
+                } else {
+                  // ★ 追加: 自チームが含まれないグループは、代表チームをキーにして全試合を一極集中させる
+                  final repTeam = groupToRepresentativeTeam[m.groupName!] ?? '設定なし';
+                  matchesByTeam.putIfAbsent(repTeam, () => []).add(m);
                 }
               } else {
                 if (isRedOwn) matchesByTeam.putIfAbsent(rTeam, () => []).add(m);
@@ -626,10 +639,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                                 onPressed: () {
                                                                   final target = (firstMatch.groupName != null && firstMatch.groupName!.isNotEmpty) ? firstMatch.groupName! : firstMatch.id;
                                                                   final encodedTarget = Uri.encodeComponent(target);
+                                                                  final tId = firstMatch.tournamentId ?? '';
                                                                   if (permissions.isReadOnly) {
-                                                                    context.push(firstMatch.isKachinuki ? '/viewer-kachinuki/$encodedTarget' : '/viewer-team/$encodedTarget');
+                                                                    context.push(firstMatch.isKachinuki ? '/viewer-kachinuki/$encodedTarget?tournamentId=$tId' : '/viewer-team/$encodedTarget?tournamentId=$tId');
                                                                   } else {
-                                                                    context.push(firstMatch.isKachinuki ? '/kachinuki-scoreboard/$encodedTarget' : '/team-scoreboard/$encodedTarget');
+                                                                    context.push(firstMatch.isKachinuki ? '/kachinuki-scoreboard/$encodedTarget?tournamentId=$tId' : '/team-scoreboard/$encodedTarget?tournamentId=$tId');
                                                                   }
                                                                 },
                                                                 style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: titleColor.withValues(alpha: 0.2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
@@ -880,10 +894,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 onPressed: () {
                                                                                   final target = (bouts.first.groupName != null && bouts.first.groupName!.isNotEmpty) ? bouts.first.groupName! : bouts.first.id;
                                                                                   final encodedTarget = Uri.encodeComponent(target);
+                                                                                  final tId = bouts.first.tournamentId ?? '';
                                                                                   if (permissions.isReadOnly) {
-                                                                                    context.push('/viewer-team/$encodedTarget');
+                                                                                    context.push('/viewer-team/$encodedTarget?tournamentId=$tId');
                                                                                   } else {
-                                                                                    context.push('/team-scoreboard/$encodedTarget');
+                                                                                    context.push('/team-scoreboard/$encodedTarget?tournamentId=$tId');
                                                                                   }
                                                                                 },
                                                                                 style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: mTitleColor.withValues(alpha: 0.2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
@@ -1860,10 +1875,11 @@ class MatchListTileCard extends ConsumerWidget {
                         onPressed: () {
                           final target = (match.groupName != null && match.groupName!.isNotEmpty) ? match.groupName! : match.id;
                           final encodedTarget = Uri.encodeComponent(target);
+                          final tId = match.tournamentId ?? '';
                           if (permissions.isReadOnly) {
-                            context.push('/viewer-team/$encodedTarget');
+                            context.push('/viewer-team/$encodedTarget?tournamentId=$tId');
                           } else {
-                            context.push('/team-scoreboard/$encodedTarget');
+                            context.push('/team-scoreboard/$encodedTarget?tournamentId=$tId');
                           }
                         },
                         style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), side: BorderSide(color: textC.withValues(alpha: 0.2)), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
@@ -1903,7 +1919,8 @@ class MatchListTileCard extends ConsumerWidget {
               final ptsMap = PdfViewModel.calculatePointsRaw(match);
               final redPoints = ptsMap['red'] ?? [];
               final whitePoints = ptsMap['white'] ?? [];
-              final bool hasValidPoints = redPoints.isNotEmpty || whitePoints.isNotEmpty;
+              final bool isDraw = isFinished && match.redScore == match.whiteScore;
+              final bool hasValidPoints = redPoints.isNotEmpty || whitePoints.isNotEmpty || isDraw;
 
               Widget buildMarkItem(dynamic p, Color textColor) {
                 final String mark = p.mark == '✕' ? '×' : p.mark;
@@ -1989,7 +2006,7 @@ class MatchListTileCard extends ConsumerWidget {
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                                child: Text(isFinished && match.redScore == match.whiteScore ? '×' : 'ー', style: TextStyle(fontSize: 13, color: Colors.grey.shade400, fontWeight: FontWeight.bold)),
+                                child: Text(isDraw ? '×' : 'ー', style: TextStyle(fontSize: 13, color: Colors.grey.shade400, fontWeight: FontWeight.bold)),
                               ),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -2015,10 +2032,11 @@ class MatchListTileCard extends ConsumerWidget {
           ],
         ),
         onTap: () {
+          final tId = match.tournamentId ?? '';
           if (permissions.isReadOnly) {
-            context.push('/viewer/${match.id}');
+            context.push('/viewer/${match.id}?tournamentId=$tId');
           } else {
-            context.push('/match/${match.id}');
+            context.push('/match/${match.id}?tournamentId=$tId');
           }
         },
         ),

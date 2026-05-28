@@ -27,13 +27,43 @@ class TeamScoreboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ 修正：matches が直接渡されている場合はそれを使用し、なければ groupName で監視する
+    // ★ 修正：URLエンコードされたグループ名（日本語の文字化け状態）を安全に元に戻す
+    String safeDecodeComponent(String? input) {
+      if (input == null) return '';
+      try {
+        return Uri.decodeComponent(input);
+      } catch (_) {
+        return input;
+      }
+    }
+    final decodedGroupName = safeDecodeComponent(groupName);
+
+    // ★ 修正：matches が直接渡されている場合はそれを使用し、なければ decodedGroupName と URLの tournamentId で監視する
     List<MatchModel> teamMatches = matches ?? [];
+    final urlTournamentId = GoRouterState.of(context).uri.queryParameters['tournamentId'];
     
-    if (matches == null && groupName != null) {
-      teamMatches = ref.watch(matchListProvider.select((list) => 
-        list.where((m) => m.groupName == groupName).toList()
-      ));
+    // ★ 常にメモリ上の最新試合リストを監視
+    final allMatches = ref.watch(matchListProvider);
+    final asyncMatches = (urlTournamentId != null && urlTournamentId.isNotEmpty)
+        ? ref.watch(matchListByTournamentProvider(urlTournamentId))
+        : null;
+
+    if (matches == null && decodedGroupName.isNotEmpty) {
+      // 1. 最優先でメモリから即座に探す（一覧画面から遷移してきた場合は必ずここで見つかるため、クルクルしない）
+      teamMatches = allMatches.where((m) => m.groupName == decodedGroupName || m.id == decodedGroupName).toList();
+
+      // 2. メモリに見つからない場合（F5更新などで空になった場合）はクラウドからの読み込みを待つ
+      if (teamMatches.isEmpty && asyncMatches != null) {
+        if (asyncMatches.isLoading && (asyncMatches.valueOrNull == null || asyncMatches.valueOrNull!.isEmpty)) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Scaffold(
+            backgroundColor: isDark ? Colors.black : Colors.white,
+            appBar: AppBar(title: const Text('スコアボード', style: TextStyle(fontSize: 16))),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        teamMatches = (asyncMatches.value ?? []).where((m) => m.groupName == decodedGroupName || m.id == decodedGroupName).toList();
+      }
     }
     
     if (teamMatches.isEmpty) return const Scaffold(body: Center(child: Text('データがありません')));

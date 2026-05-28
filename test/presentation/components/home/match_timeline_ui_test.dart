@@ -264,5 +264,143 @@ void main() {
       expect(find.text('1', skipOffstage: false), findsWidgets);   // 白勝者数（中堅）
       expect(find.text('(2)', skipOffstage: false), findsWidgets); // 白総本数（0 + 0 + 1 + 0 + 1 = 2本）
     });
+
+    testWidgets('6. 【引き分け表示】 0対0で試合終了した引き分けのとき、中央に「×」が表示されること', (WidgetTester tester) async {
+      final mockMatch = makeMockMatch(
+        id: 'match_006',
+        redName: '亀山クラブ : 道上',
+        whiteName: '広島道場 : 皿田',
+        status: 'finished',
+        redScore: 0,
+        whiteScore: 0,
+        events: [],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            matchListByTournamentProvider.overrideWith((ref, id) => Stream.value([mockMatch])),
+            isarProvider.overrideWithValue(null),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value(const <String>[])),
+            permissionProvider.overrideWith((ref) => const AppPermissions(
+              isReadOnly: false,
+              canManageTournament: true,
+              canCreateMatch: true,
+              canChangeSettings: true,
+              canDeleteData: true,
+            )),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('×'), findsOneWidget);
+      expect(find.text('ー'), findsNothing);
+    });
+
+    testWidgets('7. 【引き分け表示】 1対1で試合終了した引き分けのとき、両者のポイントと中央に「×」が表示されること', (WidgetTester tester) async {
+      final eventRed = ScoreEvent(
+        id: 'ev_r',
+        side: Side.red,
+        strikeType: StrikeType.men,
+        isIppon: true,
+        isCanceled: false,
+        timestamp: DateTime(2026, 5, 22),
+      );
+      final eventWhite = ScoreEvent(
+        id: 'ev_w',
+        side: Side.white,
+        strikeType: StrikeType.kote,
+        isIppon: true,
+        isCanceled: false,
+        timestamp: DateTime(2026, 5, 22),
+      );
+      final mockMatch = makeMockMatch(
+        id: 'match_007',
+        redName: '亀山クラブ : 道上',
+        whiteName: '広島道場 : 皿田',
+        status: 'finished',
+        redScore: 1,
+        whiteScore: 1,
+        events: [eventRed, eventWhite],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            matchListByTournamentProvider.overrideWith((ref, id) => Stream.value([mockMatch])),
+            isarProvider.overrideWithValue(null),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value(const <String>[])),
+            permissionProvider.overrideWith((ref) => const AppPermissions(
+              isReadOnly: false,
+              canManageTournament: true,
+              canCreateMatch: true,
+              canChangeSettings: true,
+              canDeleteData: true,
+            )),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('メ'), findsOneWidget);
+      expect(find.text('コ'), findsOneWidget);
+      expect(find.text('×'), findsOneWidget);
+      expect(find.text('ー'), findsNothing);
+    });
+
+    testWidgets('8. 【勝敗表示】 勝敗がついた試合のとき、得点と中央に「ー」が表示されること', (WidgetTester tester) async {
+      final eventRed = ScoreEvent(
+        id: 'ev_r',
+        side: Side.red,
+        strikeType: StrikeType.men,
+        isIppon: true,
+        isCanceled: false,
+        timestamp: DateTime(2026, 5, 22),
+      );
+      final mockMatch = makeMockMatch(
+        id: 'match_008',
+        redName: '亀山クラブ : 道上',
+        whiteName: '広島道場 : 皿田',
+        status: 'finished',
+        redScore: 1,
+        whiteScore: 0,
+        events: [eventRed],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            matchListByTournamentProvider.overrideWith((ref, id) => Stream.value([mockMatch])),
+            isarProvider.overrideWithValue(null),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value(const <String>[])),
+            permissionProvider.overrideWith((ref) => const AppPermissions(
+              isReadOnly: false,
+              canManageTournament: true,
+              canCreateMatch: true,
+              canChangeSettings: true,
+              canDeleteData: true,
+            )),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('メ'), findsOneWidget);
+      expect(find.text('ー'), findsOneWidget);
+      expect(find.text('×'), findsNothing);
+    });
   });
 }

@@ -777,10 +777,17 @@ class OfficialRecordScreen extends ConsumerWidget {
     final allFinished = matches.every((m) => m.status == 'approved' || m.status == 'finished');
     final hasMatchPoints = nonNullRule.isLeague;
 
+    String getEntityName(String fullName) {
+      if (isIndiv) {
+        return fullName.contains(':') ? fullName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : fullName.trim();
+      }
+      return fullName.contains(':') ? fullName.split(':').first.trim() : fullName.trim();
+    }
+
     final teams = <String>{};
     for (var m in normalMatches) {
-      teams.add(m.redName.split(':').first.trim());
-      teams.add(m.whiteName.split(':').first.trim());
+      teams.add(getEntityName(m.redName));
+      teams.add(getEntityName(m.whiteName));
     }
     final teamList = teams.toList()..sort();
     
@@ -833,8 +840,8 @@ class OfficialRecordScreen extends ConsumerWidget {
                       return Container(height: 65, color: blankColor, child: CustomPaint(painter: DiagonalLinePainter(color: borderColor)));
                     }
                     final bouts = normalMatches.where((m) {
-                      final r = m.redName.split(':').first.trim();
-                      final w = m.whiteName.split(':').first.trim();
+                      final r = getEntityName(m.redName);
+                      final w = getEntityName(m.whiteName);
                       return (r == rowTeam && w == colTeam) || (r == colTeam && w == rowTeam);
                     }).toList();
                     if (bouts.isEmpty) return const SizedBox(height: 65);
@@ -842,7 +849,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                     int rWins = 0, cWins = 0, rPoints = 0, cPoints = 0, rWinners = 0, cWinners = 0;
                     List<OfficialPointDisplay> techs = [];
                     for (var m in bouts) {
-                      final isRowRed = m.redName.split(':').first.trim() == rowTeam;
+                      final isRowRed = getEntityName(m.redName) == rowTeam;
                       final rs = (m.redScore as num).toInt(); final ws = (m.whiteScore as num).toInt();
                       if (rs > ws) { isRowRed ? rWins++ : cWins++; isRowRed ? rWinners++ : cWinners++; }
                       else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }

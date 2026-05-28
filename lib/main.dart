@@ -57,6 +57,7 @@ import 'package:kendo_os/presentation/auth/screens/role_select_screen.dart';
 import 'package:kendo_os/presentation/auth/screens/pin_auth_screen.dart';
 
 import 'package:kendo_os/infrastructure/repository/sync_engine.dart';
+import 'package:kendo_os/presentation/shared/providers/dojo_room_sync_provider.dart';
 
 // =========================================================================
 // 🛡️ Phase 6 - STEP 6-1 & 6-2 要件：環境分離 ＆ Feature Flag 基盤
@@ -533,6 +534,10 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp> with WidgetsBindingObse
   Widget build(BuildContext context) {
     // ★ Phase 4: 同期エンジンを監視（起動）させ、バックグラウンドで常駐させる
     ref.watch(syncEngineProvider);
+
+    // ★ 追加: 同一の道場IDでログインした際に、同期先を正しいFirestoreの道場パスへ
+    // 切り替えるための道場ルーム同期プロバイダを常駐監視させます。（シミュレータとWeb間の同期不一致を完全解決）
+    ref.watch(dojoRoomSyncProvider);
 
     // ★ ここが「中央司令部」
     // ルーターの遷移状態を監視し、パスに基づいてモードを自動決定する
