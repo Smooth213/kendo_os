@@ -11,6 +11,7 @@ import 'viewer_kachinuki_scoreboard_screen.dart';
 import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
 import '../../shared/widgets/liquid_background.dart';
 import '../../shared/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/core/utils/name_formatter.dart';
 
 // ※ TeamPointDisplay クラスは削除されました（Projectionに統合されたため）
 
@@ -245,11 +246,11 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                           ...teamProj.matches.map((m) => _buildMatchRow(
                             m, context, isDark,
                             (teamProj.matches as Iterable<dynamic>)
-                              .map<String>((x) => _parseName(x.redName)['last'] ?? '')
+                            .map<String>((x) => NameFormatter.parse(x.redName)['last'] ?? '')
                               .where((String s) => s.isNotEmpty)
                               .toList(),
                             (teamProj.matches as Iterable<dynamic>)
-                              .map<String>((x) => _parseName(x.whiteName)['last'] ?? '')
+                            .map<String>((x) => NameFormatter.parse(x.whiteName)['last'] ?? '')
                               .where((String s) => s.isNotEmpty)
                               .toList(),
                           )),
@@ -283,20 +284,13 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  Map<String, String> _parseName(String raw) {
-    if (raw.contains('欠員')) return {'last': '', 'first': ''};
-    String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
-    var parts = clean.split(RegExp(r'\s+'));
-    return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
-  }
-
   Widget _buildNameCell(String rawName, bool isDark, List<String> teamLastNames) {
     final subTextColor = isDark ? const Color(0xFF8E8E93) : Colors.grey.shade600;
     final textColor = isDark ? Colors.white : Colors.black87;
 
     if (rawName.contains('欠員')) return _cell('(欠員)', fs: 17, color: subTextColor, fontWeight: FontWeight.bold);
 
-    final parsed = _parseName(rawName);
+    final parsed = NameFormatter.parse(rawName);
     final count = teamLastNames.where((n) => n == parsed['last']).length;
     final showInitial = count > 1 && parsed['first']!.isNotEmpty;
 

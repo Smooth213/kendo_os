@@ -12,6 +12,7 @@ import 'package:kendo_os/presentation/operate/screens/kachinuki_scoreboard_scree
 import '../../shared/widgets/liquid_background.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/core/time/time_source.dart';
+import 'package:kendo_os/core/utils/name_formatter.dart';
 
 class TeamPointDisplay {
   final String mark;
@@ -199,8 +200,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                           _buildHeaderRow(redTeam, whiteTeam, isDark),
                           ...teamMatches.map((m) => _buildMatchRow(
                             m, context, isDark, 
-                            teamMatches.map((x) => _parseName(x.redName)['last']!).where((s) => s.isNotEmpty).toList(),
-                            teamMatches.map((x) => _parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).toList()
+                            teamMatches.map((x) => NameFormatter.parse(x.redName)['last']!).where((s) => s.isNotEmpty).toList(),
+                            teamMatches.map((x) => NameFormatter.parse(x.whiteName)['last']!).where((s) => s.isNotEmpty).toList()
                           )),
                           // ★ Phase 7: 計算結果オブジェクトをそのまま渡す
                           _buildTotalRow(result, isDark),
@@ -323,14 +324,6 @@ class TeamScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  // ★ 追加：名前を名字と名前に分割する魔法のヘルパー
-  Map<String, String> _parseName(String raw) {
-    if (raw.contains('欠員')) return {'last': '', 'first': ''};
-    String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
-    var parts = clean.split(RegExp(r'\s+'));
-    return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
-  }
-
   // ★ 追加：同姓がいる場合に名前の1文字目を右下に添える専用セル
   Widget _buildNameCell(String rawName, bool isDark, List<String> teamLastNames) {
     final subTextColor = isDark ? const Color(0xFF8E8E93) : Colors.grey.shade600;
@@ -338,7 +331,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
 
     if (rawName.contains('欠員')) return _cell('(欠員)', fs: 17, color: subTextColor, fontWeight: FontWeight.bold);
 
-    final parsed = _parseName(rawName);
+    final parsed = NameFormatter.parse(rawName);
     final count = teamLastNames.where((n) => n == parsed['last']).length;
     final showInitial = count > 1 && parsed['first']!.isNotEmpty;
 

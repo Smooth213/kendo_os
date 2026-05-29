@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/services/pdf_service.dart';
-import '../../operate/screens/home_screen.dart';
-import 'package:kendo_os/domain/services/standings_calculator.dart';
 import 'package:kendo_os/domain/services/team_match_calculator.dart';
 import '../../shared/widgets/liquid_background.dart';
-import '../painters/league_table_painters.dart';
 import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
-
-class OfficialPointDisplay {
-  final String mark;
-  final bool isFirstMatchPoint;
-  OfficialPointDisplay(this.mark, this.isFirstMatchPoint);
-}
+import 'package:kendo_os/presentation/shared/widgets/match_tables/score_table_card.dart';
+import 'package:kendo_os/presentation/shared/widgets/match_tables/league_grid_card.dart';
+import 'package:kendo_os/presentation/shared/widgets/match_tables/individual_list_card.dart';
+import 'package:kendo_os/presentation/shared/widgets/match_tables/point_mark_badge.dart';
+import 'package:kendo_os/presentation/shared/utils/match_calculator_helper.dart';
 
 class ViewerOfficialRecordScreen extends ConsumerWidget {
   final String tournamentId; 
@@ -31,10 +26,10 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
 
-    final tournamentAsync = ref.watch(tournamentProvider(tournamentId));
-    final tName = tournamentAsync.value?.name;
-    final tDate = tournamentAsync.value != null ? DateFormat('yyyy年MM月dd日').format(tournamentAsync.value!.date) : null;
-    final tVenue = tournamentAsync.value?.venue;
+    // ★ 運営側プロバイダ（tournamentProvider）への依存を完全に遮断し、安全なフォールバック値を適用
+    final String? tName = null;
+    final String? tDate = null;
+    final String? tVenue = null;
 
     final asyncProj = ref.watch(viewerTournamentProjectionProvider(tournamentId));
     
@@ -271,7 +266,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                         ),
                         );
                       } else if (matches.isNotEmpty && teamProj.isLeague) {
-                        final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+                        final ownTeams = <String>[]; // Viewerモードでは自チームハイライト不要
                         final String leagueTitle = _generateDescriptiveLeagueTitle(matches, ownTeams);
                         final textColor = isDark ? Colors.white : Colors.indigo.shade900;
 
@@ -314,7 +309,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               child: Text('【リーグ戦】 $leagueTitle', style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 16)),
                             ),
                             
-                            _buildLeagueGridTable(context, groupName, matches, cardColor: cardColor, isDark: isDark, ref: ref, stats: teamProj.leagueStandings, isLeagueRule: teamProj.isLeague),
+                            _buildLeagueGridTableViewer(context, groupName, matches, cardColor: cardColor, isDark: isDark, stats: teamProj.leagueStandings, isLeagueRule: teamProj.isLeague),
                             
                             const SizedBox(height: 32),
                             const Padding(
@@ -326,14 +321,14 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                             if (isIndiv)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 24),
-                                child: _buildIndividualMatchesList('対戦スコア詳細', normalMatches, cardColor: cardColor, isDark: isDark, ref: ref, applySort: false),
+                                child: _buildIndividualMatchesListViewer('対戦スコア詳細', normalMatches, cardColor: cardColor, isDark: isDark, applySort: false),
                               )
                             else
                               ...matchupOrder.map((matchupName) {
                                 final bouts = boutsByMatchup[matchupName]!;
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 24),
-                                  child: _buildScoreTable(matchupName, bouts, cardColor: cardColor, isDark: isDark),
+                                  child: _buildScoreTableViewer(matchupName, bouts, cardColor: cardColor, isDark: isDark),
                                 );
                               }),
 
@@ -346,14 +341,14 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               if (isIndiv)
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 16),
-                                  child: _buildIndividualMatchesList('順位決定戦', tieBouts, cardColor: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.shade50, isDark: isDark, ref: ref, applySort: false),
+                                  child: _buildIndividualMatchesListViewer('順位決定戦', tieBouts, cardColor: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.shade50, isDark: isDark, applySort: false),
                                 )
                               else
                                 ...tieMatchupOrder.map((matchupName) {
                                   final bouts = tieBoutsByMatchup[matchupName]!;
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 16),
-                                    child: _buildScoreTable(matchupName, bouts, cardColor: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.shade50, isDark: isDark),
+                                    child: _buildScoreTableViewer(matchupName, bouts, cardColor: isDark ? Colors.orange.withValues(alpha: 0.1) : Colors.orange.shade50, isDark: isDark),
                                   );
                                 }),
                             ],
@@ -364,10 +359,10 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                         // ★ 修正: 表示前のタイミングで、本部によるドラッグ並び替え順を強制固定
                         matches.sort((a, b) => a.order.compareTo(b.order));
                         // 👇 追加: 個人戦の場合は、専用の縦並びリスト形式で描画する
-                        return _buildIndividualMatchesList(groupName, matches, cardColor: cardColor, isDark: isDark, ref: ref, applySort: true);
+                        return _buildIndividualMatchesListViewer(groupName, matches, cardColor: cardColor, isDark: isDark, applySort: true);
                       } else {
                         // 通常団体戦の描画
-                        return _buildScoreTable(groupName, matches, result: teamProj.result, cardColor: cardColor, isDark: isDark);
+                        return _buildScoreTableViewer(groupName, matches, result: teamProj.result, cardColor: cardColor, isDark: isDark);
                       }
                     },
                   ),
@@ -383,16 +378,12 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildScoreTable(String groupName, List<MatchListProjection> matches, {TeamMatchResult? result, Color? cardColor, bool isDark = false}) {
+  Widget _buildScoreTableViewer(String groupName, List<MatchListProjection> matches, {TeamMatchResult? result, Color? cardColor, bool isDark = false}) {
     final note = matches.first.note;
     final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
 
     final redTeam = matches.first.redName.contains(':') ? matches.first.redName.split(':').first.trim() : matches.first.redName;
     final whiteTeam = matches.first.whiteName.contains(':') ? matches.first.whiteName.split(':').first.trim() : matches.first.whiteName;
-
-    // 「赤」「白」ではなく実際のチーム名を表示するように変更
-    final String sideLabelRed = redTeam;
-    final String sideLabelWhite = whiteTeam;
 
     // 試合形式に合わせてヘッダーテキストを生成
     String matchTypeStr = '団体戦';
@@ -408,11 +399,6 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     if (cleanNote.isNotEmpty && !cleanNote.contains(matchTypeStr)) {
       headerTitle += ' ($cleanNote)';
     }
-
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
-    final headerBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
-    final headerTextColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
-    final daihyoBgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50;
 
     String teamWinner = 'draw';
     int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
@@ -452,245 +438,51 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
     final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
 
+    final info = ScoreTableGroupInfo(
+      groupName: groupName,
+      headerTitle: headerTitle,
+      sideLabelRed: redTeam,
+      sideLabelWhite: whiteTeam,
+      isSummary: isSummary,
+      teamWinner: teamWinner,
+      redWins: rWins,
+      whiteWins: wWins,
+      redTotalPoints: rPts,
+      whiteTotalPoints: wPts,
+      allFinished: allFinished,
+    );
+
+    final matchItems = matches.map((m) {
+      final isFinished = m.status == 'approved' || m.status == 'finished';
+      final ptsMap = MatchCalculatorHelper.extractPointsFromProjection(m);
+      return ScoreTableMatchItem(
+        id: m.id,
+        matchType: m.matchType,
+        redName: m.redName,
+        whiteName: m.whiteName,
+        redScore: m.redScore,
+        whiteScore: m.whiteScore,
+        isFinished: isFinished,
+        isSummary: m.note.contains('[SUMMARY]'),
+        redPoints: ptsMap['red'] ?? [],
+        whitePoints: ptsMap['white'] ?? [],
+        onTap: () {},
+      );
+    }).toList();
+
     return InkWell(
       key: Key('viewer_match_card_$groupName'),
       onTap: () {}, // Widget Test のタップイベント吸収用ダミー
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4), 
-        elevation: 0,
-        color: cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12), color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100, width: double.infinity,
-                // 先ほど生成した headerTitle を使用する
-                child: Text(headerTitle, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800)),
-              ),
-              Table(
-                border: TableBorder.all(color: borderColor, width: 1),
-                columnWidths: {
-                  0: const FlexColumnWidth(1.2),
-                  for (int i = 1; i <= matches.length; i++) i: const FlexColumnWidth(1.0),
-                  matches.length + 1: const FlexColumnWidth(0.8),
-                },
-                children: [
-                  TableRow(
-                    decoration: BoxDecoration(color: headerBgColor),
-                    children: [
-                      const SizedBox.shrink(),
-                      ...matches.map((m) => Container(
-                        color: m.matchType == '代表戦' ? daihyoBgColor : Colors.transparent,
-                        child: Center(child: Padding(padding: const EdgeInsets.all(8), child: Text(m.matchType, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: m.matchType == '代表戦' ? (isDark ? Colors.red.shade400 : Colors.red.shade900) : (isDark ? Colors.grey.shade300 : Colors.grey.shade800))))),
-                      )),
-                      Center(child: Padding(padding: const EdgeInsets.all(8), child: Text('本/勝', style: TextStyle(fontSize: 10, color: headerTextColor)))),
-                    ],
-                  ),
-                  TableRow(children: [
-                    _teamCell(sideLabelRed, isDark ? Colors.red.shade400 : Colors.red.shade700),
-                    ...matches.map((m) => _nameCell(
-                      m.redName, isDark, 
-                      matches.map((x) => _parseName(x.redName)['last']!).where((s) => s.isNotEmpty).cast<String>().toList(),
-                      isDaihyo: m.matchType == '代表戦'
-                    )),
-                    _summaryCell(rWins, rPts, isDark),
-                  ]),
-                  TableRow(children: [
-                    const SizedBox.shrink(),
-                    ...matches.map((m) => _scoreCell(m, isDark, isSummary)),
-                    _teamResultCell(teamWinner, isDark, allFinished),
-                  ]),
-                  TableRow(children: [
-                    _teamCell(sideLabelWhite, isDark ? Colors.blueGrey.shade300 : Colors.blueGrey.shade700),
-                    ...matches.map((m) => _nameCell(
-                      m.whiteName, isDark, 
-                      matches.map((x) => _parseName(x.whiteName)['last']!).where((s) => s.isNotEmpty).cast<String>().toList(),
-                      isDaihyo: m.matchType == '代表戦'
-                    )),
-                    _summaryCell(wWins, wPts, isDark),
-                  ]),
-                ],
-              ),
-            ],
-          ),
-          if (isSummary)
-            Positioned.fill(
-              top: 40,
-              child: Container(
-                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.6),
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.black87 : Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
-                    ),
-                    child: Text('※簡易入力された結果です\n（詳細スコアはありません）', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade700)),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    ),
-    );
-  }
-
-  Widget _teamResultCell(String winner, bool isDark, bool allFinished) {
-    final textColor = isDark ? Colors.white : Colors.black;
-    final dividerColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
-
-    return Container(
-      height: 70, 
-      alignment: Alignment.center,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (winner != 'draw' || !allFinished)
-            Divider(color: dividerColor, thickness: 1, height: 0),
-          
-          if (allFinished) ...[
-            if (winner == 'draw')
-              Center(child: _buildVerticalName('引き分け', '', isDark))
-            else
-              Column(
-                children: [
-                  Expanded(child: Center(child: Text(winner == 'red' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'red' ? Colors.red.shade600 : textColor)))),
-                  Expanded(child: Center(child: Text(winner == 'white' ? '勝' : '負', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: winner == 'white' ? Colors.red.shade600 : textColor)))),
-                ],
-              ),
-          ]
-        ],
+      child: ScoreTableCard(
+        info: info,
+        matches: matchItems,
+        cardColor: cardColor,
+        isDark: isDark,
       ),
     );
   }
 
-  // チーム名が長い場合でも中央揃えで綺麗に折り返されるように調整
-  Widget _teamCell(String name, Color color) => Center(child: Padding(padding: const EdgeInsets.all(4), child: Text(name, textAlign: TextAlign.center, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 11))));
-
-  Widget _nameCell(String rawName, bool isDark, List<String> teamLastNames, {bool isDaihyo = false}) {
-    if (rawName.contains('欠員')) {
-      return Container(color: isDaihyo ? (isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50) : Colors.transparent);
-    }
-
-    final parsed = _parseName(rawName);
-    final showInitial = teamLastNames.where((n) => n == parsed['last']).length > 1 && parsed['first']!.isNotEmpty;
-
-    return Container(
-      color: isDaihyo ? (isDark ? Colors.red.shade900.withValues(alpha: 0.15) : Colors.red.shade50) : Colors.transparent, 
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4), 
-          child: _buildVerticalName(parsed['last']!, showInitial ? parsed['first']!.substring(0, 1) : '', isDark),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVerticalName(String text, String initial, bool isDark) {
-    final style = TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800);
-    
-    Widget nameCol = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: text.split('').map((char) {
-        if (char == 'ー' || char == '-') return RotatedBox(quarterTurns: 1, child: Text(char, style: style));
-        if (char == '(' || char == ')' || char == '（' || char == '）') return RotatedBox(quarterTurns: 1, child: Text(char, style: style));
-        return Text(char, style: style.copyWith(height: 1.1));
-      }).toList(),
-    );
-
-    if (initial.isEmpty) return nameCol;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        nameCol,
-        Padding(
-          padding: const EdgeInsets.only(left: 1, bottom: 0),
-          child: Text(initial, style: style.copyWith(fontSize: 8, color: isDark ? Colors.grey.shade600 : Colors.grey.shade500)),
-        )
-      ],
-    );
-  }
-
-  Widget _scoreCell(MatchListProjection m, bool isDark, bool isSummary) {
-    if (isSummary) return const SizedBox(height: 70);
-    final isDone = m.status == 'finished' || m.status == 'approved';
-    final rScore = m.redScore;
-    final wScore = m.whiteScore;
-
-    List<OfficialPointDisplay> redPts = [];
-    List<OfficialPointDisplay> whitePts = [];
-    bool rIsFirst = (m.firstPointSide == 'red');
-    bool wIsFirst = (m.firstPointSide == 'white');
-
-    for (int i = 0; i < m.redPointMarks.length; i++) {
-      redPts.add(OfficialPointDisplay(m.redPointMarks[i], i == 0 && rIsFirst));
-    }
-    for (int i = 0; i < m.whitePointMarks.length; i++) {
-      whitePts.add(OfficialPointDisplay(m.whitePointMarks[i], i == 0 && wIsFirst));
-    }
-
-    return Container(
-      height: 70, alignment: Alignment.center,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Divider(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, thickness: 1, height: 0),
-          if (isDone && rScore == wScore)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-              child: Text('✕', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: isDark ? Colors.grey.shade500 : Colors.grey.shade400)),
-            ),
-          Column(
-            children: [
-              Expanded(child: _buildPointBox(redPts, isDone && rScore > wScore, true, isDark)),
-              Expanded(child: _buildPointBox(whitePts, isDone && wScore > rScore, false, isDark)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPointBox(List<OfficialPointDisplay> pts, bool isWinner, bool isRed, bool isDark) {
-    final color = isRed ? Colors.red.shade700 : Colors.blue.shade700;
-    return SizedBox(
-      width: 36, height: 36,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (isWinner) Container(width: 32, height: 32, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5))),
-          if (pts.isNotEmpty) Positioned(top: 4, left: 6, child: _buildSingleMark(pts[0], color)),
-          if (pts.length > 1) Positioned(bottom: 4, right: 6, child: _buildSingleMark(pts[1], color)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSingleMark(OfficialPointDisplay p, Color color) {
-    if (p.isFirstMatchPoint && p.mark != '反') {
-      return Container(
-        width: 14, height: 14, alignment: Alignment.center,
-        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
-        child: Text(p.mark, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
-      );
-    }
-    return Text(p.mark, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
-  }
-
-  Widget _summaryCell(int wins, int pts, bool isDark) {
-    return Center(child: Text('$pts\n--\n$wins', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade800), textAlign: TextAlign.center));
-  }
-
-  Widget _buildLeagueGridTable(BuildContext context, String groupName, List<MatchListProjection> matches, {Color? cardColor, required bool isDark, required WidgetRef ref, required List<LeagueTeamStat> stats, required bool isLeagueRule}) {
+  Widget _buildLeagueGridTableViewer(BuildContext context, String groupName, List<MatchListProjection> matches, {Color? cardColor, required bool isDark, required List<dynamic> stats, required bool isLeagueRule}) {
     final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
     if (normalMatches.isEmpty) return const SizedBox();
 
@@ -705,267 +497,155 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
       return fullName.contains(':') ? fullName.split(':').first.trim() : fullName.trim();
     }
 
-    final teams = <String>{};
+    final teamSet = <String>{};
     for (var m in normalMatches) {
-      teams.add(getEntityName(m.redName));
-      teams.add(getEntityName(m.whiteName));
+      teamSet.add(getEntityName(m.redName));
+      teamSet.add(getEntityName(m.whiteName));
     }
-    final teamList = teams.toList()..sort();
-    
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade400;
-    final headerColor = isDark ? const Color(0xFF2C2C2E) : Colors.indigo.shade50;
-    final blankColor = isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade200;
+    final teamList = teamSet.toList()..sort();
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: InkWell(
-        key: Key('viewer_match_card_$groupName'),
-        onTap: () {}, // Widget Test のタップイベント吸収用ダミー
-        child: Card(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          elevation: 0,
-          color: cardColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: borderColor)),
-          clipBehavior: Clip.antiAlias,
-          child: Table(
-            border: TableBorder.all(color: borderColor, width: 1),
-            columnWidths: {
-              0: const FixedColumnWidth(100), 
-              for (int i = 1; i <= teamList.length; i++) i: const FixedColumnWidth(65), 
-            teamList.length + 1: const FixedColumnWidth(45), 
-            teamList.length + 2: const FixedColumnWidth(45), 
-            teamList.length + 3: const FixedColumnWidth(45), 
-            if (hasMatchPoints) teamList.length + 4: const FixedColumnWidth(45), 
-            teamList.length + (hasMatchPoints ? 5 : 4): const FixedColumnWidth(45), 
-          },
-          children: [
-            TableRow(
-              decoration: BoxDecoration(color: headerColor),
-              children: [
-                const SizedBox(height: 50),
-                ...teamList.map((t) => Center(child: Padding(padding: const EdgeInsets.all(4), child: _buildVerticalName(t, '', isDark)))),
-                _buildHeaderCell('勝数', isDark), _buildHeaderCell('勝者', isDark), _buildHeaderCell('本数', isDark),
-                if (hasMatchPoints) _buildHeaderCell('勝点', isDark),
-                _buildHeaderCell('順位', isDark),
-              ]
-            ),
-            ...teamList.map((rowTeam) {
-              final stat = stats.firstWhere((s) => s.name == rowTeam, orElse: () => LeagueTeamStat(name: rowTeam));
-              final rankStr = allFinished ? '${stats.indexWhere((s) => s.name == rowTeam) + 1}' : '-';
+    String getStatName(dynamic s) => s is Map ? s['name'] : (s?.name ?? '');
+    int getStatMatchWins(dynamic s) => s is Map ? (s['matchWins'] ?? 0) : (s?.matchWins ?? 0);
+    int getStatIndivWinners(dynamic s) => s is Map ? (s['individualWinners'] ?? 0) : (s?.individualWinners ?? 0);
+    int getStatTotalPts(dynamic s) => s is Map ? (s['totalPointsScored'] ?? 0) : (s?.totalPointsScored ?? 0);
+    double getStatCustomPts(dynamic s) => s == null ? 0.0 : (s is Map ? ((s['customPoints'] ?? 0.0) as num).toDouble() : (s.customPoints as num).toDouble());
 
-              return TableRow(
-                children: [
-                  Container(
-                    height: 65, alignment: Alignment.center, decoration: BoxDecoration(color: headerColor),
-                    child: Padding(padding: const EdgeInsets.all(4), child: Text(rowTeam, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: isDark ? Colors.white : Colors.black87), textAlign: TextAlign.center, maxLines: 2)),
-                  ),
-                  ...teamList.map((colTeam) {
-                    if (rowTeam == colTeam) {
-                      return Container(height: 65, color: blankColor, child: CustomPaint(painter: DiagonalLinePainter(color: borderColor)));
-                    }
-                    final bouts = normalMatches.where((m) {
-                      final r = getEntityName(m.redName);
-                      final w = getEntityName(m.whiteName);
-                      return (r == rowTeam && w == colTeam) || (r == colTeam && w == rowTeam);
-                    }).toList();
-                    if (bouts.isEmpty) return const SizedBox(height: 65);
-                    
-                    int rWins = 0, cWins = 0, rPoints = 0, cPoints = 0, rWinners = 0, cWinners = 0;
-                    List<String> techs = [];
-                    for (var m in bouts) {
-                      final isRowRed = getEntityName(m.redName) == rowTeam;
-                      final rs = m.redScore; final ws = m.whiteScore;
-                      if (rs > ws) { isRowRed ? rWins++ : cWins++; isRowRed ? rWinners++ : cWinners++; }
-                      else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }
-                      isRowRed ? rPoints += rs : cPoints += rs; isRowRed ? cPoints += ws : rPoints += ws;
-                      if (isIndiv) {
-                        final extracted = List<String>.from(isRowRed ? m.redPointMarks : m.whitePointMarks);
-                        
-                        final bool isSummary = m.note.contains('[SUMMARY]');
-                        if (isSummary || extracted.isEmpty) {
-                          extracted.clear();
-                          for(int k=0; k<(isRowRed ? rs : ws); k++) {
-                            extracted.add('◯');
-                          }
-                        }
-                        techs.addAll(extracted);
-                      }
-                    }
-                    
-                    String result = 'draw';
-                    Color symbolColor = isDark ? Colors.amber.shade300 : Colors.amber.shade700;
-                    if (rWins > cWins) { result = 'win'; symbolColor = isDark ? Colors.red.shade300 : Colors.red.shade700; }
-                    else if (cWins > rWins) { result = 'loss'; symbolColor = isDark ? Colors.blue.shade300 : Colors.indigo.shade700; }
-                    
-                    if (!bouts.every((m) => m.status == 'approved' || m.status == 'finished')) return const SizedBox(height: 65);
-                    
-                    final textColor = isDark ? Colors.white : Colors.black87;
+    final leagueTeams = teamList.map((rowTeam) {
+      final stat = stats.where((s) => getStatName(s) == rowTeam).firstOrNull;
+      final rankStr = allFinished ? '${stats.indexWhere((s) => getStatName(s) == rowTeam) + 1}' : '-';
+      final customPts = getStatCustomPts(stat);
+      return LeagueGridTeamInfo(
+        teamName: rowTeam,
+        matchWins: '${getStatMatchWins(stat)}',
+        individualWinners: '${getStatIndivWinners(stat)}',
+        totalPoints: '${getStatTotalPts(stat)}',
+        customPoints: stat != null ? customPts.toStringAsFixed(customPts.truncateToDouble() == customPts ? 0 : 1) : '0',
+        rank: rankStr,
+      );
+    }).toList();
 
-                    return GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        showGeneralDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          barrierLabel: '閉じる',
-                          barrierColor: Colors.black.withValues(alpha: 0.7),
-                          transitionDuration: const Duration(milliseconds: 350), 
-                          pageBuilder: (ctx, anim1, anim2) {
-                            return Center(
-                              child: Dialog(
-                                backgroundColor: Colors.transparent,
-                                elevation: 0,
-                                insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                                child: Container(
-                                  constraints: const BoxConstraints(maxWidth: 550),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
-                                  ),
-                                  padding: const EdgeInsets.all(20), 
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Flexible(
-                                        child: isIndiv 
-                                          // 🌟 修正：個人戦なら必ずリスト形式を呼び出し、ソートは不要(applySort: false)
-                                          ? _buildIndividualMatchesList('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark, ref: ref, applySort: false)
-                                          : _buildScoreTable('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      ElevatedButton(
-                                        onPressed: () => Navigator.pop(ctx),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-                                          foregroundColor: isDark ? Colors.white : Colors.black87,
-                                          shape: const StadiumBorder(),
-                                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                                          elevation: 0,
-                                        ),
-                                        child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                          transitionBuilder: (ctx, anim1, anim2, child) {
-                            return FadeTransition(
-                              opacity: anim1,
-                              child: ScaleTransition(
-                                scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
-                                child: child,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      child: Container(
-                        height: 65,
-                        alignment: Alignment.center,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CustomPaint(size: const Size(45, 45), painter: ResultShapePainter(result: result, color: symbolColor)),
-                            if (isIndiv)
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  techs.isNotEmpty ? _buildTechMark(techs[0], true, textColor) : const SizedBox(height: 12),
-                                  Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                  techs.length > 1 ? _buildTechMark(techs[1], false, textColor) : const SizedBox(height: 12),
-                                ],
-                              )
-                            else
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text('$rPoints', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, height: 1.1, color: textColor)),
-                                  Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                  Text('$rWinners', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, height: 1.1, color: textColor)),
-                                ]
-                              ),
-                          ],
-                        ),
+    final matrix = <String, Map<String, LeagueGridCellData>>{};
+    for (var rowTeam in teamList) {
+      matrix[rowTeam] = {};
+      for (var colTeam in teamList) {
+        if (rowTeam == colTeam) continue;
+        
+        final bouts = normalMatches.where((m) {
+          final r = getEntityName(m.redName);
+          final w = getEntityName(m.whiteName);
+          return (r == rowTeam && w == colTeam) || (r == colTeam && w == rowTeam);
+        }).toList();
+        
+        if (bouts.isEmpty) continue;
+
+        int rWins = 0, cWins = 0, rPoints = 0, cPoints = 0, rWinners = 0, cWinners = 0;
+        List<PointMark> techs = [];
+        for (var m in bouts) {
+          final isRowRed = getEntityName(m.redName) == rowTeam;
+          final rs = m.redScore; final ws = m.whiteScore;
+          if (rs > ws) { isRowRed ? rWins++ : cWins++; isRowRed ? rWinners++ : cWinners++; }
+          else if (ws > rs) { isRowRed ? cWins++ : rWins++; isRowRed ? cWinners++ : rWinners++; }
+          isRowRed ? rPoints += rs : cPoints += rs; isRowRed ? cPoints += ws : rPoints += ws;
+          if (isIndiv) {
+            final extractedMap = MatchCalculatorHelper.extractPointsFromProjection(m);
+            final extracted = List<PointMark>.from(isRowRed ? extractedMap['red']! : extractedMap['white']!);
+            
+            final bool isSummary = m.note.contains('[SUMMARY]');
+            if (isSummary || extracted.isEmpty) {
+              extracted.clear();
+              for(int k=0; k<(isRowRed ? rs : ws); k++) {
+                extracted.add(const PointMark(mark: '◯', isFirst: false));
+              }
+            }
+            techs.addAll(extracted);
+          }
+        }
+        
+        String result = 'draw';
+        if (rWins > cWins) { result = 'win'; }
+        else if (cWins > rWins) { result = 'loss'; }
+        
+        if (!bouts.every((m) => m.status == 'approved' || m.status == 'finished')) continue;
+
+        matrix[rowTeam]![colTeam] = LeagueGridCellData(
+          result: result,
+          isIndiv: isIndiv,
+          techMarks: techs,
+          rPoints: rPoints,
+          rWinners: rWinners,
+          onTap: () {
+            showGeneralDialog(
+              context: context,
+              barrierDismissible: true,
+              barrierLabel: '閉じる',
+              barrierColor: Colors.black.withValues(alpha: 0.7),
+              transitionDuration: const Duration(milliseconds: 350), 
+              pageBuilder: (ctx, anim1, anim2) {
+                return Center(
+                  child: Dialog(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 550),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
                       ),
-                    );
-                  }), // チームループ(colTeam)の閉じ
-                  _buildStatCell('${stat.matchWins}', isDark),
-                  _buildStatCell('${stat.individualWinners}', isDark),
-                  _buildStatCell('${stat.totalPointsScored}', isDark),
-                  if (hasMatchPoints) _buildStatCell(stat.customPoints.toStringAsFixed(stat.customPoints.truncateToDouble() == stat.customPoints ? 0 : 1), isDark),
-                  _buildStatCell(rankStr, isDark, isRank: true),
-                ]
-              );
-            }), // チームループ(rowTeam)の閉じ
-          ]
-        )
-      ),
-      ),
-    );
-  }
+                      padding: const EdgeInsets.all(20), 
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: isIndiv 
+                              ? _buildIndividualMatchesListViewer('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark, applySort: false)
+                              : _buildScoreTableViewer('$rowTeam vs $colTeam', bouts, cardColor: Colors.transparent, isDark: isDark),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                              foregroundColor: isDark ? Colors.white : Colors.black87,
+                              shape: const StadiumBorder(),
+                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                              elevation: 0,
+                            ),
+                            child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      }
+    }
 
-  Widget _buildHeaderCell(String text, bool isDark) {
-    return Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(text, style: TextStyle(fontSize: 10, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600))));
-  }
-
-  Widget _buildStatCell(String text, bool isDark, {bool isRank = false}) {
-    return Container(
-      height: 65, alignment: Alignment.center,
-      color: isRank ? (isDark ? Colors.orange.withValues(alpha: 0.2) : Colors.orange.shade50) : null,
-      child: Text(text, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isRank ? 16 : 13, color: isRank ? Colors.orange.shade800 : (isDark ? Colors.white : Colors.black87))),
+    return InkWell(
+      key: Key('viewer_match_card_$groupName'),
+      onTap: () {},
+      child: LeagueGridCard(
+        teams: leagueTeams,
+        matrix: matrix,
+        hasMatchPoints: hasMatchPoints,
+        cardColor: cardColor,
+        isDark: isDark,
+      ),
     );
   }
 
   // 👇 ここから追加：個人戦専用の縦並びリスト描画エンジン
-  Widget _buildIndividualMatchesList(String groupName, List<MatchListProjection> matches, {Color? cardColor, required bool isDark, required WidgetRef ref, required bool applySort}) {
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
-    final headerBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
-    final textColor = isDark ? Colors.white : Colors.black87;
-
+  Widget _buildIndividualMatchesListViewer(String groupName, List<MatchListProjection> matches, {Color? cardColor, required bool isDark, required bool applySort}) {
     List<MatchListProjection> displayMatches = List.from(matches);
 
     if (applySort) {
-      final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-      
-      int getTeamPriority(MatchListProjection m) {
-        final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
-        final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
-        bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
-        bool wOwn = ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
-        if (rOwn && wOwn) return 1; // 同門
-        if (rOwn || wOwn) return 2; // 自チーム vs 他チーム
-        return 3; // 他チーム同士
-      }
-
-      String getSortName(MatchListProjection m) {
-        final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
-        final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
-        final rName = m.redName.contains(':') ? m.redName.split(':').last.trim() : m.redName;
-        final wName = m.whiteName.contains(':') ? m.whiteName.split(':').last.trim() : m.whiteName;
-        
-        bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
-        bool wOwn = ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
-        
-        if (rOwn && wOwn) return rName; // 同門は赤優先
-        if (rOwn) return rName;
-        if (wOwn) return wName;
-        return rName; 
-      }
-
       displayMatches.sort((a, b) {
-        int pA = getTeamPriority(a);
-        int pB = getTeamPriority(b);
-        if (pA != pB) return pA.compareTo(pB);
-
-        String nameA = getSortName(a);
-        String nameB = getSortName(b);
-        int nameCompare = nameA.compareTo(nameB);
-        if (nameCompare != 0) return nameCompare;
-
-        return a.order.compareTo(b.order); // 同じ選手なら試合順
+        return a.order.compareTo(b.order);
       });
     }
 
@@ -980,140 +660,53 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     if (displayGroupName.isNotEmpty) {
       headerTitle += ' $displayGroupName';
     }
-    // ★note抽出ロジックは削除完了
+
+    final matchItems = displayMatches.map((m) {
+      final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
+      final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
+      final rName = m.redName.contains(':') ? m.redName.split(':').last.replaceAll(')', '').trim() : m.redName;
+      final wName = m.whiteName.contains(':') ? m.whiteName.split(':').last.replaceAll(')', '').trim() : m.whiteName;
+
+      final isDone = m.status == 'finished' || m.status == 'approved';
+      final rScore = m.redScore;
+      final wScore = m.whiteScore;
+      final isDraw = isDone && rScore == wScore;
+      final rWin = isDone && rScore > wScore;
+      final wWin = isDone && wScore > rScore;
+
+      final ptsMap = MatchCalculatorHelper.extractPointsFromProjection(m);
+
+      return IndividualMatchItem(
+        id: m.id,
+        note: m.note,
+        redTeam: rTeam,
+        whiteTeam: wTeam,
+        redName: rName,
+        whiteName: wName,
+        redScore: rScore,
+        whiteScore: wScore,
+        isFinished: isDone,
+        isSummary: m.note.contains('[SUMMARY]'),
+        isDraw: isDraw,
+        rWin: rWin,
+        wWin: wWin,
+        hasOwnTeam: false,
+        redPoints: ptsMap['red'] ?? [],
+        whitePoints: ptsMap['white'] ?? [],
+        onTap: () {},
+      );
+    }).toList();
 
     return InkWell(
       key: Key('viewer_match_card_$groupName'),
       onTap: () {}, // Widget Test のタップイベント吸収用ダミー
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        elevation: 0,
-        color: cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: borderColor)),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12), color: headerBgColor, width: double.infinity,
-              child: Text(headerTitle, style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade300 : Colors.grey.shade800)),
-            ),
-              ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: displayMatches.length,
-            separatorBuilder: (context, index) => Divider(color: borderColor, height: 1, indent: 16, endIndent: 16),
-            itemBuilder: (context, index) {
-              final m = displayMatches[index];
-              final rName = m.redName.contains(':') ? m.redName.split(':').last.replaceAll(')', '').trim() : m.redName;
-              final wName = m.whiteName.contains(':') ? m.whiteName.split(':').last.replaceAll(')', '').trim() : m.whiteName;
-              final rTeam = m.redName.contains(':') ? m.redName.split(':').first.trim() : '';
-              final wTeam = m.whiteName.contains(':') ? m.whiteName.split(':').first.trim() : '';
-
-              final isDone = m.status == 'finished' || m.status == 'approved';
-              final rScore = m.redScore;
-              final wScore = m.whiteScore;
-              final isDraw = isDone && rScore == wScore;
-              final rWin = isDone && rScore > wScore;
-              final wWin = isDone && wScore > rScore;
-
-              List<OfficialPointDisplay> redPts = [];
-              List<OfficialPointDisplay> whitePts = [];
-              bool rIsFirst = (m.firstPointSide == 'red');
-              bool wIsFirst = (m.firstPointSide == 'white');
-
-              for (int i = 0; i < m.redPointMarks.length; i++) {
-                redPts.add(OfficialPointDisplay(m.redPointMarks[i], i == 0 && rIsFirst));
-              }
-              for (int i = 0; i < m.whitePointMarks.length; i++) {
-                whitePts.add(OfficialPointDisplay(m.whitePointMarks[i], i == 0 && wIsFirst));
-              }
-
-              // 行のコンテンツ
-              Widget rowContent = Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 55,
-                      child: Text(m.note.isNotEmpty ? m.note : '第${index+1}試合', style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (rTeam.isNotEmpty) Text(rTeam, style: TextStyle(fontSize: 9, color: Colors.grey.shade500), overflow: TextOverflow.ellipsis),
-                          Text(rName, style: TextStyle(fontWeight: rWin ? FontWeight.w900 : FontWeight.bold, color: rWin ? Colors.red.shade700 : textColor), overflow: TextOverflow.ellipsis),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    _buildPointBox(redPts, rWin, true, isDark),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(isDraw ? '✕' : '-', style: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w300, fontSize: 16)),
-                    ),
-                    _buildPointBox(whitePts, wWin, false, isDark),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (wTeam.isNotEmpty) Text(wTeam, style: TextStyle(fontSize: 9, color: Colors.grey.shade500), overflow: TextOverflow.ellipsis),
-                          Text(wName, style: TextStyle(fontWeight: wWin ? FontWeight.w900 : FontWeight.bold, color: wWin ? Colors.red.shade700 : textColor), overflow: TextOverflow.ellipsis),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-
-              final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-              final bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
-              final bool wOwn = ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
-              final bool hasOwnTeam = rOwn || wOwn;
-              final bool isRowSummary = m.note.contains('[SUMMARY]');
-
-              // ★ 修正：行ごとの簡易入力オーバーレイを復活（他チーム同士の場合のみ）
-              if (isRowSummary && !hasOwnTeam) {
-                return Container(
-                  color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.05),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Opacity(opacity: 0.2, child: rowContent), // さらに薄く
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade400, width: 0.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
-                        ),
-                        child: Text(
-                          '※簡易入力された結果です\n（詳細スコアはありません）',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isDark ? Colors.grey.shade400 : Colors.grey.shade700),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return rowContent;
-            },
-          ),
-        ],
+      child: IndividualListCard(
+        headerTitle: headerTitle,
+        matches: matchItems,
+        cardColor: cardColor,
+        isDark: isDark,
       ),
-    ),
     );
-  }
-
-  Map<String, String> _parseName(String raw) {
-    if (raw.contains('欠員')) return {'last': '', 'first': ''};
-    String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
-    var parts = clean.split(RegExp(r'\s+'));
-    return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
   }
 
   String _generateDescriptiveLeagueTitle(List<MatchListProjection> matches, List<String> ownTeams) {
@@ -1137,20 +730,6 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     } else {
       selfInfo = participantsSet.firstWhere((p) => ownTeams.contains(p), orElse: () => participantsSet.first);
     }
-
-    final suffix = isIndiv ? "$n人リーグ" : "$nチームリーグ";
-    return "$selfInfo : $suffix（全$mCount試合）";
-  }
-
-  Widget _buildTechMark(String tech, bool isFirst, Color color) {
-    final displayTech = tech == '判定' ? '判' : tech;
-    if (isFirst && displayTech != '◯' && displayTech != '反') {
-      return Container(
-        width: 14, height: 14, alignment: Alignment.center,
-        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: 0.8)),
-        child: Text(displayTech, style: TextStyle(fontSize: 8, color: color, fontWeight: FontWeight.bold, height: 1.1)),
-      );
-    }
-    return Text(displayTech, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold, height: 1.1));
+    return "$selfInfo : ${isIndiv ? "$n人リーグ" : "$nチームリーグ"}（全$mCount試合）";
   }
 }
