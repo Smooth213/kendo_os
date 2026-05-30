@@ -254,7 +254,6 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
                       itemCount: orderedFiles.length,
                       onReorder: (oldIndex, newIndex) {
                         setState(() {
-                          if (newIndex > oldIndex) newIndex -= 1;
                           final item = orderedFiles.removeAt(oldIndex);
                           orderedFiles.insert(newIndex, item);
                           // 順番が変わっても、今見ていた画像が迷子にならないようにインデックスを調整

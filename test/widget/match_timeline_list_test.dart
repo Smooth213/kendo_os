@@ -108,8 +108,7 @@ void main() {
       final reorderableListView = tester.widget<ReorderableListView>(innerListViewFinder);
       
       // Move index 2 (m3) to index 0
-      // ignore: invalid_null_aware_operator
-      reorderableListView.onReorder?.call(2, 0);
+      reorderableListView.onReorder(2, 0);
       await tester.pump();
 
       expect(fakeMatchAppService.savedMatches, isNotNull);
@@ -135,9 +134,8 @@ void main() {
       expect(listViews.isNotEmpty, isTrue);
       final outerReorderable = listViews.first;
       
-      // Move index 0 (group1) to the end (index 3 passed by flutter drag framework)
-      // ignore: invalid_null_aware_operator
-      outerReorderable.onReorder?.call(0, 3);
+      // Move index 0 (group1) to the end (index 2 in new onReorderItem)
+      outerReorderable.onReorder(0, 2);
       await tester.pump();
 
       expect(fakeMatchAppService.savedMatches, isNotNull);
@@ -169,8 +167,7 @@ void main() {
       final innerReorderable = tester.widget<ReorderableListView>(innerListViewFinder);
       
       // Move index 1 (m2) to index 0
-      // ignore: invalid_null_aware_operator
-      innerReorderable.onReorder?.call(1, 0);
+      innerReorderable.onReorder(1, 0);
       await tester.pump();
 
       expect(fakeMatchAppService.savedMatches, isNotNull);

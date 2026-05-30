@@ -501,7 +501,6 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               itemCount: _leagueParticipants.length,
                               onReorder: (oldIndex, newIndex) {
                                 setState(() {
-                                  if (oldIndex < newIndex) newIndex -= 1;
                                   final item = _leagueParticipants.removeAt(oldIndex);
                                   _leagueParticipants.insert(newIndex, item);
                                 });

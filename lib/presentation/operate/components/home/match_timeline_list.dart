@@ -793,7 +793,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                             shrinkWrap: true,
                                                             physics: const NeverScrollableScrollPhysics(),
                                                             buildDefaultDragHandles: !permissions.isReadOnly,
-                                                            onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
+                                                          onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
                                                             children: normalItems.map<Widget?>((i) {
                                                               if (i is MatchModel) {
                                                                 // ★関数から独立型Widgetカードクラスへ100%完全同期置換
@@ -976,7 +976,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                             shrinkWrap: true,
                                                             physics: const NeverScrollableScrollPhysics(),
                                                             buildDefaultDragHandles: !permissions.isReadOnly,
-                                                            onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
+                                                          onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
                                                             children: normalItems.map<Widget?>((i) {
                                                               if (i is MatchModel) {
                                                                 // ★関数から独立型Widgetカードクラスへ100%完全同期置換
@@ -1014,7 +1014,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                             shrinkWrap: true,
                                                             physics: const NeverScrollableScrollPhysics(),
                                                             buildDefaultDragHandles: !permissions.isReadOnly,
-                                                            onReorder: (oldIndex, newIndex) => _onReorderMatches(tieBreakMatches, oldIndex, newIndex, ref),
+                                                          onReorder: (oldIndex, newIndex) => _onReorderMatches(tieBreakMatches, oldIndex, newIndex, ref),
                                                             // ★関数から独立型Widgetカードクラスへ100%完全同期置換
                                                             children: tieBreakMatches.map((m) => Container(key: ValueKey(m.id), child: MatchListTileCard(initialMatch: m, isDeletable: true))).toList(),
                                                           )
@@ -1557,7 +1557,6 @@ class MatchTimelineList extends ConsumerWidget {
   void _onReorderInnerTimeline(List<TimelineItem> list, int oldIndex, int newIndex, WidgetRef ref) async {
     final permissions = ref.read(permissionProvider);
     if (permissions.isReadOnly) return;
-    if (oldIndex < newIndex) newIndex -= 1;
     if (oldIndex == newIndex) return;
     
     final item = list[oldIndex];
@@ -1579,7 +1578,6 @@ class MatchTimelineList extends ConsumerWidget {
   void _onReorderMatches(List<MatchModel> list, int oldIndex, int newIndex, WidgetRef ref) async {
     final permissions = ref.read(permissionProvider);
     if (permissions.isReadOnly) return;
-    if (oldIndex < newIndex) newIndex -= 1;
     if (oldIndex == newIndex) return;
     
     final item = list[oldIndex];
@@ -1597,7 +1595,6 @@ class MatchTimelineList extends ConsumerWidget {
   void _onReorderTimeline(List<ReorderableTimelineItem> list, int oldIndex, int newIndex, WidgetRef ref) async {
     final permissions = ref.read(permissionProvider);
     if (permissions.isReadOnly) return;
-    if (oldIndex < newIndex) newIndex -= 1;
     if (oldIndex == newIndex) return;
     
     final item = list[oldIndex];
