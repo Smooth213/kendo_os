@@ -3,7 +3,7 @@ name: AI Governance Policy Enforcement (Unified Runtime)
 
 on:
   pull_request:
-    branches: [ main, develop, "ai/sandbox/*" ]
+    branches: [ main, develop, "ai/sandbox/*", stage2-beta ]
 
 jobs:
   governance-policy-check:

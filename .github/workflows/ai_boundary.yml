@@ -2,7 +2,7 @@ name: AI Boundary Governance (Phase 5)
 
 on:
   pull_request:
-    branches: [ main, develop, "ai/sandbox/*" ]
+    branches: [ main, develop, "ai/sandbox/*", stage2-beta ]
 
 jobs:
   forbidden-ast-check:

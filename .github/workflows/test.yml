@@ -2,9 +2,9 @@ name: 🛡️ kendo_os リリース品質ゲート自動監査要塞
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, stage2-beta ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, stage2-beta ]
 
 jobs:
   quality-gate:
