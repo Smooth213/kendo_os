@@ -11,6 +11,7 @@ import 'package:kendo_os/presentation/operate/providers/permission_provider.dart
 import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart' as viewer;
 
 void main() {
   group('🛡️ [Phase 4-V3] 掲示板式3行UI＆4大不具合完全防止・回帰テスト要塞', () {
@@ -401,6 +402,70 @@ void main() {
       expect(find.text('メ'), findsOneWidget);
       expect(find.text('ー'), findsOneWidget);
       expect(find.text('×'), findsNothing);
+    });
+
+    testWidgets('9. 【観客用・Undoリアクティブ即時反映】 ViewerMatchListTileCard でも、Undoによるイベント消去が即時反映されること', (WidgetTester tester) async {
+      final initialEvent = ScoreEvent(
+        id: 'ev_1',
+        side: Side.red,
+        strikeType: StrikeType.men,
+        isIppon: true,
+        isCanceled: false,
+        timestamp: DateTime(2026, 5, 22),
+      );
+
+      final mockMatchWithIppon = makeMockMatch(
+        id: 'match_009',
+        redName: '亀山クラブ : 道上',
+        whiteName: '広島道場 : 皿田',
+        status: 'in_progress',
+        redScore: 1,
+        events: [initialEvent],
+      );
+
+      final mockMatchAfterUndo = mockMatchWithIppon.copyWith(
+        redScore: 0,
+        events: [],
+      );
+
+      final matchesProviderNotifier = StateProvider<List<MatchModel>>((ref) => [mockMatchWithIppon]);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            matchListProvider.overrideWith((ref) => ref.watch(matchesProviderNotifier)),
+            isarProvider.overrideWithValue(null),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value(const <String>[])),
+            viewer.customTeamNamesProvider.overrideWith((ref) => Stream.value(const <String>[])),
+            permissionProvider.overrideWith((ref) => const AppPermissions(
+              isReadOnly: true,
+              canManageTournament: false,
+              canCreateMatch: false,
+              canChangeSettings: false,
+              canDeleteData: false,
+            )),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: viewer.ViewerMatchListTileCard(initialMatch: mockMatchWithIppon),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(find.text('メ'), findsOneWidget);
+
+      // 🔄 【Undo発動シミュレート】: メモリ上の状態を更新し、Elementキャッシュを突破できるか検証
+      final element = tester.element(find.byType(viewer.ViewerMatchListTileCard));
+      ProviderScope.containerOf(element).read(matchesProviderNotifier.notifier).state = [mockMatchAfterUndo];
+      
+      await tester.pumpAndSettle();
+
+      // Undo操作直後に、画面から「メ」が完全消滅したことを厳密に検証
+      expect(find.text('メ'), findsNothing);
     });
   });
 }

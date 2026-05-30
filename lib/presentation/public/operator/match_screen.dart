@@ -70,7 +70,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     super.initState();
     // ★ 修正: 画面を開き直すたびにランダムなIDが生成され「他人が操作中」と誤認され
     // タイマーがロック（止められない状態）になってしまうバグを防ぐため、固定IDを使用します。
-    _myUserId = FirebaseAuth.instance.currentUser?.uid ?? 'local_user';
+    try {
+      _myUserId = FirebaseAuth.instance.currentUser?.uid ?? 'local_user';
+    } catch (_) {
+      // 🛡️ 例外セーフティガード：Firebase未初期化のテスト環境や、現場の電波断絶下での [core/no-app] による画面クラッシュを100%封殺します。
+      _myUserId = 'local_user';
+    }
     
     // ★ Step 3-3: 画面全体のタイマー(Timer.periodic)を完全に削除し、
     // タイマーが動いている場合のみ、バックグラウンドの時計（MatchTimerProvider）を動かす指示を出す
@@ -151,7 +156,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(ctx, 'red'),
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
-                    child: Text('赤の判定勝ち\n($rName)', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    child: FittedBox(
+                      child: Text('赤の判定勝ち\n($rName)', textAlign: TextAlign.center, style: const TextStyle(fontSize: 40.0, fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -159,7 +166,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(ctx, 'white'),
                     style: ElevatedButton.styleFrom(backgroundColor: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, foregroundColor: isDark ? Colors.white : Colors.black87, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
-                    child: Text('白の判定勝ち\n($wName)', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    child: FittedBox(
+                      child: Text('白の判定勝ち\n($wName)', textAlign: TextAlign.center, style: const TextStyle(fontSize: 40.0, fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ),
               ],
@@ -320,39 +329,39 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          Expanded(
-            child: Stack(
-              children: [
-          // ★ ポイント：PopScopeを消去し、画面全体をGestureDetectorで包む
-          GestureDetector(
-            behavior: HitTestBehavior.translucent, // ボタン以外のタップも透過して検知
-            onHorizontalDragEnd: (details) {
-              if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 500) {
-                // ★ 修正: キャンセル済みのイベントを除外して判定
-                if (match.events.any((e) => !e.isCanceled && e.type != PointType.undo)) {
-                  HapticFeedback.mediumImpact();
-                  ref.read(matchCommandProvider).undoLastEvent(match.id);
+          Column(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent, // ボタン以外のタップも透過して検知
+                  onHorizontalDragEnd: (details) {
+                if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 500) {
+                  // ★ 修正: キャンセル済みのイベントを除外して判定
+                  if (match.events.any((e) => !e.isCanceled && e.type != PointType.undo)) {
+                    HapticFeedback.mediumImpact();
+                    ref.read(matchCommandProvider).undoLastEvent(match.id);
+                  }
                 }
-              }
-            },
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-                final isTabletLandscape = isLandscape && constraints.maxWidth > 600;
+              },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+                  final isTabletLandscape = isLandscape && constraints.maxWidth > 600;
 
-                final isCorrupted = match.status == 'corrupted' || MatchLifecycleStateLegacyExt.fromLegacyString(match.status) == MatchLifecycleState.corrupted;
-                final corruptedBanner = isCorrupted
-                  ? CorruptedMatchBanner(matchId: match.id)
-                  : const SizedBox.shrink();
+                  final isCorrupted = match.status == 'corrupted' || MatchLifecycleStateLegacyExt.fromLegacyString(match.status) == MatchLifecycleState.corrupted;
+                  final corruptedBanner = isCorrupted
+                    ? CorruptedMatchBanner(matchId: match.id)
+                    : const SizedBox.shrink();
 
-                final viewOnlyBanner = (isViewOnly && !isApproved) 
-                  ? Container(
-                      width: double.infinity,
-                      color: Colors.red.shade900.withValues(alpha: 0.9), 
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: Row(
+                  final viewOnlyBanner = (isViewOnly && !isApproved) 
+                    ? Container(
+                        width: double.infinity,
+                        color: Colors.red.shade900.withValues(alpha: 0.9), 
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        child: Row(
                         children: [
                           const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 18),
                           const SizedBox(width: 12),
@@ -382,9 +391,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   children: [
                     // 1. 直近3件のミニログ表示エリア（★高さを完全に固定し、ボタンの圧迫を防ぐ）
                     Container(
-                      height: 76, // ★ 修正: 54pxだと3件表示時に11pxあふれるため、76pxに拡張して完全に収める
+                      height: 62, // ★ 3件表示時の5pxのはみ出し（RenderFlex overflow）を完全に解消
                       margin: const EdgeInsets.symmetric(horizontal: 16),
-                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
                       decoration: BoxDecoration(
                         color: isDark ? Colors.white10 : Colors.grey.shade100,
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
@@ -428,7 +437,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         } : null,
                         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
                         child: Container(
-                          height: 50,
+                          height: 40,
                           decoration: BoxDecoration(
                             color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.grey.shade200,
                             borderRadius: validEvents.isNotEmpty 
@@ -455,7 +464,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 0), // ★ 操作履歴の下にある余白を限界まで削除
                   ],
                 );
 
@@ -463,7 +472,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 
                 // ★ 修正: ボタンの並び順を「URL共有・復元 / スコア・ルール」に変更
                 final groupButtonPart = Padding(
-                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                  padding: const EdgeInsets.only(bottom: 0, left: 8, right: 8),
                   child: Column(
                     children: [
                       // 1段目: 観戦URLを共有 | 履歴から復元
@@ -478,7 +487,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               },
                               icon: const Icon(Icons.ios_share, size: 16),
                               label: const Text('観戦URLを共有', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 30), padding: EdgeInsets.zero),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -488,12 +497,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               onPressed: isViewOnly ? null : () => _showSnapshotDialog(context, ref, match),
                               icon: const Icon(Icons.history, size: 16),
                               label: const Text('履歴から復元', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 30), padding: EdgeInsets.zero),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 2),
                       // 2段目: スコアを確認 | ルールを確認
                       Row(
                         children: [
@@ -502,7 +511,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               onPressed: () => match.isKachinuki ? context.push('/kachinuki-scoreboard/${match.groupName}') : context.push('/team-scoreboard/${match.groupName}'),
                               icon: Icon(match.isKachinuki ? Icons.timeline : Icons.table_chart_outlined, size: 16),
                               label: const Text('スコアを確認', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 30), padding: EdgeInsets.zero),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -511,7 +520,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               onPressed: () => _showRuleInfoSheet(context, match), 
                               icon: const Icon(Icons.info_outline, size: 16),
                               label: const Text('ルールを確認', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 36), padding: EdgeInsets.zero),
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 30), padding: EdgeInsets.zero),
                             ),
                           ),
                         ],
@@ -520,23 +529,33 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   ),
                 );
 
-                final scoreboardPart = MatchScoreboard(
-                  matchId: match.id, myUserId: _myUserId,
-                  onNameTap: (side) => _showNameEditBottomSheet(match, side),
+                final scoreboardPart = ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: constraints.maxHeight * 0.32, // ★ スコアボードの最大高さをさらに拡張し、選手名をさらに大きく表示
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown, // ★ 枠に収まるように全体を少し縮小（スケールダウン）
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      child: MatchScoreboard(
+                        matchId: match.id, myUserId: _myUserId,
+                        onNameTap: (side) => _showNameEditBottomSheet(match, side),
+                      ),
+                    ),
+                  ),
                 );
 
                 final actionPanelPart = Container(
                   color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 0),
                   child: Consumer(
                     builder: (context, ref, child) {
                       final settings = ref.watch(settingsProvider);
                       final redPanel = ScoreActionPanel(matchId: match.id, side: Side.red, color: Colors.red.shade600, isLocked: isInputLocked);
                       final whitePanel = ScoreActionPanel(matchId: match.id, side: Side.white, color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100, textColor: isDark ? Colors.white : Colors.black87, isLocked: isInputLocked);
-                      final divider = VerticalDivider(width: 1, color: isDark ? Colors.white10 : Colors.black12);
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch, 
-                        children: settings.leftHanded ? [whitePanel, divider, redPanel] : [redPanel, divider, whitePanel]
+                        children: settings.leftHanded ? [whitePanel, redPanel] : [redPanel, whitePanel]
                       );
                     }
                   ),
@@ -544,13 +563,13 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
                 final bottomButtonPart = Container(
                   color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0), // ★ 最下部の余白もゼロに
                   child: Builder(
                     builder: (context) {
                       final settings = ref.watch(settingsProvider);
                       
                       if (isApproved) {
-                        return const SizedBox(height: 54, child: Center(child: Text('公式記録確定済み', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))));
+                        return const SizedBox(height: 48, child: Center(child: Text('公式記録確定済み', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))));
                       }
                       
                       if (rule.isRenseikai && rule.renseikaiType == '時間制' && (match.matchType == rule.positions.last || match.matchType == '錬成会') && match.status == 'finished') {
@@ -617,7 +636,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isTie ? Colors.red.shade700 : (isAllDone ? Colors.indigo.shade700 : Colors.teal.shade600), 
                               foregroundColor: Colors.white, 
-                              minimumSize: const Size(double.infinity, 54), 
+                              minimumSize: const Size(double.infinity, 44), 
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), 
                               elevation: 4
                             ),
@@ -714,7 +733,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               child: ElevatedButton(
                                 onPressed: settings.confirmBehavior == 'single' ? effectiveFinishAction : (isViewOnly ? null : () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.confirmBehavior == 'double' ? 'ダブルタップで終了してください' : '長押しで終了してください'), duration: const Duration(milliseconds: 1500)))),
                                 onLongPress: settings.confirmBehavior == 'long' ? effectiveFinishAction : null,
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo.shade600, foregroundColor: Colors.white, minimumSize: const Size(double.infinity, 54), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo.shade600, foregroundColor: Colors.white, minimumSize: const Size(double.infinity, 44), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
                                 child: isProcessing 
                                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                                   : const Text('この試合を終了する', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
@@ -763,60 +782,85 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     ],
                   );
                 } else {
-                  return Column(
+                  // 🛡️ 強制描画レイアウト
+                  final isCompact = constraints.maxHeight < 700;
+
+                  final content = Column(
                     children: [
                       corruptedBanner,
                       viewOnlyBanner,
                       timerPart,
-                      groupButtonPart,
-                      Expanded(flex: 5, child: scoreboardPart),
-                      Expanded(flex: 6, child: actionPanelPart), 
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: groupButtonPart,
+                      ),
+                      // 選手名・スコアボード領域
+                      SizedBox(
+                        height: 220, 
+                        child: scoreboardPart,
+                      ),
+                      // 部位ボタン領域
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: actionPanelPart,
+                        ),
+                      ),
                       undoArea,
-                      bottomButtonPart,
+                      SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
+                          child: bottomButtonPart,
+                        ),
+                      ),
                     ],
                   );
+
+                  return isCompact 
+                    ? SingleChildScrollView(child: SizedBox(height: 700, child: content)) // 短い時はスクロール
+                    : content; // 十分な高さがある時はそのままフィット
                 }
               },
             ),
           ),
-          
-          if (match.matchType == '代表戦' && (match.redName.contains('未定') || match.whiteName.contains('未定') || match.redName.contains('代表選手') || match.whiteName.contains('代表選手')))
-            Container(
-              color: Colors.black.withValues(alpha: 0.8),
-              width: double.infinity,
-              height: double.infinity,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.person_add, color: Colors.white, size: 80),
-                    const SizedBox(height: 24),
-                    const Text(
-                      '代表戦の選手が未設定です',
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: 250,
-                      child: GlassButton(
-                        onPressed: () => _showDaihyoSelectDialog(match),
-                        color: Colors.indigo,
-                        label: '代表者を選択する',
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                      ),
-                    ),
-                  ],
+        ), // Expanded
+      ], // Column children
+    ),
+    if (match.matchType == '代表戦' && (match.redName.contains('未定') || match.whiteName.contains('未定') || match.redName.contains('代表選手') || match.whiteName.contains('代表選手')))
+      Container(
+        color: Colors.black.withValues(alpha: 0.8),
+        width: double.infinity,
+        height: double.infinity,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.person_add, color: Colors.white, size: 80),
+              const SizedBox(height: 24),
+              const Text(
+                '代表戦の選手が未設定です',
+                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: 250,
+                child: GlassButton(
+                  onPressed: () => _showDaihyoSelectDialog(match),
+                  color: Colors.indigo,
+                  label: '代表者を選択する',
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                 ),
               ),
-            ),
-              ],
-            ), // Stack
-          ), // Expanded
-        ], // Column children
-        ), // Scaffold
+            ],
+          ),
+        ),
       ),
-    );
-  }
+  ], // Stack children
+), // Stack
+), // Scaffold
+); // LiquidBackground
+}
 
 
   // ★ 直感UX改修：試合中の選手変更を、状況（自チーム/相手チーム）に応じて分岐するモダンなボトムシートへ昇格

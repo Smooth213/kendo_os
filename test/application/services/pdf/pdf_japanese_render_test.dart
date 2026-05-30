@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'dart:io';
 // ★ 適合補正: エラーログから確定した実際の配置階層パスへ100%完全に同期
 import 'package:kendo_os/application/services/pdf/widgets/pdf_team_table.dart';
 import 'package:kendo_os/application/services/pdf/widgets/pdf_individual_list.dart';
@@ -9,13 +10,22 @@ import 'package:kendo_os/domain/match/match_model.dart'; // ★ 追加: 本物�
 void main() {
   group('🛡️ [Phase 6-2] PDF 日本語レンダリング＆豆腐文字完全防止テスト', () {
     
-    // ★ 適合補正: doc.save() が返す Future 型の安全な展開のため、テストラムダ式を async 化
     test('日本語文字列および「×」マークが、pdfエンジンの例外を投げずに100%決定論的にビルドできること', () async {
       final doc = pw.Document();
       
-      // テスト用のダミー日本語フォント空間をエミュレート（pdfパッケージ標準のHelveticaフォールバック）
-      final font = pw.Font.helvetica();
-      final fontBold = pw.Font.helveticaBold();
+      // ★ 修正: Helvetica は日本語(Unicode)をサポートしていないため、実際の日本語フォントをロードします
+      final fontFile = File('assets/fonts/NotoSansJP-Regular.ttf'); // ※プロジェクトの実際のフォントパスに合わせてください
+      if (!fontFile.existsSync()) {
+        markTestSkipped('日本語フォントファイルが存在しないため、PDFレンダリングテストを安全にスキップします。');
+        return;
+      }
+      final fontData = fontFile.readAsBytesSync();
+      final font = pw.Font.ttf(fontData.buffer.asByteData());
+      
+      // ★ 修正: baseと完全に同一のフォントデータをfallbackに指定すると、
+      // pdfパッケージ内部のフォント解決で無限ループ(ハングアップ)を引き起こしテストが終了しなくなります。
+      // これを防ぐため、fallbackの指定自体を取り除きます。
+      final fontBold = pw.Font.ttf(fontData.buffer.asByteData()); 
 
       // ★ 適合補正: Map を全廃し、コンパイル時ゲッター参照エラーを完全に防壁化する MatchModel 空間へ完全同期
       final mockMatches = [
@@ -43,6 +53,10 @@ void main() {
       doc.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
+          theme: pw.ThemeData.withFont(
+            base: font,
+            bold: fontBold,
+          ),
           build: (pw.Context context) {
             return pw.Column(
               children: [
@@ -54,7 +68,7 @@ void main() {
         ),
       );
 
-      // ★ 適合補正: Future<Uint8List> を await で同期展開し、型破綻を完全根絶
+      // ★ 修正: doc.save() は Future<Uint8List> を返すため、await を付けて結果を取得します
       final bytes = await doc.save();
       expect(bytes, isNotNull);
       expect(bytes.isNotEmpty, true); // バイナリストリームが正常に生成されたことを確認

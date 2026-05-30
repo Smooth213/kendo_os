@@ -14,12 +14,12 @@ import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 // プロバイダ層
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/application/services/pdf/models/pdf_view_model.dart';
 
 // 共通シェアUIコンポーネント・ウィジェット層（★ パスを正しい座標へ完全適合）
 import 'package:kendo_os/presentation/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/presentation/shared/widgets/glass_button.dart';
 import 'package:kendo_os/presentation/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/presentation/shared/utils/match_calculator_helper.dart';
 
 // ★ 適合補正: 前回の位置リプレイスの際に一時的に消失していた、画面専用プロバイダ空間4点を完全復元
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
@@ -723,17 +723,16 @@ class ViewerHomeScreen extends ConsumerWidget {
 
                                                       if (label.contains('リーグ戦')) {
                                                         if (label.contains('個人戦')) {
-                                                          // 【リーグ個人戦】中枠を省き、直接試合リストを表示
-                                                        // ★ 適合置換①: 観客席専用の独立Widgetカードへと置換（Undoリアクティブ対応）
-                                                        childrenWidgets.addAll(normalMatches.map((m) => ViewerMatchListTileCard(initialMatch: m)).toList());
+                                                          // 🛡️ STEP 4-1 要件：一意な識別Key（viewer_match_card_xxx）を完全埋入
+                                                          childrenWidgets.addAll(normalMatches.map((m) => ViewerMatchListTileCard(key: Key('viewer_match_card_${m.id}'), initialMatch: m)).toList());
                                                         } else {
                                                           // 【リーグ団体戦】中枠あり
                                                           final boutsByMatchup = <String, List<MatchModel>>{};
                                                           final matchupOrder = <String>[];
                                                           for (var m in normalMatches) {
                                                             final t1 = m.redName.split(':').first.trim();
-                                                            final t2 = m.whiteName.split(':').first.trim();
-                                                            final matchupName = '$t1 vs $t2';
+                                                            final r2 = m.whiteName.split(':').first.trim();
+                                                            final matchupName = '$t1 vs $r2';
                                                             if (!boutsByMatchup.containsKey(matchupName)) {
                                                               matchupOrder.add(matchupName);
                                                               boutsByMatchup[matchupName] = [];
@@ -754,13 +753,12 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                               : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
                                                               
                                                           final Color mTitleColor = boutsAllFinished 
-                                                              ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500) 
+                                                              ? (isDark ? Colors.grey.shade600 : Colors.grey.shade50) 
                                                               : (isDark ? Colors.white : Colors.black87);
 
                                                           return Container(
                                                             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                             decoration: BoxDecoration(
-                                                              // ★ 修正: color: mCardBg, を削除
                                                               borderRadius: BorderRadius.circular(8),
                                                               border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300, width: 1),
                                                               boxShadow: boutsInProgress ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))] : [],
@@ -774,12 +772,10 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                   title: Column(
                                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                                     children: [
-                                                                      // 🔼 【中枠1行目】: コントロールボタン集約ライン
                                                                       Row(
                                                                         children: [
                                                                           Text('${bouts.length}ポジション', style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold)),
                                                                           const Spacer(),
-                                                                          // スコア詳細ボタン（観客閲覧専用）
                                                                           if (bouts.isNotEmpty && bouts.first.groupName != null && bouts.first.groupName!.isNotEmpty)
                                                                             Padding(
                                                                               padding: const EdgeInsets.only(right: 6),
@@ -795,7 +791,6 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                 ),
                                                                               ),
                                                                             ),
-                                                                          // 状態バナー
                                                                           Container(
                                                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                                                             decoration: BoxDecoration(color: boutsInProgress ? Colors.blueGrey.shade600 : (boutsAllFinished ? (isDark ? Colors.grey.shade800 : Colors.grey.shade300) : (isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade200)), borderRadius: BorderRadius.circular(4)),
@@ -804,7 +799,6 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                         ],
                                                                       ),
                                                                       const SizedBox(height: 10),
-                                                                      // 🔽 【中枠2行目】: リーグ内チーム対抗勝数(本数)掲示ライン（完全同期・均一モデリング）
                                                                       Builder(builder: (context) {
                                                                         int redWins = 0; int redPts = 0;
                                                                         int whiteWins = 0; int whitePts = 0;
@@ -848,8 +842,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       }),
                                                                     ],
                                                                   ),
-                                                                  // ★ 適合置換②: リーグ内各ポジションの試合タイル置換
-                                                                  children: bouts.map((m) => ViewerMatchListTileCard(initialMatch: m)).toList(),
+                                                                  // ★ 適合置換②: リーグ内各ポジションの試合タイル置換（Key付与）
+                                                                  children: bouts.map((m) => ViewerMatchListTileCard(key: Key('viewer_match_card_${m.id}'), initialMatch: m)).toList(),
                                                                 ),
                                                               ),
                                                             ),
@@ -857,15 +851,15 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                         }));
                                                         }
                                                       } else {
-                                                        // ★ 適合置換③: 通常のトーナメント団体戦内ポジション置換
-                                                        childrenWidgets.addAll(normalMatches.map((m) => ViewerMatchListTileCard(initialMatch: m)).toList());
+                                                        // ★ 適合置換③: 通常のトーナメント団体戦内ポジション置換（Key付与）
+                                                        childrenWidgets.addAll(normalMatches.map((m) => ViewerMatchListTileCard(key: Key('viewer_match_card_${m.id}'), initialMatch: m)).toList());
                                                       }
 
                                                       if (tieBreakMatches.isNotEmpty) {
                                                         childrenWidgets.add(const Divider());
                                                         childrenWidgets.add(const Padding(padding: EdgeInsets.all(8), child: Text('【順位決定戦】', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.orange))));
-                                                        // ★ 適合置換④: 順位決定戦置換
-                                                        childrenWidgets.addAll(tieBreakMatches.map((m) => ViewerMatchListTileCard(initialMatch: m)));
+                                                        // ★ 適合置換④: 順位決定戦置換（Key付与）
+                                                        childrenWidgets.addAll(tieBreakMatches.map((m) => ViewerMatchListTileCard(key: Key('viewer_match_card_${m.id}'), initialMatch: m)));
                                                       }
 
                                                       return childrenWidgets;
@@ -1081,7 +1075,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
 
     Widget buildMarkItem(dynamic p, Color textColor) {
       final String mark = p.mark == '✕' ? '×' : p.mark;
-      final bool isFirstOverall = p.isFirstOverall;
+      final bool isFirstOverall = p.isFirst;
 
       if (mark == '◯' || mark == '×') {
         return Padding(
@@ -1175,7 +1169,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
               final wTeam = getTeamPart(match.whiteName);
               final wName = getNamePart(match.whiteName);
 
-              final ptsMap = PdfViewModel.calculatePointsRaw(match);
+              final ptsMap = MatchCalculatorHelper.extractPointsFromModel(match);
               final redPoints = ptsMap['red'] ?? [];
               final whitePoints = ptsMap['white'] ?? [];
               final bool hasValidPoints = redPoints.isNotEmpty || whitePoints.isNotEmpty;

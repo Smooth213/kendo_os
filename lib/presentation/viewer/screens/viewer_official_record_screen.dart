@@ -511,6 +511,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     double getStatCustomPts(dynamic s) => s == null ? 0.0 : (s is Map ? ((s['customPoints'] ?? 0.0) as num).toDouble() : (s.customPoints as num).toDouble());
 
     final leagueTeams = teamList.map((rowTeam) {
+
       final stat = stats.where((s) => getStatName(s) == rowTeam).firstOrNull;
       final rankStr = allFinished ? '${stats.indexWhere((s) => getStatName(s) == rowTeam) + 1}' : '-';
       final customPts = getStatCustomPts(stat);

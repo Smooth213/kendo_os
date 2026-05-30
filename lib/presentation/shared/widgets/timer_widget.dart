@@ -89,8 +89,11 @@ class TimerWidget extends ConsumerWidget {
     // ※ 操作ロック（isInputLocked）は親から渡されているため、終了後に誤ってタイマーを動かしてしまう心配はありません。
     
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4), // 少しだけ外側に余白を持たせる
-      child: _buildTimerContent(context, ref),
+      padding: const EdgeInsets.symmetric(vertical: 2), // ★ 画面の圧迫を防ぐため余白をスリム化
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: _buildTimerContent(context, ref),
+      ),
     );
   }
 

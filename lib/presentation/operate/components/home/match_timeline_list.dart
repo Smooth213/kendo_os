@@ -12,8 +12,8 @@ import 'package:kendo_os/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
-// ★ 適合修正: プロダクション環境で実績のあるPDFデータ計算モデルをインポートし、未定義エラーを完全粉砕
-import 'package:kendo_os/application/services/pdf/models/pdf_view_model.dart';
+// ★ 適合修正: プロダクション環境で実績のあるKendoRuleEngine経由の計算ヘルパーをインポート
+import 'package:kendo_os/presentation/shared/utils/match_calculator_helper.dart';
 
 import '../../providers/match_command_provider.dart';
 import '../../providers/timeline_provider.dart';
@@ -1916,7 +1916,7 @@ class MatchListTileCard extends ConsumerWidget {
               final wTeam = getTeamPart(match.whiteName);
               final wName = getNamePart(match.whiteName);
 
-              final ptsMap = PdfViewModel.calculatePointsRaw(match);
+              final ptsMap = MatchCalculatorHelper.extractPointsFromModel(match);
               final redPoints = ptsMap['red'] ?? [];
               final whitePoints = ptsMap['white'] ?? [];
               final bool isDraw = isFinished && match.redScore == match.whiteScore;
@@ -1924,7 +1924,7 @@ class MatchListTileCard extends ConsumerWidget {
 
               Widget buildMarkItem(dynamic p, Color textColor) {
                 final String mark = p.mark == '✕' ? '×' : p.mark;
-                final bool isFirstOverall = p.isFirstOverall;
+                final bool isFirstOverall = p.isFirst;
 
                 if (mark == '◯' || mark == '×') {
                   return Padding(

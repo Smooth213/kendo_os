@@ -7,6 +7,13 @@ import '../models/pdf_point_data.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 
 class PdfLeagueTable {
+  static String _getEntityName(String fullName, bool isIndiv) {
+    if (isIndiv) {
+      return fullName.contains(':') ? fullName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : fullName.trim();
+    }
+    return fullName.contains(':') ? fullName.split(':').first.trim() : fullName.trim();
+  }
+
   static pw.Widget build(String groupName, List<dynamic> matches, pw.Font ttf, pw.Font ttfBold) {
     if (matches.isEmpty) return pw.SizedBox();
     
@@ -26,8 +33,8 @@ class PdfLeagueTable {
 
     final teams = <String>{};
     for (var m in normalMatches) {
-      teams.add(m.redName.split(':').first.trim());
-      teams.add(m.whiteName.split(':').first.trim());
+      teams.add(_getEntityName(m.redName, isIndiv));
+      teams.add(_getEntityName(m.whiteName, isIndiv));
     }
     final teamList = teams.toList()..sort();
 
@@ -72,8 +79,8 @@ class PdfLeagueTable {
               cells.add(pw.Container(height: 40, color: PdfColors.grey300, child: pw.CustomPaint(painter: (PdfGraphics canvas, PdfPoint size) { canvas.setStrokeColor(PdfColors.grey500); canvas.setLineWidth(0.5); canvas.drawLine(0, size.y, size.x, 0); canvas.strokePath(); })));
             } else {
               final bouts = normalMatches.where((m) {
-                final r = m.redName.split(':').first.trim();
-                final w = m.whiteName.split(':').first.trim();
+                final r = _getEntityName(m.redName, isIndiv);
+                final w = _getEntityName(m.whiteName, isIndiv);
                 return (r == rowTeam && w == colTeam) || (r == colTeam && w == rowTeam);
               }).toList();
               if (bouts.isEmpty) {
@@ -107,7 +114,7 @@ class PdfLeagueTable {
     if (!hasStarted) return pw.Container(height: 40);
     String result = 'draw'; int aWins = 0, bWins = 0, aPts = 0, bPts = 0; List<PdfPointData> techs = [];
     for (var m in pairMatches) {
-      final isRedA = m.redName.split(':').first.trim() == teamA;
+      final isRedA = _getEntityName(m.redName, isIndividual) == teamA;
       final rs = (m.redScore as num).toInt(); final ws = (m.whiteScore as num).toInt();
       if (rs > ws) { isRedA ? aWins++ : bWins++; } else if (ws > rs) { isRedA ? bWins++ : aWins++; }
       aPts += isRedA ? rs : ws; bPts += isRedA ? ws : rs;

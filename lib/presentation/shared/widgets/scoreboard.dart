@@ -28,20 +28,23 @@ class MatchScoreboard extends ConsumerWidget {
 
     final calculatePointDisplays = ref.watch(calculatePointDisplaysUseCaseProvider);
     final ptsMap = calculatePointDisplays.execute(match);
-    
-    // ★ 修正: ViewStateからすべての計算済み状態を取得
     final viewState = ref.watch(matchViewStateProvider(matchId));
 
+    // ★修正：Columnの柔軟性を確保するために、ここを Stack に戻します
+    // ただし、インジケーターは「結果がある時だけ」浮かび上がるようにします。
     return Stack(
-      alignment: Alignment.topCenter,
+      alignment: Alignment.center,
       children: [
+        // スコアボード本体
         Row(
           children: [
             _buildScoreColumn(context, Side.red, match, ptsMap, viewState),
             _buildScoreColumn(context, Side.white, match, ptsMap, viewState),
           ],
         ),
-        if (viewState.winner != null) _buildResultOverlay(context, viewState),
+        // 結果表示用：結果がある時だけ表示（Stackで重ねることでレイアウト崩れを防ぐ）
+        if (viewState.winner != null || viewState.isTie)
+          _buildResultOverlay(context, viewState),
       ],
     );
   }
@@ -60,7 +63,7 @@ class MatchScoreboard extends ConsumerWidget {
 
     return Expanded(
       child: FittedBox(
-        fit: BoxFit.scaleDown,
+        fit: BoxFit.contain, // ★ BoxFit.scaleDown から変更
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start, 
           children: [
@@ -70,22 +73,20 @@ class MatchScoreboard extends ConsumerWidget {
               child: Container(
                 height: 44,
                 alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: FittedBox(
-                  fit: BoxFit.scaleDown,
+                  fit: BoxFit.scaleDown, // ★枠からはみ出る場合のみ縮小
                   child: Text(
                     side == Side.red ? viewState.redCleanName : viewState.whiteCleanName,
                     style: TextStyle(
-                        // ★ 文字サイズを24から32へ拡大。さらにウェイトを極太に。
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        color: nameColor,
-                        // 文字の視認性を上げるために少しだけレタースペーシングを広げる
-                        letterSpacing: 1.2,
+                      fontSize: 28, // 左右で共通の基準サイズに設定
+                      fontWeight: FontWeight.w900,
+                      color: nameColor,
+                      letterSpacing: 1.0,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -93,18 +94,18 @@ class MatchScoreboard extends ConsumerWidget {
               ),
             ),
             
-            const SizedBox(height: 24),
-            
+            const SizedBox(height: 16),
+            // ポイントアイコンの拡大
             SizedBox(
-              width: 150,
-              height: 150,
+              width: 180,
+              height: 180,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   if (isFinished && isWinner)
                     Container(
-                      width: 150,
-                      height: 150,
+                      width: 180,
+                      height: 180,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(color: nameColor.withValues(alpha: 0.6), width: 6),
@@ -197,26 +198,32 @@ class MatchScoreboard extends ConsumerWidget {
   Widget _buildResultOverlay(BuildContext context, MatchViewState viewState) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ★ 修正: r > w などの計算を完全削除し、ViewStateの文字列に変換するだけ
     String resultText = '引き分け';
     if (viewState.winner == 'red') resultText = '赤 の勝ち';
     if (viewState.winner == 'white') resultText = '白 の勝ち';
 
     return Positioned(
-      top: 16,
+      top: 20, // 呼び出し側にあった top: 20 をこちらに統合して位置を調整
       child: Container(
-        height: 44,
+        height: 70, // ★ 高さを大きく
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 40), // 横幅を広げて余裕を作る
         decoration: BoxDecoration(
           color: isDark ? Colors.indigo.shade900 : Colors.indigo.shade700,
-          borderRadius: BorderRadius.circular(22),
-          border: isDark ? Border.all(color: Colors.indigo.shade400, width: 1) : null,
-          boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 8)],
+          borderRadius: BorderRadius.circular(35), // 丸みを拡大
+          border: isDark ? Border.all(color: Colors.indigo.shade400, width: 2) : null,
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))
+          ],
         ),
         child: Text(
           resultText,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.1),
+          style: const TextStyle(
+            color: Colors.white, 
+            fontWeight: FontWeight.w900, // 極太に
+            fontSize: 32, // ★ フォントサイズを大幅アップ
+            letterSpacing: 2.0, // 文字間隔を広げて読みやすく
+          ),
         ),
       ),
     );

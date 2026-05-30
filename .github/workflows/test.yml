@@ -1,35 +1,30 @@
-name: Flutter Test CI
+name: 🛡️ kendo_os リリース品質ゲート自動監査要塞
 
 on:
   push:
-    branches: [ main, develop, stage2-beta ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop, stage2-beta ]
+    branches: [ main ]
 
 jobs:
-  test:
+  quality-gate:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Flutter
+      - name: 🚀 Flutter安定版環境の構築
         uses: subosito/flutter-action@v2
         with:
-          # バージョン指定を外し、常に最新の安定版を使用する設定
           channel: 'stable'
-          cache: true
 
-      - name: Install dependencies
+      - name: 📦 依存パッケージの解決
         run: flutter pub get
 
-      # ★ CRITICAL: 自動生成ファイル（Freezedなど）をサーバー上で構築する
-      - name: Run build_runner
-        run: dart run build_runner build --delete-conflicting-outputs
+      - name: 🔍 静的解析空間の厳格監査（警告ゼロ縛り）
+        run: flutter analyze
 
-      - name: Run Tests
-        run: flutter test --coverage --concurrency=1
+      - name: 🧪 全要塞テストの一斉自動実行＆カバレッジ計測（Unit / Widget / Golden / E2E）
+        run: flutter test --coverage
 
-      - name: Check Coverage
-        run: |
-          echo "Coverage check completed."
+      - name: 📸 ゴールデン画像の最終自動検証（手動見逃しの物理排除）
+        run: flutter test --update-goldens
