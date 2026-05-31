@@ -3,6 +3,10 @@ import 'package:isar_community/isar.dart';
 import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
 
 void main() {
+  setUpAll(() async {
+    await Isar.initializeIsarCore(download: true);
+  });
+
   group('🛡️ PHASE 11 — データ永続化完全保証インテグレーションテスト要塞', () {
     late Isar isar;
     late String testDbPath;
