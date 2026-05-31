@@ -18,6 +18,7 @@ void main() {
       return UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           home: Scaffold(
             body: Builder(
               builder: (context) => ElevatedButton(

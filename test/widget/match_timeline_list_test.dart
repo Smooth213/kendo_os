@@ -74,8 +74,11 @@ void main() {
         searchQueryProvider.overrideWith((ref) => ''),
         isSearchVisibleProvider.overrideWith((ref) => false),
       ],
-      child: const MaterialApp(
-        home: Scaffold(
+      child: MaterialApp(
+        theme: ThemeData(
+          splashFactory: NoSplash.splashFactory, // ★ 追加: テスト時のInkSparkleエラーを回避
+        ),
+        home: const Scaffold(
           body: MatchTimelineList(tournamentId: 't1'),
         ),
       ),
@@ -108,7 +111,7 @@ void main() {
       final reorderableListView = tester.widget<ReorderableListView>(innerListViewFinder);
       
       // Move index 2 (m3) to index 0
-      reorderableListView.onReorder(2, 0);
+      reorderableListView.onReorderItem!(2, 0);
       await tester.pump();
 
       expect(fakeMatchAppService.savedMatches, isNotNull);
@@ -134,8 +137,8 @@ void main() {
       expect(listViews.isNotEmpty, isTrue);
       final outerReorderable = listViews.first;
       
-      // Move index 0 (group1) to the end (index 2 in new onReorderItem)
-      outerReorderable.onReorder(0, 2);
+      // Move index 0 (group1) to the end
+      outerReorderable.onReorderItem!(0, 2);
       await tester.pump();
 
       expect(fakeMatchAppService.savedMatches, isNotNull);
@@ -167,7 +170,7 @@ void main() {
       final innerReorderable = tester.widget<ReorderableListView>(innerListViewFinder);
       
       // Move index 1 (m2) to index 0
-      innerReorderable.onReorder(1, 0);
+      innerReorderable.onReorderItem!(1, 0);
       await tester.pump();
 
       expect(fakeMatchAppService.savedMatches, isNotNull);

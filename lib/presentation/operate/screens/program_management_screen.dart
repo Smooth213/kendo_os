@@ -252,7 +252,7 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
                     child: ReorderableListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       itemCount: orderedFiles.length,
-                      onReorder: (oldIndex, newIndex) {
+                      onReorderItem: (oldIndex, newIndex) {
                         setState(() {
                           final item = orderedFiles.removeAt(oldIndex);
                           orderedFiles.insert(newIndex, item);

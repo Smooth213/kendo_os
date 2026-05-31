@@ -499,7 +499,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: _leagueParticipants.length,
-                              onReorder: (oldIndex, newIndex) {
+                              onReorderItem: (oldIndex, newIndex) {
                                 setState(() {
                                   final item = _leagueParticipants.removeAt(oldIndex);
                                   _leagueParticipants.insert(newIndex, item);

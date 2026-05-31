@@ -88,8 +88,9 @@ void main() {
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
           tournamentProvider('test-tournament').overrideWith((ref) => Stream.value(null)),
         ],
-        child: const MaterialApp(
-          home: ViewerOfficialRecordScreen(tournamentId: 'test-tournament'),
+        child: MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
+          home: const ViewerOfficialRecordScreen(tournamentId: 'test-tournament'),
         ),
       ),
     );
@@ -254,7 +255,10 @@ void main() {
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
           tournamentProvider('test-tournament').overrideWith((ref) => Stream.value(null)),
         ],
-        child: const MaterialApp(home: ViewerOfficialRecordScreen(tournamentId: 'test-tournament')),
+        child: MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
+          home: const ViewerOfficialRecordScreen(tournamentId: 'test-tournament'),
+        ),
       ),
     );
     await tester.pumpAndSettle();

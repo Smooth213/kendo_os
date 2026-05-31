@@ -68,6 +68,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
             ),
@@ -104,6 +105,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
             ),
@@ -139,6 +141,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
             ),
@@ -193,6 +196,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: MatchListTileCard(initialMatch: mockMatchWithIppon, isDeletable: false),
             ),
@@ -249,6 +253,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: MatchTimelineList(tournamentId: 't1'),
             ),
@@ -292,6 +297,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
             ),
@@ -345,6 +351,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
             ),
@@ -392,6 +399,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: MatchListTileCard(initialMatch: mockMatch, isDeletable: false),
             ),
@@ -446,6 +454,7 @@ void main() {
             )),
           ],
           child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: Scaffold(
               body: SingleChildScrollView(
                 child: viewer.ViewerMatchListTileCard(initialMatch: mockMatchWithIppon),

@@ -44,6 +44,7 @@ void main() {
           tournamentProvider(tournamentId).overrideWith((ref) => Stream.value(null)),
         ],
         child: MaterialApp.router(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           routerConfig: router,
         ),
       );

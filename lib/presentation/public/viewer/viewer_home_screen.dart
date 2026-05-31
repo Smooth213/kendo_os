@@ -1103,12 +1103,15 @@ class ViewerMatchListTileCard extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: bg,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300, width: 1.2),
         boxShadow: isPlaying ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))] : [],
       ),
-      child: ListTile(
+      child: Material(
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1228,6 +1231,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
           ],
         ),
         onTap: () => context.push('/viewer/${match.id}'),
+      ),
       ),
     );
   }

@@ -433,7 +433,7 @@ class MatchTimelineList extends ConsumerWidget {
                             // ★ 修正: 閲覧専用の時はドラッグの物理的な動きを完全にロックし、誤タップによるブレを完全防止
                             physics: permissions.isReadOnly ? const NeverScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
                             buildDefaultDragHandles: !permissions.isReadOnly, // ★ 追加: 閲覧モードの時はドラッグ用のハンドルをつまませない
-                            onReorder: (oldIndex, newIndex) => _onReorderTimeline(timelineItems, oldIndex, newIndex, ref),
+                            onReorderItem: (oldIndex, newIndex) => _onReorderTimeline(timelineItems, oldIndex, newIndex, ref),
                             children: (() {
                               String lastGroupLabel = ''; 
                               return timelineItems.map<Widget?>((item) {
@@ -543,7 +543,7 @@ class MatchTimelineList extends ConsumerWidget {
                                     child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                      ?headerWidget,
+                                        ?headerWidget,
                                         Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                           child: Slidable(
@@ -793,7 +793,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                             shrinkWrap: true,
                                                             physics: const NeverScrollableScrollPhysics(),
                                                             buildDefaultDragHandles: !permissions.isReadOnly,
-                                                          onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
+                                                          onReorderItem: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
                                                             children: normalItems.map<Widget?>((i) {
                                                               if (i is MatchModel) {
                                                                 // ★関数から独立型Widgetカードクラスへ100%完全同期置換
@@ -976,7 +976,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                             shrinkWrap: true,
                                                             physics: const NeverScrollableScrollPhysics(),
                                                             buildDefaultDragHandles: !permissions.isReadOnly,
-                                                          onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
+                                                          onReorderItem: (oldIndex, newIndex) => _onReorderInnerTimeline(normalItems, oldIndex, newIndex, ref),
                                                             children: normalItems.map<Widget?>((i) {
                                                               if (i is MatchModel) {
                                                                 // ★関数から独立型Widgetカードクラスへ100%完全同期置換
@@ -1014,7 +1014,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                             shrinkWrap: true,
                                                             physics: const NeverScrollableScrollPhysics(),
                                                             buildDefaultDragHandles: !permissions.isReadOnly,
-                                                          onReorder: (oldIndex, newIndex) => _onReorderMatches(tieBreakMatches, oldIndex, newIndex, ref),
+                                                          onReorderItem: (oldIndex, newIndex) => _onReorderMatches(tieBreakMatches, oldIndex, newIndex, ref),
                                                             // ★関数から独立型Widgetカードクラスへ100%完全同期置換
                                                             children: tieBreakMatches.map((m) => Container(key: ValueKey(m.id), child: MatchListTileCard(initialMatch: m, isDeletable: true))).toList(),
                                                           )
@@ -1114,7 +1114,7 @@ class MatchTimelineList extends ConsumerWidget {
                                       shrinkWrap: true,
                                       physics: const NeverScrollableScrollPhysics(),
                                       buildDefaultDragHandles: !permissions.isReadOnly,
-                                      onReorder: (oldIndex, newIndex) => _onReorderInnerTimeline(playerMixedItems, oldIndex, newIndex, ref),
+                                      onReorderItem: (oldIndex, newIndex) => _onReorderInnerTimeline(playerMixedItems, oldIndex, newIndex, ref),
                                       children: playerMixedItems.map<Widget?>((i) {
                                         if (i is MatchModel) {
                                           // ★関数から独立型Widgetカードクラスへ100%完全同期置換
@@ -1801,7 +1801,7 @@ class MatchListTileCard extends ConsumerWidget {
       ),
       // ★ 適合修正: ListTile が Material のエフェクトを正しく描画できるよう、Material で包囲する
       child: Material(
-        color: Colors.transparent,
+        type: MaterialType.transparency,
         child: ListTile(
           key: Key('viewer_match_card_${match.id}'),
           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),

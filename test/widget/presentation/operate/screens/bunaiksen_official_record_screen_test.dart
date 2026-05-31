@@ -86,6 +86,7 @@ void main() {
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
         child: MaterialApp.router(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           routerConfig: router,
         ),
       ),
@@ -166,6 +167,7 @@ void main() {
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
         child: MaterialApp.router(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           routerConfig: router,
         ),
       ),
@@ -220,6 +222,7 @@ void main() {
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
         child: MaterialApp.router(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           routerConfig: router,
         ),
       ),
@@ -277,6 +280,7 @@ void main() {
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
         child: MaterialApp.router(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           routerConfig: router,
         ),
       ),
@@ -330,7 +334,10 @@ void main() {
           bunaiksenRecordCategoryGroupsProvider(testTournamentId).overrideWith((ref) => categoryGroups),
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
+          routerConfig: router,
+        ),
       ),
     );
     await tester.pumpAndSettle();

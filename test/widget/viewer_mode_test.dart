@@ -435,6 +435,7 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer, List<Overrid
       ...overrides,
     ],
     child: MaterialApp.router(
+      theme: ThemeData(splashFactory: NoSplash.splashFactory),
       routerConfig: router,
     ),
   );
@@ -740,7 +741,7 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           Theme(
-            data: ThemeData.dark(), // 🌟 ダークモード環境の完全模写
+            data: ThemeData.dark().copyWith(splashFactory: NoSplash.splashFactory), // 🌟 ダークモード環境の完全模写
             child: const ViewerTeamScoreboardScreen(groupName: '一般の部_勝ち抜き'),
           ),
         ),
@@ -761,7 +762,7 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           Theme(
-            data: ThemeData.light(),
+            data: ThemeData.light().copyWith(splashFactory: NoSplash.splashFactory),
             // 意図的に無効な、または初期化中の通信切断状態をエミュレートするために
             // 存在しないグループ名、またはモックがエラーを吐くトリガーを引く
             child: const ViewerTeamScoreboardScreen(groupName: 'OFFLINE_DISCONNECTED_SHIELD_VAL'),

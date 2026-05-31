@@ -674,7 +674,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                   ? Center(child: Text('選手を追加してください', style: TextStyle(color: Colors.grey.shade500)))
                   : ReorderableListView.builder(
                       itemCount: _leagueParticipants.length,
-                      onReorder: (oldIndex, newIndex) {
+                      onReorderItem: (oldIndex, newIndex) {
                         setState(() {
                           final item = _leagueParticipants.removeAt(oldIndex);
                           _leagueParticipants.insert(newIndex, item);
@@ -785,7 +785,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen> wit
                   ? Center(child: Text('選手を追加してください', style: TextStyle(color: Colors.grey.shade500)))
                   : ReorderableListView.builder(
                       itemCount: queue.length,
-                      onReorder: (oldIndex, newIndex) {
+                      onReorderItem: (oldIndex, newIndex) {
                         ref.read(bunaiksenInfiniteQueueProvider.notifier).reorder(oldIndex, newIndex);
                       },
                       itemBuilder: (context, index) {
