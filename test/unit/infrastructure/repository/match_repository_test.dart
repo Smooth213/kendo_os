@@ -16,21 +16,21 @@ void main() {
 
       // 2. テスト用のダミーデータを投入（ステータスがバラバラの3試合）
       final matchesCollection = fakeFirestore.collection('matches');
-      
+
       await matchesCollection.doc('match_active').set({
         'matchType': '先鋒',
         'redName': '赤',
         'whiteName': '白',
         'status': 'in_progress', // 進行中
       });
-      
+
       await matchesCollection.doc('match_done').set({
         'matchType': '次鋒',
         'redName': '赤',
         'whiteName': '白',
         'status': 'finished', // 終了済み
       });
-      
+
       await matchesCollection.doc('match_waiting').set({
         'matchType': '中堅',
         'redName': '赤',
@@ -39,17 +39,20 @@ void main() {
       });
     });
 
-    test('watchActiveMatches: 進行中(in_progress)と待機中(waiting)の試合を抽出して監視できるか', () async {
-      // 実行
-      final stream = repository.watchActiveMatches();
-      final activeMatches = await stream.first;
+    test(
+      'watchActiveMatches: 進行中(in_progress)と待機中(waiting)の試合を抽出して監視できるか',
+      () async {
+        // 実行
+        final stream = repository.watchActiveMatches();
+        final activeMatches = await stream.first;
 
-      // 検証: 3件中、進行中と待機中の2件がヒットするはず
-      expect(activeMatches.length, 2, reason: '進行中と待機中の試合が2件ヒットするはず');
-      final ids = activeMatches.map((m) => m.id).toList();
-      expect(ids.contains('match_active'), isTrue);
-      expect(ids.contains('match_waiting'), isTrue);
-    });
+        // 検証: 3件中、進行中と待機中の2件がヒットするはず
+        expect(activeMatches.length, 2, reason: '進行中と待機中の試合が2件ヒットするはず');
+        final ids = activeMatches.map((m) => m.id).toList();
+        expect(ids.contains('match_active'), isTrue);
+        expect(ids.contains('match_waiting'), isTrue);
+      },
+    );
 
     test('getStaticMatches: 終了済み(finished, approved)の試合を1回だけ取得できるか', () async {
       // 実行
@@ -57,7 +60,7 @@ void main() {
 
       // 検証: 3件中、終了済みの1件がヒットするはず
       expect(staticMatches.length, 1, reason: '終了済みの試合は1件のはず');
-      
+
       final ids = staticMatches.map((m) => m.id).toList();
       expect(ids.contains('match_done'), isTrue);
       expect(ids.contains('match_waiting'), isFalse);

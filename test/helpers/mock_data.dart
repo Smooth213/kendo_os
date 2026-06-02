@@ -10,18 +10,60 @@ class MatchBuilder {
   double _matchTimeMinutes = 3.0;
   SyncState _syncState = SyncState.synced;
 
-  MatchBuilder id(String id) { _id = id; return this; }
-  MatchBuilder matchType(String type) { _matchType = type; return this; }
-  MatchBuilder kachinuki() { _matchType = '勝ち抜き'; return this; }
-  MatchBuilder redName(String name) { _redName = name; return this; }
-  MatchBuilder whiteName(String name) { _whiteName = name; return this; }
-  MatchBuilder groupName(String? name) { _groupName = name; return this; }
-  MatchBuilder individual() { _groupName = '個人戦の部'; return this; }
-  
-  MatchBuilder approved() { _status = 'approved'; return this; }
-  MatchBuilder inProgress() { _status = 'in_progress'; return this; }
-  MatchBuilder matchTimeMinutes(double minutes) { _matchTimeMinutes = minutes; return this; }
-  MatchBuilder localOnly() { _syncState = SyncState.localOnly; return this; }
+  MatchBuilder id(String id) {
+    _id = id;
+    return this;
+  }
+
+  MatchBuilder matchType(String type) {
+    _matchType = type;
+    return this;
+  }
+
+  MatchBuilder kachinuki() {
+    _matchType = '勝ち抜き';
+    return this;
+  }
+
+  MatchBuilder redName(String name) {
+    _redName = name;
+    return this;
+  }
+
+  MatchBuilder whiteName(String name) {
+    _whiteName = name;
+    return this;
+  }
+
+  MatchBuilder groupName(String? name) {
+    _groupName = name;
+    return this;
+  }
+
+  MatchBuilder individual() {
+    _groupName = '個人戦の部';
+    return this;
+  }
+
+  MatchBuilder approved() {
+    _status = 'approved';
+    return this;
+  }
+
+  MatchBuilder inProgress() {
+    _status = 'in_progress';
+    return this;
+  }
+
+  MatchBuilder matchTimeMinutes(double minutes) {
+    _matchTimeMinutes = minutes;
+    return this;
+  }
+
+  MatchBuilder localOnly() {
+    _syncState = SyncState.localOnly;
+    return this;
+  }
 
   MatchModel build() {
     return MatchModel(

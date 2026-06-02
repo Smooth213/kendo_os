@@ -9,20 +9,26 @@ final teamRepositoryProvider = Provider((ref) {
 });
 
 // ★ 追加：自チーム一覧をリアルタイム監視する固定の窓口（リセット防止！）
-final registeredTeamsProvider = StreamProvider.family.autoDispose<List<TeamModel>, String>((ref, tournamentId) {
-  return ref.watch(teamRepositoryProvider).watchTeamsByTournament(tournamentId);
-});
+final registeredTeamsProvider = StreamProvider.family
+    .autoDispose<List<TeamModel>, String>((ref, tournamentId) {
+      return ref
+          .watch(teamRepositoryProvider)
+          .watchTeamsByTournament(tournamentId);
+    });
 
 class TeamRepository {
   final FirebaseFirestore _firestore;
   final String dojoId;
 
   TeamRepository({required this.dojoId, FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _collection {
     if (dojoId.isEmpty) return _firestore.collection('teams');
-    return _firestore.collection('organizations').doc(dojoId).collection('teams');
+    return _firestore
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('teams');
   }
 
   // チームを保存・更新し、IDを返す（修正版）
@@ -33,7 +39,9 @@ class TeamRepository {
       final docRef = await _collection.add(data);
       return docRef.id;
     } else {
-      await _collection.doc(team.id).set(team.toJson(), SetOptions(merge: true));
+      await _collection
+          .doc(team.id)
+          .set(team.toJson(), SetOptions(merge: true));
       return team.id;
     }
   }
@@ -44,10 +52,10 @@ class TeamRepository {
         .where('tournamentId', isEqualTo: tournamentId)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return TeamModel.fromJson({...doc.data(), 'id': doc.id});
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            return TeamModel.fromJson({...doc.data(), 'id': doc.id});
+          }).toList();
+        });
   }
 
   // チームを削除する

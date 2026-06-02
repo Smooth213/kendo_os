@@ -15,19 +15,32 @@ void main() {
   final engine = KendoRuleEngine();
 
   group('⏪ Phase 3-3: リプレイ回帰テスト (過去の試合の完全再現)', () {
-    
     test('実データシナリオ1: 逆転勝利の歴史が正しく再現されること', () {
       // 1. 過去の試合の前提条件
       final rule = const MatchRule(ipponLimit: 2, matchTimeMinutes: 3.0);
-      final match = TestMatchFactory.createIndividualMatch(id: 'historic-match-001');
+      final match =
+          TestMatchFactory.createIndividualMatch(id: 'historic-match-001');
 
       // 2. 過去の試合のイベント履歴（データベースに保存されていたJSONを想定）
       // 歴史: 赤メン先制 -> 白コテ取り返し -> 赤反則1回 -> 白メン で「白の勝利」
       final historicEvents = [
-        ScoreEventLegacyAdapter.fromLegacy(side: Side.red, type: PointType.men, sequence: 1, userId: 'ref_1'),
-        ScoreEventLegacyAdapter.fromLegacy(side: Side.white, type: PointType.kote, sequence: 2, userId: 'ref_1'),
-        ScoreEventLegacyAdapter.fromLegacy(side: Side.red, type: PointType.hansoku, sequence: 3, userId: 'ref_1'),
-        ScoreEventLegacyAdapter.fromLegacy(side: Side.white, type: PointType.men, sequence: 4, userId: 'ref_1'),
+        ScoreEventLegacyAdapter.fromLegacy(
+            side: Side.red, type: PointType.men, sequence: 1, userId: 'ref_1'),
+        ScoreEventLegacyAdapter.fromLegacy(
+            side: Side.white,
+            type: PointType.kote,
+            sequence: 2,
+            userId: 'ref_1'),
+        ScoreEventLegacyAdapter.fromLegacy(
+            side: Side.red,
+            type: PointType.hansoku,
+            sequence: 3,
+            userId: 'ref_1'),
+        ScoreEventLegacyAdapter.fromLegacy(
+            side: Side.white,
+            type: PointType.men,
+            sequence: 4,
+            userId: 'ref_1'),
       ];
 
       // 3. エンジンによる歴史の再構築
@@ -47,13 +60,21 @@ void main() {
 
     test('実データシナリオ2: 誤審の取り消し（Undo）を含む歴史が正しく再現されること', () {
       final rule = const MatchRule(ipponLimit: 2, matchTimeMinutes: 3.0);
-      final match = TestMatchFactory.createIndividualMatch(id: 'historic-match-002');
+      final match =
+          TestMatchFactory.createIndividualMatch(id: 'historic-match-002');
 
       // 歴史: 赤メン -> 間違えて白ドウを入力（後でUndoキャンセル） -> 赤コテ で「赤の2本勝ち」
       final historicEvents = [
-        ScoreEventLegacyAdapter.fromLegacy(side: Side.red, type: PointType.men, sequence: 1, userId: 'ref_1'),
-        ScoreEventLegacyAdapter.fromLegacy(side: Side.white, type: PointType.doIdo, sequence: 2, userId: 'ref_1', isCanceled: true), // キャンセル済み
-        ScoreEventLegacyAdapter.fromLegacy(side: Side.red, type: PointType.kote, sequence: 3, userId: 'ref_1'),
+        ScoreEventLegacyAdapter.fromLegacy(
+            side: Side.red, type: PointType.men, sequence: 1, userId: 'ref_1'),
+        ScoreEventLegacyAdapter.fromLegacy(
+            side: Side.white,
+            type: PointType.doIdo,
+            sequence: 2,
+            userId: 'ref_1',
+            isCanceled: true), // キャンセル済み
+        ScoreEventLegacyAdapter.fromLegacy(
+            side: Side.red, type: PointType.kote, sequence: 3, userId: 'ref_1'),
       ];
 
       final analysis = engine.analyzeHistory(historicEvents, match, rule);
@@ -61,7 +82,7 @@ void main() {
 
       // キャンセルされた「白のドウ」がスコアに影響を与えていないことを証明
       expect(ctx.redIppon, 2);
-      expect(ctx.whiteIppon, 0); 
+      expect(ctx.whiteIppon, 0);
 
       final result = engine.decideResult(ctx, rule);
       expect(result, MatchResultStatus.redWin);

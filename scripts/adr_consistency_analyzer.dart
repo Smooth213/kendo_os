@@ -26,14 +26,22 @@ void main() {
   // Step 5-3: RuleModule Stateless検査
   final ruleDir = Directory('lib/domain/rules');
   if (ruleDir.existsSync()) {
-    final files = ruleDir.listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'));
+    final files = ruleDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'));
     for (final file in files) {
       final lines = file.readAsLinesSync();
       for (int i = 0; i < lines.length; i++) {
         final line = lines[i].trim();
         // 簡易的な非Stateless検知: 'var' や非 'final' なプロパティ宣言を警告
-        if (line.startsWith('var ') || (line.startsWith('static ') && !line.contains('const') && !line.contains('final'))) {
-          print('❌ [ADR Violation] RuleModule is NOT stateless. Found mutable state in ${file.path}:${i+1} -> $line');
+        if (line.startsWith('var ') ||
+            (line.startsWith('static ') &&
+                !line.contains('const') &&
+                !line.contains('final'))) {
+          print(
+            '❌ [ADR Violation] RuleModule is NOT stateless. Found mutable state in ${file.path}:${i + 1} -> $line',
+          );
           hasViolation = true;
         }
       }
@@ -44,14 +52,20 @@ void main() {
   // ドメイン層が外層（presentation, infrastructure）に依存することはADR違反
   final domainDir = Directory('lib/domain');
   if (domainDir.existsSync()) {
-    final files = domainDir.listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'));
+    final files = domainDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'));
     for (final file in files) {
       final lines = file.readAsLinesSync();
       for (int i = 0; i < lines.length; i++) {
         final line = lines[i].trim();
-        if (line.startsWith('import ') && 
-           (line.contains('package:kendo_os/presentation/') || line.contains('package:kendo_os/infrastructure/'))) {
-          print('❌ [ADR Violation] Forbidden Layer Dependency (Domain -> Outer Layer) in ${file.path}:${i+1} -> $line');
+        if (line.startsWith('import ') &&
+            (line.contains('package:kendo_os/presentation/') ||
+                line.contains('package:kendo_os/infrastructure/'))) {
+          print(
+            '❌ [ADR Violation] Forbidden Layer Dependency (Domain -> Outer Layer) in ${file.path}:${i + 1} -> $line',
+          );
           hasViolation = true;
         }
       }
@@ -61,7 +75,9 @@ void main() {
   // Step 5-5: Replay Safety Enforcement は CI上の `replay_regression_test.dart` に委譲
 
   if (hasViolation) {
-    print('🚨 ADR Consistency Audit Failed! コードが Architecture Invariants から乖離（Drift）しています。');
+    print(
+      '🚨 ADR Consistency Audit Failed! コードが Architecture Invariants から乖離（Drift）しています。',
+    );
     exit(1);
   } else {
     print('✅ ADR Consistency Audit Passed. コードは ADR の制約を完全に遵守しています。');

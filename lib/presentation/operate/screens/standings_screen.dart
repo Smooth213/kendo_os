@@ -27,21 +27,21 @@ class StandingsScreen extends ConsumerWidget {
   const StandingsScreen({super.key, required this.tournamentId});
 
   String _formatWinRate(double rate) {
-    if (rate >= 1.0) return '10割';
-    if (rate <= 0.0) return '0割';
+    if (rate >= 1.0) { return '10割'; }
+    if (rate <= 0.0) { return '0割'; }
     
     int wari = (rate * 10).floor() % 10;
     int bu = (rate * 100).floor() % 10;
     int rin = (rate * 1000).floor() % 10;
     
-    if (bu == 0 && rin == 0) return '$wari割';
-    if (rin == 0) return '$wari割$bu分';
+    if (bu == 0 && rin == 0) { return '$wari割'; }
+    if (rin == 0) { return '$wari割$bu分'; }
     return '$wari割$bu分$rin厘';
   }
 
   // ★ 追加：所属名などを取り除き、純粋な「選手名」だけを抽出するヘルパー
   String _extractPlayerName(String rawName) {
-    if (rawName.contains('欠員') || rawName.contains('未定')) return '';
+    if (rawName.contains('欠員') || rawName.contains('未定')) { return ''; }
     String clean = rawName.contains(':') ? rawName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : rawName.trim();
     return clean;
   }

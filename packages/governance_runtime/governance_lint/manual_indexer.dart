@@ -12,30 +12,39 @@ void main() {
 
   final docsDir = Directory('docs/manuals');
   final validDirs = ['viewer', 'operator', 'quickstart', 'faq', 'recovery'];
-  final excludeFiles = ['personas.md', 'image_mapping.md', 'style_guide.md', 'forbidden_words.md', 'manual_index.md'];
+  final excludeFiles = [
+    'personas.md',
+    'image_mapping.md',
+    'style_guide.md',
+    'forbidden_words.md',
+    'manual_index.md'
+  ];
 
   final List<Map<String, dynamic>> index = [];
 
-  final mdFiles = docsDir.listSync(recursive: true)
+  final mdFiles = docsDir
+      .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.md'))
       .where((f) {
-        final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
-        final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
-        return isAllowedDir && !isExcluded;
-      }).toList();
+    final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
+    final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
+    return isAllowedDir && !isExcluded;
+  }).toList();
 
   for (final file in mdFiles) {
     // ★ 修正1: 古い場所に残っているFAQファイルの残骸を完全に無視する
-    if ((file.path.endsWith('viewer_faq.md') || file.path.endsWith('operator_faq.md')) && 
+    if ((file.path.endsWith('viewer_faq.md') ||
+            file.path.endsWith('operator_faq.md')) &&
         !file.path.contains('/faq/')) {
-      continue; 
+      continue;
     }
 
     final content = file.readAsStringSync();
-    
+
     String title = '';
-    final titleMatch = RegExp(r'^#\s+(.+)$', multiLine: true).firstMatch(content);
+    final titleMatch =
+        RegExp(r'^#\s+(.+)$', multiLine: true).firstMatch(content);
     if (titleMatch != null) {
       title = titleMatch.group(1)?.trim() ?? '';
     }
@@ -46,12 +55,16 @@ void main() {
       } else if (file.path.contains('operator_faq')) {
         title = '運営向け よくある質問';
       } else {
-        title = file.uri.pathSegments.last.replaceAll('.md', '').replaceAll('_', ' ');
+        title = file.uri.pathSegments.last
+            .replaceAll('.md', '')
+            .replaceAll('_', ' ');
       }
     }
 
-    String cleanTitle = title.replaceFirst(RegExp(r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+', unicode: true), '');
-    cleanTitle = cleanTitle.replaceAll(RegExp(r'\s*\([A-Za-z0-9\s&\-]+\)$'), '').trim();
+    String cleanTitle = title.replaceFirst(
+        RegExp(r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+', unicode: true), '');
+    cleanTitle =
+        cleanTitle.replaceAll(RegExp(r'\s*\([A-Za-z0-9\s&\-]+\)$'), '').trim();
 
     String finalTitle = cleanTitle;
     int sortOrder = 99;
@@ -77,9 +90,12 @@ void main() {
     index.add({
       'path': file.path,
       'title': finalTitle,
-      'headings': RegExp(r'^##\s+(.+)$', multiLine: true).allMatches(content).map((m) => m.group(1)?.trim() ?? '').toList(),
+      'headings': RegExp(r'^##\s+(.+)$', multiLine: true)
+          .allMatches(content)
+          .map((m) => m.group(1)?.trim() ?? '')
+          .toList(),
       'sort_order': sortOrder,
-      'tags': [], 
+      'tags': [],
       'last_updated': DateTime.now().toIso8601String(),
     });
   }
@@ -101,9 +117,12 @@ void main() {
 
   index.sort((a, b) {
     final cmp = (a['sort_order'] as int).compareTo(b['sort_order'] as int);
-    return cmp != 0 ? cmp : (a['title'] as String).compareTo(b['title'] as String);
+    return cmp != 0
+        ? cmp
+        : (a['title'] as String).compareTo(b['title'] as String);
   });
 
-  File('docs/manuals/manual_search_index.json').writeAsStringSync(jsonEncode(index));
+  File('docs/manuals/manual_search_index.json')
+      .writeAsStringSync(jsonEncode(index));
   print('✅ [PASS] Cleaned Search Index generated.');
 }

@@ -35,37 +35,40 @@ class MockDrawConfig implements DrawConfig {
 
 void main() {
   group('🛡️ [Phase 5] Rule DSL 完全隔離・防衛機能検証テスト', () {
-    
-    testWidgets('【手順 5-1】showRuleDslEditorがfalseの際、ルール設定パネルがUI上に露出せず完全隠蔽（消滅）すること', (WidgetTester tester) async {
-      expect(BetaFeatureFlags.showRuleDslEditor, false);
+    testWidgets(
+      '【手順 5-1】showRuleDslEditorがfalseの際、ルール設定パネルがUI上に露出せず完全隠蔽（消滅）すること',
+      (WidgetTester tester) async {
+        expect(BetaFeatureFlags.showRuleDslEditor, false);
 
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: RuleConfigPanel(),
-            ),
+        await tester.pumpWidget(
+          const ProviderScope(
+            child: MaterialApp(home: Scaffold(body: RuleConfigPanel())),
           ),
-        ),
-      );
+        );
 
-      await tester.pump();
-      
-      // 画面上に設定セクションのテキストやエディタ要素が一切描画されていないことを確認
-      expect(find.textContaining('大会プリセットを選択'), findsNothing);
-      expect(find.textContaining('詳細設定をカスタマイズ'), findsNothing);
-      expect(find.byType(Card), findsNothing);
-    });
+        await tester.pump();
+
+        // 画面上に設定セクションのテキストやエディタ要素が一切描画されていないことを確認
+        expect(find.textContaining('大会プリセットを選択'), findsNothing);
+        expect(find.textContaining('詳細設定をカスタマイズ'), findsNothing);
+        expect(find.byType(Card), findsNothing);
+      },
+    );
 
     test('【手順 5-2】公式外の変則ルールプリセット（例: 5本先取ルール等）の適用を試みた際、ドメイン層が検知して即座に阻止すること', () {
       final invalidRule = MockLimitScoringRule(5); // 5本先取というあり得ない変則ルール
-      
+
       final mockContext = RuleContext(
         events: [],
         clock: 180,
         matchState: MatchContext(
-          redIppon: 0, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0,
-          isTimeUp: false, targetIppon: 5, hasHantei: false,
+          redIppon: 0,
+          whiteIppon: 0,
+          redHansoku: 0,
+          whiteHansoku: 0,
+          isTimeUp: false,
+          targetIppon: 5,
+          hasHantei: false,
         ),
         tournamentConfig: MockTournamentRuleConfig(), // ★ 修正: 安全な空モックインスタンスを注入
       );
@@ -78,11 +81,17 @@ void main() {
       expect(result.allowed, true);
     });
 
-    test('【手順 5-3】外部テキスト（External DSL）からルールを動的インポートしようとした際、インポートプロトコルが作動して物理拒否すること', () {
-      const dummyDsl = "TournamentRule { Scoring { ipponLimit: 99 } }";
-      
-      // インポート実行が厳格に禁止されていることを証明
-      expect(() => RuleDslMapper.importFromDsl(dummyDsl), throwsA(isA<UnsupportedError>()));
-    });
+    test(
+      '【手順 5-3】外部テキスト（External DSL）からルールを動的インポートしようとした際、インポートプロトコルが作動して物理拒否すること',
+      () {
+        const dummyDsl = "TournamentRule { Scoring { ipponLimit: 99 } }";
+
+        // インポート実行が厳格に禁止されていることを証明
+        expect(
+          () => RuleDslMapper.importFromDsl(dummyDsl),
+          throwsA(isA<UnsupportedError>()),
+        );
+      },
+    );
   });
 }

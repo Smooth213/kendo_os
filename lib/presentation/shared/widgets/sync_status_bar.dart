@@ -24,10 +24,18 @@ class SyncStatusBar extends ConsumerWidget {
 
     Color barColor;
     switch (activeRole) {
-      case Role.admin: barColor = Colors.indigo.shade800; break;
-      case Role.scorer: barColor = Colors.teal.shade700; break;
-      case Role.editor: barColor = Colors.purple.shade700; break;
-      case Role.viewer: barColor = Colors.blueGrey.shade700; break;
+      case Role.admin:
+        barColor = Colors.indigo.shade800;
+        break;
+      case Role.scorer:
+        barColor = Colors.teal.shade700;
+        break;
+      case Role.editor:
+        barColor = Colors.purple.shade700;
+        break;
+      case Role.viewer:
+        barColor = Colors.blueGrey.shade700;
+        break;
     }
 
     // エラーがある場合はバー全体を赤みがかった警告色にする
@@ -38,7 +46,10 @@ class SyncStatusBar extends ConsumerWidget {
     return Material(
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: 4),
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top,
+          bottom: 4,
+        ),
         color: barColor,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -48,17 +59,34 @@ class SyncStatusBar extends ConsumerWidget {
               // 1. 左側：現在の状態
               Text(
                 '【${mode.label}：${activeRole.label}】',
-                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              
+
               // 2. 右側：同期ステータス（★ Phase 3-2: ロードマップ指定の4つの安心表現へ完全縮退）
               Row(
                 children: [
                   if (!isOnline) ...[
-                    const Icon(Icons.cloud_off, color: Colors.white70, size: 12),
+                    const Icon(
+                      Icons.cloud_off,
+                      color: Colors.white70,
+                      size: 12,
+                    ),
                     const SizedBox(width: 4),
-                    const Text('オフライン', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
-                  ] else if (deadLetterCount > 0 || matchStatus == SyncStatus.syncing || isGlobalSyncing) ...[
+                    const Text(
+                      'オフライン',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ] else if (deadLetterCount > 0 ||
+                      matchStatus == SyncStatus.syncing ||
+                      isGlobalSyncing) ...[
                     GestureDetector(
                       onTap: () => _showErrorQueueSheet(context, ref),
                       child: Container(
@@ -70,14 +98,22 @@ class SyncStatusBar extends ConsumerWidget {
                             Text(
                               deadLetterCount > 0 ? '再接続中' : '同期中',
                               style: TextStyle(
-                                fontSize: 10, 
+                                fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: deadLetterCount > 0 ? Colors.yellowAccent : Colors.blue.shade100
+                                color: deadLetterCount > 0
+                                    ? Colors.yellowAccent
+                                    : Colors.blue.shade100,
                               ),
                             ),
                             if (deadLetterCount > 0) ...[
                               const SizedBox(width: 4),
-                              Text('($deadLetterCount)', style: const TextStyle(fontSize: 10, color: Colors.yellowAccent)),
+                              Text(
+                                '($deadLetterCount)',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.yellowAccent,
+                                ),
+                              ),
                             ],
                           ],
                         ),
@@ -85,10 +121,21 @@ class SyncStatusBar extends ConsumerWidget {
                     ),
                   ] else ...[
                     // 送信待ちがなく、ネットワークも健全で同期が完了している状態
-                    const Icon(Icons.cloud_done_outlined, color: Colors.greenAccent, size: 12),
+                    const Icon(
+                      Icons.cloud_done_outlined,
+                      color: Colors.greenAccent,
+                      size: 12,
+                    ),
                     const SizedBox(width: 4),
-                    const Text('保存済み', style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                  ]
+                    const Text(
+                      '保存済み',
+                      style: TextStyle(
+                        color: Colors.greenAccent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -100,24 +147,36 @@ class SyncStatusBar extends ConsumerWidget {
 
   Widget _buildMatchSyncIcon(SyncStatus status) {
     if (status == SyncStatus.syncing) {
-      return const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue));
+      return const SizedBox(
+        width: 12,
+        height: 12,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue),
+      );
     }
     return Icon(
-      status == SyncStatus.pending ? Icons.cloud_upload_outlined : Icons.cloud_done_outlined,
-      color: status == SyncStatus.pending ? Colors.orange.shade300 : Colors.greenAccent,
+      status == SyncStatus.pending
+          ? Icons.cloud_upload_outlined
+          : Icons.cloud_done_outlined,
+      color: status == SyncStatus.pending
+          ? Colors.orange.shade300
+          : Colors.greenAccent,
       size: 14,
     );
   }
 
   // ★ 追加: デッドレター（エラー）一覧を表示・操作するボトムシート
   void _showErrorQueueSheet(BuildContext context, WidgetRef ref) {
-    final navContext = rootNavigatorKey.currentContext ?? context; // ★ 修正: ルートのNavigatorContextを使用
+    final navContext =
+        rootNavigatorKey.currentContext ??
+        context; // ★ 修正: ルートのNavigatorContextを使用
     showModalBottomSheet(
       context: navContext, // ★ 修正: 安全なコンテキストを渡す
       useRootNavigator: true, // ★ Phase 8修正: ステータスバーからの安全な展開のためルートナビゲーターを使用
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (sheetContext) {
         return Consumer(
           builder: (context, sheetRef, _) {
@@ -131,21 +190,34 @@ class SyncStatusBar extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('☁️ クラウド同期ステータス', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text(
+                      '☁️ クラウド同期ステータス',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 16),
-                    
+
                     if (deadLetters.isEmpty) ...[
                       // 通常の未送信データのみの場合（従来のリセット機能を提供）
-                      const Text('現在、送信待ちのデータがキューに溜まっています。電波状況が回復すると自動的に送信されます。'),
+                      const Text(
+                        '現在、送信待ちのデータがキューに溜まっています。電波状況が回復すると自動的に送信されます。',
+                      ),
                       const SizedBox(height: 16),
                       if (pendingStatus == SyncStatus.pending)
                         Center(
                           child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade100, foregroundColor: Colors.orange.shade900),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange.shade100,
+                              foregroundColor: Colors.orange.shade900,
+                            ),
                             icon: const Icon(Icons.delete_sweep),
                             label: const Text('サーバーのデータを優先し、未送信を破棄する'),
                             onPressed: () async {
-                              await sheetRef.read(syncEngineProvider).resolveConflictByKeepingServer();
+                              await sheetRef
+                                  .read(syncEngineProvider)
+                                  .resolveConflictByKeepingServer();
                               if (context.mounted) Navigator.pop(context);
                             },
                           ),
@@ -154,7 +226,10 @@ class SyncStatusBar extends ConsumerWidget {
                       // デッドレター（送信エラー）がある場合
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: Row(
                           children: [
                             // ★ Step 8-3: Error-linked Help (同期失敗時にリカバリマニュアルへ誘導)
@@ -164,9 +239,11 @@ class SyncStatusBar extends ConsumerWidget {
                                 Navigator.push(
                                   navContext,
                                   MaterialPageRoute(
-                                    builder: (context) => const EmbeddedManualScreen(
-                                      initialFilePath: 'docs/manuals/recovery/failure_catalog.md',
-                                    ),
+                                    builder: (context) =>
+                                        const EmbeddedManualScreen(
+                                          initialFilePath:
+                                              'docs/manuals/recovery/failure_catalog.md',
+                                        ),
                                   ),
                                 );
                               },
@@ -183,8 +260,8 @@ class SyncStatusBar extends ConsumerWidget {
                             // ★ Phase 3-2: 操作員を動揺させない、現場FAQマニュアルと完全に一貫した優しい日本語への洗練マージ
                             const Expanded(
                               child: Text(
-                                '電波のズレ等により一時的に保留された操作があります。右側のボタンで「再送」を押すか、お急ぎの場合は「データ更新」マニュアルをご確認ください。', 
-                                style: TextStyle(fontSize: 11, height: 1.3)
+                                '電波のズレ等により一時的に保留された操作があります。右側のボタンで「再送」を押すか、お急ぎの場合は「データ更新」マニュアルをご確認ください。',
+                                style: TextStyle(fontSize: 11, height: 1.3),
                               ),
                             ),
                           ],
@@ -196,27 +273,60 @@ class SyncStatusBar extends ConsumerWidget {
                         child: ListView.separated(
                           shrinkWrap: true,
                           itemCount: deadLetters.length,
-                          separatorBuilder: (context, index) => const Divider(height: 1),
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
                           itemBuilder: (context, index) {
                             final cmd = deadLetters[index];
-                            final time = '${cmd.createdAt.hour.toString().padLeft(2, '0')}:${cmd.createdAt.minute.toString().padLeft(2, '0')}';
-                            final typeStr = cmd.type == CommandType.addScore ? '得点追加' : (cmd.type == CommandType.undoLastEvent ? '取り消し' : 'その他操作');
-                            
+                            final time =
+                                '${cmd.createdAt.hour.toString().padLeft(2, '0')}:${cmd.createdAt.minute.toString().padLeft(2, '0')}';
+                            final typeStr = cmd.type == CommandType.addScore
+                                ? '得点追加'
+                                : (cmd.type == CommandType.undoLastEvent
+                                      ? '取り消し'
+                                      : 'その他操作');
+
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
-                              title: Text('[$time] $typeStr', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                              subtitle: Text('ID: ${cmd.payload['matchId'] ?? cmd.id}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                              title: Text(
+                                '[$time] $typeStr',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'ID: ${cmd.payload['matchId'] ?? cmd.id}',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                ),
+                              ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   TextButton(
-                                    onPressed: () => sheetRef.read(deadLetterQueueProvider.notifier).discardCommand(cmd),
-                                    child: const Text('破棄', style: TextStyle(color: Colors.grey)),
+                                    onPressed: () => sheetRef
+                                        .read(deadLetterQueueProvider.notifier)
+                                        .discardCommand(cmd),
+                                    child: const Text(
+                                      '破棄',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
                                   ),
                                   ElevatedButton(
-                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                    ),
                                     onPressed: () {
-                                      sheetRef.read(deadLetterQueueProvider.notifier).retryCommand(cmd);
+                                      sheetRef
+                                          .read(
+                                            deadLetterQueueProvider.notifier,
+                                          )
+                                          .retryCommand(cmd);
                                     },
                                     child: const Text('再送'),
                                   ),

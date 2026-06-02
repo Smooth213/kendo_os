@@ -8,15 +8,16 @@ import 'dart:convert';
 // メモリ上に毎回1ミリ秒でダイナミック生成し、通信負荷を「完全ゼロ」にします。
 // =========================================================================
 class TournamentProgramPdfEngine {
-  
   // 🌟 空データ、100試合、リーグ戦、トーナメント、個人戦すべての材料を網羅する遅延ビルドコア
   static Future<Uint8List?> generateOnDemand({
     required String tournamentTitle,
     required List<MatchModel> matches,
     required String type, // 'league', 'tournament', 'individual'
   }) async {
-    debugPrint('🖨️ [PDF Engine] 保存用ディスクを一切汚さず、最新のIsarキャッシュからオンデマンドでPDFを組み立てます: $tournamentTitle');
-    
+    debugPrint(
+      '🖨️ [PDF Engine] 保存用ディスクを一切汚さず、最新のIsarキャッシュからオンデマンドでPDFを組み立てます: $tournamentTitle',
+    );
+
     if (matches.isEmpty) {
       debugPrint('🖨️ [PDF Engine] 試合データが空のため、空のプログラムひな形をメモリ上にレンダリングしました。');
       return Uint8List(0);
@@ -32,7 +33,9 @@ class TournamentProgramPdfEngine {
       buffer.writeln('形式: $type');
 
       for (var m in matches) {
-        buffer.writeln('[${m.order}] ${m.redName} vs ${m.whiteName} (${m.status})');
+        buffer.writeln(
+          '[${m.order}] ${m.redName} vs ${m.whiteName} (${m.status})',
+        );
       }
 
       // 擬似的にクリーンなメモリバイナリ（遅延生成データ）を即座にUIへ供給

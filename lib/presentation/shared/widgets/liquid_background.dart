@@ -37,7 +37,9 @@ class LiquidBackground extends ConsumerWidget {
             height: 350,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isDark ? Colors.indigo.withValues(alpha: 0.3) : Colors.indigo.withValues(alpha: 0.15),
+              color: isDark
+                  ? Colors.indigo.withValues(alpha: 0.3)
+                  : Colors.indigo.withValues(alpha: 0.15),
             ),
           ),
         ),
@@ -50,7 +52,9 @@ class LiquidBackground extends ConsumerWidget {
             height: 450,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isDark ? Colors.teal.withValues(alpha: 0.25) : Colors.teal.withValues(alpha: 0.12),
+              color: isDark
+                  ? Colors.teal.withValues(alpha: 0.25)
+                  : Colors.teal.withValues(alpha: 0.12),
             ),
           ),
         ),

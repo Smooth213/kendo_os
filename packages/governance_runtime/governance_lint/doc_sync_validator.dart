@@ -9,7 +9,10 @@ import 'dart:io';
 void main(List<String> args) {
   print('🛡️ [Governance CI] Starting Deep Documentation Audit (Phase 9)...');
 
-  final changedFiles = args.expand((e) => e.split(' ')).where((f) => f.trim().isNotEmpty).toList();
+  final changedFiles = args
+      .expand((e) => e.split(' '))
+      .where((f) => f.trim().isNotEmpty)
+      .toList();
   bool hasViolation = false;
 
   final changedScreens = <String>[];
@@ -22,14 +25,20 @@ void main(List<String> args) {
       changedScreens.add(file);
     }
     if (file.contains('lib/domain/rules/')) hasRuleChange = true;
-    if (file.startsWith('docs/manuals/') && file.endsWith('.md')) hasManualUpdate = true;
+    if (file.startsWith('docs/manuals/') && file.endsWith('.md')) {
+      hasManualUpdate = true;
+    }
     // ★ Step 4-4: 監視対象を新しいアセットディレクトリに変更
     if (file.contains('assets/manual_images/')) hasScreenshotUpdate = true;
   }
 
   final manualsDir = Directory('docs/manuals');
   final allManuals = manualsDir.existsSync()
-      ? manualsDir.listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.md') && !f.path.contains('templates')).toList()
+      ? manualsDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.md') && !f.path.contains('templates'))
+          .toList()
       : <File>[];
 
   // ----------------------------------------------------------------------
@@ -37,14 +46,18 @@ void main(List<String> args) {
   // ----------------------------------------------------------------------
   for (final screenFile in changedScreens) {
     final screenName = screenFile.split('/').last.replaceAll('.dart', '');
-    final manualExists = allManuals.any((f) => f.readAsStringSync().contains(screenName));
+    final manualExists =
+        allManuals.any((f) => f.readAsStringSync().contains(screenName));
     if (!manualExists) {
-      print('❌ [Step 9-1 Violation] Screen modified but no manual covers it: $screenName');
+      print(
+          '❌ [Step 9-1 Violation] Screen modified but no manual covers it: $screenName');
       hasViolation = true;
     }
     if (!hasScreenshotUpdate) {
-      print('❌ [UI/Image Sync Violation] UI changed ($screenName), but screenshots in assets/manual_images/ were not updated.');
-      print('👉 解決方法: 新しいスクリーンショットを撮影し、 assets/manual_images/ に正しい命名規約（例: ${screenName}_01.png）で配置してください。');
+      print(
+          '❌ [UI/Image Sync Violation] UI changed ($screenName), but screenshots in assets/manual_images/ were not updated.');
+      print(
+          '👉 解決方法: 新しいスクリーンショットを撮影し、 assets/manual_images/ に正しい命名規約（例: ${screenName}_01.png）で配置してください。');
       hasViolation = true;
     }
   }
@@ -53,7 +66,8 @@ void main(List<String> args) {
   // Step 9-4: Governance Coverage Check
   // ----------------------------------------------------------------------
   if (hasRuleChange && !hasManualUpdate) {
-    print('❌ [Step 9-4 Violation] Domain Rules changed but Governance Notes in manuals were not updated.');
+    print(
+        '❌ [Step 9-4 Violation] Domain Rules changed but Governance Notes in manuals were not updated.');
     hasViolation = true;
   }
 
@@ -83,7 +97,8 @@ void main(List<String> args) {
       final target = match.group(1);
       if (target != null && !target.startsWith('http')) {
         if (!_resolvePath(file, target)) {
-          print('❌ [Step 9-3 Violation] Broken Cross-reference in ${file.path} -> $target');
+          print(
+              '❌ [Step 9-3 Violation] Broken Cross-reference in ${file.path} -> $target');
           hasViolation = true;
         }
       }
@@ -91,15 +106,19 @@ void main(List<String> args) {
 
     // 3. Deep Documentation の品質要件 (AI Metadata必須)
     if (!content.contains('ai_metadata:')) {
-      print('❌ [Governance Violation] Missing AI Metadata block in ${file.path}');
+      print(
+          '❌ [Governance Violation] Missing AI Metadata block in ${file.path}');
       hasViolation = true;
     }
   }
 
   if (hasViolation) {
-    print('🚨 [BLOCK] Documentation Governance CI Failed. PR Merge is BLOCKED.');
-    print('📖 詳細なポリシーについては以下を参照してください: docs/governance/manual_update_policy.md');
-    print('👉 PRのチェックリスト（Documentation Governance Checklist）の項目がすべて完了しているか確認してください。');
+    print(
+        '🚨 [BLOCK] Documentation Governance CI Failed. PR Merge is BLOCKED.');
+    print(
+        '📖 詳細なポリシーについては以下を参照してください: docs/governance/manual_update_policy.md');
+    print(
+        '👉 PRのチェックリスト（Documentation Governance Checklist）の項目がすべて完了しているか確認してください。');
     exit(1);
   }
 

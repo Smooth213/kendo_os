@@ -7,9 +7,9 @@ import 'package:kendo_os/domain/match/match_model.dart';
 
 /// 大会形式（フォーマット）の定義
 enum TournamentFormat {
-  league,     // リーグ戦（総当たり）
-  knockout,   // トーナメント戦（勝ち上がり）
-  kachinuki,  // 勝ち抜き戦
+  league, // リーグ戦（総当たり）
+  knockout, // トーナメント戦（勝ち上がり）
+  kachinuki, // 勝ち抜き戦
 }
 
 class TournamentAggregate {
@@ -35,6 +35,8 @@ class TournamentAggregate {
   /// 現在の大会形式において、全試合が終了しているかを判定する
   bool get isAllMatchesFinished {
     if (matches.isEmpty) return false;
-    return matches.every((m) => m.status == 'finished' || m.status == 'approved');
+    return matches.every(
+      (m) => m.status == 'finished' || m.status == 'approved',
+    );
   }
 }

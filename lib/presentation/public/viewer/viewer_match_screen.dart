@@ -25,8 +25,12 @@ class ViewerMatchScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewStateAsync = kIsWeb ? null : ref.watch(viewerMatchProjectionProvider(matchId));
-    final asyncWebMatch = kIsWeb ? ref.watch(webScoreboardMatchProvider(matchId)) : null;
+    final viewStateAsync = kIsWeb
+        ? null
+        : ref.watch(viewerMatchProjectionProvider(matchId));
+    final asyncWebMatch = kIsWeb
+        ? ref.watch(webScoreboardMatchProvider(matchId))
+        : null;
 
     // 🌟 ずっとクルクルする（無限ローディング）不具合修正パッチ
     // Projectionストリームの初回パケットを待機中で loading に陥っている場合でも、
@@ -38,17 +42,34 @@ class ViewerMatchScreen extends ConsumerWidget {
         final match = asyncWebMatch!.value!;
         try {
           final engine = KendoRuleEngine();
-          final analysis = engine.analyzeHistory(match.events, match, match.rule);
-          fallbackProjection = MatchProjectionMapper.toProjection(match, analysis);
+          final analysis = engine.analyzeHistory(
+            match.events,
+            match,
+            match.rule,
+          );
+          fallbackProjection = MatchProjectionMapper.toProjection(
+            match,
+            analysis,
+          );
         } catch (_) {}
       }
     } else if (viewStateAsync!.isLoading || viewStateAsync.value == null) {
-      final match = ref.watch(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+      final match = ref
+          .watch(matchListProvider)
+          .where((m) => m.id == matchId)
+          .firstOrNull;
       if (match != null) {
         try {
           final engine = KendoRuleEngine();
-          final analysis = engine.analyzeHistory(match.events, match, match.rule);
-          fallbackProjection = MatchProjectionMapper.toProjection(match, analysis);
+          final analysis = engine.analyzeHistory(
+            match.events,
+            match,
+            match.rule,
+          );
+          fallbackProjection = MatchProjectionMapper.toProjection(
+            match,
+            analysis,
+          );
         } catch (_) {}
       }
     }
@@ -57,28 +78,39 @@ class ViewerMatchScreen extends ConsumerWidget {
       if (asyncWebMatch!.isLoading && fallbackProjection == null) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       } else if (asyncWebMatch.hasError) {
-        return Scaffold(body: Center(child: Text('エラーが発生しました: ${asyncWebMatch.error}')));
+        return Scaffold(
+          body: Center(child: Text('エラーが発生しました: ${asyncWebMatch.error}')),
+        );
       } else {
-        if (fallbackProjection == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
+        if (fallbackProjection == null)
+        {  return const Scaffold(body: Center(child: Text('試合データが見つかりません'))); }
         return _buildScreen(context, ref, fallbackProjection);
       }
     } else {
       return viewStateAsync!.when(
         loading: () {
-          if (fallbackProjection != null) return _buildScreen(context, ref, fallbackProjection);
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          if (fallbackProjection != null)
+          {  return _buildScreen(context, ref, fallbackProjection); }
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         },
         error: (e, s) => Scaffold(body: Center(child: Text('エラーが発生しました: $e'))),
         data: (MatchProjection? projection) {
           final target = projection ?? fallbackProjection;
-          if (target == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
+          if (target == null)
+          {  return const Scaffold(body: Center(child: Text('試合データが見つかりません'))); }
           return _buildScreen(context, ref, target);
         },
       );
     }
   }
 
-  Widget _buildScreen(BuildContext context, WidgetRef ref, MatchProjection projection) {
+  Widget _buildScreen(
+    BuildContext context,
+    WidgetRef ref,
+    MatchProjection projection,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final iconColor = isDark ? Colors.white : Colors.indigo.shade900;
     final textColor = isDark ? Colors.white : Colors.black;
@@ -88,7 +120,10 @@ class ViewerMatchScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: Text('試合状況 (観戦)', style: TextStyle(fontSize: 14, color: textColor)),
+          title: Text(
+            '試合状況 (観戦)',
+            style: TextStyle(fontSize: 14, color: textColor),
+          ),
           leading: context.canPop()
               ? IconButton(
                   icon: Icon(Icons.arrow_back_ios, color: iconColor, size: 20),
@@ -100,9 +135,13 @@ class ViewerMatchScreen extends ConsumerWidget {
             IconButton(
               icon: Icon(Icons.qr_code_2, color: iconColor, size: 20),
               tooltip: 'この試合の観戦QRコード・リンクを共有',
-              onPressed: () => _showShareDialog(context, ref, projection.tournamentId),
+              onPressed: () =>
+                  _showShareDialog(context, ref, projection.tournamentId),
             ),
-            ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: iconColor),
+            ManualHelpButton(
+              manualPath: 'docs/manuals/faq/viewer_faq.md',
+              color: iconColor,
+            ),
             const SizedBox(width: 8),
           ],
         ),
@@ -128,13 +167,17 @@ class ViewerMatchScreen extends ConsumerWidget {
   }
 
   // ★ Phase 10: 現場運営スタッフが3タップ以内で試合作成・入力へ戻れる動的ヘッダー
-  Widget _buildStatusBar(BuildContext context, WidgetRef ref, MatchProjection p) {
+  Widget _buildStatusBar(
+    BuildContext context,
+    WidgetRef ref,
+    MatchProjection p,
+  ) {
     return Container(
       width: double.infinity,
       color: Colors.blueGrey.shade700,
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
@@ -142,7 +185,11 @@ class ViewerMatchScreen extends ConsumerWidget {
               const SizedBox(width: 6),
               const Text(
                 '閲覧モード',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
               ),
               const SizedBox(width: 8),
               // クイック切替用ボタン（現場での迷子を物理的にゼロにする）
@@ -150,14 +197,21 @@ class ViewerMatchScreen extends ConsumerWidget {
                 style: TextButton.styleFrom(
                   // ★ 修正：非推奨の withOpacity(0.2) を最新の withValues(alpha: 0.2) へ刷新
                   backgroundColor: Colors.orangeAccent.withValues(alpha: 0.2),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 onPressed: () => _showModeSwitchDialog(context, ref),
                 child: const Text(
                   '運営モードへ切替',
-                  style: TextStyle(color: Colors.orangeAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.orangeAccent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -166,7 +220,11 @@ class ViewerMatchScreen extends ConsumerWidget {
           Expanded(
             child: Text(
               '${p.statusText} | 直前: ${p.lastEventText}',
-              style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.right,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
@@ -182,7 +240,10 @@ class ViewerMatchScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('モード切替確認', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: const Text(
+          'モード切替確認',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         content: const Text(
           '現在の端末を「閲覧専用」から「運営者（Operator）」に変更しますか？\n変更すると、試合作成やスコア入力画面への進入が可能になります。',
           style: TextStyle(fontSize: 13),
@@ -193,10 +254,18 @@ class ViewerMatchScreen extends ConsumerWidget {
             child: const Text('キャンセル'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orangeAccent, foregroundColor: Colors.black),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orangeAccent,
+              foregroundColor: Colors.black,
+            ),
             onPressed: () {
               // 1タップ目: 状態を運営者へ書き換え（MatchRouterが即座に検知して画面を自動再描画します）
-              ref.read(authSessionProvider.notifier).establishSession(UserRole.operator, ref.read(currentDojoIdProvider));
+              ref
+                  .read(authSessionProvider.notifier)
+                  .establishSession(
+                    UserRole.operator,
+                    ref.read(currentDojoIdProvider),
+                  );
               Navigator.pop(ctx); // 2タップ目: ダイアログを閉じる
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('運営者モードへ切り替えました。試合操作が可能です。')),
@@ -209,7 +278,11 @@ class ViewerMatchScreen extends ConsumerWidget {
     );
   }
 
-  void _showShareDialog(BuildContext context, WidgetRef ref, String tournamentId) {
+  void _showShareDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String tournamentId,
+  ) {
     final dojoId = ref.read(currentDojoIdProvider);
     final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
     final String shareUrl = isBunaiksen
@@ -219,30 +292,58 @@ class ViewerMatchScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(isBunaiksen ? '部内戦観戦リンク' : '大会観戦リンク', style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        title: Text(
+          isBunaiksen ? '部内戦観戦リンク' : '大会観戦リンク',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
         content: SizedBox(
           width: 300,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('このリンクを共有すると、\nリアルタイムで観戦できます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+              const Text(
+                'このリンクを共有すると、\nリアルタイムで観戦できます。',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13),
+              ),
               const SizedBox(height: 16),
-              Container(padding: const EdgeInsets.all(8), color: Colors.white, child: QrImageView(data: shareUrl, version: QrVersions.auto, size: 200.0)),
+              Container(
+                padding: const EdgeInsets.all(8),
+                color: Colors.white,
+                child: QrImageView(
+                  data: shareUrl,
+                  version: QrVersions.auto,
+                  size: 200.0,
+                ),
+              ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => SharePlus.instance.share(ShareParams(text: 
-                  '【剣道リアルタイムViewer共有】この試合（コート）のリアルタイム打突一本速報・タイマー状態をその場で確認できます！\n'
-                  'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
-                  '試合速報リンク: $shareUrl'
-                )),
+                onPressed: () => SharePlus.instance.share(
+                  ShareParams(
+                    text:
+                        '【剣道リアルタイムViewer共有】この試合（コート）のリアルタイム打突一本速報・タイマー状態をその場で確認できます！\n'
+                        'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
+                        '試合速報リンク: $shareUrl',
+                  ),
+                ),
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade700, foregroundColor: Colors.white, elevation: 0),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey.shade700,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                ),
               ),
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('閉じる'),
+          ),
+        ],
       ),
     );
   }

@@ -9,11 +9,7 @@ class ManualHelpButton extends StatelessWidget {
   final String manualPath;
   final Color? color;
 
-  const ManualHelpButton({
-    super.key,
-    required this.manualPath,
-    this.color,
-  });
+  const ManualHelpButton({super.key, required this.manualPath, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +20,8 @@ class ManualHelpButton extends StatelessWidget {
         // 現在の画面の上に、マニュアル画面を被せて表示する
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => EmbeddedManualScreen(initialFilePath: manualPath),
+            builder: (context) =>
+                EmbeddedManualScreen(initialFilePath: manualPath),
             fullscreenDialog: true, // 下からスッと出てくるモーダル表現（iOS風）
           ),
         );

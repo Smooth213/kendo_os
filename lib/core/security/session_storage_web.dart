@@ -22,7 +22,8 @@ class SessionStorage {
       final jsonStr = web.window.localStorage.getItem(_storageKey);
       if (jsonStr == null || jsonStr.isEmpty) return null;
 
-      final Map<String, dynamic> map = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final Map<String, dynamic> map =
+          jsonDecode(jsonStr) as Map<String, dynamic>;
       final session = UserSession.fromJson(map);
 
       // 改ざん・バージョン不一致、または期限切れのデータは水際でパージ

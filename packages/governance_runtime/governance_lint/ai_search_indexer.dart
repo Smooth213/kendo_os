@@ -9,10 +9,14 @@ import 'dart:convert';
 // ============================================================================
 
 void main() {
-  print('🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime (Phase 7)...');
+  print(
+      '🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime (Phase 7)...');
 
   final manualsDir = Directory('docs/manuals');
-  final mdFiles = manualsDir.listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.md'));
+  final mdFiles = manualsDir
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((f) => f.path.endsWith('.md'));
   final List<Map<String, dynamic>> chunks = [];
 
   for (final file in mdFiles) {
@@ -21,9 +25,10 @@ void main() {
     }
 
     final content = file.readAsStringSync();
-    
+
     // Step 7-2: Semantic Tagging (YAMLメタデータの詳細抽出)
-    final metadataMatch = RegExp(r'^---\s*\n(.*?)\n---\s*\n', dotAll: true).firstMatch(content);
+    final metadataMatch =
+        RegExp(r'^---\s*\n(.*?)\n---\s*\n', dotAll: true).firstMatch(content);
     Map<String, dynamic> metadata = {};
     if (metadataMatch != null) {
       final yamlContent = metadataMatch.group(1) ?? '';
@@ -46,23 +51,27 @@ void main() {
 
     // Step 7-3: Cross Reference Network の抽出 (See also: ...)
     List<String> crossReferences = [];
-    final seeAlsoMatch = RegExp(r'See also:\n((\s*-\s*\[.*?\]\(.*?\)\n?)+)').firstMatch(content);
+    final seeAlsoMatch =
+        RegExp(r'See also:\n((\s*-\s*\[.*?\]\(.*?\)\n?)+)').firstMatch(content);
     if (seeAlsoMatch != null) {
-      final links = RegExp(r'\[(.*?)\]\((.*?)\)').allMatches(seeAlsoMatch.group(1) ?? '');
+      final links =
+          RegExp(r'\[(.*?)\]\((.*?)\)').allMatches(seeAlsoMatch.group(1) ?? '');
       for (final link in links) {
         crossReferences.add(link.group(2) ?? ''); // リンク先の相対パスを抽出
       }
     }
 
     // Step 7-1: Chunk Structure 最適化
-    final body = content.replaceFirst(RegExp(r'^---\s*\n.*?\n---\s*\n', dotAll: true), '');
+    final body = content.replaceFirst(
+        RegExp(r'^---\s*\n.*?\n---\s*\n', dotAll: true), '');
     final lines = body.split('\n');
     String currentH1 = '';
     String currentH2 = '';
     List<String> currentBuffer = [];
 
     void saveChunk() {
-      if (currentBuffer.isNotEmpty && currentBuffer.join('').trim().isNotEmpty) {
+      if (currentBuffer.isNotEmpty &&
+          currentBuffer.join('').trim().isNotEmpty) {
         // 見出しからチャンクの種類を高精度に推論
         String chunkType = 'info';
         final h2Lower = currentH2.toLowerCase();
@@ -70,7 +79,10 @@ void main() {
           chunkType = 'faq';
         } else if (h2Lower.contains('手順') || h2Lower.contains('操作')) {
           chunkType = 'procedure';
-        } else if (h2Lower.contains('障害') || h2Lower.contains('エラー') || h2Lower.contains('通信断') || h2Lower.contains('停電')) {
+        } else if (h2Lower.contains('障害') ||
+            h2Lower.contains('エラー') ||
+            h2Lower.contains('通信断') ||
+            h2Lower.contains('停電')) {
           chunkType = 'failure_recovery';
         } else if (h2Lower.contains('governance')) {
           chunkType = 'governance';
@@ -111,5 +123,6 @@ void main() {
 
   final outputFile = File('${outputDir.path}/vector_index.json');
   outputFile.writeAsStringSync(jsonEncode(chunks));
-  print('✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks generated with Semantic Tags & Cross-Refs.');
+  print(
+      '✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks generated with Semantic Tags & Cross-Refs.');
 }

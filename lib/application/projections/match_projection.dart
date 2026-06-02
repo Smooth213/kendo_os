@@ -10,9 +10,9 @@ abstract class TimelineEvent with _$TimelineEvent {
   const factory TimelineEvent({
     required String id,
     required DateTime timestamp,
-    required String side,       
-    required String actionName, 
-    required bool isImportant,  
+    required String side,
+    required String actionName,
+    required bool isImportant,
   }) = _TimelineEvent;
 }
 
@@ -43,15 +43,14 @@ abstract class MatchListProjection with _$MatchListProjection {
 /// ③ 試合詳細Viewer用のリッチProjection (アニメーションや詳細軌跡を含む)
 @freezed
 abstract class MatchProjection with _$MatchProjection {
-
   const factory MatchProjection({
     required String id,
     required String tournamentId,
     required int matchOrder,
     required String matchType,
     required String status,
-    required String groupName, 
-    required bool isKachinuki, 
+    required String groupName,
+    required bool isKachinuki,
     required String redName,
     required String whiteName,
     @Default([]) List<String> redRemaining,
@@ -60,7 +59,7 @@ abstract class MatchProjection with _$MatchProjection {
     required int whiteScore,
     @Default([]) List<PointDisplay> redDisplays,
     @Default([]) List<PointDisplay> whiteDisplays,
-    
+
     // ★ 復元: 公式記録画面やスコアボードで必須の表示用フィールド
     @Default('') String firstPointSide,
     @Default([]) List<String> redPointMarks,
@@ -69,8 +68,8 @@ abstract class MatchProjection with _$MatchProjection {
     required int remainingSeconds,
     required bool timerIsRunning,
     required String note,
-    @Default([]) List<TimelineEvent> timeline, 
-    @Default(0.0) double momentum,             
+    @Default([]) List<TimelineEvent> timeline,
+    @Default(0.0) double momentum,
   }) = _MatchProjection;
 }
 
@@ -93,11 +92,16 @@ extension MatchListProjectionUIX on MatchListProjection {
   int get order => matchOrder;
   String get statusText {
     switch (status) {
-      case 'waiting': return '待機中';
-      case 'in_progress': return '進行中';
-      case 'finished': return '試合終了';
-      case 'approved': return '承認済';
-      default: return '不明';
+      case 'waiting':
+        return '待機中';
+      case 'in_progress':
+        return '進行中';
+      case 'finished':
+        return '試合終了';
+      case 'approved':
+        return '承認済';
+      default:
+        return '不明';
     }
   }
 }
@@ -106,21 +110,28 @@ extension MatchListProjectionUIX on MatchListProjection {
 extension MatchProjectionUIX on MatchProjection {
   String get matchId => id;
   int get order => matchOrder;
-  
+
   String get statusText {
     switch (status) {
-      case 'waiting': return '待機中';
-      case 'in_progress': return '進行中';
-      case 'finished': return '試合終了';
-      case 'approved': return '承認済';
-      default: return '不明';
+      case 'waiting':
+        return '待機中';
+      case 'in_progress':
+        return '進行中';
+      case 'finished':
+        return '試合終了';
+      case 'approved':
+        return '承認済';
+      default:
+        return '不明';
     }
   }
 
   String get lastEventText {
     if (timeline.isNotEmpty) {
       final last = timeline.last;
-      final prefix = last.side == 'red' ? '【赤】' : (last.side == 'white' ? '【白】' : '【審判】');
+      final prefix = last.side == 'red'
+          ? '【赤】'
+          : (last.side == 'white' ? '【白】' : '【審判】');
       return '$prefix ${last.actionName}';
     }
     if (status == 'finished') return '試合が終了しました';
@@ -131,9 +142,15 @@ extension MatchProjectionUIX on MatchProjection {
   // ★ Step 2-2: Projection rebuild hash導入
   // 完全に決定論的なハッシュを生成し、リプレイによる再構築結果が100%同一であることを証明する
   String get rebuildHash {
-    final displaysRed = redDisplays.map((d) => '${d.mark}:${d.isFirstMatchPoint}').join(',');
-    final displaysWhite = whiteDisplays.map((d) => '${d.mark}:${d.isFirstMatchPoint}').join(',');
-    final tLine = timeline.map((t) => '${t.id}:${t.side}:${t.actionName}').join(',');
+    final displaysRed = redDisplays
+        .map((d) => '${d.mark}:${d.isFirstMatchPoint}')
+        .join(',');
+    final displaysWhite = whiteDisplays
+        .map((d) => '${d.mark}:${d.isFirstMatchPoint}')
+        .join(',');
+    final tLine = timeline
+        .map((t) => '${t.id}:${t.side}:${t.actionName}')
+        .join(',');
     return '$id|$status|$redScore|$whiteScore|$displaysRed|$displaysWhite|$tLine|${momentum.toStringAsFixed(4)}';
   }
 }

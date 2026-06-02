@@ -358,7 +358,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final generator = ref.read(matchGeneratorProvider);
     
     if (_creationMode == '単発試合') {
-      if (_redNameController.text.isEmpty || _whiteNameController.text.isEmpty) return;
+      if (_redNameController.text.isEmpty || _whiteNameController.text.isEmpty) { return; }
       if (widget.tournamentId == null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('大会IDが不明なため保存できません')));
         return;
@@ -379,11 +379,11 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
       
     } else if (_creationMode == 'リーグ戦自動生成') {
       final participants = _leagueParticipantsController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-      if (participants.length < 2) return;
+      if (participants.length < 2) { return; }
       await generator.generateLeagueMatches(_categoryController.text, participants, _countForStandings, _noteController.text, widget.tournamentId); 
       
     } else if (_creationMode == '団体戦テンプレ生成') {
-      if (_redOrg == null || _redTeam == null || _whiteOrg == null || _whiteTeam == null) return;
+      if (_redOrg == null || _redTeam == null || _whiteOrg == null || _whiteTeam == null) { return; }
       await generator.generateTeamMatchBouts(
         _redTeam!.name, _redTeam!.orderedMemberNames,
         _whiteTeam!.name, _whiteTeam!.orderedMemberNames,
@@ -394,7 +394,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
       );
     }
     
-    if (!mounted) return;
+    if (!mounted) { return; }
     Navigator.pop(context);
   }
 }

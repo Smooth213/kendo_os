@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; 
+import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import '../../../helpers/event_factory.dart';
 
 void main() {
@@ -13,10 +13,15 @@ void main() {
 
     setUp(() {
       engine = KendoRuleEngine();
-      dummyMatch = MatchModel( // ★ constを外し、コンパイラクラッシュを回避
-        id: 'test', tournamentId: 't1', matchOrder: 1,
-        redName: 'Red', whiteName: 'White',
-        status: 'in_progress', matchType: '個人戦',
+      dummyMatch = MatchModel(
+        // ★ constを外し、コンパイラクラッシュを回避
+        id: 'test',
+        tournamentId: 't1',
+        matchOrder: 1,
+        redName: 'Red',
+        whiteName: 'White',
+        status: 'in_progress',
+        matchType: '個人戦',
       );
       dummyRule = MatchRule(); // デフォルト設定
     });

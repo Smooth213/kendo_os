@@ -5,5 +5,6 @@ class MatchCorruptionException implements Exception {
   MatchCorruptionException(this.message, {this.matchId});
 
   @override
-  String toString() => 'MatchCorruptionException: $message${matchId != null ? ' (Match ID: $matchId)' : ''}';
+  String toString() =>
+      'MatchCorruptionException: $message${matchId != null ? ' (Match ID: $matchId)' : ''}';
 }

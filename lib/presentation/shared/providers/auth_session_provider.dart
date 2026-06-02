@@ -29,7 +29,7 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
         break;
       case UserRole.operator:
       case UserRole.recorder:
-        duration = const Duration(hours: 12);   // 終日大会・錬成会運営用
+        duration = const Duration(hours: 12); // 終日大会・錬成会運営用
         break;
       case UserRole.viewer:
         duration = const Duration(minutes: 30); // 一般観客用
@@ -69,9 +69,10 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
 }
 
 /// セッションのインメモリ状態を管理するグローバルプロバイダー
-final authSessionProvider = StateNotifierProvider<AuthSessionNotifier, UserSession?>((ref) {
-  return AuthSessionNotifier();
-});
+final authSessionProvider =
+    StateNotifierProvider<AuthSessionNotifier, UserSession?>((ref) {
+      return AuthSessionNotifier();
+    });
 
 /// 🌟 STEP 3-2核心：Firestoreの組織内メンバー情報をStreamで常時リッスンし、
 /// 本部で権限が切り替えられた瞬間に0秒で端末に反映させるプロバイダー。

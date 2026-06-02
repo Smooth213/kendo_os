@@ -22,15 +22,18 @@ class IsarProjectionStore {
       ..tournamentId = match.tournamentId ?? ''
       ..category = match.category
       ..groupName = match.groupName
-      ..matchOrder = match.order.toInt() // 🌟 補正：doubleを明示的にintにキャスト
+      ..matchOrder = match.order
+          .toInt() // 🌟 補正：doubleを明示的にintにキャスト
       ..redName = match.redName
       ..whiteName = match.whiteName
       ..redScore = match.redScore
       ..whiteScore = match.whiteScore
       ..status = match.status
-      ..lastUpdatedAt = DateTime.now(); // 🌟 補正：ドメインaggregateに含まれないwinnerNameの直接代入を排除
+      ..lastUpdatedAt =
+          DateTime.now(); // 🌟 補正：ドメインaggregateに含まれないwinnerNameの直接代入を排除
 
-    await _isar.writeTxn(() async { // 🌟 補正：スマートキャストが効いているため「!」を完全撤去
+    await _isar.writeTxn(() async {
+      // 🌟 補正：スマートキャストが効いているため「!」を完全撤去
       final existing = await _isar.matchProjectionEntitys
           .filter()
           .matchIdEqualTo(match.id)
@@ -44,9 +47,12 @@ class IsarProjectionStore {
   }
 
   // キャッシュから特定の大会の全プロジェクションを高速復元
-  Future<List<MatchProjectionEntity>> getTournamentProjections(String tournamentId) async {
+  Future<List<MatchProjectionEntity>> getTournamentProjections(
+    String tournamentId,
+  ) async {
     if (_isar == null) return [];
-    return await _isar.matchProjectionEntitys // 🌟 補正：「!」を完全撤去
+    return await _isar
+        .matchProjectionEntitys // 🌟 補正：「!」を完全撤去
         .filter()
         .tournamentIdEqualTo(tournamentId)
         .sortByMatchOrder()

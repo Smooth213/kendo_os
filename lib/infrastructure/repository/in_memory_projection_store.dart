@@ -4,7 +4,7 @@ import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/domain/repositories/projection_store.dart';
 
 final projectionStoreProvider = Provider<ProjectionStore>((ref) {
-  return InMemoryProjectionStore(); 
+  return InMemoryProjectionStore();
 });
 
 /// B-2: ProjectionStoreのローカル実装（Isar移行前のインメモリ版）
@@ -16,15 +16,20 @@ class InMemoryProjectionStore implements ProjectionStore {
   final _listStore = <String, MatchListProjection>{};
 
   final _singleControllers = <String, StreamController<MatchProjection>>{};
-  final _listController = StreamController<List<MatchListProjection>>.broadcast();
+  final _listController =
+      StreamController<List<MatchListProjection>>.broadcast();
 
   @override
   Future<void> save(MatchProjection projection) async {
     _store[projection.id] = projection;
-    
-    _singleControllers.putIfAbsent(projection.id, () => StreamController<MatchProjection>.broadcast())
+
+    _singleControllers
+        .putIfAbsent(
+          projection.id,
+          () => StreamController<MatchProjection>.broadcast(),
+        )
         .add(projection);
-    
+
     // 保存時にリスト用の軽量版も自動生成してキャッシュ（メモリ節約の要）
     _listStore[projection.id] = MatchListProjection(
       id: projection.id,
@@ -43,7 +48,7 @@ class InMemoryProjectionStore implements ProjectionStore {
       redPointMarks: projection.redPointMarks,
       whitePointMarks: projection.whitePointMarks,
     );
-    
+
     _listController.add(_listStore.values.toList());
   }
 
@@ -57,7 +62,10 @@ class InMemoryProjectionStore implements ProjectionStore {
     if (_store.containsKey(matchId)) {
       yield _store[matchId]!;
     }
-    final controller = _singleControllers.putIfAbsent(matchId, () => StreamController<MatchProjection>.broadcast());
+    final controller = _singleControllers.putIfAbsent(
+      matchId,
+      () => StreamController<MatchProjection>.broadcast(),
+    );
     await for (final projection in controller.stream) {
       yield projection;
     }
@@ -65,8 +73,12 @@ class InMemoryProjectionStore implements ProjectionStore {
 
   // ★ リスト画面では MatchProjection ではなく MatchListProjection を流すように変更
   @override
-  Stream<List<MatchListProjection>> watchByTournament(String tournamentId) async* {
-    yield _listStore.values.where((p) => p.tournamentId == tournamentId).toList();
+  Stream<List<MatchListProjection>> watchByTournament(
+    String tournamentId,
+  ) async* {
+    yield _listStore.values
+        .where((p) => p.tournamentId == tournamentId)
+        .toList();
     await for (final list in _listController.stream) {
       yield list.where((p) => p.tournamentId == tournamentId).toList();
     }

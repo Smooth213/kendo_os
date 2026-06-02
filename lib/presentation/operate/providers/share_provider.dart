@@ -16,14 +16,15 @@ class ShareService {
   /// 2. メッセージ内へのQRコード自動生成用URL（Google Chart API連携）の埋め込み
   /// をすべて全自動で同時に執行し、現地共有の手間を完全ゼロ化します。
   Future<void> shareMatch(MatchModel match) async {
-    const String baseUrl = 'https://kendo-os.web.app'; 
+    const String baseUrl = 'https://kendo-os.web.app';
     final String matchUrl = '$baseUrl/viewer/${match.id}';
 
     // クリップボードへ共有URLを先回りして自動強制格納（コピーの手間を破壊）
     await Clipboard.setData(ClipboardData(text: matchUrl));
 
     // そのままスマホのブラウザで開くだけで即座にQRコードとしてレンダリングされる、高互換URLを自動生成
-    final String qrUrl = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${Uri.encodeComponent(matchUrl)}';
+    final String qrUrl =
+        'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${Uri.encodeComponent(matchUrl)}';
 
     final rScore = match.redScore;
     final wScore = match.whiteScore;
@@ -32,8 +33,9 @@ class ShareService {
 
     final isFinished = match.status == 'approved' || match.status == 'finished';
     final String statusText = isFinished ? '【試合結果】' : '【試合速報 (進行中)】';
-    
-    final String shareText = '''
+
+    final String shareText =
+        '''
 $statusText
 🔴 $rName $rScore - $wScore $wName ⚪️
 

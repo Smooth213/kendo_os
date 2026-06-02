@@ -24,5 +24,6 @@ abstract class MatchMeta with _$MatchMeta {
     @Default(false) bool isAutoAssigned,
   }) = _MatchMeta;
 
-  factory MatchMeta.fromJson(Map<String, dynamic> json) => _$MatchMetaFromJson(json);
+  factory MatchMeta.fromJson(Map<String, dynamic> json) =>
+      _$MatchMetaFromJson(json);
 }

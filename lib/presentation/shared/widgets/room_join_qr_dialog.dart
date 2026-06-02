@@ -7,7 +7,9 @@ import '../../../../core/security/pwa_storage_bridge.dart';
 import '../providers/dojo_room_history_provider.dart';
 
 // ★ テスト時にモック（FakeFirestore）を安全に注入するための専用Provider
-final roomFirestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
+final roomFirestoreProvider = Provider<FirebaseFirestore>(
+  (ref) => FirebaseFirestore.instance,
+);
 
 /// 保護者端末や会場配置モニターを、特定の道場同期空間（organizationId）へ
 /// 最速かつ迷わせずに直結させるための、QR・手動入力統合ダイアログ。
@@ -61,7 +63,8 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
 
     try {
       // 1. 指定されたIDのフォルダ（組織ドキュメント）がFirestore上に実在するか get 照会
-      final docSnapshot = await ref.read(roomFirestoreProvider)
+      final docSnapshot = await ref
+          .read(roomFirestoreProvider)
           .collection('organizations')
           .doc(cleanCode)
           .get();
@@ -76,7 +79,8 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
       }
 
       // 3. 重複していなければ、完全新規の綺麗な道場ルームとして安全に初期創設を執行
-      await ref.read(roomFirestoreProvider)
+      await ref
+          .read(roomFirestoreProvider)
           .collection('organizations')
           .doc(cleanCode)
           .set({
@@ -85,7 +89,6 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
           });
 
       _executeFinalConnection(cleanCode);
-
     } catch (e) {
       if (mounted) {
         setState(() => _errorMessage = '通信エラーが発生しました。電波状況を確認してください。');
@@ -103,13 +106,13 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
       context: parentContext,
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        final cardBgColor = isDark 
-            ? const Color(0xFF1C1C1E).withValues(alpha: 0.4) 
+        final cardBgColor = isDark
+            ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
             : Colors.white.withValues(alpha: 0.6);
         final textColor = isDark ? Colors.white : const Color(0xFF1A237E);
         final subTextColor = isDark ? Colors.white70 : Colors.black87;
-        final borderColor = isDark 
-            ? Colors.white.withValues(alpha: 0.2) 
+        final borderColor = isDark
+            ? Colors.white.withValues(alpha: 0.2)
             : Colors.white.withValues(alpha: 0.7);
 
         return Dialog(
@@ -131,9 +134,21 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.report_problem_rounded, color: Colors.amber),
+                        const Icon(
+                          Icons.report_problem_rounded,
+                          color: Colors.amber,
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(child: Text('⚠️ ID重複・既存の部屋', style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold))),
+                        Expanded(
+                          child: Text(
+                            '⚠️ ID重複・既存の部屋',
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -141,7 +156,11 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                       'ルームID [ $code ] はすでに存在しています。\n\n'
                       '他の道場が使用中か、過去に作成された部屋です。このまま接続して共有しますか？\n'
                       '※新規で作りたい場合はキャンセルし、別のIDに変更してください。',
-                      style: TextStyle(color: subTextColor, fontSize: 13, height: 1.5),
+                      style: TextStyle(
+                        color: subTextColor,
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     Wrap(
@@ -150,19 +169,35 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                       runSpacing: 8,
                       children: [
                         TextButton(
-                          onPressed: () => Navigator.of(context).pop(), // 閉じて別の名前の入力を促す
-                          child: const Text('キャンセル（変更する）', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                          onPressed: () =>
+                              Navigator.of(context).pop(), // 閉じて別の名前の入力を促す
+                          child: const Text(
+                            'キャンセル（変更する）',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, elevation: 0),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal,
+                            elevation: 0,
+                          ),
                           onPressed: () {
                             Navigator.of(context).pop(); // 警告を閉じる
                             _executeFinalConnection(code); // 既存の部屋として接続を承認
                           },
-                          child: const Text('このまま接続', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'このまま接続',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -185,7 +220,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
 
     // ダイアログを閉じる
     Navigator.of(context).pop();
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('⚡ 道場空間 [ $code ] にリアルタイム直結しました'),
@@ -197,16 +232,16 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBgColor = isDark 
-        ? const Color(0xFF1C1C1E).withValues(alpha: 0.4) 
+    final cardBgColor = isDark
+        ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
         : Colors.white.withValues(alpha: 0.6);
     final textColor = isDark ? Colors.white : const Color(0xFF1A237E);
     final subTextColor = isDark ? Colors.white70 : Colors.black54;
-    final borderColor = isDark 
-        ? Colors.white.withValues(alpha: 0.2) 
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.2)
         : Colors.white.withValues(alpha: 0.7);
-    final inputBgColor = isDark 
-        ? Colors.white.withValues(alpha: 0.05) 
+    final inputBgColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
         : Colors.black.withValues(alpha: 0.05);
 
     return Dialog(
@@ -228,14 +263,25 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
               children: [
                 Text(
                   '道場ルームへの参加',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Container(
                   width: 130,
                   height: 130,
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                  child: const Icon(Icons.qr_code_2, size: 110, color: Color(0xFF161B26)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.qr_code_2,
+                    size: 110,
+                    color: Color(0xFF161B26),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -253,36 +299,66 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                         final text = textEditingValue.text.toLowerCase();
                         final history = ref.read(dojoRoomHistoryProvider);
                         if (text.isEmpty) return history;
-                        return history.where((option) => option.toLowerCase().contains(text));
-                      },
-                      fieldViewBuilder: (context, fieldController, focusNode, onFieldSubmitted) {
-                        return TextField(
-                          controller: fieldController,
-                          focusNode: focusNode,
-                          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-                          decoration: InputDecoration(
-                            hintText: '例: tokyo_dojo_2026',
-                            hintStyle: TextStyle(color: subTextColor),
-                            filled: true,
-                            fillColor: inputBgColor,
-                            errorText: _errorMessage,
-                            errorStyle: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold),
-                            prefixIcon: Icon(Icons.meeting_room, color: subTextColor),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.teal)),
-                          ),
-                          onSubmitted: _handleJoin,
+                        return history.where(
+                          (option) => option.toLowerCase().contains(text),
                         );
                       },
+                      fieldViewBuilder:
+                          (
+                            context,
+                            fieldController,
+                            focusNode,
+                            onFieldSubmitted,
+                          ) {
+                            return TextField(
+                              controller: fieldController,
+                              focusNode: focusNode,
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: '例: tokyo_dojo_2026',
+                                hintStyle: TextStyle(color: subTextColor),
+                                filled: true,
+                                fillColor: inputBgColor,
+                                errorText: _errorMessage,
+                                errorStyle: const TextStyle(
+                                  color: Colors.orangeAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.meeting_room,
+                                  color: subTextColor,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: borderColor),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: Colors.teal,
+                                  ),
+                                ),
+                              ),
+                              onSubmitted: _handleJoin,
+                            );
+                          },
                       optionsViewBuilder: (context, onSelected, options) {
                         return Align(
                           alignment: Alignment.topLeft,
                           child: Material(
                             elevation: 8.0,
                             borderRadius: BorderRadius.circular(12),
-                            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                            color: isDark
+                                ? const Color(0xFF2C2C2E)
+                                : Colors.white,
                             child: ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: 200, maxWidth: constraints.maxWidth),
+                              constraints: BoxConstraints(
+                                maxHeight: 200,
+                                maxWidth: constraints.maxWidth,
+                              ),
                               child: ListView.builder(
                                 padding: EdgeInsets.zero,
                                 shrinkWrap: true,
@@ -290,15 +366,35 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                 itemBuilder: (context, index) {
                                   final option = options.elementAt(index);
                                   return ListTile(
-                                    leading: Icon(Icons.history, color: subTextColor, size: 20),
-                                    title: Text(option, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                                    leading: Icon(
+                                      Icons.history,
+                                      color: subTextColor,
+                                      size: 20,
+                                    ),
+                                    title: Text(
+                                      option,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     trailing: IconButton(
-                                      icon: const Icon(Icons.close, color: Colors.grey, size: 18),
+                                      icon: const Icon(
+                                        Icons.close,
+                                        color: Colors.grey,
+                                        size: 18,
+                                      ),
                                       onPressed: () {
-                                        ref.read(dojoRoomHistoryProvider.notifier).removeHistory(option);
+                                        ref
+                                            .read(
+                                              dojoRoomHistoryProvider.notifier,
+                                            )
+                                            .removeHistory(option);
                                         // リストを再描画するためテキストを同値で再セットするハック
-                                        final selection = _codeController.selection;
-                                        _codeController.text = _codeController.text;
+                                        final selection =
+                                            _codeController.selection;
+                                        _codeController.text =
+                                            _codeController.text;
                                         _codeController.selection = selection;
                                       },
                                     ),
@@ -314,7 +410,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                         );
                       },
                     );
-                  }
+                  },
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -328,8 +424,16 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                   runSpacing: 8,
                   children: [
                     TextButton(
-                      onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-                      child: Text('キャンセル', style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold)),
+                      onPressed: _isLoading
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: Text(
+                        'キャンセル',
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     _isLoading
                         ? const CircularProgressIndicator(color: Colors.teal)
@@ -338,13 +442,18 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                               backgroundColor: Colors.teal,
                               foregroundColor: Colors.white,
                               elevation: 0,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             onPressed: () => _handleJoin(_codeController.text),
-                            child: const Text('接続開始', style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: const Text(
+                              '接続開始',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                   ],
-                )
+                ),
               ],
             ),
           ),

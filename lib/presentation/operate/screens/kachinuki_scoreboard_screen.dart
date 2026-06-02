@@ -22,7 +22,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     final teamMatchesModels = allMatches.where((m) => m.groupName == groupName).toList();
     teamMatchesModels.sort((a, b) => a.order.compareTo(b.order));
 
-    if (teamMatchesModels.isEmpty) return const Scaffold(body: Center(child: Text('データがありません')));
+    if (teamMatchesModels.isEmpty) { return const Scaffold(body: Center(child: Text('データがありません'))); }
 
     final engine = ref.read(kendoRuleEngineProvider);
     final teamMatches = teamMatchesModels.map((m) {
@@ -590,7 +590,10 @@ class KachinukiBracketPainter extends CustomPainter {
     
     String text = isTeamName ? teamName : span!.lastName;
     final chars = text.split('');
-    if (chars.length * charHeight > availableHeight) { charHeight = availableHeight / chars.length; fontSize = charHeight * 0.8; }
+    if (chars.length * charHeight > availableHeight) { 
+      charHeight = availableHeight / chars.length; 
+      fontSize = charHeight * 0.8; 
+    }
     
     final textStyle = TextStyle(
       color: textColor, 

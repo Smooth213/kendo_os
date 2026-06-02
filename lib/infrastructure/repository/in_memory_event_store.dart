@@ -39,25 +39,33 @@ class InMemoryEventStore implements EventStore {
     required int expectedVersion,
   }) async {
     final current = _store[streamId] ?? [];
-    
+
     // 楽観的ロックのチェック
     if (current.length != expectedVersion) {
       // ★ Phase 3-Step 3: 競合時の再適用の土台（後ほどApplicationServiceで処理）
-      throw ConcurrencyException('同時更新の競合を検知しました。期待値: $expectedVersion, 実際: ${current.length}');
+      throw ConcurrencyException(
+        '同時更新の競合を検知しました。期待値: $expectedVersion, 実際: ${current.length}',
+      );
     }
-    
+
     // 現在の最新の時計を取得
-    int currentMaxClock = current.isEmpty ? 0 : current.map((e) => e.logicalClock).reduce((a, b) => a > b ? a : b);
+    int currentMaxClock = current.isEmpty
+        ? 0
+        : current.map((e) => e.logicalClock).reduce((a, b) => a > b ? a : b);
 
     // 新しいイベントに時計を割り振る
     final updatedEvents = events.map((e) {
-      currentMaxClock = (currentMaxClock >= e.logicalClock ? currentMaxClock : e.logicalClock) + 1;
+      currentMaxClock =
+          (currentMaxClock >= e.logicalClock
+              ? currentMaxClock
+              : e.logicalClock) +
+          1;
       return e.copyWith(logicalClock: currentMaxClock);
     }).toList();
 
     // Append-onlyで状態を更新
     var next = [...current, ...updatedEvents];
-    
+
     // ==========================================
     // ★ Phase 3-Step 4: 順序決定（ソート）
     // ==========================================
@@ -73,10 +81,15 @@ class InMemoryEventStore implements EventStore {
     });
 
     _store[streamId] = next;
-    
+
     // ★ Phase 1-Step 4: ストリームに流す際も必ずマイグレーションを通す
     final migratedNext = next.map(_migrateEvent).toList();
-    _controllers.putIfAbsent(streamId, () => StreamController<List<ScoreEvent>>.broadcast()).add(migratedNext);
+    _controllers
+        .putIfAbsent(
+          streamId,
+          () => StreamController<List<ScoreEvent>>.broadcast(),
+        )
+        .add(migratedNext);
   }
 
   @override
@@ -89,7 +102,10 @@ class InMemoryEventStore implements EventStore {
 
   @override
   Stream<List<ScoreEvent>> watch(String streamId) {
-    final controller = _controllers.putIfAbsent(streamId, () => StreamController<List<ScoreEvent>>.broadcast());
+    final controller = _controllers.putIfAbsent(
+      streamId,
+      () => StreamController<List<ScoreEvent>>.broadcast(),
+    );
     return controller.stream;
   }
 }

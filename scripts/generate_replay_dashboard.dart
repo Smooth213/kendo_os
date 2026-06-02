@@ -3,12 +3,13 @@ import 'dart:io';
 
 void main() {
   print('📊 [Phase 5] Updating Governance Dashboard with Risk Metrics...');
-  
+
   final dashboardFile = File('docs/governance/replay_drift_dashboard.md');
   final timestamp = DateTime.now().toUtc().toIso8601String();
-  
+
   // 本来はCIの環境変数や実行ログから取得するが、ここでは構造を定義
-  final content = '''
+  final content =
+      '''
 # Governance & Replay Dashboard
 
 ## 🛡️ Current Pipeline Status: **Verified**
@@ -26,7 +27,7 @@ void main() {
 ## 📜 Historical Violation Log
 - [NONE]
 ''';
-  
+
   dashboardFile.writeAsStringSync(content);
   print('✅ Dashboard updated at docs/governance/replay_drift_dashboard.md');
 }

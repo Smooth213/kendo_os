@@ -18,7 +18,8 @@ class SessionStorage {
       final jsonStr = PwaStorage.getItem(_storageKey);
       if (jsonStr == null || jsonStr.isEmpty) return null;
 
-      final Map<String, dynamic> map = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final Map<String, dynamic> map =
+          jsonDecode(jsonStr) as Map<String, dynamic>;
       final session = UserSession.fromJson(map);
 
       if (session.sessionVersion != 1 || session.isExpired) {

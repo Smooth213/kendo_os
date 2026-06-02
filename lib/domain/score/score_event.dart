@@ -5,10 +5,21 @@ part 'score_event.freezed.dart';
 part 'score_event.g.dart';
 
 enum Side { red, white, none }
+
 enum StrikeType { men, kote, dou, tsuki, none }
 
 // ★ 救済措置：UIやテストの改修が終わるまで「旧型」を延命させる
-enum PointType { men, kote, doIdo, tsuki, hansoku, undo, fusen, hantei, restore }
+enum PointType {
+  men,
+  kote,
+  doIdo,
+  tsuki,
+  hansoku,
+  undo,
+  fusen,
+  hantei,
+  restore,
+}
 
 // ★ Phase 1-Step 2: バージョン定数の定義
 const int currentEventVersion = 2;
@@ -18,14 +29,14 @@ abstract class ScoreEvent with _$ScoreEvent {
   const ScoreEvent._();
 
   const factory ScoreEvent({
-    @Default('') String id, 
-    
+    @Default('') String id,
+
     // ★ 修正: JSONにschemaVersionが無い昔のデータは「1」として読み込み、
     // 新しくDart内で生成されるイベントは最新の「2(currentEventVersion)」にする魔法の記述
     @JsonKey(defaultValue: 1) @Default(currentEventVersion) int schemaVersion,
-    
-    required Side side, 
-    
+
+    required Side side,
+
     // --- 新しいDDDの意味ベース構造 ---
     @Default(StrikeType.none) StrikeType strikeType,
     @Default(false) bool isIppon,
@@ -35,9 +46,9 @@ abstract class ScoreEvent with _$ScoreEvent {
     @Default(false) bool isUndo,
     @Default(false) bool isRestore,
 
-    @TimestampConverter() required DateTime timestamp, 
-    String? userId, 
-    @Default(0) int sequence, 
+    @TimestampConverter() required DateTime timestamp,
+    String? userId,
+    @Default(0) int sequence,
     @Default(false) bool isCanceled,
 
     // ==========================================
@@ -58,12 +69,11 @@ abstract class ScoreEvent with _$ScoreEvent {
     // ★ Phase 3-Step 1: 分散同期のためのメタデータを追加
     // ==========================================
     @Default('local_device') String deviceId, // どの端末から発火したか
-    @Default(0) int logicalClock,             // ランポート論理時計（順序解決用）
-
+    @Default(0) int logicalClock, // ランポート論理時計（順序解決用）
     // ==========================================
     // ★ Phase 1-Step 3: ゼロトラスト（改ざん防止）のための署名
     // ==========================================
-    @Default('') String signature,            // 発行者と内容を証明する暗号署名
+    @Default('') String signature, // 発行者と内容を証明する暗号署名
   }) = _ScoreEvent;
 
   // ★ 修正: freezedが正しく自動生成できるように標準の1行アロー関数に戻す
@@ -78,11 +88,16 @@ abstract class ScoreEvent with _$ScoreEvent {
     if (isFusen) return PointType.fusen;
     if (isHantei) return PointType.hantei;
     switch (strikeType) {
-      case StrikeType.men: return PointType.men;
-      case StrikeType.kote: return PointType.kote;
-      case StrikeType.dou: return PointType.doIdo;
-      case StrikeType.tsuki: return PointType.tsuki;
-      default: return PointType.undo;
+      case StrikeType.men:
+        return PointType.men;
+      case StrikeType.kote:
+        return PointType.kote;
+      case StrikeType.dou:
+        return PointType.doIdo;
+      case StrikeType.tsuki:
+        return PointType.tsuki;
+      default:
+        return PointType.undo;
     }
   }
 
@@ -95,10 +110,10 @@ abstract class ScoreEvent with _$ScoreEvent {
   int compareTo(ScoreEvent other) {
     int clockCmp = logicalClock.compareTo(other.logicalClock);
     if (clockCmp != 0) return clockCmp;
-    
+
     int timeCmp = timestamp.compareTo(other.timestamp);
     if (timeCmp != 0) return timeCmp;
-    
+
     return id.compareTo(other.id);
   }
 }

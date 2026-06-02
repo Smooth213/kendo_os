@@ -22,7 +22,10 @@ void main() {
       );
 
       final groupDataList = [
-        {'groupName': '第1試合', 'matches': [mockMatch]}
+        {
+          'groupName': '第1試合',
+          'matches': [mockMatch],
+        },
       ];
 
       // 2. 実行
@@ -30,7 +33,12 @@ void main() {
 
       // 3. 検証（ヘッダーとデータ行が含まれているか）
       expect(result, contains('\uFEFF')); // BOMチェック
-      expect(result, contains('"小学生の部","第1試合","1.0","赤チーム","皿田","白チーム","山田","2","0","赤勝ち","メメ"'));
+      expect(
+        result,
+        contains(
+          '"小学生の部","第1試合","1.0","赤チーム","皿田","白チーム","山田","2","0","赤勝ち","メメ"',
+        ),
+      );
     });
   });
 }

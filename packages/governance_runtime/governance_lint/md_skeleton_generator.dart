@@ -11,12 +11,12 @@ void main() {
 
   final targetDirs = ['operator', 'viewer', 'recovery'];
   final templateFile = File('docs/manuals/templates/operator_template.md');
-  
+
   if (!templateFile.existsSync()) {
     print('❌ Template not found at ${templateFile.path}');
     return;
   }
-  
+
   final templateContent = templateFile.readAsStringSync();
   int createdCount = 0;
 
@@ -34,11 +34,12 @@ void main() {
         final title = match.group(1);
         final filename = match.group(2);
         final targetPath = 'docs/manuals/$dir/$filename';
-        
+
         final targetFile = File(targetPath);
         if (!targetFile.existsSync()) {
           // テンプレートの見出しをファイル名に置き換えて生成
-          final newContent = templateContent.replaceFirst('[画面名]', title ?? '画面名未定義');
+          final newContent =
+              templateContent.replaceFirst('[画面名]', title ?? '画面名未定義');
           targetFile.writeAsStringSync(newContent);
           print('✨ Created skeleton: $targetPath');
           createdCount++;

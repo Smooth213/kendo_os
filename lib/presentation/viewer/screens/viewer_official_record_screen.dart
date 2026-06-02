@@ -203,12 +203,12 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final groupName = sortedGroupKeys[index];
                       final teamProj = proj.teamMatches[groupName];
-                      if (teamProj == null) return const SizedBox.shrink();
+                      if (teamProj == null) { return const SizedBox.shrink(); }
                       
                       final matches = List<MatchListProjection>.from(teamProj.matches)..sort((a, b) => a.order.compareTo(b.order));
                       
                       // ★ STEP 4/6: matchesが空の場合に matches.first が呼ばれて Bad state で落ちるのを完全に防ぐ防波堤
-                      if (matches.isEmpty) return const SizedBox.shrink();
+                      if (matches.isEmpty) { return const SizedBox.shrink(); }
                       
                       if (matches.isNotEmpty && teamProj.isKachinuki) {
                         final firstMatch = matches.first;

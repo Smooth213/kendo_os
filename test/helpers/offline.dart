@@ -5,8 +5,15 @@ class OfflineNetworkSimulator {
   bool _isOnline = true;
   bool get isOnline => _isOnline;
 
-  void disconnect() { _isOnline = false; }
-  void connect() { _isOnline = true; }
+  void disconnect() {
+    _isOnline = false;
+  }
+
+  void connect() {
+    _isOnline = true;
+  }
 }
 
-final offlineNetworkSimulatorProvider = Provider((ref) => OfflineNetworkSimulator());
+final offlineNetworkSimulatorProvider = Provider(
+  (ref) => OfflineNetworkSimulator(),
+);

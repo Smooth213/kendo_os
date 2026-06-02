@@ -17,9 +17,9 @@ class MatchRouter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 🔒 Phase 9: 内部開発画面へのディープリンク・直接進入の完全物理隔離
-    if (matchId.startsWith('sys_') || 
-        matchId == 'observability-dashboard' || 
-        matchId == 'audit-log' || 
+    if (matchId.startsWith('sys_') ||
+        matchId == 'observability-dashboard' ||
+        matchId == 'audit-log' ||
         matchId == 'rule-config') {
       return const Scaffold(
         body: Center(
@@ -37,12 +37,18 @@ class MatchRouter extends ConsumerWidget {
     final session = ref.watch(authSessionProvider);
 
     // 🌟 修正版：FeatureGate の動的判定を最優先にする
-    final bool canOperate = FeatureGate.canOperateMatch(currentRole, currentLevel);
+    final bool canOperate = FeatureGate.canOperateMatch(
+      currentRole,
+      currentLevel,
+    );
     final bool isViewerSession = session?.role == UserRole.viewer;
-    final bool isUrlViewer = GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
+    final bool isUrlViewer =
+        GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
 
     // 動的に権限（canOperate）がない、またはViewerセッションが確立されている場合はViewer画面へ切り替え
-    if (!canOperate || isViewerSession || (isUrlViewer && currentRole == UserRole.viewer)) {
+    if (!canOperate ||
+        isViewerSession ||
+        (isUrlViewer && currentRole == UserRole.viewer)) {
       return ViewerMatchScreen(matchId: matchId);
     } else {
       return MatchScreen(matchId: matchId);

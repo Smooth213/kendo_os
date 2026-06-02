@@ -54,11 +54,14 @@ void main() {
         ),
       ];
 
-      final projection = TournamentProjectionMapper.fromProjections(fakeTournament, matches);
+      final projection = TournamentProjectionMapper.fromProjections(
+        fakeTournament,
+        matches,
+      );
 
       expect(projection.tournament.id, equals('tournament_test_001'));
       expect(projection.teamMatches.containsKey('小学生の部'), isTrue);
-      
+
       final teamProj = projection.teamMatches['小学生の部']!;
       expect(teamProj.redTeamName, equals('××剣道教室'));
       expect(teamProj.whiteTeamName, equals('〇〇剣友会'));
@@ -86,7 +89,10 @@ void main() {
         ),
       ];
 
-      final projection = TournamentProjectionMapper.fromProjections(fakeTournament, matches);
+      final projection = TournamentProjectionMapper.fromProjections(
+        fakeTournament,
+        matches,
+      );
       final teamProj = projection.teamMatches['3人リーグ戦の部']!;
 
       expect(teamProj.isLeague, isTrue);
@@ -111,7 +117,10 @@ void main() {
         ),
       ];
 
-      final projection = TournamentProjectionMapper.fromProjections(fakeTournament, matches);
+      final projection = TournamentProjectionMapper.fromProjections(
+        fakeTournament,
+        matches,
+      );
       final teamProj = projection.teamMatches['個人戦トーナメント']!;
 
       expect(teamProj.matchType, equals('individual'));
@@ -136,7 +145,10 @@ void main() {
         ),
       ];
 
-      final projection = TournamentProjectionMapper.fromProjections(fakeTournament, matches);
+      final projection = TournamentProjectionMapper.fromProjections(
+        fakeTournament,
+        matches,
+      );
       final teamProj = projection.teamMatches['勝ち抜き戦の部']!;
 
       expect(teamProj.isKachinuki, isTrue);
@@ -160,7 +172,10 @@ void main() {
         ),
       ];
 
-      final projection = TournamentProjectionMapper.fromProjections(fakeTournament, matches);
+      final projection = TournamentProjectionMapper.fromProjections(
+        fakeTournament,
+        matches,
+      );
       final teamProj = projection.teamMatches['総合決戦']!;
 
       expect(teamProj.note, equals('[SUMMARY] overlay判定対象'));
@@ -186,8 +201,11 @@ void main() {
         ),
       ];
 
-      final projection = TournamentProjectionMapper.fromProjections(fakeTournament, matches);
-      
+      final projection = TournamentProjectionMapper.fromProjections(
+        fakeTournament,
+        matches,
+      );
+
       expect(projection.teamMatches.containsKey(uuidGroupName), isTrue);
       expect(projection.categoryToGroupKeys['全カテゴリ'], contains(uuidGroupName));
     });

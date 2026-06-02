@@ -29,10 +29,14 @@ class MatchRuleSet {
 class RuleResolver {
   static MatchRuleSet build(TournamentRuleConfig config) {
     return MatchRuleSet(
-      scoring: config.scoring.isIpponShobu ? IpponShobuScoringRule() : LimitScoringRule(),
+      scoring: config.scoring.isIpponShobu
+          ? IpponShobuScoringRule()
+          : LimitScoringRule(),
       victory: config.draw.hasHantei ? HanteiVictoryRule() : DrawVictoryRule(),
       time: StandardTimeRule(),
-      hansoku: config.hansoku.hansokuLimit > 0 ? LimitHansokuRule() : NoHansokuRule(),
+      hansoku: config.hansoku.hansokuLimit > 0
+          ? LimitHansokuRule()
+          : NoHansokuRule(),
     );
   }
 }

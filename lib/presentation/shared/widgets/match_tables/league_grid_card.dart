@@ -59,7 +59,9 @@ class LeagueGridCard extends StatelessWidget {
     if (teams.isEmpty) return const SizedBox();
 
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade400;
-    final headerColor = isDark ? const Color(0xFF2C2C2E) : Colors.indigo.shade50;
+    final headerColor = isDark
+        ? const Color(0xFF2C2C2E)
+        : Colors.indigo.shade50;
     final blankColor = isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade200;
 
     return SingleChildScrollView(
@@ -68,13 +70,17 @@ class LeagueGridCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         elevation: 0,
         color: cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: borderColor)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: borderColor),
+        ),
         clipBehavior: Clip.antiAlias,
         child: Table(
           border: TableBorder.all(color: borderColor, width: 1),
           columnWidths: {
             0: const FixedColumnWidth(100),
-            for (int i = 1; i <= teams.length; i++) i: const FixedColumnWidth(65),
+            for (int i = 1; i <= teams.length; i++)
+              i: const FixedColumnWidth(65),
             teams.length + 1: const FixedColumnWidth(45),
             teams.length + 2: const FixedColumnWidth(45),
             teams.length + 3: const FixedColumnWidth(45),
@@ -86,7 +92,14 @@ class LeagueGridCard extends StatelessWidget {
               decoration: BoxDecoration(color: headerColor),
               children: [
                 const SizedBox(height: 50),
-                ...teams.map((t) => Center(child: Padding(padding: const EdgeInsets.all(4), child: VerticalNameText(text: t.teamName, isDark: isDark)))),
+                ...teams.map(
+                  (t) => Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: VerticalNameText(text: t.teamName, isDark: isDark),
+                    ),
+                  ),
+                ),
                 _buildHeaderCell('勝数', isDark),
                 _buildHeaderCell('勝者', isDark),
                 _buildHeaderCell('本数', isDark),
@@ -103,22 +116,44 @@ class LeagueGridCard extends StatelessWidget {
                     decoration: BoxDecoration(color: headerColor),
                     child: Padding(
                       padding: const EdgeInsets.all(4),
-                      child: Text(rowTeam.teamName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: isDark ? Colors.white : Colors.black87), textAlign: TextAlign.center, maxLines: 2),
+                      child: Text(
+                        rowTeam.teamName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
                     ),
                   ),
                   ...teams.map((colTeam) {
                     if (rowTeam.teamName == colTeam.teamName) {
-                      return Container(height: 65, color: blankColor, child: CustomPaint(painter: DiagonalLinePainter(color: borderColor)));
+                      return Container(
+                        height: 65,
+                        color: blankColor,
+                        child: CustomPaint(
+                          painter: DiagonalLinePainter(color: borderColor),
+                        ),
+                      );
                     }
 
-                    final cellData = matrix[rowTeam.teamName]?[colTeam.teamName];
+                    final cellData =
+                        matrix[rowTeam.teamName]?[colTeam.teamName];
                     if (cellData == null) return const SizedBox(height: 65);
 
-                    Color symbolColor = isDark ? Colors.amber.shade300 : Colors.amber.shade700;
+                    Color symbolColor = isDark
+                        ? Colors.amber.shade300
+                        : Colors.amber.shade700;
                     if (cellData.result == 'win') {
-                      symbolColor = isDark ? Colors.red.shade300 : Colors.red.shade700;
+                      symbolColor = isDark
+                          ? Colors.red.shade300
+                          : Colors.red.shade700;
                     } else if (cellData.result == 'loss') {
-                      symbolColor = isDark ? Colors.blue.shade300 : Colors.indigo.shade700;
+                      symbolColor = isDark
+                          ? Colors.blue.shade300
+                          : Colors.indigo.shade700;
                     }
 
                     final textColor = isDark ? Colors.white : Colors.black87;
@@ -129,23 +164,71 @@ class LeagueGridCard extends StatelessWidget {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          CustomPaint(size: const Size(45, 45), painter: ResultShapePainter(result: cellData.result, color: symbolColor)),
+                          CustomPaint(
+                            size: const Size(45, 45),
+                            painter: ResultShapePainter(
+                              result: cellData.result,
+                              color: symbolColor,
+                            ),
+                          ),
                           if (cellData.isIndiv)
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                cellData.techMarks.isNotEmpty ? PointMarkBadge(point: cellData.techMarks[0], color: textColor, isDark: isDark) : const SizedBox(height: 12),
-                                Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                cellData.techMarks.length > 1 ? PointMarkBadge(point: cellData.techMarks[1], color: textColor, isDark: isDark) : const SizedBox(height: 12),
+                                cellData.techMarks.isNotEmpty
+                                    ? PointMarkBadge(
+                                        point: cellData.techMarks[0],
+                                        color: textColor,
+                                        isDark: isDark,
+                                      )
+                                    : const SizedBox(height: 12),
+                                Container(
+                                  height: 0.5,
+                                  width: 18,
+                                  color: textColor.withValues(alpha: 0.5),
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 2,
+                                  ),
+                                ),
+                                cellData.techMarks.length > 1
+                                    ? PointMarkBadge(
+                                        point: cellData.techMarks[1],
+                                        color: textColor,
+                                        isDark: isDark,
+                                      )
+                                    : const SizedBox(height: 12),
                               ],
                             )
                           else
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text('${cellData.rPoints}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, height: 1.1, color: textColor)),
-                                Container(height: 0.5, width: 18, color: textColor.withValues(alpha: 0.5), margin: const EdgeInsets.symmetric(vertical: 2)),
-                                Text('${cellData.rWinners}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, height: 1.1, color: textColor)),
+                                Text(
+                                  '${cellData.rPoints}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.1,
+                                    color: textColor,
+                                  ),
+                                ),
+                                Container(
+                                  height: 0.5,
+                                  width: 18,
+                                  color: textColor.withValues(alpha: 0.5),
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 2,
+                                  ),
+                                ),
+                                Text(
+                                  '${cellData.rWinners}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.1,
+                                    color: textColor,
+                                  ),
+                                ),
                               ],
                             ),
                         ],
@@ -165,7 +248,8 @@ class LeagueGridCard extends StatelessWidget {
                   _buildStatCell(rowTeam.matchWins, isDark),
                   _buildStatCell(rowTeam.individualWinners, isDark),
                   _buildStatCell(rowTeam.totalPoints, isDark),
-                  if (hasMatchPoints) _buildStatCell(rowTeam.customPoints ?? '', isDark),
+                  if (hasMatchPoints)
+                    _buildStatCell(rowTeam.customPoints ?? '', isDark),
                   _buildStatCell(rowTeam.rank, isDark, isRank: true),
                 ],
               );
@@ -180,7 +264,13 @@ class LeagueGridCard extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(text, style: TextStyle(fontSize: 10, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 10,
+            color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+          ),
+        ),
       ),
     );
   }
@@ -189,13 +279,19 @@ class LeagueGridCard extends StatelessWidget {
     return Container(
       height: 65,
       alignment: Alignment.center,
-      color: isRank ? (isDark ? Colors.orange.withValues(alpha: 0.2) : Colors.orange.shade50) : null,
+      color: isRank
+          ? (isDark
+                ? Colors.orange.withValues(alpha: 0.2)
+                : Colors.orange.shade50)
+          : null,
       child: Text(
         text,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: isRank ? 16 : 13,
-          color: isRank ? Colors.orange.shade800 : (isDark ? Colors.white : Colors.black87),
+          color: isRank
+              ? Colors.orange.shade800
+              : (isDark ? Colors.white : Colors.black87),
         ),
       ),
     );
@@ -208,7 +304,9 @@ class DiagonalLinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..strokeWidth = 1;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
     canvas.drawLine(const Offset(0, 0), Offset(size.width, size.height), paint);
   }
 
@@ -223,8 +321,13 @@ class ResultShapePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()..color = color.withValues(alpha: 0.1)..style = PaintingStyle.fill;
-    final strokePaint = Paint()..color = color..strokeWidth = 1.0..style = PaintingStyle.stroke;
+    final bgPaint = Paint()
+      ..color = color.withValues(alpha: 0.1)
+      ..style = PaintingStyle.fill;
+    final strokePaint = Paint()
+      ..color = color
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width * 0.42;
 
@@ -240,7 +343,11 @@ class ResultShapePainter extends CustomPainter {
       canvas.drawPath(path, bgPaint);
       canvas.drawPath(path, strokePaint);
     } else {
-      final rect = Rect.fromCenter(center: center, width: radius * 1.8, height: radius * 1.8);
+      final rect = Rect.fromCenter(
+        center: center,
+        width: radius * 1.8,
+        height: radius * 1.8,
+      );
       canvas.drawRect(rect, bgPaint);
       canvas.drawRect(rect, strokePaint);
     }

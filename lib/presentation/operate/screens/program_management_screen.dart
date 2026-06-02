@@ -76,11 +76,11 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
       withData: kIsWeb, // ★ Webはバイナリデータを取得する必要がある
     );
 
-    if (result == null || result.files.isEmpty) return;
+    if (result == null || result.files.isEmpty) { return; }
 
     // ★ 新しいプレビューダイアログを呼び出し
     final dialogResult = await _showTitleAndPreviewDialog(result.files);
-    if (dialogResult == null || dialogResult['title'].isEmpty) return;
+    if (dialogResult == null || dialogResult['title'].isEmpty) { return; }
 
     final String title = dialogResult['title'];
     final List<PlatformFile> orderedFiles = dialogResult['files']; // 並び替え済みのファイルリスト
@@ -112,11 +112,11 @@ class _ProgramManagementScreenState extends ConsumerState<ProgramManagementScree
         );
       }
 
-      if (mounted) Navigator.of(context, rootNavigator: true).pop();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$fileCount件のプログラムをアップロードしました')));
+      if (mounted) { Navigator.of(context, rootNavigator: true).pop(); }
+      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$fileCount件のプログラムをアップロードしました'))); }
     } catch (e) {
-      if (mounted) Navigator.of(context, rootNavigator: true).pop();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('エラーが発生しました: $e')));
+      if (mounted) { Navigator.of(context, rootNavigator: true).pop(); }
+      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('エラーが発生しました: $e'))); }
     }
   }
 

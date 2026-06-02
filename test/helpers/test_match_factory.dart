@@ -40,9 +40,6 @@ class TestMatchFactory {
 
   /// 基本的なルールセットを作成
   static MatchRule createDefaultRule() {
-    return MatchRule(
-      matchTimeMinutes: 3,
-      isKachinuki: false,
-    );
+    return MatchRule(matchTimeMinutes: 3, isKachinuki: false);
   }
 }

@@ -8,10 +8,10 @@ import 'dart:io';
 // ============================================================================
 void main(List<String> args) {
   print('🛡️ [Sandbox Validator] Checking AI Branch Constraints...');
-  
+
   final branchName = Platform.environment['GITHUB_HEAD_REF'] ?? '';
   final isAiBranch = branchName.startsWith('ai/sandbox/');
-  
+
   if (!isAiBranch) {
     print('✅ Not an AI branch. Skipping sandbox validation.');
     exit(0);
@@ -39,7 +39,8 @@ void main(List<String> args) {
   print('ℹ️ Validating AI-GENERATED metadata presence...');
 
   if (hasViolation) {
-    print('🚨 [Sandbox Violation] AI escaped the sandbox or violated boundaries!');
+    print(
+        '🚨 [Sandbox Violation] AI escaped the sandbox or violated boundaries!');
     exit(1);
   } else {
     print('✅ AI Sandbox constraints satisfied.');

@@ -22,14 +22,11 @@ final projectionUpdaterProvider = Provider<ProjectionUpdater>((ref) {
 class ProjectionUpdater {
   final EventStore eventStore;
   final ProjectionStore projectionStore;
-  
+
   // メモリリークを防ぐため、購読中のストリームを保持する
   final _subscriptions = <String, StreamSubscription>{};
 
-  ProjectionUpdater({
-    required this.eventStore,
-    required this.projectionStore,
-  });
+  ProjectionUpdater({required this.eventStore, required this.projectionStore});
 
   /// 指定した試合（Match）の監視を開始し、変更があるたびにProjectionを更新する
   void startWatching(MatchModel baseModel, MatchAggregate baseAggregate) {
@@ -38,23 +35,31 @@ class ProjectionUpdater {
 
     _subscriptions[matchId] = eventStore.watch(matchId).listen((events) async {
       // ★ Step 2-1: Event ordering固定 (ソートして決定性を保証)
-      final sortedEvents = List<ScoreEvent>.from(events)..sort((a, b) => a.compareTo(b));
+      final sortedEvents = List<ScoreEvent>.from(events)
+        ..sort((a, b) => a.compareTo(b));
 
       // 1. 真実のドメイン状態（Aggregate）を再構築
       final updatedAggregate = baseAggregate.copyWith(events: sortedEvents);
-      
+
       // 2. 共通の計算エンジン（RuleEngine）で解析
       final engine = KendoRuleEngine();
       final mergedModel = baseModel.copyWith(
         events: sortedEvents,
         status: updatedAggregate.status,
       );
-      final analysis = engine.analyzeHistory(sortedEvents, mergedModel, mergedModel.rule);
+      final analysis = engine.analyzeHistory(
+        sortedEvents,
+        mergedModel,
+        mergedModel.rule,
+      );
 
       // 3. ★ Phase 5-1: 用途別に異なる3種類のProjectionを同時に生成
-      final richProjection = MatchProjectionMapper.toMatchProjection(mergedModel, analysis);
+      final richProjection = MatchProjectionMapper.toMatchProjection(
+        mergedModel,
+        analysis,
+      );
       // final listProjection = MatchProjectionMapper.toListProjection(mergedModel, analysis); // ★ 将来的なキャッシュ拡張用
-      
+
       // 4. ProjectionStoreに保存
       await projectionStore.save(richProjection);
       // await projectionStore.saveListCache(listProjection); // 拡張予定

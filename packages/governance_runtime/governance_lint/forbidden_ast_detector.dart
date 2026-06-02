@@ -13,8 +13,8 @@ void main(List<String> args) {
   print('🛡️ [Governance AST Linter] Starting AST inspection (Phase 5)...');
   bool hasViolation = false;
 
-  final targetFiles = args.isEmpty 
-      ? _getAllDartFiles(Directory('lib')).toList() 
+  final targetFiles = args.isEmpty
+      ? _getAllDartFiles(Directory('lib')).toList()
       : args.where((f) => f.endsWith('.dart')).toList();
 
   for (final filePath in targetFiles) {
@@ -22,7 +22,7 @@ void main(List<String> args) {
     if (!file.existsSync()) continue;
 
     final content = file.readAsStringSync();
-    
+
     try {
       final parseResult = parseString(content: content, path: filePath);
       final visitor = ForbiddenNodeVisitor(filePath);
@@ -47,7 +47,8 @@ void main(List<String> args) {
 
 Iterable<String> _getAllDartFiles(Directory dir) {
   if (!dir.existsSync()) return [];
-  return dir.listSync(recursive: true)
+  return dir
+      .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.dart'))
       .map((f) => f.path);
@@ -65,26 +66,31 @@ class ForbiddenNodeVisitor extends RecursiveAstVisitor<void> {
     final methodName = node.methodName.name;
 
     if (targetName == 'DateTime' && methodName == 'now') {
-      _reportViolation(node, 'Usage of DateTime.now() is forbidden. Use TimeSource to ensure replay determinism.');
+      _reportViolation(node,
+          'Usage of DateTime.now() is forbidden. Use TimeSource to ensure replay determinism.');
     }
     if (methodName == 'Random' && targetName.isEmpty) {
-      _reportViolation(node, 'Usage of Random() is forbidden. Hallucination replay attack prevented.');
+      _reportViolation(node,
+          'Usage of Random() is forbidden. Hallucination replay attack prevented.');
     }
     if (methodName == 'clear') {
-      _reportViolation(node, 'Usage of .clear() is forbidden. Event mutation / Projection overwrite detected.');
+      _reportViolation(node,
+          'Usage of .clear() is forbidden. Event mutation / Projection overwrite detected.');
     }
     if (methodName == 'removeWhere') {
-      _reportViolation(node, 'Usage of .removeWhere() is forbidden. Event mutation / Projection overwrite detected.');
+      _reportViolation(node,
+          'Usage of .removeWhere() is forbidden. Event mutation / Projection overwrite detected.');
     }
 
     super.visitMethodInvocation(node);
   }
-  
+
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
     final typeName = node.constructorName.type.toSource();
     if (typeName == 'Random') {
-      _reportViolation(node, 'Usage of Random() is forbidden. Hallucination replay attack prevented.');
+      _reportViolation(node,
+          'Usage of Random() is forbidden. Hallucination replay attack prevented.');
     }
     super.visitInstanceCreationExpression(node);
   }

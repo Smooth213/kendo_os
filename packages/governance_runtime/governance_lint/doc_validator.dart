@@ -7,7 +7,7 @@ import 'dart:io';
 // ============================================================================
 void main() {
   print('📚 [Doc Validator] Scanning documentation constraints...');
-  
+
   final manualsDir = Directory('docs/manuals');
   if (!manualsDir.existsSync()) {
     print('✅ [PASS] docs/manuals does not exist yet. Skipping deep scan.');
@@ -15,10 +15,13 @@ void main() {
   }
 
   bool hasError = false;
-  
+
   // 簡易チェック実装 (md存在確認など)
-  final mdFiles = manualsDir.listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.md'));
-  
+  final mdFiles = manualsDir
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((f) => f.path.endsWith('.md'));
+
   if (mdFiles.isEmpty) {
     print('⚠️ [WARN] No markdown files found in docs/manuals.');
   } else {

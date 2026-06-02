@@ -5,9 +5,9 @@ double calculateNewOrder(List<double> list, int oldIndex, int newIndex) {
   if (oldIndex < newIndex) {
     newIndex -= 1;
   }
-  
+
   if (oldIndex == newIndex) return list[oldIndex];
-  
+
   double newOrder;
   if (newIndex == 0) {
     newOrder = list.first - 100.0;
@@ -51,7 +51,7 @@ void main() {
       final newOrder = calculateNewOrder(list, 3, 1);
       expect(newOrder, 150.0); // (100.0 + 200.0) / 2.0
     });
-    
+
     test('重複回避ロジック: 既存要素と同じ値になった場合は+0.001されること', () {
       final list = [100.0, 100.0, 100.0];
       final newOrder = calculateNewOrder(list, 2, 1);

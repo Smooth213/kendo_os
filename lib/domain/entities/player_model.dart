@@ -1,15 +1,16 @@
 class PlayerModel {
   final String id;
+
   /// ★ 新・同期空間統治キー：名簿データが所属する固有の道場ID
   final String organizationId;
-  final String lastName; 
-  final String firstName; 
-  final String lastNameKana;  // ★ 追加：名字のよみがな
+  final String lastName;
+  final String firstName;
+  final String lastNameKana; // ★ 追加：名字のよみがな
   final String firstNameKana; // ★ 追加：名前のよみがな
-  final int grade; 
-  final String organization; 
-  final String gender; 
-  final bool isBeginner;      // ★ 追加：初心者フラグ
+  final int grade;
+  final String organization;
+  final String gender;
+  final bool isBeginner; // ★ 追加：初心者フラグ
 
   PlayerModel({
     required this.id,
@@ -19,9 +20,9 @@ class PlayerModel {
     required this.lastNameKana,
     required this.firstNameKana,
     required this.grade,
-    this.organization = '道上剣友会', 
-    this.gender = '男子', 
-    this.isBeginner = false,   // デフォルトは通常選手
+    this.organization = '道上剣友会',
+    this.gender = '男子',
+    this.isBeginner = false, // デフォルトは通常選手
   });
 
   String get name => '$lastName $firstName'.trim();
@@ -33,10 +34,10 @@ class PlayerModel {
       'firstName': firstName,
       'lastNameKana': lastNameKana,
       'firstNameKana': firstNameKana,
-      'name': name, 
+      'name': name,
       'grade': grade,
       'organization': organization,
-      'gender': gender, 
+      'gender': gender,
       'isBeginner': isBeginner,
     };
   }
@@ -44,7 +45,7 @@ class PlayerModel {
   factory PlayerModel.fromMap(Map<String, dynamic> map, String documentId) {
     String lName = map['lastName'] ?? '';
     String fName = map['firstName'] ?? '';
-    
+
     if (lName.isEmpty && fName.isEmpty && map['name'] != null) {
       final parts = map['name'].toString().split(RegExp(r'\s+'));
       if (parts.isNotEmpty) {
@@ -61,7 +62,7 @@ class PlayerModel {
       firstNameKana: map['firstNameKana'] ?? '',
       grade: map['grade']?.toInt() ?? 99,
       organization: map['organization'] ?? '',
-      gender: map['gender'] ?? '男子', 
+      gender: map['gender'] ?? '男子',
       isBeginner: map['isBeginner'] ?? false,
     );
   }
@@ -74,7 +75,7 @@ class PlayerModel {
     String? firstNameKana,
     int? grade,
     String? organization,
-    String? gender, 
+    String? gender,
     bool? isBeginner,
   }) {
     return PlayerModel(
@@ -85,7 +86,7 @@ class PlayerModel {
       firstNameKana: firstNameKana ?? this.firstNameKana,
       grade: grade ?? this.grade,
       organization: organization ?? this.organization,
-      gender: gender ?? this.gender, 
+      gender: gender ?? this.gender,
       isBeginner: isBeginner ?? this.isBeginner,
     );
   }

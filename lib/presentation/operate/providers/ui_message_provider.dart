@@ -4,12 +4,8 @@ class UiMessage {
   final String id;
   final String text;
   final bool isError;
-  
-  UiMessage({
-    required this.id,
-    required this.text,
-    this.isError = false,
-  });
+
+  UiMessage({required this.id, required this.text, this.isError = false});
 }
 
 class UiMessageNotifier extends Notifier<UiMessage?> {
@@ -17,11 +13,19 @@ class UiMessageNotifier extends Notifier<UiMessage?> {
   UiMessage? build() => null;
 
   void showSuccess(String text) {
-    state = UiMessage(id: DateTime.now().millisecondsSinceEpoch.toString(), text: text, isError: false);
+    state = UiMessage(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      text: text,
+      isError: false,
+    );
   }
 
   void showError(String text) {
-    state = UiMessage(id: DateTime.now().millisecondsSinceEpoch.toString(), text: text, isError: true);
+    state = UiMessage(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      text: text,
+      isError: true,
+    );
   }
 }
 

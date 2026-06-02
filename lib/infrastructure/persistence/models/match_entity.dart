@@ -1,5 +1,4 @@
-
-import 'package:isar_community/isar.dart'; 
+import 'package:isar_community/isar.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/match/match_model.dart'; // ★ SyncStateを使うため追加
 
@@ -9,18 +8,18 @@ part 'match_entity.g.dart';
 @embedded
 class ScoreEventEntity {
   String? id;
-  
+
   @enumerated
   Side side = Side.none;
-  
+
   @enumerated
   PointType type = PointType.men;
-  
+
   DateTime? timestamp;
   String? userId;
   int sequence = 0;
-  bool isCanceled = false; 
-  
+  bool isCanceled = false;
+
   // ★ Phase 10: Event/Replayer整合
   int ruleVersion = 1;
 
@@ -66,7 +65,7 @@ class MatchEntity {
   @enumerated
   SyncState syncState = SyncState.synced;
   List<ScoreEventEntity> pendingEvents = []; // 送信待ちの差分キュー
-  
+
   DateTime? lastUpdatedAt;
 
   List<String> refereeNames = [];

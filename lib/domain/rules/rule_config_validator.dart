@@ -13,7 +13,8 @@ class RuleConfigValidator {
       errors.add('試合時間は0分より大きい必要があります。');
     }
 
-    if ((config.encho.isEnchoUnlimited || config.encho.enchoCount > 0) && config.encho.enchoTimeMinutes <= 0) {
+    if ((config.encho.isEnchoUnlimited || config.encho.enchoCount > 0) &&
+        config.encho.enchoTimeMinutes <= 0) {
       errors.add('延長戦を行う場合、延長時間は0分より大きい必要があります。');
     }
 
@@ -26,8 +27,11 @@ class RuleConfigValidator {
     }
 
     // 8-2: Dependency Validation (依存関係の矛盾の排除)
-    if (config.team.isKachinuki && config.team.kachinukiUnlimitedType == '大将引き分け延長') {
-      if (!config.encho.isEnchoUnlimited && config.encho.enchoCount == 0 && !config.draw.hasHantei) {
+    if (config.team.isKachinuki &&
+        config.team.kachinukiUnlimitedType == '大将引き分け延長') {
+      if (!config.encho.isEnchoUnlimited &&
+          config.encho.enchoCount == 0 &&
+          !config.draw.hasHantei) {
         errors.add('勝ち抜き戦(大将延長)が有効ですが、延長ルールまたは判定が設定されていません。');
       }
     }

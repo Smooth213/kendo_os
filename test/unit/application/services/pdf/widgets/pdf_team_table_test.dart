@@ -45,9 +45,13 @@ void main() {
   late pw.Font ttfBold;
 
   setUpAll(() async {
-    final fontData = await rootBundle.load('assets/fonts/NotoSansJP-Regular.ttf');
+    final fontData = await rootBundle.load(
+      'assets/fonts/NotoSansJP-Regular.ttf',
+    );
     ttf = pw.Font.ttf(fontData.buffer.asByteData());
-    final fontBoldData = await rootBundle.load('assets/fonts/NotoSansJP-Bold.ttf');
+    final fontBoldData = await rootBundle.load(
+      'assets/fonts/NotoSansJP-Bold.ttf',
+    );
     ttfBold = pw.Font.ttf(fontBoldData.buffer.asByteData());
   });
 
@@ -75,7 +79,8 @@ void main() {
       // Find the draw symbol widget
       final drawSymbolWidget = stack.children[1];
       expect(drawSymbolWidget, isA<pw.Container>());
-      final drawSymbolText = (drawSymbolWidget as pw.Container).child as pw.Text;
+      final drawSymbolText =
+          (drawSymbolWidget as pw.Container).child as pw.Text;
 
       // U+00D7 is the multiplication sign '×'
       expect(drawSymbolText.text.toPlainText(), '×');
@@ -84,7 +89,12 @@ void main() {
     test('古い引き分け記号「✕」が入力されても、PDFでは「×」に変換されるべき', () {
       // This tests the pdfPointBox directly as it's hard to simulate the old data through MatchModel
       final oldDrawPoint = PdfPointData('✕', false);
-      final resultWidget = PdfTeamTable.pdfPointBox([oldDrawPoint], false, true, ttfBold,);
+      final resultWidget = PdfTeamTable.pdfPointBox(
+        [oldDrawPoint],
+        false,
+        true,
+        ttfBold,
+      );
 
       final container = resultWidget as pw.Container;
       final stack = container.child as pw.Stack;
@@ -95,7 +105,9 @@ void main() {
 
     test('ヘッダータイトルが正しく生成されるべき', () {
       // Case 1: Normal team match
-      final matches1 = [createMockMatch(id: 'm1', redName: 'チームA:選手', whiteName: 'チームB:選手')];
+      final matches1 = [
+        createMockMatch(id: 'm1', redName: 'チームA:選手', whiteName: 'チームB:選手'),
+      ];
       final result1 = PdfTeamTable.build('団体戦グループA', matches1, ttf, ttfBold);
       final column1 = (result1 as pw.Container).child as pw.Column;
       final header1 = column1.children.first as pw.Container;
@@ -103,7 +115,14 @@ void main() {
       expect(headerText1, '【団体戦】対戦スコア詳細');
 
       // Case 2: League match with note
-      final matches2 = [createMockMatch(id: 'm2', redName: 'チームC:選手', whiteName: 'チームD:選手', note: '[リーグ戦] 決勝トーナメント')];
+      final matches2 = [
+        createMockMatch(
+          id: 'm2',
+          redName: 'チームC:選手',
+          whiteName: 'チームD:選手',
+          note: '[リーグ戦] 決勝トーナメント',
+        ),
+      ];
       final result2 = PdfTeamTable.build('リーグA', matches2, ttf, ttfBold);
       final column2 = (result2 as pw.Container).child as pw.Column;
       final header2 = column2.children.first as pw.Container;
@@ -111,20 +130,16 @@ void main() {
       expect(headerText2, '【リーグ団体戦】対戦スコア詳細（決勝トーナメント）');
     });
 
-
     test('欠員の場合、選手名のセルは空欄で表示されるべき', () {
       final matches = [
-        createMockMatch(
-          id: 'm1',
-          redName: 'チームA:山田太郎',
-          whiteName: 'チームB:(欠員)',
-        ),
+        createMockMatch(id: 'm1', redName: 'チームA:山田太郎', whiteName: 'チームB:(欠員)'),
       ];
 
       final result = PdfTeamTable.build('団体戦', matches, ttf, ttfBold);
       final column = (result as pw.Container).child as pw.Column;
       final table = column.children[1] as pw.Table;
-      final whiteNameRow = table.children[3]; // 0:header, 1:red, 2:score, 3:white
+      final whiteNameRow =
+          table.children[3]; // 0:header, 1:red, 2:score, 3:white
       final nameCell = whiteNameRow.children[1];
 
       // It should be an empty SizedBox
@@ -148,16 +163,18 @@ void main() {
       final result = PdfTeamTable.build('団体戦', matches, ttf, ttfBold);
       final column = (result as pw.Container).child as pw.Column;
       final table = column.children[1] as pw.Table;
-      
+
       // Red team names
       final redNameRow = table.children[1];
-      
+
       // Check Taro Yamada
       final taroCell = redNameRow.children[1] as pw.Center;
       final taroRow = taroCell.child as pw.Padding;
       final taroInnerRow = taroRow.child as pw.Row;
-      final taroLastName = (taroInnerRow.children[0] as pw.Text).text.toPlainText();
-      final taroInitial = (taroInnerRow.children[1] as pw.Padding).child as pw.Text;
+      final taroLastName = (taroInnerRow.children[0] as pw.Text).text
+          .toPlainText();
+      final taroInitial =
+          (taroInnerRow.children[1] as pw.Padding).child as pw.Text;
       expect(taroLastName, '山\n田');
       expect(taroInitial.text.toPlainText(), '太');
 
@@ -165,17 +182,25 @@ void main() {
       final hanakoCell = redNameRow.children[2] as pw.Center;
       final hanakoRow = hanakoCell.child as pw.Padding;
       final hanakoInnerRow = hanakoRow.child as pw.Row;
-      final hanakoLastName = (hanakoInnerRow.children[0] as pw.Text).text.toPlainText();
-      final hanakoInitial = (hanakoInnerRow.children[1] as pw.Padding).child as pw.Text;
+      final hanakoLastName = (hanakoInnerRow.children[0] as pw.Text).text
+          .toPlainText();
+      final hanakoInitial =
+          (hanakoInnerRow.children[1] as pw.Padding).child as pw.Text;
       expect(hanakoLastName, '山\n田');
       expect(hanakoInitial.text.toPlainText(), '花');
 
       // White team names (negative case)
       final whiteNameRow = table.children[3];
       final satoCell = whiteNameRow.children[1] as pw.Center;
-      expect(((satoCell.child as pw.Padding).child as pw.Row).children.length, 1);
+      expect(
+        ((satoCell.child as pw.Padding).child as pw.Row).children.length,
+        1,
+      );
       final suzukiCell = whiteNameRow.children[2] as pw.Center;
-      expect(((suzukiCell.child as pw.Padding).child as pw.Row).children.length, 1);
+      expect(
+        ((suzukiCell.child as pw.Padding).child as pw.Row).children.length,
+        1,
+      );
     });
   });
 }

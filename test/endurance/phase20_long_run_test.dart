@@ -4,9 +4,16 @@ import 'package:kendo_os/domain/match/match_model.dart';
 void main() {
   group('🛡️ PHASE 20 — 長時間運転要塞：10時間耐久試験', () {
     test('1. 【1000試合連続処理】大量の試合状態更新の整合性', () async {
-      final matches = List.generate(1000, (i) => MatchModel(
-        id: 'm_$i', matchType: '個人戦', redName: 'A', whiteName: 'B', syncState: SyncState.synced
-      ));
+      final matches = List.generate(
+        1000,
+        (i) => MatchModel(
+          id: 'm_$i',
+          matchType: '個人戦',
+          redName: 'A',
+          whiteName: 'B',
+          syncState: SyncState.synced,
+        ),
+      );
       expect(matches.length, 1000);
     });
 

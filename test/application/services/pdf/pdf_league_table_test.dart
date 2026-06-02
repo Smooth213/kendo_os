@@ -36,22 +36,40 @@ MatchModel createMockMatch({
     events: eventsData.isEmpty
         ? <ScoreEvent>[
             ...List.generate(
-                redScore,
-                (i) => ScoreEventLegacyAdapter.fromLegacy(
-                    id: 'r$i', type: PointType.men, side: Side.red, timestamp: SystemTimeSource().now().add(Duration(seconds: i)))),
+              redScore,
+              (i) => ScoreEventLegacyAdapter.fromLegacy(
+                id: 'r$i',
+                type: PointType.men,
+                side: Side.red,
+                timestamp: SystemTimeSource().now().add(Duration(seconds: i)),
+              ),
+            ),
             ...List.generate(
-                whiteScore,
-                (i) => ScoreEventLegacyAdapter.fromLegacy(
-                    id: 'w$i', type: PointType.kote, side: Side.white, timestamp: SystemTimeSource().now().add(Duration(seconds: 10 + i)))),
+              whiteScore,
+              (i) => ScoreEventLegacyAdapter.fromLegacy(
+                id: 'w$i',
+                type: PointType.kote,
+                side: Side.white,
+                timestamp: SystemTimeSource().now().add(
+                  Duration(seconds: 10 + i),
+                ),
+              ),
+            ),
           ]
         : eventsData
-            .map((e) => ScoreEventLegacyAdapter.fromLegacy(
+              .map(
+                (e) => ScoreEventLegacyAdapter.fromLegacy(
                   id: e['id']?.toString() ?? 'temp_id',
                   type: e['type'] == 'men' ? PointType.men : PointType.kote,
                   side: e['side'] == 'red' ? Side.red : Side.white,
-                  timestamp: (e['isFirstOverall'] as bool? ?? false) ? SystemTimeSource().now() : SystemTimeSource().now().add(const Duration(seconds: 1)),
-                ))
-            .toList(),
+                  timestamp: (e['isFirstOverall'] as bool? ?? false)
+                      ? SystemTimeSource().now()
+                      : SystemTimeSource().now().add(
+                          const Duration(seconds: 1),
+                        ),
+                ),
+              )
+              .toList(),
     rule: rule ?? const MatchRule(isLeague: true),
   );
 }
@@ -65,9 +83,13 @@ void main() {
 
   // 全テストの開始前に一度だけフォントを読み込む
   setUpAll(() async {
-    final fontData = await rootBundle.load('assets/fonts/NotoSansJP-Regular.ttf');
+    final fontData = await rootBundle.load(
+      'assets/fonts/NotoSansJP-Regular.ttf',
+    );
     ttf = pw.Font.ttf(fontData.buffer.asByteData());
-    final fontBoldData = await rootBundle.load('assets/fonts/NotoSansJP-Bold.ttf');
+    final fontBoldData = await rootBundle.load(
+      'assets/fonts/NotoSansJP-Bold.ttf',
+    );
     ttfBold = pw.Font.ttf(fontBoldData.buffer.asByteData());
   });
 
@@ -93,11 +115,24 @@ void main() {
           ],
         ),
         // リーグ表を成立させるためのダミー試合
-        createMockMatch(id: 'm2', redName: '選手A', whiteName: '選手C', redScore: 0, whiteScore: 0),
-        createMockMatch(id: 'm3', redName: '選手B', whiteName: '選手C', redScore: 0, whiteScore: 0),
+        createMockMatch(
+          id: 'm2',
+          redName: '選手A',
+          whiteName: '選手C',
+          redScore: 0,
+          whiteScore: 0,
+        ),
+        createMockMatch(
+          id: 'm3',
+          redName: '選手B',
+          whiteName: '選手C',
+          redScore: 0,
+          whiteScore: 0,
+        ),
       ];
 
-      final pdfTable = PdfLeagueTable.build('個人戦リーグ', matches, ttf, ttfBold) as pw.Table;
+      final pdfTable =
+          PdfLeagueTable.build('個人戦リーグ', matches, ttf, ttfBold) as pw.Table;
 
       // 生成されたPDFテーブルから「選手A vs 選手B」のセルを特定
       // ヘッダーが1行目、選手Aの行が2行目(index:1)
@@ -109,20 +144,40 @@ void main() {
 
       // Stackの2番目の要素が、技マークを表示するウィジェット
       final contentWidget = cellStack.children[1];
-      expect(contentWidget, isA<pw.Column>(), reason: '個人戦では取得技はColumnで縦並びに表示されるべきです');
+      expect(
+        contentWidget,
+        isA<pw.Column>(),
+        reason: '個人戦では取得技はColumnで縦並びに表示されるべきです',
+      );
 
       // Columnの中身を検証
       final column = contentWidget as pw.Column;
-      expect(column.children.length, 3, reason: '2本取得しているので、2つの技マークと間に横線が表示されるべきです');
+      expect(
+        column.children.length,
+        3,
+        reason: '2本取得しているので、2つの技マークと間に横線が表示されるべきです',
+      );
 
       // 1本目の技マーク(丸付き)を検証
       final firstMarkWidget = column.children[0];
-      expect(firstMarkWidget, isA<pw.Container>(), reason: '1本目は丸で囲まれる(Container)べきです');
-      expect((firstMarkWidget as pw.Container).child, isA<pw.Text>(), reason: 'Containerの子はTextであるべきです');
+      expect(
+        firstMarkWidget,
+        isA<pw.Container>(),
+        reason: '1本目は丸で囲まれる(Container)べきです',
+      );
+      expect(
+        (firstMarkWidget as pw.Container).child,
+        isA<pw.Text>(),
+        reason: 'Containerの子はTextであるべきです',
+      );
       expect(((firstMarkWidget).child as pw.Text).text.toPlainText(), 'メ');
 
       // 中間の区切り線
-      expect(column.children[1], isA<pw.Container>(), reason: '2つの技の間に区切り線が表示されるべきです');
+      expect(
+        column.children[1],
+        isA<pw.Container>(),
+        reason: '2つの技の間に区切り線が表示されるべきです',
+      );
 
       // 2本目の技マーク(丸なし)を検証
       final secondMarkWidget = column.children[2];
@@ -132,15 +187,51 @@ void main() {
 
     test('団体戦リーグのセルは、取得本数/勝者数を「縦並び(Column)」で表示するべき', () {
       final matches = [
-        createMockMatch(id: 'm1', redName: 'チームA:先鋒', whiteName: 'チームB:先鋒', redScore: 1, whiteScore: 0, matchType: '団体戦'),
-        createMockMatch(id: 'm2', redName: 'チームA:中堅', whiteName: 'チームB:中堅', redScore: 0, whiteScore: 0, matchType: '団体戦'),
-        createMockMatch(id: 'm3', redName: 'チームA:大将', whiteName: 'チームB:大将', redScore: 2, whiteScore: 1, matchType: '団体戦'),
+        createMockMatch(
+          id: 'm1',
+          redName: 'チームA:先鋒',
+          whiteName: 'チームB:先鋒',
+          redScore: 1,
+          whiteScore: 0,
+          matchType: '団体戦',
+        ),
+        createMockMatch(
+          id: 'm2',
+          redName: 'チームA:中堅',
+          whiteName: 'チームB:中堅',
+          redScore: 0,
+          whiteScore: 0,
+          matchType: '団体戦',
+        ),
+        createMockMatch(
+          id: 'm3',
+          redName: 'チームA:大将',
+          whiteName: 'チームB:大将',
+          redScore: 2,
+          whiteScore: 1,
+          matchType: '団体戦',
+        ),
         // リーグ表を成立させるためのダミー試合
-        createMockMatch(id: 'm4', redName: 'チームA', whiteName: 'チームC', redScore: 0, whiteScore: 0, matchType: '団体戦'),
-        createMockMatch(id: 'm5', redName: 'チームB', whiteName: 'チームC', redScore: 0, whiteScore: 0, matchType: '団体戦'),
+        createMockMatch(
+          id: 'm4',
+          redName: 'チームA',
+          whiteName: 'チームC',
+          redScore: 0,
+          whiteScore: 0,
+          matchType: '団体戦',
+        ),
+        createMockMatch(
+          id: 'm5',
+          redName: 'チームB',
+          whiteName: 'チームC',
+          redScore: 0,
+          whiteScore: 0,
+          matchType: '団体戦',
+        ),
       ];
 
-      final pdfTable = PdfLeagueTable.build('団体戦リーグ', matches, ttf, ttfBold) as pw.Table;
+      final pdfTable =
+          PdfLeagueTable.build('団体戦リーグ', matches, ttf, ttfBold) as pw.Table;
 
       // 「チームA vs チームB」のセルを特定
       final tableRow = pdfTable.children[1]; // チームAの行
@@ -149,7 +240,11 @@ void main() {
 
       // Stackの2番目の要素が、スコアを表示するウィジェット
       final contentWidget = cellStack.children[1];
-      expect(contentWidget, isA<pw.Column>(), reason: '団体戦では取得本数/勝者数はColumnで縦並びに表示されるべきです');
+      expect(
+        contentWidget,
+        isA<pw.Column>(),
+        reason: '団体戦では取得本数/勝者数はColumnで縦並びに表示されるべきです',
+      );
 
       // Columnの中身を検証
       final column = contentWidget as pw.Column;
@@ -157,7 +252,11 @@ void main() {
 
       // 取得本数 (aPts)
       final pointsText = column.children[0] as pw.Text;
-      expect(pointsText.text.toPlainText(), '3', reason: 'チームAは合計3本取得しているはずです (1+0+2)');
+      expect(
+        pointsText.text.toPlainText(),
+        '3',
+        reason: 'チームAは合計3本取得しているはずです (1+0+2)',
+      );
 
       // 区切り線
       final divider = column.children[1] as pw.Container;
@@ -165,59 +264,169 @@ void main() {
 
       // 勝者数 (aWins)
       final winsText = column.children[2] as pw.Text;
-      expect(winsText.text.toPlainText(), '2', reason: 'チームAは2人勝利しているはずです (先鋒と大将)');
+      expect(
+        winsText.text.toPlainText(),
+        '2',
+        reason: 'チームAは2人勝利しているはずです (先鋒と大将)',
+      );
     });
 
     test('団体戦リーグのセルで引き分け(draw)の場合、例外なく描画が完了するべき', () {
       final matches = [
-        createMockMatch(id: 'm1', redName: 'チームA:先鋒', whiteName: 'チームB:先鋒', redScore: 1, whiteScore: 1, matchType: '団体戦'),
-        createMockMatch(id: 'm2', redName: 'チームA:中堅', whiteName: 'チームB:中堅', redScore: 0, whiteScore: 0, matchType: '団体戦'),
-        createMockMatch(id: 'm3', redName: 'チームA:大将', whiteName: 'チームB:大将', redScore: 1, whiteScore: 1, matchType: '団体戦'),
+        createMockMatch(
+          id: 'm1',
+          redName: 'チームA:先鋒',
+          whiteName: 'チームB:先鋒',
+          redScore: 1,
+          whiteScore: 1,
+          matchType: '団体戦',
+        ),
+        createMockMatch(
+          id: 'm2',
+          redName: 'チームA:中堅',
+          whiteName: 'チームB:中堅',
+          redScore: 0,
+          whiteScore: 0,
+          matchType: '団体戦',
+        ),
+        createMockMatch(
+          id: 'm3',
+          redName: 'チームA:大将',
+          whiteName: 'チームB:大将',
+          redScore: 1,
+          whiteScore: 1,
+          matchType: '団体戦',
+        ),
         // リーグ表を成立させるためのダミー試合
-        createMockMatch(id: 'm4', redName: 'チームA', whiteName: 'チームC', redScore: 0, whiteScore: 0, matchType: '団体戦'),
-        createMockMatch(id: 'm5', redName: 'チームB', whiteName: 'チームC', redScore: 0, whiteScore: 0, matchType: '団体戦'),
+        createMockMatch(
+          id: 'm4',
+          redName: 'チームA',
+          whiteName: 'チームC',
+          redScore: 0,
+          whiteScore: 0,
+          matchType: '団体戦',
+        ),
+        createMockMatch(
+          id: 'm5',
+          redName: 'チームB',
+          whiteName: 'チームC',
+          redScore: 0,
+          whiteScore: 0,
+          matchType: '団体戦',
+        ),
       ];
 
-      final pdfTable = PdfLeagueTable.build('団体戦リーグ', matches, ttf, ttfBold) as pw.Table;
+      final pdfTable =
+          PdfLeagueTable.build('団体戦リーグ', matches, ttf, ttfBold) as pw.Table;
 
       // 「チームA vs チームB」のセルを特定
       final tableRow = pdfTable.children[1]; // チームAの行
       final cellContainer = tableRow.children[2] as pw.Container; // vs チームB のセル
-      
-      expect(cellContainer.child, isA<pw.Stack>(), reason: '引き分けの場合でもStackベースで背景とスコアが描画されるべきです');
+
+      expect(
+        cellContainer.child,
+        isA<pw.Stack>(),
+        reason: '引き分けの場合でもStackベースで背景とスコアが描画されるべきです',
+      );
       final cellStack = cellContainer.child as pw.Stack;
-      
+
       // 引き分け時でもCustomPaintとColumnが生成されていることを確認
-      expect(cellStack.children[0], isA<pw.CustomPaint>(), reason: '背景の図形(四角形)を描画するCustomPaintが含まれるべきです');
-      expect(cellStack.children[1], isA<pw.Column>(), reason: 'スコアを描画するColumnが含まれるべきです');
+      expect(
+        cellStack.children[0],
+        isA<pw.CustomPaint>(),
+        reason: '背景の図形(四角形)を描画するCustomPaintが含まれるべきです',
+      );
+      expect(
+        cellStack.children[1],
+        isA<pw.Column>(),
+        reason: 'スコアを描画するColumnが含まれるべきです',
+      );
     });
 
     test('全試合が完了していない(waitingがある)場合、勝敗の図形は描画されないべき', () {
       final matches = [
-        createMockMatch(id: 'm1', redName: 'チームA:先鋒', whiteName: 'チームB:先鋒', redScore: 1, whiteScore: 0, matchType: '団体戦', status: 'finished'),
-        createMockMatch(id: 'm2', redName: 'チームA:大将', whiteName: 'チームB:大将', redScore: 0, whiteScore: 0, matchType: '団体戦', status: 'waiting'), // 未実施
+        createMockMatch(
+          id: 'm1',
+          redName: 'チームA:先鋒',
+          whiteName: 'チームB:先鋒',
+          redScore: 1,
+          whiteScore: 0,
+          matchType: '団体戦',
+          status: 'finished',
+        ),
+        createMockMatch(
+          id: 'm2',
+          redName: 'チームA:大将',
+          whiteName: 'チームB:大将',
+          redScore: 0,
+          whiteScore: 0,
+          matchType: '団体戦',
+          status: 'waiting',
+        ), // 未実施
         // リーグ表を成立させるためのダミー試合
-        createMockMatch(id: 'm3', redName: 'チームA', whiteName: 'チームC', redScore: 0, whiteScore: 0, matchType: '団体戦'),
+        createMockMatch(
+          id: 'm3',
+          redName: 'チームA',
+          whiteName: 'チームC',
+          redScore: 0,
+          whiteScore: 0,
+          matchType: '団体戦',
+        ),
       ];
 
-      final pdfTable = PdfLeagueTable.build('団体戦リーグ未完了', matches, ttf, ttfBold) as pw.Table;
-      
+      final pdfTable =
+          PdfLeagueTable.build('団体戦リーグ未完了', matches, ttf, ttfBold) as pw.Table;
+
       final tableRow = pdfTable.children[1]; // チームAの行
       final cellContainer = tableRow.children[2] as pw.Container; // vs チームB のセル
 
       // 未完了の場合は空のコンテナ（height: 40, childなし）が返されるはず
-      expect(cellContainer.child, isNull, reason: '全試合が完了していない対戦カードは、図形やスコアを描画しない空のContainerになるべきです');
+      expect(
+        cellContainer.child,
+        isNull,
+        reason: '全試合が完了していない対戦カードは、図形やスコアを描画しない空のContainerになるべきです',
+      );
     });
 
     test('リーグ戦の勝ち点はMatchRuleに基づいて計算されるべき', () {
-      final rule = const MatchRule(isLeague: true, winPoint: 3, drawPoint: 1, lossPoint: 0);
+      final rule = const MatchRule(
+        isLeague: true,
+        winPoint: 3,
+        drawPoint: 1,
+        lossPoint: 0,
+      );
       final matches = [
-        createMockMatch(id: 'm1', redName: '選手A', whiteName: '選手B', redScore: 1, whiteScore: 0, rule: rule, matchType: 'individual'),
-        createMockMatch(id: 'm2', redName: '選手A', whiteName: '選手C', redScore: 0, whiteScore: 0, rule: rule, matchType: 'individual'),
-        createMockMatch(id: 'm3', redName: '選手B', whiteName: '選手C', redScore: 2, whiteScore: 0, rule: rule, matchType: 'individual'),
+        createMockMatch(
+          id: 'm1',
+          redName: '選手A',
+          whiteName: '選手B',
+          redScore: 1,
+          whiteScore: 0,
+          rule: rule,
+          matchType: 'individual',
+        ),
+        createMockMatch(
+          id: 'm2',
+          redName: '選手A',
+          whiteName: '選手C',
+          redScore: 0,
+          whiteScore: 0,
+          rule: rule,
+          matchType: 'individual',
+        ),
+        createMockMatch(
+          id: 'm3',
+          redName: '選手B',
+          whiteName: '選手C',
+          redScore: 2,
+          whiteScore: 0,
+          rule: rule,
+          matchType: 'individual',
+        ),
       ];
 
-      final pdfTable = PdfLeagueTable.build('個人戦リーグ', matches, ttf, ttfBold) as pw.Table;
+      final pdfTable =
+          PdfLeagueTable.build('個人戦リーグ', matches, ttf, ttfBold) as pw.Table;
 
       // Player A: 1 win, 1 draw -> rule points = 3 + 1 = 4
       // Player B: 1 win, 1 loss -> rule points = 3 + 0 = 3
@@ -226,13 +435,31 @@ void main() {
       final tableRows = pdfTable.children;
 
       final rowA = tableRows[1];
-      expect(((rowA.children[rowA.children.length - 2] as pw.Container).child as pw.Text).text.toPlainText(), '4');
+      expect(
+        ((rowA.children[rowA.children.length - 2] as pw.Container).child
+                as pw.Text)
+            .text
+            .toPlainText(),
+        '4',
+      );
 
       final rowB = tableRows[2];
-      expect(((rowB.children[rowB.children.length - 2] as pw.Container).child as pw.Text).text.toPlainText(), '3');
+      expect(
+        ((rowB.children[rowB.children.length - 2] as pw.Container).child
+                as pw.Text)
+            .text
+            .toPlainText(),
+        '3',
+      );
 
       final rowC = tableRows[3];
-      expect(((rowC.children[rowC.children.length - 2] as pw.Container).child as pw.Text).text.toPlainText(), '1');
+      expect(
+        ((rowC.children[rowC.children.length - 2] as pw.Container).child
+                as pw.Text)
+            .text
+            .toPlainText(),
+        '1',
+      );
     });
   });
 }

@@ -15,13 +15,16 @@ import '../../shared/providers/current_sync_context_provider.dart';
 import '../providers/settings_provider.dart';
 
 import '../../shared/widgets/liquid_background.dart';
-import '../components/home/match_timeline_list.dart'; 
+import '../components/home/match_timeline_list.dart';
 import '../components/home/operator_action_buttons.dart';
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart';
 
-final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
+final tournamentProvider = StreamProvider.family<TournamentModel?, String>((
+  ref,
+  id,
+) {
   final repo = ref.watch(tournamentRepositoryProvider);
   return repo.getTournamentStream(id);
 });
@@ -49,7 +52,7 @@ class HomeScreen extends ConsumerWidget {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;    
+    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final bool isReadOnly = (currentRole == UserRole.viewer);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
@@ -65,7 +68,7 @@ class HomeScreen extends ConsumerWidget {
 
     for (var match in allMatchesList) {
       if (match.status == 'finished' || match.status == 'approved') continue;
-      
+
       String key;
       if (match.note.contains('[リーグ戦]')) {
         final t1 = match.redName.split(':').first.trim();
@@ -112,16 +115,27 @@ class HomeScreen extends ConsumerWidget {
                   child: Container(
                     width: double.infinity,
                     color: Colors.amber.shade900,
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 16,
+                    ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.wifi_off_rounded, color: Colors.white, size: 18),
+                        Icon(
+                          Icons.wifi_off_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                         SizedBox(width: 8),
                         Flexible(
                           child: Text(
                             '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ],
@@ -132,32 +146,67 @@ class HomeScreen extends ConsumerWidget {
             ),
             Expanded(
               child: Scaffold(
-                backgroundColor: Colors.transparent, 
+                backgroundColor: Colors.transparent,
                 appBar: AppBar(
-                  automaticallyImplyLeading: !isReadOnly, 
-                  title: Text('大会ホーム', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: textColor)),
-                  backgroundColor: enableLiquidGlass ? Colors.transparent : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+                  automaticallyImplyLeading: !isReadOnly,
+                  title: Text(
+                    '大会ホーム',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: textColor,
+                    ),
+                  ),
+                  backgroundColor: enableLiquidGlass
+                      ? Colors.transparent
+                      : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
                   elevation: 0,
                   iconTheme: IconThemeData(color: textColor),
                   actions: [
                     if (!isReadOnly)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 8,
+                        ),
                         child: ElevatedButton.icon(
-                          onPressed: () => context.go('/'), 
-                          icon: Icon(Icons.home, color: isDark ? Colors.white : Colors.indigo.shade700, size: 18),
-                          label: Text('トップへ', style: TextStyle(color: isDark ? Colors.white : Colors.indigo.shade700, fontWeight: FontWeight.bold)),
+                          onPressed: () => context.go('/'),
+                          icon: Icon(
+                            Icons.home,
+                            color: isDark
+                                ? Colors.white
+                                : Colors.indigo.shade700,
+                            size: 18,
+                          ),
+                          label: Text(
+                            'トップへ',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white
+                                  : Colors.indigo.shade700,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.indigo.shade50, 
-                            elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            backgroundColor: isDark
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.indigo.shade50,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
                         ),
                       ),
                     IconButton(
-                      icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
+                      icon: Icon(
+                        Icons.qr_code_2,
+                        color: isDark ? Colors.white : Colors.indigo.shade900,
+                      ),
                       tooltip: '大会を共有する',
-                      onPressed: () => _showShareDialog(context, ref, tournamentId),
+                      onPressed: () =>
+                          _showShareDialog(context, ref, tournamentId),
                     ),
                     const SizedBox(width: 8),
                   ],
@@ -167,15 +216,57 @@ class HomeScreen extends ConsumerWidget {
                     // --- アクティブバナー ---
                     if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
                       Container(
-                        width: double.infinity, margin: const EdgeInsets.fromLTRB(16, 4, 16, 12), padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.indigo.shade800, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))]),
+                        width: double.infinity,
+                        margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.indigo.shade800,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.indigo.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
                         child: Column(
-                          mainAxisSize: MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
+                          mainAxisSize:
+                              MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
                           children: [
-                            if (uniqueInProgress.isNotEmpty) _buildCallRow('進行中', uniqueInProgress.first, Colors.orangeAccent),
-                            if (uniqueInProgress.isNotEmpty && uniqueWaiting.isNotEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: Colors.white24, height: 1)),
-                            if (uniqueWaiting.isNotEmpty) _buildCallRow('次試合', uniqueWaiting.first, Colors.white),
-                            if (uniqueWaiting.length > 1) Padding(padding: const EdgeInsets.only(top: 8), child: Text('次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}', style: const TextStyle(color: Colors.white70, fontSize: 12), overflow: TextOverflow.ellipsis)),
+                            if (uniqueInProgress.isNotEmpty)
+                              _buildCallRow(
+                                '進行中',
+                                uniqueInProgress.first,
+                                Colors.orangeAccent,
+                              ),
+                            if (uniqueInProgress.isNotEmpty &&
+                                uniqueWaiting.isNotEmpty)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Divider(
+                                  color: Colors.white24,
+                                  height: 1,
+                                ),
+                              ),
+                            if (uniqueWaiting.isNotEmpty)
+                              _buildCallRow(
+                                '次試合',
+                                uniqueWaiting.first,
+                                Colors.white,
+                              ),
+                            if (uniqueWaiting.length > 1)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  '次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -184,8 +275,13 @@ class HomeScreen extends ConsumerWidget {
                     // ★ 修正: Viewer（閲覧専用）以外には、試合記録者を含めてすべてのボタンを表示する
                     if (!isReadOnly)
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
-                        child: OperatorActionButtons(tournamentId: tournamentId),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 2.0,
+                        ),
+                        child: OperatorActionButtons(
+                          tournamentId: tournamentId,
+                        ),
                       ),
 
                     // --- タイムラインリスト（スクロール領域） ---
@@ -202,35 +298,70 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  void _showShareDialog(BuildContext context, WidgetRef ref, String tournamentId) {
+  void _showShareDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String tournamentId,
+  ) {
     final dojoId = ref.read(currentDojoIdProvider);
-    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
+    final String shareUrl =
+        'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('大会観戦リンク', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        title: const Text(
+          '大会観戦リンク',
+          style: TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
         content: SizedBox(
           width: 300,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-            const Text('離れた場所にいる保護者や仲間も、\n試合状況をリアルタイムで安心して見守れます。', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+              const Text(
+                '離れた場所にいる保護者や仲間も、\n試合状況をリアルタイムで安心して見守れます。',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13),
+              ),
               const SizedBox(height: 16),
-              Container(padding: const EdgeInsets.all(8), color: Colors.white, child: QrImageView(data: shareUrl, version: QrVersions.auto, size: 200.0, backgroundColor: Colors.white)),
+              Container(
+                padding: const EdgeInsets.all(8),
+                color: Colors.white,
+                child: QrImageView(
+                  data: shareUrl,
+                  version: QrVersions.auto,
+                  size: 200.0,
+                  backgroundColor: Colors.white,
+                ),
+              ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => SharePlus.instance.share(ShareParams(text: 
-                  '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
-                  'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
-                  'リンク: $shareUrl'
-                )),
-                icon: const Icon(Icons.share), label: const Text('LINEやSNSでURLを送る'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, elevation: 0),
+                onPressed: () => SharePlus.instance.share(
+                  ShareParams(
+                    text:
+                        '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
+                        'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
+                        'リンク: $shareUrl',
+                  ),
+                ),
+                icon: const Icon(Icons.share),
+                label: const Text('LINEやSNSでURLを送る'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                ),
               ),
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる', style: TextStyle(color: Colors.grey)))],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
+          ),
+        ],
       ),
     );
   }
@@ -239,13 +370,34 @@ class HomeScreen extends ConsumerWidget {
     return Column(
       mainAxisSize: MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
       children: [
-        if (match.note.isNotEmpty) Text(match.note, style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 12, fontWeight: FontWeight.bold)),
+        if (match.note.isNotEmpty)
+          Text(
+            match.note,
+            style: TextStyle(
+              color: textColor.withValues(alpha: 0.7),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(label, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+            Text(
+              label,
+              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(width: 12),
-            Flexible(child: Text(_getMatchTitle(match), style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+            Flexible(
+              child: Text(
+                _getMatchTitle(match),
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ],
@@ -254,8 +406,13 @@ class HomeScreen extends ConsumerWidget {
 
   String _getMatchTitle(dynamic match) {
     final isGrouped = match.groupName != null && match.groupName!.isNotEmpty;
-    final isIndividual = match.matchType == 'individual' || match.matchType == '選手' || match.matchType.contains('個人戦');
-    if (isGrouped && !isIndividual) return '${match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName} vs ${match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName}';
+    final isIndividual =
+        match.matchType == 'individual' ||
+        match.matchType == '選手' ||
+        match.matchType.contains('個人戦');
+    if (isGrouped && !isIndividual) {
+      return '${match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName} vs ${match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName}';
+    }
     return '${match.redName} vs ${match.whiteName.contains(':') ? '${match.whiteName.split(':')[1].trim()} : ${match.whiteName.split(':')[0].trim()}' : match.whiteName}';
   }
 }

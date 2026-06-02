@@ -7,13 +7,18 @@ import 'match_provider.dart';
 
 // ★ Step 3-5: 団体戦や勝ち抜き戦の複雑な集計ロジックをキャッシュするProvider
 // これにより、MatchScreenのbuild内で毎秒計算が走るのを防ぎます
-final groupMatchStatusProvider = Provider.family<GroupMatchStatus, String>((ref, matchId) {
+final groupMatchStatusProvider = Provider.family<GroupMatchStatus, String>((
+  ref,
+  matchId,
+) {
   // 1. 必要なデータを取得（これらのデータが変更された時だけ再計算される）
   final matches = ref.watch(matchListProvider);
   final match = matches.where((m) => m.id == matchId).firstOrNull;
   if (match == null) return GroupMatchStatus(isAllDone: false);
 
-  final teamMatches = matches.where((m) => m.groupName == match.groupName).toList();
+  final teamMatches = matches
+      .where((m) => m.groupName == match.groupName)
+      .toList();
   final rule = ref.watch(matchRuleProvider);
   final lastSettings = ref.watch(lastUsedSettingsProvider);
 

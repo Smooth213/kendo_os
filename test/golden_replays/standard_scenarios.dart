@@ -7,10 +7,25 @@ class StandardScenarios {
   static final teamMatchWithExtension = [
     // 先鋒: 引き分け
     // 次鋒: 赤一本勝ち
-    ScoreEventLegacyAdapter.fromLegacy(side: Side.red, type: PointType.men, sequence: 1, userId: 'admin'),
+    ScoreEventLegacyAdapter.fromLegacy(
+      side: Side.red,
+      type: PointType.men,
+      sequence: 1,
+      userId: 'admin',
+    ),
     // 中堅: 白二本勝ち
-    ScoreEventLegacyAdapter.fromLegacy(side: Side.white, type: PointType.kote, sequence: 2, userId: 'admin'),
-    ScoreEventLegacyAdapter.fromLegacy(side: Side.white, type: PointType.men, sequence: 3, userId: 'admin'),
+    ScoreEventLegacyAdapter.fromLegacy(
+      side: Side.white,
+      type: PointType.kote,
+      sequence: 2,
+      userId: 'admin',
+    ),
+    ScoreEventLegacyAdapter.fromLegacy(
+      side: Side.white,
+      type: PointType.men,
+      sequence: 3,
+      userId: 'admin',
+    ),
     // 代表戦: 赤一本勝ち (歴史的真実)
   ];
 

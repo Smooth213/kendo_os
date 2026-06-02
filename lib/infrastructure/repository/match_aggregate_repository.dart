@@ -11,14 +11,16 @@ import 'package:kendo_os/infrastructure/repository/in_memory_snapshot_store.dart
 
 // EventStoreをDI（依存性の注入）するためのProvider
 final eventStoreProvider = Provider<EventStore>((ref) {
-  return InMemoryEventStore(); 
+  return InMemoryEventStore();
 });
 
 final snapshotStoreProvider = Provider<SnapshotStore>((ref) {
   return InMemorySnapshotStore();
 });
 
-final matchAggregateRepositoryProvider = Provider<MatchAggregateRepository>((ref) {
+final matchAggregateRepositoryProvider = Provider<MatchAggregateRepository>((
+  ref,
+) {
   return MatchAggregateRepository(
     ref.read(eventStoreProvider),
     ref.read(snapshotStoreProvider),
@@ -35,7 +37,12 @@ class MatchAggregateRepository {
   Future<MatchAggregate> load(String matchId, MatchRule rule) async {
     final snapshot = await snapshotStore.loadLatest(matchId);
     final events = await store.load(matchId);
-    final baseModel = MatchModel(id: matchId, matchType: 'individual', redName: '赤', whiteName: '白');
+    final baseModel = MatchModel(
+      id: matchId,
+      matchType: 'individual',
+      redName: '赤',
+      whiteName: '白',
+    );
     return MatchAggregate.rehydrate(matchId, snapshot, events, baseModel);
   }
 
@@ -46,7 +53,7 @@ class MatchAggregateRepository {
       events: [event],
       expectedVersion: agg.events.length, // 楽観的ロックのためのバージョン渡し
     );
-    
+
     final newEvents = await store.load(agg.id);
 
     // ==========================================
@@ -57,7 +64,12 @@ class MatchAggregateRepository {
         id: const Uuid().v4(),
         matchId: agg.id,
         version: newEvents.length,
-        state: MatchModel(id: agg.id, matchType: 'individual', redName: '赤', whiteName: '白'),
+        state: MatchModel(
+          id: agg.id,
+          matchType: 'individual',
+          redName: '赤',
+          whiteName: '白',
+        ),
         createdAt: DateTime.now(),
         reason: 'Auto Snapshot at ${newEvents.length} events',
         events: newEvents,
@@ -82,10 +94,10 @@ class MatchAggregateRepository {
       try {
         // 1. 最新の歴史を取得
         final currentAgg = await load(matchId, rule);
-        
+
         // 2. その歴史に対して、自分がやりたい操作（イベント生成）を適用
         final newEvent = action(currentAgg);
-        
+
         // 3. 保存を試みる（ここで他人に先を越されていたら例外が飛ぶ）
         return await append(currentAgg, newEvent);
       } on ConcurrencyException {

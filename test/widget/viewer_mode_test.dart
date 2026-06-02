@@ -24,7 +24,8 @@ import 'package:kendo_os/presentation/viewer/screens/viewer_team_scoreboard_scre
 import 'package:kendo_os/domain/repositories/projection_store.dart';
 import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
-import 'package:kendo_os/application/projections/projection_store.dart' as app_store;
+import 'package:kendo_os/application/projections/projection_store.dart'
+    as app_store;
 
 // ★ Phase 8: settingsProviderのモック用
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
@@ -46,13 +47,14 @@ import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provide
 import 'package:kendo_os/presentation/operate/providers/match_view_state_provider.dart';
 
 // ★ 全テストのスクロール可視範囲問題を永続的に解消する安定化ヘルパー
-Future<void> tapVisible(
-  WidgetTester tester,
-  Key key,
-) async {
+Future<void> tapVisible(WidgetTester tester, Key key) async {
   final finder = find.byKey(key, skipOffstage: false);
   // ① 存在を保証 (typoや非レンダリングを水際で検知)
-  expect(finder, findsOneWidget, reason: 'Key $key not found in the widget tree');
+  expect(
+    finder,
+    findsOneWidget,
+    reason: 'Key $key not found in the widget tree',
+  );
 
   // ② 画面外ならスクロールして強制的に可視化
   await tester.ensureVisible(finder);
@@ -67,7 +69,8 @@ Future<void> tapVisible(
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
-  SettingsModel build() => const SettingsModel(securityLevel: 1, enableLiquidGlass: false); // CI(Linux)環境でのシェーダークラッシュや無限アニメーションタイムアウトを防止
+  SettingsModel build() =>
+      const SettingsModel(securityLevel: 1, enableLiquidGlass: false); // CI(Linux)環境でのシェーダークラッシュや無限アニメーションタイムアウトを防止
 }
 
 class MockTournamentRepository implements TournamentRepository {
@@ -88,13 +91,20 @@ class MockTournamentRepository implements TournamentRepository {
       ),
     );
   }
-  
+
   @override
-  Future<void> updateTournamentDetails(String id, {String? name, String? venue, String? notes, DateTime? date}) async {}
+  Future<void> updateTournamentDetails(
+    String id, {
+    String? name,
+    String? venue,
+    String? notes,
+    DateTime? date,
+  }) async {}
   @override
   Future<void> deleteTournament(String id) async {}
   @override
-  Future<String> saveTournament(TournamentModel tournament) async => 'test_tournament_1';
+  Future<String> saveTournament(TournamentModel tournament) async =>
+      'test_tournament_1';
   @override
   Future<void> updateTournament(TournamentModel tournament) async {}
   @override
@@ -104,14 +114,14 @@ class MockTournamentRepository implements TournamentRepository {
 
   // ★ 追加: 予期せぬ呼び出しに対応する明示的なメソッド
   Future<TournamentModel?> getTournament(String id) async => TournamentModel(
-        id: 'test_tournament_1',
-        organizationId: 'default_org',
-        name: '春季県大会',
-        date: DateTime.now(),
-        venue: '県立武道館',
-        notes: 'テスト用メモ',
-        categories: const ['一般', '個人'],
-      );
+    id: 'test_tournament_1',
+    organizationId: 'default_org',
+    name: '春季県大会',
+    date: DateTime.now(),
+    venue: '県立武道館',
+    notes: 'テスト用メモ',
+    categories: const ['一般', '個人'],
+  );
 }
 
 class MockPlayerRepository implements PlayerRepository {
@@ -119,12 +129,15 @@ class MockPlayerRepository implements PlayerRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
-  Stream<List<String>> watchCustomTeamNames({String organization = '道上剣友会'}) => Stream.value([]);
+  Stream<List<String>> watchCustomTeamNames({String organization = '道上剣友会'}) =>
+      Stream.value([]);
 
   // ★ 追加: Playerの取得系メソッドが呼ばれた場合に対応
   @override
-  Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) => Stream.value([]);
-  Stream<List<String>> watchPlayers({String organization = '道上剣友会'}) => Stream.value([]);
+  Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) =>
+      Stream.value([]);
+  Stream<List<String>> watchPlayers({String organization = '道上剣友会'}) =>
+      Stream.value([]);
 }
 
 class MockMatchRepository implements MatchRepository {
@@ -139,8 +152,10 @@ class MockMatchRepository implements MatchRepository {
   Future<List<MatchModel>> getStaticMatches() async => mockMatches;
 
   // ★ 追加: 大会IDで試合を絞り込むメソッドが呼ばれた場合に対応
-  Stream<List<MatchModel>> watchMatchesByTournament(String tournamentId) => Stream.value(mockMatches);
-  Future<List<MatchModel>> getMatchesByTournament(String tournamentId) async => mockMatches;
+  Stream<List<MatchModel>> watchMatchesByTournament(String tournamentId) =>
+      Stream.value(mockMatches);
+  Future<List<MatchModel>> getMatchesByTournament(String tournamentId) async =>
+      mockMatches;
 }
 
 class MockLocalMatchRepository implements LocalMatchRepository {
@@ -153,8 +168,10 @@ class MockLocalMatchRepository implements LocalMatchRepository {
   Future<void> saveMatchesBulk(List<MatchModel> matches) async {}
 
   // ★ 追加: ローカル側でも大会ID指定が呼ばれる可能性への対応
-  Stream<List<MatchModel>> watchMatchesByTournament(String tournamentId) => Stream.value(mockMatches);
-  Future<List<MatchModel>> getMatchesByTournament(String tournamentId) async => mockMatches;
+  Stream<List<MatchModel>> watchMatchesByTournament(String tournamentId) =>
+      Stream.value(mockMatches);
+  Future<List<MatchModel>> getMatchesByTournament(String tournamentId) async =>
+      mockMatches;
 }
 
 // 網羅的なモック試合データ（団体、個人、リーグ、勝ち抜きなど）
@@ -172,7 +189,7 @@ final List<MatchModel> mockMatches = [
     redScore: 1,
     whiteScore: 0,
     order: 1.0,
-    note: '[団体戦]'
+    note: '[団体戦]',
   ),
   const MatchModel(
     id: 'team_match_2',
@@ -186,7 +203,7 @@ final List<MatchModel> mockMatches = [
     redScore: 0,
     whiteScore: 0,
     order: 2.0,
-    note: '[団体戦]'
+    note: '[団体戦]',
   ),
 
   // ★ 修正2: 「チーム名 : 選手名」の正しい形式に修正
@@ -194,7 +211,7 @@ final List<MatchModel> mockMatches = [
     id: 'indiv_match_1',
     tournamentId: 'test_tournament_1',
     category: '個人',
-    redName: '青龍道場 : 山田', 
+    redName: '青龍道場 : 山田',
     whiteName: '白虎剣友会 : 鈴木',
     matchType: '個人戦',
     status: 'finished',
@@ -239,12 +256,12 @@ final List<MatchModel> mockMatches = [
     tournamentId: 'test_tournament_1',
     category: '個人',
     groupName: '個人リーグA',
-    redName: '青龍道場 : 山田', 
+    redName: '青龍道場 : 山田',
     whiteName: '朱雀会 : 佐藤',
     matchType: '個人戦',
-    note: '[リーグ戦] [SUMMARY]', 
+    note: '[リーグ戦] [SUMMARY]',
     status: 'approved',
-    redScore: 1, 
+    redScore: 1,
     whiteScore: 0,
     order: 5.0,
     rule: MatchRule(isLeague: true),
@@ -295,26 +312,29 @@ class MockProjectionStore implements ProjectionStore {
   // ★ 戻り値を MatchListProjection に変換して返すように修正
   @override
   Stream<List<MatchListProjection>> watchByTournament(String tournamentId) {
-    final list = originalMatches.where((m) => m.tournamentId == tournamentId).map((m) {
-      final p = projections.firstWhere((proj) => proj.id == m.id);
-      return MatchListProjection(
-        id: p.id,
-        tournamentId: p.tournamentId,
-        matchOrder: p.matchOrder,
-        matchType: p.matchType,
-        status: p.status,
-        redName: p.redName,
-        whiteName: p.whiteName,
-        redScore: p.redScore,
-        whiteScore: p.whiteScore,
-        groupName: p.groupName,
-        isKachinuki: p.isKachinuki,
-        note: p.note,
-        firstPointSide: p.firstPointSide,
-        redPointMarks: p.redPointMarks,
-        whitePointMarks: p.whitePointMarks,
-      );
-    }).toList();
+    final list = originalMatches
+        .where((m) => m.tournamentId == tournamentId)
+        .map((m) {
+          final p = projections.firstWhere((proj) => proj.id == m.id);
+          return MatchListProjection(
+            id: p.id,
+            tournamentId: p.tournamentId,
+            matchOrder: p.matchOrder,
+            matchType: p.matchType,
+            status: p.status,
+            redName: p.redName,
+            whiteName: p.whiteName,
+            redScore: p.redScore,
+            whiteScore: p.whiteScore,
+            groupName: p.groupName,
+            isKachinuki: p.isKachinuki,
+            note: p.note,
+            firstPointSide: p.firstPointSide,
+            redPointMarks: p.redPointMarks,
+            whitePointMarks: p.whitePointMarks,
+          );
+        })
+        .toList();
     return Stream.value(list); // async* の遅延をなくし、即時反映させる
   }
 }
@@ -338,32 +358,40 @@ class MockAppProjectionStore implements app_store.ProjectionStore {
 
   @override
   Stream<List<MatchListProjection>> watchByTournament(String tournamentId) {
-    final list = originalMatches.where((m) => m.tournamentId == tournamentId).map((m) {
-      final p = projections.firstWhere((proj) => proj.id == m.id);
-      return MatchListProjection(
-        id: p.id,
-        tournamentId: p.tournamentId,
-        matchOrder: p.matchOrder,
-        matchType: p.matchType,
-        status: p.status,
-        redName: p.redName,
-        whiteName: p.whiteName,
-        redScore: p.redScore,
-        whiteScore: p.whiteScore,
-        groupName: p.groupName,
-        isKachinuki: p.isKachinuki,
-        note: p.note,
-        firstPointSide: p.firstPointSide,
-        redPointMarks: p.redPointMarks,
-        whitePointMarks: p.whitePointMarks,
-      );
-    }).toList();
-    return Stream.value(list); 
+    final list = originalMatches
+        .where((m) => m.tournamentId == tournamentId)
+        .map((m) {
+          final p = projections.firstWhere((proj) => proj.id == m.id);
+          return MatchListProjection(
+            id: p.id,
+            tournamentId: p.tournamentId,
+            matchOrder: p.matchOrder,
+            matchType: p.matchType,
+            status: p.status,
+            redName: p.redName,
+            whiteName: p.whiteName,
+            redScore: p.redScore,
+            whiteScore: p.whiteScore,
+            groupName: p.groupName,
+            isKachinuki: p.isKachinuki,
+            note: p.note,
+            firstPointSide: p.firstPointSide,
+            redPointMarks: p.redPointMarks,
+            whitePointMarks: p.whitePointMarks,
+          );
+        })
+        .toList();
+    return Stream.value(list);
   }
 }
 
 // テスト用ユーティリティ：ProviderScopeでラップしてマウントする
-Widget createTestableWidget(Widget child, {Role role = Role.viewer, List<Override> overrides = const [], GoRouter? customRouter}) {
+Widget createTestableWidget(
+  Widget child, {
+  Role role = Role.viewer,
+  List<Override> overrides = const [],
+  GoRouter? customRouter,
+}) {
   // ★ 追加: MatchModelのモックを、Viewerが依存するMatchProjectionのモックに変換
   final mockProjections = mockMatches.map((m) {
     final proj = MatchProjection(
@@ -392,41 +420,54 @@ Widget createTestableWidget(Widget child, {Role role = Role.viewer, List<Overrid
     return proj;
   }).toList();
 
-  final router = customRouter ?? GoRouter(
-    initialLocation: '/',
-    routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => child,
-      ),
-    ],
-  );
+  final router =
+      customRouter ??
+      GoRouter(
+        initialLocation: '/',
+        routes: [GoRoute(path: '/', builder: (context, state) => child)],
+      );
 
   return ProviderScope(
     overrides: [
       activeRoleProvider.overrideWith((ref) => role),
       // ★ 修正: 多くのWidgetが依存する `matchListProvider` と `matchListByTournamentProvider` の両方をモック化
       matchListProvider.overrideWithValue(mockMatches),
-      matchListByTournamentProvider.overrideWith((ref, tournamentId) => Stream.value(mockMatches)),
+      matchListByTournamentProvider.overrideWith(
+        (ref, tournamentId) => Stream.value(mockMatches),
+      ),
       isarProvider.overrideWithValue(null), // ★ Isar未初期化エラーを解決
       matchStreamProvider.overrideWith((ref) => Stream.value(mockMatches)),
       playerRepositoryProvider.overrideWithValue(MockPlayerRepository()),
       matchRepositoryProvider.overrideWithValue(MockMatchRepository()),
-      localMatchRepositoryProvider.overrideWithValue(MockLocalMatchRepository()),
+      localMatchRepositoryProvider.overrideWithValue(
+        MockLocalMatchRepository(),
+      ),
       // ★ 追加: 意図せずFirestoreを叩くプロバイダを安全なモックに置き換え
-      bunaiksenMatchesProvider.overrideWith((ref, id) => Stream.value(mockMatches)),
-      tournamentRepositoryProvider.overrideWithValue(MockTournamentRepository()),
+      bunaiksenMatchesProvider.overrideWith(
+        (ref, id) => Stream.value(mockMatches),
+      ),
+      tournamentRepositoryProvider.overrideWithValue(
+        MockTournamentRepository(),
+      ),
       // ★ 追加: Viewer用のProjectionStoreをモックデータで上書き
-      projectionStoreProvider.overrideWithValue(MockProjectionStore(mockProjections, mockMatches)),
+      projectionStoreProvider.overrideWithValue(
+        MockProjectionStore(mockProjections, mockMatches),
+      ),
       // ★ 修正: アプリ本編が依存している正しいProjectionStoreのプロバイダも確実にモック化し、[core/no-app] 自爆エラーを完全消滅させる
-      app_store.projectionStoreProvider.overrideWithValue(MockAppProjectionStore(mockProjections, mockMatches)),
+      app_store.projectionStoreProvider.overrideWithValue(
+        MockAppProjectionStore(mockProjections, mockMatches),
+      ),
       // ★ 修正3: これがないと画面描画時に必ずクラッシュするため追加
       customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
       // ★ 追加: Firebaseやローカルストレージへの意図しないアクセスを完全遮断
-      firestoreRoleStreamProvider.overrideWith((ref) => Stream.value(UserRole.viewer)),
+      firestoreRoleStreamProvider.overrideWith(
+        (ref) => Stream.value(UserRole.viewer),
+      ),
       currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
       currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
-      dojoRoomSyncProvider.overrideWith((ref) {}), // ★ 追加: FirebaseFirestore.instance の直接呼び出しをテスト環境で物理的に遮断
+      dojoRoomSyncProvider.overrideWith(
+        (ref) {},
+      ), // ★ 追加: FirebaseFirestore.instance の直接呼び出しをテスト環境で物理的に遮断
       // ★ Phase 8: SettingsProviderをモック化してSharedPreferences未実装エラーを回避
       settingsProvider.overrideWith(() => MockSettingsNotifier()),
       commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
@@ -445,7 +486,9 @@ void main() {
   group('Viewer Mode Tests (Read-Only & Drawing)', () {
     const testTournamentId = 'test_tournament_1';
 
-    testWidgets('1. Read-Only Permission is strictly applied in Viewer Mode', (WidgetTester tester) async {
+    testWidgets('1. Read-Only Permission is strictly applied in Viewer Mode', (
+      WidgetTester tester,
+    ) async {
       final container = ProviderContainer(
         overrides: [
           activeRoleProvider.overrideWith((ref) => Role.viewer),
@@ -454,13 +497,15 @@ void main() {
         ],
       );
       final permissions = container.read(permissionProvider);
-      
+
       expect(permissions.isReadOnly, isTrue);
       expect(permissions.canCreateMatch, isFalse);
       expect(permissions.canManageTournament, isFalse);
     });
 
-    testWidgets('1-2. No Edit buttons in ViewerHomeScreen', (WidgetTester tester) async {
+    testWidgets('1-2. No Edit buttons in ViewerHomeScreen', (
+      WidgetTester tester,
+    ) async {
       // ★ CI環境でのRenderFlexオーバーフローを防ぐため、画面サイズを十分に確保
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
@@ -469,20 +514,87 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(createTestableWidget(const ViewerHomeScreen(tournamentId: testTournamentId)));
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerHomeScreen(tournamentId: testTournamentId),
+        ),
+      );
       await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.text('この大会に試合を追加する'), findsNothing);
-      expect(find.byIcon(Icons.more_horiz), findsNothing); 
-      expect(find.byIcon(Icons.edit_note), findsNothing); 
-      expect(find.byIcon(Icons.delete_outline), findsNothing); 
+      expect(find.byIcon(Icons.more_horiz), findsNothing);
+      expect(find.byIcon(Icons.edit_note), findsNothing);
+      expect(find.byIcon(Icons.delete_outline), findsNothing);
       expect(find.byIcon(Icons.flash_on), findsNothing);
     });
 
-    testWidgets('2. ViewerHomeScreen displays current status and correctly renders elements', (WidgetTester tester) async {
+    testWidgets(
+      '2. ViewerHomeScreen displays current status and correctly renders elements',
+      (WidgetTester tester) async {
+        // ★ 画面サイズを縦長にして、スクロールが必要な検索アイコンが確実に描画されるようにする
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      // ★ 画面サイズを縦長にして、スクロールが必要な検索アイコンが確実に描画されるようにする
+        await tester.pumpWidget(
+          createTestableWidget(
+            const ViewerHomeScreen(tournamentId: testTournamentId),
+          ),
+        );
+        await tester.pump(); // Streamの即時反映を待つ
+        await tester.pumpAndSettle();
+
+        expect(find.text('進行中'), findsWidgets);
+        expect(find.byIcon(Icons.search), findsOneWidget);
+
+        await tester.tap(find.byIcon(Icons.search));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pumpAndSettle(); // ★ Widgetの描画完了を確実に待つ
+        expect(find.byType(TextField), findsOneWidget);
+        // スコアという文字はViewerHomeScreenに直接は無いため、検索フィールドのヒントテキスト等で検証
+        expect(find.text('選手名・チーム名で検索...'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '3. ViewerOfficialRecordScreen renders header and export buttons',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await tester.pumpWidget(
+          createTestableWidget(
+            const ViewerOfficialRecordScreen(tournamentId: testTournamentId),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pumpAndSettle();
+
+        debugDumpApp(); // ツリー内部構成の確認用（不要になれば削除してください）
+
+        await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+
+        expect(find.byKey(const Key('viewer_export_pdf_button')), findsWidgets);
+        expect(
+          find.byKey(const Key('viewer_export_image_button')),
+          findsWidgets,
+        );
+      },
+    );
+
+    testWidgets('4-1. Renders normal Team Match (Table Format)', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -490,52 +602,11 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(createTestableWidget(const ViewerHomeScreen(tournamentId: testTournamentId)));
-      await tester.pump(); // Streamの即時反映を待つ
-      await tester.pumpAndSettle();
-
-      expect(find.text('進行中'), findsWidgets);
-      expect(find.byIcon(Icons.search), findsOneWidget);
-      
-      await tester.tap(find.byIcon(Icons.search));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pumpAndSettle(); // ★ Widgetの描画完了を確実に待つ
-      expect(find.byType(TextField), findsOneWidget);
-      // スコアという文字はViewerHomeScreenに直接は無いため、検索フィールドのヒントテキスト等で検証
-      expect(find.text('選手名・チーム名で検索...'), findsOneWidget);
-    });
-
-    testWidgets('3. ViewerOfficialRecordScreen renders header and export buttons', (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pumpAndSettle();
-
-      debugDumpApp(); // ツリー内部構成の確認用（不要になれば削除してください）
-
-      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
-
-      expect(find.byKey(const Key('viewer_export_pdf_button')), findsWidgets);
-      expect(find.byKey(const Key('viewer_export_image_button')), findsWidgets);
-    });
-
-    testWidgets('4-1. Renders normal Team Match (Table Format)', (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerOfficialRecordScreen(tournamentId: testTournamentId),
+        ),
+      );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
@@ -557,7 +628,11 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerOfficialRecordScreen(tournamentId: testTournamentId),
+        ),
+      );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
@@ -569,8 +644,37 @@ void main() {
       expect(find.textContaining('玄武館', skipOffstage: false), findsWidgets);
     });
 
-    testWidgets('4-3. Renders Individual League with SUMMARY (Flat List & Star Table)', (WidgetTester tester) async {
-      // ★ 追加：画面サイズを縦長にして、リスト下部の試合が確実に描画されるようにする
+    testWidgets(
+      '4-3. Renders Individual League with SUMMARY (Flat List & Star Table)',
+      (WidgetTester tester) async {
+        // ★ 追加：画面サイズを縦長にして、リスト下部の試合が確実に描画されるようにする
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await tester.pumpWidget(
+          createTestableWidget(
+            const ViewerOfficialRecordScreen(tournamentId: testTournamentId),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pumpAndSettle();
+
+        debugDumpApp();
+
+        await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+
+        expect(find.textContaining('朱雀会', skipOffstage: false), findsWidgets);
+      },
+    );
+
+    testWidgets('4-4. 【リーグ個人戦表記】 星取表のヘッダーがチーム名ではなく選手名で描画されること', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -578,27 +682,11 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pumpAndSettle();
-
-      debugDumpApp();
-
-      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
-
-      expect(find.textContaining('朱雀会', skipOffstage: false), findsWidgets);
-    });
-
-    testWidgets('4-4. 【リーグ個人戦表記】 星取表のヘッダーがチーム名ではなく選手名で描画されること', (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerOfficialRecordScreen(tournamentId: testTournamentId),
+        ),
+      );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
@@ -611,109 +699,130 @@ void main() {
       expect(find.text('佐藤', skipOffstage: false), findsWidgets);
     });
 
-    testWidgets('5. ViewerMatchScreen fallback renders UI when projection is loading', (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      '5. ViewerMatchScreen fallback renders UI when projection is loading',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      await tester.pumpWidget(
-        createTestableWidget(
-          const ViewerMatchScreen(matchId: 'indiv_match_1'),
-          overrides: [
-            viewerMatchProjectionProvider.overrideWith((ref, id) {
-              final controller = StreamController<MatchProjection?>();
-              ref.onDispose(controller.close); // テスト終了時に安全にストリームを閉じてメモリリークを防止
-              return controller.stream;
-            }),
+        await tester.pumpWidget(
+          createTestableWidget(
+            const ViewerMatchScreen(matchId: 'indiv_match_1'),
+            overrides: [
+              viewerMatchProjectionProvider.overrideWith((ref, id) {
+                final controller = StreamController<MatchProjection?>();
+                ref.onDispose(controller.close); // テスト終了時に安全にストリームを閉じてメモリリークを防止
+                return controller.stream;
+              }),
+            ],
+          ),
+        );
+
+        await tester.pump();
+
+        // ローディング状態であっても、キャッシュにデータがあるためUIがフォールバック描画されることを確認
+        expect(find.text('試合状況 (観戦)'), findsOneWidget);
+        expect(find.text('運営モードへ切替'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '6. ViewerMatchListTileCard correctly navigates to Scoreboard when "スコア" button is tapped',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        // ★ 遷移を完全に再現するため、ViewerHome と TeamScoreboard を繋ぐ専用ルーターを構築
+        final router = GoRouter(
+          initialLocation: '/viewer-home/$testTournamentId',
+          routes: [
+            GoRoute(
+              path: '/viewer-home/:tournamentId',
+              builder: (context, state) => ViewerHomeScreen(
+                tournamentId: state.pathParameters['tournamentId']!,
+              ),
+            ),
+            GoRoute(
+              path: '/viewer-team/:groupName',
+              builder: (context, state) => ViewerTeamScoreboardScreen(
+                groupName: state.pathParameters['groupName']!,
+              ),
+            ),
           ],
-        ),
-      );
+        );
 
-      await tester.pump();
+        await tester.pumpWidget(
+          createTestableWidget(const SizedBox(), customRouter: router),
+        );
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      // ローディング状態であっても、キャッシュにデータがあるためUIがフォールバック描画されることを確認
-      expect(find.text('試合状況 (観戦)'), findsOneWidget);
-      expect(find.text('運営モードへ切替'), findsOneWidget);
-    });
+        // "スコア" ボタンが表示されていることを確認
+        final scoreButtonFinder = find.widgetWithText(
+          OutlinedButton,
+          'スコア',
+          skipOffstage: false,
+        );
+        expect(scoreButtonFinder, findsWidgets);
 
-    testWidgets('6. ViewerMatchListTileCard correctly navigates to Scoreboard when "スコア" button is tapped', (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+        // 画面内に見えている最初のスコアボタン（団体戦等）を確実に見つけてタップ
+        await tester.ensureVisible(scoreButtonFinder.first);
+        await tester.pumpAndSettle();
+        await tester.tap(scoreButtonFinder.first);
+        await tester.pumpAndSettle();
 
-      // ★ 遷移を完全に再現するため、ViewerHome と TeamScoreboard を繋ぐ専用ルーターを構築
-      final router = GoRouter(
-        initialLocation: '/viewer-home/$testTournamentId',
-        routes: [
-          GoRoute(
-            path: '/viewer-home/:tournamentId',
-            builder: (context, state) => ViewerHomeScreen(tournamentId: state.pathParameters['tournamentId']!),
+        // 遷移先の ViewerTeamScoreboardScreen がエラーなく表示され、タイトルが出ていることを確認
+        // （以前のバグではここで大会IDが取得できず「大会情報がありません」等のエラーやホワイトアウトになっていた）
+        expect(find.text('団体戦 スコア (観戦)'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '7. ViewerTeamScoreboardScreen resolves groupName or matchId to tournamentId without errors',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        // 直接 groupName ('団体戦A') を指定して画面を開く
+        await tester.pumpWidget(
+          createTestableWidget(
+            const ViewerTeamScoreboardScreen(groupName: '団体戦A'),
           ),
-          GoRoute(
-            path: '/viewer-team/:groupName',
-            builder: (context, state) => ViewerTeamScoreboardScreen(groupName: state.pathParameters['groupName']!),
-          ),
-        ],
-      );
+        );
 
-      await tester.pumpWidget(createTestableWidget(const SizedBox(), customRouter: router));
-      await tester.pump();
-      await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      // "スコア" ボタンが表示されていることを確認
-      final scoreButtonFinder = find.widgetWithText(OutlinedButton, 'スコア', skipOffstage: false);
-      expect(scoreButtonFinder, findsWidgets);
+        // 団体戦のスコア表示画面が正しくプロジェクションからデータを拾い上げて描画されることを確認
+        expect(find.text('団体戦 スコア (観戦)'), findsOneWidget);
+        expect(find.text('青龍道場'), findsWidgets);
+        expect(find.text('白虎剣友会'), findsWidgets);
 
-      // 画面内に見えている最初のスコアボタン（団体戦等）を確実に見つけてタップ
-      await tester.ensureVisible(scoreButtonFinder.first);
-      await tester.pumpAndSettle();
-      await tester.tap(scoreButtonFinder.first);
-      await tester.pumpAndSettle();
-
-      // 遷移先の ViewerTeamScoreboardScreen がエラーなく表示され、タイトルが出ていることを確認
-      // （以前のバグではここで大会IDが取得できず「大会情報がありません」等のエラーやホワイトアウトになっていた）
-      expect(find.text('団体戦 スコア (観戦)'), findsOneWidget);
-    });
-
-    testWidgets('7. ViewerTeamScoreboardScreen resolves groupName or matchId to tournamentId without errors', (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      // 直接 groupName ('団体戦A') を指定して画面を開く
-      await tester.pumpWidget(
-        createTestableWidget(
-          const ViewerTeamScoreboardScreen(groupName: '団体戦A'),
-        ),
-      );
-
-      await tester.pump();
-      await tester.pumpAndSettle();
-
-      // 団体戦のスコア表示画面が正しくプロジェクションからデータを拾い上げて描画されることを確認
-      expect(find.text('団体戦 スコア (観戦)'), findsOneWidget);
-      expect(find.text('青龍道場'), findsWidgets);
-      expect(find.text('白虎剣友会'), findsWidgets);
-
-      // --- 既存のテストケース7の正常終了を保証するクローザー ---
-      await tester.pumpAndSettle();
-      expect(find.byType(ViewerTeamScoreboardScreen), findsOneWidget);
-    });
+        // --- 既存のテストケース7の正常終了を保証するクローザー ---
+        await tester.pumpAndSettle();
+        expect(find.byType(ViewerTeamScoreboardScreen), findsOneWidget);
+      },
+    );
 
     // =========================================================================
     // 🛡️ STEP 4-2 要件：Viewer完全網羅（団体・個人・リーグ・勝ち抜き・SUMMARY・ダーク・横画面）
     // UI変更による表示崩れを100%即座に検知する絶対防衛ラインを敷設します。
     // =========================================================================
-    testWidgets('8. 【完全網羅】団体戦・個人戦・リーグ戦・勝ち抜き・SUMMARY表示の統合描画検証', (WidgetTester tester) async {
+    testWidgets('8. 【完全網羅】団体戦・個人戦・リーグ戦・勝ち抜き・SUMMARY表示の統合描画検証', (
+      WidgetTester tester,
+    ) async {
       // 画面解像度のシミュレート
       tester.view.physicalSize = const Size(1200, 1920);
       tester.view.devicePixelRatio = 1.0;
@@ -730,9 +839,11 @@ void main() {
       expect(find.byType(ViewerTeamScoreboardScreen), findsOneWidget);
     });
 
-    testWidgets('9. 【マルチ環境】ダークモードおよび横画面（Landscape）におけるレイアウト不変性検証', (WidgetTester tester) async {
+    testWidgets('9. 【マルチ環境】ダークモードおよび横画面（Landscape）におけるレイアウト不変性検証', (
+      WidgetTester tester,
+    ) async {
       // 体育館でのタブレット横置き（横画面）を完全再現
-      tester.view.physicalSize = const Size(1920, 1080); 
+      tester.view.physicalSize = const Size(1920, 1080);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
@@ -741,7 +852,9 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           Theme(
-            data: ThemeData.dark().copyWith(splashFactory: NoSplash.splashFactory), // 🌟 ダークモード環境の完全模写
+            data: ThemeData.dark().copyWith(
+              splashFactory: NoSplash.splashFactory,
+            ), // 🌟 ダークモード環境の完全模写
             child: const ViewerTeamScoreboardScreen(groupName: '一般の部_勝ち抜き'),
           ),
         ),
@@ -758,21 +871,27 @@ void main() {
     // またはエラーパケットを返却した際にも、Viewerが画面をクラッシュさせず
     // 直前のキャッシュ状態を完全に維持して粘り強く表示し続ける耐久性を証明します。
     // =========================================================================
-    testWidgets('10. 【オフライン】通信切断（ストリームエラー・無通信）でもViewer画面がクラッシュせず表示を維持すること', (WidgetTester tester) async {
+    testWidgets('10. 【オフライン】通信切断（ストリームエラー・無通信）でもViewer画面がクラッシュせず表示を維持すること', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         createTestableWidget(
           Theme(
-            data: ThemeData.light().copyWith(splashFactory: NoSplash.splashFactory),
+            data: ThemeData.light().copyWith(
+              splashFactory: NoSplash.splashFactory,
+            ),
             // 意図的に無効な、または初期化中の通信切断状態をエミュレートするために
             // 存在しないグループ名、またはモックがエラーを吐くトリガーを引く
-            child: const ViewerTeamScoreboardScreen(groupName: 'OFFLINE_DISCONNECTED_SHIELD_VAL'),
+            child: const ViewerTeamScoreboardScreen(
+              groupName: 'OFFLINE_DISCONNECTED_SHIELD_VAL',
+            ),
           ),
         ),
       );
-      
+
       // ネットワーク瞬断時のラグをシミュレート
       await tester.pump();
-      
+
       // 画面がエラーで強制終了（ホワイトアウト）せず、セーフティガードによって
       // 最低限のフォールバックツリー（Viewerコンポーネント構造）を100%維持していることをアサート
       expect(find.byType(ViewerTeamScoreboardScreen), findsOneWidget);
@@ -783,13 +902,19 @@ void main() {
     // PDF生成時の非同期ライフサイクル（キック -> 内部遅延発生 -> UIのフリーズなき正常復帰）
     // の全タイムライン挙動が、設計通り決定論的に完走することを証明します。
     // =========================================================================
-    testWidgets('11. 【PDFボタン】非同期生成時のローディングおよび正常復帰ライフサイクルの検証', (WidgetTester tester) async {
+    testWidgets('11. 【PDFボタン】非同期生成時のローディングおよび正常復帰ライフサイクルの検証', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
       // 1. 公式記録画面（ViewerOfficialRecordScreen）を立ち上げる
-      await tester.pumpWidget(createTestableWidget(const ViewerOfficialRecordScreen(tournamentId: testTournamentId)));
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerOfficialRecordScreen(tournamentId: testTournamentId),
+        ),
+      );
       await tester.pumpAndSettle();
 
       // モックテスト環境の仕様に合わせてタブを選択し、ボタンを活性化
@@ -801,7 +926,7 @@ void main() {
 
       // 3. ボタンをタップして非同期生成プロセスをキック
       await tester.tap(pdfButtonFinder.first);
-      
+
       // 4. pdf_service内の _isTest 遅延（100ms）の合間を縫って、pump() で1フレーム進める
       // これにより、生成中のバックグラウンド待機状態をシミュレート
       await tester.pump(const Duration(milliseconds: 10));

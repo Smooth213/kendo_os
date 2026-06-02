@@ -14,10 +14,15 @@ void main() {
 
     setUp(() {
       engine = KendoRuleEngine();
-      dummyMatch = MatchModel( // ★ constを外し、コンパイラクラッシュを回避
-        id: 'test', tournamentId: 't1', matchOrder: 1,
-        redName: 'Red', whiteName: 'White',
-        status: 'in_progress', matchType: '個人戦',
+      dummyMatch = MatchModel(
+        // ★ constを外し、コンパイラクラッシュを回避
+        id: 'test',
+        tournamentId: 't1',
+        matchOrder: 1,
+        redName: 'Red',
+        whiteName: 'White',
+        status: 'in_progress',
+        matchType: '個人戦',
       );
       dummyRule = MatchRule();
     });
@@ -30,7 +35,7 @@ void main() {
       expect(analysis.context.whiteIppon, 0);
       expect(analysis.displays[Side.red]!.first.mark, 'メ');
     });
-    
+
     test('白が小手を打った時、白のスコアが1本になること', () {
       final events = [kote(Side.white)];
       final analysis = engine.analyzeHistory(events, dummyMatch, dummyRule);
@@ -66,7 +71,7 @@ void main() {
         targetIppon: 2,
         hasHantei: false,
       );
-      
+
       final shouldExtend = engine.shouldEnterEncho(ctx, true);
 
       expect(shouldExtend, isTrue);
@@ -82,7 +87,7 @@ void main() {
         targetIppon: 2,
         hasHantei: false,
       );
-      
+
       final shouldExtend = engine.shouldEnterEncho(ctx, true);
 
       expect(shouldExtend, isFalse);
@@ -98,7 +103,7 @@ void main() {
         targetIppon: 2,
         hasHantei: false,
       );
-      
+
       final result = engine.decideResult(ctx, dummyRule);
 
       expect(result, MatchResultStatus.redWin);
@@ -114,7 +119,7 @@ void main() {
         targetIppon: 2,
         hasHantei: false,
       );
-      
+
       final result = engine.decideResult(ctx, dummyRule);
 
       expect(result, MatchResultStatus.redWin);
@@ -130,7 +135,7 @@ void main() {
         targetIppon: 2,
         hasHantei: false,
       );
-      
+
       final result = engine.decideResult(ctx, dummyRule);
 
       expect(result, MatchResultStatus.draw);
@@ -146,7 +151,7 @@ void main() {
         targetIppon: 2,
         hasHantei: false,
       );
-      
+
       final result = engine.decideResult(ctx, dummyRule);
 
       expect(result, MatchResultStatus.inProgress);
@@ -155,8 +160,16 @@ void main() {
     test('試合ステータスが「finished」の場合、新しいイベントは無効と判定されること', () {
       final match = dummyMatch.copyWith(status: 'finished');
       final event = men(Side.red);
-      final ctx = MatchContext(redIppon: 0, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2, hasHantei: false);
-      
+      final ctx = MatchContext(
+        redIppon: 0,
+        whiteIppon: 0,
+        redHansoku: 0,
+        whiteHansoku: 0,
+        isTimeUp: false,
+        targetIppon: 2,
+        hasHantei: false,
+      );
+
       final validation = engine.validateEvent(match, event, ctx);
 
       expect(validation.isValid, isFalse);
@@ -166,8 +179,16 @@ void main() {
     test('既に規定本数（2本）に達している場合、追加の打突イベントは無効と判定されること', () {
       final match = dummyMatch;
       final event = men(Side.red);
-      final ctx = MatchContext(redIppon: 2, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2, hasHantei: false);
-      
+      final ctx = MatchContext(
+        redIppon: 2,
+        whiteIppon: 0,
+        redHansoku: 0,
+        whiteHansoku: 0,
+        isTimeUp: false,
+        targetIppon: 2,
+        hasHantei: false,
+      );
+
       final validation = engine.validateEvent(match, event, ctx);
 
       expect(validation.isValid, isFalse);
@@ -178,16 +199,34 @@ void main() {
       // Undoを許可するためには、まず歴史に何らかのイベントが必要
       final match = dummyMatch.copyWith(events: [men(Side.red)]);
       final event = cancel(Side.none).copyWith(isUndo: true);
-      final ctx = MatchContext(redIppon: 2, whiteIppon: 0, redHansoku: 0, whiteHansoku: 0, isTimeUp: false, targetIppon: 2, hasHantei: false);
-      
+      final ctx = MatchContext(
+        redIppon: 2,
+        whiteIppon: 0,
+        redHansoku: 0,
+        whiteHansoku: 0,
+        isTimeUp: false,
+        targetIppon: 2,
+        hasHantei: false,
+      );
+
       final validation = engine.validateEvent(match, event, ctx);
 
-      expect(validation.isValid, isTrue, reason: 'イベントが存在すれば、スコア確定後でもUndoは有効であるべき');
+      expect(
+        validation.isValid,
+        isTrue,
+        reason: 'イベントが存在すれば、スコア確定後でもUndoは有効であるべき',
+      );
     });
 
     test('【判定】判定(Hantei)が入力された際、マークが「判定」かつ「◯囲み対象」になるか', () {
-      final event = ScoreEvent(id: 'e', side: Side.red, strikeType: StrikeType.none, isHantei: true, timestamp: DateTime.now());
-      
+      final event = ScoreEvent(
+        id: 'e',
+        side: Side.red,
+        strikeType: StrikeType.none,
+        isHantei: true,
+        timestamp: DateTime.now(),
+      );
+
       final analysis = engine.analyzeHistory([event], dummyMatch, dummyRule);
       final display = analysis.displays[Side.red]!.first;
 
@@ -196,8 +235,14 @@ void main() {
     });
 
     test('【不戦勝】不戦勝(Fusen)が入力された際、マーク「◯」が2つ生成されるか', () {
-      final event = ScoreEvent(id: 'e', side: Side.red, strikeType: StrikeType.none, isFusen: true, timestamp: DateTime.now());
-      
+      final event = ScoreEvent(
+        id: 'e',
+        side: Side.red,
+        strikeType: StrikeType.none,
+        isFusen: true,
+        timestamp: DateTime.now(),
+      );
+
       final analysis = engine.analyzeHistory([event], dummyMatch, dummyRule);
       final displays = analysis.displays[Side.red]!;
 
@@ -210,9 +255,9 @@ void main() {
 
     test('【反則一本】反則2回で、相手側にマーク「反」が生成されるか', () {
       final events = [hansoku(Side.red), hansoku(Side.red)];
-      
+
       final analysis = engine.analyzeHistory(events, dummyMatch, dummyRule);
-      
+
       final whiteDisplay = analysis.displays[Side.white]!.first;
 
       expect(whiteDisplay.mark, '反');
@@ -222,7 +267,7 @@ void main() {
 
     test('【1本目/2本目】1本目は◯囲みあり、2本目は◯囲みなしになるか', () {
       final events = [men(Side.red), kote(Side.red)];
-      
+
       final analysis = engine.analyzeHistory(events, dummyMatch, dummyRule);
       final displays = analysis.displays[Side.red]!;
 
@@ -231,9 +276,13 @@ void main() {
       expect(displays[1].mark, 'コ');
       expect(displays[1].isFirstMatchPoint, isFalse);
     });
-    
+
     test('【反則数】UI表示用の反則数(▲カウント)が正しく計算されるか', () {
-      final analysis = engine.analyzeHistory([hansoku(Side.red)], dummyMatch, dummyRule);
+      final analysis = engine.analyzeHistory(
+        [hansoku(Side.red)],
+        dummyMatch,
+        dummyRule,
+      );
 
       expect(analysis.context.redHansoku, 1);
     });

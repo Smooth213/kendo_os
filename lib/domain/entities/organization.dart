@@ -11,8 +11,10 @@ abstract class Organization with _$Organization {
     @Default([]) List<String> memberNames, // シンプルに名前のリストで管理
   }) = _Organization;
 
-  factory Organization.fromJson(Map<String, dynamic> json) => _$OrganizationFromJson(json);
+  factory Organization.fromJson(Map<String, dynamic> json) =>
+      _$OrganizationFromJson(json);
 }
+
 @freezed
 abstract class TeamTemplate with _$TeamTemplate {
   const factory TeamTemplate({
@@ -21,5 +23,6 @@ abstract class TeamTemplate with _$TeamTemplate {
     @Default([]) List<String> orderedMemberNames, // 先鋒, 次鋒...の順に名前を格納
   }) = _TeamTemplate;
 
-  factory TeamTemplate.fromJson(Map<String, dynamic> json) => _$TeamTemplateFromJson(json);
+  factory TeamTemplate.fromJson(Map<String, dynamic> json) =>
+      _$TeamTemplateFromJson(json);
 }

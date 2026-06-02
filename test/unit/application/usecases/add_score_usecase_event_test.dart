@@ -18,15 +18,27 @@ void main() {
     setUp(() {
       engine = KendoRuleEngine();
       final permission = PermissionService(); // ★ 関所を追加
-      usecase = AddScoreUseCase(engine, permission, SystemTimeSource()); // ★ 引数追加
-      testUser = const User(id: 'test_user', role: Role.admin, organizationId: 'test_org'); 
+      usecase = AddScoreUseCase(
+        engine,
+        permission,
+        SystemTimeSource(),
+      ); // ★ 引数追加
+      testUser = const User(
+        id: 'test_user',
+        role: Role.admin,
+        organizationId: 'test_org',
+      );
     });
 
     test('イベントを追加するとMatchModelのeventsとscoreが更新されること', () {
-      final initialMatch = MatchModel( 
-        id: 'test', tournamentId: 't1', matchOrder: 1,
-        redName: 'Red', whiteName: 'White',
-        status: 'in_progress', matchType: '個人戦',
+      final initialMatch = MatchModel(
+        id: 'test',
+        tournamentId: 't1',
+        matchOrder: 1,
+        redName: 'Red',
+        whiteName: 'White',
+        status: 'in_progress',
+        matchType: '個人戦',
       );
 
       // ★ 修正: 競合チェックを通過するため、期待される sequence (空の状態に対しては 1) を明示する
@@ -38,7 +50,12 @@ void main() {
       );
       final rule = const MatchRule();
 
-      final updatedMatch = usecase.execute(testUser, initialMatch, newEvent, rule);
+      final updatedMatch = usecase.execute(
+        testUser,
+        initialMatch,
+        newEvent,
+        rule,
+      );
 
       expect(updatedMatch.events.length, 1);
       expect(updatedMatch.events.first.strikeType, StrikeType.men);

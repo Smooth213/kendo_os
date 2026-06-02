@@ -37,8 +37,9 @@ class FakeStrokeRepository implements StrokeRepository {
 class FakeLocalStrokeRepository implements LocalStrokeRepository {
   @override
   Stream<List<LocalStrokeModel>> watchStrokes(String programId) {
-    return Stream.value(<LocalStrokeModel>[]); 
+    return Stream.value(<LocalStrokeModel>[]);
   }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -114,9 +115,13 @@ void main() {
           await tester.pumpWidget(
             createUnifiedTestableWidget(
               MediaQuery(
-                data: MediaQueryData(textScaler: TextScaler.linear(env['scale'] as double)),
+                data: MediaQueryData(
+                  textScaler: TextScaler.linear(env['scale'] as double),
+                ),
                 child: Theme(
-                  data: (env['dark'] as bool) ? ThemeData.dark() : ThemeData.light(),
+                  data: (env['dark'] as bool)
+                      ? ThemeData.dark()
+                      : ThemeData.light(),
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
@@ -126,23 +131,35 @@ void main() {
                         ),
                         const SizedBox(
                           height: 200,
-                          child: TimerWidget(matchId: testMatchId, isInputLocked: false),
+                          child: TimerWidget(
+                            matchId: testMatchId,
+                            isInputLocked: false,
+                          ),
                         ),
                         const SizedBox(
                           height: 500,
-                          child: ViewerTeamScoreboardScreen(groupName: testGroupName),
+                          child: ViewerTeamScoreboardScreen(
+                            groupName: testGroupName,
+                          ),
                         ),
                         SizedBox(
                           height: 500,
-                          child: ProgramViewerScreen(programs: mockPrograms, initialIndex: 0),
+                          child: ProgramViewerScreen(
+                            programs: mockPrograms,
+                            initialIndex: 0,
+                          ),
                         ),
                         SizedBox(
                           height: 500,
-                          child: const StandingsScreen(tournamentId: testTournamentId),
+                          child: const StandingsScreen(
+                            tournamentId: testTournamentId,
+                          ),
                         ),
                         SizedBox(
                           height: 500,
-                          child: const KachinukiScoreboardScreen(groupName: testGroupName),
+                          child: const KachinukiScoreboardScreen(
+                            groupName: testGroupName,
+                          ),
                         ),
                       ],
                     ),
@@ -150,32 +167,67 @@ void main() {
                 ),
               ),
               overrides: [
-                sharedPreferencesProvider.overrideWithValue(prefs), // プロバイダを安全にオーバーライド
-                  matchStreamProvider.overrideWith((ref) => Stream<List<MatchModel>>.value([
-                    MatchModel(id: testMatchId, tournamentId: testTournamentId, matchType: '個人戦', redName: '赤選手', whiteName: '白選手', groupName: testGroupName)
-                  ])), // 🛡️ ダミーデータを流し込み、ローディング状態を解除
-                  matchListProvider.overrideWith((ref) => [
-                    MatchModel(id: testMatchId, tournamentId: testTournamentId, matchType: '個人戦', redName: '赤選手', whiteName: '白選手', groupName: testGroupName)
-                  ]),  // 🛡️ ダミーデータを流し込み、ローディング状態を解除
-                  soundServiceProvider.overrideWithValue(FakeSoundService()),  // 🛡️ Sound依存切断
-                  isarProvider.overrideWithValue(null), // 🛡️ Isar未初期化エラーを解決
-                  strokeRepositoryProvider.overrideWith((ref) => FakeStrokeRepository()), // 🛡️ FirebaseFirestore未初期化エラーを解決 (autoDispose対策)
-                  localStrokeRepositoryProvider.overrideWith((ref) => FakeLocalStrokeRepository()), // 🛡️ Isar null checkエラーを解決
-                  matchViewStateUserIdProvider.overrideWith((ref) => 'test_user_id'), // 🛡️ Firebase未初期化エラーを解決
-                  activeRoleProvider.overrideWith((ref) => Role.admin), // 🛡️ Firebase未初期化エラーを解決
-                  matchApplicationServiceProvider.overrideWithValue(FakeMatchApplicationService()), // 🛡️ Isar書き込みクラッシュを解決
+                sharedPreferencesProvider.overrideWithValue(
+                  prefs,
+                ), // プロバイダを安全にオーバーライド
+                matchStreamProvider.overrideWith(
+                  (ref) => Stream<List<MatchModel>>.value([
+                    MatchModel(
+                      id: testMatchId,
+                      tournamentId: testTournamentId,
+                      matchType: '個人戦',
+                      redName: '赤選手',
+                      whiteName: '白選手',
+                      groupName: testGroupName,
+                    ),
+                  ]),
+                ), // 🛡️ ダミーデータを流し込み、ローディング状態を解除
+                matchListProvider.overrideWith(
+                  (ref) => [
+                    MatchModel(
+                      id: testMatchId,
+                      tournamentId: testTournamentId,
+                      matchType: '個人戦',
+                      redName: '赤選手',
+                      whiteName: '白選手',
+                      groupName: testGroupName,
+                    ),
+                  ],
+                ), // 🛡️ ダミーデータを流し込み、ローディング状態を解除
+                soundServiceProvider.overrideWithValue(
+                  FakeSoundService(),
+                ), // 🛡️ Sound依存切断
+                isarProvider.overrideWithValue(null), // 🛡️ Isar未初期化エラーを解決
+                strokeRepositoryProvider.overrideWith(
+                  (ref) => FakeStrokeRepository(),
+                ), // 🛡️ FirebaseFirestore未初期化エラーを解決 (autoDispose対策)
+                localStrokeRepositoryProvider.overrideWith(
+                  (ref) => FakeLocalStrokeRepository(),
+                ), // 🛡️ Isar null checkエラーを解決
+                matchViewStateUserIdProvider.overrideWith(
+                  (ref) => 'test_user_id',
+                ), // 🛡️ Firebase未初期化エラーを解決
+                activeRoleProvider.overrideWith(
+                  (ref) => Role.admin,
+                ), // 🛡️ Firebase未初期化エラーを解決
+                matchApplicationServiceProvider.overrideWithValue(
+                  FakeMatchApplicationService(),
+                ), // 🛡️ Isar書き込みクラッシュを解決
               ],
             ),
           );
 
           await tester.pump();
-          
+
           // ★ 修正: TimerWidgetの点滅や、CircularProgressIndicatorの無限アニメーションが回っていると
           // pumpAndSettle() はアニメーションが止まるまで永遠に待ち続け、タイムアウト(フリーズ)を引き起こします。
           // これを防ぐため、明示的に一定時間だけフレームを進める pump(Duration) に置き換えます。
           await tester.pump(const Duration(milliseconds: 500));
 
-          expect(find.byType(TimerWidget), findsWidgets); // 🛡️ TimerWidgetは MatchScreen と直接配置の2つが存在するため findsWidgets にする
+          expect(
+            find.byType(TimerWidget),
+            findsWidgets,
+          ); // 🛡️ TimerWidgetは MatchScreen と直接配置の2つが存在するため findsWidgets にする
         });
       }
     }

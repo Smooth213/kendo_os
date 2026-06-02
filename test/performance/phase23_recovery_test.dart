@@ -6,11 +6,11 @@ void main() {
     test('1. 【バックアップ&リストア】全試合データの整合性検証', () {
       // 🛡️ 補正：required 引数を網羅
       final original = MatchModel(
-        id: 'm1', 
-        matchType: '個人戦', 
-        redName: '選手A', 
-        whiteName: '選手B', 
-        syncState: SyncState.synced
+        id: 'm1',
+        matchType: '個人戦',
+        redName: '選手A',
+        whiteName: '選手B',
+        syncState: SyncState.synced,
       );
       final json = original.toJson();
       final restored = MatchModel.fromJson(json);
@@ -20,11 +20,11 @@ void main() {
     test('2. 【端末間移行】進行中ステータスの完全継承検証', () {
       // 🛡️ 補正：required 引数を網羅
       final match = MatchModel(
-        id: 'm2', 
-        matchType: '個人戦', 
-        redName: '選手C', 
-        whiteName: '選手D', 
-        status: 'playing'
+        id: 'm2',
+        matchType: '個人戦',
+        redName: '選手C',
+        whiteName: '選手D',
+        status: 'playing',
       );
       final json = match.toJson();
       final restored = MatchModel.fromJson(json);

@@ -7,7 +7,9 @@ class BunaiksenHelper {
     if (raw.contains('欠員')) {
       return {'last': '', 'first': ''};
     }
-    String clean = raw.contains(':') ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : raw.trim();
+    String clean = raw.contains(':')
+        ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
+        : raw.trim();
     var parts = clean.split(RegExp(r'\s+'));
     return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
   }
@@ -25,7 +27,7 @@ class BunaiksenHelper {
         continue;
       }
       bool eventIsRed = s.contains('red') || s.contains('赤');
-      
+
       String mark = '';
       if (s.contains('men') || s.contains('メ')) {
         mark = 'メ';
@@ -70,7 +72,7 @@ class BunaiksenHelper {
         continue;
       }
       bool isRedPoint = s.contains('red') || s.contains('赤');
-      
+
       String mark = '';
       if (s.contains('men') || s.contains('メ')) {
         mark = 'メ';
@@ -109,7 +111,10 @@ class BunaiksenHelper {
   }
 
   // 4. リーグ戦用のタイトル生成ロジック
-  static String generateDescriptiveLeagueTitle(List<MatchModel> matches, List<String> ownTeams) {
+  static String generateDescriptiveLeagueTitle(
+    List<MatchModel> matches,
+    List<String> ownTeams,
+  ) {
     final participantsSet = <String>{};
     for (var m in matches) {
       participantsSet.add(m.redName.split(':').first.trim());
@@ -117,18 +122,33 @@ class BunaiksenHelper {
     }
     final int n = participantsSet.length;
     final int mCount = n * (n - 1) ~/ 2;
-    final bool isIndiv = matches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
+    final bool isIndiv = matches.any(
+      (m) =>
+          m.matchType == 'individual' ||
+          m.matchType == '選手' ||
+          m.matchType.contains('個人戦'),
+    );
 
     String selfInfo = "";
     if (isIndiv) {
-      final myMatch = matches.firstWhere((m) => ownTeams.any((ot) => m.redName.contains(ot) || m.whiteName.contains(ot)), orElse: () => matches.first);
+      final myMatch = matches.firstWhere(
+        (m) => ownTeams.any(
+          (ot) => m.redName.contains(ot) || m.whiteName.contains(ot),
+        ),
+        orElse: () => matches.first,
+      );
       final isRedOwn = ownTeams.any((ot) => myMatch.redName.contains(ot));
       final rawName = isRedOwn ? myMatch.redName : myMatch.whiteName;
       final team = rawName.split(':').first.trim();
-      final name = rawName.contains(':') ? rawName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : rawName;
+      final name = rawName.contains(':')
+          ? rawName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
+          : rawName;
       selfInfo = "$name（$team）";
     } else {
-      selfInfo = participantsSet.firstWhere((p) => ownTeams.contains(p), orElse: () => participantsSet.first);
+      selfInfo = participantsSet.firstWhere(
+        (p) => ownTeams.contains(p),
+        orElse: () => participantsSet.first,
+      );
     }
 
     final suffix = isIndiv ? "$n人リーグ" : "$nチームリーグ";
@@ -136,7 +156,10 @@ class BunaiksenHelper {
   }
 
   // 4-2. リーグ戦用のタイトル生成ロジック (Projection用)
-  static String generateDescriptiveLeagueTitleFromProjections(List<MatchProjection> matches, List<String> ownTeams) {
+  static String generateDescriptiveLeagueTitleFromProjections(
+    List<MatchProjection> matches,
+    List<String> ownTeams,
+  ) {
     final participantsSet = <String>{};
     for (var m in matches) {
       participantsSet.add(m.redName.split(':').first.trim());
@@ -144,18 +167,33 @@ class BunaiksenHelper {
     }
     final int n = participantsSet.length;
     final int mCount = n * (n - 1) ~/ 2;
-    final bool isIndiv = matches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
+    final bool isIndiv = matches.any(
+      (m) =>
+          m.matchType == 'individual' ||
+          m.matchType == '選手' ||
+          m.matchType.contains('個人戦'),
+    );
 
     String selfInfo = "";
     if (isIndiv) {
-      final myMatch = matches.firstWhere((m) => ownTeams.any((ot) => m.redName.contains(ot) || m.whiteName.contains(ot)), orElse: () => matches.first);
+      final myMatch = matches.firstWhere(
+        (m) => ownTeams.any(
+          (ot) => m.redName.contains(ot) || m.whiteName.contains(ot),
+        ),
+        orElse: () => matches.first,
+      );
       final isRedOwn = ownTeams.any((ot) => myMatch.redName.contains(ot));
       final rawName = isRedOwn ? myMatch.redName : myMatch.whiteName;
       final team = rawName.split(':').first.trim();
-      final name = rawName.contains(':') ? rawName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim() : rawName;
+      final name = rawName.contains(':')
+          ? rawName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
+          : rawName;
       selfInfo = "$name（$team）";
     } else {
-      selfInfo = participantsSet.firstWhere((p) => ownTeams.contains(p), orElse: () => participantsSet.first);
+      selfInfo = participantsSet.firstWhere(
+        (p) => ownTeams.contains(p),
+        orElse: () => participantsSet.first,
+      );
     }
 
     final suffix = isIndiv ? "$n人リーグ" : "$nチームリーグ";
@@ -163,7 +201,11 @@ class BunaiksenHelper {
   }
 
   // 5. リーグ戦の独自勝ち点計算ロジック（勝=3, 分=1, 負=0）
-  static int calculateCustomLeaguePoints(String rowTeam, List<String> teamList, List<MatchModel> normalMatches) {
+  static int calculateCustomLeaguePoints(
+    String rowTeam,
+    List<String> teamList,
+    List<MatchModel> normalMatches,
+  ) {
     int customTeamPoints = 0;
     for (var colTeam in teamList) {
       if (rowTeam == colTeam) {
@@ -174,23 +216,26 @@ class BunaiksenHelper {
         final w = m.whiteName.split(':').first.trim();
         return (r == rowTeam && w == colTeam) || (r == colTeam && w == rowTeam);
       }).toList();
-      
-      if (bouts.isEmpty || !bouts.every((m) => m.status == 'approved' || m.status == 'finished')) {
+
+      if (bouts.isEmpty ||
+          !bouts.every(
+            (m) => m.status == 'approved' || m.status == 'finished',
+          )) {
         continue;
       }
-      
+
       int rWins = 0, cWins = 0;
       for (var m in bouts) {
         final isRowRed = m.redName.split(':').first.trim() == rowTeam;
-        final rs = (m.redScore as num).toInt(); 
+        final rs = (m.redScore as num).toInt();
         final ws = (m.whiteScore as num).toInt();
-        if (rs > ws) { 
+        if (rs > ws) {
           if (isRowRed) {
             rWins++;
           } else {
             cWins++;
           }
-        } else if (ws > rs) { 
+        } else if (ws > rs) {
           if (isRowRed) {
             cWins++;
           } else {
@@ -198,11 +243,11 @@ class BunaiksenHelper {
           }
         }
       }
-      
+
       if (rWins > cWins) {
-        customTeamPoints += 3; 
+        customTeamPoints += 3;
       } else if (rWins == cWins) {
-        customTeamPoints += 1; 
+        customTeamPoints += 1;
       }
     }
     return customTeamPoints;

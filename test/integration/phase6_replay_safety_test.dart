@@ -9,18 +9,35 @@ void main() {
   final engine = KendoRuleEngine();
 
   group('🛡️ Phase 6: Replay Safety Pipeline', () {
-    
     test('Step 6-2: Version Replay Matrix (過去の歴史の一致を証明)', () {
       final ruleV1 = const MatchRule(ipponLimit: 2);
-      final match = TestMatchFactory.createIndividualMatch(id: 'matrix-match-001');
-      
-      final analysis = engine.analyzeHistory(HistoricEventsArchive.v1MatchEvents, match, ruleV1);
+      final match = TestMatchFactory.createIndividualMatch(
+        id: 'matrix-match-001',
+      );
+
+      final analysis = engine.analyzeHistory(
+        HistoricEventsArchive.v1MatchEvents,
+        match,
+        ruleV1,
+      );
       final ctx = analysis.context;
       final result = engine.decideResult(ctx, ruleV1);
 
-      expect(ctx.redIppon, HistoricEventsArchive.expectedRedScore, reason: '🚨 [Replay Drift] 赤のスコアが改変されました！');
-      expect(ctx.whiteIppon, HistoricEventsArchive.expectedWhiteScore, reason: '🚨 [Replay Drift] 白のスコアが改変されました！');
-      expect(result, MatchResultStatus.redWin, reason: '🚨 [Replay Drift] 勝敗結果が改変されました！');
+      expect(
+        ctx.redIppon,
+        HistoricEventsArchive.expectedRedScore,
+        reason: '🚨 [Replay Drift] 赤のスコアが改変されました！',
+      );
+      expect(
+        ctx.whiteIppon,
+        HistoricEventsArchive.expectedWhiteScore,
+        reason: '🚨 [Replay Drift] 白のスコアが改変されました！',
+      );
+      expect(
+        result,
+        MatchResultStatus.redWin,
+        reason: '🚨 [Replay Drift] 勝敗結果が改変されました！',
+      );
     });
 
     test('Step 6-3: Snapshot Compatibility Test (スナップショットとリプレイ結果の完全一致)', () {

@@ -15,7 +15,7 @@ class MatchContext {
   final int whiteHansoku;
   final bool isTimeUp;
   final int targetIppon;
-  final bool hasHantei; 
+  final bool hasHantei;
 
   MatchContext({
     required this.redIppon,
@@ -36,10 +36,10 @@ class MatchContext {
 
 /// ルールを適用するための入力コンテキスト
 class RuleContext {
-  final MatchContext matchState;           // 現在の計算状態（スコア等）
-  final List<ScoreEvent> events;           // 歴史（打突や反則の履歴）
+  final MatchContext matchState; // 現在の計算状態（スコア等）
+  final List<ScoreEvent> events; // 歴史（打突や反則の履歴）
   final TournamentRuleConfig tournamentConfig; // ★ Phase 5変更完了: 階層型Configに完全移行
-  final double clock;                      // 残り時間 (remainingSeconds)
+  final double clock; // 残り時間 (remainingSeconds)
 
   RuleContext({
     required this.matchState,
@@ -54,19 +54,13 @@ class MatchTransition {
   final MatchContext updatedState;
   final MatchResultStatus? resultStatus;
 
-  MatchTransition({
-    required this.updatedState,
-    this.resultStatus,
-  });
+  MatchTransition({required this.updatedState, this.resultStatus});
 }
 
 /// ルールの実行結果
 class RuleResult {
-  final bool allowed;                  // このルールが適用可能だったか（矛盾がないか）
-  final MatchTransition? transition;   // 適用後の状態変化
+  final bool allowed; // このルールが適用可能だったか（矛盾がないか）
+  final MatchTransition? transition; // 適用後の状態変化
 
-  RuleResult({
-    required this.allowed,
-    this.transition,
-  });
+  RuleResult({required this.allowed, this.transition});
 }

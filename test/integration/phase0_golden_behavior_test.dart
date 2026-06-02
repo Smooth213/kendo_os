@@ -19,7 +19,11 @@ void main() {
     late AddScoreUseCase addScoreUseCase;
     late UndoScoreUseCase undoScoreUseCase;
     late TimeUpUseCase timeUpUseCase;
-    final testUser = const User(id: 'golden_user', role: Role.admin, organizationId: 'test_org');
+    final testUser = const User(
+      id: 'golden_user',
+      role: Role.admin,
+      organizationId: 'test_org',
+    );
 
     setUp(() {
       final engine = KendoRuleEngine();
@@ -70,7 +74,12 @@ void main() {
       final rule = const MatchRule();
 
       for (int i = 0; i < 4; i++) {
-        match = addScoreUseCase.execute(testUser, match, hansoku(Side.white), rule);
+        match = addScoreUseCase.execute(
+          testUser,
+          match,
+          hansoku(Side.white),
+          rule,
+        );
       }
 
       expect(match.redScore, 2);
@@ -106,9 +115,12 @@ void main() {
       final rule = const MatchRule(hasHantei: true);
 
       match = timeUpUseCase.execute(testUser, match, false, rule);
-      
+
       final hanteiEvent = ScoreEventLegacyAdapter.fromLegacy(
-        side: Side.red, type: PointType.hantei, sequence: 0, userId: testUser.id,
+        side: Side.red,
+        type: PointType.hantei,
+        sequence: 0,
+        userId: testUser.id,
       );
       match = addScoreUseCase.execute(testUser, match, hanteiEvent, rule);
 
@@ -120,7 +132,10 @@ void main() {
       final rule = const MatchRule(); // 規定2本
 
       final fusenEvent = ScoreEventLegacyAdapter.fromLegacy(
-        side: Side.red, type: PointType.fusen, sequence: 0, userId: testUser.id,
+        side: Side.red,
+        type: PointType.fusen,
+        sequence: 0,
+        userId: testUser.id,
       );
       match = addScoreUseCase.execute(testUser, match, fusenEvent, rule);
 
@@ -130,9 +145,13 @@ void main() {
 
     test('9. 団体戦(Team)引分のGolden Snapshot', () {
       final rule = const MatchRule();
-      var match1 = TestMatchFactory.createIndividualMatch(id: 'team-1').copyWith(status: 'finished');
-      var match2 = TestMatchFactory.createIndividualMatch(id: 'team-2').copyWith(status: 'finished');
-      
+      var match1 = TestMatchFactory.createIndividualMatch(
+        id: 'team-1',
+      ).copyWith(status: 'finished');
+      var match2 = TestMatchFactory.createIndividualMatch(
+        id: 'team-2',
+      ).copyWith(status: 'finished');
+
       final engine = KendoRuleEngine();
       final status = engine.analyzeGroupStatus(
         currentMatch: match2,
@@ -145,17 +164,21 @@ void main() {
     });
 
     test('10. 勝ち抜き戦(Kachinuki)大将戦のGolden Snapshot', () {
-      final rule = const MatchRule(isKachinuki: true, kachinukiUnlimitedType: '大将引き分け延長');
-      var match = TestMatchFactory.createIndividualMatch(id: 'kachinuki-1').copyWith(
-        matchType: '個人戦', // 代表戦や延長戦ではない状態
-        redRemaining: [],   // 大将
-        whiteRemaining: [], // 大将
-        redScore: 0,
-        whiteScore: 0,
-        status: 'in_progress',
-        note: '',
+      final rule = const MatchRule(
+        isKachinuki: true,
+        kachinukiUnlimitedType: '大将引き分け延長',
       );
-      
+      var match = TestMatchFactory.createIndividualMatch(id: 'kachinuki-1')
+          .copyWith(
+            matchType: '個人戦', // 代表戦や延長戦ではない状態
+            redRemaining: [], // 大将
+            whiteRemaining: [], // 大将
+            redScore: 0,
+            whiteScore: 0,
+            status: 'in_progress',
+            note: '',
+          );
+
       final engine = KendoRuleEngine();
       final status = engine.analyzeGroupStatus(
         currentMatch: match,

@@ -16,13 +16,13 @@ abstract class MatchSnapshot with _$MatchSnapshot {
   const factory MatchSnapshot({
     required String id,
     @Default('') String matchId, // ★ どの試合のスナップショットか
-    @Default(0) int version,     // ★ このスナップショットは何番目のイベントまでを適用した結果か
-    required MatchModel state,   // ★ この時点の計算済みの試合状態（重い計算をスキップするため）
+    @Default(0) int version, // ★ このスナップショットは何番目のイベントまでを適用した結果か
+    required MatchModel state, // ★ この時点の計算済みの試合状態（重い計算をスキップするため）
     required DateTime createdAt,
     required String reason,
-    
+
     // 下方互換のために残すが、今後はStateを使うので基本的には空になる
-    @Default([]) List<ScoreEvent> events, 
+    @Default([]) List<ScoreEvent> events,
   }) = _MatchSnapshot;
 
   factory MatchSnapshot.fromJson(Map<String, dynamic> json) =>
@@ -38,16 +38,16 @@ abstract class MatchAggregate with _$MatchAggregate {
 
   const factory MatchAggregate({
     required String id,
-    
+
     // イベントソーシング：すべての変更履歴
     @Default([]) List<ScoreEvent> events,
-    
+
     // 楽観的ロック用：現在のイベント数（バージョン）
     @Default(0) int version,
 
     // 試合の基本情報や状態（投影元となるベースデータ）
     required String status,
-    
+
     // ★ Phase 2: 絶対時間化
     @TimestampConverter() DateTime? timerStartedAt,
     @Default(0) int accumulatedPauseDurationMs,
@@ -62,9 +62,9 @@ abstract class MatchAggregate with _$MatchAggregate {
   // ==========================================
   static MatchAggregate rehydrate(
     String matchId,
-    MatchSnapshot? snapshot, 
-    List<ScoreEvent> allEvents, 
-    MatchModel baseModel // 初期状態のベースモデル
+    MatchSnapshot? snapshot,
+    List<ScoreEvent> allEvents,
+    MatchModel baseModel, // 初期状態のベースモデル
   ) {
     MatchModel currentState;
     int currentVersion;
@@ -88,8 +88,9 @@ abstract class MatchAggregate with _$MatchAggregate {
     // Aggregateとしては単にイベントリストを結合するだけに留める。
     // ★ 完璧なCQRSを目指すなら、このAggregate内で状態(State)を完全に持たせるべきだが、
     // Phase 2の段階ではまず「イベントの結合」と「バージョンのカウント」を担保する。
-    
-    final updatedEvents = List<ScoreEvent>.from(currentState.events)..addAll(remainingEvents);
+
+    final updatedEvents = List<ScoreEvent>.from(currentState.events)
+      ..addAll(remainingEvents);
 
     return MatchAggregate(
       id: matchId,

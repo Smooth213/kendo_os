@@ -26,7 +26,7 @@ void main() {
       print('❌ [ERROR] Missing core governance file: $path');
       exit(1);
     }
-    
+
     final bytes = file.readAsBytesSync();
     final hash = sha256.convert(bytes).toString();
     hashes[path] = hash;

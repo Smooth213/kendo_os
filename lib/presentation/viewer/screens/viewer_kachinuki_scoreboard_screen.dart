@@ -18,10 +18,21 @@ class ViewerKachinukiScoreboardScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: headerTextColor, size: 20),
+            icon: Icon(
+              Icons.arrow_back_ios_new,
+              color: headerTextColor,
+              size: 20,
+            ),
             onPressed: () => context.canPop() ? context.pop() : context.go('/'),
           ),
-          title: Text('勝ち抜き戦 記録 (観戦)', style: TextStyle(fontWeight: FontWeight.bold, color: headerTextColor, fontSize: 16)),
+          title: Text(
+            '勝ち抜き戦 記録 (観戦)',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: headerTextColor,
+              fontSize: 16,
+            ),
+          ),
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           elevation: 0,
         ),

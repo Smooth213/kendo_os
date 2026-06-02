@@ -18,7 +18,11 @@ void main() {
     late SystemTimeSource timeSource;
     late AddScoreUseCase addScoreUseCase;
     late UndoScoreUseCase undoScoreUseCase;
-    final testUser = const User(id: 'test_user', role: Role.admin, organizationId: 'test_org');
+    final testUser = const User(
+      id: 'test_user',
+      role: Role.admin,
+      organizationId: 'test_org',
+    );
     final rule = const MatchRule();
 
     setUp(() {
@@ -29,7 +33,13 @@ void main() {
       undoScoreUseCase = UndoScoreUseCase(engine, permission, timeSource);
     });
 
-    ScoreEvent createEvent(String id, Side side, PointType type, int clock, DateTime time) {
+    ScoreEvent createEvent(
+      String id,
+      Side side,
+      PointType type,
+      int clock,
+      DateTime time,
+    ) {
       return ScoreEventLegacyAdapter.fromLegacy(
         id: id,
         side: side,
@@ -42,73 +52,170 @@ void main() {
     test('Step 2-3: Replay fuzz test - ランダム順序でのリプレイ（イベントソートの決定的確認）', () {
       final baseTime = DateTime(2025, 1, 1, 10, 0, 0).toUtc();
       final events = [
-        createEvent('e1', Side.red, PointType.men, 1, baseTime.add(const Duration(seconds: 1))),
-        createEvent('e2', Side.white, PointType.kote, 2, baseTime.add(const Duration(seconds: 2))),
-        createEvent('e3', Side.red, PointType.doIdo, 3, baseTime.add(const Duration(seconds: 3))),
-        createEvent('e4', Side.white, PointType.tsuki, 4, baseTime.add(const Duration(seconds: 4))),
-        createEvent('e5', Side.red, PointType.men, 5, baseTime.add(const Duration(seconds: 5))), // 赤の勝ち
+        createEvent(
+          'e1',
+          Side.red,
+          PointType.men,
+          1,
+          baseTime.add(const Duration(seconds: 1)),
+        ),
+        createEvent(
+          'e2',
+          Side.white,
+          PointType.kote,
+          2,
+          baseTime.add(const Duration(seconds: 2)),
+        ),
+        createEvent(
+          'e3',
+          Side.red,
+          PointType.doIdo,
+          3,
+          baseTime.add(const Duration(seconds: 3)),
+        ),
+        createEvent(
+          'e4',
+          Side.white,
+          PointType.tsuki,
+          4,
+          baseTime.add(const Duration(seconds: 4)),
+        ),
+        createEvent(
+          'e5',
+          Side.red,
+          PointType.men,
+          5,
+          baseTime.add(const Duration(seconds: 5)),
+        ), // 赤の勝ち
       ];
 
       // 真実の順序での投影を生成
       var matchTruth = TestMatchFactory.createIndividualMatch(id: 'match-fuzz');
-      final sortedEvents = List<ScoreEvent>.from(events)..sort((a, b) => a.compareTo(b));
+      final sortedEvents = List<ScoreEvent>.from(events)
+        ..sort((a, b) => a.compareTo(b));
       matchTruth = matchTruth.copyWith(events: sortedEvents);
-      final analysisTruth = engine.analyzeHistory(sortedEvents, matchTruth, rule);
-      final projTruth = MatchProjectionMapper.toProjection(matchTruth, analysisTruth);
+      final analysisTruth = engine.analyzeHistory(
+        sortedEvents,
+        matchTruth,
+        rule,
+      );
+      final projTruth = MatchProjectionMapper.toProjection(
+        matchTruth,
+        analysisTruth,
+      );
       final hashTruth = ReplayHashCalculator.calculate(projTruth);
 
       final random = Random(42);
-      
+
       // 1000回シャッフルしてリプレイ
       for (int i = 0; i < 1000; i++) {
         final shuffledEvents = List<ScoreEvent>.from(events)..shuffle(random);
-        
+
         // システム側でソートされることをシミュレート
-        final resolvedEvents = List<ScoreEvent>.from(shuffledEvents)..sort((a, b) => a.compareTo(b));
+        final resolvedEvents = List<ScoreEvent>.from(shuffledEvents)
+          ..sort((a, b) => a.compareTo(b));
         var matchReplay = matchTruth.copyWith(events: resolvedEvents);
-        
-        final analysisReplay = engine.analyzeHistory(resolvedEvents, matchReplay, rule);
-        final projReplay = MatchProjectionMapper.toProjection(matchReplay, analysisReplay);
+
+        final analysisReplay = engine.analyzeHistory(
+          resolvedEvents,
+          matchReplay,
+          rule,
+        );
+        final projReplay = MatchProjectionMapper.toProjection(
+          matchReplay,
+          analysisReplay,
+        );
         final hashReplay = ReplayHashCalculator.calculate(projReplay);
 
-        expect(hashReplay, hashTruth, reason: 'Iteration $i failed: hash mismatch');
+        expect(
+          hashReplay,
+          hashTruth,
+          reason: 'Iteration $i failed: hash mismatch',
+        );
       }
     });
 
     test('Step 2-4: Undo deterministic test - Undoが混ざった状態での決定性', () {
       final baseTime = DateTime(2025, 1, 1, 10, 0, 0).toUtc();
       var matchTruth = TestMatchFactory.createIndividualMatch(id: 'match-undo');
-      
+
       // イベント生成とUndo
-      final e1 = createEvent('e1', Side.red, PointType.men, 1, baseTime.add(const Duration(seconds: 1)));
+      final e1 = createEvent(
+        'e1',
+        Side.red,
+        PointType.men,
+        1,
+        baseTime.add(const Duration(seconds: 1)),
+      );
       matchTruth = addScoreUseCase.execute(testUser, matchTruth, e1, rule);
-      
-      final e2 = createEvent('e2', Side.white, PointType.kote, 2, baseTime.add(const Duration(seconds: 2)));
+
+      final e2 = createEvent(
+        'e2',
+        Side.white,
+        PointType.kote,
+        2,
+        baseTime.add(const Duration(seconds: 2)),
+      );
       matchTruth = addScoreUseCase.execute(testUser, matchTruth, e2, rule);
-      
-      matchTruth = undoScoreUseCase.execute(testUser, matchTruth, rule); // e2を取り消す
 
-      final e3 = createEvent('e3', Side.red, PointType.men, 4, baseTime.add(const Duration(seconds: 4)));
-      matchTruth = addScoreUseCase.execute(testUser, matchTruth, e3, rule); // 赤の勝ち
+      matchTruth = undoScoreUseCase.execute(
+        testUser,
+        matchTruth,
+        rule,
+      ); // e2を取り消す
 
-      final analysisTruth = engine.analyzeHistory(matchTruth.events, matchTruth, rule);
-      final projTruth = MatchProjectionMapper.toProjection(matchTruth, analysisTruth);
+      final e3 = createEvent(
+        'e3',
+        Side.red,
+        PointType.men,
+        4,
+        baseTime.add(const Duration(seconds: 4)),
+      );
+      matchTruth = addScoreUseCase.execute(
+        testUser,
+        matchTruth,
+        e3,
+        rule,
+      ); // 赤の勝ち
+
+      final analysisTruth = engine.analyzeHistory(
+        matchTruth.events,
+        matchTruth,
+        rule,
+      );
+      final projTruth = MatchProjectionMapper.toProjection(
+        matchTruth,
+        analysisTruth,
+      );
       final hashTruth = ReplayHashCalculator.calculate(projTruth);
 
       final random = Random(123);
       final allEvents = List<ScoreEvent>.from(matchTruth.events);
 
       for (int i = 0; i < 1000; i++) {
-        final shuffledEvents = List<ScoreEvent>.from(allEvents)..shuffle(random);
-        
-        final resolvedEvents = List<ScoreEvent>.from(shuffledEvents)..sort((a, b) => a.compareTo(b));
+        final shuffledEvents = List<ScoreEvent>.from(allEvents)
+          ..shuffle(random);
+
+        final resolvedEvents = List<ScoreEvent>.from(shuffledEvents)
+          ..sort((a, b) => a.compareTo(b));
         var matchReplay = matchTruth.copyWith(events: resolvedEvents);
-        
-        final analysisReplay = engine.analyzeHistory(resolvedEvents, matchReplay, rule);
-        final projReplay = MatchProjectionMapper.toProjection(matchReplay, analysisReplay);
+
+        final analysisReplay = engine.analyzeHistory(
+          resolvedEvents,
+          matchReplay,
+          rule,
+        );
+        final projReplay = MatchProjectionMapper.toProjection(
+          matchReplay,
+          analysisReplay,
+        );
         final hashReplay = ReplayHashCalculator.calculate(projReplay);
 
-        expect(hashReplay, hashTruth, reason: 'Undo Iteration $i failed: hash mismatch');
+        expect(
+          hashReplay,
+          hashTruth,
+          reason: 'Undo Iteration $i failed: hash mismatch',
+        );
       }
     });
   });

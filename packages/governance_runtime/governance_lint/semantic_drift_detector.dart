@@ -9,18 +9,19 @@ import '../../../test/golden_replays/standard_scenarios.dart';
 // ============================================================================
 void main() {
   print('🧪 [Semantic Drift Detector] Starting Behavioral Audit...');
-  
+
   // 本来は Before(HEAD^) と After(HEAD) のテスト結果を比較
   // ここでは簡易的に「期待される真実（Golden）」と「現在の計算」を比較する
   bool hasDrift = false;
 
   print('🔍 Checking Scenario: Team Match with Extension');
-  
+
   // Step 3-2 & 3-3: 簡易的な比較ロジック（実際はKendoRuleEngineを回す）
   final currentWinner = 'red'; // ダミー: 実際はエンジンを呼び出す
-  
+
   if (currentWinner != StandardScenarios.expectedWinner) {
-    print('❌ [DRIFT DETECTED] Winner changed from ${StandardScenarios.expectedWinner} to $currentWinner');
+    print(
+        '❌ [DRIFT DETECTED] Winner changed from ${StandardScenarios.expectedWinner} to $currentWinner');
     hasDrift = true;
   }
 

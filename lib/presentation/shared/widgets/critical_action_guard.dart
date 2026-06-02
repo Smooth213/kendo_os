@@ -29,14 +29,24 @@ class CriticalActionGuard {
                 children: [
                   Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
                   SizedBox(width: 8),
-                  Text('⚠️ 危険操作の再認証', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    '⚠️ 危険操作の再認証',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(message, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                  Text(
+                    message,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: pinController,
@@ -50,8 +60,14 @@ class CriticalActionGuard {
                       fillColor: Colors.white.withValues(alpha: 0.05),
                       errorText: errorMessage,
                       errorStyle: const TextStyle(color: Colors.orangeAccent),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white30)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.teal)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.teal),
+                      ),
                     ),
                   ),
                 ],
@@ -59,13 +75,21 @@ class CriticalActionGuard {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('キャンセル', style: TextStyle(color: Colors.white60)),
+                  child: const Text(
+                    'キャンセル',
+                    style: TextStyle(color: Colors.white60),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.withValues(alpha: 0.8)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange.withValues(alpha: 0.8),
+                  ),
                   onPressed: () {
                     // PinGuardへ現在のロールと再入力された値を渡して決定論的に直接検証
-                    final isValid = PinGuard.validate(currentRole, pinController.text);
+                    final isValid = PinGuard.validate(
+                      currentRole,
+                      pinController.text,
+                    );
                     if (isValid) {
                       Navigator.of(context).pop();
                       onVerified(); // 認証成功時のみ本番の処理をキック
@@ -73,7 +97,13 @@ class CriticalActionGuard {
                       setState(() => errorMessage = 'PINコードが一致しません');
                     }
                   },
-                  child: const Text('認証して実行', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    '認証して実行',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             );

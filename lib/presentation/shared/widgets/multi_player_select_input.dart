@@ -18,15 +18,17 @@ class MultiPlayerSelectInput extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MultiPlayerSelectInput> createState() => _MultiPlayerSelectInputState();
+  ConsumerState<MultiPlayerSelectInput> createState() =>
+      _MultiPlayerSelectInputState();
 }
 
-class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput> {
+class _MultiPlayerSelectInputState
+    extends ConsumerState<MultiPlayerSelectInput> {
   Future<void> _showMultiSelectSheet() async {
     final masterPlayers = ref.read(bunaiksenPlayerMasterProvider).value ?? [];
     final guestPlayers = ref.watch(bunaiksenGuestProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     String searchText = '';
     // モーダル内でのみ操作する一時的な選択リスト
     List<String> tempSelected = List.from(widget.initialSelected);
@@ -35,18 +37,28 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (BuildContext sheetContext) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
-            final filteredMaster = masterPlayers.where((p) => p.name.contains(searchText)).toList();
-            final filteredGuest = guestPlayers.where((name) => name.contains(searchText)).toList();
-            final isNewName = searchText.trim().isNotEmpty && 
-                              !filteredMaster.any((p) => p.name == searchText.trim()) &&
-                              !filteredGuest.any((name) => name == searchText.trim());
+            final filteredMaster = masterPlayers
+                .where((p) => p.name.contains(searchText))
+                .toList();
+            final filteredGuest = guestPlayers
+                .where((name) => name.contains(searchText))
+                .toList();
+            final isNewName =
+                searchText.trim().isNotEmpty &&
+                !filteredMaster.any((p) => p.name == searchText.trim()) &&
+                !filteredGuest.any((name) => name == searchText.trim());
 
             return Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, top: 16),
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                top: 16,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -57,17 +69,38 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context), 
-                          child: Text('キャンセル', style: TextStyle(color: isDark ? Colors.grey.shade400 : Colors.grey.shade600))
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            'キャンセル',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade600,
+                            ),
+                          ),
                         ),
-                        Text('${tempSelected.length}名 選択中', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: widget.accentColor)),
+                        Text(
+                          '${tempSelected.length}名 選択中',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: widget.accentColor,
+                          ),
+                        ),
                         TextButton(
                           onPressed: () {
                             // ★ ここで確定し、親の画面にリストを一気に渡す
                             widget.onConfirm(tempSelected);
                             Navigator.pop(context);
-                          }, 
-                          child: Text('確定', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: widget.accentColor))
+                          },
+                          child: Text(
+                            '確定',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: widget.accentColor,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -82,14 +115,21 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
                         hintText: '名前で検索、または出稽古を追加',
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                        fillColor: isDark
+                            ? Colors.grey.shade900
+                            : Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       ),
                       onChanged: (val) => setStateSheet(() => searchText = val),
                       onSubmitted: (val) {
                         if (isNewName) {
-                          ref.read(bunaiksenGuestProvider.notifier).update((state) => [...state, val.trim()]);
+                          ref
+                              .read(bunaiksenGuestProvider.notifier)
+                              .update((state) => [...state, val.trim()]);
                           setStateSheet(() {
                             tempSelected.add(val.trim());
                             searchText = '';
@@ -106,10 +146,27 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
                       children: [
                         if (isNewName)
                           ListTile(
-                            leading: CircleAvatar(backgroundColor: widget.accentColor.withAlpha(26), child: Icon(Icons.person_add, color: widget.accentColor, size: 20)),
-                            title: Text('"${searchText.trim()}" をゲスト追加して選択', style: TextStyle(color: widget.accentColor, fontWeight: FontWeight.bold)),
+                            leading: CircleAvatar(
+                              backgroundColor: widget.accentColor.withAlpha(26),
+                              child: Icon(
+                                Icons.person_add,
+                                color: widget.accentColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              '"${searchText.trim()}" をゲスト追加して選択',
+                              style: TextStyle(
+                                color: widget.accentColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             onTap: () {
-                              ref.read(bunaiksenGuestProvider.notifier).update((state) => [...state, searchText.trim()]);
+                              ref
+                                  .read(bunaiksenGuestProvider.notifier)
+                                  .update(
+                                    (state) => [...state, searchText.trim()],
+                                  );
                               setStateSheet(() {
                                 tempSelected.add(searchText.trim());
                                 searchText = '';
@@ -122,8 +179,21 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
                             activeColor: widget.accentColor,
                             value: isSelected,
                             title: Text(name),
-                            subtitle: const Text('出稽古・ゲスト', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                            secondary: CircleAvatar(backgroundColor: Colors.grey.withAlpha(26), child: const Icon(Icons.person_outline, color: Colors.grey, size: 20)),
+                            subtitle: const Text(
+                              '出稽古・ゲスト',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            secondary: CircleAvatar(
+                              backgroundColor: Colors.grey.withAlpha(26),
+                              child: const Icon(
+                                Icons.person_outline,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                            ),
                             onChanged: (bool? val) {
                               setStateSheet(() {
                                 if (val == true) {
@@ -141,8 +211,21 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
                             activeColor: widget.accentColor,
                             value: isSelected,
                             title: Text(p.name),
-                            subtitle: Text(p.gradeName, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                            secondary: CircleAvatar(backgroundColor: widget.accentColor.withAlpha(26), child: Icon(Icons.person, color: widget.accentColor, size: 20)),
+                            subtitle: Text(
+                              p.gradeName,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            secondary: CircleAvatar(
+                              backgroundColor: widget.accentColor.withAlpha(26),
+                              child: Icon(
+                                Icons.person,
+                                color: widget.accentColor,
+                                size: 20,
+                              ),
+                            ),
                             onChanged: (bool? val) {
                               setStateSheet(() {
                                 if (val == true) {
@@ -169,10 +252,10 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // 入力欄に「何人選択されているか」と「選択した名前」をサマリー表示する
-    final displayText = widget.initialSelected.isEmpty 
-        ? '' 
+    final displayText = widget.initialSelected.isEmpty
+        ? ''
         : '${widget.initialSelected.length}名選択中: ${widget.initialSelected.join(", ")}';
 
     return TextField(
@@ -189,11 +272,15 @@ class _MultiPlayerSelectInputState extends ConsumerState<MultiPlayerSelectInput>
         suffixIcon: const Icon(Icons.touch_app),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade400),
+          borderSide: BorderSide(
+            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade400),
+          borderSide: BorderSide(
+            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

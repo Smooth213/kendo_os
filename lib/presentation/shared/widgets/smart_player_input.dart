@@ -5,10 +5,11 @@ import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
 
 // 部内戦機能で利用する選手マスタを取得する専用Provider
-final bunaiksenPlayerMasterProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
-  // 既存のplayerRepositoryProviderをwatchして選手リストを取得
-  return ref.watch(playerRepositoryProvider).getPlayers();
-});
+final bunaiksenPlayerMasterProvider =
+    StreamProvider.autoDispose<List<PlayerModel>>((ref) {
+      // 既存のplayerRepositoryProviderをwatchして選手リストを取得
+      return ref.watch(playerRepositoryProvider).getPlayers();
+    });
 
 class SmartPlayerInput extends ConsumerStatefulWidget {
   final TextEditingController controller;
@@ -32,7 +33,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
     final masterPlayers = ref.read(bunaiksenPlayerMasterProvider).value ?? [];
     final guestPlayers = ref.watch(bunaiksenGuestProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     String searchText = '';
 
     await showModalBottomSheet(
@@ -46,13 +47,18 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
             // 検索文字で絞り込み
-            final filteredMaster = masterPlayers.where((p) => p.name.contains(searchText)).toList();
-            final filteredGuest = guestPlayers.where((name) => name.contains(searchText)).toList();
-            
+            final filteredMaster = masterPlayers
+                .where((p) => p.name.contains(searchText))
+                .toList();
+            final filteredGuest = guestPlayers
+                .where((name) => name.contains(searchText))
+                .toList();
+
             // 入力文字が完全に新しい場合のみ「追加」ボタンを表示
-            final isNewName = searchText.trim().isNotEmpty && 
-                              !filteredMaster.any((p) => p.name == searchText.trim()) &&
-                              !filteredGuest.any((name) => name == searchText.trim());
+            final isNewName =
+                searchText.trim().isNotEmpty &&
+                !filteredMaster.any((p) => p.name == searchText.trim()) &&
+                !filteredGuest.any((name) => name == searchText.trim());
 
             return Padding(
               padding: EdgeInsets.only(
@@ -62,7 +68,14 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('選手を選択', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: widget.accentColor)),
+                  Text(
+                    '選手を選択',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: widget.accentColor,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -72,8 +85,13 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                         hintText: '名前で検索、または出稽古を追加',
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                        fillColor: isDark
+                            ? Colors.grey.shade900
+                            : Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
                       ),
                       onChanged: (val) {
@@ -82,7 +100,9 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                       onSubmitted: (val) {
                         if (val.trim().isNotEmpty) {
                           if (isNewName) {
-                            ref.read(bunaiksenGuestProvider.notifier).update((state) => [...state, val.trim()]);
+                            ref
+                                .read(bunaiksenGuestProvider.notifier)
+                                .update((state) => [...state, val.trim()]);
                           }
                           widget.controller.text = val.trim();
                           Navigator.pop(context);
@@ -97,32 +117,79 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                       children: [
                         if (isNewName)
                           ListTile(
-                            leading: CircleAvatar(backgroundColor: widget.accentColor.withAlpha(26), child: Icon(Icons.person_add, color: widget.accentColor, size: 20)),
-                            title: Text('"${searchText.trim()}" をゲストとして追加', style: TextStyle(color: widget.accentColor, fontWeight: FontWeight.bold)),
+                            leading: CircleAvatar(
+                              backgroundColor: widget.accentColor.withAlpha(26),
+                              child: Icon(
+                                Icons.person_add,
+                                color: widget.accentColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              '"${searchText.trim()}" をゲストとして追加',
+                              style: TextStyle(
+                                color: widget.accentColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             onTap: () {
-                              ref.read(bunaiksenGuestProvider.notifier).update((state) => [...state, searchText.trim()]);
+                              ref
+                                  .read(bunaiksenGuestProvider.notifier)
+                                  .update(
+                                    (state) => [...state, searchText.trim()],
+                                  );
                               widget.controller.text = searchText.trim();
                               Navigator.pop(context);
                             },
                           ),
-                        ...filteredGuest.map((name) => ListTile(
-                          leading: CircleAvatar(backgroundColor: Colors.grey.withAlpha(26), child: const Icon(Icons.person_outline, color: Colors.grey, size: 20)),
-                          title: Text(name),
-                          subtitle: const Text('出稽古・ゲスト', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          onTap: () {
-                            widget.controller.text = name;
-                            Navigator.pop(context);
-                          },
-                        )),
-                        ...filteredMaster.map((p) => ListTile(
-                          leading: CircleAvatar(backgroundColor: widget.accentColor.withAlpha(26), child: Icon(Icons.person, color: widget.accentColor, size: 20)),
-                          title: Text(p.name),
-                          subtitle: Text(p.gradeName, style: const TextStyle(fontSize: 12, color: Colors.grey)), // ★ 修正：マスタの学年を表示
-                          onTap: () {
-                            widget.controller.text = p.name;
-                            Navigator.pop(context);
-                          },
-                        )),
+                        ...filteredGuest.map(
+                          (name) => ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.grey.withAlpha(26),
+                              child: const Icon(
+                                Icons.person_outline,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(name),
+                            subtitle: const Text(
+                              '出稽古・ゲスト',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            onTap: () {
+                              widget.controller.text = name;
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        ...filteredMaster.map(
+                          (p) => ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: widget.accentColor.withAlpha(26),
+                              child: Icon(
+                                Icons.person,
+                                color: widget.accentColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(p.name),
+                            subtitle: Text(
+                              p.gradeName,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ), // ★ 修正：マスタの学年を表示
+                            onTap: () {
+                              widget.controller.text = p.name;
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -151,11 +218,15 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
         suffixIcon: const Icon(Icons.arrow_drop_down), // ボトムシートが開くことを示唆するアイコン
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade400),
+          borderSide: BorderSide(
+            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade400),
+          borderSide: BorderSide(
+            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

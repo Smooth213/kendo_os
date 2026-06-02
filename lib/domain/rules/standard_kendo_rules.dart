@@ -22,7 +22,7 @@ abstract class BaseScoringRule implements ScoringRule {
     // 例外を投げて画面をクラッシュ（フリーズ）させるのではなく、最も安全なデフォルトである「2（三本勝負）」へ
     // 自動的かつ決定論的に強制フォールバックさせ、いかなるファジング環境下でも「絶対に壊れないプロダクト」を確立します。
     if (currentTarget != 1 && currentTarget != 2) {
-      currentTarget = 2; 
+      currentTarget = 2;
     }
 
     for (var e in context.events) {
@@ -36,7 +36,7 @@ abstract class BaseScoringRule implements ScoringRule {
         if (e.side == Side.white) white += currentTarget;
       }
     }
-    
+
     final newState = MatchContext(
       redIppon: red,
       whiteIppon: white,
@@ -46,7 +46,10 @@ abstract class BaseScoringRule implements ScoringRule {
       targetIppon: currentTarget,
       hasHantei: context.tournamentConfig.draw.hasHantei,
     );
-    return RuleResult(allowed: true, transition: MatchTransition(updatedState: newState));
+    return RuleResult(
+      allowed: true,
+      transition: MatchTransition(updatedState: newState),
+    );
   }
 }
 
@@ -54,7 +57,7 @@ class LimitScoringRule extends BaseScoringRule {
   @override
   int determineTarget(RuleContext context) {
     return context.tournamentConfig.scoring.ipponLimit > 0
-        ? context.tournamentConfig.scoring.ipponLimit 
+        ? context.tournamentConfig.scoring.ipponLimit
         : context.matchState.targetIppon;
   }
 }
@@ -72,7 +75,7 @@ class LimitHansokuRule implements HansokuRule {
     int whiteHansoku = 0;
     int redIpponAdded = 0;
     int whiteIpponAdded = 0;
-    
+
     final limit = context.tournamentConfig.hansoku.hansokuLimit;
 
     for (var e in context.events) {
@@ -97,14 +100,20 @@ class LimitHansokuRule implements HansokuRule {
       targetIppon: context.matchState.targetIppon,
       hasHantei: context.matchState.hasHantei,
     );
-    return RuleResult(allowed: true, transition: MatchTransition(updatedState: newState));
+    return RuleResult(
+      allowed: true,
+      transition: MatchTransition(updatedState: newState),
+    );
   }
 }
 
 class NoHansokuRule implements HansokuRule {
   @override
   RuleResult apply(RuleContext context) {
-    return RuleResult(allowed: true, transition: MatchTransition(updatedState: context.matchState));
+    return RuleResult(
+      allowed: true,
+      transition: MatchTransition(updatedState: context.matchState),
+    );
   }
 }
 
@@ -121,7 +130,10 @@ class StandardTimeRule implements TimeRule {
       targetIppon: context.matchState.targetIppon,
       hasHantei: context.matchState.hasHantei,
     );
-    return RuleResult(allowed: true, transition: MatchTransition(updatedState: newState));
+    return RuleResult(
+      allowed: true,
+      transition: MatchTransition(updatedState: newState),
+    );
   }
 }
 
@@ -138,19 +150,39 @@ abstract class BaseVictoryRule implements VictoryRule {
     for (var e in context.events) {
       if (e.isCanceled) continue;
       final eStr = e.toString().toLowerCase();
-      
+
       // 判定勝ちイベントの評価
       if (e.isHantei || eStr.contains('hantei')) {
         if (e.side == Side.red) {
-          return RuleResult(allowed: true, transition: MatchTransition(updatedState: state, resultStatus: MatchResultStatus.redWin));
+          return RuleResult(
+            allowed: true,
+            transition: MatchTransition(
+              updatedState: state,
+              resultStatus: MatchResultStatus.redWin,
+            ),
+          );
         } else if (e.side == Side.white) {
-          return RuleResult(allowed: true, transition: MatchTransition(updatedState: state, resultStatus: MatchResultStatus.whiteWin));
+          return RuleResult(
+            allowed: true,
+            transition: MatchTransition(
+              updatedState: state,
+              resultStatus: MatchResultStatus.whiteWin,
+            ),
+          );
         }
       }
-      
+
       // 引き分けイベントの評価
-      if (eStr.contains('draw') || eStr.contains('hikiwake') || eStr.contains('tie')) {
-        return RuleResult(allowed: true, transition: MatchTransition(updatedState: state, resultStatus: MatchResultStatus.draw));
+      if (eStr.contains('draw') ||
+          eStr.contains('hikiwake') ||
+          eStr.contains('tie')) {
+        return RuleResult(
+          allowed: true,
+          transition: MatchTransition(
+            updatedState: state,
+            resultStatus: MatchResultStatus.draw,
+          ),
+        );
       }
     }
 
@@ -169,18 +201,20 @@ abstract class BaseVictoryRule implements VictoryRule {
     }
 
     return RuleResult(
-      allowed: true, 
-      transition: MatchTransition(updatedState: state, resultStatus: status)
+      allowed: true,
+      transition: MatchTransition(updatedState: state, resultStatus: status),
     );
   }
 }
 
 class DrawVictoryRule extends BaseVictoryRule {
   @override
-  MatchResultStatus handleTimeUpTie(RuleContext context) => MatchResultStatus.draw;
+  MatchResultStatus handleTimeUpTie(RuleContext context) =>
+      MatchResultStatus.draw;
 }
 
 class HanteiVictoryRule extends BaseVictoryRule {
   @override
-  MatchResultStatus handleTimeUpTie(RuleContext context) => MatchResultStatus.inProgress;
+  MatchResultStatus handleTimeUpTie(RuleContext context) =>
+      MatchResultStatus.inProgress;
 }

@@ -14,16 +14,22 @@ class PlayerRepository {
   final String dojoId;
 
   PlayerRepository({required this.dojoId, FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _playersCollection {
     if (dojoId.isEmpty) return _firestore.collection('players');
-    return _firestore.collection('organizations').doc(dojoId).collection('players');
+    return _firestore
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('players');
   }
 
   CollectionReference<Map<String, dynamic>> get _customTeamsCollection {
     if (dojoId.isEmpty) return _firestore.collection('custom_team_names');
-    return _firestore.collection('organizations').doc(dojoId).collection('custom_team_names');
+    return _firestore
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('custom_team_names');
   }
 
   // ① 選手一覧を取得する（道上剣友会のメンバーだけを取るなど）
@@ -33,10 +39,10 @@ class PlayerRepository {
         // .orderBy('grade') // ★ここをコメントアウト（無効化）！
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => PlayerModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => PlayerModel.fromMap(doc.data(), doc.id))
+              .toList();
+        });
   }
 
   // ② 選手を新しく追加する
@@ -65,7 +71,7 @@ class PlayerRepository {
 
     for (var doc in snapshot.docs) {
       int currentGrade = doc.data()['grade'] as int? ?? 99;
-      
+
       if (currentGrade < 16) {
         // 未就学〜大学3年まではそのまま +1
         batch.update(doc.reference, {'grade': currentGrade + 1});
@@ -87,13 +93,18 @@ class PlayerRepository {
     return _customTeamsCollection
         .where('organization', isEqualTo: organization)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => doc.data()['name'] as String)
-            .toList()..sort());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => doc.data()['name'] as String).toList()
+                ..sort(),
+        );
   }
 
   /// 新しいカスタムチーム名を追加する
-  Future<void> addCustomTeamName(String name, {String organization = '道上剣友会'}) async {
+  Future<void> addCustomTeamName(
+    String name, {
+    String organization = '道上剣友会',
+  }) async {
     final docId = '${organization}_$name'; // 重複防止のためのID
     await _customTeamsCollection.doc(docId).set({
       'organization': organization,
@@ -103,7 +114,10 @@ class PlayerRepository {
   }
 
   /// カスタムチーム名を削除する
-  Future<void> deleteCustomTeamName(String name, {String organization = '道上剣友会'}) async {
+  Future<void> deleteCustomTeamName(
+    String name, {
+    String organization = '道上剣友会',
+  }) async {
     final docId = '${organization}_$name';
     await _customTeamsCollection.doc(docId).delete();
   }

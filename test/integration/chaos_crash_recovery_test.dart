@@ -32,51 +32,81 @@ void main() {
       // 1. 試合のセットアップ
       final localRepo = MockLocalMatchRepository();
       final rule = const MatchRule(ipponLimit: 2, matchTimeMinutes: 3.0);
-      final initialMatch = TestMatchFactory.createIndividualMatch(id: 'crash-match-1');
+      final initialMatch = TestMatchFactory.createIndividualMatch(
+        id: 'crash-match-1',
+      );
       // ★ 修正: 必須引数 organizationId を追加
-      final user = const User(id: 'scorer_1', role: Role.scorer, organizationId: 'org1');
+      final user = const User(
+        id: 'scorer_1',
+        role: Role.scorer,
+        organizationId: 'org1',
+      );
 
       // ユースケースの準備（UIを使わずに直接ビジネスロジックを叩く）
-      final addScoreUseCase = AddScoreUseCase(KendoRuleEngine(), PermissionService(), SystemTimeSource());
+      final addScoreUseCase = AddScoreUseCase(
+        KendoRuleEngine(),
+        PermissionService(),
+        SystemTimeSource(),
+      );
 
       // 2. 試合進行（赤にメンが入る）
       final event1 = ScoreEventLegacyAdapter.fromLegacy(
-        side: Side.red, type: PointType.men, userId: user.id, sequence: 1,
+        side: Side.red,
+        type: PointType.men,
+        userId: user.id,
+        sequence: 1,
       );
-      final matchState1 = addScoreUseCase.execute(user, initialMatch, event1, rule);
-      
+      final matchState1 = addScoreUseCase.execute(
+        user,
+        initialMatch,
+        event1,
+        rule,
+      );
+
       // DBに保存される（実際はMatchApplicationService経由だが、ここでは直接モックDBに書き込む）
       await localRepo.saveMatch(matchState1);
 
       // ==========================================
       // 💥 ここでアプリが強制終了（クラッシュ）したと仮定する
       // ==========================================
-      
+
       // メモリ上の変数をすべて消去（シミュレーション）
       MatchModel? crashedMatchState = matchState1;
-      crashedMatchState = null; 
+      crashedMatchState = null;
       expect(crashedMatchState, isNull); // 完全に消えたことを確認
 
       // ==========================================
       // 🔄 アプリ再起動（復旧）
       // ==========================================
-      
+
       // 3. ローカルDBからデータを再読み込み
       final recoveredMatch = await localRepo.getMatch('crash-match-1');
 
       // 4. 検証: クラッシュ前の状態が1ミリも欠けずに復元されていること
       expect(recoveredMatch, isNotNull, reason: 'DBから試合データが復元できること');
       expect(recoveredMatch!.events.length, 1, reason: 'イベント履歴が残っていること');
-      expect(recoveredMatch.events[0].type, PointType.men, reason: '赤のメンが記録されていること');
+      expect(
+        recoveredMatch.events[0].type,
+        PointType.men,
+        reason: '赤のメンが記録されていること',
+      );
       expect(recoveredMatch.redScore, 1, reason: 'スコアが1になっていること');
       expect(recoveredMatch.status, 'in_progress', reason: '試合は進行中のままであること');
-      
+
       // 5. 復旧後、さらに試合を継続できること（白がコテを取り返す）
       final event2 = ScoreEventLegacyAdapter.fromLegacy(
-        side: Side.white, type: PointType.kote, userId: user.id, sequence: 2,
+        side: Side.white,
+        type: PointType.kote,
+        userId: user.id,
+        sequence: 2,
       );
-      final matchState2 = addScoreUseCase.execute(user, recoveredMatch, event2, rule);
-      
+      final matchState2 = addScoreUseCase.execute(
+        user,
+        recoveredMatch,
+        event2,
+        rule,
+      );
+
       expect(matchState2.events.length, 2);
       expect(matchState2.redScore, 1);
       expect(matchState2.whiteScore, 1);

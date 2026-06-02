@@ -28,11 +28,8 @@ void main(List<String> args) {
   };
 
   // 追加専用（Append-only）で保存 (Step 5-3)
-  ledgerFile.writeAsStringSync(
-    '${jsonEncode(decision)}\n', 
-    mode: FileMode.append,
-    flush: true
-  );
+  ledgerFile.writeAsStringSync('${jsonEncode(decision)}\n',
+      mode: FileMode.append, flush: true);
 
   print('✅ Decision archived: ${decision['decision_id']}');
 }

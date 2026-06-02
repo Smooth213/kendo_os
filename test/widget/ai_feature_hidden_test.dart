@@ -9,20 +9,23 @@ void main() {
       expect(BetaFeatureFlags.showAiFeatures, false);
     });
 
-    test('【ガバナンス監査】AI機能フラグOFFの際、AiHelpService 内の全処理がパニックを起こさず決定論的に空データまたはアクセス制限文言を返すこと', () async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      '【ガバナンス監査】AI機能フラグOFFの際、AiHelpService 内の全処理がパニックを起こさず決定論的に空データまたはアクセス制限文言を返すこと',
+      () async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      final aiService = container.read(aiHelpServiceProvider);
+        final aiService = container.read(aiHelpServiceProvider);
 
-      // 1. 検索処理の呼び出しが空を返すことを担保
-      final manuals = await aiService.searchRelevantManuals('延長戦のルール');
-      expect(manuals, isEmpty);
+        // 1. 検索処理の呼び出しが空を返すことを担保
+        final manuals = await aiService.searchRelevantManuals('延長戦のルール');
+        expect(manuals, isEmpty);
 
-      // 2. 回答生成処理が、クラッシュせず安全なアクセス制限文言にフォールバックすることを確認
-      final response = await aiService.askAgent('ヘルプエージェント起動');
-      expect(response, contains('アクセス制限'));
-      expect(response, contains('完全に封鎖されています'));
-    });
+        // 2. 回答生成処理が、クラッシュせず安全なアクセス制限文言にフォールバックすることを確認
+        final response = await aiService.askAgent('ヘルプエージェント起動');
+        expect(response, contains('アクセス制限'));
+        expect(response, contains('完全に封鎖されています'));
+      },
+    );
   });
 }

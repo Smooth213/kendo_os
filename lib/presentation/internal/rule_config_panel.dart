@@ -43,7 +43,14 @@ class RuleConfigPanel extends ConsumerWidget {
                   children: [
                     Icon(Icons.auto_awesome, color: primaryColor),
                     const SizedBox(width: 8),
-                    Text('1. 大会プリセットを選択 (Basic)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
+                    Text(
+                      '1. 大会プリセットを選択 (Basic)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: primaryColor,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -54,7 +61,9 @@ class RuleConfigPanel extends ConsumerWidget {
                     return ActionChip(
                       label: Text(preset.name),
                       backgroundColor: Colors.purple.shade50,
-                      side: BorderSide(color: primaryColor.withValues(alpha: 0.5)),
+                      side: BorderSide(
+                        color: primaryColor.withValues(alpha: 0.5),
+                      ),
                       onPressed: () => notifier.applyPreset(preset),
                     );
                   }).toList(),
@@ -62,20 +71,31 @@ class RuleConfigPanel extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           // --- Real-time Summary Section ---
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
             color: Colors.blueGrey.shade50,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.info_outline, color: Colors.blueGrey, size: 20),
+                const Icon(
+                  Icons.info_outline,
+                  color: Colors.blueGrey,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     summary,
-                    style: TextStyle(fontSize: 14, color: Colors.blueGrey.shade800, height: 1.4),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blueGrey.shade800,
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ],
@@ -84,14 +104,20 @@ class RuleConfigPanel extends ConsumerWidget {
 
           // --- Advanced Section: 詳細設定 ---
           ExpansionTile(
-            title: const Text('2. 詳細設定をカスタマイズ (Advanced)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            title: const Text(
+              '2. 詳細設定をカスタマイズ (Advanced)',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
             collapsedBackgroundColor: Colors.grey.shade50,
             childrenPadding: const EdgeInsets.all(16.0),
             children: [
               // 1. 規定本数の切り替え
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('規定本数（勝敗ライン）', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                child: Text(
+                  '規定本数（勝敗ライン）',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
               ),
               const SizedBox(height: 8),
               SegmentedButton<int>(
@@ -101,7 +127,10 @@ class RuleConfigPanel extends ConsumerWidget {
                 ],
                 selected: {rule.ipponLimit},
                 onSelectionChanged: (set) {
-                  notifier.updateField(ipponLimit: set.first, isIpponShobu: set.first == 1);
+                  notifier.updateField(
+                    ipponLimit: set.first,
+                    isIpponShobu: set.first == 1,
+                  );
                 },
               ),
               const SizedBox(height: 24),
@@ -110,15 +139,28 @@ class RuleConfigPanel extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('延長戦の有無', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  Text(
+                    '延長戦の有無',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
                   Switch(
                     value: rule.isEnchoUnlimited || rule.enchoCount > 0,
                     activeThumbColor: primaryColor,
                     onChanged: (val) {
                       if (val) {
-                        notifier.updateField(isEnchoUnlimited: true, enchoCount: 1);
+                        notifier.updateField(
+                          isEnchoUnlimited: true,
+                          enchoCount: 1,
+                        );
                       } else {
-                        notifier.updateField(isEnchoUnlimited: false, enchoCount: 0);
+                        notifier.updateField(
+                          isEnchoUnlimited: false,
+                          enchoCount: 0,
+                        );
                       }
                     },
                   ),
@@ -129,7 +171,14 @@ class RuleConfigPanel extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('判定 (引き分け時に旗で決着)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  Text(
+                    '判定 (引き分け時に旗で決着)',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
                   Switch(
                     value: rule.hasHantei,
                     activeThumbColor: primaryColor,

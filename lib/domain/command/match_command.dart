@@ -17,5 +17,6 @@ abstract class MatchCommand with _$MatchCommand {
     required DateTime createdAt,
   }) = _MatchCommand;
 
-  factory MatchCommand.fromJson(Map<String, dynamic> json) => _$MatchCommandFromJson(json);
+  factory MatchCommand.fromJson(Map<String, dynamic> json) =>
+      _$MatchCommandFromJson(json);
 }

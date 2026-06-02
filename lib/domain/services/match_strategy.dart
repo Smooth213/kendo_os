@@ -10,19 +10,25 @@ class GroupMatchStatus {
 }
 
 // ★ フェーズ1 追加：試合終了時に次に何をすべきかを示す列挙型（アクションの選択肢）
-enum NextMatchAction { continueMatch, startExtension, showHantei, finishMatch, goToDaihyosen }
+enum NextMatchAction {
+  continueMatch,
+  startExtension,
+  showHantei,
+  finishMatch,
+  goToDaihyosen,
+}
 
 // ★ すべての試合形式が必ず持つべき「戦略（ルール）」の設計図
 abstract class MatchStrategy {
   // 試合単体の先取本数（基本2本、代表戦・延長は1本など）
   int getTargetIppon(MatchModel match, MatchRule? rule);
-  
+
   // ★ フェーズ1 追加：同点時の次のアクションを決定するロジック
   NextMatchAction getNextActionOnTie({
     required MatchModel match,
     required Map<String, dynamic>? lastSettings,
   });
-  
+
   // チーム全体（グループ）としての対戦が終了したか、同点かの判定
   GroupMatchStatus checkGroupStatus({
     required MatchModel currentMatch,
@@ -30,7 +36,7 @@ abstract class MatchStrategy {
     required int currentRedPoints,
     required int currentWhitePoints,
     required MatchRule? rule,
-    Map<String, dynamic>? lastSettings, 
+    Map<String, dynamic>? lastSettings,
   });
 }
 
@@ -45,19 +51,23 @@ class IndividualMatchStrategy implements MatchStrategy {
   }
 
   @override
-  NextMatchAction getNextActionOnTie({required MatchModel match, required Map<String, dynamic>? lastSettings}) {
-    final bool hasExt = lastSettings?['hasExtension'] ?? true; 
-    final int maxExt = lastSettings?['extensionCount'] ?? 1; 
+  NextMatchAction getNextActionOnTie({
+    required MatchModel match,
+    required Map<String, dynamic>? lastSettings,
+  }) {
+    final bool hasExt = lastSettings?['hasExtension'] ?? true;
+    final int maxExt = lastSettings?['extensionCount'] ?? 1;
     int currentExtCount = '延長'.allMatches(match.note).length;
 
     if (hasExt && (maxExt == -2 || maxExt == -1 || currentExtCount < maxExt)) {
       return NextMatchAction.startExtension;
     }
-    
-    if ((lastSettings?['hasHantei'] ?? true) || match.matchType.contains('個人戦')) {
+
+    if ((lastSettings?['hasHantei'] ?? true) ||
+        match.matchType.contains('個人戦')) {
       return NextMatchAction.showHantei;
     }
-    
+
     return NextMatchAction.finishMatch;
   }
 
@@ -87,27 +97,33 @@ class TeamMatchStrategy implements MatchStrategy {
   @override
   int getTargetIppon(MatchModel match, MatchRule? rule) {
     bool isDaihyoIppon = rule?.isDaihyoIpponShobu ?? false;
-    
+
     if (match.matchType == '代表戦' && isDaihyoIppon) {
       return 1;
     }
     if (match.matchType == '代表戦' || match.matchType == '大将延長戦') {
-      return 1; 
+      return 1;
     }
     return 2;
   }
 
   @override
-  NextMatchAction getNextActionOnTie({required MatchModel match, required Map<String, dynamic>? lastSettings}) {
+  NextMatchAction getNextActionOnTie({
+    required MatchModel match,
+    required Map<String, dynamic>? lastSettings,
+  }) {
     if (match.matchType == '代表戦') {
       final bool hasExt = lastSettings?['hasExtension'] ?? true;
       final int maxExt = lastSettings?['extensionCount'] ?? 1;
       final int currentExtCount = '延長'.allMatches(match.note).length;
-      
-      if (hasExt && (maxExt == -2 || maxExt == -1 || currentExtCount < maxExt)) {
+
+      if (hasExt &&
+          (maxExt == -2 || maxExt == -1 || currentExtCount < maxExt)) {
         return NextMatchAction.startExtension;
       }
-      return (lastSettings?['hasHantei'] ?? true) ? NextMatchAction.showHantei : NextMatchAction.finishMatch;
+      return (lastSettings?['hasHantei'] ?? true)
+          ? NextMatchAction.showHantei
+          : NextMatchAction.finishMatch;
     }
     return NextMatchAction.finishMatch;
   }
@@ -142,8 +158,12 @@ class KachinukiStrategy implements MatchStrategy {
   }
 
   @override
-  NextMatchAction getNextActionOnTie({required MatchModel match, required Map<String, dynamic>? lastSettings}) {
-    final bool isTaishoVsTaisho = match.redRemaining.isEmpty && match.whiteRemaining.isEmpty;
+  NextMatchAction getNextActionOnTie({
+    required MatchModel match,
+    required Map<String, dynamic>? lastSettings,
+  }) {
+    final bool isTaishoVsTaisho =
+        match.redRemaining.isEmpty && match.whiteRemaining.isEmpty;
     final String kType = lastSettings?['kachinukiUnlimitedType'] ?? '';
 
     if (isTaishoVsTaisho && kType == '大将引き分け延長') {
@@ -151,10 +171,13 @@ class KachinukiStrategy implements MatchStrategy {
       final int maxExt = lastSettings?['extensionCount'] ?? 1;
       final int currentExtCount = '延長'.allMatches(match.note).length;
 
-      if (hasExt && (maxExt == -2 || maxExt == -1 || currentExtCount < maxExt)) {
+      if (hasExt &&
+          (maxExt == -2 || maxExt == -1 || currentExtCount < maxExt)) {
         return NextMatchAction.startExtension;
       }
-      return (lastSettings?['hasHantei'] ?? true) ? NextMatchAction.showHantei : NextMatchAction.finishMatch;
+      return (lastSettings?['hasHantei'] ?? true)
+          ? NextMatchAction.showHantei
+          : NextMatchAction.finishMatch;
     }
     return NextMatchAction.finishMatch;
   }
@@ -184,10 +207,10 @@ class KachinukiStrategy implements MatchStrategy {
 class MatchStrategyFactory {
   static MatchStrategy getStrategy(MatchModel match, [int groupSize = 0]) {
     if (match.isKachinuki) return KachinukiStrategy();
-    
-    if (match.matchType.contains('個人戦') || 
-        match.matchType.contains('リーグ戦') || 
-        match.matchType.contains('錬成会') || 
+
+    if (match.matchType.contains('個人戦') ||
+        match.matchType.contains('リーグ戦') ||
+        match.matchType.contains('錬成会') ||
         groupSize == 1) {
       return IndividualMatchStrategy();
     }
@@ -195,7 +218,7 @@ class MatchStrategyFactory {
     if (match.groupName != null && match.groupName!.isNotEmpty) {
       return TeamMatchStrategy();
     }
-    
+
     return IndividualMatchStrategy();
   }
 }

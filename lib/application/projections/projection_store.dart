@@ -35,7 +35,11 @@ class ProjectionStore {
           if (!snapshot.exists || snapshot.data() == null) return null;
           final match = MatchModel.fromJson(snapshot.data()!);
           final engine = KendoRuleEngine();
-          final analysis = engine.analyzeHistory(match.events, match, match.rule);
+          final analysis = engine.analyzeHistory(
+            match.events,
+            match,
+            match.rule,
+          );
           return MatchProjectionMapper.toProjection(match, analysis);
         });
   }
@@ -53,7 +57,11 @@ class ProjectionStore {
           return snapshot.docs.map((doc) {
             final match = MatchModel.fromJson(doc.data());
             final engine = KendoRuleEngine();
-            final analysis = engine.analyzeHistory(match.events, match, match.rule);
+            final analysis = engine.analyzeHistory(
+              match.events,
+              match,
+              match.rule,
+            );
             return MatchProjectionMapper.toListProjection(match, analysis);
           }).toList();
         });

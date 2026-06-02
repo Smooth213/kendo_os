@@ -322,7 +322,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   Widget _buildStaticHeader() {
     // ★ Phase 8-1: 横画面ではヘッダーを隠す
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-    if (isLandscape && MediaQuery.of(context).size.height < 500) return const SizedBox.shrink();
+        if (isLandscape && MediaQuery.of(context).size.height < 500) { return const SizedBox.shrink(); }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
@@ -821,9 +821,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             ),
                           );
 
-                          if (isStartNow == null) return; 
+                          if (isStartNow == null) { return; } 
 
-                          if (!context.mounted) return;
+                          if (!context.mounted) { return; }
                           // ★ Phase 8-1: ダイアログの「戻る」が画面を消さないように、rootNavigatorを使う
                           showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: CircularProgressIndicator()));
 
@@ -990,7 +990,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
                             if (matchesToSave.isNotEmpty) await ref.read(matchApplicationServiceProvider).saveMatchesBulk(matchesToSave); // ★ 修正
                             
-                            if (!context.mounted) return;
+                            if (!context.mounted) { return; }
                             Navigator.of(context, rootNavigator: true).pop(); // ★ Phase 8-1: ローディングダイアログだけを確実に閉じる！
                             
                             if (isStartNow) {
@@ -1004,7 +1004,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               context.go('/home/${widget.tournamentId}'); 
                             }
                           } catch (e) {
-                            if (!context.mounted) return;
+                            if (!context.mounted) { return; }
                             Navigator.of(context, rootNavigator: true).pop();
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存に失敗しました: $e')));
                           }

@@ -7,7 +7,9 @@ import 'package:kendo_os/presentation/match_router.dart';
 
 void main() {
   group('🛡️ [Phase 1] Feature Flag 完全統制セキュリティ検証テスト', () {
-    testWidgets('フラグがOFFの際、開発者用システム画面への直接URLアクセス（DeepLink）が物理拒否されること', (WidgetTester tester) async {
+    testWidgets('フラグがOFFの際、開発者用システム画面への直接URLアクセス（DeepLink）が物理拒否されること', (
+      WidgetTester tester,
+    ) async {
       // 1. 偽装URL直打ち（Observabilityダッシュボード等へのディープリンク）をシミュレート
       await tester.pumpWidget(
         const ProviderScope(
@@ -24,7 +26,9 @@ void main() {
       expect(find.text('Observability Dashboard'), findsNothing);
     });
 
-    testWidgets('一般ユーザー画面において、隠蔽すべき特権操作ボタンやメニューが一切露出していないこと', (WidgetTester tester) async {
+    testWidgets('一般ユーザー画面において、隠蔽すべき特権操作ボタンやメニューが一切露出していないこと', (
+      WidgetTester tester,
+    ) async {
       // 1. フラグ状態の事前検証（★最新 of 定数定義に完全同期）
       const testMode = RuntimeMode.beta;
       expect(testMode, RuntimeMode.beta);

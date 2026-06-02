@@ -41,10 +41,10 @@ class _TeamRegistrationScreenState extends ConsumerState<TeamRegistrationScreen>
 
   // ★ 修正：最終的なカテゴリ名を生成。マスタ画面の判定と文字列を100%一致させる
   String get _selectedCategory {
-    if (_selectedMajorCategory == '初心者') return '初心者の部';
-    if (_selectedMajorCategory == '幼年') return '幼年の部';
-    if (_selectedMinorCategory == '全体') return '$_selectedMajorCategoryの部';
-    if (_selectedMajorCategory == '大学・一般') return '$_selectedMinorCategoryの部';
+    if (_selectedMajorCategory == '初心者') { return '初心者の部'; }
+    if (_selectedMajorCategory == '幼年') { return '幼年の部'; }
+    if (_selectedMinorCategory == '全体') { return '$_selectedMajorCategoryの部'; }
+    if (_selectedMajorCategory == '大学・一般') { return '$_selectedMinorCategoryの部'; }
     return '$_selectedMajorCategory$_selectedMinorCategoryの部';
   }
 

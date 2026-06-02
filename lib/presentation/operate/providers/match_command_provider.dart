@@ -44,7 +44,7 @@ class MatchCommandService {
   // ★ Step 7-3: 誤操作防止（デバウンス）用の管理変数
   DateTime? _lastScoreTime;
   String? _lastScoreKey;
-  
+
   bool _isUndoing = false; // ★ 追加: Undo連打防止用フラグ
   DateTime? _lastUndoTime; // ★ 追加: Phase 4-1 Undo専用のデバウンス時間管理
 
@@ -57,14 +57,22 @@ class MatchCommandService {
   // ==========================================
 
   // 3. 判定による試合終了処理
-  Future<void> completeMatchWithHantei(MatchModel currentMatch, String hanteiResult, String? userId) async {
+  Future<void> completeMatchWithHantei(
+    MatchModel currentMatch,
+    String hanteiResult,
+    String? userId,
+  ) async {
     try {
       // ★ 修正: 直接データを書き換えて saveMatch するのではなく、関所を通る ApplicationService に委譲する
       if (hanteiResult == 'red' || hanteiResult == 'white') {
         final side = hanteiResult == 'red' ? Side.red : Side.white;
-        await ref.read(matchApplicationServiceProvider).finishMatchManually(currentMatch.id, hanteiWinner: side);
+        await ref
+            .read(matchApplicationServiceProvider)
+            .finishMatchManually(currentMatch.id, hanteiWinner: side);
       } else if (hanteiResult == 'draw') {
-        await ref.read(matchApplicationServiceProvider).finishMatchManually(currentMatch.id);
+        await ref
+            .read(matchApplicationServiceProvider)
+            .finishMatchManually(currentMatch.id);
       }
     } catch (e) {
       debugPrint('🔥 [Command Error] completeMatchWithHantei: $e');
@@ -75,18 +83,24 @@ class MatchCommandService {
   // 4. ★ Phase 3: スコアラー権限（有効期限付きロック機構）
   Future<bool> claimScorer(String matchId, String userId) async {
     // ★ 修正: ApplicationService にロック操作を委譲
-    return await ref.read(matchApplicationServiceProvider).claimScorer(matchId, userId);
+    return await ref
+        .read(matchApplicationServiceProvider)
+        .claimScorer(matchId, userId);
   }
 
   Future<void> releaseScorer(String matchId, String userId) async {
     // ★ 修正: ApplicationService にアンロック操作を委譲
-    await ref.read(matchApplicationServiceProvider).releaseScorer(matchId, userId);
+    await ref
+        .read(matchApplicationServiceProvider)
+        .releaseScorer(matchId, userId);
   }
 
   // ★ Phase 3: スコアラー権限の強制奪取 (テイクオーバー)
   Future<void> forceClaimScorer(String matchId, String userId) async {
     // ★ 修正: ApplicationService にテイクオーバー操作を委譲
-    await ref.read(matchApplicationServiceProvider).forceClaimScorer(matchId, userId);
+    await ref
+        .read(matchApplicationServiceProvider)
+        .forceClaimScorer(matchId, userId);
   }
 
   // 5. 試合削除
@@ -103,8 +117,10 @@ class MatchCommandService {
   }) async {
     final allMatches = ref.read(matchListProvider);
     // 対象の大会の試合に絞り込む
-    final targetMatches = allMatches.where((m) => m.tournamentId == tournamentId).toList();
-    
+    final targetMatches = allMatches
+        .where((m) => m.tournamentId == tournamentId)
+        .toList();
+
     List<MatchModel> updatedMatches = [];
 
     for (var m in targetMatches) {
@@ -137,18 +153,24 @@ class MatchCommandService {
       }
 
       if (isChanged) {
-        updatedMatches.add(m.copyWith(
-          redName: rName,
-          whiteName: wName,
-          syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
-          lastUpdatedAt: DateTime.now(),
-        ));
+        updatedMatches.add(
+          m.copyWith(
+            redName: rName,
+            whiteName: wName,
+            syncState: SyncState.localOnly, // ★ isDirty: true を SyncState に修正
+            lastUpdatedAt: DateTime.now(),
+          ),
+        );
       }
     }
 
     if (updatedMatches.isNotEmpty) {
-      await ref.read(matchApplicationServiceProvider).saveMatchesBulk(updatedMatches); // ★ 修正
-      debugPrint('⚡ Team Renamed Bulk: $oldTeamName -> $newTeamName (${updatedMatches.length} matches)');
+      await ref
+          .read(matchApplicationServiceProvider)
+          .saveMatchesBulk(updatedMatches); // ★ 修正
+      debugPrint(
+        '⚡ Team Renamed Bulk: $oldTeamName -> $newTeamName (${updatedMatches.length} matches)',
+      );
     }
   }
 
@@ -157,12 +179,12 @@ class MatchCommandService {
     final now = DateTime.now();
     final currentKey = '$matchId-$side-$type';
 
-    if (_lastScoreTime != null && 
+    if (_lastScoreTime != null &&
         now.difference(_lastScoreTime!) < const Duration(milliseconds: 500) &&
         _lastScoreKey == currentKey) {
-      
       // ★ テスト用：コンソールではなくUIに直接通知を出す
-      ref.read(matchCommandErrorProvider.notifier).state = '🛡️ 連打防止：${type.name}をブロックしました';
+      ref.read(matchCommandErrorProvider.notifier).state =
+          '🛡️ 連打防止：${type.name}をブロックしました';
       return;
     }
 
@@ -176,7 +198,9 @@ class MatchCommandService {
       if (type == PointType.undo) {
         await ref.read(matchApplicationServiceProvider).undo(matchId);
       } else {
-        await ref.read(matchApplicationServiceProvider).addIppon(matchId, side, type);
+        await ref
+            .read(matchApplicationServiceProvider)
+            .addIppon(matchId, side, type);
       }
     } catch (e) {
       debugPrint('🔥 [Command Error] addScoreEvent: $e');
@@ -188,10 +212,12 @@ class MatchCommandService {
   Future<void> undoLastEvent(String matchId) async {
     debugPrint('🔙 [Undo Start] matchId=$matchId');
     final now = DateTime.now();
-    
+
     // ★ Phase 4-1, 4-3: 100連続Undoやチャタリング（連打）による状態破綻を物理的に防ぐための厳格ガード
-    if (_lastUndoTime != null && now.difference(_lastUndoTime!) < const Duration(milliseconds: 300)) {
-      ref.read(matchCommandErrorProvider.notifier).state = '🛡️ 履歴保護：過度な連続Undoをブロックしました';
+    if (_lastUndoTime != null &&
+        now.difference(_lastUndoTime!) < const Duration(milliseconds: 300)) {
+      ref.read(matchCommandErrorProvider.notifier).state =
+          '🛡️ 履歴保護：過度な連続Undoをブロックしました';
       return;
     }
     _lastUndoTime = now;
@@ -201,7 +227,7 @@ class MatchCommandService {
 
     _isUndoing = true;
     ref.read(isMatchCommandProcessingProvider.notifier).state = true;
-    
+
     try {
       // キューシステム経由、またはダイレクトUseCase経由で安全に非破壊ロールバックを実行
       await ref.read(matchApplicationServiceProvider).undo(matchId);
@@ -223,13 +249,17 @@ class MatchCommandService {
   Future<void> rebuildMatchSnapshot(String matchId) async {
     final match = _getMatch(matchId);
     if (match == null) return;
-    
+
     final rule = ref.read(matchRuleProvider);
     // UseCaseの計算ロジックを使用して、歴史から真実を復元
-    final rebuiltMatch = ref.read(rebuildMatchFromEventsUseCaseProvider).execute(match, rule);
-    
+    final rebuiltMatch = ref
+        .read(rebuildMatchFromEventsUseCaseProvider)
+        .execute(match, rule);
+
     // 計算結果をFirestoreへ強制同期
-    await ref.read(matchApplicationServiceProvider).saveMatch(rebuiltMatch); // ★ 修正
+    await ref
+        .read(matchApplicationServiceProvider)
+        .saveMatch(rebuiltMatch); // ★ 修正
   }
 
   // ==========================================
@@ -240,9 +270,11 @@ class MatchCommandService {
   // ★ 修正: 保存後の最新データを return で返すように変更
   Future<MatchModel?> takeSnapshot(String matchId, String reason) async {
     // Riverpodのキャッシュラグを回避するため、DBから直接最新データを取得
-    final match = await ref.read(localMatchRepositoryProvider).getMatch(matchId) ?? _getMatch(matchId);
+    final match =
+        await ref.read(localMatchRepositoryProvider).getMatch(matchId) ??
+        _getMatch(matchId);
     if (match == null) return null;
-    
+
     final snapshot = MatchSnapshot(
       id: const Uuid().v4(),
       matchId: match.id,
@@ -260,12 +292,17 @@ class MatchCommandService {
     }
 
     final updatedMatch = match.copyWith(snapshots: newSnapshots);
-    await ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch); // ★ 修正
+    await ref
+        .read(matchApplicationServiceProvider)
+        .saveMatch(updatedMatch); // ★ 修正
     return updatedMatch; // 最新の状態を返す
   }
 
   // スナップショットからの復元
-  Future<void> restoreFromSnapshot(String matchId, MatchSnapshot snapshot) async {
+  Future<void> restoreFromSnapshot(
+    String matchId,
+    MatchSnapshot snapshot,
+  ) async {
     final match = _getMatch(matchId);
     if (match == null) return;
 
@@ -283,9 +320,11 @@ class MatchCommandService {
     final newEvents = [...snapshot.events, restoreEvent];
 
     // 状態を上書きし、rebuildMatchSnapshot を呼んでスコアなどを再計算させる
-    await ref.read(matchApplicationServiceProvider).saveMatch(match.copyWith(events: newEvents)); // ★ 修正
+    await ref
+        .read(matchApplicationServiceProvider)
+        .saveMatch(match.copyWith(events: newEvents)); // ★ 修正
     await rebuildMatchSnapshot(matchId);
-    
+
     // 復元後、現在の状態を「復元直後」として再度スナップショットを取っておくとさらに安全
     await takeSnapshot(matchId, '【復元】${snapshot.reason} の時点');
   }
@@ -300,7 +339,14 @@ class MatchCommandService {
 // ★【Phase 1: 堅牢化】オフラインファースト・キューシステムの基盤
 // ============================================================================
 
-enum CommandType { addScore, undoLastEvent, approveMatch, rewindTo, updateMatch } // ★ rewindTo, updateMatch を追加
+enum CommandType {
+  addScore,
+  undoLastEvent,
+  approveMatch,
+  rewindTo,
+  updateMatch,
+} // ★ rewindTo, updateMatch を追加
+
 enum CommandStatus { pending, done, failed }
 
 // 1. 操作の意図をパッキングするデータクラス (名前の競合を避けるため Model を付与)
@@ -344,7 +390,7 @@ class DeadLetterQueueNotifier extends Notifier<List<MatchCommandModel>> {
   Future<void> retryCommand(MatchCommandModel cmd) async {
     final queue = ref.read(matchCommandQueueProvider);
     state = state.where((c) => c.id != cmd.id).toList(); // リストから消す
-    
+
     // エラーカウントをリセットして再度キューに突っ込む
     final newCmd = MatchCommandModel(
       id: cmd.id,
@@ -362,9 +408,10 @@ class DeadLetterQueueNotifier extends Notifier<List<MatchCommandModel>> {
   }
 }
 
-final deadLetterQueueProvider = NotifierProvider<DeadLetterQueueNotifier, List<MatchCommandModel>>(() {
-  return DeadLetterQueueNotifier();
-});
+final deadLetterQueueProvider =
+    NotifierProvider<DeadLetterQueueNotifier, List<MatchCommandModel>>(() {
+      return DeadLetterQueueNotifier();
+    });
 
 class MatchCommandQueue {
   final Ref ref;
@@ -405,15 +452,15 @@ class MatchCommandQueue {
         try {
           await _executeCommand(cmd);
           await localRepo.deleteCommand(cmd.id);
-          _queue.removeAt(0); 
+          _queue.removeAt(0);
           _errorCounts.remove(cmd.id);
         } catch (e) {
           _errorCounts[cmd.id] = (_errorCounts[cmd.id] ?? 0) + 1;
           debugPrint('🔥 [CommandQueue] 処理失敗 (${_errorCounts[cmd.id]}回目): $e');
-          
+
           final errStr = e.toString();
           // ★ 追加: ドメインルールの制約によるエラー（再送しても絶対に成功しない）は即座に破棄する
-          if (errStr.contains('DomainException') || 
+          if (errStr.contains('DomainException') ||
               errStr.contains('取り消すイベントがありません') ||
               errStr.contains('既に規定本数に達しています')) {
             debugPrint('🛡️ [CommandQueue] ドメインルールの制約によりコマンドを破棄します: $errStr');
@@ -422,24 +469,26 @@ class MatchCommandQueue {
             _errorCounts.remove(cmd.id);
             continue; // 次のコマンドへ
           }
-          
+
           // ==========================================
           // ★ Phase 3-Step 5: オフラインキューの強化
           // ConcurrencyException のような一時的なエラーはすぐリトライするが、
           // ネットワークエラーなどはデッドレターキューへ送る
           // ==========================================
-          if (errStr.contains('ConcurrencyException') && _errorCounts[cmd.id]! < 5) {
+          if (errStr.contains('ConcurrencyException') &&
+              _errorCounts[cmd.id]! < 5) {
             // 競合エラーの場合は、上限を増やして少し待ってから再挑戦する
             await Future.delayed(const Duration(milliseconds: 200));
             continue; // 次のループ（リトライ）へ
           }
-          
+
           if (_errorCounts[cmd.id]! >= 3) {
             debugPrint('🚨 [CommandQueue] 失敗上限到達。デッドレターキューへ退避: ${cmd.id}');
-            ref.read(deadLetterQueueProvider.notifier).addErrorCommand(cmd); 
+            ref.read(deadLetterQueueProvider.notifier).addErrorCommand(cmd);
             _queue.removeAt(0);
             await localRepo.deleteCommand(cmd.id);
-            ref.read(matchCommandErrorProvider.notifier).state = '一時的な通信エラーにより、データ送信を保留しました。電波状況を確認して再送してください。';
+            ref.read(matchCommandErrorProvider.notifier).state =
+                '一時的な通信エラーにより、データ送信を保留しました。電波状況を確認して再送してください。';
           } else {
             break; // その他のエラーは一旦ループを抜けて全体の処理を止める
           }
@@ -463,9 +512,15 @@ class MatchCommandQueue {
       case CommandType.addScore:
         final sideStr = cmd.payload['side'] as String;
         final typeStr = cmd.payload['type'] as String;
-        final side = Side.values.firstWhere((e) => e.name == sideStr, orElse: () => Side.none);
-        final type = PointType.values.firstWhere((e) => e.name == typeStr, orElse: () => PointType.men);
-        
+        final side = Side.values.firstWhere(
+          (e) => e.name == sideStr,
+          orElse: () => Side.none,
+        );
+        final type = PointType.values.firstWhere(
+          (e) => e.name == typeStr,
+          orElse: () => PointType.men,
+        );
+
         // ★ UI側が古い形式(PointType.undo)で取り消しコマンドを送ってきた場合のガードルーティング
         if (type == PointType.undo) {
           await appService.undo(matchId);

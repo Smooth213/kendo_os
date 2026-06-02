@@ -19,7 +19,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
   SettingsModel build() {
     final prefs = ref.watch(sharedPreferencesProvider);
     final jsonString = prefs.getString(_key);
-    
+
     // ★ 修正：アプリ初回起動時の「初期状態」を明示的に指定し、確認ダイアログをデフォルトOFF(false)にする
     SettingsModel initialSettings = SettingsModel(showConfirmDialog: false);
     if (jsonString != null) {
@@ -29,10 +29,10 @@ class SettingsNotifier extends Notifier<SettingsModel> {
         // パース失敗時はデフォルト値
       }
     }
-    
+
     // 初期化時にスリープ防止設定を適用
     _applyWakelock(initialSettings.sleepPrevent);
-    
+
     return initialSettings;
   }
 
@@ -41,10 +41,10 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     state = newSettings;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_key, jsonEncode(newSettings.toJson()));
-    
+
     // スリープ防止設定が変更されたら即座に適用
     _applyWakelock(newSettings.sleepPrevent);
-    
+
     // ★ 追加：マナーモード設定が変更されたら、即座にオーディオエンジンを書き換える
     ref.read(soundServiceProvider).configureAudio(newSettings.ignoreMannerMode);
   }
@@ -79,7 +79,9 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog,
       themeMode: themeMode ?? state.themeMode,
       enableLiquidGlass: enableLiquidGlass ?? state.enableLiquidGlass,
-      experimentalFeatures: experimentalFeatures ?? state.experimentalFeatures, // ★ 修正: この1行を代入に追加
+      experimentalFeatures:
+          experimentalFeatures ??
+          state.experimentalFeatures, // ★ 修正: この1行を代入に追加
       securityLevel: securityLevel ?? state.securityLevel,
       adminPasscode: adminPasscode ?? state.adminPasscode,
     );
@@ -91,8 +93,8 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     // ==========================================
     if (securityLevel != null && securityLevel != oldState.securityLevel) {
       _logSystemChange(
-        'セキュリティレベル変更', 
-        'Lv.${oldState.securityLevel} -> Lv.$securityLevel'
+        'セキュリティレベル変更',
+        'Lv.${oldState.securityLevel} -> Lv.$securityLevel',
       );
     }
     if (adminPasscode != null && adminPasscode != oldState.adminPasscode) {
@@ -106,7 +108,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       // 既存の auditLogProvider を利用して記録
       // ※ audit_provider.dart が AuditLog(action: action, details: detail) を
       //Firestoreへ送るメソッドを持っている前提
-      // ref.read(auditProvider.notifier).addLog(action, detail); 
+      // ref.read(auditProvider.notifier).addLog(action, detail);
       debugPrint('📝 [AuditLog] $action: $detail'); // デバッグ用
     } catch (e) {
       debugPrint('🔥 AuditLog recording failed: $e');
@@ -116,29 +118,56 @@ class SettingsNotifier extends Notifier<SettingsModel> {
   // 一括設定（プリセット）を適用する
   void applyPreset(String presetName) {
     if (presetName == 'official') {
-      updateSettings(const SettingsModel(
-        confirmBehavior: 'long', isLocked: true, showConfirmDialog: true, 
-        haptic: true, strikeVib: true, audioFeedbackMode: 'effect', ignoreMannerMode: true,
-        sleepPrevent: true, leftHanded: false, themeMode: 'system',
-        enableLiquidGlass: true,
-        securityLevel: 2,
-      ));
+      updateSettings(
+        const SettingsModel(
+          confirmBehavior: 'long',
+          isLocked: true,
+          showConfirmDialog: true,
+          haptic: true,
+          strikeVib: true,
+          audioFeedbackMode: 'effect',
+          ignoreMannerMode: true,
+          sleepPrevent: true,
+          leftHanded: false,
+          themeMode: 'system',
+          enableLiquidGlass: true,
+          securityLevel: 2,
+        ),
+      );
     } else if (presetName == 'renseikai') {
-      updateSettings(const SettingsModel(
-        confirmBehavior: 'double', isLocked: false, showConfirmDialog: false, 
-        haptic: true, strikeVib: true, audioFeedbackMode: 'off', ignoreMannerMode: true,
-        sleepPrevent: true, leftHanded: false, themeMode: 'system',
-        enableLiquidGlass: true,
-        securityLevel: 1,
-      ));
+      updateSettings(
+        const SettingsModel(
+          confirmBehavior: 'double',
+          isLocked: false,
+          showConfirmDialog: false,
+          haptic: true,
+          strikeVib: true,
+          audioFeedbackMode: 'off',
+          ignoreMannerMode: true,
+          sleepPrevent: true,
+          leftHanded: false,
+          themeMode: 'system',
+          enableLiquidGlass: true,
+          securityLevel: 1,
+        ),
+      );
     } else if (presetName == 'practice') {
-      updateSettings(const SettingsModel(
-        confirmBehavior: 'single', isLocked: false, showConfirmDialog: false, 
-        haptic: false, strikeVib: false, audioFeedbackMode: 'off', ignoreMannerMode: false,
-        sleepPrevent: true, leftHanded: false, themeMode: 'system',
-        enableLiquidGlass: true,
-        securityLevel: 1,
-      ));
+      updateSettings(
+        const SettingsModel(
+          confirmBehavior: 'single',
+          isLocked: false,
+          showConfirmDialog: false,
+          haptic: false,
+          strikeVib: false,
+          audioFeedbackMode: 'off',
+          ignoreMannerMode: false,
+          sleepPrevent: true,
+          leftHanded: false,
+          themeMode: 'system',
+          enableLiquidGlass: true,
+          securityLevel: 1,
+        ),
+      );
     }
   }
 

@@ -40,15 +40,16 @@ class ProgramRepository {
     // 3. Storageにアップロード（ここでAIが裏で走り始める）
     final String fileName;
     if (file != null) {
-      fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+      fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
     } else {
       // Webの場合はファイルパスがないため、ダミーのファイル名を生成
       final ext = fileType == 'pdf' ? 'pdf' : 'jpg';
       fileName = '${DateTime.now().millisecondsSinceEpoch}_web_upload.$ext';
     }
-    
+
     final storageRef = _storage.ref().child('programs/$programId/$fileName');
-    
+
     String downloadUrl;
     if (kIsWeb && bytes != null) {
       // ★ Webの場合：bytes（バイナリ）を使って直接アップロード
@@ -75,9 +76,13 @@ class ProgramRepository {
         .where('tournamentId', isEqualTo: tournamentId)
         .orderBy('createdAt', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ProgramModel.fromJson({...doc.data(), 'id': doc.id}))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map(
+                (doc) => ProgramModel.fromJson({...doc.data(), 'id': doc.id}),
+              )
+              .toList(),
+        );
   }
 
   // 3. プログラムの削除（StorageとFirestore両方から完全に消し去る）
@@ -92,7 +97,7 @@ class ProgramRepository {
 
     // Firestoreから削除
     await _firestore.collection('programs').doc(program.id).delete();
-    
+
     // 紐づく共有ストローク（線）も削除するバッチ処理
     final strokesSnapshot = await _firestore
         .collection('strokes')
@@ -106,16 +111,21 @@ class ProgramRepository {
   }
 
   // 4. 共有ハイライト（線）のリアルタイム取得
-  Stream<List<StrokeModel>> watchSharedStrokes(String programId, int pageIndex) {
+  Stream<List<StrokeModel>> watchSharedStrokes(
+    String programId,
+    int pageIndex,
+  ) {
     return _firestore
         .collection('strokes')
         .where('programId', isEqualTo: programId)
         .where('pageIndex', isEqualTo: pageIndex)
         .where('isShared', isEqualTo: true) // 共有フラグが立っているものだけ
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => StrokeModel.fromJson({...doc.data(), 'id': doc.id}))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => StrokeModel.fromJson({...doc.data(), 'id': doc.id}))
+              .toList(),
+        );
   }
 
   // 5. 共有ハイライトの保存

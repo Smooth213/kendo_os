@@ -43,52 +43,52 @@ class MatchStateMachine {
   static MatchLifecycleState transition(MatchLifecycleState currentState, StateTransitionEvent event) {
     switch (currentState) {
       case MatchLifecycleState.notStarted:
-        if (event == StateTransitionEvent.playersReady) return MatchLifecycleState.ready;
-        if (event == StateTransitionEvent.startMatch) return MatchLifecycleState.inProgress;
+        if (event == StateTransitionEvent.playersReady) { return MatchLifecycleState.ready; }
+        if (event == StateTransitionEvent.startMatch) { return MatchLifecycleState.inProgress; }
         break;
 
       case MatchLifecycleState.waitingForPlayers:
-        if (event == StateTransitionEvent.playersReady) return MatchLifecycleState.ready;
+        if (event == StateTransitionEvent.playersReady) { return MatchLifecycleState.ready; }
         break;
 
       case MatchLifecycleState.ready:
-        if (event == StateTransitionEvent.startMatch) return MatchLifecycleState.inProgress;
-        if (event == StateTransitionEvent.decideWinner) return MatchLifecycleState.fusen;
+        if (event == StateTransitionEvent.startMatch) { return MatchLifecycleState.inProgress; }
+        if (event == StateTransitionEvent.decideWinner) { return MatchLifecycleState.fusen; }
         break;
 
       case MatchLifecycleState.inProgress:
-        if (event == StateTransitionEvent.addScore) return MatchLifecycleState.inProgress;
-        if (event == StateTransitionEvent.timeUp) return MatchLifecycleState.completed;
-        if (event == StateTransitionEvent.startEncho) return MatchLifecycleState.encho;
-        if (event == StateTransitionEvent.decideWinner) return MatchLifecycleState.completed;
-        if (event == StateTransitionEvent.pause) return MatchLifecycleState.paused;
-        if (event == StateTransitionEvent.requestHantei) return MatchLifecycleState.hanteiPending;
-        if (event == StateTransitionEvent.undo) return MatchLifecycleState.inProgress;
+        if (event == StateTransitionEvent.addScore) { return MatchLifecycleState.inProgress; }
+        if (event == StateTransitionEvent.timeUp) { return MatchLifecycleState.completed; }
+        if (event == StateTransitionEvent.startEncho) { return MatchLifecycleState.encho; }
+        if (event == StateTransitionEvent.decideWinner) { return MatchLifecycleState.completed; }
+        if (event == StateTransitionEvent.pause) { return MatchLifecycleState.paused; }
+        if (event == StateTransitionEvent.requestHantei) { return MatchLifecycleState.hanteiPending; }
+        if (event == StateTransitionEvent.undo) { return MatchLifecycleState.inProgress; }
         break;
 
       case MatchLifecycleState.paused:
-        if (event == StateTransitionEvent.resume) return MatchLifecycleState.inProgress;
-        if (event == StateTransitionEvent.undo) return MatchLifecycleState.paused;
+        if (event == StateTransitionEvent.resume) { return MatchLifecycleState.inProgress; }
+        if (event == StateTransitionEvent.undo) { return MatchLifecycleState.paused; }
         break;
 
       case MatchLifecycleState.encho:
-        if (event == StateTransitionEvent.addScore) return MatchLifecycleState.encho;
-        if (event == StateTransitionEvent.decideWinner) return MatchLifecycleState.completed;
-        if (event == StateTransitionEvent.timeUp) return MatchLifecycleState.completed;
-        if (event == StateTransitionEvent.pause) return MatchLifecycleState.paused;
-        if (event == StateTransitionEvent.requestHantei) return MatchLifecycleState.hanteiPending;
-        if (event == StateTransitionEvent.undo) return MatchLifecycleState.encho;
+        if (event == StateTransitionEvent.addScore) { return MatchLifecycleState.encho; }
+        if (event == StateTransitionEvent.decideWinner) { return MatchLifecycleState.completed; }
+        if (event == StateTransitionEvent.timeUp) { return MatchLifecycleState.completed; }
+        if (event == StateTransitionEvent.pause) { return MatchLifecycleState.paused; }
+        if (event == StateTransitionEvent.requestHantei) { return MatchLifecycleState.hanteiPending; }
+        if (event == StateTransitionEvent.undo) { return MatchLifecycleState.encho; }
         break;
 
       case MatchLifecycleState.hanteiPending:
-        if (event == StateTransitionEvent.decideWinner) return MatchLifecycleState.completed;
-        if (event == StateTransitionEvent.undo) return MatchLifecycleState.inProgress;
+        if (event == StateTransitionEvent.decideWinner) { return MatchLifecycleState.completed; }
+        if (event == StateTransitionEvent.undo) { return MatchLifecycleState.inProgress; }
         break;
 
       case MatchLifecycleState.completed:
       case MatchLifecycleState.fusen:
-        if (event == StateTransitionEvent.approve) return MatchLifecycleState.completed;
-        if (event == StateTransitionEvent.undo) return MatchLifecycleState.inProgress; // 勝敗取り消しで進行中へ戻る
+        if (event == StateTransitionEvent.approve) { return MatchLifecycleState.completed; }
+        if (event == StateTransitionEvent.undo) { return MatchLifecycleState.inProgress; } // 勝敗取り消しで進行中へ戻る
         break;
 
       case MatchLifecycleState.canceled:

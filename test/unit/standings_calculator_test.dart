@@ -103,8 +103,12 @@ void main() {
 
     test('4. 【勝点】winPoint / drawPoint に基づく customPoints の優位が最優先されること', () {
       final calculator = LeagueStandingsCalculator();
-      final customRule = const MatchRule(winPoint: 5.0, drawPoint: 2.0, lossPoint: 0.0);
-      
+      final customRule = const MatchRule(
+        winPoint: 5.0,
+        drawPoint: 2.0,
+        lossPoint: 0.0,
+      );
+
       final matches = [
         const MatchModel(
           id: 'm1',
@@ -195,7 +199,7 @@ void main() {
       ];
 
       final stats = calculator.calculate(matches, defaultRule);
-      
+
       // 三つ巴時は全員が1勝1敗、取得本数も同じになるため、記名順またはデフォルトソートの安定性が担保される
       expect(stats.map((s) => s.rank), containsAll([1, 2, 3]));
     });

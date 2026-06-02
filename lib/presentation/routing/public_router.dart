@@ -10,9 +10,13 @@ class PublicRouter {
       case 'viewer':
         return MatchRouter(matchId: id);
       case 'settings':
-        return const Scaffold(body: Center(child: Text('Public Settings Screen')));
+        return const Scaffold(
+          body: Center(child: Text('Public Settings Screen')),
+        );
       case 'manual':
-        return const Scaffold(body: Center(child: Text('Public Manual Screen')));
+        return const Scaffold(
+          body: Center(child: Text('Public Manual Screen')),
+        );
       default:
         return const Scaffold(
           body: Center(

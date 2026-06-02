@@ -18,7 +18,8 @@ class LocalCommentRepository {
       ..tournamentId = comment.tournamentId
       ..category = comment.category
       ..groupName = comment.groupName
-      ..matchGroupId = comment.matchGroupId // ★ 追加
+      ..matchGroupId = comment
+          .matchGroupId // ★ 追加
       ..text = comment.text
       ..order = comment.order
       ..syncState = comment.syncState
@@ -38,24 +39,33 @@ class LocalCommentRepository {
         .tournamentIdEqualTo(tournamentId)
         .build()
         .watch(fireImmediately: true)
-        .map((entities) => entities.map((e) => MatchCommentModel(
-              id: e.commentId,
-              tournamentId: e.tournamentId,
-              category: e.category,
-              groupName: e.groupName,
-              matchGroupId: e.matchGroupId, // ★ 追加
-              text: e.text,
-              order: e.order,
-              syncState: e.syncState,
-              lastUpdatedAt: e.lastUpdatedAt,
-            )).toList());
+        .map(
+          (entities) => entities
+              .map(
+                (e) => MatchCommentModel(
+                  id: e.commentId,
+                  tournamentId: e.tournamentId,
+                  category: e.category,
+                  groupName: e.groupName,
+                  matchGroupId: e.matchGroupId, // ★ 追加
+                  text: e.text,
+                  order: e.order,
+                  syncState: e.syncState,
+                  lastUpdatedAt: e.lastUpdatedAt,
+                ),
+              )
+              .toList(),
+        );
   }
 
   Future<void> markAsSynced(String id) async {
     // ★ Web環境ではIsarが無効なため処理をスキップ
     if (kIsWeb || _isar == null) return;
 
-    final entity = await _isar.matchCommentEntitys.filter().commentIdEqualTo(id).findFirst();
+    final entity = await _isar.matchCommentEntitys
+        .filter()
+        .commentIdEqualTo(id)
+        .findFirst();
     if (entity != null) {
       entity.syncState = SyncState.synced;
       await _isar.writeTxn(() async {
@@ -69,7 +79,10 @@ class LocalCommentRepository {
     if (kIsWeb || _isar == null) return;
 
     await _isar.writeTxn(() async {
-      final success = await _isar.matchCommentEntitys.filter().commentIdEqualTo(id).deleteAll();
+      final success = await _isar.matchCommentEntitys
+          .filter()
+          .commentIdEqualTo(id)
+          .deleteAll();
       debugPrint(success > 0 ? 'Comment $id deleted' : 'Comment $id not found');
     });
   }

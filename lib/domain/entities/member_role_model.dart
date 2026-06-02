@@ -29,7 +29,9 @@ class MemberRoleModel {
         orElse: () => UserRole.viewer,
       ),
       displayName: json['displayName'] as String? ?? '操作端末',
-      updatedAt: DateTime.parse(json['updatedAt'] as String? ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 }

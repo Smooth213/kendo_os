@@ -14,5 +14,6 @@ abstract class EventSettings with _$EventSettings {
     @Default(180) int defaultDurationSeconds,
   }) = _EventSettings;
 
-  factory EventSettings.fromJson(Map<String, dynamic> json) => _$EventSettingsFromJson(json);
+  factory EventSettings.fromJson(Map<String, dynamic> json) =>
+      _$EventSettingsFromJson(json);
 }

@@ -57,8 +57,9 @@ void main() {
     test('全試合がカテゴリごとに正しくグループ化されること', () async {
       final container = createContainer(
         overrides: [
-          matchListByTournamentProvider
-              .overrideWith((ref, id) => Stream.value([testMatch1, testMatch2, testMatch3])),
+          matchListByTournamentProvider.overrideWith(
+            (ref, id) => Stream.value([testMatch1, testMatch2, testMatch3]),
+          ),
         ],
       );
 
@@ -71,16 +72,18 @@ void main() {
 
       expect(result.isLoading, false);
       expect(result.hasError, false);
-      
+
       // カテゴリは2つ（一般の部、女子の部）
       expect(result.entries.length, 2);
-      
+
       final cats = result.entries.map((e) => e.key).toList();
       expect(cats, contains('一般の部'));
       expect(cats, contains('女子の部'));
-      
+
       // 「一般の部」には2つの試合が含まれていること
-      final ippanMatches = result.entries.firstWhere((e) => e.key == '一般の部').value;
+      final ippanMatches = result.entries
+          .firstWhere((e) => e.key == '一般の部')
+          .value;
       expect(ippanMatches.length, 2);
       expect(ippanMatches.map((m) => m.id), containsAll(['match1', 'match2']));
     });
@@ -88,8 +91,9 @@ void main() {
     test('検索クエリに合致する試合・グループのみが抽出されること', () async {
       final container = createContainer(
         overrides: [
-          matchListByTournamentProvider
-              .overrideWith((ref, id) => Stream.value([testMatch1, testMatch2, testMatch3])),
+          matchListByTournamentProvider.overrideWith(
+            (ref, id) => Stream.value([testMatch1, testMatch2, testMatch3]),
+          ),
           searchQueryProvider.overrideWith((ref) => 'Aチーム'),
         ],
       );
@@ -102,19 +106,20 @@ void main() {
       // Aチームが含まれるのは一般の部のみ
       expect(result.entries.length, 1);
       expect(result.entries.first.key, '一般の部');
-      
+
       // Aチームに合致したのは match1 だが、groupNameが 'Aリーグ' なので
       // 同じグループの match2 も一緒に抽出される仕様になっているかを検証
       expect(result.matchedGroupNames, contains('Aリーグ'));
       expect(result.matchedMatchIds, contains('match1'));
-      expect(result.entries.first.value.length, 2); 
+      expect(result.entries.first.value.length, 2);
     });
 
     test('カテゴリのソート（昇順・降順）が切り替わること', () async {
       final container = createContainer(
         overrides: [
-          matchListByTournamentProvider
-              .overrideWith((ref, id) => Stream.value([testMatch1, testMatch3])),
+          matchListByTournamentProvider.overrideWith(
+            (ref, id) => Stream.value([testMatch1, testMatch3]),
+          ),
           categorySortProvider.overrideWith((ref) => false), // false = 降順
         ],
       );
@@ -122,11 +127,14 @@ void main() {
       container.listen(safeTimelineProvider('test_tournament'), (_, _) {});
 
       await Future.delayed(const Duration(milliseconds: 200));
-      final resultDesc = container.read(safeTimelineProvider('test_tournament'));
+      final resultDesc = container.read(
+        safeTimelineProvider('test_tournament'),
+      );
       final keysDesc = resultDesc.entries.map((e) => e.key).toList();
-      
+
       // 降順ソートの検証
-      final sortedKeysDesc = List<String>.from(keysDesc)..sort((a, b) => b.compareTo(a));
+      final sortedKeysDesc = List<String>.from(keysDesc)
+        ..sort((a, b) => b.compareTo(a));
       expect(keysDesc, sortedKeysDesc);
 
       // 昇順に変更
@@ -136,15 +144,17 @@ void main() {
       final keysAsc = resultAsc.entries.map((e) => e.key).toList();
 
       // 昇順ソートの検証
-      final sortedKeysAsc = List<String>.from(keysAsc)..sort((a, b) => a.compareTo(b));
+      final sortedKeysAsc = List<String>.from(keysAsc)
+        ..sort((a, b) => a.compareTo(b));
       expect(keysAsc, sortedKeysAsc);
     });
 
     test('データ取得エラー時に安全にエラー状態を反映すること', () async {
       final container = createContainer(
         overrides: [
-          matchListByTournamentProvider
-              .overrideWith((ref, id) => Stream.error(Exception('Network Error'))),
+          matchListByTournamentProvider.overrideWith(
+            (ref, id) => Stream.error(Exception('Network Error')),
+          ),
         ],
       );
 

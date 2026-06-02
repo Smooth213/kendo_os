@@ -31,7 +31,9 @@ void main() {
       );
     }
 
-    testWidgets('【新規作成ケース】クラウド上にIDが実在しない場合、正常にコレクションが初期創設され直結すること', (WidgetTester tester) async {
+    testWidgets('【新規作成ケース】クラウド上にIDが実在しない場合、正常にコレクションが初期創設され直結すること', (
+      WidgetTester tester,
+    ) async {
       final container = ProviderContainer(
         overrides: [
           // ★ Widget内の専用ProviderをオーバーライドしてFakeFirestoreを確実に注入
@@ -56,12 +58,15 @@ void main() {
         // fake_cloud_firestore の内部パケットループが完結するのを決定論的に待機
         await Future.delayed(const Duration(milliseconds: 100));
       });
-      
+
       // 3. 通信結果に伴うUI更新の反映
       await tester.pumpAndSettle();
 
       // アサーション1：Firestoreの「organizations/osaka_dojo」にデータが正しく自動創設されていること
-      final doc = await fakeFirestore.collection('organizations').doc('osaka_dojo').get();
+      final doc = await fakeFirestore
+          .collection('organizations')
+          .doc('osaka_dojo')
+          .get();
       expect(doc.exists, isTrue);
       expect(doc.data()?['createdBy'], equals('owner_terminal'));
 
@@ -70,11 +75,13 @@ void main() {
 
       // アサーション3：ダイアログが正常に閉じていること
       expect(find.byType(RoomJoinQrDialog), findsNothing);
-      
+
       container.dispose();
     });
 
-    testWidgets('【重複ガードケース】既に他者が使用中のIDを入力した場合、警告ダイアログが露出し無断上書きをブロックすること', (WidgetTester tester) async {
+    testWidgets('【重複ガードケース】既に他者が使用中のIDを入力した場合、警告ダイアログが露出し無断上書きをブロックすること', (
+      WidgetTester tester,
+    ) async {
       // 事前条件：クラウド上に既に「tokyo_dojo」という部屋が実在している状態を作る
       await fakeFirestore.collection('organizations').doc('tokyo_dojo').set({
         'createdAt': DateTime.now().toIso8601String(),
@@ -82,9 +89,7 @@ void main() {
       });
 
       final container = ProviderContainer(
-        overrides: [
-          roomFirestoreProvider.overrideWithValue(fakeFirestore),
-        ],
+        overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
       );
 
       await tester.pumpWidget(createTestTarget(container));
@@ -102,7 +107,7 @@ void main() {
         await tester.tap(find.text('接続開始'));
         await Future.delayed(const Duration(milliseconds: 100));
       });
-      
+
       // 3. 警告ダイアログのポップアップアニメーションを消化
       await tester.pumpAndSettle();
 
@@ -115,7 +120,7 @@ void main() {
         await tester.tap(find.text('このまま接続'));
         await Future.delayed(const Duration(milliseconds: 50));
       });
-      
+
       // 5. 画面が閉じるのを待機
       await tester.pumpAndSettle();
 

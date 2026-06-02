@@ -21,7 +21,9 @@ class MockDeadLetterQueueNotifier extends DeadLetterQueueNotifier {
 
 void main() {
   group('🛡️ [Phase 3] Observability 統一ロケーション隔離検証テスト', () {
-    testWidgets('同期バーが、一般ユーザー向けに定義された安心日本語表現（保存済み）を出力すること', (WidgetTester tester) async {
+    testWidgets('同期バーが、一般ユーザー向けに定義された安心日本語表現（保存済み）を出力すること', (
+      WidgetTester tester,
+    ) async {
       // 1. ProviderScope内で、例外を投げる依存プロバイダ群（IsarおよびFirebase）を安全に固定（override）
       await tester.pumpWidget(
         ProviderScope(
@@ -29,21 +31,23 @@ void main() {
             // タイマーリークとUnimplementedErrorの原因となるSyncEngineを安全にモック化
             syncEngineProvider.overrideWith((ref) => MockSyncEngine()),
             // NotifierProvider の正しい型定義に合わせてオーバーライド
-            deadLetterQueueProvider.overrideWith(() => MockDeadLetterQueueNotifier()),
-            
+            deadLetterQueueProvider.overrideWith(
+              () => MockDeadLetterQueueNotifier(),
+            ),
+
             // 🌟 修正: プロジェクトの実際の定義（OperationMode.tournament）に完全シンクロさせ、コンパイルエラーを根絶
             activeRoleProvider.overrideWith((ref) => Role.scorer),
-            operationModeProvider.overrideWith((ref) => OperationMode.tournament),
-            
+            operationModeProvider.overrideWith(
+              (ref) => OperationMode.tournament,
+            ),
+
             // テスト表示用のステータスプロバイダを健全な初期値に固定
             syncStatusProvider.overrideWith((ref) => SyncStatus.synced),
             isOnlineProvider.overrideWith((ref) => true),
             isSyncingStateProvider.overrideWith((ref) => false),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              bottomNavigationBar: SyncStatusBar(),
-            ),
+            home: Scaffold(bottomNavigationBar: SyncStatusBar()),
           ),
         ),
       );

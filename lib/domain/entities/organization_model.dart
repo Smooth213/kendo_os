@@ -11,5 +11,6 @@ abstract class OrganizationModel with _$OrganizationModel {
     @Default([]) List<String> memberNames,
   }) = _OrganizationModel;
 
-  factory OrganizationModel.fromJson(Map<String, dynamic> json) => _$OrganizationModelFromJson(json);
+  factory OrganizationModel.fromJson(Map<String, dynamic> json) =>
+      _$OrganizationModelFromJson(json);
 }

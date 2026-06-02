@@ -14,20 +14,20 @@ abstract class MatchRule with _$MatchRule {
     // 🛡️ Domain Rules (真の試合ルール：Phase 5でConfig化する対象)
     // ==========================================
     // --- Scoring & Hansoku (得点・反則) ---
-    @Default(2) int ipponLimit,     // 何本取ったら勝ちか（通常2本、サドンデスは1本）
-    @Default(2) int hansokuLimit,   // 反則何回で相手に1本入るか（通常2回）
+    @Default(2) int ipponLimit, // 何本取ったら勝ちか（通常2本、サドンデスは1本）
+    @Default(2) int hansokuLimit, // 反則何回で相手に1本入るか（通常2回）
     @Default(false) bool isIpponShobu,
-    
+
     // --- Time (時間) ---
     @Default(3.0) double matchTimeMinutes,
     @Default(false) bool isRunningTime,
-    
+
     // --- Draw & Encho (判定・延長) ---
     @Default(false) bool hasHantei,
     @Default(false) bool isEnchoUnlimited,
     @Default(3.0) double enchoTimeMinutes,
     @Default(1) int enchoCount,
-    
+
     // --- Team & Kachinuki (団体・勝ち抜き) ---
     @Default(false) bool isKachinuki,
     @Default('大将対大将') String kachinukiUnlimitedType,
@@ -44,7 +44,7 @@ abstract class MatchRule with _$MatchRule {
     @Default('') String teamName,
     @Default('') String category,
     @Default('') String note,
-    
+
     // --- 進行・リーグ構成 ---
     @Default(false) bool isLeague,
     @Default([]) List<String> leagueOrder,
@@ -59,7 +59,8 @@ abstract class MatchRule with _$MatchRule {
     @Default(30) int overallTimeMinutes,
   }) = _MatchRule;
 
-  factory MatchRule.fromJson(Map<String, dynamic> json) => _$MatchRuleFromJson(json);
+  factory MatchRule.fromJson(Map<String, dynamic> json) =>
+      _$MatchRuleFromJson(json);
 
   // ==========================================
   // ★ Phase 5: 新しい TournamentRuleConfig への変換アダプター
@@ -67,15 +68,25 @@ abstract class MatchRule with _$MatchRule {
   // ==========================================
   TournamentRuleConfig get toRuleConfig {
     return TournamentRuleConfig(
-      time: TimeConfig(matchTimeMinutes: matchTimeMinutes, isRunningTime: isRunningTime),
-      encho: EnchoConfig(isEnchoUnlimited: isEnchoUnlimited, enchoTimeMinutes: enchoTimeMinutes, enchoCount: enchoCount),
-      scoring: ScoringConfig(ipponLimit: ipponLimit, isIpponShobu: isIpponShobu),
+      time: TimeConfig(
+        matchTimeMinutes: matchTimeMinutes,
+        isRunningTime: isRunningTime,
+      ),
+      encho: EnchoConfig(
+        isEnchoUnlimited: isEnchoUnlimited,
+        enchoTimeMinutes: enchoTimeMinutes,
+        enchoCount: enchoCount,
+      ),
+      scoring: ScoringConfig(
+        ipponLimit: ipponLimit,
+        isIpponShobu: isIpponShobu,
+      ),
       hansoku: HansokuConfig(hansokuLimit: hansokuLimit),
       team: TeamConfig(
-        isKachinuki: isKachinuki, 
-        kachinukiUnlimitedType: kachinukiUnlimitedType, 
-        hasRepresentativeMatch: hasRepresentativeMatch, 
-        isDaihyoIpponShobu: isDaihyoIpponShobu
+        isKachinuki: isKachinuki,
+        kachinukiUnlimitedType: kachinukiUnlimitedType,
+        hasRepresentativeMatch: hasRepresentativeMatch,
+        isDaihyoIpponShobu: isDaihyoIpponShobu,
       ),
       draw: DrawConfig(hasHantei: hasHantei),
     );

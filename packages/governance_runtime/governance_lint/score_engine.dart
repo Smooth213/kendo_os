@@ -7,7 +7,7 @@ import 'dart:io';
 // ============================================================================
 void main(List<String> args) {
   print('📊 [Score Engine] Calculating Governance Risk Score...');
-  
+
   if (args.isEmpty) {
     print('✅ No changes detected. Score: 0');
     exit(0);
@@ -37,7 +37,8 @@ void main(List<String> args) {
   // Step 5-3: Metrics output for CI
   final outputFile = Platform.environment['GITHUB_OUTPUT'];
   if (outputFile != null) {
-    File(outputFile).writeAsStringSync('gov_score=$finalScore\n', mode: FileMode.append);
+    File(outputFile)
+        .writeAsStringSync('gov_score=$finalScore\n', mode: FileMode.append);
   }
 
   if (finalScore >= 85) {

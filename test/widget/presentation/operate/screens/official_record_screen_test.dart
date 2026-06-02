@@ -7,7 +7,8 @@ import 'package:kendo_os/presentation/public/operator/official_record_screen.dar
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart' show customTeamNamesProvider, tournamentProvider;
+import 'package:kendo_os/presentation/operate/screens/home_screen.dart'
+    show customTeamNamesProvider, tournamentProvider;
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/domain/entities/settings_model.dart';
@@ -22,12 +23,16 @@ void main() {
     const testTournamentId = 'test_tournament_1';
     const testGroupId = 'group_1';
 
-    Widget createTestableWidget(List<MatchModel> mockMatches, {String tournamentId = testTournamentId}) {
+    Widget createTestableWidget(
+      List<MatchModel> mockMatches, {
+      String tournamentId = testTournamentId,
+    }) {
       final router = GoRouter(
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => OfficialRecordScreen(tournamentId: tournamentId),
+            builder: (context, state) =>
+                OfficialRecordScreen(tournamentId: tournamentId),
           ),
         ],
       );
@@ -35,13 +40,22 @@ void main() {
       return ProviderScope(
         overrides: [
           matchListProvider.overrideWith((ref) => mockMatches),
-          customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
-          permissionProvider.overrideWith((ref) => const AppPermissions(
-                canCreateMatch: true, canManageTournament: true, isReadOnly: false,
-                canChangeSettings: true, canDeleteData: true,
-              )),
+          customTeamNamesProvider.overrideWith(
+            (ref) => Stream.value(<String>[]),
+          ),
+          permissionProvider.overrideWith(
+            (ref) => const AppPermissions(
+              canCreateMatch: true,
+              canManageTournament: true,
+              isReadOnly: false,
+              canChangeSettings: true,
+              canDeleteData: true,
+            ),
+          ),
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
-          tournamentProvider(tournamentId).overrideWith((ref) => Stream.value(null)),
+          tournamentProvider(
+            tournamentId,
+          ).overrideWith((ref) => Stream.value(null)),
         ],
         child: MaterialApp.router(
           theme: ThemeData(splashFactory: NoSplash.splashFactory),
@@ -50,7 +64,9 @@ void main() {
       );
     }
 
-    testWidgets('1. 代表戦のスコアがチームの合計(勝数/本数)に合算されないこと', (WidgetTester tester) async {
+    testWidgets('1. 代表戦のスコアがチームの合計(勝数/本数)に合算されないこと', (
+      WidgetTester tester,
+    ) async {
       final mockMatches = [
         const MatchModel(
           id: 'm1',
@@ -81,11 +97,21 @@ void main() {
 
       // 大将戦で赤が1勝1本、代表戦で赤が1勝2本だが、
       // サマリー（合計）には本戦の「1勝 1本」だけが反映されるべき
-      expect(find.text('1\n--\n1'), findsOneWidget, reason: '赤チームのサマリーは1勝1本であるべき');
-      expect(find.text('0\n--\n0'), findsOneWidget, reason: '白チームのサマリーは0勝0本であるべき');
+      expect(
+        find.text('1\n--\n1'),
+        findsOneWidget,
+        reason: '赤チームのサマリーは1勝1本であるべき',
+      );
+      expect(
+        find.text('0\n--\n0'),
+        findsOneWidget,
+        reason: '白チームのサマリーは0勝0本であるべき',
+      );
     });
 
-    testWidgets('2. 判定勝ちの場合、「判」という1文字に圧縮されて丸囲み等で描画されること', (WidgetTester tester) async {
+    testWidgets('2. 判定勝ちの場合、「判」という1文字に圧縮されて丸囲み等で描画されること', (
+      WidgetTester tester,
+    ) async {
       final hanteiEvent = ScoreEventLegacyAdapter.fromLegacy(
         id: 'e1',
         type: PointType.hantei,
@@ -113,7 +139,11 @@ void main() {
 
       // KendoRuleEngine を通して「判定」が返ってくるが、UIで「判」に圧縮される
       expect(find.text('判'), findsOneWidget);
-      expect(find.text('判定'), findsNothing, reason: 'レイアウト崩れを防ぐため「判定」とは表示されないこと');
+      expect(
+        find.text('判定'),
+        findsNothing,
+        reason: 'レイアウト崩れを防ぐため「判定」とは表示されないこと',
+      );
     });
 
     testWidgets('3. 欠員の場合、選手名のセルは空欄で表示されるべき', (WidgetTester tester) async {
@@ -133,7 +163,8 @@ void main() {
       await tester.pumpAndSettle();
 
       final tableWidget = tester.widget<Table>(find.byType(Table).first);
-      final whiteNameRow = tableWidget.children[3]; // 0:header, 1:red names, 2:scores, 3:white names
+      final whiteNameRow = tableWidget
+          .children[3]; // 0:header, 1:red names, 2:scores, 3:white names
       final nameCellWidget = whiteNameRow.children[1] as Container;
 
       expect(nameCellWidget.child, isNull);
@@ -171,21 +202,41 @@ void main() {
       final initialTaroFinder = find.text('太');
       expect(initialTaroFinder, findsOneWidget);
 
-      final rowTaroFinder = find.ancestor(of: initialTaroFinder, matching: find.byType(Row));
-      expect(find.descendant(of: rowTaroFinder, matching: find.text('山')), findsOneWidget);
-      expect(find.descendant(of: rowTaroFinder, matching: find.text('田')), findsOneWidget);
+      final rowTaroFinder = find.ancestor(
+        of: initialTaroFinder,
+        matching: find.byType(Row),
+      );
+      expect(
+        find.descendant(of: rowTaroFinder, matching: find.text('山')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: rowTaroFinder, matching: find.text('田')),
+        findsOneWidget,
+      );
 
       final initialHanakoFinder = find.text('花');
       expect(initialHanakoFinder, findsOneWidget);
-      final rowHanakoFinder = find.ancestor(of: initialHanakoFinder, matching: find.byType(Row));
-      expect(find.descendant(of: rowHanakoFinder, matching: find.text('山')), findsOneWidget);
-      expect(find.descendant(of: rowHanakoFinder, matching: find.text('田')), findsOneWidget);
+      final rowHanakoFinder = find.ancestor(
+        of: initialHanakoFinder,
+        matching: find.byType(Row),
+      );
+      expect(
+        find.descendant(of: rowHanakoFinder, matching: find.text('山')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: rowHanakoFinder, matching: find.text('田')),
+        findsOneWidget,
+      );
 
       expect(find.text('一'), findsNothing);
       expect(find.text('二'), findsNothing);
     });
 
-    testWidgets('5. PDF出力ボタンをタップした際、ローディングが表示され最終的に閉じられること', (WidgetTester tester) async {
+    testWidgets('5. PDF出力ボタンをタップした際、ローディングが表示され最終的に閉じられること', (
+      WidgetTester tester,
+    ) async {
       final matches = [
         const MatchModel(
           id: 'm1',
@@ -219,7 +270,9 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('6. 試合が order プロパティの昇順にソートされて表示されること', (WidgetTester tester) async {
+    testWidgets('6. 試合が order プロパティの昇順にソートされて表示されること', (
+      WidgetTester tester,
+    ) async {
       // order が逆順になっているモックデータを作成
       final mockMatches = [
         const MatchModel(
@@ -247,9 +300,17 @@ void main() {
 
       final tableWidget = tester.widget<Table>(find.byType(Table).first);
       final headerRow = tableWidget.children[0];
-      
-      final firstMatchText = (((headerRow.children[1] as Container).child as Center).child as Padding).child as Text;
-      final secondMatchText = (((headerRow.children[2] as Container).child as Center).child as Padding).child as Text;
+
+      final firstMatchText =
+          (((headerRow.children[1] as Container).child as Center).child
+                      as Padding)
+                  .child
+              as Text;
+      final secondMatchText =
+          (((headerRow.children[2] as Container).child as Center).child
+                      as Padding)
+                  .child
+              as Text;
 
       expect(firstMatchText.data, '先鋒');
       expect(secondMatchText.data, '大将');

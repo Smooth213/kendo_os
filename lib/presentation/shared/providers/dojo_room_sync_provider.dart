@@ -21,13 +21,22 @@ Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
       result[key] = _sanitizeFirestoreData(Map<String, dynamic>.from(value));
     } else if (value is List) {
       result[key] = value.map((e) {
-        if (e is Map) return _sanitizeFirestoreData(Map<String, dynamic>.from(e));
+        if (e is Map) {
+          return _sanitizeFirestoreData(Map<String, dynamic>.from(e));
+        }
         if (e is Timestamp) return e.toDate().toIso8601String();
         return e;
       }).toList();
-    } else if ((key == 'order' || key == 'matchTimeMinutes' || key == 'extensionTimeMinutes' || key == 'enchoTimeMinutes') && value is num) {
+    } else if ((key == 'order' ||
+            key == 'matchTimeMinutes' ||
+            key == 'extensionTimeMinutes' ||
+            key == 'enchoTimeMinutes') &&
+        value is num) {
       result[key] = value.toDouble();
-    } else if ((key == 'redScore' || key == 'whiteScore' || key == 'matchOrder') && value is num) {
+    } else if ((key == 'redScore' ||
+            key == 'whiteScore' ||
+            key == 'matchOrder') &&
+        value is num) {
       result[key] = value.toInt();
     } else {
       result[key] = value;
@@ -64,9 +73,11 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
       if (lastDojoId != null && lastDojoId.isNotEmpty && lastDojoId != dojoId) {
         // ★ 処理が重複しないよう、検知した瞬間にとりあえず新しいIDを保存しておく
         await prefs.setString('global_last_dojo_id_v4', dojoId);
-        
-        debugPrint('🔄 [DojoRoomSync] テナント切り替え検知: $lastDojoId -> $dojoId. 古いローカルデータを完全パージします。');
-        
+
+        debugPrint(
+          '🔄 [DojoRoomSync] テナント切り替え検知: $lastDojoId -> $dojoId. 古いローカルデータを完全パージします。',
+        );
+
         if (!kIsWeb) {
           try {
             final isar = Isar.getInstance();
@@ -76,9 +87,11 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
               });
               debugPrint('🧹 [DojoRoomSync] Isarローカルデータベースを完全ワイプしました');
             } else {
-              debugPrint('⚠️ [DojoRoomSync] Isar.getInstance() が null です。セーフティネットとして手動削除を実行します');
+              debugPrint(
+                '⚠️ [DojoRoomSync] Isar.getInstance() が null です。セーフティネットとして手動削除を実行します',
+              );
             }
-            
+
             // ★ セーフティネット: メモリ上の試合を1件ずつ消去
             try {
               final localRepo = ref.read(localMatchRepositoryProvider);
@@ -93,7 +106,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
             debugPrint('🔥 [DojoRoomSync] Isarのワイプに失敗しました: $e');
           }
         }
-        
+
         // メモリ上に残存している古い道場の状態（リスト、キャッシュ等）を完全に吹き飛ばす
         try {
           ref.invalidate(matchListProvider);
@@ -104,7 +117,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
           debugPrint('⚠️ [DojoRoomSync] Invalidateエラー: $e');
         }
       }
-      
+
       // 既に更新済みなのでここでは何もしない
       if (lastDojoId == null || lastDojoId.isEmpty) {
         await prefs.setString('global_last_dojo_id_v4', dojoId);
@@ -124,43 +137,61 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
           .doc(dojoId)
           .collection('matches')
           .snapshots()
-          .listen((snapshot) {
-        
-        debugPrint('📡 [DojoRoomSync] データを検知: ${snapshot.docChanges.length}件の変更を受信');
-        for (final change in snapshot.docChanges) {
-          if (change.type == DocumentChangeType.added || change.type == DocumentChangeType.modified) {
-            final data = change.doc.data();
-            if (data == null) continue;
+          .listen(
+            (snapshot) {
+              debugPrint(
+                '📡 [DojoRoomSync] データを検知: ${snapshot.docChanges.length}件の変更を受信',
+              );
+              for (final change in snapshot.docChanges) {
+                if (change.type == DocumentChangeType.added ||
+                    change.type == DocumentChangeType.modified) {
+                  final data = change.doc.data();
+                  if (data == null) continue;
 
-            try {
-              final convertedData = _sanitizeFirestoreData(data);
-              final match = MatchModel.fromJson(convertedData);
-              final engine = KendoRuleEngine();
-              final analysis = engine.analyzeHistory(match.events, match, match.rule);
-              final cloudProj = MatchProjectionMapper.toProjection(match, analysis);
-              
-              store.updateProjectionDirectly(cloudProj);
+                  try {
+                    final convertedData = _sanitizeFirestoreData(data);
+                    final match = MatchModel.fromJson(convertedData);
+                    final engine = KendoRuleEngine();
+                    final analysis = engine.analyzeHistory(
+                      match.events,
+                      match,
+                      match.rule,
+                    );
+                    final cloudProj = MatchProjectionMapper.toProjection(
+                      match,
+                      analysis,
+                    );
 
-              if (!kIsWeb) {
-                ref.read(localMatchRepositoryProvider).saveMatch(match);
-                debugPrint('✅ [DojoRoomSync] Isarへ試合データを保存完了: ID=${match.id}');
+                    store.updateProjectionDirectly(cloudProj);
+
+                    if (!kIsWeb) {
+                      ref.read(localMatchRepositoryProvider).saveMatch(match);
+                      debugPrint(
+                        '✅ [DojoRoomSync] Isarへ試合データを保存完了: ID=${match.id}',
+                      );
+                    }
+                  } catch (e) {
+                    debugPrint('⚠️ [DojoRoomSync] データ変換/保存エラー: $e');
+                  }
+                } else if (change.type == DocumentChangeType.removed) {
+                  // ★ 追加: クラウド側で削除された試合があればローカルからも消去し、古いデータが残らないようにする
+                  final data = change.doc.data();
+                  if (data != null && !kIsWeb) {
+                    final deletedId = change.doc.id;
+                    ref
+                        .read(localMatchRepositoryProvider)
+                        .deleteMatch(deletedId);
+                    debugPrint(
+                      '🧹 [DojoRoomSync] クラウドでの削除を検知しローカルから消去: ID=$deletedId',
+                    );
+                  }
+                }
               }
-            } catch (e) {
-              debugPrint('⚠️ [DojoRoomSync] データ変換/保存エラー: $e');
-            }
-          } else if (change.type == DocumentChangeType.removed) {
-            // ★ 追加: クラウド側で削除された試合があればローカルからも消去し、古いデータが残らないようにする
-            final data = change.doc.data();
-            if (data != null && !kIsWeb) {
-              final deletedId = change.doc.id;
-              ref.read(localMatchRepositoryProvider).deleteMatch(deletedId);
-              debugPrint('🧹 [DojoRoomSync] クラウドでの削除を検知しローカルから消去: ID=$deletedId');
-            }
-          }
-        }
-      }, onError: (error) {
-        debugPrint('🔥 [DojoRoomSync] 致命的な通信エラー: $error');
-      });
+            },
+            onError: (error) {
+              debugPrint('🔥 [DojoRoomSync] 致命的な通信エラー: $error');
+            },
+          );
     } catch (e) {
       debugPrint('⚠️ [DojoRoomSync] Firestoreへの接続をスキップしました: $e');
     }

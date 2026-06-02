@@ -5,10 +5,7 @@ class PointMark {
   final String mark;
   final bool isFirst;
 
-  const PointMark({
-    required this.mark,
-    this.isFirst = false,
-  });
+  const PointMark({required this.mark, this.isFirst = false});
 }
 
 /// 技マーク（メ、コ、ド、ツ、反、判定、◯など）を描画するバッジWidget
@@ -27,7 +24,7 @@ class PointMarkBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String displayMark = point.mark == '判定' ? '判' : point.mark;
-    
+
     // 1本目（先取）かつ、フセン勝ち（◯）や反則（反）でない場合は丸で囲む
     if (point.isFirst && displayMark != '◯' && displayMark != '反') {
       return Container(
@@ -53,7 +50,7 @@ class PointMarkBadge extends StatelessWidget {
         ),
       );
     }
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Text(
@@ -86,8 +83,8 @@ class PointBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isRed 
-        ? (isDark ? Colors.red.shade400 : Colors.red.shade700) 
+    final color = isRed
+        ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
         : (isDark ? Colors.blue.shade400 : Colors.blue.shade700);
 
     return SizedBox(
@@ -112,13 +109,21 @@ class PointBox extends StatelessWidget {
             Positioned(
               top: 4,
               left: 6,
-              child: PointMarkBadge(point: points[0], color: color, isDark: isDark),
+              child: PointMarkBadge(
+                point: points[0],
+                color: color,
+                isDark: isDark,
+              ),
             ),
           if (points.length > 1)
             Positioned(
               bottom: 4,
               right: 6,
-              child: PointMarkBadge(point: points[1], color: color, isDark: isDark),
+              child: PointMarkBadge(
+                point: points[1],
+                color: color,
+                isDark: isDark,
+              ),
             ),
         ],
       ),

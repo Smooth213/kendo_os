@@ -10,30 +10,30 @@ abstract class SettingsModel with _$SettingsModel {
     @Default('default_org') String organizationId,
     // 【操作・安全設定】
     // ★ アプリの初期状態を「大会・錬成会」プリセットに完全統一
-    @Default('double') String confirmBehavior, 
-    @Default(false) bool isLocked,            
+    @Default('double') String confirmBehavior,
+    @Default(false) bool isLocked,
     @Default(false) bool showConfirmDialog, // ★ 変更：初期値をOFF（ダイアログなし）に統一
-    
     // 【フィードバック】
-    @Default(true) bool haptic,              
-    @Default(true) bool strikeVib,           
+    @Default(true) bool haptic,
+    @Default(true) bool strikeVib,
     // ★ Phase 6-3: 音声フィードバックを3択に変更 ('off', 'effect', 'voice')
-    @Default('off') String audioFeedbackMode, 
+    @Default('off') String audioFeedbackMode,
     @Default(true) bool ignoreMannerMode, // ★ 追加：マナーモード時も強制的に音を鳴らす（初期値ON）
-    
     // 【システム・表示】
-    @Default(true) bool sleepPrevent,        // スリープ(画面消灯)防止
-    @Default(false) bool leftHanded,         // 左利きモード（赤白反転）
-    @Default('system') String themeMode,     // ★ ダークモード対応 ('system', 'light', 'dark')
-    @Default(true) bool enableLiquidGlass,   // ★ iOS風すりガラス効果 (Liquid Glass) のON/OFF
-    
+    @Default(true) bool sleepPrevent, // スリープ(画面消灯)防止
+    @Default(false) bool leftHanded, // 左利きモード（赤白反転）
+    @Default('system')
+    String themeMode, // ★ ダークモード対応 ('system', 'light', 'dark')
+    @Default(true)
+    bool enableLiquidGlass, // ★ iOS風すりガラス効果 (Liquid Glass) のON/OFF
     // 【実験・内部機能 (Feature Flag)】 (Phase 0: 一般ユーザーから隠蔽するため)
     @Default(false) bool experimentalFeatures,
-    
+
     // 【セキュリティ・権限】 (Phase 8)
     @Default(1) int securityLevel, // ★ Phase 8: 1(自由), 2(標準), 3(厳格)
-    String? adminPasscode,        // ★ Phase 8: 英数8文字パスコード
+    String? adminPasscode, // ★ Phase 8: 英数8文字パスコード
   }) = _SettingsModel;
 
-  factory SettingsModel.fromJson(Map<String, dynamic> json) => _$SettingsModelFromJson(json);
+  factory SettingsModel.fromJson(Map<String, dynamic> json) =>
+      _$SettingsModelFromJson(json);
 }

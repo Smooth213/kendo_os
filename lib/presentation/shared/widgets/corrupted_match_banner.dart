@@ -14,7 +14,11 @@ class CorruptedMatchBanner extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+          const Icon(
+            Icons.error_outline_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
           const SizedBox(width: 12),
           // ★ Phase 7-1: ユーザー向け簡略文への縮退
           // 一般ユーザーや保護者の不安を完全に払拭するため、「破損」「Replay自動復旧」といったデバッグ文言や
@@ -22,7 +26,11 @@ class CorruptedMatchBanner extends ConsumerWidget {
           const Expanded(
             child: Text(
               'データに問題が発生しました',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
           ),
         ],

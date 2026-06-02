@@ -34,9 +34,15 @@ void main() {
 
       // 1. カオスな状況の準備：100件の未送信データ（isDirty / pendingEventsあり）を生成
       for (int i = 0; i < 100; i++) {
-        final m = TestMatchFactory.createIndividualMatch(id: 'load-match-$i').copyWith(
-          pendingEvents: [TestMatchFactory.createEvent(side: Side.red, type: PointType.men)],
-        );
+        final m = TestMatchFactory.createIndividualMatch(id: 'load-match-$i')
+            .copyWith(
+              pendingEvents: [
+                TestMatchFactory.createEvent(
+                  side: Side.red,
+                  type: PointType.men,
+                ),
+              ],
+            );
         fakeDb[m.id] = m;
       }
 
@@ -52,11 +58,13 @@ void main() {
         }
       });
 
-      when(() => mockNetwork.sendData(any(), any())).thenAnswer((_) async => {});
+      when(
+        () => mockNetwork.sendData(any(), any()),
+      ).thenAnswer((_) async => {});
 
       // 2. 同期ループの実行とパフォーマンス計測
       final stopwatch = Stopwatch()..start();
-      
+
       final pendingMatches = await localRepo.getPendingMatches();
       expect(pendingMatches.length, 100, reason: '100件の未送信データが正しく認識されていること');
 
@@ -74,9 +82,13 @@ void main() {
       final finalPending = await localRepo.getPendingMatches();
       expect(finalPending.length, 0, reason: '100件すべてが正しく送信完了し、未送信が0になること');
       verify(() => mockNetwork.sendData(any(), any())).called(100);
-      
+
       // 負荷要件: 100件のモック同期ループ（Json変換等を含む）が1秒(1000ms)以内に完了すること
-      expect(stopwatch.elapsedMilliseconds, lessThan(1000), reason: '大量の同期ループ処理に致命的なボトルネックがないこと');
+      expect(
+        stopwatch.elapsedMilliseconds,
+        lessThan(1000),
+        reason: '大量の同期ループ処理に致命的なボトルネックがないこと',
+      );
     });
   });
 }

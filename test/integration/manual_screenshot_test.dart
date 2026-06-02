@@ -29,7 +29,7 @@ void main() {
 
       // Screenshot 撮影処理 (Android/iOS対応)
       // await binding.takeScreenshot('docs/manuals/images/match_screen_01_initial_timer.png');
-      
+
       expect(true, isTrue); // ダミーアサーション。UIの実装に合わせて後で拡張します。
     });
   });

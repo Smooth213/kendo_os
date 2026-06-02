@@ -16,12 +16,20 @@ class CommentRepository {
         .collection('comments')
         .where('tournamentId', isEqualTo: tournamentId)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => MatchCommentModel.fromJson(doc.data()..['id'] = doc.id))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map(
+                (doc) =>
+                    MatchCommentModel.fromJson(doc.data()..['id'] = doc.id),
+              )
+              .toList(),
+        );
   }
 
   Future<void> saveComment(MatchCommentModel comment) async {
-    await _firestore.collection('comments').doc(comment.id).set(comment.toJson()..remove('id'));
+    await _firestore
+        .collection('comments')
+        .doc(comment.id)
+        .set(comment.toJson()..remove('id'));
   }
 }

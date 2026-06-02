@@ -13,7 +13,8 @@ abstract class TimeConfig with _$TimeConfig {
     @Default(3.0) double matchTimeMinutes,
     @Default(false) bool isRunningTime,
   }) = _TimeConfig;
-  factory TimeConfig.fromJson(Map<String, dynamic> json) => _$TimeConfigFromJson(json);
+  factory TimeConfig.fromJson(Map<String, dynamic> json) =>
+      _$TimeConfigFromJson(json);
 }
 
 @freezed
@@ -23,7 +24,8 @@ abstract class EnchoConfig with _$EnchoConfig {
     @Default(3.0) double enchoTimeMinutes,
     @Default(1) int enchoCount,
   }) = _EnchoConfig;
-  factory EnchoConfig.fromJson(Map<String, dynamic> json) => _$EnchoConfigFromJson(json);
+  factory EnchoConfig.fromJson(Map<String, dynamic> json) =>
+      _$EnchoConfigFromJson(json);
 }
 
 @freezed
@@ -32,15 +34,15 @@ abstract class ScoringConfig with _$ScoringConfig {
     @Default(2) int ipponLimit,
     @Default(false) bool isIpponShobu,
   }) = _ScoringConfig;
-  factory ScoringConfig.fromJson(Map<String, dynamic> json) => _$ScoringConfigFromJson(json);
+  factory ScoringConfig.fromJson(Map<String, dynamic> json) =>
+      _$ScoringConfigFromJson(json);
 }
 
 @freezed
 abstract class HansokuConfig with _$HansokuConfig {
-  const factory HansokuConfig({
-    @Default(2) int hansokuLimit,
-  }) = _HansokuConfig;
-  factory HansokuConfig.fromJson(Map<String, dynamic> json) => _$HansokuConfigFromJson(json);
+  const factory HansokuConfig({@Default(2) int hansokuLimit}) = _HansokuConfig;
+  factory HansokuConfig.fromJson(Map<String, dynamic> json) =>
+      _$HansokuConfigFromJson(json);
 }
 
 @freezed
@@ -51,15 +53,15 @@ abstract class TeamConfig with _$TeamConfig {
     @Default(true) bool hasRepresentativeMatch,
     @Default(true) bool isDaihyoIpponShobu,
   }) = _TeamConfig;
-  factory TeamConfig.fromJson(Map<String, dynamic> json) => _$TeamConfigFromJson(json);
+  factory TeamConfig.fromJson(Map<String, dynamic> json) =>
+      _$TeamConfigFromJson(json);
 }
 
 @freezed
 abstract class DrawConfig with _$DrawConfig {
-  const factory DrawConfig({
-    @Default(false) bool hasHantei,
-  }) = _DrawConfig;
-  factory DrawConfig.fromJson(Map<String, dynamic> json) => _$DrawConfigFromJson(json);
+  const factory DrawConfig({@Default(false) bool hasHantei}) = _DrawConfig;
+  factory DrawConfig.fromJson(Map<String, dynamic> json) =>
+      _$DrawConfigFromJson(json);
 }
 
 /// 大会ルールの総本山 (Root Config)
@@ -74,5 +76,6 @@ abstract class TournamentRuleConfig with _$TournamentRuleConfig {
     @Default(TeamConfig()) TeamConfig team,
     @Default(DrawConfig()) DrawConfig draw,
   }) = _TournamentRuleConfig;
-  factory TournamentRuleConfig.fromJson(Map<String, dynamic> json) => _$TournamentRuleConfigFromJson(json);
+  factory TournamentRuleConfig.fromJson(Map<String, dynamic> json) =>
+      _$TournamentRuleConfigFromJson(json);
 }

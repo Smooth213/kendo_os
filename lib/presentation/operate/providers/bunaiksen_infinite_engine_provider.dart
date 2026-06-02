@@ -3,13 +3,18 @@ import 'package:uuid/uuid.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'bunaiksen_provider.dart';
 
-final bunaiksenInfiniteEngineProvider = Provider((ref) => BunaiksenInfiniteEngine(ref));
+final bunaiksenInfiniteEngineProvider = Provider(
+  (ref) => BunaiksenInfiniteEngine(ref),
+);
 
 class BunaiksenInfiniteEngine {
   final Ref ref;
   BunaiksenInfiniteEngine(this.ref);
 
-  Future<MatchModel?> processMatchResult(MatchModel finishedMatch, String winnerColor) async {
+  Future<MatchModel?> processMatchResult(
+    MatchModel finishedMatch,
+    String winnerColor,
+  ) async {
     final queueNotifier = ref.read(bunaiksenInfiniteQueueProvider.notifier);
     final streakNotifier = ref.read(bunaiksenInfiniteStreakProvider.notifier);
 
@@ -50,7 +55,7 @@ class BunaiksenInfiniteEngine {
       redScore: 0,
       whiteScore: 0,
       status: 'waiting',
-      order: DateTime.now().millisecondsSinceEpoch.toDouble(), 
+      order: DateTime.now().millisecondsSinceEpoch.toDouble(),
     );
   }
 }

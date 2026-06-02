@@ -94,10 +94,10 @@ class _SetupMatchFormatScreenState extends ConsumerState<SetupMatchFormatScreen>
   final List<String> _majorCategories = ['初心者', '幼年', '小学生', '中学生', '高校生', '大学・一般'];
 
   List<String> _getMinorCategories(String major) {
-    if (major == '初心者' || major == '幼年') return ['全体', '男子', '女子'];
-    if (major == '小学生') return ['全体', '低学年', '高学年', '1年', '2年', '3年', '4年', '5年', '6年', '男子', '女子'];
-    if (major == '中学生' || major == '高校生') return ['全体', '1年', '2年', '3年', '男子', '女子'];
-    if (major == '大学・一般') return ['全体', '大学生', '一般', 'シニア', '男子', '女子'];
+    if (major == '初心者' || major == '幼年') { return ['全体', '男子', '女子']; }
+    if (major == '小学生') { return ['全体', '低学年', '高学年', '1年', '2年', '3年', '4年', '5年', '6年', '男子', '女子']; }
+    if (major == '中学生' || major == '高校生') { return ['全体', '1年', '2年', '3年', '男子', '女子']; }
+    if (major == '大学・一般') { return ['全体', '大学生', '一般', 'シニア', '男子', '女子']; }
     return ['全体'];
   }
 

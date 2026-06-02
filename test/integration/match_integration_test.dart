@@ -16,12 +16,18 @@ class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(const MatchModel(id: 'dummy', matchType: '', redName: '', whiteName: ''));
+    registerFallbackValue(
+      const MatchModel(id: 'dummy', matchType: '', redName: '', whiteName: ''),
+    );
   });
 
   late RebuildMatchFromEventsUseCase rebuildUseCase;
-  final testUser = const User(id: 'test_user', role: Role.admin, organizationId: 'test_org'); // ★ 追加
-  
+  final testUser = const User(
+    id: 'test_user',
+    role: Role.admin,
+    organizationId: 'test_org',
+  ); // ★ 追加
+
   setUp(() {
     final container = ProviderContainer();
     rebuildUseCase = container.read(rebuildMatchFromEventsUseCaseProvider);
@@ -36,7 +42,7 @@ void main() {
     late MatchModel dummyMatch;
 
     setUp(() {
-      dummyMatch = MatchModel( 
+      dummyMatch = MatchModel(
         id: 'test',
         tournamentId: 't1',
         matchOrder: 1,
@@ -51,9 +57,7 @@ void main() {
       when(() => mockRepo.saveMatch(any())).thenAnswer((_) async {});
 
       container = ProviderContainer(
-        overrides: [
-          localMatchRepositoryProvider.overrideWithValue(mockRepo),
-        ],
+        overrides: [localMatchRepositoryProvider.overrideWithValue(mockRepo)],
       );
 
       addScoreUseCase = container.read(addScoreUseCaseProvider);
@@ -69,10 +73,20 @@ void main() {
       final rule = MatchRule();
       var match = dummyMatch;
 
-      match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        men(Side.red),
+        rule,
+      ); // ★ 変更
       expect(match.redScore, 1);
 
-      match = addScoreUseCase.execute(testUser, match, kote(Side.red), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        kote(Side.red),
+        rule,
+      ); // ★ 変更
       expect(match.redScore, 2);
       expect(match.status, 'finished');
     });
@@ -81,17 +95,37 @@ void main() {
       final rule = MatchRule();
       var match = dummyMatch;
 
-      match = addScoreUseCase.execute(testUser, match, hansoku(Side.white), rule); // ★ 変更
-      expect(match.redScore, 0); 
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        hansoku(Side.white),
+        rule,
+      ); // ★ 変更
+      expect(match.redScore, 0);
 
-      match = addScoreUseCase.execute(testUser, match, hansoku(Side.white), rule); // ★ 変更
-      expect(match.redScore, 1); 
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        hansoku(Side.white),
+        rule,
+      ); // ★ 変更
+      expect(match.redScore, 1);
 
-      match = addScoreUseCase.execute(testUser, match, hansoku(Side.white), rule); // ★ 変更
-      expect(match.redScore, 1); 
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        hansoku(Side.white),
+        rule,
+      ); // ★ 変更
+      expect(match.redScore, 1);
 
-      match = addScoreUseCase.execute(testUser, match, hansoku(Side.white), rule); // ★ 変更
-      expect(match.redScore, 2); 
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        hansoku(Side.white),
+        rule,
+      ); // ★ 変更
+      expect(match.redScore, 2);
       expect(match.status, 'finished');
     });
 
@@ -99,17 +133,36 @@ void main() {
       final rule = MatchRule();
       var match = dummyMatch;
 
-      match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        men(Side.red),
+        rule,
+      ); // ★ 変更
       expect(match.redScore, 1);
 
       match = undoScoreUseCase.execute(testUser, match, rule);
       expect(match.redScore, 0);
-      expect(match.events.last.isUndo, isTrue, reason: '仕様変更: isCanceledではなくisUndoが追記される');
+      expect(
+        match.events.last.isUndo,
+        isTrue,
+        reason: '仕様変更: isCanceledではなくisUndoが追記される',
+      );
 
-      match = addScoreUseCase.execute(testUser, match, men(Side.white), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        men(Side.white),
+        rule,
+      ); // ★ 変更
       expect(match.whiteScore, 1);
 
-      match = addScoreUseCase.execute(testUser, match, men(Side.white), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        men(Side.white),
+        rule,
+      ); // ★ 変更
       expect(match.whiteScore, 2);
       expect(match.status, 'finished');
     });
@@ -125,7 +178,12 @@ void main() {
         timestamp: SystemTimeSource().now(),
       );
 
-      match = addScoreUseCase.execute(testUser, match, fusenEvent, rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        fusenEvent,
+        rule,
+      ); // ★ 変更
       expect(match.redScore, 2);
       expect(match.status, 'finished');
     });
@@ -134,17 +192,32 @@ void main() {
       final rule = MatchRule(isEnchoUnlimited: true);
       var match = dummyMatch.copyWith(events: <ScoreEvent>[]);
 
-      match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
-      match = addScoreUseCase.execute(testUser, match, kote(Side.white), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        men(Side.red),
+        rule,
+      ); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        kote(Side.white),
+        rule,
+      ); // ★ 変更
       expect(match.redScore, 1);
       expect(match.whiteScore, 1);
 
       match = timeUpUseCase.execute(testUser, match, true, rule); // ★ 変更
       expect(match.matchType, '延長戦');
-      expect(match.status, 'in_progress'); 
+      expect(match.status, 'in_progress');
 
-      match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
-      
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        men(Side.red),
+        rule,
+      ); // ★ 変更
+
       expect(match.redScore, 2);
       expect(match.status, 'finished');
     });
@@ -153,8 +226,8 @@ void main() {
       var match = dummyMatch.copyWith(
         matchType: '勝ち抜き戦',
         isKachinuki: true,
-        redRemaining: <String>[], 
-        whiteRemaining: <String>[], 
+        redRemaining: <String>[],
+        whiteRemaining: <String>[],
       );
       final rule = MatchRule(kachinukiUnlimitedType: '大将引き分け延長なし');
 
@@ -165,18 +238,39 @@ void main() {
 
     test('PHASE 8: 勝敗確定後にUndoして技を入れても、残り時間が0秒にリセットされず維持されること', () {
       final rule = const MatchRule();
-      var match = dummyMatch.copyWith(events: <ScoreEvent>[]).updateRemainingSeconds(45, SystemTimeSource().now());
+      var match = dummyMatch
+          .copyWith(events: <ScoreEvent>[])
+          .updateRemainingSeconds(45, SystemTimeSource().now());
 
-      match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
-      match = addScoreUseCase.execute(testUser, match, kote(Side.red), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        men(Side.red),
+        rule,
+      ); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        kote(Side.red),
+        rule,
+      ); // ★ 変更
       expect(match.status, 'finished');
-      expect(match.calculateRemainingSeconds(SystemTimeSource().now()), 45, reason: '残り時間は0にリセットされないべき');
+      expect(
+        match.calculateRemainingSeconds(SystemTimeSource().now()),
+        45,
+        reason: '残り時間は0にリセットされないべき',
+      );
 
       match = undoScoreUseCase.execute(testUser, match, rule); // ★ 変更
       expect(match.status, 'in_progress');
       expect(match.calculateRemainingSeconds(SystemTimeSource().now()), 45);
 
-      match = addScoreUseCase.execute(testUser, match, dou(Side.white), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        dou(Side.white),
+        rule,
+      ); // ★ 変更
       expect(match.status, 'in_progress', reason: '時間切れではないため進行中であるべき');
       expect(match.calculateRemainingSeconds(SystemTimeSource().now()), 45);
     });
@@ -192,8 +286,16 @@ void main() {
       engine = KendoRuleEngine();
       final permission = PermissionService(); // ★ 関所を追加
       final timeSource = SystemTimeSource();
-      addScoreUseCase = AddScoreUseCase(engine, permission, timeSource); // ★ 引数追加
-      undoScoreUseCase = UndoScoreUseCase(engine, permission, timeSource); // ★ 引数追加
+      addScoreUseCase = AddScoreUseCase(
+        engine,
+        permission,
+        timeSource,
+      ); // ★ 引数追加
+      undoScoreUseCase = UndoScoreUseCase(
+        engine,
+        permission,
+        timeSource,
+      ); // ★ 引数追加
       dummyMatch = const MatchModel(
         id: 'test_regression',
         tournamentId: 't1',
@@ -209,32 +311,59 @@ void main() {
       final rule = MatchRule();
       var match = dummyMatch.copyWith(events: <ScoreEvent>[]);
 
-      match = addScoreUseCase.execute(testUser, match, men(Side.red), rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        men(Side.red),
+        rule,
+      ); // ★ 変更
       expect(match.redScore, 1);
       expect(match.status, 'in_progress');
 
       final finishMarker = ScoreEventLegacyAdapter.fromLegacy(
-        id: 'marker-1', type: PointType.hantei, side: Side.none, timestamp: SystemTimeSource().now(),
+        id: 'marker-1',
+        type: PointType.hantei,
+        side: Side.none,
+        timestamp: SystemTimeSource().now(),
       );
-      match = addScoreUseCase.execute(testUser, match, finishMarker, rule); // ★ 変更
-      match = match.copyWith(status: 'finished'); 
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        finishMarker,
+        rule,
+      ); // ★ 変更
+      match = match.copyWith(status: 'finished');
 
       match = undoScoreUseCase.execute(testUser, match, rule);
-      
+
       expect(match.status, 'in_progress', reason: '終了マーカーが取り消され、進行中に戻るべき');
       expect(match.redScore, 1, reason: '直前のメンは計算上維持されるべき');
-      expect(match.events.last.isUndo, isTrue, reason: '最新のイベントとしてUndoが追記されているべき');
+      expect(
+        match.events.last.isUndo,
+        isTrue,
+        reason: '最新のイベントとしてUndoが追記されているべき',
+      );
     });
 
     test('終了ステータスからでも判定(hantei)を入力でき、スコアに反映されて終了状態を維持すること', () {
       final rule = MatchRule(hasHantei: true);
-      var match = dummyMatch.copyWith(events: <ScoreEvent>[], status: 'finished').updateRemainingSeconds(0, SystemTimeSource().now()); 
+      var match = dummyMatch
+          .copyWith(events: <ScoreEvent>[], status: 'finished')
+          .updateRemainingSeconds(0, SystemTimeSource().now());
 
       final hanteiEvent = ScoreEventLegacyAdapter.fromLegacy(
-        id: 'hantei-1', type: PointType.hantei, side: Side.white, timestamp: SystemTimeSource().now(),
+        id: 'hantei-1',
+        type: PointType.hantei,
+        side: Side.white,
+        timestamp: SystemTimeSource().now(),
       );
 
-      match = addScoreUseCase.execute(testUser, match, hanteiEvent, rule); // ★ 変更
+      match = addScoreUseCase.execute(
+        testUser,
+        match,
+        hanteiEvent,
+        rule,
+      ); // ★ 変更
 
       expect(match.whiteScore, 1, reason: '判定によって白に1ポイント入るべき');
       expect(match.status, 'finished', reason: '判定決着後は終了ステータスになるべき');
@@ -242,49 +371,60 @@ void main() {
   });
 
   test('PHASE 5: バグ修正の回帰テスト - 判定や引き分けで終了した試合が、再構築されても進行中に巻き戻らないこと', () {
-      final rule = MatchRule( 
-        matchTimeMinutes: 3,
-        positions: ['個人戦'],
-        isDaihyoIpponShobu: false,
-        hasRepresentativeMatch: false,
-        isEnchoUnlimited: false,
-        enchoTimeMinutes: 0,
-        enchoCount: 0,
-        hasHantei: true, 
-        isLeague: false,
-        isKachinuki: false,
-        renseikaiType: '',
-        overallTimeMinutes: 0,
-        isRunningTime: false,
-      );
-      
-      var match = MatchModel(
-        id: 'bug-fix-test-1',
-        matchType: '個人戦',
-        redName: '赤',
-        whiteName: '白',
-        status: 'in_progress',
-        order: 1,
-        matchTimeMinutes: 3,
-        rule: rule,
-      );
+    final rule = MatchRule(
+      matchTimeMinutes: 3,
+      positions: ['個人戦'],
+      isDaihyoIpponShobu: false,
+      hasRepresentativeMatch: false,
+      isEnchoUnlimited: false,
+      enchoTimeMinutes: 0,
+      enchoCount: 0,
+      hasHantei: true,
+      isLeague: false,
+      isKachinuki: false,
+      renseikaiType: '',
+      overallTimeMinutes: 0,
+      isRunningTime: false,
+    );
 
-      final hanteiEvent = ScoreEventLegacyAdapter.fromLegacy(
-        id: 'hantei-1',
-        type: PointType.hantei,
-        side: Side.red,
-        timestamp: SystemTimeSource().now(),
-      );
+    var match = MatchModel(
+      id: 'bug-fix-test-1',
+      matchType: '個人戦',
+      redName: '赤',
+      whiteName: '白',
+      status: 'in_progress',
+      order: 1,
+      matchTimeMinutes: 3,
+      rule: rule,
+    );
 
-      match = match.copyWith(
-        status: 'finished', 
-        hasExtension: false,
-        events: [hanteiEvent],
-      );
+    final hanteiEvent = ScoreEventLegacyAdapter.fromLegacy(
+      id: 'hantei-1',
+      type: PointType.hantei,
+      side: Side.red,
+      timestamp: SystemTimeSource().now(),
+    );
 
-      final rebuiltMatch = rebuildUseCase.execute(match, rule); // ★ 再構築は読み取りなのでUser不要のまま
+    match = match.copyWith(
+      status: 'finished',
+      hasExtension: false,
+      events: [hanteiEvent],
+    );
 
-      expect(rebuiltMatch.status, 'finished', reason: '判定イベントがある場合、再構築してもfinishedを維持すべき');
-      expect(rebuiltMatch.redScore, greaterThan(rebuiltMatch.whiteScore), reason: '赤の判定勝ちは、赤のスコア優位として計算されるべき');
-    });
+    final rebuiltMatch = rebuildUseCase.execute(
+      match,
+      rule,
+    ); // ★ 再構築は読み取りなのでUser不要のまま
+
+    expect(
+      rebuiltMatch.status,
+      'finished',
+      reason: '判定イベントがある場合、再構築してもfinishedを維持すべき',
+    );
+    expect(
+      rebuiltMatch.redScore,
+      greaterThan(rebuiltMatch.whiteScore),
+      reason: '赤の判定勝ちは、赤のスコア優位として計算されるべき',
+    );
+  });
 }

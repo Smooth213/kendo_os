@@ -7,11 +7,9 @@ class PendingSyncQueue<T> {
 
   /// キューに未同期タスクを格納する
   void enqueue(String taskId, T data) {
-    _queue.add(PendingTask<T>(
-      taskId: taskId,
-      data: data,
-      timestamp: DateTime.now(),
-    ));
+    _queue.add(
+      PendingTask<T>(taskId: taskId, data: data, timestamp: DateTime.now()),
+    );
   }
 
   /// 最古の未同期タスクを1件取得する（キューからは削除しない）

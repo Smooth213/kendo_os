@@ -10,7 +10,7 @@ class MatchCalculatorHelper {
   static Map<String, List<PointMark>> extractPointsFromModel(MatchModel match) {
     final engine = KendoRuleEngine();
     final analysis = engine.analyzeHistory(match.events, match, match.rule);
-    
+
     final redPts = (analysis.displays[Side.red] ?? [])
         .map((d) => PointMark(mark: d.mark, isFirst: d.isFirstMatchPoint))
         .toList();
@@ -22,18 +22,24 @@ class MatchCalculatorHelper {
   }
 
   /// MatchListProjection から PointMark のリストを生成します（観戦側・読み取りモデル用）
-  static Map<String, List<PointMark>> extractPointsFromProjection(MatchListProjection match) {
+  static Map<String, List<PointMark>> extractPointsFromProjection(
+    MatchListProjection match,
+  ) {
     final List<PointMark> redPts = [];
     final List<PointMark> whitePts = [];
-    
+
     final bool rIsFirst = (match.firstPointSide == 'red');
     final bool wIsFirst = (match.firstPointSide == 'white');
 
     for (int i = 0; i < match.redPointMarks.length; i++) {
-      redPts.add(PointMark(mark: match.redPointMarks[i], isFirst: i == 0 && rIsFirst));
+      redPts.add(
+        PointMark(mark: match.redPointMarks[i], isFirst: i == 0 && rIsFirst),
+      );
     }
     for (int i = 0; i < match.whitePointMarks.length; i++) {
-      whitePts.add(PointMark(mark: match.whitePointMarks[i], isFirst: i == 0 && wIsFirst));
+      whitePts.add(
+        PointMark(mark: match.whitePointMarks[i], isFirst: i == 0 && wIsFirst),
+      );
     }
 
     return {'red': redPts, 'white': whitePts};

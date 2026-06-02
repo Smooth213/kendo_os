@@ -60,22 +60,29 @@ class BunaiksenInfiniteQueueNotifier extends StateNotifier<List<String>> {
   }
 }
 
-final bunaiksenInfiniteQueueProvider = StateNotifierProvider<BunaiksenInfiniteQueueNotifier, List<String>>((ref) {
-  return BunaiksenInfiniteQueueNotifier();
-});
+final bunaiksenInfiniteQueueProvider =
+    StateNotifierProvider<BunaiksenInfiniteQueueNotifier, List<String>>((ref) {
+      return BunaiksenInfiniteQueueNotifier();
+    });
 
 // 4. 無限勝ち抜き連勝カウンター（誰が何連勝しているか）
 class BunaiksenInfiniteStreakNotifier extends StateNotifier<Map<String, int>> {
   BunaiksenInfiniteStreakNotifier() : super({});
 
-  void incrementStreak(String name) => state = {...state, name: (state[name] ?? 0) + 1};
+  void incrementStreak(String name) =>
+      state = {...state, name: (state[name] ?? 0) + 1};
   void resetStreak(String name) => state = {...state, name: 0};
   void clearAll() => state = {};
 }
 
-final bunaiksenInfiniteStreakProvider = StateNotifierProvider<BunaiksenInfiniteStreakNotifier, Map<String, int>>((ref) {
-  return BunaiksenInfiniteStreakNotifier();
-});
+final bunaiksenInfiniteStreakProvider =
+    StateNotifierProvider<BunaiksenInfiniteStreakNotifier, Map<String, int>>((
+      ref,
+    ) {
+      return BunaiksenInfiniteStreakNotifier();
+    });
 
 // 5. 部内戦ホームで「表示している日付」を管理するProvider
-final bunaiksenViewDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+final bunaiksenViewDateProvider = StateProvider<DateTime>(
+  (ref) => DateTime.now(),
+);

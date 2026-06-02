@@ -22,35 +22,42 @@ void main() {
           currentUserRoleProvider.overrideWith((ref) => role),
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
-        child: const MaterialApp(
-          home: StartScreen(),
-        ),
+        child: const MaterialApp(home: StartScreen()),
       );
     }
 
-    testWidgets('Viewerモード時、新規作成ボタンが画面上から物理排除されていること', (WidgetTester tester) async {
+    testWidgets('Viewerモード時、新規作成ボタンが画面上から物理排除されていること', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(UserRole.viewer));
       await tester.pumpAndSettle();
       expect(find.text('新しい大会\nを作る'), findsNothing);
     });
 
-    testWidgets('Operatorモード時、新規作成ボタンが正しく画面に露出すること', (WidgetTester tester) async {
+    testWidgets('Operatorモード時、新規作成ボタンが正しく画面に露出すること', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(UserRole.operator));
       await tester.pumpAndSettle();
       expect(find.text('新しい大会\nを作る'), findsOneWidget);
     });
 
-    testWidgets('Recorder（記録者）モード時、システム設定へのアクセス経路（歯車）が物理排除されていること', (WidgetTester tester) async {
+    testWidgets('Recorder（記録者）モード時、システム設定へのアクセス経路（歯車）が物理排除されていること', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestWidget(UserRole.recorder));
       await tester.pumpAndSettle();
       // 設定進入アイコンが出ないことを厳格に検証
       expect(find.byIcon(Icons.settings_outlined), findsNothing);
     });
 
-    testWidgets('Operator（運営者）モード時、Admin特権である一括破棄（delete_sweep）などの危険機能が露出しないこと', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget(UserRole.operator));
-      await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.delete_sweep), findsNothing);
-    });
+    testWidgets(
+      'Operator（運営者）モード時、Admin特権である一括破棄（delete_sweep）などの危険機能が露出しないこと',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(createTestWidget(UserRole.operator));
+        await tester.pumpAndSettle();
+        expect(find.byIcon(Icons.delete_sweep), findsNothing);
+      },
+    );
   });
 }

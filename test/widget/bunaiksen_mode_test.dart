@@ -6,7 +6,8 @@ import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/presentation/operate/screens/bunaiksen_official_record_screen.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart' show customTeamNamesProvider;
+import 'package:kendo_os/presentation/operate/screens/home_screen.dart'
+    show customTeamNamesProvider;
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
@@ -26,12 +27,12 @@ void main() {
         overrides: [
           bunaiksenViewDateProvider.overrideWith((ref) => mockDate),
           matchListProvider.overrideWith((ref) => mockMatches),
-          customTeamNamesProvider.overrideWith((ref) => Stream.value(<String>[])),
+          customTeamNamesProvider.overrideWith(
+            (ref) => Stream.value(<String>[]),
+          ),
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
-        child: const MaterialApp(
-          home: BunaiksenOfficialRecordScreen(),
-        ),
+        child: const MaterialApp(home: BunaiksenOfficialRecordScreen()),
       );
     }
 
@@ -48,7 +49,7 @@ void main() {
           whiteScore: 0,
           status: 'finished',
           note: '団体戦',
-        )
+        ),
       ];
 
       await tester.pumpWidget(createTestableWidget(mockMatches));
@@ -72,7 +73,7 @@ void main() {
           whiteScore: 0,
           status: 'finished',
           note: '個人戦',
-        )
+        ),
       ];
 
       await tester.pumpWidget(createTestableWidget(mockIndividualMatch));
@@ -95,9 +96,9 @@ void main() {
           whiteScore: 1,
           status: 'finished',
           note: '個人戦',
-        )
+        ),
       ];
-      
+
       await tester.pumpWidget(createTestableWidget(mockDrawMatch));
       await tester.pumpAndSettle();
 
@@ -105,11 +106,17 @@ void main() {
       expect(xTextFinder, findsWidgets);
     });
 
-    testWidgets('KendoRuleEngineを利用して、部内戦の公式記録（丸囲みや技マーク）が正確に描画されること', (WidgetTester tester) async {
+    testWidgets('KendoRuleEngineを利用して、部内戦の公式記録（丸囲みや技マーク）が正確に描画されること', (
+      WidgetTester tester,
+    ) async {
       final mockEvents = [
         ScoreEvent(
-          id: 'e1', side: Side.red, strikeType: StrikeType.men, isIppon: true, timestamp: DateTime.now()
-        )
+          id: 'e1',
+          side: Side.red,
+          strikeType: StrikeType.men,
+          isIppon: true,
+          timestamp: DateTime.now(),
+        ),
       ];
 
       final mockMatch = [
@@ -126,7 +133,7 @@ void main() {
           note: '個人戦',
           rule: const MatchRule(),
           events: mockEvents,
-        )
+        ),
       ];
 
       await tester.pumpWidget(createTestableWidget(mockMatch));

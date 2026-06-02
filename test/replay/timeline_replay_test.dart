@@ -53,12 +53,27 @@ void main() {
     });
 
     test('Timeline Merge Conflict Determinism', () {
-      final evt1 = CommentEvent(id: 'evt1', commentId: 'c1', type: CommentEventType.added, timestamp: DateTime(2026, 1, 1, 10, 0, 0), userId: 'user1', logicalClock: 1);
-      final evt2 = CommentEvent(id: 'evt2', commentId: 'c1', type: CommentEventType.updated, text: 'Updated Comment', timestamp: DateTime(2026, 1, 1, 10, 5, 0), userId: 'user1', logicalClock: 2);
+      final evt1 = CommentEvent(
+        id: 'evt1',
+        commentId: 'c1',
+        type: CommentEventType.added,
+        timestamp: DateTime(2026, 1, 1, 10, 0, 0),
+        userId: 'user1',
+        logicalClock: 1,
+      );
+      final evt2 = CommentEvent(
+        id: 'evt2',
+        commentId: 'c1',
+        type: CommentEventType.updated,
+        text: 'Updated Comment',
+        timestamp: DateTime(2026, 1, 1, 10, 5, 0),
+        userId: 'user1',
+        logicalClock: 2,
+      );
 
       final events = [evt2, evt1];
       events.sort((a, b) => a.compareTo(b));
-      
+
       expect(events.first.id, 'evt1');
       expect(events.last.id, 'evt2');
     });

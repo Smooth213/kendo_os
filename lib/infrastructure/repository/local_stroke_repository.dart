@@ -5,7 +5,7 @@ import '../persistence/models/local_stroke_model.dart';
 /// どこからでもリポジトリを呼び出せるようにするProvider
 final localStrokeRepositoryProvider = Provider<LocalStrokeRepository>((ref) {
   // すでに開かれているIsarインスタンスを取得します
-  final isar = Isar.getInstance()!; 
+  final isar = Isar.getInstance()!;
   return LocalStrokeRepository(isar);
 });
 
@@ -37,7 +37,7 @@ class LocalStrokeRepository {
           .filter()
           .programIdEqualTo(programId)
           .sortByCreatedAtDesc() // 新しい順に並び替え
-          .findFirst();          // 一番上（最新）を取得
+          .findFirst(); // 一番上（最新）を取得
 
       if (lastStroke != null) {
         await _isar.localStrokeModels.delete(lastStroke.id);

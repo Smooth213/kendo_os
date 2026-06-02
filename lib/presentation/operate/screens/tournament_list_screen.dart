@@ -18,7 +18,7 @@ class TournamentListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (isArchive) ref.watch(archiveRefreshProvider);
+    if (isArchive) { ref.watch(archiveRefreshProvider); }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;

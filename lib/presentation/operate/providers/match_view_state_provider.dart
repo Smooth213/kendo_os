@@ -56,47 +56,74 @@ class MatchViewState {
 // ==========================================
 // ★ Step 2: ViewState Providerの作成 (すべての計算ロジックをここに集約)
 // ==========================================
-final matchViewStateProvider = Provider.family<MatchViewState, String>((ref, matchId) {
-  final match = ref.watch(matchListProvider).where((m) => m.id == matchId).firstOrNull;
+final matchViewStateProvider = Provider.family<MatchViewState, String>((
+  ref,
+  matchId,
+) {
+  final match = ref
+      .watch(matchListProvider)
+      .where((m) => m.id == matchId)
+      .firstOrNull;
   final syncStatus = ref.watch(syncStatusProvider);
   final isProcessing = ref.watch(isMatchCommandProcessingProvider);
   final settings = ref.watch(settingsProvider);
   final groupStatus = ref.watch(groupMatchStatusProvider(matchId));
-  
+
   if (match == null) {
     return MatchViewState(
-      scoreText: '0 - 0', redScore: 0, whiteScore: 0, isEncho: false, 
-      winner: null, lastEventText: '', canUndo: false, statusText: '', syncStatus: syncStatus,
-      isViewOnly: true, isInputLocked: true, isAllDone: false, isTie: false,
-      redCleanName: '', whiteCleanName: ''
+      scoreText: '0 - 0',
+      redScore: 0,
+      whiteScore: 0,
+      isEncho: false,
+      winner: null,
+      lastEventText: '',
+      canUndo: false,
+      statusText: '',
+      syncStatus: syncStatus,
+      isViewOnly: true,
+      isInputLocked: true,
+      isAllDone: false,
+      isTie: false,
+      redCleanName: '',
+      whiteCleanName: '',
     );
   }
 
   // 1. 勝敗判定
   String? winner;
   if (match.status == 'finished' || match.status == 'approved') {
-    if (match.redScore > match.whiteScore) { winner = 'red'; } 
-    else if (match.whiteScore > match.redScore) { winner = 'white'; } 
-    else { winner = 'draw'; }
+    if (match.redScore > match.whiteScore) {
+      winner = 'red';
+    } else if (match.whiteScore > match.redScore) {
+      winner = 'white';
+    } else {
+      winner = 'draw';
+    }
   }
 
   // 2. 権限・ロック判定（UIから完全引越し）
   final myUserId = ref.watch(matchViewStateUserIdProvider);
   final now = DateTime.now();
-  final isLockExpired = match.lockExpiresAt != null && match.lockExpiresAt!.isBefore(now);
-  final isViewOnly = match.scorerId != null && match.scorerId != myUserId && !isLockExpired;
+  final isLockExpired =
+      match.lockExpiresAt != null && match.lockExpiresAt!.isBefore(now);
+  final isViewOnly =
+      match.scorerId != null && match.scorerId != myUserId && !isLockExpired;
 
   final isApproved = match.status == 'approved';
   final rMiss = match.redName.contains('欠員');
   final wMiss = match.whiteName.contains('欠員');
-  final isInputLocked = isViewOnly || 
-                       (match.status == 'finished' && settings.isLocked) || 
-                       (isApproved && settings.isLocked) || 
-                       rMiss || wMiss;
+  final isInputLocked =
+      isViewOnly ||
+      (match.status == 'finished' && settings.isLocked) ||
+      (isApproved && settings.isLocked) ||
+      rMiss ||
+      wMiss;
 
   // 3. 延長・ステータス判定
   final isEncho = match.note.contains('延長') || match.matchType.contains('延長');
-  final statusText = isEncho ? '延長' : (isApproved || match.status == 'finished' ? '終了' : '試合中');
+  final statusText = isEncho
+      ? '延長'
+      : (isApproved || match.status == 'finished' ? '終了' : '試合中');
 
   // 4. Undoロジック
   ScoreEvent? validLastEvent;
@@ -104,14 +131,30 @@ final matchViewStateProvider = Provider.family<MatchViewState, String>((ref, mat
   for (int i = match.events.length - 1; i >= 0; i--) {
     final e = match.events[i];
     if (e.isCanceled || e.type == PointType.restore) continue;
-    if (e.type == PointType.undo) { undoCount++; } 
-    else { if (undoCount > 0) { undoCount--; } else { validLastEvent = e; break; } }
+    if (e.type == PointType.undo) {
+      undoCount++;
+    } else {
+      if (undoCount > 0) {
+        undoCount--;
+      } else {
+        validLastEvent = e;
+        break;
+      }
+    }
   }
 
   String lastEventText = '';
   if (validLastEvent != null) {
     final sideStr = validLastEvent.side == Side.red ? '赤' : '白';
-    final typeMap = {PointType.men: 'メン', PointType.kote: 'コテ', PointType.doIdo: 'ドウ', PointType.tsuki: 'ツキ', PointType.hansoku: '反則', PointType.fusen: '不戦勝', PointType.hantei: '判定'};
+    final typeMap = {
+      PointType.men: 'メン',
+      PointType.kote: 'コテ',
+      PointType.doIdo: 'ドウ',
+      PointType.tsuki: 'ツキ',
+      PointType.hansoku: '反則',
+      PointType.fusen: '不戦勝',
+      PointType.hantei: '判定',
+    };
     lastEventText = '$sideStr ${typeMap[validLastEvent.type] ?? ''}';
   }
 
@@ -129,7 +172,8 @@ final matchViewStateProvider = Provider.family<MatchViewState, String>((ref, mat
     isEncho: isEncho,
     winner: winner,
     lastEventText: lastEventText,
-    canUndo: (!isViewOnly && !isApproved && validLastEvent != null && !isProcessing),
+    canUndo:
+        (!isViewOnly && !isApproved && validLastEvent != null && !isProcessing),
     statusText: statusText,
     syncStatus: syncStatus,
     isViewOnly: isViewOnly,

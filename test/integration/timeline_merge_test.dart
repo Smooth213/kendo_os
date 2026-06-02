@@ -7,13 +7,39 @@ void main() {
   group('Timeline Merge Logic Test', () {
     test('試合3件とコメント2件がLexical Orderingに基づいて正しくマージ・ソートされること', () {
       // 1. 試合3件 (order: 100.0, 300.0, 500.0)
-      final match1 = MatchModel(id: 'm1', order: 100.0, matchType: '', redName: '', whiteName: '');
-      final match2 = MatchModel(id: 'm2', order: 300.0, matchType: '', redName: '', whiteName: '');
-      final match3 = MatchModel(id: 'm3', order: 500.0, matchType: '', redName: '', whiteName: '');
+      final match1 = MatchModel(
+        id: 'm1',
+        order: 100.0,
+        matchType: '',
+        redName: '',
+        whiteName: '',
+      );
+      final match2 = MatchModel(
+        id: 'm2',
+        order: 300.0,
+        matchType: '',
+        redName: '',
+        whiteName: '',
+      );
+      final match3 = MatchModel(
+        id: 'm3',
+        order: 500.0,
+        matchType: '',
+        redName: '',
+        whiteName: '',
+      );
 
       // 2. コメント2件 (order: 200.0, 400.0)
-      final comment1 = MatchCommentModel(id: 'c1', text: 'comment1', order: 200.0);
-      final comment2 = MatchCommentModel(id: 'c2', text: 'comment2', order: 400.0);
+      final comment1 = MatchCommentModel(
+        id: 'c1',
+        text: 'comment1',
+        order: 200.0,
+      );
+      final comment2 = MatchCommentModel(
+        id: 'c2',
+        text: 'comment2',
+        order: 400.0,
+      );
 
       // 3. タイムライン要素に変換してリストに格納（あえて順序をバラバラに挿入）
       final timelineItems = <ReorderableTimelineItem>[

@@ -48,7 +48,7 @@ class RulePreset {
       encho: EnchoConfig(isEnchoUnlimited: false, enchoCount: 0),
       team: TeamConfig(
         isKachinuki: false,
-        hasRepresentativeMatch: true, 
+        hasRepresentativeMatch: true,
         isDaihyoIpponShobu: true,
       ),
       draw: DrawConfig(hasHantei: false),
@@ -62,7 +62,11 @@ class RulePreset {
     description: '3分3本勝負、2分延長1回、その後判定',
     config: TournamentRuleConfig(
       time: TimeConfig(matchTimeMinutes: 3.0),
-      encho: EnchoConfig(isEnchoUnlimited: false, enchoTimeMinutes: 2.0, enchoCount: 1),
+      encho: EnchoConfig(
+        isEnchoUnlimited: false,
+        enchoTimeMinutes: 2.0,
+        enchoCount: 1,
+      ),
       draw: DrawConfig(hasHantei: true),
     ),
   );

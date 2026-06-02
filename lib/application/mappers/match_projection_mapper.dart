@@ -6,11 +6,12 @@ import 'package:kendo_os/domain/match/match_aggregate.dart';
 import 'package:kendo_os/core/time/system_time_source.dart';
 
 class MatchProjectionMapper {
-  
   // タイムライン生成
   static List<TimelineEvent> _buildTimeline(List<ScoreEvent> events) {
     return events.map((e) {
-      String side = e.side == Side.red ? 'red' : (e.side == Side.white ? 'white' : 'none');
+      String side = e.side == Side.red
+          ? 'red'
+          : (e.side == Side.white ? 'white' : 'none');
       String actionName = 'イベント';
       bool isImportant = false;
 
@@ -27,12 +28,14 @@ class MatchProjectionMapper {
         actionName = '判定勝ち';
         isImportant = true;
       } else if (e.strikeType != StrikeType.none) {
-        actionName = {
-          StrikeType.men: 'メン',
-          StrikeType.kote: 'コテ',
-          StrikeType.dou: 'ドウ',
-          StrikeType.tsuki: 'ツキ'
-        }[e.strikeType] ?? '打突';
+        actionName =
+            {
+              StrikeType.men: 'メン',
+              StrikeType.kote: 'コテ',
+              StrikeType.dou: 'ドウ',
+              StrikeType.tsuki: 'ツキ',
+            }[e.strikeType] ??
+            '打突';
         isImportant = true;
       }
 
@@ -50,8 +53,12 @@ class MatchProjectionMapper {
   static double _calculateMomentum(MatchModel model, MatchAnalysis analysis) {
     double momentum = 0.0;
     momentum += (analysis.context.redIppon - analysis.context.whiteIppon) * 0.5;
-    final redHansoku = model.events.where((e) => e.side == Side.red && e.isHansoku).length;
-    final whiteHansoku = model.events.where((e) => e.side == Side.white && e.isHansoku).length;
+    final redHansoku = model.events
+        .where((e) => e.side == Side.red && e.isHansoku)
+        .length;
+    final whiteHansoku = model.events
+        .where((e) => e.side == Side.white && e.isHansoku)
+        .length;
     momentum -= (redHansoku - whiteHansoku) * 0.2;
 
     // ★ 修正: filterActiveEventsを使って有効イベントのみを考慮
@@ -66,13 +73,21 @@ class MatchProjectionMapper {
   }
 
   // ★ 互換性維持: 既存の画面が toProjection を探しているため、エイリアスとして残す
-  static MatchProjection toProjection(MatchModel model, MatchAnalysis analysis) => toMatchProjection(model, analysis);
+  static MatchProjection toProjection(
+    MatchModel model,
+    MatchAnalysis analysis,
+  ) => toMatchProjection(model, analysis);
 
   // ★ Phase 5: 軽量版にも集計に必要なデータを詰め込む
-  static MatchListProjection toListProjection(MatchModel model, MatchAnalysis analysis) {
-    List<String> rMarks = analysis.displays[Side.red]?.map((d) => d.mark).toList() ?? [];
-    List<String> wMarks = analysis.displays[Side.white]?.map((d) => d.mark).toList() ?? [];
-    
+  static MatchListProjection toListProjection(
+    MatchModel model,
+    MatchAnalysis analysis,
+  ) {
+    List<String> rMarks =
+        analysis.displays[Side.red]?.map((d) => d.mark).toList() ?? [];
+    List<String> wMarks =
+        analysis.displays[Side.white]?.map((d) => d.mark).toList() ?? [];
+
     String firstPointSide = '';
     // ★ 修正: KendoRuleEngineのfilterActiveEventsを通して、Undoされたイベントを正確に除外する
     final engine = KendoRuleEngine();
@@ -102,11 +117,16 @@ class MatchProjectionMapper {
   }
 
   // 詳細・記録用リッチ射影
-  static MatchProjection toMatchProjection(MatchModel model, MatchAnalysis analysis) {
+  static MatchProjection toMatchProjection(
+    MatchModel model,
+    MatchAnalysis analysis,
+  ) {
     // 表示用マーク（メ、コ、反など）のリスト生成
-    List<String> rMarks = analysis.displays[Side.red]?.map((d) => d.mark).toList() ?? [];
-    List<String> wMarks = analysis.displays[Side.white]?.map((d) => d.mark).toList() ?? [];
-    
+    List<String> rMarks =
+        analysis.displays[Side.red]?.map((d) => d.mark).toList() ?? [];
+    List<String> wMarks =
+        analysis.displays[Side.white]?.map((d) => d.mark).toList() ?? [];
+
     // ★ 修正: 初取（先取）のサイド判定にも有効イベント抽出を適用
     String firstPointSide = '';
     if (model.events.isNotEmpty) {
@@ -134,13 +154,15 @@ class MatchProjectionMapper {
       whiteScore: analysis.context.whiteIppon,
       redDisplays: analysis.displays[Side.red] ?? [],
       whiteDisplays: analysis.displays[Side.white] ?? [],
-      
+
       // ★ 復元された値をセット
       firstPointSide: firstPointSide,
       redPointMarks: rMarks,
       whitePointMarks: wMarks,
 
-      remainingSeconds: model.calculateRemainingSeconds(SystemTimeSource().now()),
+      remainingSeconds: model.calculateRemainingSeconds(
+        SystemTimeSource().now(),
+      ),
       timerIsRunning: model.timerIsRunning,
       note: model.note,
       timeline: _buildTimeline(model.events),
@@ -148,17 +170,24 @@ class MatchProjectionMapper {
     );
   }
 
-  static MatchProjection fromAggregate(MatchAggregate aggregate, MatchModel baseModel) {
+  static MatchProjection fromAggregate(
+    MatchAggregate aggregate,
+    MatchModel baseModel,
+  ) {
     final mergedModel = baseModel.copyWith(
       events: aggregate.events,
       status: aggregate.status,
       timerStartedAt: aggregate.timerStartedAt,
       accumulatedPauseDurationMs: aggregate.accumulatedPauseDurationMs,
     );
-    
+
     final engine = KendoRuleEngine();
-    final analysis = engine.analyzeHistory(mergedModel.events, mergedModel, mergedModel.rule);
-    
+    final analysis = engine.analyzeHistory(
+      mergedModel.events,
+      mergedModel,
+      mergedModel.rule,
+    );
+
     return toMatchProjection(mergedModel, analysis);
   }
 }

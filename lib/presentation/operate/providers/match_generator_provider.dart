@@ -16,35 +16,55 @@ class MatchGenerator {
   FirebaseFirestore get _firestore => ref.read(firestoreProvider);
 
   // リーグ戦生成
-  Future<void> generateLeagueMatches(String category, List<String> participants, bool countForStandings, [String? note, String? tournamentId]) async {
+  Future<void> generateLeagueMatches(
+    String category,
+    List<String> participants,
+    bool countForStandings, [
+    String? note,
+    String? tournamentId,
+  ]) async {
     int order = 1;
     List<MatchModel> matchesToSave = [];
     for (int i = 0; i < participants.length; i++) {
       for (int j = i + 1; j < participants.length; j++) {
         final docRef = _firestore.collection('matches').doc();
         final newMatch = MatchModel(
-          id: docRef.id, matchType: 'リーグ戦', category: category,
-          redName: participants[i], whiteName: participants[j],
-          countForStandings: countForStandings, source: 'auto_league',
+          id: docRef.id,
+          matchType: 'リーグ戦',
+          category: category,
+          redName: participants[i],
+          whiteName: participants[j],
+          countForStandings: countForStandings,
+          source: 'auto_league',
           tournamentId: tournamentId,
-          order: (order++).toDouble(), note: note ?? '',
+          order: (order++).toDouble(),
+          note: note ?? '',
         );
         matchesToSave.add(newMatch);
       }
     }
     // ★ 修正: ApplicationService に一括保存を委譲
-    await ref.read(matchApplicationServiceProvider).saveMatchesBulk(matchesToSave);
+    await ref
+        .read(matchApplicationServiceProvider)
+        .saveMatchesBulk(matchesToSave);
   }
 
   // 団体戦生成
   Future<void> generateTeamMatchBouts(
-    String redTeamName, List<String> redMembers, 
-    String whiteTeamName, List<String> whiteMembers, 
-    bool countForStandings, {String? category, String? note, String? tournamentId}
-  ) async {
+    String redTeamName,
+    List<String> redMembers,
+    String whiteTeamName,
+    List<String> whiteMembers,
+    bool countForStandings, {
+    String? category,
+    String? note,
+    String? tournamentId,
+  }) async {
     final groupName = '$redTeamName vs $whiteTeamName';
-    int maxLength = redMembers.length > whiteMembers.length ? redMembers.length : whiteMembers.length;
-    final positions = ['先鋒', '次鋒', '中堅', '副将', '大将']; 
+    int maxLength = redMembers.length > whiteMembers.length
+        ? redMembers.length
+        : whiteMembers.length;
+    final positions = ['先鋒', '次鋒', '中堅', '副将', '大将'];
     List<MatchModel> matchesToSave = [];
     for (int i = 0; i < maxLength; i++) {
       final docRef = _firestore.collection('matches').doc();
@@ -52,16 +72,23 @@ class MatchGenerator {
         id: docRef.id,
         tournamentId: tournamentId,
         matchType: i < positions.length ? positions[i] : '${i + 1}将',
-        groupName: groupName, category: category,
+        groupName: groupName,
+        category: category,
         redName: '$redTeamName:${i < redMembers.length ? redMembers[i] : '欠員'}',
-        whiteName: '$whiteTeamName:${i < whiteMembers.length ? whiteMembers[i] : '欠員'}',
-        countForStandings: countForStandings, source: 'auto_team',
-        matchOrder: i + 1, order: (i + 1).toDouble(), note: note ?? '',
+        whiteName:
+            '$whiteTeamName:${i < whiteMembers.length ? whiteMembers[i] : '欠員'}',
+        countForStandings: countForStandings,
+        source: 'auto_team',
+        matchOrder: i + 1,
+        order: (i + 1).toDouble(),
+        note: note ?? '',
       );
       matchesToSave.add(newMatch);
     }
     // ★ 修正: ApplicationService に一括保存を委譲
-    await ref.read(matchApplicationServiceProvider).saveMatchesBulk(matchesToSave);
+    await ref
+        .read(matchApplicationServiceProvider)
+        .saveMatchesBulk(matchesToSave);
   }
 
   // ★ Step 5-3: トーナメント形式のプレースホルダー試合を生成するヘルパー（例：準決勝）

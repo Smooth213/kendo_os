@@ -8,9 +8,9 @@ import 'dart:io';
 // ============================================================================
 void main(List<String> args) {
   print('🔍 [Diff Auditor] Analyzing changed files...');
-  
+
   final changedFiles = args.isNotEmpty ? args : <String>[];
-  
+
   if (changedFiles.isEmpty) {
     print('✅ No changed files provided for analysis.');
     exit(0);
@@ -30,14 +30,15 @@ void main(List<String> args) {
 
   for (final file in changedFiles) {
     print('  - $file');
-    
+
     // Step 2-2: Diff Analyzer
     if (file.contains('score_event.dart')) {
       affectsSchema = true;
       affectsReplay = true;
     }
-    
-    if (file.contains('lib/domain/rules/') || file.contains('kendo_rule_engine.dart')) {
+
+    if (file.contains('lib/domain/rules/') ||
+        file.contains('kendo_rule_engine.dart')) {
       affectsReplay = true;
     }
 
@@ -63,11 +64,13 @@ void main(List<String> args) {
   if (outputFile != null) {
     final file = File(outputFile);
     file.writeAsStringSync('risk_level=$riskLevel\n', mode: FileMode.append);
-    file.writeAsStringSync('replay_risk=${affectsReplay ? 'YES' : 'NO'}\n', mode: FileMode.append);
+    file.writeAsStringSync('replay_risk=${affectsReplay ? 'YES' : 'NO'}\n',
+        mode: FileMode.append);
   }
 
   if (riskLevel == 'CATASTROPHIC' || riskLevel == 'CRITICAL') {
-    print('⚠️ [WARNING] Mandatory Human Review Required due to high risk level.');
+    print(
+        '⚠️ [WARNING] Mandatory Human Review Required due to high risk level.');
   }
 
   exit(0);

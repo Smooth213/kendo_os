@@ -6,7 +6,7 @@ import 'dart:io';
 void main() {
   print('🤖 Running Machine Validation Tool...');
   final file = File('docs/governance/governance_rules.yaml');
-  
+
   if (!file.existsSync()) {
     print('❌ [Error] governance_rules.yaml が見つかりません。');
     exit(1);

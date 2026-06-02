@@ -8,7 +8,6 @@ import 'package:kendo_os/domain/rules/tournament_rule_config.dart';
 // 大会ルールの保存・共有（Import/Export）を可能にするシリアライザー
 // ==========================================
 class RuleSerializer {
-  
   // --- 9-1 & 9-3: JSON Serialization (Export) ---
   /// 新しい階層型ConfigをJSON文字列に変換（DB保存や他端末への共有用）
   static String serialize(TournamentRuleConfig config) {
@@ -33,7 +32,7 @@ class RuleSerializer {
         // 旧バージョンの MatchRule JSON とみなして安全にマイグレーション（変換）
         // これにより、既存のIsarデータベース内の古い試合データがクラッシュせずに読み込める
         final oldRule = MatchRule.fromJson(decoded);
-        return oldRule.toRuleConfig; 
+        return oldRule.toRuleConfig;
       }
     } catch (e) {
       // 不正な文字列やパースエラー時は、システムを落とさずデフォルトルールを返す

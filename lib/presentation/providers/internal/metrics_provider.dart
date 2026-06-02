@@ -25,15 +25,20 @@ class AlertService {
 // ==========================================
 // ★ Phase 2-Step 5: ダッシュボード用の状態管理を追加
 // ==========================================
-final dashboardMetricsProvider = StateProvider<Map<String, dynamic>>((ref) => {
-  'totalEvents': 0,
-  'errorRate': 0.0,
-  'conflictRate': 0.0,
-  'lastLagMs': 0,
-});
+final dashboardMetricsProvider = StateProvider<Map<String, dynamic>>(
+  (ref) => {
+    'totalEvents': 0,
+    'errorRate': 0.0,
+    'conflictRate': 0.0,
+    'lastLagMs': 0,
+  },
+);
 
 final metricsProvider = Provider<MetricsService>((ref) {
-  return MetricsService(ref.read(alertProvider), ref); // ★ 修正: refを渡して状態を更新できるようにする
+  return MetricsService(
+    ref.read(alertProvider),
+    ref,
+  ); // ★ 修正: refを渡して状態を更新できるようにする
 });
 
 class MetricsService {
@@ -60,8 +65,13 @@ class MetricsService {
 
   void recordLatency(String operationName, int latencyMs, {String? traceId}) {
     _emitMetric('${operationName}_count', 1, 'count', traceId: traceId);
-    _emitMetric('${operationName}_latency_ms', latencyMs, 'histogram', traceId: traceId);
-    
+    _emitMetric(
+      '${operationName}_latency_ms',
+      latencyMs,
+      'histogram',
+      traceId: traceId,
+    );
+
     if (operationName == 'event_append' || operationName == 'event_undo') {
       _recordOperationResult('success', traceId: traceId);
     }
@@ -79,15 +89,19 @@ class MetricsService {
 
   void recordProjectionLag(int lagMs, {String? traceId}) {
     _emitMetric('projection_lag_ms', lagMs, 'histogram', traceId: traceId);
-    
+
     // ★ ダッシュボード用状態更新
-    _ref.read(dashboardMetricsProvider.notifier).update((state) => {
-      ...state,
-      'lastLagMs': lagMs,
-    });
+    _ref
+        .read(dashboardMetricsProvider.notifier)
+        .update((state) => {...state, 'lastLagMs': lagMs});
 
     if (lagMs > 2000) {
-      _alertService.triggerAlert('HighProjectionLag', 'Projection delay exceeded 2 seconds', lagMs, traceId: traceId);
+      _alertService.triggerAlert(
+        'HighProjectionLag',
+        'Projection delay exceeded 2 seconds',
+        lagMs,
+        traceId: traceId,
+      );
     }
   }
 
@@ -112,11 +126,21 @@ class MetricsService {
     if (total < 10) return; // サンプルが少ないうちはアラートを鳴らさない
 
     if (errorRate > 0.01) {
-      _alertService.triggerAlert('HighErrorRate', 'Error rate exceeded 1%', errorRate * 100, traceId: traceId);
+      _alertService.triggerAlert(
+        'HighErrorRate',
+        'Error rate exceeded 1%',
+        errorRate * 100,
+        traceId: traceId,
+      );
     }
 
     if (conflictRate > 0.05) {
-      _alertService.triggerAlert('HighConflictRate', 'Conflict rate exceeded 5%', conflictRate * 100, traceId: traceId);
+      _alertService.triggerAlert(
+        'HighConflictRate',
+        'Conflict rate exceeded 5%',
+        conflictRate * 100,
+        traceId: traceId,
+      );
     }
   }
 
@@ -125,7 +149,7 @@ class MetricsService {
       'metric': name,
       'value': value,
       'type': type,
-      'traceId': ?traceId, 
+      'traceId': ?traceId,
       'timestamp': DateTime.now().toUtc().toIso8601String(),
     };
     developer.log(jsonEncode(metricData), name: 'KendoOS.Metrics');

@@ -20,25 +20,30 @@ class PermissionState {
     bool canCreateMatch = false,
     bool canChangeSettings = false, // テスト空間が要求する引数を完全補完
     bool canDeleteData = false,
-  })  : _role = role,
-        _explicitReadOnly = isReadOnly,
-        _explicitCanManageTournament = canManageTournament,
-        _explicitCanDeleteData = canDeleteData,
-        _explicitCanCreateMatch = canCreateMatch;
+  }) : _role = role,
+       _explicitReadOnly = isReadOnly,
+       _explicitCanManageTournament = canManageTournament,
+       _explicitCanDeleteData = canDeleteData,
+       _explicitCanCreateMatch = canCreateMatch;
 
   /// 閲覧専用かどうか（role定義を最優先し、テスト用モック値へフォールバック）
-  bool get isReadOnly => _role != null ? _role == UserRole.viewer : (_explicitReadOnly ?? false);
+  bool get isReadOnly =>
+      _role != null ? _role == UserRole.viewer : (_explicitReadOnly ?? false);
 
   /// 大会の作成・管理が可能か（Admin, Operatorのみ許可）
-  bool get canManageTournament => _role != null 
-      ? (_role == UserRole.admin || _role == UserRole.operator) 
+  bool get canManageTournament => _role != null
+      ? (_role == UserRole.admin || _role == UserRole.operator)
       : (_explicitCanManageTournament ?? false);
 
   /// データの物理削除が可能か（Adminのみ制限）
-  bool get canDeleteData => _role != null ? _role == UserRole.admin : (_explicitCanDeleteData ?? false);
+  bool get canDeleteData => _role != null
+      ? _role == UserRole.admin
+      : (_explicitCanDeleteData ?? false);
 
   /// 試合作成・記録権限（Viewer以外すべて許可）
-  bool get canCreateMatch => _role != null ? _role != UserRole.viewer : (_explicitCanCreateMatch ?? false);
+  bool get canCreateMatch => _role != null
+      ? _role != UserRole.viewer
+      : (_explicitCanCreateMatch ?? false);
 }
 
 /// 既存のテスト資産（AppPermissions）が名前を変えずに `const` でアクセスできるようにするエイリアス
@@ -48,7 +53,7 @@ typedef AppPermissions = PermissionState;
 final permissionProvider = Provider<PermissionState>((ref) {
   // 中央のロール状態をリアルタイムに監視
   final currentRole = ref.watch(currentUserRoleProvider);
-  
+
   // 新しい名前付きパラメータ仕様でインスタンス化して返却
   return PermissionState(role: currentRole);
 });

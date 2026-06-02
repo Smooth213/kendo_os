@@ -7,7 +7,7 @@ import 'package:kendo_os/domain/match/match_aggregate.dart';
 abstract class SnapshotStore {
   /// スナップショットを保存する
   Future<void> save(MatchSnapshot snapshot);
-  
+
   /// 指定した試合の「最新の」スナップショットを読み込む
   Future<MatchSnapshot?> loadLatest(String matchId);
 }

@@ -20,10 +20,11 @@ final localCommentRepositoryProvider = Provider<LocalCommentRepository>((ref) {
 // ==========================================
 // 2. コメントのストリーム監視 (Local DB)
 // ==========================================
-final commentStreamProvider = StreamProvider.family<List<MatchCommentModel>, String>((ref, tournamentId) {
-  final repo = ref.watch(localCommentRepositoryProvider);
-  return repo.watchComments(tournamentId);
-});
+final commentStreamProvider =
+    StreamProvider.family<List<MatchCommentModel>, String>((ref, tournamentId) {
+      final repo = ref.watch(localCommentRepositoryProvider);
+      return repo.watchComments(tournamentId);
+    });
 
 // ==========================================
 // 3. コメント操作用の Command Service
@@ -31,7 +32,8 @@ final commentStreamProvider = StreamProvider.family<List<MatchCommentModel>, Str
 class CommentCommandService {
   final LocalCommentRepository _repo;
   final TimeSource _timeSource;
-  final List<CommentEvent> _eventStore = []; // ★ Phase 4: Append-only Event Store
+  final List<CommentEvent> _eventStore =
+      []; // ★ Phase 4: Append-only Event Store
 
   CommentCommandService(this._repo, this._timeSource);
 
@@ -58,7 +60,7 @@ class CommentCommandService {
       userId: 'system',
       logicalClock: _timeSource.now().millisecondsSinceEpoch,
     );
-    
+
     _eventStore.add(event); // Append-only
     final comment = _rebuildSingle(commentId);
     if (comment != null) {
@@ -66,7 +68,10 @@ class CommentCommandService {
     }
   }
 
-  Future<void> updateCommentOrder(MatchCommentModel comment, double newOrder) async {
+  Future<void> updateCommentOrder(
+    MatchCommentModel comment,
+    double newOrder,
+  ) async {
     final event = CommentEvent(
       id: const Uuid().v4(),
       commentId: comment.id,
@@ -76,7 +81,7 @@ class CommentCommandService {
       userId: 'system',
       logicalClock: _timeSource.now().millisecondsSinceEpoch,
     );
-    
+
     _eventStore.add(event);
     final updated = _rebuildSingle(comment.id);
     if (updated != null) {
@@ -95,7 +100,7 @@ class CommentCommandService {
       userId: 'system',
       logicalClock: _timeSource.now().millisecondsSinceEpoch,
     );
-    
+
     _eventStore.add(event);
     final updated = _rebuildSingle(comment.id);
     if (updated != null) {
@@ -113,16 +118,16 @@ class CommentCommandService {
       userId: 'system',
       logicalClock: _timeSource.now().millisecondsSinceEpoch,
     );
-    
+
     _eventStore.add(event);
     await _repo.deleteComment(id);
   }
-  
+
   // ★ Phase 4: timeline replay rebuild
   MatchCommentModel? _rebuildSingle(String commentId) {
     final events = _eventStore.where((e) => e.commentId == commentId).toList();
     events.sort((a, b) => a.compareTo(b));
-    
+
     MatchCommentModel? state;
     for (var e in events) {
       if (e.type == CommentEventType.added) {
@@ -171,7 +176,11 @@ class MatchGroupTimelineItem implements ReorderableTimelineItem {
   final List<MatchModel> matches;
   final List<MatchCommentModel> comments; // ★ 追加: グループ内のコメント
 
-  MatchGroupTimelineItem(this.groupId, this.matches, [this.comments = const []]); // ★ 修正
+  MatchGroupTimelineItem(
+    this.groupId,
+    this.matches, [
+    this.comments = const [],
+  ]); // ★ 修正
 
   @override
   String get id => groupId;
@@ -183,16 +192,22 @@ class MatchGroupTimelineItem implements ReorderableTimelineItem {
       return 0.0;
     }
 
-    final mOrder = matches.isEmpty 
-        ? double.maxFinite 
-        : matches.fold<double>(double.maxFinite, (min, m) => m.order < min ? m.order : min);
-        
-    final cOrder = comments.isEmpty 
-        ? double.maxFinite 
-        : comments.fold<double>(double.maxFinite, (min, c) => c.order < min ? c.order : min);
-        
+    final mOrder = matches.isEmpty
+        ? double.maxFinite
+        : matches.fold<double>(
+            double.maxFinite,
+            (min, m) => m.order < min ? m.order : min,
+          );
+
+    final cOrder = comments.isEmpty
+        ? double.maxFinite
+        : comments.fold<double>(
+            double.maxFinite,
+            (min, c) => c.order < min ? c.order : min,
+          );
+
     final minVal = mOrder < cOrder ? mOrder : cOrder;
-    
+
     // システムの最大値を超えている、または infinity に近い場合は安全に 0.0 へフォールバック
     if (minVal >= double.maxFinite || minVal.isInfinite || minVal.isNaN) {
       return 0.0;

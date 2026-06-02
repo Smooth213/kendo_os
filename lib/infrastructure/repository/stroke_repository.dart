@@ -27,16 +27,21 @@ class StrokeRepository {
         .orderBy('createdAt', descending: true) // ここを Descending (降順) に合わせる
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => StrokeModel.fromMap(doc.data())).toList();
-    });
+          return snapshot.docs
+              .map((doc) => StrokeModel.fromMap(doc.data()))
+              .toList();
+        });
   }
 
   /// 特定のプログラムに引かれた線をすべて消去する
   Future<void> clearStrokes(String programId) async {
     try {
       debugPrint('🧹 全消去命令を送信: ProgramID=$programId');
-      final snapshot = await _db.collection('strokes').where('programId', isEqualTo: programId).get();
-      
+      final snapshot = await _db
+          .collection('strokes')
+          .where('programId', isEqualTo: programId)
+          .get();
+
       if (snapshot.docs.isEmpty) {
         return;
       }
@@ -62,7 +67,9 @@ class StrokeRepository {
           .where('programId', isEqualTo: programId)
           .orderBy('createdAt', descending: true)
           .limit(1)
-          .get(const GetOptions(source: Source.serverAndCache)); // ★ サーバーとキャッシュ両方を強制チェック
+          .get(
+            const GetOptions(source: Source.serverAndCache),
+          ); // ★ サーバーとキャッシュ両方を強制チェック
 
       if (querySnapshot.docs.isNotEmpty) {
         await querySnapshot.docs.first.reference.delete();

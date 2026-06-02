@@ -20,16 +20,20 @@ class PdfService {
   }
 
   static Future<Uint8List> _generatePdfBytes(
-    String categoryName, 
+    String categoryName,
     List<Map<String, dynamic>> groupDataList, {
     String? tournamentName,
     String? tournamentDate,
     String? tournamentVenue,
     required DateTime outputTime,
   }) async {
-    final fontData = await rootBundle.load('assets/fonts/NotoSansJP-Regular.ttf');
+    final fontData = await rootBundle.load(
+      'assets/fonts/NotoSansJP-Regular.ttf',
+    );
     final ttf = pw.Font.ttf(fontData);
-    final fontDataBold = await rootBundle.load('assets/fonts/NotoSansJP-Bold.ttf');
+    final fontDataBold = await rootBundle.load(
+      'assets/fonts/NotoSansJP-Bold.ttf',
+    );
     final ttfBold = pw.Font.ttf(fontDataBold);
 
     final pdf = pw.Document();
@@ -39,7 +43,7 @@ class PdfService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         theme: pw.ThemeData.withFont(base: ttf, bold: ttfBold),
-        
+
         header: (pw.Context context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -51,55 +55,102 @@ class PdfService {
                   pw.Row(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text('公式記録', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                      if (tournamentName != null && tournamentName.isNotEmpty) ...[
+                      pw.Text(
+                        '公式記録',
+                        style: pw.TextStyle(
+                          fontSize: 18,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      if (tournamentName != null &&
+                          tournamentName.isNotEmpty) ...[
                         pw.SizedBox(width: 12),
-                        pw.Text(tournamentName, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                        pw.Text(
+                          tournamentName,
+                          style: pw.TextStyle(
+                            fontSize: 14,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ],
                   ),
-                  pw.Text(DateFormat('yyyy/MM/dd HH:mm 出力').format(outputTime), style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                  pw.Text(
+                    DateFormat('yyyy/MM/dd HH:mm 出力').format(outputTime),
+                    style: const pw.TextStyle(
+                      fontSize: 10,
+                      color: PdfColors.grey700,
+                    ),
+                  ),
                 ],
               ),
-              if ((tournamentDate != null && tournamentDate.isNotEmpty) || (tournamentVenue != null && tournamentVenue.isNotEmpty)) ...[
+              if ((tournamentDate != null && tournamentDate.isNotEmpty) ||
+                  (tournamentVenue != null && tournamentVenue.isNotEmpty)) ...[
                 pw.SizedBox(height: 6),
                 pw.Row(
                   children: [
                     if (tournamentDate != null && tournamentDate.isNotEmpty)
-                      pw.Text('開催日: $tournamentDate', style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey800)),
-                    if (tournamentDate != null && tournamentDate.isNotEmpty && tournamentVenue != null && tournamentVenue.isNotEmpty)
+                      pw.Text(
+                        '開催日: $tournamentDate',
+                        style: const pw.TextStyle(
+                          fontSize: 11,
+                          color: PdfColors.grey800,
+                        ),
+                      ),
+                    if (tournamentDate != null &&
+                        tournamentDate.isNotEmpty &&
+                        tournamentVenue != null &&
+                        tournamentVenue.isNotEmpty)
                       pw.SizedBox(width: 16),
                     if (tournamentVenue != null && tournamentVenue.isNotEmpty)
-                      pw.Text('場所: $tournamentVenue', style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey800)),
+                      pw.Text(
+                        '場所: $tournamentVenue',
+                        style: const pw.TextStyle(
+                          fontSize: 11,
+                          color: PdfColors.grey800,
+                        ),
+                      ),
                   ],
                 ),
               ],
               pw.SizedBox(height: 4),
-              pw.Text('カテゴリ: $categoryName', style: pw.TextStyle(fontSize: 14, color: PdfColors.indigo900, fontWeight: pw.FontWeight.bold)),
+              pw.Text(
+                'カテゴリ: $categoryName',
+                style: pw.TextStyle(
+                  fontSize: 14,
+                  color: PdfColors.indigo900,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
               pw.Divider(thickness: 2),
               pw.SizedBox(height: 12),
             ],
           );
         },
-        
+
         footer: (pw.Context context) {
           return pw.Container(
             alignment: pw.Alignment.centerRight,
             margin: const pw.EdgeInsets.only(top: 10),
-            child: pw.Text('${context.pageNumber} / ${context.pagesCount}', style: const pw.TextStyle(fontSize: 12)),
+            child: pw.Text(
+              '${context.pageNumber} / ${context.pagesCount}',
+              style: const pw.TextStyle(fontSize: 12),
+            ),
           );
         },
-        
+
         build: (pw.Context context) {
           final List<pw.Widget> contentWidgets = [];
 
           for (int i = 0; i < groupDataList.length; i++) {
             final group = groupDataList[i];
-            final matches = group['matches'] as List<dynamic>; // MatchModel でも MatchProjection でも可
+            final matches =
+                group['matches']
+                    as List<dynamic>; // MatchModel でも MatchProjection でも可
             if (matches.isEmpty) continue;
 
             final first = matches.first;
-            
+
             // ★重要: MatchModel (rule.isKachinuki) と MatchProjection (isKachinuki) の両方に対応
             bool isKachinuki = false;
             if (first is MatchModel) {
@@ -116,24 +167,56 @@ class PdfService {
             final bool isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
 
             if (isKachinuki) {
-              contentWidgets.add(PdfKachinukiPainter.build(group['groupName'], matches, ttf, ttfBold));
+              contentWidgets.add(
+                PdfKachinukiPainter.build(
+                  group['groupName'],
+                  matches,
+                  ttf,
+                  ttfBold,
+                ),
+              );
               contentWidgets.add(pw.SizedBox(height: 16));
             } else if (isLeague) {
-              final normalMatches = matches.where((m) => !m.note.contains('[順位決定戦]')).toList();
-              final tieBreakMatches = matches.where((m) => m.note.contains('[順位決定戦]')).toList();
-              
+              final normalMatches = matches
+                  .where((m) => !m.note.contains('[順位決定戦]'))
+                  .toList();
+              final tieBreakMatches = matches
+                  .where((m) => m.note.contains('[順位決定戦]'))
+                  .toList();
+
               if (normalMatches.isNotEmpty) {
-                final allFinished = normalMatches.every((m) => m.status.toString().contains('finished') || m.status.toString().contains('approved'));
+                final allFinished = normalMatches.every(
+                  (m) =>
+                      m.status.toString().contains('finished') ||
+                      m.status.toString().contains('approved'),
+                );
                 final statusText = allFinished ? '（最終結果）' : '（進行中）';
-                
-                contentWidgets.add(pw.Text('【リーグ表】 $statusText', style: pw.TextStyle(font: ttfBold, fontSize: 14)));
+
+                contentWidgets.add(
+                  pw.Text(
+                    '【リーグ表】 $statusText',
+                    style: pw.TextStyle(font: ttfBold, fontSize: 14),
+                  ),
+                );
                 contentWidgets.add(pw.SizedBox(height: 10));
-                contentWidgets.add(PdfLeagueTable.build(group['groupName'], normalMatches, ttf, ttfBold));
+                contentWidgets.add(
+                  PdfLeagueTable.build(
+                    group['groupName'],
+                    normalMatches,
+                    ttf,
+                    ttfBold,
+                  ),
+                );
                 contentWidgets.add(pw.SizedBox(height: 24));
 
-                contentWidgets.add(pw.Text('【対戦詳細スコア】', style: pw.TextStyle(font: ttfBold, fontSize: 12)));
+                contentWidgets.add(
+                  pw.Text(
+                    '【対戦詳細スコア】',
+                    style: pw.TextStyle(font: ttfBold, fontSize: 12),
+                  ),
+                );
                 contentWidgets.add(pw.SizedBox(height: 10));
-                
+
                 final matchups = <String, List<dynamic>>{};
                 for (var m in normalMatches) {
                   final t1 = m.redName.split(':').first.trim();
@@ -142,24 +225,59 @@ class PdfService {
                   if (!matchups.containsKey(key)) matchups[key] = [];
                   matchups[key]!.add(m);
                 }
-                final matchupLists = matchups.values.where((ms) => !ms.any((m) => m.note.contains('[SUMMARY]'))).toList();
-                final isIndivLeague = normalMatches.any((m) => 
-                  m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦') ||
-                  (!m.redName.contains(':') && !m.whiteName.contains(':'))
+                final matchupLists = matchups.values
+                    .where((ms) => !ms.any((m) => m.note.contains('[SUMMARY]')))
+                    .toList();
+                final isIndivLeague = normalMatches.any(
+                  (m) =>
+                      m.matchType == 'individual' ||
+                      m.matchType == '選手' ||
+                      m.matchType.contains('個人戦') ||
+                      (!m.redName.contains(':') && !m.whiteName.contains(':')),
                 );
-                
+
                 if (isIndivLeague) {
-                  final indivMatches = normalMatches.where((m) => !m.note.contains('[SUMMARY]')).toList();
+                  final indivMatches = normalMatches
+                      .where((m) => !m.note.contains('[SUMMARY]'))
+                      .toList();
                   if (indivMatches.isNotEmpty) {
-                    contentWidgets.add(PdfIndividualList.build('対戦スコア詳細', indivMatches, ttf, ttfBold));
+                    contentWidgets.add(
+                      PdfIndividualList.build(
+                        '対戦スコア詳細',
+                        indivMatches,
+                        ttf,
+                        ttfBold,
+                      ),
+                    );
                     contentWidgets.add(pw.SizedBox(height: 16));
                   }
                 } else {
                   for (int j = 0; j < matchupLists.length; j += 2) {
-                    final pw.Widget table1 = PdfTeamTable.build('matchup', matchupLists[j], ttf, ttfBold);
+                    final pw.Widget table1 = PdfTeamTable.build(
+                      'matchup',
+                      matchupLists[j],
+                      ttf,
+                      ttfBold,
+                    );
                     pw.Widget table2 = pw.SizedBox();
-                    if (j + 1 < matchupLists.length) table2 = PdfTeamTable.build('matchup', matchupLists[j + 1], ttf, ttfBold);
-                    contentWidgets.add(pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [pw.Expanded(child: table1), pw.SizedBox(width: 16), pw.Expanded(child: table2)]));
+                    if (j + 1 < matchupLists.length) {
+                      table2 = PdfTeamTable.build(
+                        'matchup',
+                        matchupLists[j + 1],
+                        ttf,
+                        ttfBold,
+                      );
+                    }
+                    contentWidgets.add(
+                      pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Expanded(child: table1),
+                          pw.SizedBox(width: 16),
+                          pw.Expanded(child: table2),
+                        ],
+                      ),
+                    );
                     contentWidgets.add(pw.SizedBox(height: 16));
                   }
                 }
@@ -167,13 +285,37 @@ class PdfService {
 
               if (tieBreakMatches.isNotEmpty) {
                 contentWidgets.add(pw.SizedBox(height: 8));
-                contentWidgets.add(pw.Text('▼ 順位決定戦', style: pw.TextStyle(font: ttfBold, fontSize: 12, color: PdfColors.orange700)));
+                contentWidgets.add(
+                  pw.Text(
+                    '▼ 順位決定戦',
+                    style: pw.TextStyle(
+                      font: ttfBold,
+                      fontSize: 12,
+                      color: PdfColors.orange700,
+                    ),
+                  ),
+                );
                 contentWidgets.add(pw.SizedBox(height: 10));
-                
-                final isIndivTie = tieBreakMatches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
-                
+
+                final isIndivTie = tieBreakMatches.any(
+                  (m) =>
+                      m.matchType == 'individual' ||
+                      m.matchType == '選手' ||
+                      m.matchType.contains('個人戦'),
+                );
+
                 if (isIndivTie) {
-                  contentWidgets.add(pw.SizedBox(width: PdfPageFormat.a4.availableWidth / 2 - 8, child: PdfIndividualList.build('順位決定戦', tieBreakMatches, ttf, ttfBold)));
+                  contentWidgets.add(
+                    pw.SizedBox(
+                      width: PdfPageFormat.a4.availableWidth / 2 - 8,
+                      child: PdfIndividualList.build(
+                        '順位決定戦',
+                        tieBreakMatches,
+                        ttf,
+                        ttfBold,
+                      ),
+                    ),
+                  );
                   contentWidgets.add(pw.SizedBox(height: 16));
                 } else {
                   final tieMatchups = <String, List<dynamic>>{};
@@ -185,17 +327,43 @@ class PdfService {
                     tieMatchups[key]!.add(m);
                   }
                   for (var entry in tieMatchups.entries) {
-                    contentWidgets.add(pw.SizedBox(width: PdfPageFormat.a4.availableWidth / 2 - 8, child: PdfTeamTable.build(entry.key, entry.value, ttf, ttfBold)));
+                    contentWidgets.add(
+                      pw.SizedBox(
+                        width: PdfPageFormat.a4.availableWidth / 2 - 8,
+                        child: PdfTeamTable.build(
+                          entry.key,
+                          entry.value,
+                          ttf,
+                          ttfBold,
+                        ),
+                      ),
+                    );
                     contentWidgets.add(pw.SizedBox(height: 16));
                   }
                 }
               }
               contentWidgets.add(pw.SizedBox(height: 16));
-
             } else {
               if (matches.any((m) => m.note.contains('[SUMMARY]'))) continue;
-              final isIndiv = matches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
-              final pw.Widget table1 = isIndiv ? PdfIndividualList.build(group['groupName'], matches, ttf, ttfBold) : PdfTeamTable.build(group['groupName'], matches, ttf, ttfBold);
+              final isIndiv = matches.any(
+                (m) =>
+                    m.matchType == 'individual' ||
+                    m.matchType == '選手' ||
+                    m.matchType.contains('個人戦'),
+              );
+              final pw.Widget table1 = isIndiv
+                  ? PdfIndividualList.build(
+                      group['groupName'],
+                      matches,
+                      ttf,
+                      ttfBold,
+                    )
+                  : PdfTeamTable.build(
+                      group['groupName'],
+                      matches,
+                      ttf,
+                      ttfBold,
+                    );
               pw.Widget table2 = pw.SizedBox();
               if (i + 1 < groupDataList.length) {
                 final nextGroup = groupDataList[i + 1];
@@ -206,20 +374,54 @@ class PdfService {
                   if (nextFirst is MatchModel) {
                     nextIsKachinuki = nextFirst.rule?.isKachinuki ?? false;
                   } else {
-                    try { nextIsKachinuki = nextFirst.isKachinuki; } catch (_) {}
+                    try {
+                      nextIsKachinuki = nextFirst.isKachinuki;
+                    } catch (_) {}
                   }
                   if (!(nextIsKachinuki || nextFirst.note.contains('[リーグ戦]'))) {
-                    final isNextIndiv = nextMatches.any((m) => m.matchType == 'individual' || m.matchType == '選手' || m.matchType.contains('個人戦'));
-                    table2 = isNextIndiv ? PdfIndividualList.build(nextGroup['groupName'], nextMatches, ttf, ttfBold) : PdfTeamTable.build(nextGroup['groupName'], nextMatches, ttf, ttfBold);
-                    i++; 
+                    final isNextIndiv = nextMatches.any(
+                      (m) =>
+                          m.matchType == 'individual' ||
+                          m.matchType == '選手' ||
+                          m.matchType.contains('個人戦'),
+                    );
+                    table2 = isNextIndiv
+                        ? PdfIndividualList.build(
+                            nextGroup['groupName'],
+                            nextMatches,
+                            ttf,
+                            ttfBold,
+                          )
+                        : PdfTeamTable.build(
+                            nextGroup['groupName'],
+                            nextMatches,
+                            ttf,
+                            ttfBold,
+                          );
+                    i++;
                   }
                 }
               }
-              contentWidgets.add(pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [pw.Expanded(child: table1), pw.SizedBox(width: 16), pw.Expanded(child: table2)]));
+              contentWidgets.add(
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Expanded(child: table1),
+                    pw.SizedBox(width: 16),
+                    pw.Expanded(child: table2),
+                  ],
+                ),
+              );
               contentWidgets.add(pw.SizedBox(height: 16));
             }
           }
-          if (contentWidgets.isEmpty) contentWidgets.add(pw.Center(child: pw.Text('データがありません。', style: pw.TextStyle(font: ttf))));
+          if (contentWidgets.isEmpty) {
+            contentWidgets.add(
+              pw.Center(
+                child: pw.Text('データがありません。', style: pw.TextStyle(font: ttf)),
+              ),
+            );
+          }
           return contentWidgets;
         },
       ),
@@ -228,7 +430,7 @@ class PdfService {
   }
 
   static Future<void> printOfficialRecord(
-    String categoryName, 
+    String categoryName,
     List<Map<String, dynamic>> groupDataList, {
     String? tournamentName,
     String? tournamentDate,
@@ -236,23 +438,41 @@ class PdfService {
     required DateTime outputTime,
   }) async {
     if (_isTest) {
-      await Future.delayed(const Duration(milliseconds: 100)); // テスト時にダイアログ描画を待たせるためのダミー遅延
+      await Future.delayed(
+        const Duration(milliseconds: 100),
+      ); // テスト時にダイアログ描画を待たせるためのダミー遅延
       return;
     }
-    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue, outputTime: outputTime);
-    
+    final pdfBytes = await _generatePdfBytes(
+      categoryName,
+      groupDataList,
+      tournamentName: tournamentName,
+      tournamentDate: tournamentDate,
+      tournamentVenue: tournamentVenue,
+      outputTime: outputTime,
+    );
+
     if (kIsWeb) {
       // Web/PWAの場合はポップアップブロックを回避し、共有ダイアログ経由でPDFを渡す（メニューから「プリント」も可能）
-      final pdfFile = XFile.fromData(pdfBytes, mimeType: 'application/pdf', name: '公式記録_$categoryName.pdf');
-      await SharePlus.instance.share(ShareParams(files: [pdfFile], text: '【$categoryName】の公式記録(PDF)です。'));
+      final pdfFile = XFile.fromData(
+        pdfBytes,
+        mimeType: 'application/pdf',
+        name: '公式記録_$categoryName.pdf',
+      );
+      await SharePlus.instance.share(
+        ShareParams(files: [pdfFile], text: '【$categoryName】の公式記録(PDF)です。'),
+      );
     } else {
       // ネイティブアプリ（iOS/Android実機）の場合は直接印刷プレビューを開く
-      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdfBytes, name: '公式記録_$categoryName.pdf');
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdfBytes,
+        name: '公式記録_$categoryName.pdf',
+      );
     }
   }
 
   static Future<void> shareOfficialRecordAsImage(
-    String categoryName, 
+    String categoryName,
     List<Map<String, dynamic>> groupDataList, {
     String? tournamentName,
     String? tournamentDate,
@@ -260,17 +480,34 @@ class PdfService {
     required DateTime outputTime,
   }) async {
     if (_isTest) {
-      await Future.delayed(const Duration(milliseconds: 100)); // テスト時にダイアログ描画を待たせるためのダミー遅延
+      await Future.delayed(
+        const Duration(milliseconds: 100),
+      ); // テスト時にダイアログ描画を待たせるためのダミー遅延
       return;
     }
-    final pdfBytes = await _generatePdfBytes(categoryName, groupDataList, tournamentName: tournamentName, tournamentDate: tournamentDate, tournamentVenue: tournamentVenue, outputTime: outputTime);
+    final pdfBytes = await _generatePdfBytes(
+      categoryName,
+      groupDataList,
+      tournamentName: tournamentName,
+      tournamentDate: tournamentDate,
+      tournamentVenue: tournamentVenue,
+      outputTime: outputTime,
+    );
     final outputFiles = <XFile>[];
     int pageNum = 1;
     await for (final page in Printing.raster(pdfBytes, dpi: 300)) {
       final pngBytes = await page.toPng();
-      outputFiles.add(XFile.fromData(pngBytes, mimeType: 'image/png', name: '公式記録_${categoryName}_$pageNum.png'));
+      outputFiles.add(
+        XFile.fromData(
+          pngBytes,
+          mimeType: 'image/png',
+          name: '公式記録_${categoryName}_$pageNum.png',
+        ),
+      );
       pageNum++;
     }
-    await SharePlus.instance.share(ShareParams(files: outputFiles, text: '【$categoryName】の公式記録です。'));
+    await SharePlus.instance.share(
+      ShareParams(files: outputFiles, text: '【$categoryName】の公式記録です。'),
+    );
   }
 }

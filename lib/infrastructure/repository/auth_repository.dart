@@ -9,10 +9,11 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 
 class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   // ★ 提供されたWebクライアントIDで初期化を確実化
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: '164010781926-62n3ne0oal1jov5qpa26htp4q9ele8pa.apps.googleusercontent.com',
+    clientId:
+        '164010781926-62n3ne0oal1jov5qpa26htp4q9ele8pa.apps.googleusercontent.com',
   );
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -37,7 +38,8 @@ class AuthRepository {
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -47,7 +49,7 @@ class AuthRepository {
       debugPrint("✅ [Auth] Googleログイン成功");
     } catch (e, stack) {
       debugPrint("🔥 [Auth] Googleログイン失敗: $e\n$stack");
-      rethrow; 
+      rethrow;
     }
   }
 

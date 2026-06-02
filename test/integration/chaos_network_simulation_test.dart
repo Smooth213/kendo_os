@@ -44,26 +44,37 @@ void main() {
 
       when(() => localRepo.getPendingMatches()).thenAnswer((_) async {
         // isDirty または pendingEvents があるものを未送信とみなす
-        return fakeDb.values.where((m) => m.isDirty || m.pendingEvents.isNotEmpty).toList();
+        return fakeDb.values
+            .where((m) => m.isDirty || m.pendingEvents.isNotEmpty)
+            .toList();
       });
 
       when(() => localRepo.markAsSynced(any())).thenAnswer((invocation) async {
         final id = invocation.positionalArguments[0] as String;
         if (fakeDb.containsKey(id)) {
           // ★ 修正: 存在しない SyncState.pending を削除し、pendingEvents を空にすることで送信完了を表現
-          fakeDb[id] = fakeDb[id]!.copyWith(pendingEvents: []); 
+          fakeDb[id] = fakeDb[id]!.copyWith(pendingEvents: []);
         }
       });
     });
 
     test('通信断絶中に蓄積されたデータが、通信復旧時の同期エンジンによって全て送信されること', () async {
       // 1. オフライン状態で試合データがローカルに保存される（未送信状態）
-      final offlineMatch1 = TestMatchFactory.createIndividualMatch(id: 'offline-1').copyWith(
-        pendingEvents: [TestMatchFactory.createEvent(side: Side.red, type: PointType.men)],
-      );
-      final offlineMatch2 = TestMatchFactory.createIndividualMatch(id: 'offline-2').copyWith(
-        pendingEvents: [TestMatchFactory.createEvent(side: Side.white, type: PointType.kote)],
-      );
+      final offlineMatch1 =
+          TestMatchFactory.createIndividualMatch(id: 'offline-1').copyWith(
+            pendingEvents: [
+              TestMatchFactory.createEvent(side: Side.red, type: PointType.men),
+            ],
+          );
+      final offlineMatch2 =
+          TestMatchFactory.createIndividualMatch(id: 'offline-2').copyWith(
+            pendingEvents: [
+              TestMatchFactory.createEvent(
+                side: Side.white,
+                type: PointType.kote,
+              ),
+            ],
+          );
 
       await localRepo.saveMatch(offlineMatch1);
       await localRepo.saveMatch(offlineMatch2);
@@ -73,7 +84,9 @@ void main() {
       expect(initialPending.length, 2, reason: 'オフラインなので未送信データが溜まっている');
 
       // 2. ネットワークが復旧し、SyncEngineの挙動をシミュレート
-      when(() => mockNetwork.sendData(any(), any())).thenAnswer((_) async => {});
+      when(
+        () => mockNetwork.sendData(any(), any()),
+      ).thenAnswer((_) async => {});
 
       final pendingMatches = await localRepo.getPendingMatches();
       for (final match in pendingMatches) {

@@ -18,7 +18,9 @@ class AiHelpService {
     if (!BetaFeatureFlags.showAiFeatures) return;
     if (_indexCache != null) return;
     try {
-      final jsonString = await rootBundle.loadString('assets/manual_embeddings/vector_index.json');
+      final jsonString = await rootBundle.loadString(
+        'assets/manual_embeddings/vector_index.json',
+      );
       final List<dynamic> decoded = jsonDecode(jsonString);
       _indexCache = decoded.cast<Map<String, dynamic>>();
     } catch (e) {
@@ -30,7 +32,7 @@ class AiHelpService {
   Future<List<Map<String, dynamic>>> searchRelevantManuals(String query) async {
     // ★ Phase 4-1: AI Runtime の完全封鎖ガード
     if (!BetaFeatureFlags.showAiFeatures) return [];
-    
+
     await _loadIndex();
     if (_indexCache == null || _indexCache!.isEmpty) return [];
 
@@ -50,7 +52,9 @@ class AiHelpService {
       return {'chunk': chunk, 'score': score};
     }).toList();
 
-    scoredChunks.sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
+    scoredChunks.sort(
+      (a, b) => (b['score'] as int).compareTo(a['score'] as int),
+    );
     return scoredChunks
         .where((e) => (e['score'] as int) > 0)
         .take(3)
@@ -70,8 +74,11 @@ class AiHelpService {
       return "申し訳ありません。マニュアル内に「$query」に関する情報が見つかりませんでした。";
     }
 
-    final sourceTitles = relevantChunks.map((c) => "「${c['h1']} > ${c['h2']}」").toSet().join(", ");
+    final sourceTitles = relevantChunks
+        .map((c) => "「${c['h1']} > ${c['h2']}」")
+        .toSet()
+        .join(", ");
     return "マニュアルの $sourceTitles に関連する情報が見つかりました。\\n\\n"
-           "【該当箇所の抜粋】\\n${relevantChunks.first['content']}";
+        "【該当箇所の抜粋】\\n${relevantChunks.first['content']}";
   }
 }

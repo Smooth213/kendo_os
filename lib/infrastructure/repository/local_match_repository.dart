@@ -40,7 +40,9 @@ class LocalMatchRepository {
   // 1. 試合一覧をローカルからリアルタイム取得
   Stream<List<MatchModel>> watchMatches() {
     if (_isar == null) return Stream.value([]);
-    return _isar.matchEntitys.where().watch(fireImmediately: true).map((entities) {
+    return _isar.matchEntitys.where().watch(fireImmediately: true).map((
+      entities,
+    ) {
       return entities.map((e) => _toModel(e)).toList();
     });
   }
@@ -48,17 +50,24 @@ class LocalMatchRepository {
   // 2. 特定の1試合をローカルからリアルタイム監視
   Stream<MatchModel?> watchSingleMatch(String matchId) {
     if (_isar == null) return Stream.value(null);
-    return _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).watch(fireImmediately: true).map((entities) {
-      if (entities.isEmpty) return null;
-      return _toModel(entities.first);
-    });
+    return _isar.matchEntitys
+        .filter()
+        .firestoreIdEqualTo(matchId)
+        .watch(fireImmediately: true)
+        .map((entities) {
+          if (entities.isEmpty) return null;
+          return _toModel(entities.first);
+        });
   }
 
   // ★ 追加: DBから直接最新の試合データを1件取得（RiverpodのStream遅延を回避するため）
   Future<MatchModel?> getMatch(String matchId) async {
     if (_isar == null) return null;
     try {
-      final entity = await _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).findFirst();
+      final entity = await _isar.matchEntitys
+          .filter()
+          .firestoreIdEqualTo(matchId)
+          .findFirst();
       if (entity == null) return null;
 
       // ★ 修正: タイマーをスタートした直後はイベントが空のまま in_progress になるのが正常な仕様のため、
@@ -71,8 +80,12 @@ class LocalMatchRepository {
     } catch (e, stack) {
       // ★ Phase 7: 万が一ローカルDBが破損していた場合の緊急回避
       debugPrint('🔥 [Critical] ローカルDBからの読み込みに失敗しました(破損の可能性): $e');
-      FirebaseCrashlytics.instance.recordError(e, stack, reason: 'Local DB Read Failure');
-      return null; 
+      FirebaseCrashlytics.instance.recordError(
+        e,
+        stack,
+        reason: 'Local DB Read Failure',
+      );
+      return null;
     }
   }
 
@@ -85,15 +98,23 @@ class LocalMatchRepository {
       // 保存前にすべてのイベントが改ざんされていないかチェックする
       // ==========================================
       for (final event in match.events) {
-        if (!ScoreEventLegacyAdapter.verifySignature(event, 'kendo_os_secret_key_v1')) {
-          throw TamperedEventException('イベント(ID: ${event.id})の署名が無効、または改ざんされています。');
+        if (!ScoreEventLegacyAdapter.verifySignature(
+          event,
+          'kendo_os_secret_key_v1',
+        )) {
+          throw TamperedEventException(
+            'イベント(ID: ${event.id})の署名が無効、または改ざんされています。',
+          );
         }
       }
 
       final entity = _toEntity(match);
       // ★ Phase 5-2, 5-3: 1〜3秒以内の自動保存を強制し、端末スリープ・強制終了時もデータを100%保護する即時同期的ライトスルー確約
       await _isar.writeTxn(() async {
-        final existing = await _isar.matchEntitys.filter().firestoreIdEqualTo(match.id).findFirst();
+        final existing = await _isar.matchEntitys
+            .filter()
+            .firestoreIdEqualTo(match.id)
+            .findFirst();
         if (existing != null) {
           entity.id = existing.id; // 既存の内部IDを引き継いで上書き更新する
         }
@@ -101,21 +122,33 @@ class LocalMatchRepository {
       });
     } catch (e, stack) {
       debugPrint('🔥 [Storage Error] ローカルDBへの保存に失敗しました: $e');
-      FirebaseCrashlytics.instance.recordError(e, stack, reason: 'Local DB Save Failure');
-      
+      FirebaseCrashlytics.instance.recordError(
+        e,
+        stack,
+        reason: 'Local DB Save Failure',
+      );
+
       // ★ Phase 7: 最後の一線 - DBがロックされていても、JSONとして緊急避難保存を試みる
       try {
         final emergencyJson = jsonEncode(match.toJson());
         final dir = await getApplicationDocumentsDirectory();
         // 試合ごとにユニークなファイル名で保存し、上書きを防ぐ
-        final file = File('${dir.path}/emergency_backup_${match.id}_${DateTime.now().millisecondsSinceEpoch}.json');
+        final file = File(
+          '${dir.path}/emergency_backup_${match.id}_${DateTime.now().millisecondsSinceEpoch}.json',
+        );
         await file.writeAsString(emergencyJson);
-        debugPrint('🛡️ [Emergency Backup] DB保存失敗のため、緊急JSONバックアップを実行しました: ${file.path}');
+        debugPrint(
+          '🛡️ [Emergency Backup] DB保存失敗のため、緊急JSONバックアップを実行しました: ${file.path}',
+        );
       } catch (innerE, innerStack) {
         debugPrint('🚨 [Fatal] 緊急バックアップすら失敗しました: $innerE');
-        FirebaseCrashlytics.instance.recordError(innerE, innerStack, reason: 'Emergency Backup Failure');
+        FirebaseCrashlytics.instance.recordError(
+          innerE,
+          innerStack,
+          reason: 'Emergency Backup Failure',
+        );
       }
-      
+
       rethrow;
     }
   }
@@ -126,8 +159,13 @@ class LocalMatchRepository {
     // ★ 複数保存時もすべてのイベントの署名を検証する
     for (final match in matches) {
       for (final event in match.events) {
-        if (!ScoreEventLegacyAdapter.verifySignature(event, 'kendo_os_secret_key_v1')) {
-          throw TamperedEventException('イベント(ID: ${event.id})の署名が無効、または改ざんされています。');
+        if (!ScoreEventLegacyAdapter.verifySignature(
+          event,
+          'kendo_os_secret_key_v1',
+        )) {
+          throw TamperedEventException(
+            'イベント(ID: ${event.id})の署名が無効、または改ざんされています。',
+          );
         }
       }
     }
@@ -135,7 +173,10 @@ class LocalMatchRepository {
     await _isar.writeTxn(() async {
       for (var match in matches) {
         final entity = _toEntity(match);
-        final existing = await _isar.matchEntitys.filter().firestoreIdEqualTo(match.id).findFirst();
+        final existing = await _isar.matchEntitys
+            .filter()
+            .firestoreIdEqualTo(match.id)
+            .findFirst();
         if (existing != null) {
           entity.id = existing.id; // ここでも既存IDを引き継ぐ
         }
@@ -155,7 +196,11 @@ class LocalMatchRepository {
   // ★ Phase 4 復旧: Isarの正しい否定構文に修正
   Future<List<MatchModel>> getPendingMatches() async {
     if (_isar == null) return [];
-    final entities = await _isar.matchEntitys.filter().not().syncStateEqualTo(SyncState.synced).findAll();
+    final entities = await _isar.matchEntitys
+        .filter()
+        .not()
+        .syncStateEqualTo(SyncState.synced)
+        .findAll();
     return entities.map((e) => _toModel(e)).toList();
   }
 
@@ -163,7 +208,10 @@ class LocalMatchRepository {
   Future<void> markAsSynced(String matchId) async {
     if (_isar == null) return;
     await _isar.writeTxn(() async {
-      final entity = await _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).findFirst();
+      final entity = await _isar.matchEntitys
+          .filter()
+          .firestoreIdEqualTo(matchId)
+          .findFirst();
       if (entity != null) {
         entity.syncState = SyncState.synced;
         entity.pendingEvents = []; // ★ 送信が完了したため差分キューを空にする
@@ -175,7 +223,12 @@ class LocalMatchRepository {
   // ★ Phase 4 復旧: Isarの正しい否定構文に修正
   Stream<int> watchPendingMatchesCount() {
     if (_isar == null) return Stream.value(0);
-    return _isar.matchEntitys.filter().not().syncStateEqualTo(SyncState.synced).watch(fireImmediately: true).map((events) => events.length);
+    return _isar.matchEntitys
+        .filter()
+        .not()
+        .syncStateEqualTo(SyncState.synced)
+        .watch(fireImmediately: true)
+        .map((events) => events.length);
   }
 
   ScoreEventEntity _eventToEntity(ScoreEvent e) {
@@ -204,15 +257,24 @@ class LocalMatchRepository {
       ..redScore = model.redScore
       ..whiteScore = model.whiteScore
       ..status = model.status
-      ..events = model.events.map<ScoreEventEntity>((e) => _eventToEntity(e)).toList() // ★ 型を明示的に指定して変換エラーを回避
-      ..snapshots = model.snapshots.map((s) => MatchSnapshotEntity()
-        ..id = s.id
-        ..createdAt = s.createdAt
-        ..reason = s.reason
-        ..events = s.events.map<ScoreEventEntity>((e) => _eventToEntity(e)).toList()
-      ).toList()
+      ..events = model.events
+          .map<ScoreEventEntity>((e) => _eventToEntity(e))
+          .toList() // ★ 型を明示的に指定して変換エラーを回避
+      ..snapshots = model.snapshots
+          .map(
+            (s) => MatchSnapshotEntity()
+              ..id = s.id
+              ..createdAt = s.createdAt
+              ..reason = s.reason
+              ..events = s.events
+                  .map<ScoreEventEntity>((e) => _eventToEntity(e))
+                  .toList(),
+          )
+          .toList()
       ..syncState = model.syncState
-      ..pendingEvents = model.pendingEvents.map<ScoreEventEntity>((e) => _eventToEntity(e)).toList()
+      ..pendingEvents = model.pendingEvents
+          .map<ScoreEventEntity>((e) => _eventToEntity(e))
+          .toList()
       ..lastUpdatedAt = model.lastUpdatedAt
       ..refereeNames = model.refereeNames
       ..countForStandings = model.countForStandings
@@ -274,20 +336,24 @@ class LocalMatchRepository {
       pendingEvents: entity.pendingEvents.map(_entityToEvent).toList(),
       events: entity.events.map(_entityToEvent).toList(),
       // ★ Phase 1: スナップショットのモデル変換を追加（Isarからの読み込み）
-      snapshots: entity.snapshots.map((s) => MatchSnapshot(
-        id: s.id ?? '',
-        matchId: entity.firestoreId,
-        version: s.events.length,
-        state: MatchModel(
-          id: entity.firestoreId,
-          matchType: entity.matchType,
-          redName: entity.redName,
-          whiteName: entity.whiteName,
-        ),
-        createdAt: s.createdAt ?? DateTime.now(),
-        reason: s.reason ?? '',
-        events: s.events.map(_entityToEvent).toList(),
-      )).toList(),
+      snapshots: entity.snapshots
+          .map(
+            (s) => MatchSnapshot(
+              id: s.id ?? '',
+              matchId: entity.firestoreId,
+              version: s.events.length,
+              state: MatchModel(
+                id: entity.firestoreId,
+                matchType: entity.matchType,
+                redName: entity.redName,
+                whiteName: entity.whiteName,
+              ),
+              createdAt: s.createdAt ?? DateTime.now(),
+              reason: s.reason ?? '',
+              events: s.events.map(_entityToEvent).toList(),
+            ),
+          )
+          .toList(),
       lastUpdatedAt: entity.lastUpdatedAt,
       refereeNames: entity.refereeNames,
       countForStandings: entity.countForStandings,
@@ -310,11 +376,17 @@ class LocalMatchRepository {
       timerPausedAt: entity.timerPausedAt,
       // ★ 防衛サニタイズ: 過去のバグや時刻変更等で負の数がDBに入っていた場合、
       // ドメインアサーションクラッシュを避けるため、一律で安全な「0」に最大値制御（丸め）を行います。
-      accumulatedPauseDurationMs: (entity.accumulatedPauseDurationMs < 0) ? 0 : entity.accumulatedPauseDurationMs,
+      accumulatedPauseDurationMs: (entity.accumulatedPauseDurationMs < 0)
+          ? 0
+          : entity.accumulatedPauseDurationMs,
       note: entity.note,
       isKachinuki: entity.isKachinuki,
       // ★ 追加：文字列(JSON)から元のルール箱に解凍して復元する！
-      rule: entity.ruleJson != null ? MatchRule.fromJson(jsonDecode(entity.ruleJson!) as Map<String, dynamic>) : null,
+      rule: entity.ruleJson != null
+          ? MatchRule.fromJson(
+              jsonDecode(entity.ruleJson!) as Map<String, dynamic>,
+            )
+          : null,
       redRemaining: entity.redRemaining,
       whiteRemaining: entity.whiteRemaining,
     );
@@ -335,7 +407,10 @@ class LocalMatchRepository {
 
     // ★ Phase 5: 電波断環境下（体育館）でコマンドキューを1ミリ秒でローカルディスクに焼き付ける強制ライトスルー
     await _isar.writeTxn(() async {
-      final existing = await _isar.matchCommandEntitys.filter().commandIdEqualTo(cmd.id).findFirst();
+      final existing = await _isar.matchCommandEntitys
+          .filter()
+          .commandIdEqualTo(cmd.id)
+          .findFirst();
       if (existing != null) {
         entity.id = existing.id;
       }
@@ -358,13 +433,17 @@ class LocalMatchRepository {
         .sortByCreatedAt()
         .findAll();
 
-    return entities.map((e) => MatchCommandModel(
-      id: e.commandId,
-      type: CommandType.values.byName(e.type),
-      payload: jsonDecode(e.payloadJson),
-      createdAt: e.createdAt,
-      status: CommandStatus.values.byName(e.status),
-    )).toList();
+    return entities
+        .map(
+          (e) => MatchCommandModel(
+            id: e.commandId,
+            type: CommandType.values.byName(e.type),
+            payload: jsonDecode(e.payloadJson),
+            createdAt: e.createdAt,
+            status: CommandStatus.values.byName(e.status),
+          ),
+        )
+        .toList();
   }
 
   // =========================================================================
@@ -376,7 +455,7 @@ class LocalMatchRepository {
       debugPrint('⚠️ [Isar] Warning: Isar is null, fallback to empty stream');
       return Stream.value([]);
     }
-    
+
     // Isarのコレクション変更を検知してリアルタイムにドメインモデルに変換して流す
     return _isar.matchEntitys
         .filter()
@@ -401,7 +480,7 @@ class LocalMatchRepository {
       debugPrint('⚠️ [Isar] Warning: Isar is null, fallback to empty stream');
       return Stream.value([]);
     }
-    
+
     return _isar.matchEntitys
         .where()
         .sortByOrder()

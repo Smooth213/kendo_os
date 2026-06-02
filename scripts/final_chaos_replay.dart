@@ -14,7 +14,7 @@ void main() async {
     'dart run tools/governance_lint/semantic_drift_detector.dart',
     'dart run tools/governance_lint/package_verifier.dart',
     'flutter test test/chaos/drift_attack_test.dart',
-    'flutter test test/integration/phase0_event_replay_snapshot_test.dart'
+    'flutter test test/integration/phase0_event_replay_snapshot_test.dart',
   ];
 
   bool allPassed = true;
@@ -22,7 +22,7 @@ void main() async {
     print('🚀 Executing: $test');
     final parts = test.split(' ');
     final result = await Process.run(parts[0], parts.sublist(1));
-    
+
     if (result.exitCode != 0) {
       print('❌ FAILED: $test');
       print(result.stderr);
@@ -33,7 +33,9 @@ void main() async {
   }
 
   if (allPassed) {
-    print('\n🏆 [GOVERNANCE FREEZE SUCCESS] kendo_os Governance Runtime v1.0 is now officially STABLE.');
+    print(
+      '\n🏆 [GOVERNANCE FREEZE SUCCESS] kendo_os Governance Runtime v1.0 is now officially STABLE.',
+    );
     exit(0);
   } else {
     print('\n🚨 [FREEZE REJECTED] Governance integrity compromised!');

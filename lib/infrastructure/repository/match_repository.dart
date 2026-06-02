@@ -13,19 +13,17 @@ class MatchRepository {
 
   // ★ 1-C. 全試合をリアルタイム監視（主にWeb観客席用）
   Stream<List<MatchModel>> watchAllMatches() {
-    return _firestore
-        .collection('matches')
-        .snapshots()
-        .map((snapshot) {
+    return _firestore.collection('matches').snapshots().map((snapshot) {
       final validMatches = <MatchModel>[];
       for (final doc in snapshot.docs) {
         try {
-          validMatches.add(MatchModel.fromJson(<String, dynamic>{
-            ...doc.data(),
-            'id': doc.id,
-          }));
+          validMatches.add(
+            MatchModel.fromJson(<String, dynamic>{...doc.data(), 'id': doc.id}),
+          );
         } catch (e, stack) {
-          debugPrint('🔥 [watchAllMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack');
+          debugPrint(
+            '🔥 [watchAllMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack',
+          );
         }
       }
       return validMatches;
@@ -39,19 +37,23 @@ class MatchRepository {
         .where('status', whereIn: ['in_progress', 'waiting'])
         .snapshots()
         .map((snapshot) {
-      final validMatches = <MatchModel>[];
-      for (final doc in snapshot.docs) {
-        try {
-          validMatches.add(MatchModel.fromJson(<String, dynamic>{
-            ...doc.data(),
-            'id': doc.id,
-          }));
-        } catch (e, stack) {
-          debugPrint('🔥 [watchActiveMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack');
-        }
-      }
-      return validMatches;
-    });
+          final validMatches = <MatchModel>[];
+          for (final doc in snapshot.docs) {
+            try {
+              validMatches.add(
+                MatchModel.fromJson(<String, dynamic>{
+                  ...doc.data(),
+                  'id': doc.id,
+                }),
+              );
+            } catch (e, stack) {
+              debugPrint(
+                '🔥 [watchActiveMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack',
+              );
+            }
+          }
+          return validMatches;
+        });
   }
 
   // 1-B. 終了済みの試合を1回だけ取得（キャッシュ用）
@@ -60,16 +62,17 @@ class MatchRepository {
         .collection('matches')
         .where('status', whereIn: ['finished', 'approved'])
         .get();
-        
+
     final validMatches = <MatchModel>[];
     for (final doc in snapshot.docs) {
       try {
-        validMatches.add(MatchModel.fromJson(<String, dynamic>{
-          ...doc.data(),
-          'id': doc.id,
-        }));
+        validMatches.add(
+          MatchModel.fromJson(<String, dynamic>{...doc.data(), 'id': doc.id}),
+        );
       } catch (e, stack) {
-        debugPrint('🔥 [getStaticMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack');
+        debugPrint(
+          '🔥 [getStaticMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack',
+        );
       }
     }
     return validMatches;
@@ -77,11 +80,7 @@ class MatchRepository {
 
   // 2. 特定の1試合をリアルタイム監視（MatchProviderで使用）
   Stream<MatchModel> watchSingleMatch(String matchId) {
-    return _firestore
-        .collection('matches')
-        .doc(matchId)
-        .snapshots()
-        .map((doc) {
+    return _firestore.collection('matches').doc(matchId).snapshots().map((doc) {
       return MatchModel.fromJson(<String, dynamic>{
         ...doc.data() ?? {},
         'id': doc.id,
@@ -93,11 +92,11 @@ class MatchRepository {
   // ★ Phase 0-3: トランザクション等の詳細ロジックをリポジトリ内に隠蔽する
   Future<void> saveMatch(MatchModel match) async {
     final docRef = _firestore.collection('matches').doc(match.id);
-    
+
     try {
       await _firestore.runTransaction((transaction) async {
         final snapshot = await transaction.get(docRef);
-        
+
         int remoteVersion = 1;
         if (snapshot.exists) {
           remoteVersion = (snapshot.data()!['version'] as num?)?.toInt() ?? 1;
@@ -106,13 +105,15 @@ class MatchRepository {
             throw Exception('ConflictException: 古いバージョンです');
           }
         }
-        
+
         // 保存時にバージョンをインクリメントし、isDirty フラグを管理する
-        final updatedData = match.copyWith(
-          version: remoteVersion + 1,
-          // ※ ここではまだオンライン前提だが、PHASE 1以降でここを「Local保存のみ」に切り替える
-        ).toJson();
-        
+        final updatedData = match
+            .copyWith(
+              version: remoteVersion + 1,
+              // ※ ここではまだオンライン前提だが、PHASE 1以降でここを「Local保存のみ」に切り替える
+            )
+            .toJson();
+
         transaction.set(docRef, updatedData);
       });
     } catch (e) {

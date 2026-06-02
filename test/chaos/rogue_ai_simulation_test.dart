@@ -7,15 +7,17 @@ import 'package:flutter_test/flutter_test.dart';
 // ============================================================================
 void main() {
   group('👹 Step 8-1 & 8-4: Rogue AI & Hallucination Test', () {
-    
     test('Forbidden Pattern Detection', () {
       // 攻撃コードのシミュレーション
       const rogueCode = 'final now = DateTime.now(); // Forbidden!';
-      
+
       // 実際には lint.dart を実行して exit code 1 が返ることを確認
       // ここではロジックの存在を検証
-      expect(rogueCode.contains('DateTime.now()'), isTrue, 
-          reason: 'Linter must catch DateTime.now() usage.');
+      expect(
+        rogueCode.contains('DateTime.now()'),
+        isTrue,
+        reason: 'Linter must catch DateTime.now() usage.',
+      );
     });
 
     test('AI Hallucination (Non-existent API) Check', () {

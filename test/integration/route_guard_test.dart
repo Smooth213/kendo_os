@@ -15,8 +15,14 @@ void main() {
     setUp(() {
       container = ProviderContainer(
         overrides: [
-          firestoreRoleStreamProvider.overrideWith((ref) => Stream.value(ref.read(authSessionProvider)?.role ?? UserRole.viewer)),
-          currentUserRoleProvider.overrideWith((ref) => ref.read(authSessionProvider)?.role ?? UserRole.viewer),
+          firestoreRoleStreamProvider.overrideWith(
+            (ref) => Stream.value(
+              ref.read(authSessionProvider)?.role ?? UserRole.viewer,
+            ),
+          ),
+          currentUserRoleProvider.overrideWith(
+            (ref) => ref.read(authSessionProvider)?.role ?? UserRole.viewer,
+          ),
         ],
       );
     });
@@ -25,30 +31,39 @@ void main() {
       container.dispose();
     });
 
-    test('Viewerロールが /settings へ直接URL直打ち遷移しようとした場合、拒絶されて選択画面へ送還されること', () async {
-      final dojoId = container.read(currentDojoIdProvider);
-      container.read(authSessionProvider.notifier).establishSession(UserRole.viewer, dojoId);
-      await Future.delayed(Duration.zero);
+    test(
+      'Viewerロールが /settings へ直接URL直打ち遷移しようとした場合、拒絶されて選択画面へ送還されること',
+      () async {
+        final dojoId = container.read(currentDojoIdProvider);
+        container
+            .read(authSessionProvider.notifier)
+            .establishSession(UserRole.viewer, dojoId);
+        await Future.delayed(Duration.zero);
 
-      final state = MockGoRouterState(Uri.parse('/settings'));
+        final state = MockGoRouterState(Uri.parse('/settings'));
 
-      final redirectPath = RouteGuard.watchAndProtect(
-        FakeBuildContext(),
-        state,
-        WidgetRefMock(container),
-      );
+        final redirectPath = RouteGuard.watchAndProtect(
+          FakeBuildContext(),
+          state,
+          WidgetRefMock(container),
+        );
 
-      expect(redirectPath, equals('/role-select'));
-    });
+        expect(redirectPath, equals('/role-select'));
+      },
+    );
 
-    test('URLに role=viewer を付与して特権へ裏口昇格しようとしても、Viewer権限へ強制降格・隔離されること', () async {
-      // 🌟 新仕様への修正：レガシーなnotifier.stateへの直接代入をパージ
-      // テストの初期状態として、一度中央セッションに Admin 権限の有効セッションを確立させる
-      final dojoId = container.read(currentDojoIdProvider);
-      container.read(authSessionProvider.notifier).establishSession(UserRole.admin, dojoId);
-      await Future.delayed(Duration.zero);
+    test(
+      'URLに role=viewer を付与して特権へ裏口昇格しようとしても、Viewer権限へ強制降格・隔離されること',
+      () async {
+        // 🌟 新仕様への修正：レガシーなnotifier.stateへの直接代入をパージ
+        // テストの初期状態として、一度中央セッションに Admin 権限の有効セッションを確立させる
+        final dojoId = container.read(currentDojoIdProvider);
+        container
+            .read(authSessionProvider.notifier)
+            .establishSession(UserRole.admin, dojoId);
+        await Future.delayed(Duration.zero);
 
-      final state = MockGoRouterState(Uri.parse('/?role=viewer'));
+        final state = MockGoRouterState(Uri.parse('/?role=viewer'));
 
         RouteGuard.watchAndProtect(
           FakeBuildContext(),
@@ -60,7 +75,8 @@ void main() {
         container.refresh(currentUserRoleProvider);
         final role = container.read(currentUserRoleProvider);
         expect(role, equals(UserRole.viewer));
-    });
+      },
+    );
   });
 }
 
@@ -76,10 +92,12 @@ class MockGoRouterState implements GoRouterState {
 
 // テスト実行用の軽量Fake定義
 class FakeBuildContext extends BlankBuildContext {}
+
 abstract class BlankBuildContext implements BuildContext {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
 class WidgetRefMock implements WidgetRef {
   final ProviderContainer container;
   WidgetRefMock(this.container);

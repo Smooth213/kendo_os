@@ -35,7 +35,6 @@ class RuleSchemaRegistry {
 /// 12-3: DSL変換境界整理
 /// 将来のパーサー(String -> Config)実装に備え、まずは Config -> DSL文字列 のエクスポート口を確保
 abstract class RuleDslMapper {
-  
   /// 現在のルール設定を人間が読めるDSLライクな文字列に変換
   static String exportToDsl(TournamentRuleConfig config) {
     final buffer = StringBuffer();
@@ -70,7 +69,9 @@ abstract class RuleDslMapper {
   /// 外部スクリプトや不正なテキストパースを媒介とした、実行時のルール動的改ざん（Import）を100%完全拒否・封鎖します。
   static void importFromDsl(String dsl) {
     if (!BetaFeatureFlags.showRuleDslEditor) {
-      throw UnsupportedError('🔒 DSL Import Violation: 外部DSLからのルール動的上書きは、一般のStage2 β環境では完全に禁止されています。');
+      throw UnsupportedError(
+        '🔒 DSL Import Violation: 外部DSLからのルール動的上書きは、一般のStage2 β環境では完全に禁止されています。',
+      );
     }
   }
 }

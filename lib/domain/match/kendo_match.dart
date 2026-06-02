@@ -5,7 +5,7 @@ import 'package:kendo_os/domain/entities/event_settings.dart';
 part 'kendo_match.freezed.dart';
 part 'kendo_match.g.dart';
 
-enum MatchStatus { waiting, playing, done } 
+enum MatchStatus { waiting, playing, done }
 
 @freezed
 abstract class TeamInfo with _$TeamInfo {
@@ -15,7 +15,8 @@ abstract class TeamInfo with _$TeamInfo {
     @Default([]) List<String> memberIds,
   }) = _TeamInfo;
 
-  factory TeamInfo.fromJson(Map<String, dynamic> json) => _$TeamInfoFromJson(json);
+  factory TeamInfo.fromJson(Map<String, dynamic> json) =>
+      _$TeamInfoFromJson(json);
 }
 
 @freezed
@@ -33,7 +34,8 @@ abstract class SubMatch with _$SubMatch {
     @Default([]) List<ScoreEvent> events,
   }) = _SubMatch;
 
-  factory SubMatch.fromJson(Map<String, dynamic> json) => _$SubMatchFromJson(json);
+  factory SubMatch.fromJson(Map<String, dynamic> json) =>
+      _$SubMatchFromJson(json);
 }
 
 @freezed
@@ -55,5 +57,6 @@ abstract class KendoMatch with _$KendoMatch {
     @Default([]) List<SubMatch> subMatches,
   }) = _KendoMatch;
 
-  factory KendoMatch.fromJson(Map<String, dynamic> json) => _$KendoMatchFromJson(json);
+  factory KendoMatch.fromJson(Map<String, dynamic> json) =>
+      _$KendoMatchFromJson(json);
 }

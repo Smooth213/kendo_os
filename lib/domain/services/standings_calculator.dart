@@ -87,10 +87,10 @@ class LeagueStandingsCalculator implements StandingsCalculator<List<LeagueTeamSt
     final sortedList = statsMap.values.toList();
     sortedList.sort((a, b) {
       if (rule.winPoint > 0 || rule.drawPoint > 0) {
-        if (b.customPoints != a.customPoints) return b.customPoints.compareTo(a.customPoints);
+        if (b.customPoints != a.customPoints) { return b.customPoints.compareTo(a.customPoints); }
       }
-      if (b.matchWins != a.matchWins) return b.matchWins.compareTo(a.matchWins);
-      if (b.individualWinners != a.individualWinners) return b.individualWinners.compareTo(a.individualWinners);
+      if (b.matchWins != a.matchWins) { return b.matchWins.compareTo(a.matchWins); }
+      if (b.individualWinners != a.individualWinners) { return b.individualWinners.compareTo(a.individualWinners); }
       return b.totalPointsScored.compareTo(a.totalPointsScored);
     });
 

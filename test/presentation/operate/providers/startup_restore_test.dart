@@ -13,9 +13,19 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           // ストリームがFirestoreに依存せず、安全にローカルモックデータをミリ秒で返すことを擬似保証
-          matchStreamProvider.overrideWith((ref) => Stream.value([
-            MatchModel(id: 'match_001', matchType: '団体戦', redName: '先鋒(紅)', whiteName: '先鋒(白)', order: 1.0, status: 'in_progress', events: []),
-          ])),
+          matchStreamProvider.overrideWith(
+            (ref) => Stream.value([
+              MatchModel(
+                id: 'match_001',
+                matchType: '団体戦',
+                redName: '先鋒(紅)',
+                whiteName: '先鋒(白)',
+                order: 1.0,
+                status: 'in_progress',
+                events: [],
+              ),
+            ]),
+          ),
         ],
       );
 
@@ -24,21 +34,31 @@ void main() {
 
       // 起動（初期読み込み）
       final matches = container.read(matchListProvider);
-      
+
       // 🌟 判定：通信を待たずに、即座にIsar内の前回の試合Projectionが画面に供給されているか
       expect(matches.length, 1);
       expect(matches.first.id, 'match_001');
       expect(matches.first.status, 'in_progress');
-      
+
       container.dispose();
     });
 
     test('2. アプリが途中クラッシュ・Safari強制リロードされても状態が崩壊しないこと', () async {
       final container = ProviderContainer(
         overrides: [
-          matchStreamProvider.overrideWith((ref) => Stream.value([
-            MatchModel(id: 'match_001', matchType: '団体戦', redName: '先鋒(紅)', whiteName: '先鋒(白)', order: 1.0, status: 'finished', events: []),
-          ])),
+          matchStreamProvider.overrideWith(
+            (ref) => Stream.value([
+              MatchModel(
+                id: 'match_001',
+                matchType: '団体戦',
+                redName: '先鋒(紅)',
+                whiteName: '先鋒(白)',
+                order: 1.0,
+                status: 'finished',
+                events: [],
+              ),
+            ]),
+          ),
         ],
       );
 
@@ -47,7 +67,7 @@ void main() {
 
       // クラッシュ・リロード後の再読み込みシーケンスをシミュレート
       final restoredMatches = container.read(matchListProvider);
-      
+
       expect(restoredMatches.first.status, 'finished');
       container.dispose();
     });

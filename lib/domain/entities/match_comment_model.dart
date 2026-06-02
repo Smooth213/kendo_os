@@ -8,7 +8,9 @@ part 'match_comment_model.freezed.dart';
 part 'match_comment_model.g.dart';
 
 @freezed
-abstract class MatchCommentModel with _$MatchCommentModel implements TimelineItem {
+abstract class MatchCommentModel
+    with _$MatchCommentModel
+    implements TimelineItem {
   const MatchCommentModel._();
 
   const factory MatchCommentModel({
@@ -23,14 +25,15 @@ abstract class MatchCommentModel with _$MatchCommentModel implements TimelineIte
     @SafeTimestampConverter() DateTime? lastUpdatedAt,
   }) = _MatchCommentModel;
 
-  factory MatchCommentModel.fromJson(Map<String, dynamic> json) => _$MatchCommentModelFromJson(json);
+  factory MatchCommentModel.fromJson(Map<String, dynamic> json) =>
+      _$MatchCommentModelFromJson(json);
 
   @override
   String get timelineId => id;
-  
+
   @override
   double get timelineOrder => order;
-  
+
   @override
   TimelineItemType get itemType => TimelineItemType.comment;
 

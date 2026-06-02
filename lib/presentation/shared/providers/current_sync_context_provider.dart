@@ -10,7 +10,10 @@ String _getOrCreateDeviceId() {
     final saved = PwaStorage.getItem('kendo_os_device_id');
     if (saved != null && saved.isNotEmpty) return saved;
 
-    final randomStr = List.generate(4, (_) => Random().nextInt(1000000).toString().padLeft(6, '0')).join('-');
+    final randomStr = List.generate(
+      4,
+      (_) => Random().nextInt(1000000).toString().padLeft(6, '0'),
+    ).join('-');
     final newId = 'dev-$randomStr';
     PwaStorage.setItem('kendo_os_device_id', newId);
     return newId;
@@ -31,7 +34,9 @@ final currentDojoIdProvider = StateProvider<String>((ref) {
 final currentSyncContextProvider = Provider<CurrentSyncContext>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
   final session = ref.watch(authSessionProvider);
-  final UserRole activeRole = (session != null && !session.isExpired) ? session.role : UserRole.viewer;
+  final UserRole activeRole = (session != null && !session.isExpired)
+      ? session.role
+      : UserRole.viewer;
   final deviceId = _getOrCreateDeviceId();
 
   return CurrentSyncContext(

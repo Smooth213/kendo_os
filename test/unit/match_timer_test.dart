@@ -18,7 +18,7 @@ void main() {
         whiteName: '白組',
         status: 'waiting',
         matchTimeMinutes: 3.0, // 3分 = 180秒
-        timerStartedAt: null,   // まだ動いていない
+        timerStartedAt: null, // まだ動いていない
         timerPausedAt: null,
       );
 
@@ -59,10 +59,10 @@ void main() {
 
       // 一時停止から1時間（3600秒）が経過した劣悪な環境をシミュレート
       final futureTime = baseTime.add(const Duration(hours: 1));
-      
+
       // 内部的には蓄積された経過時間（accMs）等から逆算されるため、時間が進んでも残り秒数は変わらない
       final remaining = match.calculateRemainingSeconds(futureTime);
-      expect(remaining, isNotNull); 
+      expect(remaining, isNotNull);
     });
 
     test('4. 【無制限・代表戦】代表戦や時間無制限（0分設定）の場合、残り秒数がマイナスに突入せず安全にフォールバックされること', () {
@@ -81,7 +81,10 @@ void main() {
       final remaining = match.calculateRemainingSeconds(timePassed);
 
       // 代表戦の特殊なカウントアップ、または0秒ガードが破綻しないことを検証
-      expect(remaining, isPlatformWithDirectionality ? isNotNull : subtitleIsEmptyOrVerified);
+      expect(
+        remaining,
+        isPlatformWithDirectionality ? isNotNull : subtitleIsEmptyOrVerified,
+      );
     });
   });
 }

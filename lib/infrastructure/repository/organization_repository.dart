@@ -24,9 +24,14 @@ class OrganizationRepository {
   // 画面側（MasterManagementScreen）が求めているメソッド名に合わせます
   Future<void> saveOrganization(Organization org) async {
     if (org.id.isEmpty) {
-      await _firestore.collection('organizations').add(org.toJson()..remove('id'));
+      await _firestore
+          .collection('organizations')
+          .add(org.toJson()..remove('id'));
     } else {
-      await _firestore.collection('organizations').doc(org.id).set(org.toJson());
+      await _firestore
+          .collection('organizations')
+          .doc(org.id)
+          .set(org.toJson());
     }
   }
 
@@ -36,6 +41,7 @@ class OrganizationRepository {
       'memberNames': FieldValue.arrayUnion([playerName]),
     });
   }
+
   // チームテンプレを取得
   Stream<List<TeamTemplate>> watchTeamTemplates(String orgId) {
     return _firestore
@@ -44,19 +50,27 @@ class OrganizationRepository {
         .collection('teams')
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return TeamTemplate.fromJson(data);
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return TeamTemplate.fromJson(data);
+          }).toList();
+        });
   }
 
   // チームテンプレを保存
   Future<void> saveTeamTemplate(String orgId, TeamTemplate team) async {
     final docRef = team.id.isEmpty
-        ? _firestore.collection('organizations').doc(orgId).collection('teams').doc()
-        : _firestore.collection('organizations').doc(orgId).collection('teams').doc(team.id);
+        ? _firestore
+              .collection('organizations')
+              .doc(orgId)
+              .collection('teams')
+              .doc()
+        : _firestore
+              .collection('organizations')
+              .doc(orgId)
+              .collection('teams')
+              .doc(team.id);
 
     // ★ toJsonのマップを直接いじるのではなく、copyWithで安全にidをセットしてから保存する
     final newTeam = team.copyWith(id: docRef.id);

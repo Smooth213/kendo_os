@@ -13,33 +13,44 @@ import 'package:documentation_runtime/manual_routes.dart';
 
 // ★ Step 6-1: 新しい全文検索インデックス (manual_search_index.json) を読み込む
 final manualIndexProvider = FutureProvider<List<dynamic>>((ref) async {
-  final jsonString = await rootBundle.loadString('docs/manuals/manual_search_index.json');
+  final jsonString = await rootBundle.loadString(
+    'docs/manuals/manual_search_index.json',
+  );
   final decoded = jsonDecode(jsonString);
 
   // 新しいList形式の場合
   if (decoded is List) {
     return decoded;
-  } 
+  }
   // 古いMap形式（以前のロードマップの遺物）が残っていた場合のフェイルセーフ（自動変換）
   else if (decoded is Map) {
-    return decoded.entries.map((e) => {
-      'path': e.key,
-      'title': e.value['title'] ?? '無題',
-      'headings': [],
-      'tags': e.value['keywords'] ?? [],
-    }).toList();
+    return decoded.entries
+        .map(
+          (e) => {
+            'path': e.key,
+            'title': e.value['title'] ?? '無題',
+            'headings': [],
+            'tags': e.value['keywords'] ?? [],
+          },
+        )
+        .toList();
   }
-  
+
   return [];
 });
 
 class EmbeddedManualScreen extends ConsumerStatefulWidget {
   final String? initialFilePath;
   final String? initialSearchQuery;
-  const EmbeddedManualScreen({super.key, this.initialFilePath, this.initialSearchQuery});
+  const EmbeddedManualScreen({
+    super.key,
+    this.initialFilePath,
+    this.initialSearchQuery,
+  });
 
   @override
-  ConsumerState<EmbeddedManualScreen> createState() => _EmbeddedManualScreenState();
+  ConsumerState<EmbeddedManualScreen> createState() =>
+      _EmbeddedManualScreenState();
 }
 
 class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
@@ -68,15 +79,20 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
 
   Future<void> _loadMarkdown(String path) async {
     setState(() => _isLoading = true);
-    
+
     // ★ 修正1: リンクや古いインデックスからの不正なパスを強制的に正しいfaqディレクトリへ補正
     if (path.endsWith('viewer_faq.md')) path = 'docs/manuals/faq/viewer_faq.md';
-    if (path.endsWith('operator_faq.md')) path = 'docs/manuals/faq/operator_faq.md';
+    if (path.endsWith('operator_faq.md')) {
+      path = 'docs/manuals/faq/operator_faq.md';
+    }
 
     try {
       final rawContent = await rootBundle.loadString(path);
       // AI用メタデータを取り除く
-      String content = rawContent.replaceFirst(RegExp(r'^---\s*\n.*?\n---\s*\n', dotAll: true), '');
+      String content = rawContent.replaceFirst(
+        RegExp(r'^---\s*\n.*?\n---\s*\n', dotAll: true),
+        '',
+      );
 
       // 検索語がある場合、Markdown内で目立たせる
       if (_searchQuery.isNotEmpty) {
@@ -86,8 +102,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
           (match) => '***${match.group(0)}***',
         );
       }
-      
-      if (widget.initialSearchQuery != null && widget.initialSearchQuery!.isNotEmpty) {
+
+      if (widget.initialSearchQuery != null &&
+          widget.initialSearchQuery!.isNotEmpty) {
         final query = widget.initialSearchQuery!;
         content = content.replaceAllMapped(
           RegExp(RegExp.escape(query), caseSensitive: false),
@@ -103,7 +120,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
     } catch (e) {
       setState(() {
         // ★ 修正2: pubspec.yaml への追加忘れをフォローする親切なエラー画面
-        _markdownContent = '# 📄 読み込みエラー\n\nファイルが見つかりません: `$path`\n\n'
+        _markdownContent =
+            '# 📄 読み込みエラー\n\nファイルが見つかりません: `$path`\n\n'
             '**【開発者の方へ：pubspec.yamlの確認】**\n'
             'このファイルが新しく追加されたフォルダ（例: `faq/`）にある場合、'
             'アプリの `pubspec.yaml` の `assets:` セクションにそのフォルダパスが登録されていない可能性があります。\n\n'
@@ -131,7 +149,11 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
           width: isWideScreen ? 320 : null,
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-            border: Border(right: BorderSide(color: isDark ? Colors.white12 : Colors.black12)),
+            border: Border(
+              right: BorderSide(
+                color: isDark ? Colors.white12 : Colors.black12,
+              ),
+            ),
           ),
           child: Column(
             children: [
@@ -150,16 +172,24 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
                             tooltip: '検索をクリアして一覧に戻る',
                             onPressed: () {
                               _searchController.clear(); // 検索枠の文字を消去
-                              setState(() => _searchQuery = ''); // 検索状態をリセットして一覧を再描画
+                              setState(
+                                () => _searchQuery = '',
+                              ); // 検索状態をリセットして一覧を再描画
                             },
                           )
                         : null,
                     filled: true,
-                    fillColor: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                    fillColor: isDark
+                        ? Colors.white10
+                        : Colors.black.withValues(alpha: 0.05),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   ),
-                  onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+                  onChanged: (val) =>
+                      setState(() => _searchQuery = val.toLowerCase()),
                 ),
               ),
               Expanded(
@@ -168,32 +198,48 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
                     final results = indexList.where((item) {
                       if (_searchQuery.isEmpty) return true;
                       final title = item['title'].toString().toLowerCase();
-                      final headings = (item['headings'] as List).join(' ').toLowerCase();
-                      final tags = (item['tags'] as List).join(' ').toLowerCase();
+                      final headings = (item['headings'] as List)
+                          .join(' ')
+                          .toLowerCase();
+                      final tags = (item['tags'] as List)
+                          .join(' ')
+                          .toLowerCase();
                       return title.contains(_searchQuery) ||
-                             headings.contains(_searchQuery) ||
-                             tags.contains(_searchQuery);
+                          headings.contains(_searchQuery) ||
+                          tags.contains(_searchQuery);
                     }).toList();
 
                     return ListView.separated(
                       itemCount: results.length,
-                      separatorBuilder: (_, _) => Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                      separatorBuilder: (_, _) => Divider(
+                        height: 1,
+                        color: isDark ? Colors.white10 : Colors.black12,
+                      ),
                       itemBuilder: (ctx, i) {
                         final path = results[i]['path'];
                         final title = results[i]['title'];
                         final isSelected = path == _currentFilePath;
                         return ListTile(
                           dense: true,
-                          title: Text(title, style: TextStyle(
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? Colors.blueAccent : null,
-                          )),
-                          subtitle: _searchQuery.isNotEmpty ? Text(
-                            (results[i]['headings'] as List).take(2).join(' / '),
-                            style: const TextStyle(fontSize: 10),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ) : null,
+                          title: Text(
+                            title,
+                            style: TextStyle(
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected ? Colors.blueAccent : null,
+                            ),
+                          ),
+                          subtitle: _searchQuery.isNotEmpty
+                              ? Text(
+                                  (results[i]['headings'] as List)
+                                      .take(2)
+                                      .join(' / '),
+                                  style: const TextStyle(fontSize: 10),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              : null,
                           onTap: () {
                             _loadMarkdown(path);
                             // スマホ画面ならタップ後にドロワーを閉じる
@@ -203,8 +249,10 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
                       },
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) => Center(child: Text('Index Error: $err')),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) =>
+                      Center(child: Text('Index Error: $err')),
                 ),
               ),
             ],
@@ -222,7 +270,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
               selectable: false,
               onTapLink: (text, href, title) {
                 if (href == null || href.startsWith('http')) return;
-                
+
                 // ★ 修正1: ページ内リンク（#単体）がタップされても、エラー画面に行かないよう完全に無視する
                 if (href.startsWith('#')) return;
 
@@ -239,7 +287,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
                 // 現在のファイルのディレクトリを取得
                 final dirSegments = _currentFilePath.split('/');
                 dirSegments.removeLast();
-                
+
                 // 相対パスを絶対パスに変換
                 final hrefSegments = href.split('/');
                 for (final segment in hrefSegments) {
@@ -254,17 +302,31 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
                     }
                   }
                 }
-                
+
                 final targetPath = dirSegments.join('/');
                 _loadMarkdown(targetPath);
               },
               styleSheet: MarkdownStyleSheet(
-                h1: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blueAccent),
-                h2: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal, decoration: TextDecoration.underline),
+                h1: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+                h2: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal,
+                  decoration: TextDecoration.underline,
+                ),
                 p: const TextStyle(fontSize: 16, height: 1.7),
-                code: TextStyle(backgroundColor: isDark ? Colors.white10 : Colors.black12),
+                code: TextStyle(
+                  backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                ),
                 // ★ 修正4: リンクの色と下線を「明示的」に指定し、確実に水色にする
-                a: const TextStyle(color: Colors.blueAccent, decoration: TextDecoration.underline),
+                a: const TextStyle(
+                  color: Colors.blueAccent,
+                  decoration: TextDecoration.underline,
+                ),
                 em: TextStyle(
                   backgroundColor: Colors.yellow.withValues(alpha: 0.5),
                   color: isDark ? Colors.white : Colors.black,
@@ -296,27 +358,29 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
           ),
         ],
       ),
-      body: Builder(builder: (context) {
-        return Stack(
-          children: [
-            isWideScreen
-                ? Row(children: [buildIndexPane(), markdownPane])
-                : Column(children: [markdownPane]),
-            if (!isWideScreen)
-              Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  mini: true,
-                  backgroundColor: Theme.of(context).primaryColor,
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                  tooltip: 'メニューを開く',
-                  child: const Icon(Icons.search, color: Colors.white),
+      body: Builder(
+        builder: (context) {
+          return Stack(
+            children: [
+              isWideScreen
+                  ? Row(children: [buildIndexPane(), markdownPane])
+                  : Column(children: [markdownPane]),
+              if (!isWideScreen)
+                Positioned(
+                  right: 16,
+                  bottom: 16,
+                  child: FloatingActionButton(
+                    mini: true,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    tooltip: 'メニューを開く',
+                    child: const Icon(Icons.search, color: Colors.white),
+                  ),
                 ),
-              ),
-          ],
-        );
-      }),
+            ],
+          );
+        },
+      ),
     );
   }
 }

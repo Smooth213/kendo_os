@@ -7,7 +7,8 @@ enum ManualRoute {
   operateCreate('operate_create', 'docs/manuals/operator/create_tournament.md'),
   operateRecord('operate_record', 'docs/manuals/operator/official_record.md'),
   operateAudit('operate_audit', 'docs/manuals/operator/audit_log.md'),
-  operateRecovery('operate_recovery', 'docs/manuals/recovery/failure_catalog.md');
+  operateRecovery(
+      'operate_recovery', 'docs/manuals/recovery/failure_catalog.md');
 
   final String id;
   final String path;

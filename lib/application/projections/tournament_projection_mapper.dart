@@ -4,12 +4,14 @@ import 'package:kendo_os/application/projections/tournament_projection.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/services/team_match_calculator.dart'; 
+import 'package:kendo_os/domain/services/team_match_calculator.dart';
 
 class TournamentProjectionMapper {
-  
   /// ★ 修正: 内部で toListProjection を使用し、軽量版のリストを作るように変更
-  static TournamentProjection fromModels(TournamentModel tournament, List<MatchModel> matches) {
+  static TournamentProjection fromModels(
+    TournamentModel tournament,
+    List<MatchModel> matches,
+  ) {
     final engine = KendoRuleEngine();
     final projections = matches.map((m) {
       final analysis = engine.analyzeHistory(m.events, m, m.rule);
@@ -21,13 +23,16 @@ class TournamentProjectionMapper {
   }
 
   // ★ Phase 5: MatchProjection(詳細) ではなく MatchListProjection(軽量) を受け取るように修正
-  static TournamentProjection fromProjections(TournamentModel tournament, List<MatchListProjection> projections) {
+  static TournamentProjection fromProjections(
+    TournamentModel tournament,
+    List<MatchListProjection> projections,
+  ) {
     return _buildTournamentProjection(tournament, projections);
   }
 
   /// 内部の共通組み立てロジック
   static TournamentProjection _buildTournamentProjection(
-    TournamentModel tournament, 
+    TournamentModel tournament,
     List<MatchListProjection> projections,
   ) {
     final Map<String, TeamMatchProjection> teamMatches = {};
@@ -35,18 +40,22 @@ class TournamentProjectionMapper {
 
     for (var p in projections) {
       if (p.groupName.isEmpty) continue;
-      
+
       final cat = '全カテゴリ';
       categoryToGroupKeys.putIfAbsent(cat, () => {}).add(p.groupName);
 
       if (!teamMatches.containsKey(p.groupName)) {
-        final groupProjections = projections.where((m) => m.groupName == p.groupName).toList();
+        final groupProjections = projections
+            .where((m) => m.groupName == p.groupName)
+            .toList();
 
         // 団体戦結果の簡易計算
         int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
         bool hasDaihyo = false;
-        bool allFinished = groupProjections.every((m) => m.status == 'approved' || m.status == 'finished');
-        
+        bool allFinished = groupProjections.every(
+          (m) => m.status == 'approved' || m.status == 'finished',
+        );
+
         for (var m in groupProjections) {
           if (m.matchType == '代表戦') {
             hasDaihyo = true;
@@ -61,7 +70,7 @@ class TournamentProjectionMapper {
             wPts += m.whiteScore;
           }
         }
-        
+
         String winner = 'draw';
         if (allFinished) {
           if (rWins > wWins) {
@@ -78,8 +87,12 @@ class TournamentProjectionMapper {
         teamMatches[p.groupName] = TeamMatchProjection(
           groupName: p.groupName,
           matchType: p.matchType,
-          redTeamName: p.redName.contains(':') ? p.redName.split(':').first.trim() : p.redName,
-          whiteTeamName: p.whiteName.contains(':') ? p.whiteName.split(':').first.trim() : p.whiteName,
+          redTeamName: p.redName.contains(':')
+              ? p.redName.split(':').first.trim()
+              : p.redName,
+          whiteTeamName: p.whiteName.contains(':')
+              ? p.whiteName.split(':').first.trim()
+              : p.whiteName,
           isKachinuki: p.isKachinuki,
           isLeague: p.note.contains('[リーグ戦]'),
           note: p.note,
@@ -100,9 +113,11 @@ class TournamentProjectionMapper {
 
     return TournamentProjection(
       tournament: tournament,
-      allMatches: projections, 
+      allMatches: projections,
       teamMatches: teamMatches,
-      categoryToGroupKeys: categoryToGroupKeys.map((k, v) => MapEntry(k, v.toList())),
+      categoryToGroupKeys: categoryToGroupKeys.map(
+        (k, v) => MapEntry(k, v.toList()),
+      ),
     );
   }
 }

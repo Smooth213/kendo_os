@@ -1,10 +1,6 @@
 /// ★ Phase 2-1: 1ファイル完全統合 兼 Event Immutable化
 /// タイムライン上のコメントイベントを定義する、完全 Immutable（ const 緊縛）なドメインイベントモデル
-enum CommentEventType {
-  added,
-  updated,
-  deleted,
-}
+enum CommentEventType { added, updated, deleted }
 
 class CommentEvent {
   final String id;
@@ -39,10 +35,10 @@ class CommentEvent {
   int compareTo(CommentEvent other) {
     int clockCmp = logicalClock.compareTo(other.logicalClock);
     if (clockCmp != 0) return clockCmp;
-    
+
     int timeCmp = timestamp.compareTo(other.timestamp);
     if (timeCmp != 0) return timeCmp;
-    
+
     return id.compareTo(other.id);
   }
 }

@@ -23,10 +23,12 @@ class SoundService {
   }
 
   Future<void> configureAudio(bool ignoreMannerMode) async {
-    await AudioPlayer.global.setAudioContext(AudioContextConfig(
-      respectSilence: !ignoreMannerMode, 
-      stayAwake: true,       
-    ).build());
+    await AudioPlayer.global.setAudioContext(
+      AudioContextConfig(
+        respectSilence: !ignoreMannerMode,
+        stayAwake: true,
+      ).build(),
+    );
   }
 
   // ★ 汎用的な読み上げメソッド
@@ -37,7 +39,9 @@ class SoundService {
 
   Future<void> playScoreSound(bool isRed) async {
     final player = AudioPlayer();
-    await player.play(AssetSource(isRed ? 'sounds/red_score.mp3' : 'sounds/white_score.mp3'));
+    await player.play(
+      AssetSource(isRed ? 'sounds/red_score.mp3' : 'sounds/white_score.mp3'),
+    );
   }
 
   Future<void> playHansokuSound() async {

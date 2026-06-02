@@ -22,12 +22,12 @@ class MatchProjectionEntity {
   late String whiteName;
   late int redScore;
   late int whiteScore;
-  
+
   late String status; // 'waiting', 'in_progress', 'finished', 'approved'
-  
+
   String? winnerName;
   late DateTime lastUpdatedAt;
-  
+
   // 拡張表示用のメタデータ
   String? matchType;
   String? refereeNames;

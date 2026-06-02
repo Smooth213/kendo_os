@@ -17,7 +17,8 @@ void main(List<String> args) {
       hasViolation = true;
     }
     if (file.contains('score_event.dart')) {
-      print('❌ [ROOT VIOLATION] AI is prohibited from mutating Event Schema: $file');
+      print(
+          '❌ [ROOT VIOLATION] AI is prohibited from mutating Event Schema: $file');
       hasViolation = true;
     }
   }

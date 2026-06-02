@@ -10,11 +10,12 @@ import 'package:crypto/crypto.dart';
 // ============================================================================
 void main() {
   print('🔐 [Security Hardening] Verifying Rule Package Integrity...');
-  
+
   final ruleDir = Directory('lib/domain/rules');
   if (!ruleDir.existsSync()) exit(0);
 
-  final files = ruleDir.listSync(recursive: true)
+  final files = ruleDir
+      .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.dart'));
 
@@ -26,9 +27,9 @@ void main() {
   // ルールセット全体のハッシュ値を計算
   final bytes = utf8.encode(allContent);
   final digest = sha256.convert(bytes);
-  
+
   print('🛡️ Current Rule Set Hash: $digest');
-  
+
   // 本来は承認されたハッシュリストと比較
   // ここでは完全性の検証ができる基盤を構築
   print('✅ Integrity check passed.');

@@ -9,9 +9,10 @@ import 'dart:math';
 // ============================================================================
 void main() {
   print('📝 [Doc Style Linter] Starting Appliance Quality Audit...');
-  
+
   final manualsDir = Directory('docs/manuals');
-  final mdFiles = manualsDir.listSync(recursive: true)
+  final mdFiles = manualsDir
+      .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.md') && !f.path.contains('templates'));
 
@@ -42,8 +43,9 @@ void main() {
 
   for (final file in mdFiles) {
     // 対象外ファイル、またはgovernanceディレクトリは完全にスキップ
-    if (excludeFromAudit.any((ex) => file.path.endsWith(ex)) || file.path.contains('/governance/')) continue;
-    
+    if (excludeFromAudit.any((ex) => file.path.endsWith(ex)) ||
+        file.path.contains('/governance/')) { continue; }
+
     final lines = file.readAsLinesSync();
     int lineNumber = 0;
     bool inCodeBlock = false;
@@ -51,7 +53,7 @@ void main() {
 
     for (final line in lines) {
       lineNumber++;
-      
+
       // YAMLメタデータやコードブロック内部はスキップ
       if (line.trim() == '---') {
         inMetadataBlock = !inMetadataBlock;
@@ -63,26 +65,35 @@ void main() {
         continue;
       }
       // コードブロック内、見出し、画像、または表(Table)の行はスキップ
-      if (inCodeBlock || line.startsWith('#') || line.startsWith('![') || line.trim().startsWith('|')) {
+      if (inCodeBlock ||
+          line.startsWith('#') ||
+          line.startsWith('![') ||
+          line.trim().startsWith('|')) {
         continue;
       }
 
       // 1. NGワードチェック
       ngWords.forEach((ng, ok) {
         // UIなどの短い単語がURL等に誤爆しないよう、単語境界を意識した正規表現でチェック
-        final regExp = RegExp(r'\b' + RegExp.escape(ng) + r'\b', caseSensitive: false);
+        final regExp =
+            RegExp(r'\b' + RegExp.escape(ng) + r'\b', caseSensitive: false);
         if (regExp.hasMatch(line)) {
-          print('❌ [NG Word Violation] ${file.path}:$lineNumber\n   Found "$ng". Please use "$ok".');
+          print(
+              '❌ [NG Word Violation] ${file.path}:$lineNumber\n   Found "$ng". Please use "$ok".');
           hasViolation = true;
         }
       });
 
       // 2. 1文40文字以内チェック
-      final plainText = line.replaceAll(RegExp(r'\[.*?\]\(.*?\)'), '').replaceAll(RegExp(r'[*`_]'), '').trim();
+      final plainText = line
+          .replaceAll(RegExp(r'\[.*?\]\(.*?\)'), '')
+          .replaceAll(RegExp(r'[*`_]'), '')
+          .trim();
       final sentences = plainText.split('。');
       for (final sentence in sentences) {
         if (sentence.trim().length > 40) {
-          print('⚠️ [Length Warning] ${file.path}:$lineNumber\n   Sentence exceeds 40 chars: "${sentence.trim().substring(0, min(20, sentence.trim().length))}..."');
+          print(
+              '⚠️ [Length Warning] ${file.path}:$lineNumber\n   Sentence exceeds 40 chars: "${sentence.trim().substring(0, min(20, sentence.trim().length))}..."');
         }
       }
     }

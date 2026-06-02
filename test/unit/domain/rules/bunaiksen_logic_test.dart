@@ -32,10 +32,9 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container.read(bunaiksenRuleProvider.notifier).update((state) => state.copyWith(
-        isIpponShobu: true,
-        ipponLimit: 1,
-      ));
+      container
+          .read(bunaiksenRuleProvider.notifier)
+          .update((state) => state.copyWith(isIpponShobu: true, ipponLimit: 1));
 
       final rule = container.read(bunaiksenRuleProvider);
 
@@ -44,19 +43,34 @@ void main() {
 
       final engine = KendoRuleEngine();
       final mockMatch = MatchModel(
-        id: 'test', tournamentId: 't1', matchOrder: 1, order: 1,
-        redName: 'Red', whiteName: 'White',
-        status: 'in_progress', matchType: '個人戦',
+        id: 'test',
+        tournamentId: 't1',
+        matchOrder: 1,
+        order: 1,
+        redName: 'Red',
+        whiteName: 'White',
+        status: 'in_progress',
+        matchType: '個人戦',
       );
       final mockEvents = [
-        ScoreEvent(id: 'e1', side: Side.red, strikeType: StrikeType.men, isIppon: true, timestamp: DateTime.now())
+        ScoreEvent(
+          id: 'e1',
+          side: Side.red,
+          strikeType: StrikeType.men,
+          isIppon: true,
+          timestamp: DateTime.now(),
+        ),
       ];
-      
+
       final analysis = engine.analyzeHistory(mockEvents, mockMatch, rule);
       final result = engine.decideResult(analysis.context, rule);
-      
+
       expect(analysis.context.redIppon, 1);
-      expect(result, MatchResultStatus.redWin, reason: '1本勝負なので、1本先取した時点で勝利となるべき');
+      expect(
+        result,
+        MatchResultStatus.redWin,
+        reason: '1本勝負なので、1本先取した時点で勝利となるべき',
+      );
     });
   });
 
@@ -111,14 +125,51 @@ void main() {
   group('カテゴリ4: リーグ戦勝点（ポイント）計算ロジックのテスト', () {
     test('勝利した場合は勝ち点「3」、引き分けは「1」、敗北は「0」が付与されること', () {
       final mockMatches = [
-        MatchModel(id: '1', tournamentId: 'test', order: 1, matchType: 'リーグ', redName: 'Aチーム: 太郎', whiteName: 'Bチーム: 次郎', redScore: 2, whiteScore: 0, status: 'finished', events: []),
-        MatchModel(id: '2', tournamentId: 'test', order: 2, matchType: 'リーグ', redName: 'Aチーム: 太郎', whiteName: 'Cチーム: 三郎', redScore: 1, whiteScore: 1, status: 'finished', events: []),
-        MatchModel(id: '3', tournamentId: 'test', order: 3, matchType: 'リーグ', redName: 'Aチーム: 太郎', whiteName: 'Dチーム: 四郎', redScore: 0, whiteScore: 1, status: 'finished', events: []),
+        MatchModel(
+          id: '1',
+          tournamentId: 'test',
+          order: 1,
+          matchType: 'リーグ',
+          redName: 'Aチーム: 太郎',
+          whiteName: 'Bチーム: 次郎',
+          redScore: 2,
+          whiteScore: 0,
+          status: 'finished',
+          events: [],
+        ),
+        MatchModel(
+          id: '2',
+          tournamentId: 'test',
+          order: 2,
+          matchType: 'リーグ',
+          redName: 'Aチーム: 太郎',
+          whiteName: 'Cチーム: 三郎',
+          redScore: 1,
+          whiteScore: 1,
+          status: 'finished',
+          events: [],
+        ),
+        MatchModel(
+          id: '3',
+          tournamentId: 'test',
+          order: 3,
+          matchType: 'リーグ',
+          redName: 'Aチーム: 太郎',
+          whiteName: 'Dチーム: 四郎',
+          redScore: 0,
+          whiteScore: 1,
+          status: 'finished',
+          events: [],
+        ),
       ];
 
       final teamList = ['Aチーム', 'Bチーム', 'Cチーム', 'Dチーム'];
 
-      final pointsA = BunaiksenHelper.calculateCustomLeaguePoints('Aチーム', teamList, mockMatches);
+      final pointsA = BunaiksenHelper.calculateCustomLeaguePoints(
+        'Aチーム',
+        teamList,
+        mockMatches,
+      );
       // 2-0 (勝=3) + 1-1 (分=1) + 0-1 (負=0) = 4ポイント
       expect(pointsA, 4);
     });

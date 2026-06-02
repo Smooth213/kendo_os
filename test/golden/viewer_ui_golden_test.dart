@@ -22,22 +22,32 @@ void main() {
       final deviceName = entry.key;
       final size = entry.value;
 
-      testWidgets('【Goldenシミュレーション】$deviceName 環境における描画境界整合性テスト', (WidgetTester tester) async {
+      testWidgets('【Goldenシミュレーション】$deviceName 環境における描画境界整合性テスト', (
+        WidgetTester tester,
+      ) async {
         tester.view.physicalSize = size;
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
         final mockLocalMatchRepository = MockLocalMatchRepository();
-        when(() => mockLocalMatchRepository.watchAllLocalMatches()).thenAnswer((_) => Stream.value(<MatchModel>[]));
-        when(() => mockLocalMatchRepository.watchLocalMatches(any())).thenAnswer((_) => Stream.value(<MatchModel>[]));
+        when(
+          () => mockLocalMatchRepository.watchAllLocalMatches(),
+        ).thenAnswer((_) => Stream.value(<MatchModel>[]));
+        when(
+          () => mockLocalMatchRepository.watchLocalMatches(any()),
+        ).thenAnswer((_) => Stream.value(<MatchModel>[]));
 
         await tester.pumpWidget(
           createTestApp(
             const ViewerTeamScoreboardScreen(groupName: '一般の部_リーグ戦'),
             overrides: [
-              localMatchRepositoryProvider.overrideWithValue(mockLocalMatchRepository),
+              localMatchRepositoryProvider.overrideWithValue(
+                mockLocalMatchRepository,
+              ),
               matchListProvider.overrideWithValue([]),
-              matchListByTournamentProvider.overrideWith((ref, id) => Stream.value([])),
+              matchListByTournamentProvider.overrideWith(
+                (ref, id) => Stream.value([]),
+              ),
             ],
           ),
         );

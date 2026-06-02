@@ -21,12 +21,12 @@ class User {
 // ① OperationMode: アプリの動作モード
 enum OperationMode {
   tournament, // 大会モード（複数人でのクラウド共有・権限ガチガチ）
-  local,      // ローカルモード（個人道場や練習試合での簡易利用）
+  local, // ローカルモード（個人道場や練習試合での簡易利用）
 }
 
 // ② Role: ユーザーの役割
 enum Role {
-  admin,  // 大会管理者（全権限）
+  admin, // 大会管理者（全権限）
   scorer, // 記録係（担当試合のスコア入力のみ）
   editor, // ローカル用編集者（簡易操作）
   viewer, // 閲覧者（Web/QR参加者、入力不可）
@@ -98,13 +98,15 @@ class PermissionService {
   // スコア（イベント）追加の権限
   bool canAppend(User user, ScoreEvent event) {
     if (user.role == Role.viewer) return false;
-    
+
     // 例: 取り消し(Undo)や復元イベントは記録係以上のみ
     if (event.isUndo || event.isRestore || event.isCanceled) {
       return user.role == Role.admin || user.role == Role.scorer;
     }
-    
-    return user.role == Role.admin || user.role == Role.scorer || user.role == Role.editor;
+
+    return user.role == Role.admin ||
+        user.role == Role.scorer ||
+        user.role == Role.editor;
   }
 
   // 取り消しの権限
@@ -116,6 +118,8 @@ class PermissionService {
   // 時間切れ操作の権限
   bool canTimeUp(User user) {
     if (user.role == Role.viewer) return false;
-    return user.role == Role.admin || user.role == Role.scorer || user.role == Role.editor;
+    return user.role == Role.admin ||
+        user.role == Role.scorer ||
+        user.role == Role.editor;
   }
 }

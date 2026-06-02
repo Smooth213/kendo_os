@@ -48,7 +48,7 @@ class SyncEngine {
       for (final action in pendingActions) {
         // 重複送信防止（eventId / commandId の完全一致検証によるFirestoreべき等性担保）
         bool success = await _attemptUpload(action);
-        
+
         if (success) {
           // 送信成功時：Isar上の保留キューから物理削除
           await localRepo.deleteCommand(action.id);
@@ -57,7 +57,9 @@ class SyncEngine {
           // 劣悪ネットワーク環境下での指数バックオフ制御（最大5分まで段階的に遅延を挿入）
           _retryCount++;
           final backoffSeconds = min(pow(2, _retryCount).toInt(), 300);
-          debugPrint('⚠️ [Sync Engine] 通信断の可能性。指数バックオフを実行します。次の再送まで: $backoffSeconds秒');
+          debugPrint(
+            '⚠️ [Sync Engine] 通信断の可能性。指数バックオフを実行します。次の再送まで: $backoffSeconds秒',
+          );
           await Future.delayed(Duration(seconds: backoffSeconds));
           break; // 一度エラーが起きたら順序保証のため以降のキュー処理を中断
         }
@@ -72,7 +74,7 @@ class SyncEngine {
   Future<bool> _attemptUpload(SyncAction action) async {
     try {
       final remoteRepo = _ref.read(matchRepositoryProvider);
-      
+
       // ペイロード（Map形式）からドメインモデルへ完全復元
       // (※既存リポジトリが要求する型に合わせて安全にアップロードを試みます)
       if (action.payload.containsKey('id')) {

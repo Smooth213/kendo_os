@@ -9,12 +9,16 @@ import 'package:kendo_os/presentation/shared/providers/current_sync_context_prov
 // =========================================================================
 // 🛡️ 補正：プロジェクト全域でUndefinedエラーを吐いている firestoreProvider をここで安全に定義
 // =========================================================================
-final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
+final firestoreProvider = Provider<FirebaseFirestore>(
+  (ref) => FirebaseFirestore.instance,
+);
 
 // =========================================================================
 // ★ 追加: Web環境で特定の大会を読み込んだ際、グローバルにキャッシュを保持するプロバイダ
 // =========================================================================
-final webCurrentTournamentMatchesProvider = StateProvider<List<MatchModel>>((ref) => []);
+final webCurrentTournamentMatchesProvider = StateProvider<List<MatchModel>>(
+  (ref) => [],
+);
 final webCurrentTournamentIdProvider = StateProvider<String?>((ref) => null);
 
 // =========================================================================
@@ -36,9 +40,13 @@ final matchStreamProvider = StreamProvider<List<MatchModel>>((ref) {
   final localRepository = ref.watch(localMatchRepositoryProvider);
   return localRepository.watchAllLocalMatches().map((matches) {
     if (matches.isEmpty) {
-      debugPrint('⏳ [Startup Restore] Isar内にローカルキャッシュがありません。クラウド同期をバックグラウンドで待機します。');
+      debugPrint(
+        '⏳ [Startup Restore] Isar内にローカルキャッシュがありません。クラウド同期をバックグラウンドで待機します。',
+      );
     } else {
-      debugPrint('⚡ [Startup Restore] Isarローカルディスクから ${matches.length} 件の試合状態を一瞬で完全復元しました（電波ゼロOK）');
+      debugPrint(
+        '⚡ [Startup Restore] Isarローカルディスクから ${matches.length} 件の試合状態を一瞬で完全復元しました（電波ゼロOK）',
+      );
     }
     return matches;
   });
@@ -59,14 +67,24 @@ Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
       result[key] = _sanitizeFirestoreData(Map<String, dynamic>.from(value));
     } else if (value is List) {
       result[key] = value.map((e) {
-        if (e is Map) return _sanitizeFirestoreData(Map<String, dynamic>.from(e));
-        if (e is Timestamp) return e.toDate().toIso8601String();
+        if (e is Map) {
+          return _sanitizeFirestoreData(Map<String, dynamic>.from(e));
+        }
+        if (e is Timestamp) { return e.toDate().toIso8601String(); }
         return e;
       }).toList();
-    } else if ((key == 'order' || key == 'timelineOrder' || key == 'matchTimeMinutes' || key == 'extensionTimeMinutes' || key == 'enchoTimeMinutes') && value is num) {
+    } else if ((key == 'order' ||
+            key == 'timelineOrder' ||
+            key == 'matchTimeMinutes' ||
+            key == 'extensionTimeMinutes' ||
+            key == 'enchoTimeMinutes') &&
+        value is num) {
       // Firestoreからintで返ってきた場合のdoubleキャストエラー（Web特有のリスト消失バグ）を防ぐ
       result[key] = value.toDouble();
-    } else if ((key == 'redScore' || key == 'whiteScore' || key == 'matchOrder') && value is num) {
+    } else if ((key == 'redScore' ||
+            key == 'whiteScore' ||
+            key == 'matchOrder') &&
+        value is num) {
       result[key] = value.toInt();
     } else {
       result[key] = value;
@@ -89,7 +107,10 @@ final matchListProvider = Provider<List<MatchModel>>((ref) {
 });
 
 // 💡 特定の大会IDで厳密に絞り込みたい画面のための family 版も別名で安全に維持
-final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, String>((ref, tournamentId) {
+final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, String>((
+  ref,
+  tournamentId,
+) {
   // 🌟 Webアプリ表示不具合修正パッチ（アーカイブ遅延対策）
   // Webブラウザ環境のとき、Isarの代わりにFirestoreから特定の大会の試合のみをピンポイントで取得し、
   // アーカイブデータ増大による読み込み遅延とフリーズを完全に防ぎます。
@@ -97,8 +118,12 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     final firestore = ref.watch(firestoreProvider);
     final dojoId = ref.watch(currentDojoIdProvider);
 
-    debugPrint('🌐 [matchListByTournamentProvider] Webモード監視開始 - dojoId: "$dojoId", tournamentId: "$tournamentId"');
-    debugPrint('🌐 [matchListByTournamentProvider] Firestore instance: ${firestore.app.name}');
+    debugPrint(
+      '🌐 [matchListByTournamentProvider] Webモード監視開始 - dojoId: "$dojoId", tournamentId: "$tournamentId"',
+    );
+    debugPrint(
+      '🌐 [matchListByTournamentProvider] Firestore instance: ${firestore.app.name}',
+    );
 
     // ★ Web環境キャッシュ補正: 現在の大会IDを更新し、古い大会データを誤って再利用しないようにする
     // ★ Web環境のリスト消失完全対策：
@@ -107,7 +132,11 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     // どこか1つのパスでもデータが取得できたら即座にUIへ反映する最強のフォールバック・ストリームを構築します。
     final controller = StreamController<List<MatchModel>>();
     final List<StreamSubscription> subs = [];
-    final Map<String, List<MatchModel>> cache = {'root': [], 'sub': [], 'org': []};
+    final Map<String, List<MatchModel>> cache = {
+      'root': [],
+      'sub': [],
+      'org': [],
+    };
     final Set<String> respondedSources = {};
 
     final currentTournamentKey = tournamentId;
@@ -120,9 +149,13 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     void emitBestMatches() {
       if (controller.isClosed) return;
       // 取得できたデータ件数が最も多いパスのデータを正として採用
-      final bestMatches = cache.values.reduce((a, b) => a.length > b.length ? a : b);
+      final bestMatches = cache.values.reduce(
+        (a, b) => a.length > b.length ? a : b,
+      );
       if (bestMatches.isEmpty && !hasAllSourcesResponded()) {
-        debugPrint('🌐 [matchListByTournamentProvider] まだ全てのWeb検索結果が揃っていません。currentTournamentId=$currentTournamentKey, responded=${respondedSources.join(', ')}');
+        debugPrint(
+          '🌐 [matchListByTournamentProvider] まだ全てのWeb検索結果が揃っていません。currentTournamentId=$currentTournamentKey, responded=${respondedSources.join(', ')}',
+        );
         return;
       }
 
@@ -131,8 +164,10 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
       // ★ 追加: メモリ上のグローバルキャッシュにも最新データを保存し、スコア画面などでの迷子を防止
       Future.microtask(() {
         try {
-          if (ref.read(webCurrentTournamentIdProvider) == currentTournamentKey) {
-            ref.read(webCurrentTournamentMatchesProvider.notifier).state = bestMatches;
+          if (ref.read(webCurrentTournamentIdProvider) ==
+              currentTournamentKey) {
+            ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+                bestMatches;
           }
         } catch (_) {}
       });
@@ -149,73 +184,132 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     }
 
     controller.onListen = () {
-        debugPrint('🌐 [matchListByTournamentProvider] onListen called - setting up subscriptions');
+      debugPrint(
+        '🌐 [matchListByTournamentProvider] onListen called - setting up subscriptions',
+      );
       // 1. ルートコレクション (単一フィールド検索のため自動インデックスで必ず動作)
-      subs.add(firestore.collection('matches').where('tournamentId', isEqualTo: tournamentId).snapshots().listen(
-        (snap) {
-            debugPrint('🌐 [matchListByTournamentProvider] root snapshot size: ${snap.docs.length}');
-          respondedSources.add('root');
-          cache['root'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
-          emitBestMatches();
-        },
-        onError: (e) {
-          debugPrint('🚨 [Match Query Error] root: $e');
-          respondedSources.add('root');
-          emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
-        },
-      ));
+      subs.add(
+        firestore
+            .collection('matches')
+            .where('tournamentId', isEqualTo: tournamentId)
+            .snapshots()
+            .listen(
+              (snap) {
+                debugPrint(
+                  '🌐 [matchListByTournamentProvider] root snapshot size: ${snap.docs.length}',
+                );
+                respondedSources.add('root');
+                cache['root'] = snap.docs
+                    .map(parseMatch)
+                    .whereType<MatchModel>()
+                    .toList();
+                emitBestMatches();
+              },
+              onError: (e) {
+                debugPrint('🚨 [Match Query Error] root: $e');
+                respondedSources.add('root');
+                emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
+              },
+            ),
+      );
 
       // 2. 大会サブコレクション (検索条件すら不要のためインデックス完全不要)
-      subs.add(firestore.collection('tournaments').doc(tournamentId).collection('matches').snapshots().listen(
-        (snap) {
-            debugPrint('🌐 [matchListByTournamentProvider] sub snapshot size: ${snap.docs.length}');
-          respondedSources.add('sub');
-          cache['sub'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
-          emitBestMatches();
-        },
-        onError: (e) {
-          debugPrint('🚨 [Match Query Error] sub: $e');
-          respondedSources.add('sub');
-          emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
-        },
-      ));
+      subs.add(
+        firestore
+            .collection('tournaments')
+            .doc(tournamentId)
+            .collection('matches')
+            .snapshots()
+            .listen(
+              (snap) {
+                debugPrint(
+                  '🌐 [matchListByTournamentProvider] sub snapshot size: ${snap.docs.length}',
+                );
+                respondedSources.add('sub');
+                cache['sub'] = snap.docs
+                    .map(parseMatch)
+                    .whereType<MatchModel>()
+                    .toList();
+                emitBestMatches();
+              },
+              onError: (e) {
+                debugPrint('🚨 [Match Query Error] sub: $e');
+                respondedSources.add('sub');
+                emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
+              },
+            ),
+      );
 
       // 3. 道場サブコレクション
       if (dojoId.isNotEmpty) {
-        subs.add(firestore.collection('organizations').doc(dojoId).collection('matches').where('tournamentId', isEqualTo: tournamentId).snapshots().listen(
-          (snap) {
-              debugPrint('🌐 [matchListByTournamentProvider] org snapshot size: ${snap.docs.length}');
-            respondedSources.add('org');
-            cache['org'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
-            emitBestMatches();
-          },
-          onError: (e) {
-            debugPrint('🚨 [Match Query Error] org: $e');
-            respondedSources.add('org');
-            emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
-          },
-        ));
+        subs.add(
+          firestore
+              .collection('organizations')
+              .doc(dojoId)
+              .collection('matches')
+              .where('tournamentId', isEqualTo: tournamentId)
+              .snapshots()
+              .listen(
+                (snap) {
+                  debugPrint(
+                    '🌐 [matchListByTournamentProvider] org snapshot size: ${snap.docs.length}',
+                  );
+                  respondedSources.add('org');
+                  cache['org'] = snap.docs
+                      .map(parseMatch)
+                      .whereType<MatchModel>()
+                      .toList();
+                  emitBestMatches();
+                },
+                onError: (e) {
+                  debugPrint('🚨 [Match Query Error] org: $e');
+                  respondedSources.add('org');
+                  emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
+                },
+              ),
+        );
       }
 
       // 4. フォールバック: collectionGroup で大会ID一致のマッチを探索（道場IDが不明な場合の最終手段）
-      subs.add(firestore.collectionGroup('matches').where('tournamentId', isEqualTo: tournamentId).snapshots().listen((snap) {
-        debugPrint('🌐 [matchListByTournamentProvider] collectionGroup matches snapshot size: ${snap.docs.length}');
-        respondedSources.add('group');
-        cache['group'] = snap.docs.map((doc) {
-          try {
-            final data = _sanitizeFirestoreData((doc.data() as Map<String, dynamic>?) ?? {});
-            return MatchModel.fromJson({...data, 'id': (doc as DocumentSnapshot).id});
-          } catch (e) {
-            debugPrint('🚨 [Parse Error - collectionGroup match] ${doc.id} -> $e');
-            return null;
-          }
-        }).whereType<MatchModel>().toList();
-        emitBestMatches();
-      }, onError: (e) {
-        debugPrint('🚨 [Match Query Error] collectionGroup: $e');
-        respondedSources.add('group');
-        emitBestMatches();
-      }));
+      subs.add(
+        firestore
+            .collectionGroup('matches')
+            .where('tournamentId', isEqualTo: tournamentId)
+            .snapshots()
+            .listen(
+              (snap) {
+                debugPrint(
+                  '🌐 [matchListByTournamentProvider] collectionGroup matches snapshot size: ${snap.docs.length}',
+                );
+                respondedSources.add('group');
+                cache['group'] = snap.docs
+                    .map((doc) {
+                      try {
+                        final data = _sanitizeFirestoreData(
+                          (doc.data() as Map<String, dynamic>?) ?? {},
+                        );
+                        return MatchModel.fromJson({
+                          ...data,
+                          'id': (doc as DocumentSnapshot).id,
+                        });
+                      } catch (e) {
+                        debugPrint(
+                          '🚨 [Parse Error - collectionGroup match] ${doc.id} -> $e',
+                        );
+                        return null;
+                      }
+                    })
+                    .whereType<MatchModel>()
+                    .toList();
+                emitBestMatches();
+              },
+              onError: (e) {
+                debugPrint('🚨 [Match Query Error] collectionGroup: $e');
+                respondedSources.add('group');
+                emitBestMatches();
+              },
+            ),
+      );
     };
 
     void cleanup() {

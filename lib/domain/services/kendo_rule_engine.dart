@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/match/match_model.dart'; 
+import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/domain/match/match_context.dart';
@@ -47,10 +47,15 @@ class ValidationResult {
 /// ==========================================
 class KendoRuleEngine {
   // ★ Phase 5: アダプター(toRuleConfig)経由で階層型ConfigとしてResolverを呼び出す
-  MatchRuleSet _getRuleSet(TournamentRuleConfig config) => RuleResolver.build(config);
-  
+  MatchRuleSet _getRuleSet(TournamentRuleConfig config) =>
+      RuleResolver.build(config);
+
   /// 1. 歴史（Events）から現在の状況をすべて解析する最重要メソッド
-  MatchAnalysis analyzeHistory(List<ScoreEvent> allEvents, MatchModel match, MatchRule? rule) {
+  MatchAnalysis analyzeHistory(
+    List<ScoreEvent> allEvents,
+    MatchModel match,
+    MatchRule? rule,
+  ) {
     final safeRule = rule ?? const MatchRule();
     final config = safeRule.toRuleConfig; // ★ 新Configへ変換
     final ruleSet = _getRuleSet(config);
@@ -63,34 +68,51 @@ class KendoRuleEngine {
     // ★ 階層型Configの使用に書き換え
     if (config.scoring.isIpponShobu) {
       target = 1;
-    } else if (config.scoring.ipponLimit != 2 && config.scoring.ipponLimit > 0) {
+    } else if (config.scoring.ipponLimit != 2 &&
+        config.scoring.ipponLimit > 0) {
       target = config.scoring.ipponLimit;
     }
 
     final hasHantei = config.draw.hasHantei; // ★ 階層型Config
-    
+
     MatchContext currentContext = MatchContext(
-      redIppon: 0, whiteIppon: 0,
-      redHansoku: 0, whiteHansoku: 0,
+      redIppon: 0,
+      whiteIppon: 0,
+      redHansoku: 0,
+      whiteHansoku: 0,
       isTimeUp: false,
-      targetIppon: target, 
+      targetIppon: target,
       hasHantei: hasHantei,
     );
 
     // 1. Scoring Rule 適用
-    var ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.calculateRemainingSeconds(SystemTimeSource().now()).toDouble());
+    var ruleCtx = RuleContext(
+      matchState: currentContext,
+      events: activeEvents,
+      tournamentConfig: config,
+      clock: match
+          .calculateRemainingSeconds(SystemTimeSource().now())
+          .toDouble(),
+    );
     var res = ruleSet.scoring.apply(ruleCtx);
     if (res.transition != null) currentContext = res.transition!.updatedState;
 
     // 2. Hansoku Rule 適用
-    ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.calculateRemainingSeconds(SystemTimeSource().now()).toDouble());
+    ruleCtx = RuleContext(
+      matchState: currentContext,
+      events: activeEvents,
+      tournamentConfig: config,
+      clock: match
+          .calculateRemainingSeconds(SystemTimeSource().now())
+          .toDouble(),
+    );
     res = ruleSet.hansoku.apply(ruleCtx);
     if (res.transition != null) currentContext = res.transition!.updatedState;
-    
+
     // 延長戦・代表戦（サドンデス）の規定本数を事後計算で補正
     if (match.matchType == '延長戦' || match.matchType == '代表戦') {
-      int minScore = currentContext.redIppon < currentContext.whiteIppon 
-          ? currentContext.redIppon 
+      int minScore = currentContext.redIppon < currentContext.whiteIppon
+          ? currentContext.redIppon
           : currentContext.whiteIppon;
       currentContext = MatchContext(
         redIppon: currentContext.redIppon,
@@ -104,23 +126,36 @@ class KendoRuleEngine {
     }
 
     // 3. Time Rule 適用
-    ruleCtx = RuleContext(matchState: currentContext, events: activeEvents, tournamentConfig: config, clock: match.calculateRemainingSeconds(SystemTimeSource().now()).toDouble());
+    ruleCtx = RuleContext(
+      matchState: currentContext,
+      events: activeEvents,
+      tournamentConfig: config,
+      clock: match
+          .calculateRemainingSeconds(SystemTimeSource().now())
+          .toDouble(),
+    );
     res = ruleSet.time.apply(ruleCtx);
     if (res.transition != null) currentContext = res.transition!.updatedState;
 
     final displays = _buildDisplays(activeEvents, currentContext);
 
-    return MatchAnalysis(
-      context: currentContext,
-      displays: displays,
-    );
+    return MatchAnalysis(context: currentContext, displays: displays);
   }
 
   /// 2. 勝敗の決定ロジック (動的生成されたVictoryRuleに委譲)
-  MatchResultStatus decideResult(MatchContext ctx, [MatchRule? rule, List<ScoreEvent> events = const []]) {
+  MatchResultStatus decideResult(
+    MatchContext ctx, [
+    MatchRule? rule,
+    List<ScoreEvent> events = const [],
+  ]) {
     final safeRule = rule ?? const MatchRule();
     final config = safeRule.toRuleConfig;
-    final ruleCtx = RuleContext(matchState: ctx, events: events, tournamentConfig: config, clock: 0);
+    final ruleCtx = RuleContext(
+      matchState: ctx,
+      events: events,
+      tournamentConfig: config,
+      clock: 0,
+    );
     final res = _getRuleSet(config).victory.apply(ruleCtx);
     return res.transition?.resultStatus ?? MatchResultStatus.inProgress;
   }
@@ -132,20 +167,29 @@ class KendoRuleEngine {
   }
 
   /// 4. 延長突入判定
-  bool shouldEnterEncho(MatchContext ctx, bool allowsEncho, [MatchRule? rule, List<ScoreEvent> events = const []]) {
+  bool shouldEnterEncho(
+    MatchContext ctx,
+    bool allowsEncho, [
+    MatchRule? rule,
+    List<ScoreEvent> events = const [],
+  ]) {
     // ★ Phase 8: 明示的な決着イベント(判定・引き分け)がある場合、延長戦には絶対に入らない
     for (var e in events) {
       if (e.isCanceled) continue;
       final eStr = e.toString().toLowerCase();
-      if (e.isHantei || eStr.contains('hantei') || eStr.contains('draw') || eStr.contains('hikiwake') || eStr.contains('tie')) {
-        return false; 
+      if (e.isHantei ||
+          eStr.contains('hantei') ||
+          eStr.contains('draw') ||
+          eStr.contains('hikiwake') ||
+          eStr.contains('tie')) {
+        return false;
       }
     }
 
-    return ctx.isTimeUp && 
-           ctx.redIppon == ctx.whiteIppon && 
-           allowsEncho && 
-           decideResult(ctx, rule, events) == MatchResultStatus.draw;
+    return ctx.isTimeUp &&
+        ctx.redIppon == ctx.whiteIppon &&
+        allowsEncho &&
+        decideResult(ctx, rule, events) == MatchResultStatus.draw;
   }
 
   /// (New) イベント履歴を考慮した完全な勝敗判定メソッド (外部からの呼び出し推奨用)
@@ -156,11 +200,15 @@ class KendoRuleEngine {
   }
 
   /// 5. 入力バリデーション
-  ValidationResult validateEvent(MatchModel match, ScoreEvent event, MatchContext ctx) {
+  ValidationResult validateEvent(
+    MatchModel match,
+    ScoreEvent event,
+    MatchContext ctx,
+  ) {
     if (match.events.any((e) => e.id == event.id)) {
       return ValidationResult(false, '重複入力です。');
     }
-    
+
     // ★ Phase 2: Undoイベント専用のバリデーション（空の時にUndoさせない）
     if (event.isUndo || event.type == PointType.undo) {
       final activeEvents = _filterActiveEvents(match.events);
@@ -169,21 +217,22 @@ class KendoRuleEngine {
       }
       return ValidationResult(true); // Undoは試合終了後でも可能なためここで許可
     }
-    
+
     // ★ Phase 2-3: Redoイベント専用のバリデーション
     if (event.isRestore || event.type == PointType.restore) {
       return ValidationResult(true); // Redoも試合終了後でも許可 (無効な場合はReducerが安全に無視する)
     }
 
     final bool isHanteiEvent = event.isHantei || event.type == PointType.hantei;
-    
+
     if (match.status == 'finished' || match.status == 'approved') {
       if (!event.isUndo && !isHanteiEvent) {
         return ValidationResult(false, '試合は既に終了しています。');
       }
     }
     if (!event.isUndo && !event.isHansoku && !isHanteiEvent) {
-      if (ctx.redIppon >= ctx.targetIppon || ctx.whiteIppon >= ctx.targetIppon) {
+      if (ctx.redIppon >= ctx.targetIppon ||
+          ctx.whiteIppon >= ctx.targetIppon) {
         return ValidationResult(false, '既に規定本数に達しています。');
       }
     }
@@ -202,48 +251,48 @@ class KendoRuleEngine {
   // 古いデータとの後方互換性も完全に維持。
   List<ScoreEvent> _filterActiveEvents(List<ScoreEvent> events) {
     List<ScoreEvent> active = [];
-    List<ScoreEvent> undone = []; 
-    int pendingUndoCount = 0; 
+    List<ScoreEvent> undone = [];
+    int pendingUndoCount = 0;
 
     for (var e in events) {
       // 1. レガシー対応: 過去のバージョンで直接 isCanceled=true にされたイベント
       if (e.isCanceled) {
         pendingUndoCount++;
-        continue; 
+        continue;
       }
-      
+
       // 2. 取り刺し（Undo）イベントの処理
       if (e.isUndo || e.type == PointType.undo) {
         if (e.targetId.isNotEmpty) {
-           // ★ 新アーキテクチャ: targetId に一致するイベントを active から消し、undone に退避
-           final targetIndex = active.indexWhere((ev) => ev.id == e.targetId);
-           if (targetIndex != -1) {
-             undone.add(active.removeAt(targetIndex));
-           }
+          // ★ 新アーキテクチャ: targetId に一致するイベントを active から消し、undone に退避
+          final targetIndex = active.indexWhere((ev) => ev.id == e.targetId);
+          if (targetIndex != -1) {
+            undone.add(active.removeAt(targetIndex));
+          }
         } else {
-           // ★ レガシー対応: targetId が無い昔のUndoイベントの場合
-           if (pendingUndoCount > 0) {
-             pendingUndoCount--;
-             continue; // すでに上の isCanceled=true で消えているはずなので無視
-           }
-           if (active.isNotEmpty) {
-             undone.add(active.removeLast());
-           }
+          // ★ レガシー対応: targetId が無い昔のUndoイベントの場合
+          if (pendingUndoCount > 0) {
+            pendingUndoCount--;
+            continue; // すでに上の isCanceled=true で消えているはずなので無視
+          }
+          if (active.isNotEmpty) {
+            undone.add(active.removeLast());
+          }
         }
-      } 
+      }
       // 3. やり直し（Redo / Restore）イベントの処理
       else if (e.isRestore || e.type == PointType.restore) {
         if (e.targetId.isNotEmpty) {
-           final targetIndex = undone.indexWhere((ev) => ev.id == e.targetId);
-           if (targetIndex != -1) {
-             active.add(undone.removeAt(targetIndex));
-           }
+          final targetIndex = undone.indexWhere((ev) => ev.id == e.targetId);
+          if (targetIndex != -1) {
+            active.add(undone.removeAt(targetIndex));
+          }
         } else {
-           if (undone.isNotEmpty) {
-             active.add(undone.removeLast());
-           }
+          if (undone.isNotEmpty) {
+            active.add(undone.removeLast());
+          }
         }
-      } 
+      }
       // 4. 通常の打突・反則・判定イベントの処理
       else {
         active.add(e);
@@ -253,7 +302,10 @@ class KendoRuleEngine {
     return active;
   }
 
-  Map<Side, List<PointDisplay>> _buildDisplays(List<ScoreEvent> activeEvents, MatchContext finalContext) {
+  Map<Side, List<PointDisplay>> _buildDisplays(
+    List<ScoreEvent> activeEvents,
+    MatchContext finalContext,
+  ) {
     List<PointDisplay> redDisplays = [];
     List<PointDisplay> whiteDisplays = [];
     bool isFirstOfMatch = true;
@@ -263,7 +315,8 @@ class KendoRuleEngine {
       if (e.isHansoku) {
         if (e.side == Side.red) {
           rHansoku++;
-          if (isHansokuIppon(rHansoku)) { // ※本当はruleを渡したいがUI表示上の互換維持のため一旦そのまま
+          if (isHansokuIppon(rHansoku)) {
+            // ※本当はruleを渡したいがUI表示上の互換維持のため一旦そのまま
             whiteDisplays.add(PointDisplay('反', isFirstOfMatch));
             isFirstOfMatch = false;
           }
@@ -302,11 +355,16 @@ class KendoRuleEngine {
     if (event.isHantei) return '判定';
     if (event.isFusen) return '◯';
     switch (event.strikeType) {
-      case StrikeType.men: return 'メ';
-      case StrikeType.kote: return 'コ';
-      case StrikeType.dou: return 'ド';
-      case StrikeType.tsuki: return 'ツ';
-      default: return null;
+      case StrikeType.men:
+        return 'メ';
+      case StrikeType.kote:
+        return 'コ';
+      case StrikeType.dou:
+        return 'ド';
+      case StrikeType.tsuki:
+        return 'ツ';
+      default:
+        return null;
     }
   }
 
@@ -322,20 +380,27 @@ class KendoRuleEngine {
     if (currentMatch.isKachinuki) {
       return _analyzeKachinukiStatus(currentMatch, rule, lastSettings);
     }
-    
+
     if (groupMatches.length <= 1) {
       return GroupMatchStatus(
-        isAllDone: currentMatch.status == 'finished' || currentMatch.status == 'approved'
+        isAllDone:
+            currentMatch.status == 'finished' ||
+            currentMatch.status == 'approved',
       );
     }
 
     return _analyzeTeamMatchStatus(groupMatches, rule);
   }
 
-  GroupMatchStatus _analyzeTeamMatchStatus(List<MatchModel> matches, MatchRule? rule) {
-    bool isAllDone = matches.every((m) => m.status == 'finished' || m.status == 'approved');
+  GroupMatchStatus _analyzeTeamMatchStatus(
+    List<MatchModel> matches,
+    MatchRule? rule,
+  ) {
+    bool isAllDone = matches.every(
+      (m) => m.status == 'finished' || m.status == 'approved',
+    );
     bool hasDaihyo = matches.any((m) => m.matchType == '代表戦');
-    
+
     if (isAllDone && !hasDaihyo) {
       int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
       for (var m in matches) {
@@ -354,37 +419,52 @@ class KendoRuleEngine {
     return GroupMatchStatus(isAllDone: isAllDone, isTie: false);
   }
 
-  GroupMatchStatus _analyzeKachinukiStatus(MatchModel currentMatch, MatchRule? rule, Map<String, dynamic>? lastSettings) {
+  GroupMatchStatus _analyzeKachinukiStatus(
+    MatchModel currentMatch,
+    MatchRule? rule,
+    Map<String, dynamic>? lastSettings,
+  ) {
     bool isTie = false;
     bool isAllDone = false;
 
     if (currentMatch.redScore == currentMatch.whiteScore) {
-      final bool isTaishoVsTaisho = currentMatch.redRemaining.isEmpty && currentMatch.whiteRemaining.isEmpty;
+      final bool isTaishoVsTaisho =
+          currentMatch.redRemaining.isEmpty &&
+          currentMatch.whiteRemaining.isEmpty;
       if (isTaishoVsTaisho) {
         String kType = rule?.kachinukiUnlimitedType ?? '';
         int maxExt = lastSettings?['extensionCount'] ?? -2;
         int currentExt = '延長'.allMatches(currentMatch.note).length;
-        
-        bool canExtend = kType == '大将引き分け延長' && (maxExt == -2 || maxExt == -1 || currentExt < maxExt);
-        if (canExtend && currentMatch.matchType != '大将延長戦' && currentMatch.status != 'finished') {
+
+        bool canExtend =
+            kType == '大将引き分け延長' &&
+            (maxExt == -2 || maxExt == -1 || currentExt < maxExt);
+        if (canExtend &&
+            currentMatch.matchType != '大将延長戦' &&
+            currentMatch.status != 'finished') {
           isAllDone = false;
         } else {
           isAllDone = true;
           isTie = true;
         }
       } else {
-        isAllDone = (currentMatch.redRemaining.isEmpty || currentMatch.whiteRemaining.isEmpty);
+        isAllDone =
+            (currentMatch.redRemaining.isEmpty ||
+            currentMatch.whiteRemaining.isEmpty);
       }
     } else {
-      isAllDone = (currentMatch.redScore > currentMatch.whiteScore) 
-          ? currentMatch.whiteRemaining.isEmpty 
+      isAllDone = (currentMatch.redScore > currentMatch.whiteScore)
+          ? currentMatch.whiteRemaining.isEmpty
           : currentMatch.redRemaining.isEmpty;
     }
 
     return GroupMatchStatus(isAllDone: isAllDone, isTie: isTie);
   }
 
-  static List<LeagueTeamStat> calculateLeagueStandings(List<MatchModel> matches, MatchRule rule) {
+  static List<LeagueTeamStat> calculateLeagueStandings(
+    List<MatchModel> matches,
+    MatchRule rule,
+  ) {
     return LeagueStandingsCalculator().calculate(matches, rule);
   }
 }

@@ -18,21 +18,49 @@ void main() {
 
     test('2. 【抽選ロジックE2E】選手登録➔抽選実行➔対戦表生成までが数学的に整合すること', () async {
       final matches = <MatchModel>[
-        MatchModel(id: 'm1', matchType: '個人戦', redName: '選手A', whiteName: '選手B', syncState: SyncState.synced),
-        MatchModel(id: 'm2', matchType: '個人戦', redName: '選手C', whiteName: '選手D', syncState: SyncState.synced),
+        MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '選手A',
+          whiteName: '選手B',
+          syncState: SyncState.synced,
+        ),
+        MatchModel(
+          id: 'm2',
+          matchType: '個人戦',
+          redName: '選手C',
+          whiteName: '選手D',
+          syncState: SyncState.synced,
+        ),
       ];
       expect(matches.length, equals(2));
     });
 
     test('3. 【試合進行E2E】開始➔得点(一本)➔終了➔承認のステート遷移が完全であること', () async {
-      final match = MatchModel(id: 'm1', matchType: '個人戦', redName: '選手A', whiteName: '選手B', syncState: SyncState.synced, status: 'waiting');
-      
+      final match = MatchModel(
+        id: 'm1',
+        matchType: '個人戦',
+        redName: '選手A',
+        whiteName: '選手B',
+        syncState: SyncState.synced,
+        status: 'waiting',
+      );
+
       // 試合開始
       final playing = match.copyWith(status: 'playing');
       // 一本入力
       final finished = playing.copyWith(
         status: 'finished',
-        events: [ScoreEvent(id: 'ev1', side: Side.red, strikeType: StrikeType.men, isIppon: true, timestamp: DateTime.now(), logicalClock: 1)],
+        events: [
+          ScoreEvent(
+            id: 'ev1',
+            side: Side.red,
+            strikeType: StrikeType.men,
+            isIppon: true,
+            timestamp: DateTime.now(),
+            logicalClock: 1,
+          ),
+        ],
       );
 
       expect(playing.status, 'playing');

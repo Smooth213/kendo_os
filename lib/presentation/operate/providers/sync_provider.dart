@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
-import 'match_list_provider.dart'; 
+import 'match_list_provider.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart';
@@ -29,13 +29,20 @@ Map<String, dynamic> _sanitizeForSync(Map<String, dynamic> data) {
       result[key] = _sanitizeForSync(Map<String, dynamic>.from(value));
     } else if (value is List) {
       result[key] = value.map((e) {
-        if (e is Map) return _sanitizeForSync(Map<String, dynamic>.from(e));
-        if (e is Timestamp) return e.toDate().toIso8601String();
+        if (e is Map) { return _sanitizeForSync(Map<String, dynamic>.from(e)); }
+        if (e is Timestamp) { return e.toDate().toIso8601String(); }
         return e;
       }).toList();
-    } else if ((key == 'order' || key == 'matchTimeMinutes' || key == 'extensionTimeMinutes' || key == 'enchoTimeMinutes') && value is num) {
+    } else if ((key == 'order' ||
+            key == 'matchTimeMinutes' ||
+            key == 'extensionTimeMinutes' ||
+            key == 'enchoTimeMinutes') &&
+        value is num) {
       result[key] = value.toDouble();
-    } else if ((key == 'redScore' || key == 'whiteScore' || key == 'matchOrder') && value is num) {
+    } else if ((key == 'redScore' ||
+            key == 'whiteScore' ||
+            key == 'matchOrder') &&
+        value is num) {
       result[key] = value.toInt();
     } else {
       result[key] = value;
@@ -92,7 +99,9 @@ class SyncEngine {
   bool _needsSyncAgain = false; // ★ 追加：同期中に書き込みがあった場合の「おかわり」フラグ
 
   SyncEngine(this.ref) {
-    if (kIsWeb) return; // ★ 修正: Webブラウザ（Viewer）環境ではローカルDB(Isar)を持たないため、同期エンジン全体を物理的に停止させる
+    if (kIsWeb) {
+      return; // ★ 修正: Webブラウザ（Viewer）環境ではローカルDB(Isar)を持たないため、同期エンジン全体を物理的に停止させる
+    }
 
     // ★ 修正: アプリ起動時に古い未送信データをクリーンアップする
     _cleanupOldPendingData();
@@ -116,17 +125,20 @@ class SyncEngine {
     final lifecycleListener = AppLifecycleListener(
       onStateChange: (AppLifecycleState state) {
         // ユーザーがアプリを閉じた、または別のアプリに切り替えた瞬間に実行
-        if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+        if (state == AppLifecycleState.paused ||
+            state == AppLifecycleState.inactive) {
           _autoBackupToJson();
-          
+
           // ★ Phase 8-4: アプリがスリープする前の「最後の数秒間」を使って未送信データを強制送信
           debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。未送信データの強制同期を試行します...');
           syncNow();
         }
-        
+
         // ★ Phase 2-3 & 2-5: アプリがフォアグラウンドに復帰した瞬間に作動
         if (state == AppLifecycleState.resumed) {
-          debugPrint('☀️ [Lifecycle] アプリが復帰しました。Drift監視とReconnect Replayを開始します...');
+          debugPrint(
+            '☀️ [Lifecycle] アプリが復帰しました。Drift監視とReconnect Replayを開始します...',
+          );
           _performReconnectReplay();
         }
       },
@@ -147,7 +159,7 @@ class SyncEngine {
       final localRepo = ref.read(localMatchRepositoryProvider);
       final rule = ref.read(matchRuleProvider);
       final rebuilder = ref.read(rebuildMatchFromEventsUseCaseProvider);
-      
+
       // メモリ上の現在の状態を取得
       final matches = ref.read(matchListProvider);
       int driftCount = 0;
@@ -157,10 +169,10 @@ class SyncEngine {
 
         // 過去のイベントから「正しい現在」を再計算（Projection Rebuild）
         MatchModel rebuiltMatch = rebuilder.execute(match, rule);
-        
+
         // ★ 修正: リビルド処理がユーザーの明示的なステータス変更(finished等)を勝手に戻してしまうのを防ぐ
         rebuiltMatch = rebuiltMatch.copyWith(status: match.status);
-        
+
         // ★ Phase 2-4: Drift Monitor (ズレ検知)
         bool hasDrift = false;
         if (rebuiltMatch.redScore != match.redScore) hasDrift = true;
@@ -168,7 +180,9 @@ class SyncEngine {
 
         if (hasDrift) {
           driftCount++;
-          debugPrint('⚠️ [Drift Monitor] 試合 ${match.id} に状態の矛盾(Drift)を検知しました。歴史を正として修復します。');
+          debugPrint(
+            '⚠️ [Drift Monitor] 試合 ${match.id} に状態の矛盾(Drift)を検知しました。歴史を正として修復します。',
+          );
           // ズレていた場合のみ、再構築した正しい状態をローカルDBへ上書き
           await localRepo.saveMatch(rebuiltMatch);
         }
@@ -179,13 +193,12 @@ class SyncEngine {
       } else {
         debugPrint('✅ [Drift Monitor] すべての試合状態は歴史(Events)と完全に一致しています。');
       }
-
     } catch (e) {
       debugPrint('🔥 [Reconnect Replay] 復旧・監査プロセス中にエラーが発生しました: $e');
     } finally {
       _isDone();
       // 修復完了後、未送信データがあればサーバーへ送信する
-      syncNow(); 
+      syncNow();
     }
   }
 
@@ -193,12 +206,13 @@ class SyncEngine {
   Future<void> _cleanupOldPendingData() async {
     final localRepo = ref.read(localMatchRepositoryProvider);
     final pendingMatches = await localRepo.getPendingMatches();
-    
+
     final now = DateTime.now();
     for (final match in pendingMatches) {
       // 30日以上前の未送信データは、何らかの理由で同期不能な「死んだデータ」とみなし、
       // 競合防止のため同期対象から外す（または管理者に通知する）
-      if (match.lastUpdatedAt != null && now.difference(match.lastUpdatedAt!).inDays > 30) {
+      if (match.lastUpdatedAt != null &&
+          now.difference(match.lastUpdatedAt!).inDays > 30) {
         debugPrint('🧹 [Cleanup] 30日以上経過した古い未送信データを同期対象から除外します: ${match.id}');
         await localRepo.markAsSynced(match.id);
       }
@@ -208,7 +222,7 @@ class SyncEngine {
   // ★ Phase 2: 裏でひっそりとJSONを書き出すメソッド
   Future<void> _autoBackupToJson() async {
     if (kIsWeb) return; // ★ 追加: Webブラウザ環境では端末へのファイル保存機能がサポートされていないためスキップ
-    
+
     try {
       final matches = ref.read(matchListProvider);
       if (matches.isEmpty) return;
@@ -218,10 +232,14 @@ class SyncEngine {
         toEncodable: (dynamic item) {
           if (item is DateTime) return item.toIso8601String();
           if (item.runtimeType.toString() == 'Timestamp') {
-            try { return (item as dynamic).toDate().toIso8601String(); } catch (_) { return item.toString(); }
+            try {
+              return (item as dynamic).toDate().toIso8601String();
+            } catch (_) {
+              return item.toString();
+            }
           }
           return item.toString();
-        }
+        },
       );
 
       final dir = await getApplicationDocumentsDirectory();
@@ -264,36 +282,42 @@ class SyncEngine {
       try {
         final prefs = await SharedPreferences.getInstance();
         final lastDojoId = prefs.getString('global_last_dojo_id_v4');
-        if (lastDojoId != null && lastDojoId.isNotEmpty && lastDojoId != dojoId) {
+        if (lastDojoId != null &&
+            lastDojoId.isNotEmpty &&
+            lastDojoId != dojoId) {
           // ★ 処理が重複しないよう、検知した瞬間に新しいIDを保存しておく
           await prefs.setString('global_last_dojo_id_v4', dojoId);
-          
-          debugPrint('⚠️ [Sync Engine] 道場ID切り替え検知 ($lastDojoId -> $dojoId)。旧データの誤送信を防ぐため同期エンジン側で強制パージを実行します');
+
+          debugPrint(
+            '⚠️ [Sync Engine] 道場ID切り替え検知 ($lastDojoId -> $dojoId)。旧データの誤送信を防ぐため同期エンジン側で強制パージを実行します',
+          );
           if (!kIsWeb) {
-             try {
-               final isar = Isar.getInstance();
-               if (isar != null) {
-                 await isar.writeTxn(() async {
-                   await isar.clear();
-                 });
-                 debugPrint('🧹 [Sync Engine] Isarローカルデータベースを完全ワイプしました');
-               } else {
-                 debugPrint('⚠️ [Sync Engine] Isar.getInstance() が null です。フォールバックとして未送信データを削除します');
-               }
-             } catch (e) {
-               debugPrint('🔥 [Sync Engine] Isarワイプエラー: $e');
-             }
-             
-             // ★ 修正: Isarワイプが失敗した場合のセーフティネット
-             // 未送信データだけでなく、メモリに読み込まれている全ての試合データを強制削除する
-             try {
-               final allMatches = ref.read(matchListProvider);
-               for (var m in allMatches) {
-                 await localRepo.deleteMatch(m.id);
-               }
-             } catch (e) {
-               debugPrint('🔥 [Sync Engine] セーフティネット一括削除エラー: $e');
-             }
+            try {
+              final isar = Isar.getInstance();
+              if (isar != null) {
+                await isar.writeTxn(() async {
+                  await isar.clear();
+                });
+                debugPrint('🧹 [Sync Engine] Isarローカルデータベースを完全ワイプしました');
+              } else {
+                debugPrint(
+                  '⚠️ [Sync Engine] Isar.getInstance() が null です。フォールバックとして未送信データを削除します',
+                );
+              }
+            } catch (e) {
+              debugPrint('🔥 [Sync Engine] Isarワイプエラー: $e');
+            }
+
+            // ★ 修正: Isarワイプが失敗した場合のセーフティネット
+            // 未送信データだけでなく、メモリに読み込まれている全ての試合データを強制削除する
+            try {
+              final allMatches = ref.read(matchListProvider);
+              for (var m in allMatches) {
+                await localRepo.deleteMatch(m.id);
+              }
+            } catch (e) {
+              debugPrint('🔥 [Sync Engine] セーフティネット一括削除エラー: $e');
+            }
           }
           ref.invalidate(matchListProvider);
           ref.invalidate(localMatchRepositoryProvider);
@@ -322,7 +346,7 @@ class SyncEngine {
             .doc(dojoId)
             .collection('matches')
             .doc(match.id);
-        
+
         // サーバー側の最新状態を確認（楽観的ロック）
         final snapshot = await docRef.get();
         int targetVersion = match.version;
@@ -330,10 +354,12 @@ class SyncEngine {
         if (snapshot.exists) {
           final remoteData = snapshot.data()!;
           final remoteVersion = (remoteData['version'] as num?)?.toInt() ?? 1;
-          
+
           if (match.version < remoteVersion) {
-            debugPrint('⚠️ [Sync Engine] 競合検知 ID:${match.id} -> 🛡️ CRDT自動マージを実行します');
-            
+            debugPrint(
+              '⚠️ [Sync Engine] 競合検知 ID:${match.id} -> 🛡️ CRDT自動マージを実行します',
+            );
+
             MatchModel remoteMatch;
             try {
               // 1. リモートデータを復元
@@ -344,24 +370,34 @@ class SyncEngine {
               debugPrint('🔥 [Sync Engine] リモートデータの解析エラー（古い形式のデータ）: $e');
               // ★ 修正: リモートのデータが古くて壊れている場合は、最新のローカルデータで強制上書き（自己修復）する
               targetVersion = remoteVersion + 1;
-              final uploadData = match.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion).toJson();
+              final uploadData = match
+                  .copyWith(
+                    syncState: SyncState.synced,
+                    pendingEvents: [],
+                    version: targetVersion,
+                  )
+                  .toJson();
               await docRef.set(uploadData);
               await localRepo.markAsSynced(match.id);
-              debugPrint('✅ [Sync Engine] 古いデータを最新の設計図で自己修復しました ID:${match.id}');
+              debugPrint(
+                '✅ [Sync Engine] 古いデータを最新の設計図で自己修復しました ID:${match.id}',
+              );
               continue;
             }
-            
+
             // ==========================================
             // ★ Phase 4-3: Append-only Sync (差分追記同期)
             // 過去の全履歴ではなく、ローカルの「未送信差分(pendingEvents)」だけを
             // サーバーの歴史に対して追記する。これで先祖返りが理論上起きなくなる。
             // ==========================================
             final Map<String, ScoreEvent> mergedEventsMap = {};
-            for (var e in remoteMatch.events) { mergedEventsMap[e.id] = e; }
-            for (var e in match.pendingEvents) { 
+            for (var e in remoteMatch.events) {
+              mergedEventsMap[e.id] = e;
+            }
+            for (var e in match.pendingEvents) {
               mergedEventsMap[e.id] = e; // 新しいイベント、またはローカルで生成されたUndoイベントを追加
             }
-            
+
             // ==========================================
             // ★ Phase 4-4: Conflict Resolver (CRDTによる確定的解決)
             // 複数端末から同時に追記された場合でも、ランポート論理時計(logicalClock)と
@@ -369,7 +405,9 @@ class SyncEngine {
             // ==========================================
             final mergedEvents = mergedEventsMap.values.toList()
               ..sort((a, b) {
-                if (a.logicalClock != b.logicalClock) return a.logicalClock.compareTo(b.logicalClock);
+                if (a.logicalClock != b.logicalClock) {
+                  return a.logicalClock.compareTo(b.logicalClock);
+                }
                 return a.timestamp.compareTo(b.timestamp);
               });
 
@@ -386,7 +424,9 @@ class SyncEngine {
             try {
               final rule = ref.read(matchRuleProvider);
               final savedStatus = rebuiltMatch.status; // ★ 再計算前の正しいステータスを退避
-              rebuiltMatch = ref.read(rebuildMatchFromEventsUseCaseProvider).execute(rebuiltMatch, rule);
+              rebuiltMatch = ref
+                  .read(rebuildMatchFromEventsUseCaseProvider)
+                  .execute(rebuiltMatch, rule);
               // ★ 修正: リビルド処理が意図せずステータスを戻してしまうのを防ぐため、ステータスを復元
               rebuiltMatch = rebuiltMatch.copyWith(status: savedStatus);
             } catch (e) {
@@ -395,19 +435,33 @@ class SyncEngine {
 
             // 4. マージ完了後のデータを新バージョンとして両方に保存
             targetVersion = remoteVersion + 1; // 競合がなければそのまま進める
-            final uploadData = rebuiltMatch.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion).toJson();
-            
+            final uploadData = rebuiltMatch
+                .copyWith(
+                  syncState: SyncState.synced,
+                  pendingEvents: [],
+                  version: targetVersion,
+                )
+                .toJson();
+
             await docRef.set(uploadData);
 
             // 🛡️ Phase 3 ガード: 同期中にユーザーが新しい技を入力したりタイマーを操作していないか確認
             final currentLocal = await localRepo.getMatch(match.id);
-            if (currentLocal != null && (currentLocal.events.length > match.events.length || currentLocal.lastUpdatedAt != match.lastUpdatedAt)) {
+            if (currentLocal != null &&
+                (currentLocal.events.length > match.events.length ||
+                    currentLocal.lastUpdatedAt != match.lastUpdatedAt)) {
               _needsSyncAgain = true;
               debugPrint('⚠️ [Sync Engine] CRDTマージ中に状態変更あり。ローカル上書きを回避し再同期します。');
             } else {
-              await localRepo.saveMatch(rebuiltMatch.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion));
+              await localRepo.saveMatch(
+                rebuiltMatch.copyWith(
+                  syncState: SyncState.synced,
+                  pendingEvents: [],
+                  version: targetVersion,
+                ),
+              );
             }
-            
+
             debugPrint('✅ [Sync Engine] CRDTマージ完了＆保存 ID:${match.id}');
             continue; // 次の試合へ
           }
@@ -416,19 +470,29 @@ class SyncEngine {
           targetVersion = 1; // 新規
         }
 
-        final uploadData = match.copyWith(syncState: SyncState.synced, pendingEvents: [], version: targetVersion).toJson();
-        
+        final uploadData = match
+            .copyWith(
+              syncState: SyncState.synced,
+              pendingEvents: [],
+              version: targetVersion,
+            )
+            .toJson();
+
         try {
           await docRef.set(uploadData);
         } catch (e, stack) {
-          debugPrint('🔥 [Sync Engine] 試合ID: ${match.id} のFirestoreアップロードに失敗しました: $e\n$stack');
+          debugPrint(
+            '🔥 [Sync Engine] 試合ID: ${match.id} のFirestoreアップロードに失敗しました: $e\n$stack',
+          );
           _needsSyncAgain = true; // 失敗した場合は未送信フラグを維持してリトライ対象にする
           continue; // 失敗しても次の試合へ進み、エンジン全体が止まらないようにする
         }
-        
+
         // 🛡️ Phase 3 ガード: 通常同期中に追加入力やタイマー操作がないか確認
         final currentLocal = await localRepo.getMatch(match.id);
-        if (currentLocal != null && (currentLocal.events.length > match.events.length || currentLocal.lastUpdatedAt != match.lastUpdatedAt)) {
+        if (currentLocal != null &&
+            (currentLocal.events.length > match.events.length ||
+                currentLocal.lastUpdatedAt != match.lastUpdatedAt)) {
           _needsSyncAgain = true;
           debugPrint('⚠️ [Sync Engine] 通常同期中に状態変更あり。未送信フラグを維持し再同期します。');
         } else {
@@ -446,7 +510,7 @@ class SyncEngine {
       debugPrint('🔥 [Sync Engine] 同期失敗: $e');
     } finally {
       _isDone();
-      
+
       // ★ 改善：同期中に新たなデータ入力があった場合、即座に「おかわり」同期を開始
       if (_needsSyncAgain) {
         _needsSyncAgain = false;
@@ -473,8 +537,8 @@ class SyncEngine {
       // syncNow() と同じ方法で未送信データを取得
       final pendingMatches = await localRepo.getPendingMatches();
       for (final match in pendingMatches) {
-         // ローカルの未送信フラグ（isDirty）を下ろす
-         await localRepo.markAsSynced(match.id);
+        // ローカルの未送信フラグ（isDirty）を下ろす
+        await localRepo.markAsSynced(match.id);
       }
       debugPrint('✅ [Sync Engine] 競合状態をクリアしました（サーバー優先）');
     } catch (e) {
