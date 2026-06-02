@@ -50,14 +50,17 @@ void main(List<String> args) {
         allManuals.any((f) => f.readAsStringSync().contains(screenName));
     if (!manualExists) {
       print(
-          '❌ [Step 9-1 Violation] Screen modified but no manual covers it: $screenName');
+        '❌ [Step 9-1 Violation] Screen modified but no manual covers it: $screenName',
+      );
       hasViolation = true;
     }
     if (!hasScreenshotUpdate) {
       print(
-          '❌ [UI/Image Sync Violation] UI changed ($screenName), but screenshots in assets/manual_images/ were not updated.');
+        '❌ [UI/Image Sync Violation] UI changed ($screenName), but screenshots in assets/manual_images/ were not updated.',
+      );
       print(
-          '👉 解決方法: 新しいスクリーンショットを撮影し、 assets/manual_images/ に正しい命名規約（例: ${screenName}_01.png）で配置してください。');
+        '👉 解決方法: 新しいスクリーンショットを撮影し、 assets/manual_images/ に正しい命名規約（例: ${screenName}_01.png）で配置してください。',
+      );
       hasViolation = true;
     }
   }
@@ -67,7 +70,8 @@ void main(List<String> args) {
   // ----------------------------------------------------------------------
   if (hasRuleChange && !hasManualUpdate) {
     print(
-        '❌ [Step 9-4 Violation] Domain Rules changed but Governance Notes in manuals were not updated.');
+      '❌ [Step 9-4 Violation] Domain Rules changed but Governance Notes in manuals were not updated.',
+    );
     hasViolation = true;
   }
 
@@ -98,7 +102,8 @@ void main(List<String> args) {
       if (target != null && !target.startsWith('http')) {
         if (!_resolvePath(file, target)) {
           print(
-              '❌ [Step 9-3 Violation] Broken Cross-reference in ${file.path} -> $target');
+            '❌ [Step 9-3 Violation] Broken Cross-reference in ${file.path} -> $target',
+          );
           hasViolation = true;
         }
       }
@@ -107,18 +112,22 @@ void main(List<String> args) {
     // 3. Deep Documentation の品質要件 (AI Metadata必須)
     if (!content.contains('ai_metadata:')) {
       print(
-          '❌ [Governance Violation] Missing AI Metadata block in ${file.path}');
+        '❌ [Governance Violation] Missing AI Metadata block in ${file.path}',
+      );
       hasViolation = true;
     }
   }
 
   if (hasViolation) {
     print(
-        '🚨 [BLOCK] Documentation Governance CI Failed. PR Merge is BLOCKED.');
+      '🚨 [BLOCK] Documentation Governance CI Failed. PR Merge is BLOCKED.',
+    );
     print(
-        '📖 詳細なポリシーについては以下を参照してください: docs/governance/manual_update_policy.md');
+      '📖 詳細なポリシーについては以下を参照してください: docs/governance/manual_update_policy.md',
+    );
     print(
-        '👉 PRのチェックリスト（Documentation Governance Checklist）の項目がすべて完了しているか確認してください。');
+      '👉 PRのチェックリスト（Documentation Governance Checklist）の項目がすべて完了しているか確認してください。',
+    );
     exit(1);
   }
 

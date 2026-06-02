@@ -21,7 +21,8 @@ void main() {
 
   if (currentWinner != StandardScenarios.expectedWinner) {
     print(
-        '❌ [DRIFT DETECTED] Winner changed from ${StandardScenarios.expectedWinner} to $currentWinner');
+      '❌ [DRIFT DETECTED] Winner changed from ${StandardScenarios.expectedWinner} to $currentWinner',
+    );
     hasDrift = true;
   }
 

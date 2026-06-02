@@ -77,11 +77,14 @@ void main() {
       // 1. NGワードチェック
       ngWords.forEach((ng, ok) {
         // UIなどの短い単語がURL等に誤爆しないよう、単語境界を意識した正規表現でチェック
-        final regExp =
-            RegExp(r'\b' + RegExp.escape(ng) + r'\b', caseSensitive: false);
+        final regExp = RegExp(
+          r'\b' + RegExp.escape(ng) + r'\b',
+          caseSensitive: false,
+        );
         if (regExp.hasMatch(line)) {
           print(
-              '❌ [NG Word Violation] ${file.path}:$lineNumber\n   Found "$ng". Please use "$ok".');
+            '❌ [NG Word Violation] ${file.path}:$lineNumber\n   Found "$ng". Please use "$ok".',
+          );
           hasViolation = true;
         }
       });
@@ -95,7 +98,8 @@ void main() {
       for (final sentence in sentences) {
         if (sentence.trim().length > 40) {
           print(
-              '⚠️ [Length Warning] ${file.path}:$lineNumber\n   Sentence exceeds 40 chars: "${sentence.trim().substring(0, min(20, sentence.trim().length))}..."');
+            '⚠️ [Length Warning] ${file.path}:$lineNumber\n   Sentence exceeds 40 chars: "${sentence.trim().substring(0, min(20, sentence.trim().length))}..."',
+          );
         }
       }
     }

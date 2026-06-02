@@ -62,7 +62,9 @@ void main() {
     }
 
     String cleanTitle = title.replaceFirst(
-        RegExp(r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+', unicode: true), '');
+      RegExp(r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+', unicode: true),
+      '',
+    );
     cleanTitle =
         cleanTitle.replaceAll(RegExp(r'\s*\([A-Za-z0-9\s&\-]+\)$'), '').trim();
 
@@ -122,7 +124,8 @@ void main() {
         : (a['title'] as String).compareTo(b['title'] as String);
   });
 
-  File('docs/manuals/manual_search_index.json')
-      .writeAsStringSync(jsonEncode(index));
+  File('docs/manuals/manual_search_index.json').writeAsStringSync(
+    jsonEncode(index),
+  );
   print('✅ [PASS] Cleaned Search Index generated.');
 }

@@ -31,7 +31,8 @@ void main(List<String> args) {
 
   if (hasAmbiguity) {
     print(
-        '🚨 [Escalation Protocol] ABORT: AI must stop and wait for Human Arbitration.');
+      '🚨 [Escalation Protocol] ABORT: AI must stop and wait for Human Arbitration.',
+    );
     exit(1);
   } else {
     print('✅ [Escalation Guard] No obvious ambiguity detected.');

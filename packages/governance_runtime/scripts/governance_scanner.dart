@@ -21,14 +21,16 @@ void main() {
         // Step 1-2: Forbidden API Scanner
         if (line.contains('DateTime.now()') || line.contains('Random()')) {
           print(
-              '❌ [Violation] Forbidden API in ${file.path}:${i + 1} -> $line');
+            '❌ [Violation] Forbidden API in ${file.path}:${i + 1} -> $line',
+          );
           hasViolation = true;
         }
 
         // Step 1-5: Rule Purity (No IO)
         if (line.contains('dart:io') || line.contains('package:http')) {
           print(
-              '❌ [Violation] IO usage in RuleModule ${file.path}:${i + 1} -> $line');
+            '❌ [Violation] IO usage in RuleModule ${file.path}:${i + 1} -> $line',
+          );
           hasViolation = true;
         }
 
@@ -37,7 +39,8 @@ void main() {
             !line.contains('final') &&
             !line.contains('const')) {
           print(
-              '❌ [Violation] Mutable static state in ${file.path}:${i + 1} -> $line');
+            '❌ [Violation] Mutable static state in ${file.path}:${i + 1} -> $line',
+          );
           hasViolation = true;
         }
       }
@@ -60,7 +63,8 @@ void main() {
             (line.contains('presentation/') ||
                 line.contains('infrastructure/'))) {
           print(
-              '❌ [Violation] Layer Dependency Violation in ${file.path}:${i + 1} -> $line');
+            '❌ [Violation] Layer Dependency Violation in ${file.path}:${i + 1} -> $line',
+          );
           hasViolation = true;
         }
       }

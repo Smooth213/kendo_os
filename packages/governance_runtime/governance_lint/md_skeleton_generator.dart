@@ -38,8 +38,10 @@ void main() {
         final targetFile = File(targetPath);
         if (!targetFile.existsSync()) {
           // テンプレートの見出しをファイル名に置き換えて生成
-          final newContent =
-              templateContent.replaceFirst('[画面名]', title ?? '画面名未定義');
+          final newContent = templateContent.replaceFirst(
+            '[画面名]',
+            title ?? '画面名未定義',
+          );
           targetFile.writeAsStringSync(newContent);
           print('✨ Created skeleton: $targetPath');
           createdCount++;

@@ -41,14 +41,16 @@ void main() {
           !line.contains('const') &&
           !line.contains('final')) {
         print(
-            '❌ [FATAL] Mutable global state detected in ${file.path}:${i + 1} -> $line');
+          '❌ [FATAL] Mutable global state detected in ${file.path}:${i + 1} -> $line',
+        );
         hasViolation = true;
       }
 
       // 3. IO Check
       if (line.contains('dart:io') || line.contains('package:http')) {
         print(
-            '❌ [FATAL] IO usage is prohibited in domain rules: ${file.path}:${i + 1}');
+          '❌ [FATAL] IO usage is prohibited in domain rules: ${file.path}:${i + 1}',
+        );
         hasViolation = true;
       }
 
@@ -68,11 +70,13 @@ void main() {
 
   if (hasViolation) {
     print(
-        '🚨 [Governance Linter] Violation detected! Blocking the merge/commit.');
+      '🚨 [Governance Linter] Violation detected! Blocking the merge/commit.',
+    );
     exit(1);
   } else {
     print(
-        '✅ [Governance Linter] All AI outputs conform to the Governance Policies.');
+      '✅ [Governance Linter] All AI outputs conform to the Governance Policies.',
+    );
     exit(0);
   }
 }

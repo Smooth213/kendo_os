@@ -64,13 +64,16 @@ void main(List<String> args) {
   if (outputFile != null) {
     final file = File(outputFile);
     file.writeAsStringSync('risk_level=$riskLevel\n', mode: FileMode.append);
-    file.writeAsStringSync('replay_risk=${affectsReplay ? 'YES' : 'NO'}\n',
-        mode: FileMode.append);
+    file.writeAsStringSync(
+      'replay_risk=${affectsReplay ? 'YES' : 'NO'}\n',
+      mode: FileMode.append,
+    );
   }
 
   if (riskLevel == 'CATASTROPHIC' || riskLevel == 'CRITICAL') {
     print(
-        '⚠️ [WARNING] Mandatory Human Review Required due to high risk level.');
+      '⚠️ [WARNING] Mandatory Human Review Required due to high risk level.',
+    );
   }
 
   exit(0);

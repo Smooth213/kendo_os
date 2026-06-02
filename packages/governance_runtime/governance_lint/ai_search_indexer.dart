@@ -10,7 +10,8 @@ import 'dart:convert';
 
 void main() {
   print(
-      '🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime (Phase 7)...');
+    '🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime (Phase 7)...',
+  );
 
   final manualsDir = Directory('docs/manuals');
   final mdFiles = manualsDir
@@ -27,8 +28,10 @@ void main() {
     final content = file.readAsStringSync();
 
     // Step 7-2: Semantic Tagging (YAMLメタデータの詳細抽出)
-    final metadataMatch =
-        RegExp(r'^---\s*\n(.*?)\n---\s*\n', dotAll: true).firstMatch(content);
+    final metadataMatch = RegExp(
+      r'^---\s*\n(.*?)\n---\s*\n',
+      dotAll: true,
+    ).firstMatch(content);
     Map<String, dynamic> metadata = {};
     if (metadataMatch != null) {
       final yamlContent = metadataMatch.group(1) ?? '';
@@ -51,8 +54,9 @@ void main() {
 
     // Step 7-3: Cross Reference Network の抽出 (See also: ...)
     List<String> crossReferences = [];
-    final seeAlsoMatch =
-        RegExp(r'See also:\n((\s*-\s*\[.*?\]\(.*?\)\n?)+)').firstMatch(content);
+    final seeAlsoMatch = RegExp(
+      r'See also:\n((\s*-\s*\[.*?\]\(.*?\)\n?)+)',
+    ).firstMatch(content);
     if (seeAlsoMatch != null) {
       final links =
           RegExp(r'\[(.*?)\]\((.*?)\)').allMatches(seeAlsoMatch.group(1) ?? '');
@@ -63,7 +67,9 @@ void main() {
 
     // Step 7-1: Chunk Structure 最適化
     final body = content.replaceFirst(
-        RegExp(r'^---\s*\n.*?\n---\s*\n', dotAll: true), '');
+      RegExp(r'^---\s*\n.*?\n---\s*\n', dotAll: true),
+      '',
+    );
     final lines = body.split('\n');
     String currentH1 = '';
     String currentH2 = '';
@@ -124,5 +130,6 @@ void main() {
   final outputFile = File('${outputDir.path}/vector_index.json');
   outputFile.writeAsStringSync(jsonEncode(chunks));
   print(
-      '✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks generated with Semantic Tags & Cross-Refs.');
+    '✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks generated with Semantic Tags & Cross-Refs.',
+  );
 }

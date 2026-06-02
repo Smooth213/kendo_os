@@ -40,7 +40,8 @@ void main(List<String> args) {
 
   if (hasViolation) {
     print(
-        '🚨 [Sandbox Violation] AI escaped the sandbox or violated boundaries!');
+      '🚨 [Sandbox Violation] AI escaped the sandbox or violated boundaries!',
+    );
     exit(1);
   } else {
     print('✅ AI Sandbox constraints satisfied.');
