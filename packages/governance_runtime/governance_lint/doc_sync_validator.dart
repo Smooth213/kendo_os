@@ -56,7 +56,8 @@ void main(List<String> args) {
         allManuals.any((f) => f.readAsStringSync().contains(screenName));
     if (!manualExists) {
       print(
-        '❌ [Step 9-1 Violation] Screen modified but no manual covers it: $screenName',
+        '❌ [Step 9-1 Violation] Screen modified but no manual covers it: '
+        '$screenName',
       );
       hasViolation = true;
     }

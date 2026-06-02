@@ -31,7 +31,8 @@ void main(List<String> args) {
 
     if (humanToken == null || humanToken.isEmpty) {
       print(
-        '❌ [BLOCK] AI is prohibited from modifying Frozen Governance files.',
+        '❌ [BLOCK] AI is prohibited from modifying Frozen Governance '
+        'files.',
       );
       print(
         '👉 To modify these, a Human must provide GOVERNANCE_HUMAN_TOKEN.',
