@@ -30,10 +30,10 @@ jobs:
       - name: "🔍 Run AST Forbidden Pattern Detector"
         run: |
           if [ -n "${{ steps.changed-files.outputs.all_changed_files }}" ]; then
-            dart run tools/governance_lint/forbidden_ast_detector.dart ${{ steps.changed-files.outputs.all_changed_files }}
+            dart run packages/governance_runtime/governance_lint/forbidden_ast_detector.dart ${{ steps.changed-files.outputs.all_changed_files }}
           else
             echo "No Dart files changed. Skipping AST check."
           fi
 
       - name: "🧪 Run Hallucination & Attack Simulation Tests"
-        run: flutter test test/ai/forbidden_pattern_test.dart
+        run: flutter test tools/ai/forbidden_pattern_test.dart
