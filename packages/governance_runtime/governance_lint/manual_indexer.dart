@@ -22,22 +22,25 @@ void main() {
 
   final List<Map<String, dynamic>> index = [];
 
-  final rawMdFiles = docsDir
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((f) => f.path.endsWith('.md'));
+  final listSync = docsDir.listSync(recursive: true);
+  final fileList = listSync.whereType<File>();
+  final rawMdFiles = fileList.where((f) => f.path.endsWith('.md'));
 
   final mdFiles = rawMdFiles.where((f) {
-    final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
-    final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
+    final path = f.path;
+    final isAllowedDir = validDirs.any((dir) => path.contains('/$dir/'));
+    final isExcluded = excludeFiles.any((ex) => path.endsWith(ex));
     return isAllowedDir && !isExcluded;
   }).toList();
 
   for (final file in mdFiles) {
     // ★ 修正1: 古い場所に残っているFAQファイルの残骸を完全に無視する
-    final isOldFaq = file.path.endsWith('viewer_faq.md') ||
-        file.path.endsWith('operator_faq.md');
-    if (isOldFaq && !file.path.contains('/faq/')) {
+    final path = file.path;
+    final isOldViewerFaq = path.endsWith('viewer_faq.md');
+    final isOldOperatorFaq = path.endsWith('operator_faq.md');
+    final isOldFaq = isOldViewerFaq || isOldOperatorFaq;
+
+    if (isOldFaq && !path.contains('/faq/')) {
       continue;
     }
 
@@ -61,10 +64,11 @@ void main() {
       }
     }
 
-    String cleanTitle = title.replaceFirst(
-      RegExp(r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+', unicode: true),
-      '',
+    final prefixRegExp = RegExp(
+      r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+',
+      unicode: true,
     );
+    String cleanTitle = title.replaceFirst(prefixRegExp, '');
     final parenthesisRegex = RegExp(r'\s*\([A-Za-z0-9\s&\-]+\)$');
     cleanTitle = cleanTitle.replaceAll(parenthesisRegex, '').trim();
 
@@ -90,10 +94,11 @@ void main() {
     }
 
     final headingRegex = RegExp(r'^##\s+(.+)$', multiLine: true);
-    final headings = headingRegex
-        .allMatches(content)
-        .map((m) => m.group(1)?.trim() ?? '')
-        .toList();
+    final headingMatches = headingRegex.allMatches(content);
+    final headings = <String>[];
+    for (final m in headingMatches) {
+      headings.add(m.group(1)?.trim() ?? '');
+    }
 
     index.add({
       'path': file.path,
@@ -131,8 +136,8 @@ void main() {
     return titleA.compareTo(titleB);
   });
 
-  File('docs/manuals/manual_search_index.json').writeAsStringSync(
-    jsonEncode(index),
-  );
+  final outJson = jsonEncode(index);
+  final outFile = File('docs/manuals/manual_search_index.json');
+  outFile.writeAsStringSync(outJson);
   print('✅ [PASS] Cleaned Search Index generated.');
 }

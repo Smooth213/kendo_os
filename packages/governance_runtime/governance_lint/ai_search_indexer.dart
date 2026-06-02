@@ -9,16 +9,15 @@ import 'dart:io';
 // ============================================================================
 
 void main() {
-  print(
-    '🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime '
-    '(Phase 7)...',
-  );
+  const msg =
+      '🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime (Phase 7)...';
+  print(msg);
 
   final manualsDir = Directory('docs/manuals');
-  final mdFiles = manualsDir
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((f) => f.path.endsWith('.md'));
+  final listSync = manualsDir.listSync(recursive: true);
+  final fileList = listSync.whereType<File>();
+  final mdFiles = fileList.where((f) => f.path.endsWith('.md'));
+
   final List<Map<String, dynamic>> chunks = [];
 
   for (final file in mdFiles) {
@@ -72,15 +71,14 @@ void main() {
     List<String> currentBuffer = [];
 
     void saveChunk() {
-      if (currentBuffer.isNotEmpty &&
-          currentBuffer.join('').trim().isNotEmpty) {
+      final joined = currentBuffer.join('');
+      if (currentBuffer.isNotEmpty && joined.trim().isNotEmpty) {
         // 見出しからチャンクの種類を高精度に推論
         String chunkType = 'info';
         final h2Lower = currentH2.toLowerCase();
-        final isFailure = h2Lower.contains('障害') ||
-            h2Lower.contains('エラー') ||
-            h2Lower.contains('通信断') ||
-            h2Lower.contains('停電');
+        final hasObstacle = h2Lower.contains('障害') || h2Lower.contains('エラー');
+        final hasNetwork = h2Lower.contains('通信断') || h2Lower.contains('停電');
+        final isFailure = hasObstacle || hasNetwork;
 
         if (h2Lower.contains('faq') || h2Lower.contains('質問')) {
           chunkType = 'faq';
@@ -99,7 +97,8 @@ void main() {
           'h1': currentH1,
           'h2': currentH2,
           'content': currentBuffer.join('\n').trim(),
-          'cross_references': crossReferences, // ナレッジグラフ構築用
+          // ナレッジグラフ構築用
+          'cross_references': crossReferences,
         });
         currentBuffer.clear();
       }
@@ -127,8 +126,9 @@ void main() {
 
   final outputFile = File('${outputDir.path}/vector_index.json');
   outputFile.writeAsStringSync(jsonEncode(chunks));
-  print(
-    '✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks generated '
-    'with Semantic Tags & Cross-Refs.',
-  );
+
+  final count = chunks.length;
+  final msg2 =
+      '✅ [PASS] AI Knowledge Optimized: $count chunks generated with Semantic Tags & Cross-Refs.';
+  print(msg2);
 }
