@@ -27,9 +27,7 @@ void main() {
       .whereType<File>()
       .where((f) => f.path.endsWith('.md'))
       .where((f) {
-    final isAllowedDir = validDirs.any(
-      (dir) => f.path.contains('/$dir/'),
-    );
+    final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
     final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
     return isAllowedDir && !isExcluded;
   }).toList();
@@ -45,10 +43,8 @@ void main() {
     final content = file.readAsStringSync();
 
     String title = '';
-    final titleMatch = RegExp(
-      r'^#\s+(.+)$',
-      multiLine: true,
-    ).firstMatch(content);
+    final titleMatch =
+        RegExp(r'^#\s+(.+)$', multiLine: true).firstMatch(content);
     if (titleMatch != null) {
       title = titleMatch.group(1)?.trim() ?? '';
     }
@@ -65,9 +61,7 @@ void main() {
     }
 
     String cleanTitle = title.replaceFirst(
-      RegExp(r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+', unicode: true),
-      '',
-    );
+        RegExp(r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+', unicode: true), '');
     cleanTitle =
         cleanTitle.replaceAll(RegExp(r'\s*\([A-Za-z0-9\s&\-]+\)$'), '').trim();
 
