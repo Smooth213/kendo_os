@@ -53,8 +53,9 @@ void main(List<String> args) {
   // ----------------------------------------------------------------------
   for (final screenFile in changedScreens) {
     final screenName = screenFile.split('/').last.replaceAll('.dart', '');
-    final manualExists =
-        allManuals.any((f) => f.readAsStringSync().contains(screenName));
+    final manualExists = allManuals.any(
+      (f) => f.readAsStringSync().contains(screenName),
+    );
     if (!manualExists) {
       print(
         '❌ [Step 9-1 Violation] Screen modified but no manual covers it: '
@@ -124,14 +125,16 @@ void main(List<String> args) {
     // 3. Deep Documentation の品質要件 (AI Metadata必須)
     if (!content.contains('ai_metadata:')) {
       print(
-          '❌ [Governance Violation] Missing AI Metadata block in ${file.path}');
+        '❌ [Governance Violation] Missing AI Metadata block in ${file.path}',
+      );
       hasViolation = true;
     }
   }
 
   if (hasViolation) {
     print(
-        '🚨 [BLOCK] Documentation Governance CI Failed. PR Merge is BLOCKED.');
+      '🚨 [BLOCK] Documentation Governance CI Failed. PR Merge is BLOCKED.',
+    );
     print(
       '📖 詳細なポリシーについては以下を参照してください: '
       'docs/governance/manual_update_policy.md',

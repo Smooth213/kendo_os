@@ -7,7 +7,9 @@ import 'dart:io';
 // mkdocs の設定ファイルを動的生成し、PDF出力を自動化するパイプライン。
 // ============================================================================
 void main() async {
-  print('🖨️ [PDF Pipeline] Starting Markdown to PDF export orchestration...');
+  print(
+    '🖨️ [PDF Pipeline] Starting Markdown to PDF export orchestration...',
+  );
 
   final outDir = Directory('docs/manuals/pdf');
   if (!outDir.existsSync()) {

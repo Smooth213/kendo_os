@@ -9,8 +9,10 @@ import 'dart:io';
 // ============================================================================
 
 void main() {
-  print('🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime '
-      '(Phase 7)...');
+  print(
+    '🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime '
+    '(Phase 7)...',
+  );
 
   final manualsDir = Directory('docs/manuals');
   final mdFiles = manualsDir
