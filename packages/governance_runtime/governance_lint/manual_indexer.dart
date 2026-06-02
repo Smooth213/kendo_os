@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 // ============================================================================
 // Documentation Indexer (Appliance Quality Edition)
@@ -27,7 +27,9 @@ void main() {
       .whereType<File>()
       .where((f) => f.path.endsWith('.md'))
       .where((f) {
-    final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
+    final isAllowedDir = validDirs.any(
+      (dir) => f.path.contains('/$dir/'),
+    );
     final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
     return isAllowedDir && !isExcluded;
   }).toList();

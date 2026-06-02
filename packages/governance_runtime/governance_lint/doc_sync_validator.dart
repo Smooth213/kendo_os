@@ -49,8 +49,8 @@ void main(List<String> args) {
     final manualExists =
         allManuals.any((f) => f.readAsStringSync().contains(screenName));
     if (!manualExists) {
-      print('❌ [Step 9-1 Violation] Screen modified but no manual covers it: '
-          '$screenName');
+      print(
+          '❌ [Step 9-1 Violation] Screen modified but no manual covers it: $screenName');
       hasViolation = true;
     }
     if (!hasScreenshotUpdate) {
@@ -106,8 +106,8 @@ void main(List<String> args) {
 
     // 3. Deep Documentation の品質要件 (AI Metadata必須)
     if (!content.contains('ai_metadata:')) {
-      print('❌ [Governance Violation] Missing AI Metadata block in '
-          '${file.path}');
+      print(
+          '❌ [Governance Violation] Missing AI Metadata block in ${file.path}');
       hasViolation = true;
     }
   }

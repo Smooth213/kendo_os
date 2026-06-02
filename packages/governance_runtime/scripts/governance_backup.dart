@@ -10,7 +10,9 @@ void main() {
   print('📦 [Governance Backup] Archiving Governance State...');
 
   final backupDir = Directory('governance/backups');
-  if (!backupDir.existsSync()) backupDir.createSync(recursive: true);
+  if (!backupDir.existsSync()) {
+    backupDir.createSync(recursive: true);
+  }
 
   final now = DateTime.now().toUtc();
   final timestamp = now.toIso8601String().replaceAll(':', '-');

@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 // ============================================================================
 // Deep Doc Phase 7: AI Knowledge Optimization
@@ -9,8 +9,9 @@ import 'dart:convert';
 // ============================================================================
 
 void main() {
-  print('🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI '
-      'Runtime (Phase 7)...');
+  print(
+    '🧠 [AI Knowledge Indexer] Optimizing Knowledge for AI Runtime (Phase 7)...',
+  );
 
   final manualsDir = Directory('docs/manuals');
   final mdFiles = manualsDir
@@ -128,6 +129,7 @@ void main() {
 
   final outputFile = File('${outputDir.path}/vector_index.json');
   outputFile.writeAsStringSync(jsonEncode(chunks));
-  print('✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks generated '
-      'with Semantic Tags & Cross-Refs.');
+  print(
+    '✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks generated with Semantic Tags & Cross-Refs.',
+  );
 }

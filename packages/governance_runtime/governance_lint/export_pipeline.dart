@@ -10,32 +10,36 @@ void main() async {
   print('🖨️ [PDF Pipeline] Starting Markdown to PDF export orchestration...');
 
   final outDir = Directory('docs/manuals/pdf');
-  if (!outDir.existsSync()) outDir.createSync(recursive: true);
+  if (!outDir.existsSync()) {
+    outDir.createSync(recursive: true);
+  }
 
   // 役割別のPDF出力定義 (Step 5-2, 5-3, 5-4)
   final configs = [
     {
       'name': 'kendo_os_viewer_manual',
       'title': 'Kendo Sync 観客・閲覧マニュアル',
-      'nav': '  - ホーム: viewer/index.md\n  - 試合画面: viewer/viewer_match.md\n'
-          '  - オンライン版QR: shared/qr_cover.md',
+      'nav':
+          '  - ホーム: viewer/index.md\n  - 試合画面: viewer/viewer_match.md\n  - オンライン版QR: shared/qr_cover.md',
     },
     {
       'name': 'kendo_os_operator_manual',
       'title': 'Kendo Sync 運営・記録マニュアル (詳細版)',
-      'nav': '  - ホーム: operator/index.md\n  - 試合記録: operator/match.md\n'
-          '  - 障害対応: recovery/failure_catalog.md\n  - オンライン版QR: shared/qr_cover.md',
+      'nav':
+          '  - ホーム: operator/index.md\n  - 試合記録: operator/match.md\n  - 障害対応: recovery/failure_catalog.md\n  - オンライン版QR: shared/qr_cover.md',
     },
     {
       'name': 'quick_guide_operator',
       'title': '現場用クイックガイド (机上配置用)',
-      'nav': '  - 緊急対応と基本操作: quickstart/index.md\n'
-          '  - オンライン版QR: shared/qr_cover.md',
+      'nav':
+          '  - 緊急対応と基本操作: quickstart/index.md\n  - オンライン版QR: shared/qr_cover.md',
     },
   ];
 
   final tempDir = Directory('tools/manual_pdf_export/temp');
-  if (!tempDir.existsSync()) tempDir.createSync(recursive: true);
+  if (!tempDir.existsSync()) {
+    tempDir.createSync(recursive: true);
+  }
 
   for (var config in configs) {
     // PDF出力用の専用 mkdocs.yml を生成
