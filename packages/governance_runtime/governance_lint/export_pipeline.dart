@@ -52,10 +52,15 @@ void main() async {
     tempDir.createSync(recursive: true);
   }
 
-  for (var config in configs) {
+  for (final config in configs) {
+    final name = config['name'] as String;
+    final title = config['title'] as String;
+    final navList = config['nav'] as List<String>;
+    final navContent = navList.join('\n');
+
     // PDF出力用の専用 mkdocs.yml を生成
     final ymlContent = '''
-site_name: ${config['title']}
+site_name: $title
 docs_dir: ../../../docs/manuals
 theme:
   name: material
@@ -63,30 +68,28 @@ theme:
 plugins:
   - with-pdf:
       cover: true
-      cover_title: "${config['title']}"
+      cover_title: "$title"
       toc_title: "目次"
       toc_level: 3
       # Step 5-1: PDF目次とページ番号の強制
       render_js: true
       # Step 5-3: 白黒印刷を考慮し、リンクの色などを標準化する設定を注入可能
-      output_path: "../../../docs/manuals/pdf/${config['name']}.pdf"
+      output_path: "../../../docs/manuals/pdf/$name.pdf"
 nav:
-${(config['nav'] as List<String>).join('\n')}
+$navContent
 ''';
 
-    final file = File('${tempDir.path}/mkdocs_${config['name']}.yml');
+    final file = File('${tempDir.path}/mkdocs_$name.yml');
     file.writeAsStringSync(ymlContent);
     print('✅ Config generated: ${file.path}');
 
     // 注意: 実際のPDF生成は、Python環境で mkdocs-with-pdf がインストールされている必要があります。
     // CI環境等では以下のコマンドのコメントアウトを外して実行します。
-    /*
-    print('⏳ Building ${config['name']}.pdf ...');
-    final result = await Process.run('mkdocs', ['build', '-f', file.path]);
-    if (result.exitCode != 0) {
-      print('❌ Error building ${config['name']}: ${result.stderr}');
-    }
-    */
+    // print('⏳ Building $name.pdf ...');
+    // final result = await Process.run('mkdocs', ['build', '-f', file.path]);
+    // if (result.exitCode != 0) {
+    //   print('❌ Error building $name: ${result.stderr}');
+    // }
   }
 
   print('✅ [PASS] PDF Export Pipeline Orchestration Completed.');
