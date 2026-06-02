@@ -128,6 +128,6 @@ void main() {
 
   final outputFile = File('${outputDir.path}/vector_index.json');
   outputFile.writeAsStringSync(jsonEncode(chunks));
-  print('✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks '
-      'generated with Semantic Tags & Cross-Refs.');
+  print('✅ [PASS] AI Knowledge Optimized: ${chunks.length} chunks generated '
+      'with Semantic Tags & Cross-Refs.');
 }

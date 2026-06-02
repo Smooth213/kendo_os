@@ -31,7 +31,7 @@ void main() async {
       'title': '現場用クイックガイド (机上配置用)',
       'nav': '  - 緊急対応と基本操作: quickstart/index.md\n'
           '  - オンライン版QR: shared/qr_cover.md',
-    }
+    },
   ];
 
   final tempDir = Directory('tools/manual_pdf_export/temp');

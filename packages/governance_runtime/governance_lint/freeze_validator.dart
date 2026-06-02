@@ -29,8 +29,8 @@ void main(List<String> args) {
     final humanToken = Platform.environment['GOVERNANCE_HUMAN_TOKEN'];
 
     if (humanToken == null || humanToken.isEmpty) {
-      print('❌ [BLOCK] AI is prohibited from modifying Frozen '
-          'Governance files.');
+      print('❌ [BLOCK] AI is prohibited from modifying Frozen Governance '
+          'files.');
       print('👉 To modify these, a Human must provide GOVERNANCE_HUMAN_TOKEN.');
       exit(1);
     }

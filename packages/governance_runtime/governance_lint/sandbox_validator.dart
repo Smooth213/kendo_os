@@ -39,8 +39,8 @@ void main(List<String> args) {
   print('ℹ️ Validating AI-GENERATED metadata presence...');
 
   if (hasViolation) {
-    print('🚨 [Sandbox Violation] AI escaped the sandbox or violated '
-        'boundaries!');
+    print(
+        '🚨 [Sandbox Violation] AI escaped the sandbox or violated boundaries!');
     exit(1);
   } else {
     print('✅ AI Sandbox constraints satisfied.');
