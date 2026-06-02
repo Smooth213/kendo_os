@@ -58,8 +58,9 @@ void main() {
       r'See also:\n((\s*-\s*\[.*?\]\(.*?\)\n?)+)',
     ).firstMatch(content);
     if (seeAlsoMatch != null) {
-      final links =
-          RegExp(r'\[(.*?)\]\((.*?)\)').allMatches(seeAlsoMatch.group(1) ?? '');
+      final links = RegExp(
+        r'\[(.*?)\]\((.*?)\)',
+      ).allMatches(seeAlsoMatch.group(1) ?? '');
       for (final link in links) {
         crossReferences.add(link.group(2) ?? ''); // リンク先の相対パスを抽出
       }
