@@ -25,7 +25,7 @@ void main() async {
         '  - ホーム: viewer/index.md',
         '  - 試合画面: viewer/viewer_match.md',
         '  - オンライン版QR: shared/qr_cover.md',
-      ].join('\n'),
+      ],
     },
     {
       'name': 'kendo_os_operator_manual',
@@ -35,7 +35,7 @@ void main() async {
         '  - 試合記録: operator/match.md',
         '  - 障害対応: recovery/failure_catalog.md',
         '  - オンライン版QR: shared/qr_cover.md',
-      ].join('\n'),
+      ],
     },
     {
       'name': 'quick_guide_operator',
@@ -43,7 +43,7 @@ void main() async {
       'nav': [
         '  - 緊急対応と基本操作: quickstart/index.md',
         '  - オンライン版QR: shared/qr_cover.md',
-      ].join('\n'),
+      ],
     },
   ];
 
@@ -71,7 +71,7 @@ plugins:
       # Step 5-3: 白黒印刷を考慮し、リンクの色などを標準化する設定を注入可能
       output_path: "../../../docs/manuals/pdf/${config['name']}.pdf"
 nav:
-${config['nav']}
+${(config['nav'] as List<String>).join('\n')}
 ''';
 
     final file = File('${tempDir.path}/mkdocs_${config['name']}.yml');
