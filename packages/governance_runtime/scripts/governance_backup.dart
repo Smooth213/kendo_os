@@ -19,10 +19,12 @@ void main() {
   final backupFile = File('governance/backups/gov_state_$timestamp.json');
 
   // 現在の憲法と不変条件のハッシュを記録
-  final invariants =
-      File('docs/governance/architecture_invariants.md').readAsStringSync();
-  final constitution =
-      File('docs/governance/governance_constitution.md').readAsStringSync();
+  final invariants = File(
+    'docs/governance/architecture_invariants.md',
+  ).readAsStringSync();
+  final constitution = File(
+    'docs/governance/governance_constitution.md',
+  ).readAsStringSync();
 
   final state = {
     'version': '1.0',

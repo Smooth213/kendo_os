@@ -27,7 +27,9 @@ void main() {
       .whereType<File>()
       .where((f) => f.path.endsWith('.md'))
       .where((f) {
-    final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
+    final isAllowedDir = validDirs.any(
+      (dir) => f.path.contains('/$dir/'),
+    );
     final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
     return isAllowedDir && !isExcluded;
   }).toList();
@@ -43,8 +45,10 @@ void main() {
     final content = file.readAsStringSync();
 
     String title = '';
-    final titleMatch =
-        RegExp(r'^#\s+(.+)$', multiLine: true).firstMatch(content);
+    final titleMatch = RegExp(
+      r'^#\s+(.+)$',
+      multiLine: true,
+    ).firstMatch(content);
     if (titleMatch != null) {
       title = titleMatch.group(1)?.trim() ?? '';
     }
