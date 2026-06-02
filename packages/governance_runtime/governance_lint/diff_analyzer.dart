@@ -72,7 +72,8 @@ void main(List<String> args) {
 
   if (riskLevel == 'CATASTROPHIC' || riskLevel == 'CRITICAL') {
     print(
-        '⚠️ [WARNING] Mandatory Human Review Required due to high risk level.');
+      '⚠️ [WARNING] Mandatory Human Review Required due to high risk level.',
+    );
   }
 
   exit(0);

@@ -82,8 +82,10 @@ void main() {
           caseSensitive: false,
         );
         if (regExp.hasMatch(line)) {
-          print('❌ [NG Word Violation] ${file.path}:$lineNumber\n'
-              '   Found "$ng". Please use "$ok".');
+          print(
+            '❌ [NG Word Violation] ${file.path}:$lineNumber\n'
+            '   Found "$ng". Please use "$ok".',
+          );
           hasViolation = true;
         }
       });
@@ -98,8 +100,10 @@ void main() {
         final trimmed = sentence.trim();
         if (trimmed.length > 40) {
           final preview = trimmed.substring(0, min(20, trimmed.length));
-          print('⚠️ [Length Warning] ${file.path}:$lineNumber\n'
-              '   Sentence exceeds 40 chars: "$preview..."');
+          print(
+            '⚠️ [Length Warning] ${file.path}:$lineNumber\n'
+            '   Sentence exceeds 40 chars: "$preview..."',
+          );
         }
       }
     }
