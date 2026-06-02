@@ -22,11 +22,12 @@ void main() {
 
   final List<Map<String, dynamic>> index = [];
 
-  final mdFiles = docsDir
+  final rawMdFiles = docsDir
       .listSync(recursive: true)
       .whereType<File>()
-      .where((f) => f.path.endsWith('.md'))
-      .where((f) {
+      .where((f) => f.path.endsWith('.md'));
+
+  final mdFiles = rawMdFiles.where((f) {
     final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
     final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
     return isAllowedDir && !isExcluded;
@@ -43,10 +44,8 @@ void main() {
     final content = file.readAsStringSync();
 
     String title = '';
-    final titleMatch = RegExp(
-      r'^#\s+(.+)$',
-      multiLine: true,
-    ).firstMatch(content);
+    final titleRegex = RegExp(r'^#\s+(.+)$', multiLine: true);
+    final titleMatch = titleRegex.firstMatch(content);
     if (titleMatch != null) {
       title = titleMatch.group(1)?.trim() ?? '';
     }
@@ -66,8 +65,8 @@ void main() {
       RegExp(r'^(?:\s|⏱|🚨|📋|📱|💡|❓|\uFE0F)+', unicode: true),
       '',
     );
-    cleanTitle =
-        cleanTitle.replaceAll(RegExp(r'\s*\([A-Za-z0-9\s&\-]+\)$'), '').trim();
+    final parenthesisRegex = RegExp(r'\s*\([A-Za-z0-9\s&\-]+\)$');
+    cleanTitle = cleanTitle.replaceAll(parenthesisRegex, '').trim();
 
     String finalTitle = cleanTitle;
     int sortOrder = 99;
@@ -90,13 +89,16 @@ void main() {
       sortOrder = 40;
     }
 
+    final headingRegex = RegExp(r'^##\s+(.+)$', multiLine: true);
+    final headings = headingRegex
+        .allMatches(content)
+        .map((m) => m.group(1)?.trim() ?? '')
+        .toList();
+
     index.add({
       'path': file.path,
       'title': finalTitle,
-      'headings': RegExp(r'^##\s+(.+)$', multiLine: true)
-          .allMatches(content)
-          .map((m) => m.group(1)?.trim() ?? '')
-          .toList(),
+      'headings': headings,
       'sort_order': sortOrder,
       'tags': [],
       'last_updated': DateTime.now().toIso8601String(),
@@ -119,10 +121,14 @@ void main() {
   }
 
   index.sort((a, b) {
-    final cmp = (a['sort_order'] as int).compareTo(b['sort_order'] as int);
-    return cmp != 0
-        ? cmp
-        : (a['title'] as String).compareTo(b['title'] as String);
+    final sortA = a['sort_order'] as int;
+    final sortB = b['sort_order'] as int;
+    final cmp = sortA.compareTo(sortB);
+    if (cmp != 0) return cmp;
+
+    final titleA = a['title'] as String;
+    final titleB = b['title'] as String;
+    return titleA.compareTo(titleB);
   });
 
   File('docs/manuals/manual_search_index.json').writeAsStringSync(
