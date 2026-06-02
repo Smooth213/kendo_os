@@ -41,9 +41,7 @@ void main(List<String> args) {
       ? manualsDir
           .listSync(recursive: true)
           .whereType<File>()
-          .where(
-            (f) => f.path.endsWith('.md') && !f.path.contains('templates'),
-          )
+          .where((f) => f.path.endsWith('.md') && !f.path.contains('templates'))
           .toList()
       : <File>[];
 
@@ -100,9 +98,7 @@ void main(List<String> args) {
       final target = match.group(1);
       if (target != null && !target.startsWith('http')) {
         if (!_resolvePath(file, target)) {
-          print(
-            '❌ [Violation] Broken Image Link in ${file.path} -> $target',
-          );
+          print('❌ [Violation] Broken Image Link in ${file.path} -> $target');
           hasViolation = true;
         }
       }
@@ -125,8 +121,7 @@ void main(List<String> args) {
     // 3. Deep Documentation の品質要件 (AI Metadata必須)
     if (!content.contains('ai_metadata:')) {
       print(
-        '❌ [Governance Violation] Missing AI Metadata block in ${file.path}',
-      );
+          '❌ [Governance Violation] Missing AI Metadata block in ${file.path}');
       hasViolation = true;
     }
   }

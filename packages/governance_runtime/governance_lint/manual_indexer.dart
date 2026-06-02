@@ -26,13 +26,11 @@ void main() {
       .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.md'))
-      .where(
-    (f) {
-      final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
-      final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
-      return isAllowedDir && !isExcluded;
-    },
-  ).toList();
+      .where((f) {
+    final isAllowedDir = validDirs.any((dir) => f.path.contains('/$dir/'));
+    final isExcluded = excludeFiles.any((ex) => f.path.endsWith(ex));
+    return isAllowedDir && !isExcluded;
+  }).toList();
 
   for (final file in mdFiles) {
     // ★ 修正1: 古い場所に残っているFAQファイルの残骸を完全に無視する

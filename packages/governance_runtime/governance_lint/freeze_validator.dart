@@ -6,8 +6,7 @@ import 'dart:io';
 // ============================================================================
 void main(List<String> args) {
   print(
-    '❄️ [Freeze Validator] Checking for unauthorized governance changes...',
-  );
+      '❄️ [Freeze Validator] Checking for unauthorized governance changes...');
 
   final changedFiles = args;
   final protectedPaths = [
@@ -31,12 +30,8 @@ void main(List<String> args) {
 
     if (humanToken == null || humanToken.isEmpty) {
       print(
-        '❌ [BLOCK] AI is prohibited from modifying Frozen Governance '
-        'files.',
-      );
-      print(
-        '👉 To modify these, a Human must provide GOVERNANCE_HUMAN_TOKEN.',
-      );
+          '❌ [BLOCK] AI is prohibited from modifying Frozen Governance files.');
+      print('👉 To modify these, a Human must provide GOVERNANCE_HUMAN_TOKEN.');
       exit(1);
     }
 
