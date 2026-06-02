@@ -771,8 +771,9 @@ class _SetupMatchFormatScreenState
         // ★ Phase 8-1: 画面が横向き（かつ高さ500以下）のスマホ・タブレットではヘッダーを隠して作業領域を確保
         final isLandscape =
             MediaQuery.of(context).orientation == Orientation.landscape;
-        if (isLandscape && MediaQuery.of(context).size.height < 500)
+        if (isLandscape && MediaQuery.of(context).size.height < 500) {
           return const SizedBox.shrink();
+        }
 
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final t = (_currentPage / 2).clamp(0.0, 1.0);
@@ -1693,8 +1694,9 @@ class _SetupMatchFormatScreenState
                     RadioGroup<String>(
                       groupValue: _kachinukiUnlimitedType,
                       onChanged: (val) {
-                        if (val != null)
+                        if (val != null) {
                           setState(() => _kachinukiUnlimitedType = val);
+                        }
                       },
                       child: Column(
                         children: [

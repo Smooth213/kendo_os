@@ -193,11 +193,12 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         stream: orgsStream,
                         builder: (context, snapshot) {
                           final orgs = snapshot.data ?? [];
-                          if (orgs.isEmpty)
+                          if (orgs.isEmpty) {
                             return const Text(
                               'マスタ管理で組織とチームを登録してください',
                               style: TextStyle(color: Colors.red),
                             );
+                          }
                           return Column(
                             children: [
                               _buildTeamSelector('赤', orgs, true),

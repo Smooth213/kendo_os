@@ -476,7 +476,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
       bool isFaded,
       Color winColor,
     ) {
-      if (raw.contains('欠員'))
+      if (raw.contains('欠員')) {
         return Text(
           '(欠員)',
           textAlign: TextAlign.center,
@@ -486,6 +486,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             color: Colors.grey.shade500,
           ),
         );
+      }
 
       final parsed = _parseName(raw);
       final showInitial =
@@ -947,7 +948,9 @@ class KachinukiBracketPainter extends CustomPainter {
   });
 
   Map<String, String> _parse(String raw) {
-    if (raw.contains('欠員')) return {'last': '', 'first': ''};
+    if (raw.contains('欠員')) {
+      return {'last': '', 'first': ''};
+    }
     String clean = raw.contains(':')
         ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
         : raw.trim();

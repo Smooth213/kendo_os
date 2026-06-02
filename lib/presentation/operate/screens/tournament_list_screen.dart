@@ -76,10 +76,12 @@ class TournamentListScreen extends ConsumerWidget {
                 )
               : ref.watch(tournamentRepositoryProvider).watchTournaments(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting)
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
-            if (snapshot.hasError)
+            }
+            if (snapshot.hasError) {
               return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
+            }
 
             final filteredTournaments = snapshot.data ?? [];
             filteredTournaments.sort((a, b) => b.date.compareTo(a.date));

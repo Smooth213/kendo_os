@@ -109,8 +109,9 @@ class StandingsScreen extends ConsumerWidget {
 
             final statsMap = <String, PlayerStats>{};
             for (var match in matches) {
-              if (match.status != 'approved' && match.status != 'finished')
+              if (match.status != 'approved' && match.status != 'finished') {
                 continue;
+              }
 
               final rScore = (match.redScore as num).toInt();
               final wScore = (match.whiteScore as num).toInt();
@@ -163,10 +164,15 @@ class StandingsScreen extends ConsumerWidget {
                 .toList();
             sortedStats.sort((a, b) {
               // ★ 修正：最優先を「勝ち点」にする
-              if (b.matchPoints != a.matchPoints)
+              if (b.matchPoints != a.matchPoints) {
                 return b.matchPoints.compareTo(a.matchPoints);
-              if (b.wins != a.wins) return b.wins.compareTo(a.wins);
-              if (a.losses != b.losses) return a.losses.compareTo(b.losses);
+              }
+              if (b.wins != a.wins) {
+                return b.wins.compareTo(a.wins);
+              }
+              if (a.losses != b.losses) {
+                return a.losses.compareTo(b.losses);
+              }
               return b.pointsScored.compareTo(a.pointsScored);
             });
 
@@ -215,12 +221,15 @@ class StandingsScreen extends ConsumerWidget {
                 if (isTie) {
                   currentTie.add(curr);
                 } else {
-                  if (currentTie.length > 1)
+                  if (currentTie.length > 1) {
                     tieGroups.add(List.from(currentTie));
+                  }
                   currentTie = [curr];
                 }
               }
-              if (currentTie.length > 1) tieGroups.add(currentTie);
+              if (currentTie.length > 1) {
+                tieGroups.add(currentTie);
+              }
             }
 
             return Column(

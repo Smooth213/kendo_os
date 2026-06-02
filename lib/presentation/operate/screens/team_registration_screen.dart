@@ -95,8 +95,10 @@ class _TeamRegistrationScreenState
   bool _showExtraMajorCategories = false;
 
   List<String> _getMinorCategories(String major) {
-    if (major == '初心者' || major == '幼年') return ['全体', '男子', '女子'];
-    if (major == '小学生')
+    if (major == '初心者' || major == '幼年') {
+      return ['全体', '男子', '女子'];
+    }
+    if (major == '小学生') {
       return [
         '全体',
         '低学年',
@@ -110,9 +112,13 @@ class _TeamRegistrationScreenState
         '男子',
         '女子',
       ];
-    if (major == '中学生' || major == '高校生')
+    }
+    if (major == '中学生' || major == '高校生') {
       return ['全体', '1年', '2年', '3年', '男子', '女子'];
-    if (major == '大学・一般') return ['全体', '大学生', '一般', 'シニア', '男子', '女子'];
+    }
+    if (major == '大学・一般') {
+      return ['全体', '大学生', '一般', 'シニア', '男子', '女子'];
+    }
     return ['全体'];
   }
 
@@ -429,8 +435,9 @@ class _TeamRegistrationScreenState
                             ),
                           ),
                           ...helperEntries.map((entry) {
-                            if (entry.key == index)
+                            if (entry.key == index) {
                               return const SizedBox.shrink();
+                            }
                             return _buildSelectionCard(
                               entry.value,
                               '手入力選手',
@@ -832,8 +839,12 @@ class _TeamRegistrationScreenState
             // ★ 小学生の時だけ、学年範囲をラベルに補足（内部データは変えない）
             String label = cat;
             if (_selectedMajorCategory == '小学生') {
-              if (cat == '低学年') label = '低学年 (1-4年)';
-              if (cat == '高学年') label = '高学年 (5-6年)';
+              if (cat == '低学年') {
+                label = '低学年 (1-4年)';
+              }
+              if (cat == '高学年') {
+                label = '高学年 (5-6年)';
+              }
             }
             return ChoiceChip(
               label: Text(
@@ -1222,11 +1233,12 @@ class _TeamRegistrationScreenState
         _buildSectionTitle('現在の登録済み一覧'),
         registeredTeamsAsync.when(
           data: (teams) {
-            if (teams.isEmpty)
+            if (teams.isEmpty) {
               return const Text(
                 'まだ登録されたチームはありません',
                 style: TextStyle(color: Colors.grey),
               );
+            }
             return Column(
               children: teams
                   .map(

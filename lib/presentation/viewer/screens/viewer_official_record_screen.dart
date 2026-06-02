@@ -172,8 +172,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       if (aMatches == null ||
                           aMatches.isEmpty ||
                           bMatches == null ||
-                          bMatches.isEmpty)
+                          bMatches.isEmpty) {
                         return 0;
+                      }
                       return aMatches.first.order.compareTo(
                         bMatches.first.order,
                       );
@@ -244,7 +245,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                       outputTime: now,
                                     );
                                   } catch (e) {
-                                    if (context.mounted)
+                                    if (context.mounted) {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
@@ -252,6 +253,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                           content: Text('出力に失敗しました: $e'),
                                         ),
                                       );
+                                    }
                                   } finally {
                                     if (dialogContext != null &&
                                         dialogContext!.mounted) {
@@ -327,7 +329,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                       outputTime: now,
                                     );
                                   } catch (e) {
-                                    if (context.mounted)
+                                    if (context.mounted) {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
@@ -335,6 +337,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                           content: Text('出力に失敗しました: $e'),
                                         ),
                                       );
+                                    }
                                   } finally {
                                     if (dialogContext != null &&
                                         dialogContext!.mounted) {
@@ -995,8 +998,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
         if (!bouts.every(
           (m) => m.status == 'approved' || m.status == 'finished',
-        ))
+        )) {
           continue;
+        }
 
         matrix[rowTeam]![colTeam] = LeagueGridCellData(
           result: result,

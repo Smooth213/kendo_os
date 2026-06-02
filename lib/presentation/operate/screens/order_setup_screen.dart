@@ -30,9 +30,12 @@ final opponentTeamHistoryProvider = Provider.autoDispose<List<String>>((ref) {
   final allMatches = ref.watch(matchListProvider);
   final Set<String> history = {};
   for (final m in allMatches) {
-    if (m.redName.contains(':')) history.add(m.redName.split(':').first.trim());
-    if (m.whiteName.contains(':'))
+    if (m.redName.contains(':')) {
+      history.add(m.redName.split(':').first.trim());
+    }
+    if (m.whiteName.contains(':')) {
       history.add(m.whiteName.split(':').first.trim());
+    }
   }
   return history.toList()..sort();
 });
@@ -215,8 +218,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             OutlinedButton.icon(
               onPressed: () async {
                 final inputName = await _showManualInputDialog();
-                if (context.mounted && inputName != null)
+                if (context.mounted && inputName != null) {
                   Navigator.pop(context, inputName);
+                }
               },
               icon: const Icon(Icons.edit, size: 16),
               label: const Text(
@@ -1650,8 +1654,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                         }
 
                                         final matchId = const Uuid().v4();
-                                        if (senpoMatchId.isEmpty)
+                                        if (senpoMatchId.isEmpty) {
                                           senpoMatchId = matchId;
+                                        }
 
                                         final newMatch = MatchModel(
                                           id: matchId,
@@ -1700,8 +1705,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                         ) {
                                           final String matchId = const Uuid()
                                               .v4();
-                                          if (senpoMatchId.isEmpty)
+                                          if (senpoMatchId.isEmpty) {
                                             senpoMatchId = matchId;
+                                          }
                                           final posName = _positions[i];
                                           String myP =
                                               _selectedPlayers[i] ?? '未定';
@@ -1798,10 +1804,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     }
                                   });
 
-                                  if (matchesToSave.isNotEmpty)
+                                  if (matchesToSave.isNotEmpty) {
                                     await ref
                                         .read(matchApplicationServiceProvider)
                                         .saveMatchesBulk(matchesToSave); // ★ 修正
+                                  }
 
                                   if (!context.mounted) {
                                     return;
