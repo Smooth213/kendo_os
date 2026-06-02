@@ -12,8 +12,8 @@ void main() {
   final backupDir = Directory('governance/backups');
   if (!backupDir.existsSync()) backupDir.createSync(recursive: true);
 
-  final timestamp =
-      DateTime.now().toUtc().toIso8601String().replaceAll(':', '-');
+  final now = DateTime.now().toUtc();
+  final timestamp = now.toIso8601String().replaceAll(':', '-');
   final backupFile = File('governance/backups/gov_state_$timestamp.json');
 
   // 現在の憲法と不変条件のハッシュを記録
@@ -27,7 +27,7 @@ void main() {
     'timestamp': timestamp,
     'invariants_hash': invariants.hashCode.toString(),
     'constitution_hash': constitution.hashCode.toString(),
-    'status': 'HARDENED'
+    'status': 'HARDENED',
   };
 
   backupFile.writeAsStringSync(state.toString());

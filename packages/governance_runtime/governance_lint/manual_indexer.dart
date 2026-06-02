@@ -17,7 +17,7 @@ void main() {
     'image_mapping.md',
     'style_guide.md',
     'forbidden_words.md',
-    'manual_index.md'
+    'manual_index.md',
   ];
 
   final List<Map<String, dynamic>> index = [];
@@ -55,9 +55,8 @@ void main() {
       } else if (file.path.contains('operator_faq')) {
         title = '運営向け よくある質問';
       } else {
-        title = file.uri.pathSegments.last
-            .replaceAll('.md', '')
-            .replaceAll('_', ' ');
+        final name = file.uri.pathSegments.last;
+        title = name.replaceAll('.md', '').replaceAll('_', ' ');
       }
     }
 
@@ -124,8 +123,7 @@ void main() {
         : (a['title'] as String).compareTo(b['title'] as String);
   });
 
-  File('docs/manuals/manual_search_index.json').writeAsStringSync(
-    jsonEncode(index),
-  );
+  File('docs/manuals/manual_search_index.json')
+      .writeAsStringSync(jsonEncode(index));
   print('✅ [PASS] Cleaned Search Index generated.');
 }

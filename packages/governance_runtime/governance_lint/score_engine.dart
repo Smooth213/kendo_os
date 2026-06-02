@@ -37,10 +37,8 @@ void main(List<String> args) {
   // Step 5-3: Metrics output for CI
   final outputFile = Platform.environment['GITHUB_OUTPUT'];
   if (outputFile != null) {
-    File(outputFile).writeAsStringSync(
-      'gov_score=$finalScore\n',
-      mode: FileMode.append,
-    );
+    final file = File(outputFile);
+    file.writeAsStringSync('gov_score=$finalScore\n', mode: FileMode.append);
   }
 
   if (finalScore >= 85) {

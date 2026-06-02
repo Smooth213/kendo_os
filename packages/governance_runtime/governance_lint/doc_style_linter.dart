@@ -24,7 +24,7 @@ void main() {
     'Event sourcing': '試合記録方式',
     'Aggregate': '試合データ',
     'Event Queue': '同期待ち',
-    'UI': '画面（または操作画面）'
+    'UI': '画面（または操作画面）',
   };
 
   // 監査対象外（開発者・管理者向け）のファイルリスト
@@ -82,9 +82,8 @@ void main() {
           caseSensitive: false,
         );
         if (regExp.hasMatch(line)) {
-          print(
-            '❌ [NG Word Violation] ${file.path}:$lineNumber\n   Found "$ng". Please use "$ok".',
-          );
+          print('❌ [NG Word Violation] ${file.path}:$lineNumber\n'
+              '   Found "$ng". Please use "$ok".');
           hasViolation = true;
         }
       });
@@ -96,10 +95,11 @@ void main() {
           .trim();
       final sentences = plainText.split('。');
       for (final sentence in sentences) {
-        if (sentence.trim().length > 40) {
-          print(
-            '⚠️ [Length Warning] ${file.path}:$lineNumber\n   Sentence exceeds 40 chars: "${sentence.trim().substring(0, min(20, sentence.trim().length))}..."',
-          );
+        final trimmed = sentence.trim();
+        if (trimmed.length > 40) {
+          final preview = trimmed.substring(0, min(20, trimmed.length));
+          print('⚠️ [Length Warning] ${file.path}:$lineNumber\n'
+              '   Sentence exceeds 40 chars: "$preview..."');
         }
       }
     }
