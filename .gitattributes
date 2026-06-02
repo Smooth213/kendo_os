@@ -1,2 +1,0 @@
-# Enforce LF line endings for Dart files to prevent dart format CI failures
-*.dart text eol=lf

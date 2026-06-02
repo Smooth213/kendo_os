@@ -24,12 +24,16 @@ void main(List<String> args) {
     if (file.contains('lib/presentation/') && file.endsWith('_screen.dart')) {
       changedScreens.add(file);
     }
-    if (file.contains('lib/domain/rules/')) hasRuleChange = true;
+    if (file.contains('lib/domain/rules/')) {
+      hasRuleChange = true;
+    }
     if (file.startsWith('docs/manuals/') && file.endsWith('.md')) {
       hasManualUpdate = true;
     }
     // ★ Step 4-4: 監視対象を新しいアセットディレクトリに変更
-    if (file.contains('assets/manual_images/')) hasScreenshotUpdate = true;
+    if (file.contains('assets/manual_images/')) {
+      hasScreenshotUpdate = true;
+    }
   }
 
   final manualsDir = Directory('docs/manuals');
@@ -37,7 +41,9 @@ void main(List<String> args) {
       ? manualsDir
           .listSync(recursive: true)
           .whereType<File>()
-          .where((f) => f.path.endsWith('.md') && !f.path.contains('templates'))
+          .where(
+            (f) => f.path.endsWith('.md') && !f.path.contains('templates'),
+          )
           .toList()
       : <File>[];
 
@@ -93,7 +99,9 @@ void main(List<String> args) {
       final target = match.group(1);
       if (target != null && !target.startsWith('http')) {
         if (!_resolvePath(file, target)) {
-          print('❌ [Violation] Broken Image Link in ${file.path} -> $target');
+          print(
+            '❌ [Violation] Broken Image Link in ${file.path} -> $target',
+          );
           hasViolation = true;
         }
       }

@@ -19,20 +19,23 @@ void main() async {
     {
       'name': 'kendo_os_viewer_manual',
       'title': 'Kendo Sync 観客・閲覧マニュアル',
-      'nav':
-          '  - ホーム: viewer/index.md\n  - 試合画面: viewer/viewer_match.md\n  - オンライン版QR: shared/qr_cover.md',
+      'nav': '  - ホーム: viewer/index.md\n'
+          '  - 試合画面: viewer/viewer_match.md\n'
+          '  - オンライン版QR: shared/qr_cover.md',
     },
     {
       'name': 'kendo_os_operator_manual',
       'title': 'Kendo Sync 運営・記録マニュアル (詳細版)',
-      'nav':
-          '  - ホーム: operator/index.md\n  - 試合記録: operator/match.md\n  - 障害対応: recovery/failure_catalog.md\n  - オンライン版QR: shared/qr_cover.md',
+      'nav': '  - ホーム: operator/index.md\n'
+          '  - 試合記録: operator/match.md\n'
+          '  - 障害対応: recovery/failure_catalog.md\n'
+          '  - オンライン版QR: shared/qr_cover.md',
     },
     {
       'name': 'quick_guide_operator',
       'title': '現場用クイックガイド (机上配置用)',
-      'nav':
-          '  - 緊急対応と基本操作: quickstart/index.md\n  - オンライン版QR: shared/qr_cover.md',
+      'nav': '  - 緊急対応と基本操作: quickstart/index.md\n'
+          '  - オンライン版QR: shared/qr_cover.md',
     },
   ];
 
