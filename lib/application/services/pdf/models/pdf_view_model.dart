@@ -93,7 +93,8 @@ class PdfViewModel {
       if (e.type == PointType.hansoku) {
         hCount++;
         if (hCount % 2 == 0) {
-          if ((e.side == Side.red && !isRed) || (e.side == Side.white && isRed)) {
+          if ((e.side == Side.red && !isRed) ||
+              (e.side == Side.white && isRed)) {
             res.add('反');
           }
         }

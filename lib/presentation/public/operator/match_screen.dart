@@ -2259,7 +2259,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           await ref
                               .read(matchApplicationServiceProvider)
                               .saveMatch(updatedMatch); // ★ 修正
-                        if (ctx.mounted) { Navigator.pop(ctx); }
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                          }
                         },
                         child: const Text(
                           '決定して準備完了',

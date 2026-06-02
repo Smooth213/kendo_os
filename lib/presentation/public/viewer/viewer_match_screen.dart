@@ -82,15 +82,17 @@ class ViewerMatchScreen extends ConsumerWidget {
           body: Center(child: Text('エラーが発生しました: ${asyncWebMatch.error}')),
         );
       } else {
-        if (fallbackProjection == null)
-        {  return const Scaffold(body: Center(child: Text('試合データが見つかりません'))); }
+        if (fallbackProjection == null) {
+          return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
+        }
         return _buildScreen(context, ref, fallbackProjection);
       }
     } else {
       return viewStateAsync!.when(
         loading: () {
-          if (fallbackProjection != null)
-          {  return _buildScreen(context, ref, fallbackProjection); }
+          if (fallbackProjection != null) {
+            return _buildScreen(context, ref, fallbackProjection);
+          }
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
@@ -98,8 +100,9 @@ class ViewerMatchScreen extends ConsumerWidget {
         error: (e, s) => Scaffold(body: Center(child: Text('エラーが発生しました: $e'))),
         data: (MatchProjection? projection) {
           final target = projection ?? fallbackProjection;
-          if (target == null)
-          {  return const Scaffold(body: Center(child: Text('試合データが見つかりません'))); }
+          if (target == null) {
+            return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
+          }
           return _buildScreen(context, ref, target);
         },
       );

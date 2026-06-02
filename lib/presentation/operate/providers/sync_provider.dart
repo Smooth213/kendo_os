@@ -29,8 +29,12 @@ Map<String, dynamic> _sanitizeForSync(Map<String, dynamic> data) {
       result[key] = _sanitizeForSync(Map<String, dynamic>.from(value));
     } else if (value is List) {
       result[key] = value.map((e) {
-        if (e is Map) { return _sanitizeForSync(Map<String, dynamic>.from(e)); }
-        if (e is Timestamp) { return e.toDate().toIso8601String(); }
+        if (e is Map) {
+          return _sanitizeForSync(Map<String, dynamic>.from(e));
+        }
+        if (e is Timestamp) {
+          return e.toDate().toIso8601String();
+        }
         return e;
       }).toList();
     } else if ((key == 'order' ||

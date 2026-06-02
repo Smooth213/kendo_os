@@ -70,7 +70,9 @@ Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
         if (e is Map) {
           return _sanitizeFirestoreData(Map<String, dynamic>.from(e));
         }
-        if (e is Timestamp) { return e.toDate().toIso8601String(); }
+        if (e is Timestamp) {
+          return e.toDate().toIso8601String();
+        }
         return e;
       }).toList();
     } else if ((key == 'order' ||

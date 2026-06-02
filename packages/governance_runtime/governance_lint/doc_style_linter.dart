@@ -44,7 +44,9 @@ void main() {
   for (final file in mdFiles) {
     // 対象外ファイル、またはgovernanceディレクトリは完全にスキップ
     if (excludeFromAudit.any((ex) => file.path.endsWith(ex)) ||
-        file.path.contains('/governance/')) { continue; }
+        file.path.contains('/governance/')) {
+      continue;
+    }
 
     final lines = file.readAsLinesSync();
     int lineNumber = 0;

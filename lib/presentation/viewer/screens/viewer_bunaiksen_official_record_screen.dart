@@ -1247,9 +1247,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
 
                     if (!bouts.every(
                       (m) => m.status == 'approved' || m.status == 'finished',
-                      )) {
+                    )) {
                       return const SizedBox(height: 65);
-                      }
+                    }
 
                     final textColor = isDark ? Colors.white : Colors.black87;
 

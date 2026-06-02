@@ -117,7 +117,8 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                       if (action == 'undo' || action == 'rebuild') {
                         actionColor = Colors.orange;
                       }
-                      if (action == 'manual_update' || action == 'force_claim') {
+                      if (action == 'manual_update' ||
+                          action == 'force_claim') {
                         actionColor = Colors.red;
                       }
 

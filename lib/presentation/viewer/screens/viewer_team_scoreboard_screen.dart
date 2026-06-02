@@ -480,9 +480,8 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         : Colors.grey.shade600;
     final textColor = isDark ? Colors.white : Colors.black87;
 
-    if (rawName.contains('欠員'))
-    {
-       return _cell(
+    if (rawName.contains('欠員')) {
+      return _cell(
         '(欠員)',
         fs: 17,
         color: subTextColor,

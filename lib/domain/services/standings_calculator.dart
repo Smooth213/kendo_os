@@ -25,11 +25,12 @@ abstract class StandingsCalculator<T> {
 }
 
 /// リーグ戦専用の集計ロジック（KendoRuleEngineから独立）
-class LeagueStandingsCalculator implements StandingsCalculator<List<LeagueTeamStat>> {
+class LeagueStandingsCalculator
+    implements StandingsCalculator<List<LeagueTeamStat>> {
   @override
   List<LeagueTeamStat> calculate(List<MatchModel> matches, MatchRule rule) {
     final Map<String, LeagueTeamStat> statsMap = {};
-    
+
     final Set<String> participants = {};
     for (var m in matches) {
       participants.add(m.redName.split(':').first.trim());
@@ -53,7 +54,7 @@ class LeagueStandingsCalculator implements StandingsCalculator<List<LeagueTeamSt
 
       final t1 = bouts.first.redName.split(':').first.trim();
       final t2 = bouts.first.whiteName.split(':').first.trim();
-      
+
       int t1Wins = 0, t2Wins = 0, t1Pts = 0, t2Pts = 0;
       for (var b in bouts) {
         final bool isT1Red = b.redName.split(':').first.trim() == t1;
@@ -61,8 +62,11 @@ class LeagueStandingsCalculator implements StandingsCalculator<List<LeagueTeamSt
         final int wS = (b.whiteScore as num).toInt();
         t1Pts += isT1Red ? rS : wS;
         t2Pts += isT1Red ? wS : rS;
-        if (rS > wS) { isT1Red ? t1Wins++ : t2Wins++; }
-        else if (wS > rS) { isT1Red ? t2Wins++ : t1Wins++; }
+        if (rS > wS) {
+          isT1Red ? t1Wins++ : t2Wins++;
+        } else if (wS > rS) {
+          isT1Red ? t2Wins++ : t1Wins++;
+        }
       }
 
       final s1 = statsMap[t1]!;
@@ -73,24 +77,36 @@ class LeagueStandingsCalculator implements StandingsCalculator<List<LeagueTeamSt
       s2.totalPointsScored += t2Pts;
 
       if (t1Wins > t2Wins || (t1Wins == t2Wins && t1Pts > t2Pts)) {
-        s1.matchWins++; s2.matchLosses++;
-        s1.customPoints += rule.winPoint; s2.customPoints += rule.lossPoint;
+        s1.matchWins++;
+        s2.matchLosses++;
+        s1.customPoints += rule.winPoint;
+        s2.customPoints += rule.lossPoint;
       } else if (t2Wins > t1Wins || (t2Wins == t1Wins && t2Pts > t1Pts)) {
-        s2.matchWins++; s1.matchLosses++;
-        s2.customPoints += rule.winPoint; s1.customPoints += rule.lossPoint;
+        s2.matchWins++;
+        s1.matchLosses++;
+        s2.customPoints += rule.winPoint;
+        s1.customPoints += rule.lossPoint;
       } else {
-        s1.matchDraws++; s2.matchDraws++;
-        s1.customPoints += rule.drawPoint; s2.customPoints += rule.drawPoint;
+        s1.matchDraws++;
+        s2.matchDraws++;
+        s1.customPoints += rule.drawPoint;
+        s2.customPoints += rule.drawPoint;
       }
     }
 
     final sortedList = statsMap.values.toList();
     sortedList.sort((a, b) {
       if (rule.winPoint > 0 || rule.drawPoint > 0) {
-        if (b.customPoints != a.customPoints) { return b.customPoints.compareTo(a.customPoints); }
+        if (b.customPoints != a.customPoints) {
+          return b.customPoints.compareTo(a.customPoints);
+        }
       }
-      if (b.matchWins != a.matchWins) { return b.matchWins.compareTo(a.matchWins); }
-      if (b.individualWinners != a.individualWinners) { return b.individualWinners.compareTo(a.individualWinners); }
+      if (b.matchWins != a.matchWins) {
+        return b.matchWins.compareTo(a.matchWins);
+      }
+      if (b.individualWinners != a.individualWinners) {
+        return b.individualWinners.compareTo(a.individualWinners);
+      }
       return b.totalPointsScored.compareTo(a.totalPointsScored);
     });
 

@@ -994,9 +994,9 @@ class OfficialRecordScreen extends ConsumerWidget {
 
         if (!bouts.every(
           (m) => m.status == 'approved' || m.status == 'finished',
-                    )) {
+        )) {
           continue;
-                    }
+        }
 
         matrix[rowTeam]![colTeam] = LeagueGridCellData(
           result: result,

@@ -384,16 +384,16 @@ class MatchTimelineList extends ConsumerWidget {
                 String wTeam = m.whiteName.contains(':')
                     ? m.whiteName.split(':').first.trim()
                     : m.whiteName;
-                                    if (ownTeams.contains(rTeam)) {
+                if (ownTeams.contains(rTeam)) {
                   groupToOwnTeams
                       .putIfAbsent(m.groupName!, () => {})
                       .add(rTeam);
-                                    }
-                                    if (ownTeams.contains(wTeam)) {
+                }
+                if (ownTeams.contains(wTeam)) {
                   groupToOwnTeams
                       .putIfAbsent(m.groupName!, () => {})
                       .add(wTeam);
-                                    }
+                }
 
                 // ★ 追加: グループの代表チームを決定し、同じリーグが引き裂かれるのを防ぐ
                 if (!groupToRepresentativeTeam.containsKey(m.groupName!)) {
@@ -1798,24 +1798,24 @@ class MatchTimelineList extends ConsumerWidget {
                                                                   } else {
                                                                     if (currentTie
                                                                             .length >
-                                                                            1) {
+                                                                        1) {
                                                                       tieGroups.add(
                                                                         List.from(
                                                                           currentTie,
                                                                         ),
                                                                       );
-                                                                        }
+                                                                    }
                                                                     currentTie =
                                                                         [curr];
                                                                   }
                                                                 }
                                                                 if (currentTie
                                                                         .length >
-                                                                        1) {
+                                                                    1) {
                                                                   tieGroups.add(
                                                                     currentTie,
                                                                   );
-                                                                    }
+                                                                }
                                                               }
 
                                                               if (tieGroups
@@ -4125,12 +4125,24 @@ void _onReorderInnerTimeline(
   WidgetRef ref,
 ) async {
   final permissions = ref.read(permissionProvider);
-  if (permissions.isReadOnly) { return; }
-  if (oldIndex == newIndex) { return; }
-  if (permissions.isReadOnly) { return; }
-  if (oldIndex == newIndex) { return; }
-  if (permissions.isReadOnly) { return; }
-  if (oldIndex == newIndex) { return; }
+  if (permissions.isReadOnly) {
+    return;
+  }
+  if (oldIndex == newIndex) {
+    return;
+  }
+  if (permissions.isReadOnly) {
+    return;
+  }
+  if (oldIndex == newIndex) {
+    return;
+  }
+  if (permissions.isReadOnly) {
+    return;
+  }
+  if (oldIndex == newIndex) {
+    return;
+  }
 
   final item = list[oldIndex];
   double newOrder;
@@ -4145,7 +4157,9 @@ void _onReorderInnerTimeline(
         list[newIndex > oldIndex ? newIndex + 1 : newIndex].timelineOrder;
     newOrder = (prevOrder + nextOrder) / 2.0;
   }
-  if (newOrder == list[newIndex].timelineOrder) { newOrder += 0.001; }
+  if (newOrder == list[newIndex].timelineOrder) {
+    newOrder += 0.001;
+  }
 
   if (item is MatchCommentModel) {
     try {
@@ -4185,7 +4199,9 @@ void _onReorderMatches(
     final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex].order;
     newOrder = (prevOrder + nextOrder) / 2.0;
   }
-  if (newOrder == list[newIndex].order) { newOrder += 0.001; }
+  if (newOrder == list[newIndex].order) {
+    newOrder += 0.001;
+  }
 
   try {
     await ref.read(matchApplicationServiceProvider).saveMatchesBulk([
@@ -4217,7 +4233,9 @@ void _onReorderTimeline(
     final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex].order;
     newOrder = (prevOrder + nextOrder) / 2.0;
   }
-  if (newOrder == list[newIndex].order) { newOrder += 0.001; }
+  if (newOrder == list[newIndex].order) {
+    newOrder += 0.001;
+  }
 
   if (item is CommentTimelineItem) {
     try {
@@ -4557,7 +4575,7 @@ Widget _buildInnerCommentWidget(
                   ],
                 ),
               );
-                                              if (confirm == true) {
+              if (confirm == true) {
                 await ref.read(commentCommandProvider).deleteComment(c.id);
               }
             },
@@ -4935,17 +4953,17 @@ class MatchListTileCard extends ConsumerWidget {
 
                   String getTeamPart(String raw) {
                     if (raw.contains(':')) return raw.split(':').first.trim();
-      if (!isIndividual) {
+                    if (!isIndividual) {
                       return raw.trim(); // 団体戦でコロンがない場合は全体をチーム名とみなす
-      }
+                    }
                     return '';
                   }
 
                   String getNamePart(String raw) {
                     if (raw.contains(':')) return raw.split(':').last.trim();
-      if (!isIndividual) {
+                    if (!isIndividual) {
                       return match.matchType; // 団体戦でコロンがない場合、選手名の代わりにポジション名を表示
-      }
+                    }
                     return raw.trim();
                   }
 

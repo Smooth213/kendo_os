@@ -94,7 +94,9 @@ final standingsProvider = Provider<List<StandingData>>((ref) {
     if (b.matchPoints != a.matchPoints) {
       return b.matchPoints.compareTo(a.matchPoints);
     }
-    if (b.wins != a.wins) { return b.wins.compareTo(a.wins); }
+    if (b.wins != a.wins) {
+      return b.wins.compareTo(a.wins);
+    }
     return b.pointsScored.compareTo(a.pointsScored);
   });
 
