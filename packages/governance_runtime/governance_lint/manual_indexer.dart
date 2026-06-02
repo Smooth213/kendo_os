@@ -34,9 +34,9 @@ void main() {
 
   for (final file in mdFiles) {
     // ★ 修正1: 古い場所に残っているFAQファイルの残骸を完全に無視する
-    if ((file.path.endsWith('viewer_faq.md') ||
-            file.path.endsWith('operator_faq.md')) &&
-        !file.path.contains('/faq/')) {
+    final isOldFaq = file.path.endsWith('viewer_faq.md') ||
+        file.path.endsWith('operator_faq.md');
+    if (isOldFaq && !file.path.contains('/faq/')) {
       continue;
     }
 

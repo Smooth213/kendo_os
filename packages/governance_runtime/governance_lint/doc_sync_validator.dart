@@ -121,7 +121,8 @@ void main(List<String> args) {
     // 3. Deep Documentation の品質要件 (AI Metadata必須)
     if (!content.contains('ai_metadata:')) {
       print(
-          '❌ [Governance Violation] Missing AI Metadata block in ${file.path}');
+        '❌ [Governance Violation] Missing AI Metadata block in ${file.path}',
+      );
       hasViolation = true;
     }
   }

@@ -78,14 +78,16 @@ void main() {
         // 見出しからチャンクの種類を高精度に推論
         String chunkType = 'info';
         final h2Lower = currentH2.toLowerCase();
+        final isFailure = h2Lower.contains('障害') ||
+            h2Lower.contains('エラー') ||
+            h2Lower.contains('通信断') ||
+            h2Lower.contains('停電');
+
         if (h2Lower.contains('faq') || h2Lower.contains('質問')) {
           chunkType = 'faq';
         } else if (h2Lower.contains('手順') || h2Lower.contains('操作')) {
           chunkType = 'procedure';
-        } else if (h2Lower.contains('障害') ||
-            h2Lower.contains('エラー') ||
-            h2Lower.contains('通信断') ||
-            h2Lower.contains('停電')) {
+        } else if (isFailure) {
           chunkType = 'failure_recovery';
         } else if (h2Lower.contains('governance')) {
           chunkType = 'governance';
