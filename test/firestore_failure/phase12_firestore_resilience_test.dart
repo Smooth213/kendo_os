@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
   group('🛡️ PHASE 12 — Firestore障害耐性要塞・インフラ全停止耐久テスト', () {
@@ -21,12 +22,13 @@ void main() {
 
       final updatedMatch = baseMatch.copyWith(
         events: [
-          ScoreEvent(
+          ScoreEventLegacyAdapter.fromLegacy(
             id: 'ev_offline_input',
             side: Side.red,
-            strikeType: StrikeType.men,
-            isIppon: true,
+            type: PointType.men,
             timestamp: baseTime,
+            userId: 'test_user',
+            sequence: 1,
             logicalClock: 1,
           ),
         ],

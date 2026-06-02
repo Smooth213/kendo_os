@@ -9,17 +9,65 @@ import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart';
 import 'match_rule_provider.dart';
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kendo_os/application/projections/projection_store.dart';
 
 // ★ Phase 2: 自動バックアップ用のパッケージを追加
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:isar_community/isar.dart';
+
+Map<String, dynamic> _sanitizeForSync(Map<String, dynamic> data) {
+  final Map<String, dynamic> result = {};
+  data.forEach((key, value) {
+    if (value is Timestamp) {
+      result[key] = value.toDate().toIso8601String();
+    } else if (value is Map) {
+      result[key] = _sanitizeForSync(Map<String, dynamic>.from(value));
+    } else if (value is List) {
+      result[key] = value.map((e) {
+        if (e is Map) return _sanitizeForSync(Map<String, dynamic>.from(e));
+        if (e is Timestamp) return e.toDate().toIso8601String();
+        return e;
+      }).toList();
+    } else if ((key == 'order' || key == 'matchTimeMinutes' || key == 'extensionTimeMinutes' || key == 'enchoTimeMinutes') && value is num) {
+      result[key] = value.toDouble();
+    } else if ((key == 'redScore' || key == 'whiteScore' || key == 'matchOrder') && value is num) {
+      result[key] = value.toInt();
+    } else {
+      result[key] = value;
+    }
+  });
+  return result;
+}
 
 final connectivityProvider = StreamProvider<bool>((ref) async* {
+  // ★ 修正: iOSシミュレータ環境で connectivity_plus が常に none を誤検知し続け、
+  // dojoRoomSyncProvider（ダウンストリーム同期）が永久にオフラインと誤認してFirestoreからIsarへ
+  // データを一切ダウンロードしなくなってしまう致命的バグに対する絶対防衛ライン。
+  // ネイティブ環境ではFirestoreSDK自体の自動オフライン管理に完全委譲するため、常に true(オンライン) を返します。
+  if (!kIsWeb) {
+    debugPrint('📡 [Connectivity] ネイティブバイパス起動: 強制的に true (オンライン) を通知します');
+    yield true;
+    // ★ 修正: 単発の yield でストリームが静止してしまうと、ダウンストリーム同期（dojoRoomSyncProvider）の
+    // 内部実装によってはリッスンがタイムアウト、あるいは後続処理がフリーズしてしまうケースがあります。
+    // 永久に true を放出し続けるハートビート(脈拍)ストリームに切り替えて、同期パイプラインを強制的に駆動し続けます。
+    yield* Stream.periodic(const Duration(seconds: 3), (_) {
+      debugPrint('💓 [Connectivity] ハートビート送信: ダウンストリーム同期を駆動中...');
+      return true;
+    });
+    return;
+  }
+
   final initialResults = await Connectivity().checkConnectivity();
+  debugPrint('📡 [Connectivity] Web環境 初期状態: $initialResults');
   yield !initialResults.contains(ConnectivityResult.none);
 
   await for (final results in Connectivity().onConnectivityChanged) {
+    debugPrint('📡 [Connectivity] Web環境 状態変化: $results');
     yield !results.contains(ConnectivityResult.none);
   }
 });
@@ -190,7 +238,7 @@ class SyncEngine {
   Future<void> forceSync() async {
     // ★ 修正: 手動操作による同期要求なので、オンライン判定を無視して強制的に試行(突破)する
     debugPrint('🔄 [Sync Engine] 手動同期(forceSync)を強制的に開始します...');
-    await syncNow();
+    await _syncWithRetry(1);
   }
 
   Future<void> syncNow() async {
@@ -203,6 +251,59 @@ class SyncEngine {
     try {
       final localRepo = ref.read(localMatchRepositoryProvider);
       final firestore = ref.read(firestoreProvider);
+      final dojoId = ref.read(currentDojoIdProvider);
+      if (dojoId.isEmpty) {
+        debugPrint('⚠️ [Sync Engine] 道場IDが空のため同期をスキップします');
+        _isDone();
+        return;
+      }
+
+      // ★ 修正: テナント不一致ガード
+      // 道場ID切り替え直後に旧データが新道場に誤って送信・同期されるのを防ぐため、
+      // 共通キー（global_last_dojo_id_v4）でチェックします。
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final lastDojoId = prefs.getString('global_last_dojo_id_v4');
+        if (lastDojoId != null && lastDojoId.isNotEmpty && lastDojoId != dojoId) {
+          // ★ 処理が重複しないよう、検知した瞬間に新しいIDを保存しておく
+          await prefs.setString('global_last_dojo_id_v4', dojoId);
+          
+          debugPrint('⚠️ [Sync Engine] 道場ID切り替え検知 ($lastDojoId -> $dojoId)。旧データの誤送信を防ぐため同期エンジン側で強制パージを実行します');
+          if (!kIsWeb) {
+             try {
+               final isar = Isar.getInstance();
+               if (isar != null) {
+                 await isar.writeTxn(() async {
+                   await isar.clear();
+                 });
+                 debugPrint('🧹 [Sync Engine] Isarローカルデータベースを完全ワイプしました');
+               } else {
+                 debugPrint('⚠️ [Sync Engine] Isar.getInstance() が null です。フォールバックとして未送信データを削除します');
+               }
+             } catch (e) {
+               debugPrint('🔥 [Sync Engine] Isarワイプエラー: $e');
+             }
+             
+             // ★ 修正: Isarワイプが失敗した場合のセーフティネット
+             // 未送信データだけでなく、メモリに読み込まれている全ての試合データを強制削除する
+             try {
+               final allMatches = ref.read(matchListProvider);
+               for (var m in allMatches) {
+                 await localRepo.deleteMatch(m.id);
+               }
+             } catch (e) {
+               debugPrint('🔥 [Sync Engine] セーフティネット一括削除エラー: $e');
+             }
+          }
+          ref.invalidate(matchListProvider);
+          ref.invalidate(localMatchRepositoryProvider);
+          ref.invalidate(projectionStoreProvider);
+          _isDone();
+          return;
+        } else if (lastDojoId == null || lastDojoId.isEmpty) {
+          await prefs.setString('global_last_dojo_id_v4', dojoId);
+        }
+      } catch (_) {} // テスト環境等でのSharedPreferences未初期化エラーを無視
 
       // 1. 未送信データを取得
       final pendingMatches = await localRepo.getPendingMatches();
@@ -216,7 +317,11 @@ class SyncEngine {
         final match = await localRepo.getMatch(pendingMatch.id);
         if (match == null) continue;
 
-        final docRef = firestore.collection('matches').doc(match.id);
+        final docRef = firestore
+            .collection('organizations')
+            .doc(dojoId)
+            .collection('matches')
+            .doc(match.id);
         
         // サーバー側の最新状態を確認（楽観的ロック）
         final snapshot = await docRef.get();
@@ -233,7 +338,8 @@ class SyncEngine {
             try {
               // 1. リモートデータを復元
               remoteData['id'] = docRef.id;
-              remoteMatch = MatchModel.fromJson(remoteData);
+              final sanitizedRemoteData = _sanitizeForSync(remoteData);
+              remoteMatch = MatchModel.fromJson(sanitizedRemoteData);
             } catch (e) {
               debugPrint('🔥 [Sync Engine] リモートデータの解析エラー（古い形式のデータ）: $e');
               // ★ 修正: リモートのデータが古くて壊れている場合は、最新のローカルデータで強制上書き（自己修復）する
@@ -373,6 +479,19 @@ class SyncEngine {
       debugPrint('✅ [Sync Engine] 競合状態をクリアしました（サーバー優先）');
     } catch (e) {
       debugPrint('🔥 [Sync Engine] 競合クリアエラー: $e');
+    }
+  }
+
+  // SyncProvider内でのRetry追加
+  Future<void> _syncWithRetry(int attempt) async {
+    try {
+      await syncNow();
+    } catch (e) {
+      if (attempt < 3) {
+        final delay = Duration(seconds: (2 * attempt)); // Exponential Backoff
+        await Future.delayed(delay);
+        await _syncWithRetry(attempt + 1);
+      }
     }
   }
 }

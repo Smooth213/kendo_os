@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'dart:io';
@@ -11,6 +14,7 @@ void main() {
   group('LocalMatchRepository (Isar Database) Tests', () {
     late Isar isar;
     late LocalMatchRepository repository;
+    late Directory tempDir;
 
     // =========================================================================
     // 【CI環境対応】Isarの安全な初期化（二重起動・衝突を完全防止）
@@ -20,26 +24,25 @@ void main() {
         await Isar.initializeIsarCore(download: true);
       } catch (_) {}
 
-      // 既に他のテストファイルでIsarが開かれている場合は再利用する
-      if (Isar.instanceNames.isNotEmpty) {
-        isar = Isar.getInstance(Isar.instanceNames.first)!;
-      } else {
-        final tempDir = Directory.systemTemp.createTempSync('isar_repo_test_');
-        isar = await Isar.open(
-          [MatchEntitySchema],
-          directory: tempDir.path,
-          inspector: false, // CI環境でのポート衝突を防ぐためインスペクターは無効化
-        );
-      }
+      tempDir = Directory.systemTemp.createTempSync('isar_repo_test_');
+      isar = await Isar.open(
+        [MatchEntitySchema],
+        directory: tempDir.path,
+        name: 'repo_test_db_${DateTime.now().microsecondsSinceEpoch}',
+        inspector: false, // CI環境でのポート衝突を防ぐためインスペクターは無効化
+      );
 
       // テスト対象のリポジトリをインスタンス化
       repository = LocalMatchRepository(isar);
     });
 
     tearDownAll(() async {
-      try {
+      if (isar.isOpen) {
         await isar.close(deleteFromDisk: true);
-      } catch (_) {}
+      }
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
     });
 
     setUp(() async {

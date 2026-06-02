@@ -10,6 +10,7 @@ import '../../operate/providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart';
+import '../../shared/providers/current_sync_context_provider.dart';
 import '../../operate/providers/match_view_model_provider.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
@@ -125,7 +126,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.qr_code_2),
                 tooltip: '観戦リンクを共有する',
-                onPressed: () => _showShareDialog(context, tournamentId, dateDisplay),
+                onPressed: () => _showShareDialog(context, ref, tournamentId, dateDisplay),
               ),
               IconButton(
                 icon: const Icon(Icons.leaderboard_outlined),
@@ -278,8 +279,9 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
     );
   }
 
-  void _showShareDialog(BuildContext context, String tournamentId, String dateDisplay) {
-    final String shareUrl = 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId';
+  void _showShareDialog(BuildContext context, WidgetRef ref, String tournamentId, String dateDisplay) {
+    final dojoId = ref.read(currentDojoIdProvider);
+    final String shareUrl = 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
     
     showDialog(
       context: context,

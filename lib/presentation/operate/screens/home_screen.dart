@@ -11,6 +11,7 @@ import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 // ★ 古い permission_provider を排除し、新セキュリティ一元管理システムを導入
 import '../../../domain/entities/user_role.dart';
 import '../../shared/providers/current_user_role_provider.dart';
+import '../../shared/providers/current_sync_context_provider.dart';
 import '../providers/settings_provider.dart';
 
 import '../../shared/widgets/liquid_background.dart';
@@ -156,7 +157,7 @@ class HomeScreen extends ConsumerWidget {
                     IconButton(
                       icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
                       tooltip: '大会を共有する',
-                      onPressed: () => _showShareDialog(context, tournamentId),
+                      onPressed: () => _showShareDialog(context, ref, tournamentId),
                     ),
                     const SizedBox(width: 8),
                   ],
@@ -201,8 +202,9 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  void _showShareDialog(BuildContext context, String tournamentId) {
-    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer';
+  void _showShareDialog(BuildContext context, WidgetRef ref, String tournamentId) {
+    final dojoId = ref.read(currentDojoIdProvider);
+    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

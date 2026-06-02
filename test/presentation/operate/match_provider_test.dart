@@ -22,6 +22,11 @@ import 'package:kendo_os/presentation/operate/providers/ui_message_provider.dart
 import 'package:kendo_os/presentation/operate/providers/sync_provider.dart';
 import 'package:kendo_os/infrastructure/repository/sync_engine.dart' as new_sync;
 import 'package:kendo_os/core/time/system_time_source.dart';
+// ★ 追加: ProjectionとIsarの警告を防ぐためのモック追加
+import 'package:kendo_os/application/projections/projection_store.dart' as app_store;
+import 'package:kendo_os/domain/repositories/projection_store.dart' as domain_store;
+import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart' as in_memory_store;
+import 'package:kendo_os/application/projections/match_projection.dart';
 
 class MockMatchRepository extends Mock implements MatchRepository {}
 class MockAuditService extends Mock implements AuditService {}
@@ -41,6 +46,10 @@ class MockUiMessageNotifier extends UiMessageNotifier {
   void showSuccess(String message) {}
 }
 
+// ★ 追加: Projection Storeのモック (Isar警告の完全抑止)
+class MockAppProjectionStore extends Mock implements app_store.ProjectionStore {}
+class MockDomainProjectionStore extends Mock implements domain_store.ProjectionStore {}
+
 class FakeMatchModel extends Fake implements MatchModel {
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
@@ -49,6 +58,7 @@ class FakeMatchModel extends Fake implements MatchModel {
 }
 
 class FakeMatchCommandModel extends Fake implements MatchCommandModel {}
+class FakeMatchProjection extends Fake implements MatchProjection {}
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
@@ -69,11 +79,14 @@ void main() {
   late MockLocalMatchRepository mockLocalRepo;
   late MockSyncEngine mockSyncEngine;
   late MockNewSyncEngine mockNewSyncEngine;
+  late MockAppProjectionStore mockAppProjectionStore;
+  late MockDomainProjectionStore mockDomainStore;
 
   setUp(() {
     registerFallbackValue(FakeMatchModel());
     registerFallbackValue(AuditAction.addScore); 
     registerFallbackValue(FakeMatchCommandModel());
+    registerFallbackValue(FakeMatchProjection());
 
     mockRepository = MockMatchRepository();
     mockAudit = MockAuditService();
@@ -82,6 +95,8 @@ void main() {
     mockLocalRepo = MockLocalMatchRepository();
     mockSyncEngine = MockSyncEngine();
     mockNewSyncEngine = MockNewSyncEngine();
+    mockAppProjectionStore = MockAppProjectionStore();
+    mockDomainStore = MockDomainProjectionStore();
 
     // 試合が見つからないと処理が中断されるため、モックプロバイダから試合を返すように設定
     when(() => mockLocalRepo.getMatch(any())).thenAnswer((inv) async {
@@ -97,16 +112,22 @@ void main() {
     when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
     when(() => mockNewSyncEngine.processQueue()).thenAnswer((_) async {});
 
+    // ★ 追加: Projectionの書き込み処理をモック化して例外ログを完全沈黙させる
+    when(() => mockDomainStore.save(any())).thenAnswer((_) => Future.value());
+
     container = ProviderContainer(
       overrides: [
         matchRepositoryProvider.overrideWithValue(mockRepository),
         localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+        isarProvider.overrideWithValue(null), // ★ 追加: Isar初期化エラーの根本解決
         auditProvider.overrideWithValue(mockAudit),
         soundServiceProvider.overrideWithValue(mockSound),
         matchCommandProvider.overrideWithValue(mockCommand),
         syncEngineProvider.overrideWithValue(mockSyncEngine), // ★ モックを追加
         new_sync.syncEngineProvider.overrideWithValue(mockNewSyncEngine), // ★ モックを追加
         uiMessageProvider.overrideWith(() => MockUiMessageNotifier()), // ★ モックを追加
+        app_store.projectionStoreProvider.overrideWithValue(mockAppProjectionStore), // ★ Isar Projection 警告を抑止
+        in_memory_store.projectionStoreProvider.overrideWithValue(mockDomainStore), // ★ 追加: ドメイン層のProjectionStoreもモック化
         settingsProvider.overrideWith(() => MockSettingsNotifier()),
         matchListProvider.overrideWith((ref) => ref.watch(mockMatchListProvider)), 
       ],

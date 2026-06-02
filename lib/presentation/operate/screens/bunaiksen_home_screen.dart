@@ -16,6 +16,7 @@ import '../../shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../shared/providers/current_sync_context_provider.dart';
 import '../providers/match_view_model_provider.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
@@ -150,12 +151,15 @@ class BunaiksenHomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.visibility),
             tooltip: '観客席プレビュー',
-            onPressed: () => context.push('/bunaiksen-viewer-home/$dateId'),
+            onPressed: () {
+              final dojoId = ref.read(currentDojoIdProvider);
+              context.push('/bunaiksen-viewer-home/$dateId?role=viewer&dojoId=$dojoId');
+            },
           ),
           IconButton(
             icon: const Icon(Icons.qr_code_2),
             tooltip: '観戦リンクを共有する',
-            onPressed: () => _showShareDialog(context, dateId, dateDisplay),
+            onPressed: () => _showShareDialog(context, ref, dateId, dateDisplay),
           ),
           IconButton(
             // ★ 修正：チェックマークから、成績や順位表を表す「リーダーボード」のアイコンに変更
@@ -411,8 +415,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     );
   }
 
-  void _showShareDialog(BuildContext context, String tournamentId, String dateDisplay) {
-    final String shareUrl = 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId';
+  void _showShareDialog(BuildContext context, WidgetRef ref, String tournamentId, String dateDisplay) {
+    final dojoId = ref.read(currentDojoIdProvider);
+    final String shareUrl = 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
     
     showDialog(
       context: context,

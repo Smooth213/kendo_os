@@ -1,6 +1,10 @@
+@TestOn('vm')
+library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
+import 'dart:io';
 
 void main() {
   setUpAll(() async {
@@ -9,19 +13,23 @@ void main() {
 
   group('🛡️ PHASE 11 — データ永続化完全保証インテグレーションテスト要塞', () {
     late Isar isar;
-    late String testDbPath;
+    late Directory tempDir;
+    late String dbName;
 
     setUp(() async {
-      testDbPath = Isar.splitWords('test_persistence_db').join('_');
+      tempDir = Directory.systemTemp.createTempSync('phase11_test_');
+      dbName = 'db_${DateTime.now().microsecondsSinceEpoch}';
       isar = await Isar.open(
         [MatchEntitySchema],
-        directory: '.',
-        name: testDbPath,
+        directory: tempDir.path,
+        name: dbName,
+        inspector: false,
       );
     });
 
     tearDown(() async {
-      await isar.close(deleteFromDisk: true);
+      if (isar.isOpen) await isar.close(deleteFromDisk: true);
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
     });
 
     test('1. 【Isar再起動復元】試合データを保存した直後にIsarを強制close(強制終了エミュレート)し、再オープンした際、データが1ビットの欠落もなく復元されること', () async {
@@ -43,8 +51,9 @@ void main() {
 
       isar = await Isar.open(
         [MatchEntitySchema],
-        directory: '.',
-        name: testDbPath,
+        directory: tempDir.path,
+        name: dbName,
+        inspector: false,
       );
 
       final recoveredEntity = await isar.matchEntitys.filter().firestoreIdEqualTo('reboot_test_001').findFirst();
@@ -73,8 +82,9 @@ void main() {
       await isar.close();
       isar = await Isar.open(
         [MatchEntitySchema],
-        directory: '.',
-        name: testDbPath,
+        directory: tempDir.path,
+        name: dbName,
+        inspector: false,
       );
 
       final totalCount = await isar.matchEntitys.count();

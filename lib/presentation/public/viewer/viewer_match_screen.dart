@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter/foundation.dart'; // kIsWeb用
 
 import '../../shared/widgets/scoreboard.dart';
 import '../../shared/widgets/manual_help_button.dart';
@@ -24,14 +25,24 @@ class ViewerMatchScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewStateAsync = ref.watch(viewerMatchProjectionProvider(matchId));
+    final viewStateAsync = kIsWeb ? null : ref.watch(viewerMatchProjectionProvider(matchId));
+    final asyncWebMatch = kIsWeb ? ref.watch(webScoreboardMatchProvider(matchId)) : null;
 
     // 🌟 ずっとクルクルする（無限ローディング）不具合修正パッチ
     // Projectionストリームの初回パケットを待機中で loading に陥っている場合でも、
     // ローカルキャッシュ(matchListProvider)から即座に状態を生成して表示を点火し、
     // 画面のフリーズを完全回避する最強のフォールバック防衛線。
     MatchProjection? fallbackProjection;
-    if (viewStateAsync.isLoading || viewStateAsync.value == null) {
+    if (kIsWeb) {
+      if (asyncWebMatch?.value != null) {
+        final match = asyncWebMatch!.value!;
+        try {
+          final engine = KendoRuleEngine();
+          final analysis = engine.analyzeHistory(match.events, match, match.rule);
+          fallbackProjection = MatchProjectionMapper.toProjection(match, analysis);
+        } catch (_) {}
+      }
+    } else if (viewStateAsync!.isLoading || viewStateAsync.value == null) {
       final match = ref.watch(matchListProvider).where((m) => m.id == matchId).firstOrNull;
       if (match != null) {
         try {
@@ -42,18 +53,29 @@ class ViewerMatchScreen extends ConsumerWidget {
       }
     }
 
-    return viewStateAsync.when(
-      loading: () {
-        if (fallbackProjection != null) return _buildScreen(context, ref, fallbackProjection);
+    if (kIsWeb) {
+      if (asyncWebMatch!.isLoading && fallbackProjection == null) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
-      },
-      error: (e, s) => Scaffold(body: Center(child: Text('エラーが発生しました: $e'))),
-      data: (MatchProjection? projection) {
-        final target = projection ?? fallbackProjection;
-        if (target == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
-        return _buildScreen(context, ref, target);
-      },
-    );
+      } else if (asyncWebMatch.hasError) {
+        return Scaffold(body: Center(child: Text('エラーが発生しました: ${asyncWebMatch.error}')));
+      } else {
+        if (fallbackProjection == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
+        return _buildScreen(context, ref, fallbackProjection);
+      }
+    } else {
+      return viewStateAsync!.when(
+        loading: () {
+          if (fallbackProjection != null) return _buildScreen(context, ref, fallbackProjection);
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        },
+        error: (e, s) => Scaffold(body: Center(child: Text('エラーが発生しました: $e'))),
+        data: (MatchProjection? projection) {
+          final target = projection ?? fallbackProjection;
+          if (target == null) return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
+          return _buildScreen(context, ref, target);
+        },
+      );
+    }
   }
 
   Widget _buildScreen(BuildContext context, WidgetRef ref, MatchProjection projection) {
@@ -78,7 +100,7 @@ class ViewerMatchScreen extends ConsumerWidget {
             IconButton(
               icon: Icon(Icons.qr_code_2, color: iconColor, size: 20),
               tooltip: 'この試合の観戦QRコード・リンクを共有',
-              onPressed: () => _showShareDialog(context, projection.tournamentId),
+              onPressed: () => _showShareDialog(context, ref, projection.tournamentId),
             ),
             ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md', color: iconColor),
             const SizedBox(width: 8),
@@ -91,7 +113,13 @@ class ViewerMatchScreen extends ConsumerWidget {
 
             // 2. スコアボード
             Expanded(
-              child: MatchScoreboard(matchId: matchId, myUserId: 'viewer', onNameTap: (side) {}),
+              child: ProviderScope(
+                overrides: [
+                  scoreboardMatchIdProvider.overrideWithValue(matchId),
+                  scoreboardNameTapProvider.overrideWithValue(null),
+                ],
+                child: const MatchScoreboard(),
+              ),
             ),
           ],
         ),
@@ -181,11 +209,12 @@ class ViewerMatchScreen extends ConsumerWidget {
     );
   }
 
-  void _showShareDialog(BuildContext context, String tournamentId) {
+  void _showShareDialog(BuildContext context, WidgetRef ref, String tournamentId) {
+    final dojoId = ref.read(currentDojoIdProvider);
     final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
     final String shareUrl = isBunaiksen
-        ? 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId'
-        : 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer';
+        ? 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId'
+        : 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
 
     showDialog(
       context: context,

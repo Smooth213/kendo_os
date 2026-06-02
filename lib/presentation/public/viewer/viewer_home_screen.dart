@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 // ドメイン・インフラ・リポジトリ層
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
-import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 
 // プロバイダ層
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
@@ -20,6 +22,7 @@ import 'package:kendo_os/presentation/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/presentation/shared/widgets/glass_button.dart';
 import 'package:kendo_os/presentation/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/presentation/shared/utils/match_calculator_helper.dart';
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
 
 // ★ 適合補正: 前回の位置リプレイスの際に一時的に消失していた、画面専用プロバイダ空間4点を完全復元
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
@@ -36,6 +39,7 @@ final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
 // Web環境でフリーズ・空配列になる問題を回避するため、対象大会のみを直接取得する
 // 安全な専用プロバイダーを定義し、UI側へ供給します。
 // =========================================================================
+
 // ★ 修正: Record 型に hasError と errorMessage を追加
 typedef _SafeViewerTimelineResult = ({List<MapEntry<String, List<MatchModel>>> entries, Set<String> matchedGroupNames, Set<String> matchedMatchIds, bool isLoading, bool hasError, String? errorMessage});
 
@@ -48,10 +52,8 @@ final safeViewerTimelineProvider = Provider.family.autoDispose<_SafeViewerTimeli
   if (hasError) {
     debugPrint('🚨 [safeViewerTimelineProvider] エラーを検知しました: $errorMessage');
   } else if (!asyncMatches.isLoading) {
-    debugPrint('📊 [safeViewerTimelineProvider] 試合リスト抽出完了: ${asyncMatches.value?.length ?? 0} 件');
-    if ((asyncMatches.value?.length ?? 0) == 0) {
-      debugPrint('🤔 [safeViewerTimelineProvider] 試合が0件です。クラウド側でデータが作成されていないか、検索クエリ・大会IDの不一致の可能性があります。');
-    }
+    // ★ 修正: 正常動作時に「0件です」のログが毎秒・毎描画スパム出力されるのを防ぐため、
+    // エラー時（hasError == true）以外のデバッグプリントを静音化します。
   }
 
   final matches = List<MatchModel>.from(asyncMatches.value ?? [])
@@ -120,6 +122,16 @@ class ViewerHomeScreen extends ConsumerWidget {
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final Color textColor = isDark ? Colors.white : Colors.black;
+
+    if (kIsWeb) {
+      final currentTournamentId = ref.read(webCurrentTournamentIdProvider);
+      if (currentTournamentId != tournamentId) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(webCurrentTournamentIdProvider.notifier).state = tournamentId;
+          debugPrint('🌐 [ViewerHomeScreen] Web direct route 用 currentTournamentId を設定: $tournamentId');
+        });
+      }
+    }
 
     try {
         // ★ 修正: activeMatchesProvider だとリーグ戦や勝ち抜き戦で最初の試合が終了すると
@@ -204,7 +216,7 @@ class ViewerHomeScreen extends ConsumerWidget {
             IconButton(
               icon: Icon(Icons.qr_code_2, color: isDark ? Colors.white : Colors.indigo.shade900),
               tooltip: '大会を共有する',
-              onPressed: () => _showShareDialog(context, tournamentId),
+              onPressed: () => _showShareDialog(context, ref, tournamentId),
             ),
             const SizedBox(width: 8),
           ],
@@ -277,12 +289,44 @@ class ViewerHomeScreen extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 80),
                 children: [
                   
-                  ref.watch(tournamentProvider(tournamentId)).when(
-                    data: (tournament) => tournament != null 
-                      ? _buildTournamentInfoCard(context, ref, tournament)
-                      : const SizedBox.shrink(),
+                  ref.watch(viewerTournamentProvider(tournamentId)).when(
+                    data: (tournament) {
+                      if (tournament != null) return _buildTournamentInfoCard(context, ref, tournament);
+                      // ★ デバッグ支援: 大会情報が見つからない場合は原因切り分け用の表示を出す
+                      final dojoId = ref.watch(currentDojoIdProvider);
+                      return Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(color: isDark ? const Color(0xFF161618) : Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('大会情報が見つかりません', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              Text('大会ID: $tournamentId'),
+                              const SizedBox(height: 4),
+                              Text('現在の dojoId: $dojoId'),
+                              const SizedBox(height: 8),
+                              const Text('原因候補: 道場IDが一致しない、または大会が他パスに存在します。管理者に確認してください。', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                     loading: () => const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())),
-                    error: (e, s) => Text('大会情報の読み込みに失敗しました: $e'),
+                    error: (e, s) => Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: isDark ? const Color(0xFF161618) : Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text('大会情報の読み込みに失敗しました', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                          const SizedBox(height: 8),
+                          Text('$e'),
+                        ]),
+                      ),
+                    ),
                   ),
                   
                   Padding(
@@ -388,6 +432,15 @@ class ViewerHomeScreen extends ConsumerWidget {
                     const Padding(
                       padding: EdgeInsets.all(32.0),
                       child: Center(child: CircularProgressIndicator()),
+                    ),
+                  
+                  // ★ 修正: 試合データが 0件 の時に画面が真っ白になる欠陥を修正し、メッセージを表示させる
+                  if (timelineResult.entries.isEmpty && !timelineResult.isLoading && sanitizedQuery.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Center(
+                        child: Text('まだ試合が登録されていません', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                      ),
                     ),
                   
                   ...(() {
@@ -1051,7 +1104,16 @@ class ViewerMatchListTileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 🛡️ 観客席スマホのElementキャッシュをぶち破り、本部が Undo 実行した瞬間に0ミリ秒即時リビルドを緊縛
     final matches = ref.watch(matchListProvider);
-    final match = matches.where((m) => m.id == initialMatch.id).firstOrNull ?? initialMatch;
+    MatchModel? maybeMatch = matches.where((m) => m.id == initialMatch.id).firstOrNull;
+
+    // Web では matchListProvider が初回に空を返すことがあるため、
+    // 大会単位プロバイダをフォールバックとして参照して対象試合を探す
+    if (maybeMatch == null && kIsWeb && (initialMatch.tournamentId != null && initialMatch.tournamentId!.isNotEmpty)) {
+      final webMatches = ref.watch(matchListByTournamentProvider(initialMatch.tournamentId!)).value ?? [];
+      maybeMatch = webMatches.where((m) => m.id == initialMatch.id).firstOrNull;
+    }
+
+    final MatchModel match = maybeMatch ?? initialMatch;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFinished = match.status == 'finished' || match.status == 'approved';
@@ -1285,9 +1347,10 @@ class ViewerHomeScreenUtils { // 元から存在していたトップレベル�
     return '$playerName : $teamName';
   }
 
-  void _showShareDialog(BuildContext context, String tournamentId) {
-    // ★ 修正：完全に分離された viewer-home の URL を生成する
-    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId';
+  void _showShareDialog(BuildContext context, WidgetRef ref, String tournamentId) {
+    final dojoId = ref.read(currentDojoIdProvider);
+    // ★ 修正：テナントID(dojoId)を含めることでViewerが全検索ルートを回避し一発で表示できるようにする
+    final String shareUrl = 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
     
     showDialog(
       context: context,
@@ -1374,10 +1437,100 @@ class ViewerHomeScreenUtils { // 元から存在していたトップレベル�
     );
   }
 
-// ★ 追加: home_screen.dart に定義されている tournamentProvider を拝借するための定義
-final tournamentProvider = StreamProvider.family<TournamentModel?, String>((ref, id) {
-  final repo = ref.watch(tournamentRepositoryProvider);
-  return repo.getTournamentStream(id);
+// ★ 修正: Web版のViewerでは currentDojoId が取得できないため、
+// 確実に大会情報を引っ張り出せる専用のプロバイダに変更し、表示されない不具合を解消。
+final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentModel?, String>((ref, id) async* {
+  final firestore = FirebaseFirestore.instance;
+  final currentDojoId = ref.watch(currentDojoIdProvider);
+
+  debugPrint('🔎 [viewerTournamentProvider] start - id: $id, currentDojoId: $currentDojoId');
+
+  try {
+    if (currentDojoId.isNotEmpty) {
+      final orgTournamentDoc = await firestore
+          .collection('organizations')
+          .doc(currentDojoId)
+          .collection('tournaments')
+          .doc(id)
+          .get();
+
+      if (orgTournamentDoc.exists) {
+        debugPrint('🔎 [viewerTournamentProvider] found in organizations/$currentDojoId/tournaments');
+        yield* firestore
+            .collection('organizations')
+            .doc(currentDojoId)
+            .collection('tournaments')
+            .doc(id)
+            .snapshots()
+            .map((doc) {
+          if (!doc.exists) return null;
+          return TournamentModel.fromJson({...doc.data()!, 'id': doc.id});
+        });
+        return;
+      }
+
+      debugPrint('⚠️ [viewerTournamentProvider] currentDojoId($currentDojoId) の大会が見つかりませんでした。フォールバック検索を継続します。');
+    }
+
+    final rootTournamentDoc = await firestore.collection('tournaments').doc(id).get();
+    debugPrint('🔎 [viewerTournamentProvider] root doc exists: ${rootTournamentDoc.exists}');
+    if (rootTournamentDoc.exists) {
+      debugPrint('🔎 [viewerTournamentProvider] found in tournaments/$id');
+      yield* firestore.collection('tournaments').doc(id).snapshots().map((doc) {
+        if (!doc.exists) return null;
+        return TournamentModel.fromJson({...doc.data()!, 'id': doc.id});
+      });
+      return;
+    }
+
+    final groupTournamentQuery = await firestore.collectionGroup('tournaments')
+        .where(FieldPath.documentId, isEqualTo: id)
+        .limit(1)
+        .get();
+
+    debugPrint('🔎 [viewerTournamentProvider] collectionGroup tournaments found: ${groupTournamentQuery.docs.length}');
+
+    if (groupTournamentQuery.docs.isNotEmpty) {
+      final docRef = groupTournamentQuery.docs.first.reference;
+      debugPrint('🔎 [viewerTournamentProvider] found in collectionGroup at path: ${docRef.path}');
+      yield* docRef.snapshots().map((doc) {
+        if (!doc.exists) return null;
+        return TournamentModel.fromJson({...doc.data()!, 'id': doc.id});
+      });
+      return;
+    }
+
+    final matchQuery = await firestore.collectionGroup('matches')
+        .where('tournamentId', isEqualTo: id)
+        .limit(1)
+        .get();
+
+    if (matchQuery.docs.isNotEmpty) {
+      final matchRef = matchQuery.docs.first.reference;
+      final pathSegments = matchRef.path.split('/');
+      final orgIndex = pathSegments.indexOf('organizations');
+      
+      if (orgIndex != -1 && pathSegments.length > orgIndex + 1) {
+        final orgId = pathSegments[orgIndex + 1];
+        yield* firestore
+            .collection('organizations')
+            .doc(orgId)
+            .collection('tournaments')
+            .doc(id)
+            .snapshots()
+            .map((doc) {
+          if (!doc.exists) return null;
+          return TournamentModel.fromJson({...doc.data()!, 'id': doc.id});
+        });
+        return;
+      }
+    }
+
+    yield null;
+  } catch (e, st) {
+    debugPrint('🚨 [viewerTournamentProvider] エラー: $e\n$st');
+    yield null;
+  }
 });
 
 // ============================================================================

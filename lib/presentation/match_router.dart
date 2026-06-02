@@ -7,6 +7,7 @@ import 'package:kendo_os/presentation/public/viewer/viewer_match_screen.dart';
 import '../core/security/feature_gate.dart';
 import 'shared/providers/current_user_role_provider.dart';
 import 'shared/providers/security_level_provider.dart';
+import 'shared/providers/auth_session_provider.dart';
 import '../domain/entities/user_role.dart'; // UserRole.viewer の評価のために追加
 
 class MatchRouter extends ConsumerWidget {
@@ -33,13 +34,15 @@ class MatchRouter extends ConsumerWidget {
 
     final currentRole = ref.watch(currentUserRoleProvider);
     final currentLevel = ref.watch(securityLevelProvider);
+    final session = ref.watch(authSessionProvider);
 
     // 🌟 修正版：FeatureGate の動的判定を最優先にする
     final bool canOperate = FeatureGate.canOperateMatch(currentRole, currentLevel);
+    final bool isViewerSession = session?.role == UserRole.viewer;
     final bool isUrlViewer = GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
 
-    // 動的に権限（canOperate）がない、または初期状態でURLがviewerの場合のみ隔離
-    if (!canOperate || (isUrlViewer && currentRole == UserRole.viewer)) {
+    // 動的に権限（canOperate）がない、またはViewerセッションが確立されている場合はViewer画面へ切り替え
+    if (!canOperate || isViewerSession || (isUrlViewer && currentRole == UserRole.viewer)) {
       return ViewerMatchScreen(matchId: matchId);
     } else {
       return MatchScreen(matchId: matchId);

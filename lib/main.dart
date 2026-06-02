@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:isar_community/isar.dart';
 import 'dart:ui'; 
+import 'dart:io';
 import 'package:flutter/foundation.dart'; 
 import 'package:flutter_web_plugins/url_strategy.dart'; // ★ 追加: URLの#を消すためのプラグイン
 
@@ -55,9 +56,13 @@ import 'package:kendo_os/presentation/providers/internal/metrics_provider.dart';
 import 'package:kendo_os/domain/entities/user_role.dart';
 import 'package:kendo_os/presentation/auth/screens/role_select_screen.dart';
 import 'package:kendo_os/presentation/auth/screens/pin_auth_screen.dart';
+import 'package:kendo_os/presentation/shared/providers/auth_session_provider.dart';
 
 import 'package:kendo_os/infrastructure/repository/sync_engine.dart';
+import 'package:kendo_os/presentation/operate/providers/sync_provider.dart' as legacy_sync;
 import 'package:kendo_os/presentation/shared/providers/dojo_room_sync_provider.dart';
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/core/errors/global_error_handler.dart';
 
 // =========================================================================
 // 🛡️ Phase 6 - STEP 6-1 & 6-2 要件：環境分離 ＆ Feature Flag 基盤
@@ -87,10 +92,9 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 // ★ Step 5-2: アプリ全体でバックグラウンド通知を表示するための「どこでもドア」キー
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-void main() async {
-  // Flutterのエンジンを初期化（非同期処理を行う前に必須）
-  WidgetsFlutterBinding.ensureInitialized();
-  
+void main() {
+  // 🛡️ 起動シーケンスの完全カプセル化（Zone mismatch & 未初期化エラーを同時リセット）
+  GlobalErrorHandler.runWithZone(() async {
   // ★ URLパスから「#」を取り除き、Webのディープリンクを正常に処理させる（ホワイトアウト対策1）
   usePathUrlStrategy();
   
@@ -116,10 +120,18 @@ void main() async {
     // =========================================================================
     if (!kIsWeb) {
       FlutterError.onError = (errorDetails) {
-        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+        try {
+          FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+        } catch (_) {
+          // テスト環境などでFirebase未初期化の場合は安全に無視
+        }
       };
       PlatformDispatcher.instance.onError = (error, stack) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        try {
+          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        } catch (_) {
+          // テスト環境などでFirebase未初期化の場合は安全に無視
+        }
         return true;
       };
       debugPrint('🚀 [Crashlytics] ネイティブ環境の致命的クラッシュ監視ラインを活性化しました');
@@ -144,14 +156,45 @@ void main() async {
     // Firestore ローカルディスク永続化キャッシュキャッシュプロトコルを活性化
     // (※Web環境ではブラウザのIndexedDB制限によるクラッシュを防ぐため無効化します)
     // =========================================================================
-    // ★ 修正: Web環境でのオフライン通信切断時（ERR_INTERNET_DISCONNECTED）のホワイトアウトを防ぎ、
-    // オフライン状態でもローカル作成した試合が画面に即時反映されるよう Web でもキャッシュを有効化
-    FirebaseFirestore.instance.settings = const Settings(
-      persistenceEnabled: true,
-    );
+    // ★ 再修正: Firebase Web SDK のバグ（インデックス不足時にエラーを吐かずフリーズする）を
+    // 回避するため、Web環境のキャッシュ機能を無効化（デフォルト）に戻しました。
+    // これにより、確実にFirestoreサーバーへ接続され、必要なデータが瞬時に流れるようになります。
+    if (kIsWeb) {
+      // FirebaseFirestore.instance.settings = const Settings(
+      //   persistenceEnabled: true,
+      // );
+    }
 
     // ★ 修正：SharedPreferences のインスタンスをここで確実に取得する
     final prefs = await SharedPreferences.getInstance();
+
+    if (!kIsWeb) {
+      // ★ 復旧パッチ: 過去の「キャッシュ設定の二重化」バグで沈黙（スタック）してしまった
+      // ネイティブ環境のFirestoreキャッシュを一度だけ強制ワイプし、同期パイプラインを再開通させる
+      final hasCleared = prefs.getBool('has_cleared_corrupted_firestore_cache_v3') ?? false;
+      if (!hasCleared) {
+        try {
+          // ★ 修正: Firestoreがバックグラウンドで既に起動（Active）状態の場合、
+          // clearPersistence が failed-precondition エラーで弾かれるため、一度強制停止(terminate)してからワイプします。
+          await FirebaseFirestore.instance.terminate();
+          await FirebaseFirestore.instance.clearPersistence();
+          await prefs.setBool('has_cleared_corrupted_firestore_cache_v3', true);
+          debugPrint('🧹 [Firestore] 古いローカルキャッシュを強制ワイプしました（スタック完全解消 v3）');
+        } catch (e) {
+          debugPrint('⚠️ [Firestore] キャッシュワイプに失敗: $e');
+        }
+      }
+      
+      // ★ 強制オンライン化: iOSシミュレータの通信状態誤検知によるFirestoreのオフライン固着を防ぐ
+      try {
+        await FirebaseFirestore.instance.enableNetwork();
+        debugPrint('🌐 [Firestore] ネットワーク接続を強制的に有効化しました');
+        
+        // ★ ダウンストリーム強制点火パッチ: 
+        // Firestoreのネイティブコネクションがスリープしたまま固着するのを防ぐため、ダミーリスナーを設置して物理的に叩き起こします。
+        FirebaseFirestore.instance.collectionGroup('matches').limit(1).snapshots().listen((_) {});
+      } catch (_) {}
+    }
 
     // ★ Phase 1-4: Isar（ローカルDB）の起動
     Isar? isar;
@@ -162,12 +205,36 @@ void main() async {
     } else {
       // ★ iOS/Android環境の場合：従来通り端末内のDocumentsフォルダを取得
       final dir = await getApplicationDocumentsDirectory();
+
+      // =========================================================================
+      // 🧹 [ワイプ手順] Isar内データを強制リセットしてクリーンな状態で検証したい場合は、
+      // 以下のフラグを true にして1度だけ起動してください。
+      // =========================================================================
+      const bool forceWipeIsar = false; 
+      // ignore: dead_code
+      if (forceWipeIsar) {
+        try {
+          final isarDir = Directory(dir.path);
+          if (isarDir.existsSync()) {
+            for (var file in isarDir.listSync()) {
+              if (file.path.endsWith('.isar') || file.path.endsWith('.isar.lock')) {
+                file.deleteSync();
+              }
+            }
+          }
+          debugPrint('🧹 [Isar] データベースファイルを強制リセット（クリーンワイプ）しました');
+        } catch (e) {
+          debugPrint('⚠️ [Isar] ワイプエラー: $e');
+        }
+      }
+
       isar = await Isar.open(
         [
           MatchEntitySchema,
           LocalStrokeModelSchema, 
           MatchCommentEntitySchema, // ★ Phase 2: コメント用スキーマ追加
           MatchProjectionEntitySchema, // ★ Phase 8: 投影モデル用スキーマ追加
+          MatchCommandEntitySchema, // ★ 同期エンジンのキュー処理用スキーマ追加
         ],
         directory: dir.path,
       );
@@ -186,7 +253,11 @@ void main() async {
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
       if (!kIsWeb) {
-        FirebaseCrashlytics.instance.recordFlutterFatalError(details); // ★ Phase 9-3: 致命的なUIエラーをFirebaseへ送信
+        try {
+          FirebaseCrashlytics.instance.recordFlutterFatalError(details); // ★ Phase 9-3: 致命的なUIエラーをFirebaseへ送信
+        } catch (_) {
+          // テスト環境でFirebase未初期化の場合は安全に無視
+        }
       }
       container.read(metricsProvider).recordError(); // ★ UIエラーをメトリクスのエラー率に加算
       debugPrint('⚠️ UIエラー: ${details.exception}');
@@ -195,7 +266,11 @@ void main() async {
     // ★ 2. 非同期処理や裏側のエラーをキャッチしてアプリのクラッシュを防ぐ
     PlatformDispatcher.instance.onError = (error, stack) {
       if (!kIsWeb) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true); // ★ Phase 9-3: 裏側のクラッシュもFirebaseへ送信
+        try {
+          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true); // ★ Phase 9-3: 裏側のクラッシュもFirebaseへ送信
+        } catch (_) {
+          // テスト環境でFirebase未初期化の場合は安全に無視
+        }
       }
       container.read(metricsProvider).recordError(); // ★ 裏側エラーをメトリクスのエラー率に加算
       debugPrint('⚠️ 裏側エラー: $error');
@@ -281,6 +356,7 @@ void main() async {
     );
     return; // 処理を終了
   }
+  });
 }
 
 // ==========================================
@@ -365,7 +441,11 @@ final _router = GoRouter(
       // ★ Phase 6: 全ての共有可能画面を RoleInjector で包み、URLからViewer権限を適用できるようにする
       GoRoute(
         path: '/home/:tournamentId', 
-        builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: HomeScreen(tournamentId: state.pathParameters['tournamentId']!))
+        builder: (context, state) => RoleInjector(
+          roleStr: state.uri.queryParameters['role'], 
+          dojoId: state.uri.queryParameters['dojoId'], 
+          child: HomeScreen(tournamentId: state.pathParameters['tournamentId']!)
+        )
       ),
       GoRoute(
         path: '/tournament/:id/programs',
@@ -384,16 +464,25 @@ final _router = GoRouter(
       ),
       GoRoute(
         path: '/match/:id', 
-        builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: MatchRouter(matchId: state.pathParameters['id']!))
+        builder: (context, state) => RoleInjector(
+          roleStr: state.uri.queryParameters['role'], 
+          dojoId: state.uri.queryParameters['dojoId'], 
+          child: MatchRouter(matchId: state.pathParameters['id']!)
+        )
       ),
       GoRoute(
         path: '/team-scoreboard/:groupName',
-        builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: TeamScoreboardScreen(groupName: state.pathParameters['groupName']!))
+        builder: (context, state) => RoleInjector(
+          roleStr: state.uri.queryParameters['role'], 
+          dojoId: state.uri.queryParameters['dojoId'], 
+          child: TeamScoreboardScreen(groupName: state.pathParameters['groupName']!)
+        )
       ),
       GoRoute(
         path: '/viewer-home/:tournamentId',
         builder: (context, state) => RoleInjector(
           roleStr: state.uri.queryParameters['role'], 
+          dojoId: state.uri.queryParameters['dojoId'], 
           child: ViewerHomeScreen(tournamentId: state.pathParameters['tournamentId']!)
         ),
       ),
@@ -401,6 +490,7 @@ final _router = GoRouter(
         path: '/viewer-record/:tournamentId',
         builder: (context, state) => RoleInjector(
           roleStr: state.uri.queryParameters['role'], 
+          dojoId: state.uri.queryParameters['dojoId'], 
           child: ViewerOfficialRecordScreen(tournamentId: state.pathParameters['tournamentId']!)
         ),
       ),
@@ -408,6 +498,7 @@ final _router = GoRouter(
         path: '/viewer-team/:groupName',
         builder: (context, state) => RoleInjector(
           roleStr: state.uri.queryParameters['role'], 
+          dojoId: state.uri.queryParameters['dojoId'], 
           child: ViewerTeamScoreboardScreen(groupName: state.pathParameters['groupName']!)
         ),
       ),
@@ -415,12 +506,17 @@ final _router = GoRouter(
         path: '/viewer-kachinuki/:groupName',
         builder: (context, state) => RoleInjector(
           roleStr: state.uri.queryParameters['role'], 
+          dojoId: state.uri.queryParameters['dojoId'], 
           child: ViewerKachinukiScoreboardScreen(groupName: state.pathParameters['groupName']!)
         ),
       ),
       GoRoute(
         path: '/kachinuki-scoreboard/:groupName',
-        builder: (context, state) => RoleInjector(roleStr: state.uri.queryParameters['role'], child: KachinukiScoreboardScreen(groupName: state.pathParameters['groupName']!))
+        builder: (context, state) => RoleInjector(
+          roleStr: state.uri.queryParameters['role'], 
+          dojoId: state.uri.queryParameters['dojoId'], 
+          child: KachinukiScoreboardScreen(groupName: state.pathParameters['groupName']!)
+        )
       ),
   
       GoRoute(path: '/create-tournament', builder: (context, state) => const CreateTournamentScreen()),
@@ -458,6 +554,7 @@ final _router = GoRouter(
         path: '/bunaiksen-viewer-home/:tournamentId',
         builder: (context, state) => RoleInjector(
           roleStr: 'viewer', // ★強制的にViewer権限にダウングレード
+          dojoId: state.uri.queryParameters['dojoId'], 
           child: ViewerBunaiksenHomeScreen(tournamentId: state.pathParameters['tournamentId']!),
         ),
       ),
@@ -465,6 +562,7 @@ final _router = GoRouter(
         path: '/bunaiksen-viewer-record/:tournamentId',
         builder: (context, state) => RoleInjector(
           roleStr: 'viewer', // ★強制的にViewer権限にダウングレード
+          dojoId: state.uri.queryParameters['dojoId'], 
           child: ViewerBunaiksenOfficialRecordScreen(tournamentId: state.pathParameters['tournamentId']!),
         ),
       ),
@@ -521,6 +619,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp> with WidgetsBindingObse
       // 🛡️ 補正：残存していた旧式 syncNow() を、新設した processQueue() へ完全統合
       // =========================================================================
       ref.read(syncEngineProvider).processQueue();
+      ref.read(legacy_sync.syncEngineProvider).syncNow();
     }
   }
 
@@ -534,6 +633,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp> with WidgetsBindingObse
   Widget build(BuildContext context) {
     // ★ Phase 4: 同期エンジンを監視（起動）させ、バックグラウンドで常駐させる
     ref.watch(syncEngineProvider);
+    ref.watch(legacy_sync.syncEngineProvider); // ★ 追加: 試合のFirestoreアップロードエンジンを常駐
 
     // ★ 追加: 同一の道場IDでログインした際に、同期先を正しいFirestoreの道場パスへ
     // 切り替えるための道場ルーム同期プロバイダを常駐監視させます。（シミュレータとWeb間の同期不一致を完全解決）
@@ -593,7 +693,8 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp> with WidgetsBindingObse
 class RoleInjector extends ConsumerStatefulWidget {
   final Widget child; 
   final String? roleStr;
-  const RoleInjector({super.key, required this.child, this.roleStr});
+  final String? dojoId; // ★追加
+  const RoleInjector({super.key, required this.child, this.roleStr, this.dojoId});
 
   @override
   ConsumerState<RoleInjector> createState() => _RoleInjectorState();
@@ -608,23 +709,45 @@ class _RoleInjectorState extends ConsumerState<RoleInjector> {
     super.initState();
     // ★ 初期化時にコンテナを安全に確保しておく（破棄時の復元用）
     _container = ProviderScope.containerOf(context, listen: false);
-    _applyRole();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _applyRole();
+    });
   }
 
   void _applyRole() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final targetRole = widget.roleStr == 'viewer' ? Role.viewer : null;
-      final currentRole = ref.read(temporaryRoleOverrideProvider);
+    if (!mounted) return;
+    final targetRole = widget.roleStr == 'viewer' ? Role.viewer : null;
+    final currentRole = ref.read(temporaryRoleOverrideProvider);
 
-      if (currentRole != targetRole) {
-        ref.read(temporaryRoleOverrideProvider.notifier).state = targetRole;
-        debugPrint('🎭 [Role Injector] 権限を同期的に切り替えました: ${targetRole?.label ?? "通常モード"}');
+    if (currentRole != targetRole) {
+      ref.read(temporaryRoleOverrideProvider.notifier).state = targetRole;
+      debugPrint('🎭 [Role Injector] 権限を同期的に切り替えました: ${targetRole?.label ?? "通常モード"}');
+    }
+    
+    // ★ 追加: URLから道場IDが渡された場合、Viewerが迷子にならないよう同期先を確定させる
+    if (widget.dojoId != null && widget.dojoId!.isNotEmpty) {
+      ref.read(currentDojoIdProvider.notifier).state = widget.dojoId!;
+      debugPrint('🏢 [Role Injector] URLからテナントID(${widget.dojoId})を復元し同期先を確定しました');
+    }
+
+    // ★ 追加: RoleInjector が viewer 権限を要求している場合、認証セッション側にも
+    // viewer セッションを確立しておく（Firestore側や各種 Provider が viewer 前提で
+    // 動作できるようにする安全策）
+    if (widget.roleStr == 'viewer') {
+      try {
+        ref.read(authSessionProvider.notifier).establishSession(UserRole.viewer, widget.dojoId ?? ref.read(currentDojoIdProvider));
+        debugPrint('🔐 [Role Injector] authSession を viewer として確立しました');
+      } catch (e) {
+        debugPrint('⚠️ [Role Injector] authSession 確立に失敗: $e');
       }
+    }
+
+    if (mounted) {
       setState(() {
         _isReady = true;
       });
-    });
+    }
   }
 
   @override

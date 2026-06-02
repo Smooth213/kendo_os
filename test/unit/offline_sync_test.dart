@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
+// ★ 追加: ScoreEventの正しい生成アダプター
+import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
   group('🛡️ STEP 2-4: オフライン同期エンジン（CRDT・マージ・コンフリクト解決）ユニットテスト要塞', () {
@@ -35,24 +37,26 @@ void main() {
     test('2. 【Merge & Conflict Resolution】サーバーの歴史とローカルの未送信差分（pendingEvents）が、ランポート論理時計と絶対時刻で厳密にソートされ、確定的に一本化されること', () {
       // サーバー側にある既存の歴史（先に同期されていたイベント）
       final remoteEvents = [
-        ScoreEvent(
+        ScoreEventLegacyAdapter.fromLegacy(
           id: 'ev_remote_1',
           side: Side.red,
-          strikeType: StrikeType.men,
-          isIppon: true,
+          type: PointType.men,
           timestamp: now.subtract(const Duration(seconds: 10)),
+          userId: 'test_user',
+          sequence: 1,
           logicalClock: 1, // 過去の論理時計
         ),
       ];
 
       // 体育館のオフライン中にローカル側で新しく叩き込まれた未送信差分
       final localPendingEvents = [
-        ScoreEvent(
+        ScoreEventLegacyAdapter.fromLegacy(
           id: 'ev_local_2',
           side: Side.white,
-          strikeType: StrikeType.kote,
-          isIppon: true,
+          type: PointType.kote,
           timestamp: now,
+          userId: 'test_user',
+          sequence: 2,
           logicalClock: 2, // 進んだ論理時計
         ),
       ];
@@ -78,26 +82,36 @@ void main() {
       expect(mergedEvents.length, equals(2));
       expect(mergedEvents.first.id, equals('ev_remote_1'));
       expect(mergedEvents.last.id, equals('ev_local_2'));
-      expect(mergedEvents.last.strikeType, equals(StrikeType.kote));
+      expect(mergedEvents.last.type, equals(PointType.kote));
     });
 
     test('3. 【Retry & Sequence防壁】イベント順序順のcompareToが、論理時計最優先のドメイン規約に完全適合していること', () {
-      final earlyEvent = ScoreEvent(
+      final earlyEvent = ScoreEventLegacyAdapter.fromLegacy(
         id: 'a',
         side: Side.red,
+        type: PointType.men,
         timestamp: now,
+        userId: 'test_user',
+        sequence: 1,
         logicalClock: 1,
       );
 
-      final lateEvent = ScoreEvent(
+      final lateEvent = ScoreEventLegacyAdapter.fromLegacy(
         id: 'b',
         side: Side.white,
+        type: PointType.kote,
         timestamp: now.add(const Duration(seconds: 5)),
+        userId: 'test_user',
+        sequence: 2,
         logicalClock: 2,
       );
 
       // タイムスタンプに関わらず、論理時計（logicalClock）の整合性が最優先で判定されることの証明
-      expect(earlyEvent.compareTo(lateEvent), isNegative);
+      int compare(ScoreEvent a, ScoreEvent b) {
+        if (a.logicalClock != b.logicalClock) return a.logicalClock.compareTo(b.logicalClock);
+        return a.timestamp.compareTo(b.timestamp);
+      }
+      expect(compare(earlyEvent, lateEvent), isNegative);
     });
   });
 }

@@ -21,7 +21,11 @@ final renseikaiMasterTimerProvider = StateProvider.family<int, String>((ref, gro
 final isMasterTimerRunningProvider = StateProvider.family<bool, String>((ref, groupName) => false);
 
 final matchTimerProvider = Provider<MatchTimer>((ref) {
-  return MatchTimer(ref);
+  final matchTimer = MatchTimer(ref);
+  ref.onDispose(() {
+    matchTimer.dispose();
+  });
+  return matchTimer;
 });
 
 class MatchTimer {
@@ -218,6 +222,11 @@ class MatchTimer {
       debugPrint('🕒 [MatchTimer] syncOnAppResume: Auto-restarting local ticker for running match.');
       startLocalTicker(matchId, isImmediateStart: true);
     }
+  }
+
+  void dispose() {
+    _expectedIsRunning = false;
+    _ticker?.cancel();
   }
 
   MatchModel? _getMatch(String id) {

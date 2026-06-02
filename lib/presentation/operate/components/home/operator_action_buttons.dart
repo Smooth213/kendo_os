@@ -5,6 +5,7 @@ import '../../../shared/widgets/glass_button.dart';
 import '../../providers/settings_provider.dart';
 import '../../../../domain/entities/user_role.dart';
 import '../../../shared/providers/current_user_role_provider.dart';
+import '../../../shared/providers/current_sync_context_provider.dart';
 
 class OperatorActionButtons extends ConsumerWidget {
   final String tournamentId;
@@ -25,7 +26,17 @@ class OperatorActionButtons extends ConsumerWidget {
           const SizedBox(height: 8),
         ],
         // ★ 修正: 本部操作員が「保護者や観客のスマートフォンにどう見えているか」を手元でシミュレート確認するための完璧な表現へ進化
-        _buildHugeMenuButton(context, enableLiquidGlass, Icons.cast_connected, '観客・保護者側の画面を確認 (Viewer)', Colors.teal, () => context.push('/viewer-home/$tournamentId?role=viewer')),
+        _buildHugeMenuButton(
+          context,
+          enableLiquidGlass,
+          Icons.cast_connected,
+          '観客・保護者側の画面を確認 (Viewer)',
+          Colors.teal,
+          () {
+            final dojoId = ref.read(currentDojoIdProvider);
+            context.push('/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId');
+          },
+        ),
         const SizedBox(height: 8),
         _buildHugeMenuButton(context, enableLiquidGlass, Icons.print, '公式記録の確認・PDF印刷', Colors.blueGrey, () => context.push('/official-record/$tournamentId')),
         const SizedBox(height: 12),

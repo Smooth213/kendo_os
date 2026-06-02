@@ -15,6 +15,7 @@ final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore
 // ★ 追加: Web環境で特定の大会を読み込んだ際、グローバルにキャッシュを保持するプロバイダ
 // =========================================================================
 final webCurrentTournamentMatchesProvider = StateProvider<List<MatchModel>>((ref) => []);
+final webCurrentTournamentIdProvider = StateProvider<String?>((ref) => null);
 
 // =========================================================================
 // 🛡️ Webアプリ表示不具合修正パッチ（ロードマップメソッド完全維持）
@@ -78,6 +79,10 @@ final matchListProvider = Provider<List<MatchModel>>((ref) {
   if (kIsWeb) {
     // ★ 修正: Web環境の場合は、現在開いている大会の最新キャッシュを返す
     // これにより、遷移先のスコア画面（運営・観戦問わず）で matchListProvider を参照した際にも対象の試合が見つかり、フリーズしません。
+    final currentTournamentId = ref.watch(webCurrentTournamentIdProvider);
+    if (currentTournamentId == null || currentTournamentId.isEmpty) {
+      return const [];
+    }
     return ref.watch(webCurrentTournamentMatchesProvider);
   }
   return ref.watch(matchStreamProvider).value ?? const [];
@@ -93,7 +98,9 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     final dojoId = ref.watch(currentDojoIdProvider);
 
     debugPrint('🌐 [matchListByTournamentProvider] Webモード監視開始 - dojoId: "$dojoId", tournamentId: "$tournamentId"');
+    debugPrint('🌐 [matchListByTournamentProvider] Firestore instance: ${firestore.app.name}');
 
+    // ★ Web環境キャッシュ補正: 現在の大会IDを更新し、古い大会データを誤って再利用しないようにする
     // ★ Web環境のリスト消失完全対策：
     // collectionGroup クエリは手動で複合インデックスを作成しないと、キャッシュ（0件）のみを返して通信エラーをサイレントに握り潰す特性があります。
     // これを回避するため、Firestoreが自動でインデックスを作成する「通常のコレクション検索」を網羅的に並行監視し、
@@ -101,17 +108,32 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     final controller = StreamController<List<MatchModel>>();
     final List<StreamSubscription> subs = [];
     final Map<String, List<MatchModel>> cache = {'root': [], 'sub': [], 'org': []};
+    final Set<String> respondedSources = {};
+
+    final currentTournamentKey = tournamentId;
+
+    bool hasAllSourcesResponded() {
+      final expectedSources = dojoId.isNotEmpty ? 4 : 3;
+      return respondedSources.length >= expectedSources;
+    }
 
     void emitBestMatches() {
       if (controller.isClosed) return;
       // 取得できたデータ件数が最も多いパスのデータを正として採用
       final bestMatches = cache.values.reduce((a, b) => a.length > b.length ? a : b);
+      if (bestMatches.isEmpty && !hasAllSourcesResponded()) {
+        debugPrint('🌐 [matchListByTournamentProvider] まだ全てのWeb検索結果が揃っていません。currentTournamentId=$currentTournamentKey, responded=${respondedSources.join(', ')}');
+        return;
+      }
+
       controller.add(bestMatches);
 
       // ★ 追加: メモリ上のグローバルキャッシュにも最新データを保存し、スコア画面などでの迷子を防止
       Future.microtask(() {
         try {
-          ref.read(webCurrentTournamentMatchesProvider.notifier).state = bestMatches;
+          if (ref.read(webCurrentTournamentIdProvider) == currentTournamentKey) {
+            ref.read(webCurrentTournamentMatchesProvider.notifier).state = bestMatches;
+          }
         } catch (_) {}
       });
     }
@@ -127,14 +149,18 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     }
 
     controller.onListen = () {
+        debugPrint('🌐 [matchListByTournamentProvider] onListen called - setting up subscriptions');
       // 1. ルートコレクション (単一フィールド検索のため自動インデックスで必ず動作)
       subs.add(firestore.collection('matches').where('tournamentId', isEqualTo: tournamentId).snapshots().listen(
         (snap) {
+            debugPrint('🌐 [matchListByTournamentProvider] root snapshot size: ${snap.docs.length}');
+          respondedSources.add('root');
           cache['root'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
           emitBestMatches();
         },
         onError: (e) {
           debugPrint('🚨 [Match Query Error] root: $e');
+          respondedSources.add('root');
           emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
         },
       ));
@@ -142,11 +168,14 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
       // 2. 大会サブコレクション (検索条件すら不要のためインデックス完全不要)
       subs.add(firestore.collection('tournaments').doc(tournamentId).collection('matches').snapshots().listen(
         (snap) {
+            debugPrint('🌐 [matchListByTournamentProvider] sub snapshot size: ${snap.docs.length}');
+          respondedSources.add('sub');
           cache['sub'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
           emitBestMatches();
         },
         onError: (e) {
           debugPrint('🚨 [Match Query Error] sub: $e');
+          respondedSources.add('sub');
           emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
         },
       ));
@@ -155,15 +184,38 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
       if (dojoId.isNotEmpty) {
         subs.add(firestore.collection('organizations').doc(dojoId).collection('matches').where('tournamentId', isEqualTo: tournamentId).snapshots().listen(
           (snap) {
+              debugPrint('🌐 [matchListByTournamentProvider] org snapshot size: ${snap.docs.length}');
+            respondedSources.add('org');
             cache['org'] = snap.docs.map(parseMatch).whereType<MatchModel>().toList();
             emitBestMatches();
           },
           onError: (e) {
             debugPrint('🚨 [Match Query Error] org: $e');
+            respondedSources.add('org');
             emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
           },
         ));
       }
+
+      // 4. フォールバック: collectionGroup で大会ID一致のマッチを探索（道場IDが不明な場合の最終手段）
+      subs.add(firestore.collectionGroup('matches').where('tournamentId', isEqualTo: tournamentId).snapshots().listen((snap) {
+        debugPrint('🌐 [matchListByTournamentProvider] collectionGroup matches snapshot size: ${snap.docs.length}');
+        respondedSources.add('group');
+        cache['group'] = snap.docs.map((doc) {
+          try {
+            final data = _sanitizeFirestoreData((doc.data() as Map<String, dynamic>?) ?? {});
+            return MatchModel.fromJson({...data, 'id': (doc as DocumentSnapshot).id});
+          } catch (e) {
+            debugPrint('🚨 [Parse Error - collectionGroup match] ${doc.id} -> $e');
+            return null;
+          }
+        }).whereType<MatchModel>().toList();
+        emitBestMatches();
+      }, onError: (e) {
+        debugPrint('🚨 [Match Query Error] collectionGroup: $e');
+        respondedSources.add('group');
+        emitBestMatches();
+      }));
     };
 
     void cleanup() {

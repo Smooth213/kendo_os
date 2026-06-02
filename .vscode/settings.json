@@ -33,6 +33,18 @@
     "/^flutter test test/golden/phase2_ui_integrity_golden_test\\.dart 2>&1 \\| tee failed_tests\\.txt$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^flutter analyze lib/presentation/public/viewer/viewer_home_screen\\.dart lib/presentation/viewer/screens/viewer_bunaiksen_home_screen\\.dart lib/presentation/public/viewer/viewer_match_screen\\.dart$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^grep -R \"Total matches from provider\\\\\\|matchListProvider Web\\\\\\|Viewer Debug\" -n lib \\|\\| true$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^grep -R --line-number --exclude-dir=\\.git --exclude-dir=build --exclude-dir=coverage --exclude-dir=\\.dart_tool 'Viewer Debug' \\. \\|\\| true$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   },
   "yaml.schemas": {

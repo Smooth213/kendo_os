@@ -1,8 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/team_model.dart';
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
 
-final teamRepositoryProvider = Provider((ref) => TeamRepository());
+final teamRepositoryProvider = Provider((ref) {
+  final dojoId = ref.watch(currentDojoIdProvider);
+  return TeamRepository(dojoId: dojoId);
+});
 
 // ★ 追加：自チーム一覧をリアルタイム監視する固定の窓口（リセット防止！）
 final registeredTeamsProvider = StreamProvider.family.autoDispose<List<TeamModel>, String>((ref, tournamentId) {
@@ -10,25 +14,33 @@ final registeredTeamsProvider = StreamProvider.family.autoDispose<List<TeamModel
 });
 
 class TeamRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+  final String dojoId;
+
+  TeamRepository({required this.dojoId, FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  CollectionReference<Map<String, dynamic>> get _collection {
+    if (dojoId.isEmpty) return _firestore.collection('teams');
+    return _firestore.collection('organizations').doc(dojoId).collection('teams');
+  }
 
   // チームを保存・更新し、IDを返す（修正版）
   Future<String> saveTeam(TeamModel team) async {
     if (team.id.isEmpty) {
       // 新規時はidフィールドを除いて保存し、Firestoreが生成したIDを取得する
       final data = team.toJson()..remove('id');
-      final docRef = await _firestore.collection('teams').add(data);
+      final docRef = await _collection.add(data);
       return docRef.id;
     } else {
-      await _firestore.collection('teams').doc(team.id).set(team.toJson(), SetOptions(merge: true));
+      await _collection.doc(team.id).set(team.toJson(), SetOptions(merge: true));
       return team.id;
     }
   }
 
   // 大会IDに紐づくチーム一覧をリアルタイムで取得する
   Stream<List<TeamModel>> watchTeamsByTournament(String tournamentId) {
-    return _firestore
-        .collection('teams')
+    return _collection
         .where('tournamentId', isEqualTo: tournamentId)
         .snapshots()
         .map((snapshot) {
@@ -40,6 +52,6 @@ class TeamRepository {
 
   // チームを削除する
   Future<void> deleteTeam(String id) async {
-    await _firestore.collection('teams').doc(id).delete();
+    await _collection.doc(id).delete();
   }
 }

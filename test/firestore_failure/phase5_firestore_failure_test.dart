@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
-import '../../test/helpers/mock_data.dart';
+// ★ 追加: 現在のアーキテクチャに適合したイベント生成アダプターを使用
+import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
   group('🛡️ Phase 5 — Firestore障害耐性·異常系耐久テスト要塞', () {
@@ -12,18 +13,25 @@ void main() {
     });
 
     test('1. 【Partial Write】インフラ層の一部が書き込み失敗しても、ローカルドメイン状態(MatchModel)の整合性が破損せず自己防衛されること', () {
-      final match = MatchBuilder().id('partial_fail_001').build();
+      final match = const MatchModel(
+        id: 'partial_fail_001',
+        matchType: '個人戦',
+        redName: '赤',
+        whiteName: '白',
+        status: 'waiting',
+      );
       expect(match.id, equals('partial_fail_001'));
       expect(match.status, equals('waiting'));
     });
 
     test('2. 【Duplicate Event】同一のイベントIDを持つ重複パケットが2回連続で降ってきた場合、ドメイン履歴側で重複が自動パージ(冪等性)されること', () {
-      final duplicateEvent = ScoreEvent(
+      final duplicateEvent = ScoreEventLegacyAdapter.fromLegacy(
         id: 'dup_ev_001',
         side: Side.red,
-        strikeType: StrikeType.men,
-        isIppon: true,
+        type: PointType.men,
         timestamp: baseTime,
+        userId: 'test_user',
+        sequence: 1,
         logicalClock: 1,
       );
 
@@ -46,27 +54,32 @@ void main() {
     });
 
     test('3. 【Timestamp逆転】タイムスタンプが古いイベントがネットワーク遅延により後から遅れて到着しても、論理時計規約に基づき正しい歴史に再ソートされること', () {
-      final firstEvent = ScoreEvent(
+      final firstEvent = ScoreEventLegacyAdapter.fromLegacy(
         id: 'first_logic',
         side: Side.red,
-        strikeType: StrikeType.men,
-        isIppon: true,
+        type: PointType.men,
         timestamp: baseTime,
+        userId: 'test_user',
+        sequence: 1,
         logicalClock: 1,
       );
 
-      final delayedOldEvent = ScoreEvent(
+      final delayedOldEvent = ScoreEventLegacyAdapter.fromLegacy(
         id: 'delayed_old',
         side: Side.white,
-        strikeType: StrikeType.kote,
-        isIppon: true,
+        type: PointType.kote,
         timestamp: baseTime.subtract(const Duration(seconds: 10)),
+        userId: 'test_user',
+        sequence: 2,
         logicalClock: 2,
       );
 
       final receivedQueue = [firstEvent, delayedOldEvent];
 
-      receivedQueue.sort((a, b) => a.logicalClock.compareTo(b.logicalClock));
+      receivedQueue.sort((a, b) {
+        if (a.logicalClock != b.logicalClock) return a.logicalClock.compareTo(b.logicalClock);
+        return a.timestamp.compareTo(b.timestamp);
+      });
 
       expect(receivedQueue.last.id, equals('delayed_old'));
     });

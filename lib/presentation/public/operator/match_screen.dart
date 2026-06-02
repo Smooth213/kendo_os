@@ -29,6 +29,7 @@ import 'package:kendo_os/domain/services/match_strategy.dart'; // ★ Phase 5: �
 import 'package:kendo_os/application/services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; // ★ 追加: KendoRuleEngineを使用するため
 import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加: TimeSource
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
 
 // ★ Phase 3: 分割したWidget群
 import '../../shared/widgets/timer_widget.dart';
@@ -481,8 +482,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
-                                // ★ 修正: 共有URLを観戦専用の /viewer/ に変更
-                                final shareText = '${match.redName} vs ${match.whiteName} の試合状況:\nhttps://kendo-os.web.app/viewer/${match.id}';
+                                // ★ 修正: 共有URLにテナントIDを含めてViewerが直接アクセスできるようにする
+                                final dojoId = ref.read(currentDojoIdProvider);
+                                final shareText = '${match.redName} vs ${match.whiteName} の試合状況:\nhttps://kendo-os.web.app/viewer/${match.id}?dojoId=$dojoId';
                                 SharePlus.instance.share(ShareParams(text: shareText));
                               },
                               icon: const Icon(Icons.ios_share, size: 16),
@@ -537,9 +539,13 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     fit: BoxFit.scaleDown, // ★ 枠に収まるように全体を少し縮小（スケールダウン）
                     child: SizedBox(
                       width: constraints.maxWidth,
-                      child: MatchScoreboard(
-                        matchId: match.id, myUserId: _myUserId,
-                        onNameTap: (side) => _showNameEditBottomSheet(match, side),
+                      // ★ 修正: ProviderScope を介して動的引数を注入し、MatchScoreboard を完全に const 化
+                      child: ProviderScope(
+                        overrides: [
+                          scoreboardMatchIdProvider.overrideWithValue(match.id),
+                          scoreboardNameTapProvider.overrideWithValue((side) => _showNameEditBottomSheet(match, side)),
+                        ],
+                        child: const MatchScoreboard(),
                       ),
                     ),
                   ),
@@ -782,10 +788,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     ],
                   );
                 } else {
-                  // 🛡️ 強制描画レイアウト
-                  final isCompact = constraints.maxHeight < 700;
+                  // 🛡️ ハイブリッド・レスポンシブ要塞（Phase 8 適合仕様）
+                  // 縦幅が 720px 未満のコンパクトな端末（旧端末やキーボード表示時）のみスクロールを許可し、
+                  // iPhone 17 Pro などの 19.5:9 画面では完全縦フィットして下部ボタンを露出させます。
+                  final isCompactHeight = constraints.maxHeight < 720;
 
-                  final content = Column(
+                  final mainContent = Column(
                     children: [
                       corruptedBanner,
                       viewOnlyBanner,
@@ -794,19 +802,21 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: groupButtonPart,
                       ),
-                      // 選手名・スコアボード領域
+                      // 選手名・スコアボード領域（アスペクト比に応じて最大25%の高さに制限）
                       SizedBox(
-                        height: 220, 
+                        height: constraints.maxHeight * 0.25, 
                         child: scoreboardPart,
                       ),
-                      // 部位ボタン領域
+                      // 部位ボタン（ActionPanel）領域：残りのスペースを最大活用
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(vertical: 2),
                           child: actionPanelPart,
                         ),
                       ),
+                      // 履歴とUndoボタン
                       undoArea,
+                      // 最下部確定ボタン
                       SafeArea(
                         top: false,
                         child: Padding(
@@ -817,9 +827,14 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     ],
                   );
 
-                  return isCompact 
-                    ? SingleChildScrollView(child: SizedBox(height: 700, child: content)) // 短い時はスクロール
-                    : content; // 十分な高さがある時はそのままフィット
+                  return isCompactHeight
+                      ? SingleChildScrollView(
+                          child: SizedBox(
+                            height: 720, // 最低限必要な高さを保証してスクロール化
+                            child: mainContent,
+                          ),
+                        )
+                      : mainContent; // 19.5:9などの長辺画面では全画面にジャストフィット
                 }
               },
             ),

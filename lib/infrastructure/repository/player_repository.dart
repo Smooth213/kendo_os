@@ -1,17 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/player_model.dart';
+import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
 
 // アプリ全体からこの職人（リポジトリ）を呼べるようにするプロバイダー
-final playerRepositoryProvider = Provider((ref) => PlayerRepository());
+final playerRepositoryProvider = Provider((ref) {
+  final dojoId = ref.watch(currentDojoIdProvider);
+  return PlayerRepository(dojoId: dojoId);
+});
 
 class PlayerRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+  final String dojoId;
+
+  PlayerRepository({required this.dojoId, FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  CollectionReference<Map<String, dynamic>> get _playersCollection {
+    if (dojoId.isEmpty) return _firestore.collection('players');
+    return _firestore.collection('organizations').doc(dojoId).collection('players');
+  }
+
+  CollectionReference<Map<String, dynamic>> get _customTeamsCollection {
+    if (dojoId.isEmpty) return _firestore.collection('custom_team_names');
+    return _firestore.collection('organizations').doc(dojoId).collection('custom_team_names');
+  }
 
   // ① 選手一覧を取得する（道上剣友会のメンバーだけを取るなど）
   Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) {
-    return _firestore
-        .collection('players')
+    return _playersCollection
         .where('organization', isEqualTo: organization)
         // .orderBy('grade') // ★ここをコメントアウト（無効化）！
         .snapshots()
@@ -24,23 +41,22 @@ class PlayerRepository {
 
   // ② 選手を新しく追加する
   Future<void> addPlayer(PlayerModel player) async {
-    await _firestore.collection('players').add(player.toMap());
+    await _playersCollection.add(player.toMap());
   }
 
   // ③ 選手の情報を手動で更新する（手動で一般に変更する時など！）
   Future<void> updatePlayer(PlayerModel player) async {
-    await _firestore.collection('players').doc(player.id).update(player.toMap());
+    await _playersCollection.doc(player.id).update(player.toMap());
   }
 
   // ④ 選手を削除する
   Future<void> deletePlayer(String playerId) async {
-    await _firestore.collection('players').doc(playerId).delete();
+    await _playersCollection.doc(playerId).delete();
   }
 
   // ★⑤ 魔法のボタン用：全員を一括進級させる！
   Future<void> promoteAllPlayers({String organization = '道上剣友会'}) async {
-    final snapshot = await _firestore
-        .collection('players')
+    final snapshot = await _playersCollection
         .where('organization', isEqualTo: organization)
         .get();
 
@@ -68,8 +84,7 @@ class PlayerRepository {
 
   /// 所属道場に関連付けられたカスタムチーム名の一覧を監視する
   Stream<List<String>> watchCustomTeamNames({String organization = '道上剣友会'}) {
-    return _firestore
-        .collection('custom_team_names')
+    return _customTeamsCollection
         .where('organization', isEqualTo: organization)
         .snapshots()
         .map((snapshot) => snapshot.docs
@@ -80,7 +95,7 @@ class PlayerRepository {
   /// 新しいカスタムチーム名を追加する
   Future<void> addCustomTeamName(String name, {String organization = '道上剣友会'}) async {
     final docId = '${organization}_$name'; // 重複防止のためのID
-    await _firestore.collection('custom_team_names').doc(docId).set({
+    await _customTeamsCollection.doc(docId).set({
       'organization': organization,
       'name': name,
       'createdAt': FieldValue.serverTimestamp(),
@@ -90,6 +105,6 @@ class PlayerRepository {
   /// カスタムチーム名を削除する
   Future<void> deleteCustomTeamName(String name, {String organization = '道上剣友会'}) async {
     final docId = '${organization}_$name';
-    await _firestore.collection('custom_team_names').doc(docId).delete();
+    await _customTeamsCollection.doc(docId).delete();
   }
 }

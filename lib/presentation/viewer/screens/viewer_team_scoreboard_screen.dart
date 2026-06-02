@@ -81,7 +81,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
 
   const ViewerTeamScoreboardScreen({super.key, this.groupName});
 
-  Widget _buildFallbackScaffold(BuildContext context, bool isDark, Color headerColor, Widget body, String? tournamentId) {
+  Widget _buildFallbackScaffold(BuildContext context, WidgetRef ref, bool isDark, Color headerColor, Widget body, String? tournamentId) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -91,7 +91,8 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
               context.pop();
             } else {
               if (tournamentId != null) {
-                context.go('/viewer-home/$tournamentId');
+                final dojoId = GoRouterState.of(context).uri.queryParameters['dojoId'] ?? ref.read(currentDojoIdProvider);
+                context.go('/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId');
               } else {
                 context.go('/');
               }
@@ -134,7 +135,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     if (tournamentId == null && kIsWeb) {
       final asyncTourId = ref.watch(_webTournamentIdSearchProvider(decodedGroupName));
       if (asyncTourId.isLoading) {
-        return _buildFallbackScaffold(context, isDark, headerColor, const Center(child: CircularProgressIndicator()), null);
+        return _buildFallbackScaffold(context, ref, isDark, headerColor, const Center(child: CircularProgressIndicator()), null);
       }
       tournamentId = asyncTourId.value;
     }
@@ -145,22 +146,22 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     }
 
     if (tournamentId == null) {
-      return _buildFallbackScaffold(context, isDark, headerColor, const Center(child: Text('大会情報がありません')), null);
+      return _buildFallbackScaffold(context, ref, isDark, headerColor, const Center(child: Text('大会情報がありません')), null);
     }
 
     // 2. ★ CQRS: UIは安全な TournamentProjection のみを監視する
     final asyncProj = ref.watch(viewerTournamentProjectionProvider(tournamentId));
 
     return asyncProj.when(
-      loading: () => _buildFallbackScaffold(context, isDark, headerColor, const Center(child: CircularProgressIndicator()), tournamentId),
-      error: (e, s) => _buildFallbackScaffold(context, isDark, headerColor, Center(child: Text('エラー: $e')), tournamentId),
+      loading: () => _buildFallbackScaffold(context, ref, isDark, headerColor, const Center(child: CircularProgressIndicator()), tournamentId),
+      error: (e, s) => _buildFallbackScaffold(context, ref, isDark, headerColor, Center(child: Text('エラー: $e')), tournamentId),
       data: (proj) {
         // =========================================================================
         // 🛡️ 補正：Dartコンパイラへ絶対に Null にならない型シグネチャを明示。
         // これにより 187行目・188行目の 'matches' can't be unconditionally accessed エラーを完全撲滅します。
         // =========================================================================
         if (proj == null || proj.teamMatches.isEmpty) {
-          return _buildFallbackScaffold(context, isDark, headerColor, const Center(child: Text('試合データがまだ登録されていません')), tournamentId);
+          return _buildFallbackScaffold(context, ref, isDark, headerColor, const Center(child: Text('試合データがまだ登録されていません')), tournamentId);
         }
 
         // 動的探索を型安全にキャストして実行
@@ -198,7 +199,14 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
             appBar: AppBar(
               leading: IconButton(
                 icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
-                onPressed: () => context.canPop() ? context.pop() : context.go('/viewer-home/$tournamentId'),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    final dojoId = GoRouterState.of(context).uri.queryParameters['dojoId'] ?? ref.read(currentDojoIdProvider);
+                    context.go('/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId');
+                  }
+                },
               ),
               title: Text('団体戦 スコア (観戦)', style: TextStyle(fontWeight: FontWeight.bold, color: headerColor, fontSize: 16)),
               backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,

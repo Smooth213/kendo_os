@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart'; // kIsWeb用
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
@@ -7,23 +9,66 @@ import 'package:kendo_os/application/usecases/match_usecases.dart'; // ★ 追�
 import '../../operate/providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
 import '../../operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
 
-class MatchScoreboard extends ConsumerWidget {
-  final String matchId;
-  final String? myUserId;
-  final Function(String side) onNameTap;
+// ★ 追加: Scoreboard を const として扱うための Provider
+final scoreboardMatchIdProvider = Provider<String>((ref) => throw UnimplementedError());
+final scoreboardNameTapProvider = Provider<void Function(String side)?>((ref) => null);
 
+// ★ 追加: Firestoreから受信したデータを確実にMatchModelにパースするための再帰的サニタイズ関数
+Map<String, dynamic> _sanitizeWebFirestoreData(Map<String, dynamic> data) {
+  final Map<String, dynamic> result = {};
+  data.forEach((key, value) {
+    if (value is Timestamp) {
+      result[key] = value.toDate().toIso8601String();
+    } else if (value is Map) {
+      result[key] = _sanitizeWebFirestoreData(Map<String, dynamic>.from(value));
+    } else if (value is List) {
+      result[key] = value.map((e) {
+        if (e is Map) return _sanitizeWebFirestoreData(Map<String, dynamic>.from(e));
+        if (e is Timestamp) return e.toDate().toIso8601String();
+        return e;
+      }).toList();
+    } else if ((key == 'order' || key == 'matchTimeMinutes' || key == 'extensionTimeMinutes' || key == 'enchoTimeMinutes') && value is num) {
+      result[key] = value.toDouble();
+    } else if ((key == 'redScore' || key == 'whiteScore' || key == 'matchOrder') && value is num) {
+      result[key] = value.toInt();
+    } else {
+      result[key] = value;
+    }
+  });
+  return result;
+}
+
+// ★ 追加: Web環境（Viewer）で直接Firestoreから特定の試合データを取得するストリームプロバイダ
+final webScoreboardMatchProvider = StreamProvider.family.autoDispose<MatchModel?, String>((ref, matchId) {
+  return FirebaseFirestore.instance
+      .collectionGroup('matches')
+      .where('id', isEqualTo: matchId)
+      .snapshots()
+      .map((snapshot) {
+    if (snapshot.docs.isEmpty) return null;
+    final doc = snapshot.docs.first;
+    final data = doc.data();
+    data['id'] = doc.id;
+    final sanitized = _sanitizeWebFirestoreData(data);
+    return MatchModel.fromJson(sanitized);
+  });
+});
+
+class MatchScoreboard extends ConsumerWidget {
   const MatchScoreboard({
     super.key,
-    required this.matchId,
-    required this.myUserId,
-    required this.onNameTap,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final match = ref.watch(matchListProvider.select((list) => 
-      list.where((m) => m.id == matchId).firstOrNull
-    ));
+    final matchId = ref.watch(scoreboardMatchIdProvider);
+    final onNameTap = ref.watch(scoreboardNameTapProvider);
+
+    final match = kIsWeb 
+        ? ref.watch(webScoreboardMatchProvider(matchId)).value 
+        : ref.watch(matchListProvider.select((list) => 
+            list.where((m) => m.id == matchId).firstOrNull
+          ));
     if (match == null) return const SizedBox.shrink();
 
     final calculatePointDisplays = ref.watch(calculatePointDisplaysUseCaseProvider);
@@ -38,8 +83,8 @@ class MatchScoreboard extends ConsumerWidget {
         // スコアボード本体
         Row(
           children: [
-            _buildScoreColumn(context, Side.red, match, ptsMap, viewState),
-            _buildScoreColumn(context, Side.white, match, ptsMap, viewState),
+            _buildScoreColumn(context, Side.red, match, ptsMap, viewState, onNameTap),
+            _buildScoreColumn(context, Side.white, match, ptsMap, viewState, onNameTap),
           ],
         ),
         // 結果表示用：結果がある時だけ表示（Stackで重ねることでレイアウト崩れを防ぐ）
@@ -49,7 +94,7 @@ class MatchScoreboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildScoreColumn(BuildContext context, Side side, MatchModel match, Map<Side, List<PointDisplay>> allPts, MatchViewState viewState) {
+  Widget _buildScoreColumn(BuildContext context, Side side, MatchModel match, Map<Side, List<PointDisplay>> allPts, MatchViewState viewState, void Function(String)? onNameTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pts = allPts[side] ?? []; 
     
@@ -69,24 +114,24 @@ class MatchScoreboard extends ConsumerWidget {
           children: [
             SizedBox(height: isFinished ? 72 : 24),
             GestureDetector(
-              onTap: () => onNameTap(side.name),
+              onTap: onNameTap != null ? () => onNameTap(side.name) : null,
               child: Container(
                 height: 44,
                 alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: FittedBox(
-                  fit: BoxFit.scaleDown, // ★枠からはみ出る場合のみ縮小
+                  fit: BoxFit.scaleDown, // ★ 枠からはみ出る長い名前のみ縮小し、短い名前は最大サイズで左右統一
                   child: Text(
                     side == Side.red ? viewState.redCleanName : viewState.whiteCleanName,
                     style: TextStyle(
-                      fontSize: 28, // 左右で共通の基準サイズに設定
+                      fontSize: 28, // ★ 左右共通の最大フォントサイズに設定
                       fontWeight: FontWeight.w900,
                       color: nameColor,
-                      letterSpacing: 1.0,
+                      letterSpacing: 1.2,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -203,26 +248,26 @@ class MatchScoreboard extends ConsumerWidget {
     if (viewState.winner == 'white') resultText = '白 の勝ち';
 
     return Positioned(
-      top: 20, // 呼び出し側にあった top: 20 をこちらに統合して位置を調整
+      top: 10,
       child: Container(
-        height: 70, // ★ 高さを大きく
+        height: 64, // ★ 高さを大きく拡張
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 40), // 横幅を広げて余裕を作る
+        padding: const EdgeInsets.symmetric(horizontal: 40), // ★ 横幅に余裕を持たせる
         decoration: BoxDecoration(
           color: isDark ? Colors.indigo.shade900 : Colors.indigo.shade700,
-          borderRadius: BorderRadius.circular(35), // 丸みを拡大
-          border: isDark ? Border.all(color: Colors.indigo.shade400, width: 2) : null,
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))
-          ],
+          borderRadius: BorderRadius.circular(32), // ★ 丸みを大きく
+          border: isDark ? Border.all(color: Colors.indigo.shade400, width: 1.5) : null,
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
         ),
-        child: Text(
-          resultText,
-          style: const TextStyle(
-            color: Colors.white, 
-            fontWeight: FontWeight.w900, // 極太に
-            fontSize: 32, // ★ フォントサイズを大幅アップ
-            letterSpacing: 2.0, // 文字間隔を広げて読みやすく
+        child: FittedBox( // ★ 文字が絶対にはみ出さないようガード
+          child: Text(
+            resultText,
+            style: const TextStyle(
+              color: Colors.white, 
+              fontWeight: FontWeight.w900, 
+              fontSize: 32, // ★ フォントサイズを大幅に大きく
+              letterSpacing: 1.5,
+            ),
           ),
         ),
       ),

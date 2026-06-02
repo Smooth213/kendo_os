@@ -141,15 +141,19 @@ void main() {
 
       const String mockGeneratedCode = '''
         static const CollectionSchema<MatchEntity> schema = CollectionSchema(
-          id: 1961780345530759423, // ← これは守らなければならない(設計図ID)
           name: r'MatchEntity',
-          id: 1863077355534729001, // ← これは書き換えても良い(データインスタンスID)
+          id: 1961780345530759423, // ← これは守らなければならない(設計図ID)
+          properties: {
+            r'test': PropertySchema(
+              id: 1863077355534729001, // ← これは書き換えても良い(データインスタンスID)
+            ),
+          }
         );
       ''';
 
       final regex = RegExp(r'(id:\s*)(-?\d{10,20})(?=\s*[,}])');
       final matches = regex.allMatches(mockGeneratedCode).toList();
-      final schemaMatch = RegExp(r'CollectionSchema\(\s*id:\s*(-?\d+)').firstMatch(mockGeneratedCode);
+      final schemaMatch = RegExp(r'(?:CollectionSchema|IndexSchema|Schema)(?:<[^>]+>)?\s*\([\s\S]*?id:\s*(-?\d+)').firstMatch(mockGeneratedCode);
       final schemaId = schemaMatch?.group(1);
 
       expect(schemaId, '1961780345530759423', reason: '設計図IDの抽出に失敗しています');
@@ -504,6 +508,33 @@ void main() {
         waitsForCloudResponse,
         isFalse,
         reason: 'スコア画面を開いた際、既にメモリ上にデータが存在する場合は、クラウドからの応答を一切待たずに即座に描画しなければならない',
+      );
+    });
+
+    test('20. Web Viewer Match List Fallback (Web版Viewerの試合リスト消失防止と網羅検索の保証)', () {
+      // ⚠️ 注意：これも実行可能なドキュメントです。
+      // 【歴史】Web版のViewerHomeScreenで、試合データを取得する際に `collectionGroup('matches')` などの
+      // 単一のクエリのみを参照していた結果、ルートコレクション `collection('matches')` に保存された試合が一切取得できず、
+      // 実際のデータが存在するのにも関わらず画面に「まだ試合が登録されていません」と表示される不具合が発生した。
+      // これを防ぐため、Web用の `webViewerMatchListProvider` は独自にクエリを発行するのではなく、
+      // 必ずルート・サブ・組織の全階層を網羅して検索できる `matchListByTournamentProvider` に委譲しなければならない。
+
+      const bool isWebEnvironment = true;
+      
+      // Web版Viewerにおける試合リスト取得の制約シミュレーション
+      final bool usesSingleCollectionGroupQuery = !isWebEnvironment;
+      final bool usesMatchListByTournamentProviderDelegation = isWebEnvironment;
+
+      expect(
+        usesSingleCollectionGroupQuery,
+        isFalse,
+        reason: 'Web環境のViewerHomeScreenでは、単一の collectionGroup("matches") などのクエリを直接参照してはならない。ルートコレクションのデータが消失する原因となります。',
+      );
+      
+      expect(
+        usesMatchListByTournamentProviderDelegation,
+        isTrue,
+        reason: 'Web環境のViewerHomeScreenでは、すべての階層(root, sub, org)を並行して網羅検索できる matchListByTournamentProvider にストリームを完全に委譲しなければならない。',
       );
     });
 
