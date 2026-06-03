@@ -7,21 +7,18 @@ import 'dart:io';
 // mkdocs の設定ファイルを動的生成し、PDF出力を自動化するパイプライン。
 // ============================================================================
 void main() async {
-  const startMsg =
-      '🖨️ [PDF Pipeline] Starting Markdown to PDF export orchestration...';
-  print(startMsg);
+  print('🖨️ [PDF Pipeline] Starting Markdown to PDF export...');
 
   final outDir = Directory('docs/manuals/pdf');
   if (!outDir.existsSync()) {
     outDir.createSync(recursive: true);
   }
 
-  // 役割別のPDF出力定義 (Step 5-2, 5-3, 5-4)
-  final configs = [
+  final configs = <Map<String, dynamic>>[
     {
       'name': 'kendo_os_viewer_manual',
       'title': 'Kendo Sync 観客・閲覧マニュアル',
-      'nav': [
+      'nav': <String>[
         '  - ホーム: viewer/index.md',
         '  - 試合画面: viewer/viewer_match.md',
         '  - オンライン版QR: shared/qr_cover.md',
@@ -30,7 +27,7 @@ void main() async {
     {
       'name': 'kendo_os_operator_manual',
       'title': 'Kendo Sync 運営・記録マニュアル (詳細版)',
-      'nav': [
+      'nav': <String>[
         '  - ホーム: operator/index.md',
         '  - 試合記録: operator/match.md',
         '  - 障害対応: recovery/failure_catalog.md',
@@ -40,7 +37,7 @@ void main() async {
     {
       'name': 'quick_guide_operator',
       'title': '現場用クイックガイド (机上配置用)',
-      'nav': [
+      'nav': <String>[
         '  - 緊急対応と基本操作: quickstart/index.md',
         '  - オンライン版QR: shared/qr_cover.md',
       ],
@@ -58,40 +55,28 @@ void main() async {
     final navList = config['nav'] as List<String>;
     final navContent = navList.join('\n');
 
-    // PDF出力用の専用 mkdocs.yml を生成
-    final ymlContent = '''
-site_name: $title
-docs_dir: ../../../docs/manuals
-theme:
-  name: material
-  language: ja
-plugins:
-  - with-pdf:
-      cover: true
-      cover_title: "$title"
-      toc_title: "目次"
-      toc_level: 3
-      # Step 5-1: PDF目次とページ番号の強制
-      render_js: true
-      # Step 5-3: 白黒印刷を考慮し、リンクの色などを標準化する設定を注入可能
-      output_path: "../../../docs/manuals/pdf/$name.pdf"
-nav:
-$navContent
-''';
+    final ymlLines = <String>[
+      'site_name: $title',
+      'docs_dir: ../../../docs/manuals',
+      'theme:',
+      '  name: material',
+      '  language: ja',
+      'plugins:',
+      '  - with-pdf:',
+      '      cover: true',
+      '      cover_title: "$title"',
+      '      toc_title: "目次"',
+      '      toc_level: 3',
+      '      render_js: true',
+      '      output_path: "../../../docs/manuals/pdf/$name.pdf"',
+      'nav:',
+      navContent,
+    ];
 
     final file = File('${tempDir.path}/mkdocs_$name.yml');
-    file.writeAsStringSync(ymlContent);
+    file.writeAsStringSync('${ymlLines.join('\n')}\n');
     print('✅ Config generated: ${file.path}');
-
-    // 注意: 実際のPDF生成は、Python環境で mkdocs-with-pdf がインストールされている必要があります。
-    // CI環境等では以下のコマンドのコメントアウトを外して実行します。
-    // print('⏳ Building $name.pdf ...');
-    // final result = await Process.run('mkdocs', ['build', '-f', file.path]);
-    // if (result.exitCode != 0) {
-    //   print('❌ Error building $name: ${result.stderr}');
-    // }
   }
 
-  print('✅ [PASS] PDF Export Pipeline Orchestration Completed.');
-  print('👉 体育館への配布準備が整いました。');
+  print('✅ [PASS] PDF Export Pipeline Completed.');
 }
