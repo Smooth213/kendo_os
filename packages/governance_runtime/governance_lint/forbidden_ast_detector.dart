@@ -105,6 +105,19 @@ class ForbiddenNodeVisitor extends RecursiveAstVisitor<void> {
     super.visitInstanceCreationExpression(node);
   }
 
+  @override
+  void visitInterpolationExpression(InterpolationExpression node) {
+    // 文字列補間 `${...}` の内部でメソッドチェーン（例: .join()）が呼ばれていないか監視する
+    if (node.expression is MethodInvocation) {
+      _reportViolation(
+        node,
+        'Format Drift Prevention: Method chaining inside string interpolation (e.g. \${list.join()}) is forbidden. '
+        'Extract to a local variable first to guarantee CI formatter stability.',
+      );
+    }
+    super.visitInterpolationExpression(node);
+  }
+
   void _reportViolation(AstNode node, String reason) {
     hasViolation = true;
     print('❌ [Violation] $filePath : $reason');
