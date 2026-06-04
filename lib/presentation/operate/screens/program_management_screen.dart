@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/infrastructure/repository/program_repository.dart';
 import 'package:kendo_os/domain/entities/program_model.dart';
 import '../providers/permission_provider.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 // =========================================================================
 // 🛡️ Phase 0 - STEP 0-1 要件：UIからFirestoreを完全隔離する抽象化プロバイダー

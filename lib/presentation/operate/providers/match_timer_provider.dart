@@ -5,7 +5,7 @@ import 'match_list_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
 import 'package:kendo_os/domain/match/match_state.dart'; // ★ Phase 1 & 3: FSM連携用
 import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint用
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 // ★ 修正1: 監視(watch)ではなく、画面を開いた時の初期値の読み取り(read)に変更。
 // これにより、通信のたびに秒数がリセットされるバグが消滅します。

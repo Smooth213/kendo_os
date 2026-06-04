@@ -11,8 +11,8 @@ import 'package:kendo_os/infrastructure/repository/organization_repository.dart'
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
-import '../../shared/widgets/liquid_background.dart';
-import '../../shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 
 // 選手マスタ取得用プロバイダ
 final newMatchPlayerMasterProvider =

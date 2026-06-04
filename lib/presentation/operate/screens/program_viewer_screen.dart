@@ -10,7 +10,7 @@ import 'package:kendo_os/infrastructure/repository/stroke_repository.dart';
 import 'package:kendo_os/infrastructure/repository/local_stroke_repository.dart';
 import '../providers/role_provider.dart';
 import '../providers/permission_provider.dart'; // ★ 追加: 閲覧専用権限を識別するためのインポート
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 class ProgramViewerScreen extends ConsumerStatefulWidget {
   final List<ProgramModel> programs;

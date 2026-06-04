@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {

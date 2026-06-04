@@ -8,7 +8,7 @@ import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import 'package:replay_engine/replay/replay_hash_calculator.dart';
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 import '../helpers/test_match_factory.dart';
 
 void main() {

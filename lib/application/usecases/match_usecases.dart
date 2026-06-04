@@ -7,7 +7,7 @@ import 'package:kendo_os/domain/match/match_context.dart';
 import 'package:kendo_os/presentation/operate/providers/match_provider.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart';
 import 'package:kendo_os/domain/match/match_state.dart'; // ★ Phase 1: FSMのインポート
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 // ==========================================
 // ★ ② UseCaseの役割明確化：「1 UseCase = 1 責務」

@@ -5,9 +5,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb用
 
-import '../../shared/widgets/scoreboard.dart';
-import '../../shared/widgets/manual_help_button.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/scoreboard.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import '../../operate/providers/match_list_provider.dart';

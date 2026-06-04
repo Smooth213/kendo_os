@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../domain/entities/user_session.dart';
 import '../../../domain/entities/user_role.dart';
-import '../../../core/security/session_storage.dart';
+import 'package:kendo_os/security/session_storage.dart';
 import 'current_sync_context_provider.dart';
 
 /// ログイン状態や、Firestoreから降ってくるリアルタイムの権限変更を

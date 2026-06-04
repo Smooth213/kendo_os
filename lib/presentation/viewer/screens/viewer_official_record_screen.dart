@@ -4,12 +4,12 @@ import 'package:kendo_os/application/projections/match_projection.dart';
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/services/pdf_service.dart';
 import 'package:kendo_os/domain/services/team_match_calculator.dart';
-import '../../shared/widgets/liquid_background.dart';
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
-import 'package:kendo_os/presentation/shared/widgets/match_tables/score_table_card.dart';
-import 'package:kendo_os/presentation/shared/widgets/match_tables/league_grid_card.dart';
-import 'package:kendo_os/presentation/shared/widgets/match_tables/individual_list_card.dart';
-import 'package:kendo_os/presentation/shared/widgets/match_tables/point_mark_badge.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
+import 'package:kendo_os/shared/widgets/match_tables/league_grid_card.dart';
+import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
+import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/presentation/shared/utils/match_calculator_helper.dart';
 
 class ViewerOfficialRecordScreen extends ConsumerWidget {

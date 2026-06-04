@@ -3,7 +3,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/match/match_aggregate.dart';
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 class MatchProjectionMapper {
   // タイムライン生成

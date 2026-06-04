@@ -14,7 +14,7 @@ import '../../shared/providers/current_user_role_provider.dart';
 import '../../shared/providers/current_sync_context_provider.dart';
 import '../providers/settings_provider.dart';
 
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../components/home/match_timeline_list.dart';
 import '../components/home/operator_action_buttons.dart';
 import '../providers/match_list_provider.dart';

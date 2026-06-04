@@ -20,7 +20,7 @@ import '../../providers/timeline_provider.dart';
 import '../../providers/permission_provider.dart';
 import '../../providers/match_rule_provider.dart';
 import '../../providers/match_list_provider.dart';
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 import '../../screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import 'tournament_header_card.dart';

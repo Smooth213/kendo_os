@@ -5,7 +5,7 @@ import 'package:kendo_os/domain/match/match_context.dart';
 import 'package:kendo_os/domain/services/match_strategy.dart';
 import 'package:kendo_os/domain/rules/rule_factory.dart';
 import 'package:kendo_os/domain/rules/tournament_rule_config.dart'; // ★ Phase 5
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 // ★ 追加: 新しく切り出した集計ロジックを読み込み、外部(UI)へ横流しする
 import 'package:kendo_os/domain/services/standings_calculator.dart';

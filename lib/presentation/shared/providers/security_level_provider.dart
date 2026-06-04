@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/security/security_level.dart';
+import 'package:kendo_os/security/security_level.dart';
 
 /// アプリケーション全体のセキュリティレベル（大会運用防衛モード）を動的に管理するプロバイダー。
 final securityLevelProvider = StateProvider<SecurityLevel>((ref) {

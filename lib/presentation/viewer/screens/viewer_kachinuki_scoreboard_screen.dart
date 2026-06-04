@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../operate/screens/kachinuki_scoreboard_screen.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 class ViewerKachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;

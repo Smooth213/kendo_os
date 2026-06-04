@@ -15,13 +15,13 @@ import 'package:kendo_os/presentation/operate/providers/match_rule_provider.dart
 import 'package:kendo_os/application/services/csv_service.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
-import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
-import '../../shared/widgets/liquid_background.dart';
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
-import 'package:kendo_os/presentation/shared/widgets/match_tables/score_table_card.dart';
-import 'package:kendo_os/presentation/shared/widgets/match_tables/league_grid_card.dart';
-import 'package:kendo_os/presentation/shared/widgets/match_tables/individual_list_card.dart';
-import 'package:kendo_os/presentation/shared/widgets/match_tables/point_mark_badge.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
+import 'package:kendo_os/shared/widgets/match_tables/league_grid_card.dart';
+import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
+import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/presentation/shared/utils/match_calculator_helper.dart';
 
 class OfficialRecordScreen extends ConsumerWidget {

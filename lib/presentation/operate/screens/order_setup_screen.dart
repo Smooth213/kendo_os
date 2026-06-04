@@ -8,13 +8,13 @@ import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import 'package:uuid/uuid.dart';
 import '../providers/match_rule_provider.dart';
 import '../providers/last_used_settings_provider.dart'; // ★ 追加：正確な小数の時間を取得するため
-import 'package:kendo_os/core/utils/text_sanitizer.dart'; // ★ 追加：お掃除フィルター
+import 'package:kendo_os/shared/utils/text_sanitizer.dart'; // ★ 追加：お掃除フィルター
 import '../providers/match_list_provider.dart'; // ★ 追加：試合履歴の取得に必要
-import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
-import '../../shared/widgets/liquid_background.dart';
-import '../../shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイル上部
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 import '../providers/settings_provider.dart';
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();

@@ -6,7 +6,7 @@ import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 // テスト用のMatchModelを簡単に作成するためのヘルパー関数
 MatchModel createMockMatch({

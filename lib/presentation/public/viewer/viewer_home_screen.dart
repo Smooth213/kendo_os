@@ -18,9 +18,9 @@ import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 
 // 共通シェアUIコンポーネント・ウィジェット層（★ パスを正しい座標へ完全適合）
-import 'package:kendo_os/presentation/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/presentation/shared/widgets/glass_button.dart';
-import 'package:kendo_os/presentation/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/presentation/shared/utils/match_calculator_helper.dart';
 import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
 

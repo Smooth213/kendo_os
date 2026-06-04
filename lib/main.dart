@@ -63,7 +63,7 @@ import 'package:kendo_os/presentation/operate/providers/sync_provider.dart'
     as legacy_sync;
 import 'package:kendo_os/presentation/shared/providers/dojo_room_sync_provider.dart';
 import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
-import 'package:kendo_os/core/errors/global_error_handler.dart';
+import 'package:kendo_os/shared/errors/global_error_handler.dart';
 
 // =========================================================================
 // 🛡️ Phase 6 - STEP 6-1 & 6-2 要件：環境分離 ＆ Feature Flag 基盤

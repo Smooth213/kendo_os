@@ -31,7 +31,7 @@ import 'package:kendo_os/application/projections/projection_store.dart'
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/domain/entities/settings_model.dart';
 import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 import 'package:kendo_os/domain/entities/player_model.dart';
 

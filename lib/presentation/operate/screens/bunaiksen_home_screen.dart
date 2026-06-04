@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import '../providers/match_list_provider.dart';
-import '../../shared/widgets/infinite_streak_leaderboard.dart';
+import 'package:kendo_os/shared/widgets/infinite_streak_leaderboard.dart';
 import '../providers/bunaiksen_provider.dart';
 // ★ Phase 8: 削除機能と権限管理用プロバイダを追加
 import '../providers/match_command_provider.dart';
@@ -12,7 +12,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';

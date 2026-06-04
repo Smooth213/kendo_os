@@ -9,10 +9,10 @@ import '../../operate/providers/match_rule_provider.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../../operate/providers/settings_provider.dart';
 import '../../operate/providers/match_view_model_provider.dart';
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 class OfficialPointDisplay {
   final String mark;

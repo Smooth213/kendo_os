@@ -28,15 +28,15 @@ import 'package:kendo_os/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/domain/services/match_strategy.dart'; // ★ Phase 5: 戦略ファクトリの読み込み
 import 'package:kendo_os/application/services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart'; // ★ 追加: KendoRuleEngineを使用するため
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加: TimeSource
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加: TimeSource
 import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
 
 // ★ Phase 3: 分割したWidget群
-import '../../shared/widgets/timer_widget.dart';
-import '../../shared/widgets/action_buttons.dart';
-import '../../shared/widgets/scoreboard.dart';
-import '../../shared/widgets/manual_help_button.dart';
-import '../../shared/widgets/corrupted_match_banner.dart';
+import 'package:kendo_os/shared/widgets/timer_widget.dart';
+import 'package:kendo_os/shared/widgets/action_buttons.dart';
+import 'package:kendo_os/shared/widgets/scoreboard.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 import 'package:kendo_os/domain/match/match_state.dart';
 
 // ★ 追加：システム設定プロバイダの読み込み
@@ -44,8 +44,8 @@ import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/last_used_settings_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/bunaiksen_infinite_engine_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart';
-import '../../shared/widgets/liquid_background.dart';
-import '../../shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();

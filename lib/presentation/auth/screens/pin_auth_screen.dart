@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../domain/entities/user_role.dart';
-import '../../../core/security/pin_guard.dart';
+import 'package:kendo_os/security/pin_guard.dart';
 import '../../shared/providers/auth_session_provider.dart';
 import '../../shared/providers/current_sync_context_provider.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 class PinAuthScreen extends ConsumerWidget {
   final UserRole role;

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/presentation/providers/internal/audit_provider.dart';
-import 'package:kendo_os/presentation/shared/widgets/manual_help_button.dart';
-import 'package:kendo_os/presentation/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 // ★ Phase 5: Firestoreから監査ログをリアルタイム取得するProvider
 final auditLogsProvider =

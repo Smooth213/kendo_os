@@ -10,7 +10,7 @@ import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import '../../../test/helpers/test_match_factory.dart';
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
   group('📼 Phase 0-3: Event Replay Snapshot (履歴の完全再生比較)', () {

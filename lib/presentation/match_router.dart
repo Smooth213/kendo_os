@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:kendo_os/presentation/public/operator/match_screen.dart';
 import 'package:kendo_os/presentation/public/viewer/viewer_match_screen.dart';
-import '../core/security/feature_gate.dart';
+import 'package:kendo_os/security/feature_gate.dart';
 import 'shared/providers/current_user_role_provider.dart';
 import 'shared/providers/security_level_provider.dart';
 import 'shared/providers/auth_session_provider.dart';

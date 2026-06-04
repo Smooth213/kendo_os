@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 
 // ★ 旧 permissionProvider を完全撤廃し、新設計の RolePermissions に一元結合
 import '../../../domain/entities/user_role.dart';
-import '../../../core/security/role_permissions.dart';
+import 'package:kendo_os/security/role_permissions.dart';
 import '../../shared/providers/current_user_role_provider.dart';
 import '../../shared/providers/auth_session_provider.dart';
 
-import '../../shared/widgets/liquid_background.dart';
-import '../../shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 
 class StartScreen extends ConsumerWidget {
   const StartScreen({super.key});

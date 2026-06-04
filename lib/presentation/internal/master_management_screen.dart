@@ -4,22 +4,22 @@ import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 
 // ★ 新セキュリティ一元管理システムを導入
-import '../../../core/security/feature_gate.dart';
+import 'package:kendo_os/security/feature_gate.dart';
 import '../../../domain/entities/user_role.dart';
 import '../shared/providers/current_user_role_provider.dart';
 import '../shared/providers/security_level_provider.dart';
-import 'package:kendo_os/presentation/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 // ★ Phase 2: JSONエクスポートに必要なパッケージを追加
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/core/utils/text_sanitizer.dart';
+import 'package:kendo_os/shared/utils/text_sanitizer.dart';
 import 'package:kendo_os/presentation/operate/providers/team_name_history_provider.dart';
 import 'package:flutter/services.dart'; // ★ 長押し時のバイブレーション用
 import 'package:flutter_slidable/flutter_slidable.dart'; // ★ iPhoneライクなスワイプ用
-import 'package:kendo_os/presentation/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/presentation/shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 
 // 選手一覧のProvider

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/presentation/operate/providers/match_rule_provider.dart';
 import 'package:kendo_os/domain/rules/rule_preset.dart'; // ★ プリセットをインポート
-import 'package:kendo_os/core/config/beta_feature_flags.dart';
+import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 
 // ==========================================
 // ★ Phase 7: UI Rule Builder (Basic/Advanced分離)

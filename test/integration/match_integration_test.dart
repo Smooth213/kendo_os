@@ -10,7 +10,7 @@ import '../helpers/event_factory.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart'; // ★ Adapterのimport追加
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ 追加
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 

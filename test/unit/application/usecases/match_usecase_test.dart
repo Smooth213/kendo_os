@@ -6,7 +6,7 @@ import 'package:kendo_os/domain/rules/match_rule.dart';
 import 'package:kendo_os/application/usecases/match_usecases.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ 追加
 import '../../../helpers/event_factory.dart';
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
   group('MatchUseCase - イベント駆動版テスト', () {

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/core/config/beta_feature_flags.dart'; // ★ 追加: フラグによる完全統制
+import 'package:kendo_os/shared/config/beta_feature_flags.dart'; // ★ 追加: フラグによる完全統制
 
 // ============================================================================
 // Phase 6: AI Help Agent Service

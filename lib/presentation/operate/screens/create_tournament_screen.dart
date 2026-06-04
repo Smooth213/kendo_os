@@ -5,9 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
-import '../../shared/widgets/manual_help_button.dart';
-import '../../shared/widgets/liquid_background.dart';
-import '../../shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 import '../providers/settings_provider.dart';
 
 class CreateTournamentScreen extends ConsumerStatefulWidget {

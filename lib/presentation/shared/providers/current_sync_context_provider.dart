@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math';
-import '../../../core/sync/current_sync_context.dart';
+import 'package:kendo_os/shared/sync/current_sync_context.dart';
 import '../../../domain/entities/user_role.dart';
-import '../../../core/security/pwa_storage_bridge.dart';
+import 'package:kendo_os/security/pwa_storage_bridge.dart';
 import 'auth_session_provider.dart';
 
 String _getOrCreateDeviceId() {

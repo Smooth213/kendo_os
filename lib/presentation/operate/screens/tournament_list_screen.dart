@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/domain/entities/tournament_model.dart';
 import '../providers/sync_provider.dart';
-import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイル上部
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/presentation/providers/internal/metrics_provider.dart';
-import 'package:kendo_os/presentation/shared/widgets/manual_help_button.dart';
-import 'package:kendo_os/presentation/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 class ObservabilityDashboardScreen extends ConsumerWidget {
   const ObservabilityDashboardScreen({super.key});

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../domain/entities/user_role.dart';
 import '../../shared/providers/current_sync_context_provider.dart';
-import '../../shared/widgets/liquid_background.dart';
-import '../../shared/widgets/room_join_qr_dialog.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 import '../../shared/providers/dojo_room_sync_provider.dart';
 
 class RoleSelectScreen extends ConsumerWidget {

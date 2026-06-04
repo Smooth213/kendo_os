@@ -10,7 +10,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import '../providers/match_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 class KachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;

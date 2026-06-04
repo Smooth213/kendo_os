@@ -6,7 +6,7 @@ import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/domain/entities/role_permission.dart'; // ★ 追加
 import '../helpers/event_factory.dart';
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
   group('Event Driven Match Flow Integration', () {

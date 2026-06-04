@@ -12,7 +12,7 @@ import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import '../helpers/test_match_factory.dart';
 import '../helpers/event_factory.dart';
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
   group('🔒 Phase 0-2: Golden Behavior Snapshot (現状挙動の凍結)', () {

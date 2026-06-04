@@ -9,10 +9,10 @@ import 'package:kendo_os/presentation/operate/providers/match_rule_provider.dart
 import 'package:kendo_os/domain/services/team_match_calculator.dart'; // ★ Phase 7: 計算機の結線
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/presentation/operate/screens/kachinuki_scoreboard_screen.dart';
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/core/time/time_source.dart';
-import 'package:kendo_os/core/utils/name_formatter.dart';
+import 'package:kendo_os/shared/time/time_source.dart';
+import 'package:kendo_os/shared/utils/name_formatter.dart';
 
 class TeamPointDisplay {
   final String mark;

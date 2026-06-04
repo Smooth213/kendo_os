@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/domain/entities/program_model.dart' hide StrokeModel;
 import 'package:kendo_os/presentation/public/operator/match_screen.dart';
-import 'package:kendo_os/presentation/shared/widgets/timer_widget.dart';
+import 'package:kendo_os/shared/widgets/timer_widget.dart';
 import 'package:kendo_os/presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
 import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/presentation/operate/screens/program_viewer_screen.dart';

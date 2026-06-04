@@ -9,7 +9,7 @@ import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
 import '../helpers/test_match_factory.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/core/time/system_time_source.dart';
+import 'package:kendo_os/shared/time/system_time_source.dart';
 
 // 永続化層のモック（実際にデータを保持し、疑似的にクラッシュをシミュレートする）
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {

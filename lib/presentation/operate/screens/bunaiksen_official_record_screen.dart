@@ -10,10 +10,10 @@ import '../providers/match_rule_provider.dart';
 import 'package:kendo_os/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/domain/score/score_event.dart'; // Sideなどを利用
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../providers/settings_provider.dart';
 import '../providers/match_view_model_provider.dart';
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 class OfficialPointDisplay {
   final String mark;

@@ -9,12 +9,12 @@ import '../providers/bunaiksen_provider.dart';
 import '../providers/match_command_provider.dart';
 import 'package:kendo_os/application/usecases/match_application_service.dart'; // ★ 追加
 import 'package:kendo_os/domain/entities/player_model.dart';
-import '../../shared/widgets/smart_player_input.dart';
-import '../../shared/widgets/multi_player_select_input.dart'; // ★追加: 複数選択ウィジェット
-import '../../shared/widgets/liquid_background.dart';
-import '../../shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/smart_player_input.dart';
+import 'package:kendo_os/shared/widgets/multi_player_select_input.dart'; // ★追加: 複数選択ウィジェット
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 import '../providers/settings_provider.dart';
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
   const BunaiksenSetupScreen({super.key});

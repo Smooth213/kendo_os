@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 import '../../providers/settings_provider.dart';
 import '../../../../domain/entities/user_role.dart';
 import '../../../shared/providers/current_user_role_provider.dart';

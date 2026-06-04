@@ -8,10 +8,10 @@ import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/domain/services/team_match_calculator.dart';
 import 'viewer_kachinuki_scoreboard_screen.dart';
-import '../../shared/widgets/manual_help_button.dart'; // ファイル上部
-import '../../shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイル上部
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../../shared/providers/current_sync_context_provider.dart';
-import 'package:kendo_os/core/utils/name_formatter.dart';
+import 'package:kendo_os/shared/utils/name_formatter.dart';
 
 // ※ TeamPointDisplay クラスは削除されました（Projectionに統合されたため）
 

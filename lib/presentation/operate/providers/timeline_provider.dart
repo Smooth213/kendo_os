@@ -6,7 +6,7 @@ import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/domain/entities/timeline_item.dart';
 import 'package:kendo_os/domain/events/comment_event.dart'; // ★ 修正: 一本化された events 側の正しいパスへ完全同期
 import 'package:uuid/uuid.dart';
-import 'package:kendo_os/core/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 // ==========================================
 // 1. Local Repository Provider

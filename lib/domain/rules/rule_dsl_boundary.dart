@@ -1,5 +1,5 @@
 import 'package:kendo_os/domain/rules/tournament_rule_config.dart';
-import 'package:kendo_os/core/config/beta_feature_flags.dart';
+import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 
 // ==========================================
 // ★ Phase 12: DSL準備 (Domain-Specific Language)

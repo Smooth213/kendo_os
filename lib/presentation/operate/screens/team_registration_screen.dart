@@ -6,10 +6,10 @@ import 'package:kendo_os/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/domain/entities/player_model.dart';
 import 'package:kendo_os/infrastructure/repository/player_repository.dart';
 import '../providers/team_name_history_provider.dart'; // ★ 追加：履歴プロバイダ
-import 'package:kendo_os/core/utils/text_sanitizer.dart'; // ★ お掃除フィルターを追加
-import '../../shared/widgets/manual_help_button.dart';
-import '../../shared/widgets/liquid_background.dart';
-import '../../shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/utils/text_sanitizer.dart'; // ★ お掃除フィルターを追加
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 import '../providers/settings_provider.dart';
 
 // ★ 安定したProvider定義

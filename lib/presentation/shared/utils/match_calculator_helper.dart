@@ -2,7 +2,7 @@ import 'package:kendo_os/domain/match/match_model.dart';
 import 'package:kendo_os/domain/score/score_event.dart';
 import 'package:kendo_os/application/projections/match_projection.dart';
 import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/presentation/shared/widgets/match_tables/point_mark_badge.dart';
+import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 /// 試合データのパースや計算を補助する共通ヘルパー
 class MatchCalculatorHelper {

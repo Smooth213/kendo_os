@@ -4,10 +4,10 @@ import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // ★ 追加: ログアウト処理用
-import '../../shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
-import '../../shared/widgets/liquid_background.dart'; // ★ 追加
+import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
+import 'package:kendo_os/shared/widgets/liquid_background.dart'; // ★ 追加
 import '../../shared/providers/current_user_role_provider.dart';
-import '../../../core/security/feature_gate.dart';
+import 'package:kendo_os/security/feature_gate.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
