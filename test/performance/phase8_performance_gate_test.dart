@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/entities/program_model.dart';
-import 'package:kendo_os/presentation/operate/screens/standings_screen.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/domain/entities/program_model.dart';
+import 'package:kendo_os/features/tournament/presentation/screens/standings_screen.dart';
 
 void main() {
   group('🛡️ Phase 8 — 大規模性能試験・パフォーマンスゲート要塞', () {

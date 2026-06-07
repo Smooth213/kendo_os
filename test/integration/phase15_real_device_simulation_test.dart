@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/entities/program_model.dart' hide StrokeModel;
-import 'package:kendo_os/presentation/public/operator/match_screen.dart';
-import 'package:kendo_os/presentation/operate/screens/program_viewer_screen.dart';
-import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/infrastructure/repository/program_repository.dart';
-import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
-import 'package:kendo_os/presentation/shared/providers/current_user_role_provider.dart';
-import 'package:kendo_os/application/services/sound_service.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/domain/entities/program_model.dart'
+    hide StrokeModel;
+import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/program_viewer_screen.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/application/services/sound_service.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/test_app.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/infrastructure/repository/stroke_repository.dart';
-import 'package:kendo_os/domain/score/stroke_model.dart';
-import 'package:kendo_os/infrastructure/repository/local_stroke_repository.dart';
-import 'package:kendo_os/infrastructure/persistence/models/local_stroke_model.dart';
-import 'package:kendo_os/application/usecases/match_application_service.dart';
-import 'package:kendo_os/presentation/operate/providers/match_view_state_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart';
+import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repository.dart';
+import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_model.dart';
+import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 class FakeProgramRepository implements ProgramRepository {
   @override

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 // ★ 追加: 現在のアーキテクチャに適合したイベント生成アダプターを使用
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
   group('🛡️ Phase 5 — Firestore障害耐性·異常系耐久テスト要塞', () {

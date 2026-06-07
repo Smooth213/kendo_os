@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 class GlassButton extends ConsumerWidget {
   final VoidCallback? onPressed;

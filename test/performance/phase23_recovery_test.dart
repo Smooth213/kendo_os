@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
   group('🛡️ PHASE 23 — 災害復旧完全保証：物理境界を超えたデータ再構築', () {

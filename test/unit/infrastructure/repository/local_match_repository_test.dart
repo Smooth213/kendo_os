@@ -6,9 +6,9 @@ import 'package:isar_community/isar.dart';
 import 'dart:io';
 
 // ※ プロジェクトの実際のパスに合わせてインポートを調整してください
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
-import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 
 void main() {
   group('LocalMatchRepository (Isar Database) Tests', () {

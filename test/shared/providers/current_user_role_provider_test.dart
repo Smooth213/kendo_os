@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/entities/user_role.dart';
-import 'package:kendo_os/presentation/shared/providers/auth_session_provider.dart';
-import 'package:kendo_os/presentation/shared/providers/current_user_role_provider.dart';
-import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 void main() {
   group('🛡️ currentUserRoleProvider 完全ハイブリッド同期検証テスト', () {

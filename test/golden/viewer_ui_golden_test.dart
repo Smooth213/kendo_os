@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/viewer/screens/viewer_team_scoreboard_screen.dart';
 import '../helpers/test_app.dart';
 
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}

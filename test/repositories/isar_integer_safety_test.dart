@@ -111,13 +111,13 @@ void main() {
     });
 
     test('✅ 5. 全 .g.dart ファイルが制限内の整数を使用すること（包括テスト）', () async {
-      final modelDir = Directory('lib/infrastructure/persistence/models');
+      final modelDir = Directory('lib');
       if (!modelDir.existsSync()) {
-        fail('Models directory not found');
+        fail('lib directory not found');
       }
 
       final gDartFiles = modelDir
-          .listSync()
+          .listSync(recursive: true)
           .whereType<File>()
           .where((f) => f.path.endsWith('.g.dart'))
           .toList();

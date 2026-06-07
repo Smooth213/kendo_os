@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 import '../../../helpers/test_match_factory.dart'; // ★ 修正: ファイルを移動したため、階層を深く(../../..)戻るように修正
 
 void main() {

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/entities/role_permission.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/shared/domain/entities/role_permission.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
   group('🔒 Zero Trust Security Tests', () {

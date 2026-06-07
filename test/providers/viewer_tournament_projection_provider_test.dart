@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/entities/tournament_model.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provider.dart';
-import 'package:kendo_os/application/projections/tournament_projection.dart';
+import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/viewer/providers/viewer_view_state_provider.dart';
+import 'package:kendo_os/shared/application/projections/tournament_projection.dart';
 import 'dart:async';
 
 class FakeTournamentRepository implements TournamentRepository {

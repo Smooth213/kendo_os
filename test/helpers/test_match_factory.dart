@@ -1,8 +1,8 @@
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:uuid/uuid.dart';
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 /// ★ Step 0-3: テスト用の MatchModel や ScoreEvent を爆速で生成する工場
 class TestMatchFactory {

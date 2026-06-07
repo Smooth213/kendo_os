@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
   group('🛡️ PHASE 20 — 長時間運転要塞：10時間耐久試験', () {

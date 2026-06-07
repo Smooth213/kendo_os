@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/application/usecases/match_application_service.dart';
-import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/presentation/operate/providers/sync_provider.dart';
-import 'package:kendo_os/infrastructure/repository/sync_engine.dart'
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart'
     as new_sync;
-import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart';
-import 'package:kendo_os/infrastructure/repository/player_repository.dart';
-import 'package:kendo_os/domain/entities/player_model.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 // 部内戦機能で利用する選手マスタを取得する専用Provider
 final bunaiksenPlayerMasterProvider =

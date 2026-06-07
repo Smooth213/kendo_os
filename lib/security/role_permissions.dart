@@ -1,4 +1,4 @@
-import '../../domain/entities/user_role.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
 
 /// 画面ごとの権限判定の乱立を絶対禁止し、セキュリティポリシーを一元統治する集中管理クラス。
 class RolePermissions {

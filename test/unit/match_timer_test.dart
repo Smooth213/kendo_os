@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
   group('🛡️ STEP 2-3: MatchModel タイマー残り秒数・時間制御 ユニットテスト要塞', () {

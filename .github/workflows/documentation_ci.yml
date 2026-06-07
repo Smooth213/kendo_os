@@ -34,17 +34,17 @@ jobs:
       - name: 'Enforce Appliance Quality (Step 7-2: 用語・短文監査)'
         run: |
           echo "📝 マニュアルの家電メーカー品質（NG用語、長文）を自動監査します..."
-          dart run packages/governance_runtime/governance_lint/doc_style_linter.dart
+          dart run tools/governance/doc_style_linter.dart
 
       # ★ 修正: 隠れ地雷だった箇所も囲んで保護
       - name: 'Check UI and Screenshot Sync (Step 7-3: スクリーンショット存在・同期監査)'
         run: |
           echo "🔍 UIコードの変更と画像の同期、および画像欠落(Missing Image)を検証します..."
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
-          dart run packages/governance_runtime/governance_lint/doc_sync_validator.dart $CHANGED_FILES
+          dart run tools/governance/doc_sync_validator.dart $CHANGED_FILES
 
       - name: Run Full-text Search Indexer
-        run: dart run packages/governance_runtime/governance_lint/manual_indexer.dart
+        run: dart run tools/governance/manual_indexer.dart
 
       - name: Run PDF Export Pipeline
         run: |

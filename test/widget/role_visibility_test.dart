@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:kendo_os/domain/entities/user_role.dart';
-import 'package:kendo_os/presentation/operate/screens/start_screen.dart';
-import 'package:kendo_os/presentation/shared/providers/current_user_role_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/start_screen.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
   group('🔒 Stage2 β - 画面要素のロール別露出規制テスト', () {

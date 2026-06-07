@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/presentation/operate/providers/match_timer_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
 import 'package:kendo_os/shared/time/time_source.dart';
 
 class TimerWidget extends ConsumerWidget {

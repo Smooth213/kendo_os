@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/application/services/csv_service.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
+import 'package:kendo_os/shared/application/services/csv_service.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
   group('CsvService ユニットテスト', () {

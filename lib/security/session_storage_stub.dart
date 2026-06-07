@@ -1,4 +1,4 @@
-import '../../domain/entities/user_session.dart';
+import 'package:kendo_os/shared/domain/entities/user_session.dart';
 
 /// VM（テスト環境）など、Web APIが利用できないプラットフォームで
 /// 安全にコンパイルを通過させるためのスタブ実装

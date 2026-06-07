@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'pwa_storage_bridge.dart';
-import '../../domain/entities/user_session.dart';
+import 'package:kendo_os/shared/domain/entities/user_session.dart';
 
 /// 認証セッションをPWA環境へ安全に永続化・復元するインフラストレージ。
 class SessionStorage {

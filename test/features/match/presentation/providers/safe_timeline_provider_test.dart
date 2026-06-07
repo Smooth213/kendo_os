@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/presentation/operate/components/home/match_timeline_list.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 
 void main() {
   // テスト用のダミー試合データ

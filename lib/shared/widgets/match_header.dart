@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/presentation/operate/providers/match_timer_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
   final String matchId; // ★ IDのみに変更

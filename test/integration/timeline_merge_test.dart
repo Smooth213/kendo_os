@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/entities/match_comment_model.dart';
-import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 
 void main() {
   group('Timeline Merge Logic Test', () {

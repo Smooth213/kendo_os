@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/events/comment_event.dart'; // ★ 修正: 一本化された events 側の正しいパスへ完全同期
-import 'package:kendo_os/domain/entities/match_comment_model.dart';
+import 'package:kendo_os/features/match/domain/events/comment_event.dart'; // ★ 修正: 一本化された events 側の正しいパスへ完全同期
+import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 
 void main() {
   group('Phase 4: Timeline Replay & Merge Conflict Test', () {

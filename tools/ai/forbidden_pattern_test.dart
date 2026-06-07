@@ -31,7 +31,7 @@ void rogueFunction() {
 
         final result = await Process.run('dart', [
           'run',
-          'tools/governance_lint/forbidden_ast_detector.dart',
+          'tools/governance/forbidden_ast_detector.dart',
           tempFile.path,
         ]);
 
@@ -66,7 +66,7 @@ void compliantFunction() {
 
       final result = await Process.run('dart', [
         'run',
-        'tools/governance_lint/forbidden_ast_detector.dart',
+        'tools/governance/forbidden_ast_detector.dart',
         tempFile.path,
       ]);
 

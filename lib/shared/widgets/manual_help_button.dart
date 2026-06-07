@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kendo_os/presentation/shared/screens/embedded_manual_screen.dart';
+import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart';
 
 // ============================================================================
 // Appliance Quality SOS Button

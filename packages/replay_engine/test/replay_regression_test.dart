@@ -4,11 +4,11 @@
 // このテストが失敗するような変更（歴史的真実の破壊）は、いかなる理由があってもマージ禁止です。
 // ============================================================================
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
-import 'package:kendo_os/domain/match/match_context.dart'; // ★ 追加: MatchResultStatus のためにインポート
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/match/domain/match_context.dart'; // ★ 追加: MatchResultStatus のためにインポート
 import '../../../test/helpers/test_match_factory.dart';
 
 void main() {

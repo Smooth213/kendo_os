@@ -1,4 +1,4 @@
-import '../../domain/entities/user_role.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
 
 /// 端末が現在どの道場スペースに接続し、どの権限で、どの物理デバイスとして
 /// 稼働しているかを決定論的に一元保持する同期コンテキスト。

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // 🛡️ 補正：未使用の match_model.dart インポートを完全物理排除し、警告を撲滅
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/shared/widgets/action_buttons.dart';
 
 void main() {

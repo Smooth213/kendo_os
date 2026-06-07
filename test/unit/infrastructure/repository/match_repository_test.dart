@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
 // ※プロジェクトのパスに合わせてインポートを調整してください
-import 'package:kendo_os/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 
 void main() {
   group('Phase 1: MatchRepository Optimization Tests', () {

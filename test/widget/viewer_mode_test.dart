@@ -4,47 +4,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/entities/tournament_model.dart';
-import 'package:kendo_os/presentation/operate/providers/permission_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
-import 'package:kendo_os/infrastructure/repository/player_repository.dart';
-import 'package:kendo_os/infrastructure/repository/match_repository.dart';
-import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
-import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart';
-import 'package:kendo_os/presentation/viewer/screens/viewer_official_record_screen.dart';
-import 'package:kendo_os/presentation/public/viewer/viewer_match_screen.dart';
-import 'package:kendo_os/presentation/viewer/screens/viewer_team_scoreboard_screen.dart';
+import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
+import 'package:kendo_os/features/viewer/screens/viewer_official_record_screen.dart';
+import 'package:kendo_os/features/viewer/presentation/viewer_match_screen.dart';
+import 'package:kendo_os/features/viewer/screens/viewer_team_scoreboard_screen.dart';
 
 // ★ 追加：Projectionをモックするために必要なimport
-import 'package:kendo_os/domain/repositories/projection_store.dart';
-import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart';
-import 'package:kendo_os/application/projections/match_projection.dart';
-import 'package:kendo_os/application/projections/projection_store.dart'
+import 'package:kendo_os/shared/domain/repositories/projection_store.dart';
+import 'package:kendo_os/shared/infrastructure/repository/in_memory_projection_store.dart';
+import 'package:kendo_os/shared/application/projections/match_projection.dart';
+import 'package:kendo_os/shared/application/projections/projection_store.dart'
     as app_store;
 
 // ★ Phase 8: settingsProviderのモック用
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/domain/entities/settings_model.dart';
-import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/settings_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
-import 'package:kendo_os/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 // ★ 追加: セキュリティ・同期コンテキストのモック用（Firebase例外によるホワイトアウト防止）
-import 'package:kendo_os/presentation/shared/providers/auth_session_provider.dart';
-import 'package:kendo_os/presentation/shared/providers/current_user_role_provider.dart';
-import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
-import 'package:kendo_os/domain/entities/user_role.dart';
-import 'package:kendo_os/presentation/shared/providers/dojo_room_sync_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
 
 // ★ 追加: Firestoreを呼び出してしまうプロバイダのモック用
-import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_view_state_provider.dart';
+import 'package:kendo_os/features/viewer/providers/viewer_view_state_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
 
 // ★ 全テストのスクロール可視範囲問題を永続的に解消する安定化ヘルパー
 Future<void> tapVisible(WidgetTester tester, Key key) async {

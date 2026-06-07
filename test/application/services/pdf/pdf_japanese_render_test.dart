@@ -3,9 +3,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 // ★ 適合補正: エラーログから確定した実際の配置階層パスへ100%完全に同期
-import 'package:kendo_os/application/services/pdf/widgets/pdf_team_table.dart';
-import 'package:kendo_os/application/services/pdf/widgets/pdf_individual_list.dart';
-import 'package:kendo_os/domain/match/match_model.dart'; // ★ 追加: 本物のドメインオブジェクト型をロード
+import 'package:kendo_os/features/pdf/widgets/pdf_team_table.dart';
+import 'package:kendo_os/features/pdf/widgets/pdf_individual_list.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart'; // ★ 追加: 本物のドメインオブジェクト型をロード
 
 void main() {
   group('🛡️ [Phase 6-2] PDF 日本語レンダリング＆豆腐文字完全防止テスト', () {

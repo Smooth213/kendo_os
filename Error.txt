@@ -1,0 +1,16 @@
+The following plugins do not support Swift Package Manager for ios:
+  - syncfusion_flutter_pdfviewer
+  - printing
+  - isar_community_flutter_libs
+  - flutter_tts
+  - flutter_image_compress_common
+This will become an error in a future version of Flutter. Please contact the plugin maintainers to request Swift Package Manager adoption.
+The following plugins do not support Swift Package Manager for macos:
+  - syncfusion_pdfviewer_macos
+  - printing
+  - isar_community_flutter_libs
+  - flutter_tts
+  - flutter_image_compress_macos
+This will become an error in a future version of Flutter. Please contact the plugin maintainers to request Swift Package Manager adoption.
+Analyzing kendo_os...                                           
+No issues found! (ran in 8.6s)

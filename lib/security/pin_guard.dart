@@ -1,4 +1,4 @@
-import '../../domain/entities/user_role.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
 
 /// 現場での一般閲覧者による誤操作をランタイムレベルで水際防衛する簡易PINガード。
 class PinGuard {

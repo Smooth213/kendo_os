@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
   group('🛡️ PHASE 19 — 同時編集競合要塞：マルチデバイス同期', () {

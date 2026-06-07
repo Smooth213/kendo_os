@@ -1,5 +1,5 @@
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 // Step 3-1: Golden Replay Dataset
 // 複雑な試合展開（延長、反則、団体戦等）を網羅した「真実」のデータセット。

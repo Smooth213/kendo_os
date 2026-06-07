@@ -1,4 +1,4 @@
-import 'package:kendo_os/domain/match/match_model.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 
 class MatchBuilder {
   String _id = 'builder_match_default_001';

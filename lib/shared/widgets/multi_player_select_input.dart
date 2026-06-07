@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'smart_player_input.dart'; // マスタ取得用のプロバイダを参照するため
 
 class MultiPlayerSelectInput extends ConsumerStatefulWidget {

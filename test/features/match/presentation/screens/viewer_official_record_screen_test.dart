@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/application/projections/match_projection.dart';
-import 'package:kendo_os/application/projections/tournament_projection.dart';
-import 'package:kendo_os/domain/services/team_match_calculator.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart'; // for customTeamNamesProvider
-import 'package:kendo_os/presentation/viewer/providers/viewer_view_state_provider.dart';
-import 'package:kendo_os/presentation/viewer/screens/viewer_official_record_screen.dart';
-import 'package:kendo_os/domain/entities/settings_model.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
+import 'package:kendo_os/shared/application/projections/match_projection.dart';
+import 'package:kendo_os/shared/application/projections/tournament_projection.dart';
+import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // for customTeamNamesProvider
+import 'package:kendo_os/features/viewer/providers/viewer_view_state_provider.dart';
+import 'package:kendo_os/features/viewer/screens/viewer_official_record_screen.dart';
+import 'package:kendo_os/shared/domain/entities/settings_model.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override

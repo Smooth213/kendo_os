@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/application/usecases/match_usecases.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/domain/entities/role_permission.dart';
+import 'package:kendo_os/features/match/application/usecases/match_usecases.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 // ★ 修正: 古いヘルパーの代わりに、正しいSequenceを付与できるアダプターを使用する
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {

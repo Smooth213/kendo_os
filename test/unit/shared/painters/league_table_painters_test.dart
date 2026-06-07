@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:kendo_os/presentation/viewer/painters/league_table_painters.dart';
+import 'package:kendo_os/features/viewer/painters/league_table_painters.dart';
 
 void main() {
   group('🎨 League Table Painters Tests (描画レイヤー保護テスト)', () {

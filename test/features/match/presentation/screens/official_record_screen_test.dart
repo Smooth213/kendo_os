@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/presentation/public/operator/official_record_screen.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/permission_provider.dart';
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart'
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/official_record_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
     show customTeamNamesProvider, tournamentProvider;
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/domain/entities/settings_model.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override

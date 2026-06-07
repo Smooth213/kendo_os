@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
-import 'package:kendo_os/presentation/operate/providers/sync_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 
 // ウィジェットテスト中に未初期化のIsarタイマーや非同期バックグラウンド処理を走らせないためのダミーSyncEngine
 class MockSyncEngine implements SyncEngine {

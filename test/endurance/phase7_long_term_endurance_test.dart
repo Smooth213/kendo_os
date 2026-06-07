@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
   group('🛡️ Phase 7 — 長時間運営耐久・経時ストレステスト要塞', () {

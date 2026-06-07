@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
-import 'package:kendo_os/application/services/ai_help_service.dart';
+import 'package:kendo_os/shared/application/services/ai_help_service.dart';
 
 void main() {
   group('🛡️ [Phase 4] AI Runtime 完全封鎖検証テスト', () {

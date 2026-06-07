@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/presentation/operate/providers/role_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/sync_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart'; // ★ deadLetterQueueProvider を参照するために追加
-import 'package:kendo_os/presentation/shared/screens/embedded_manual_screen.dart'; // ★ Step 8-3: ヘルプ画面への遷移用
-import '../../../main.dart'; // ★ 追加: rootNavigatorKey を参照するため
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart'; // ★ deadLetterQueueProvider を参照するために追加
+import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart'; // ★ Step 8-3: ヘルプ画面への遷移用
+import 'package:kendo_os/main.dart'; // ★ 追加: rootNavigatorKey を参照するため
 
 class SyncStatusBar extends ConsumerWidget {
   const SyncStatusBar({super.key});

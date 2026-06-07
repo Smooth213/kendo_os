@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb用
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/application/usecases/match_usecases.dart'; // ★ 追加: UseCaseの参照
-import 'package:kendo_os/presentation/operate/providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/application/usecases/match_usecases.dart'; // ★ 追加: UseCaseの参照
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
 
 // ★ 追加: Scoreboard を const として扱うための Provider
 final scoreboardMatchIdProvider = Provider<String>(

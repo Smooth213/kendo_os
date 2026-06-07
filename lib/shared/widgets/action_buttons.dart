@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 
 class ScoreActionPanel extends ConsumerWidget {
   final String matchId;

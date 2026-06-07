@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/application/usecases/match_usecases.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/application/usecases/match_usecases.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import '../helpers/test_match_factory.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 

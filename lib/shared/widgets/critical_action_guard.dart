@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/security/pin_guard.dart';
-import '../../../domain/entities/user_role.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
 
 /// 大会全削除やマスタ破棄など、現場での取り返しのつかない誤操作（運用事故）を
 /// 「PINコードの再入力」によってランタイムレベルで水際ブロックするディフェンスWidget。

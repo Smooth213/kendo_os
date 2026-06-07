@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/application/services/sound_service.dart'; // ★ 追加
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/application/services/sound_service.dart'; // ★ 追加
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter/services.dart';

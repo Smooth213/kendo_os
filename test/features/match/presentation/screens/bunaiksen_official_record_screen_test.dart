@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/presentation/operate/providers/bunaiksen_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/presentation/operate/screens/bunaiksen_official_record_screen.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/screens/bunaiksen_official_record_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:kendo_os/presentation/operate/providers/match_view_model_provider.dart';
-import 'package:kendo_os/domain/entities/settings_model.dart';
+import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
+import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:go_router/go_router.dart';
 
 // モック用のSettingsNotifier

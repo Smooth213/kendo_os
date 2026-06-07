@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/entities/program_model.dart';
+import 'package:kendo_os/shared/domain/entities/program_model.dart';
 
 void main() {
   group('🛡️ PHASE 13 — PWA完全オフライン要塞・ブラウザレジリエンステスト', () {

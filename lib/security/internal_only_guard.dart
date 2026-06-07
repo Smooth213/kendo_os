@@ -1,4 +1,4 @@
-import '../../domain/entities/user_role.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'feature_gate.dart';
 
 /// 開発画面やダッシュボードへの進入をパケットレベル・UIレベルで水際ブロックする防衛ガード。

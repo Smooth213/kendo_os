@@ -2,15 +2,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
-import 'package:kendo_os/infrastructure/repository/tournament_repository.dart';
-import 'package:kendo_os/infrastructure/repository/player_repository.dart';
-import 'package:kendo_os/infrastructure/repository/team_repository.dart';
-import 'package:kendo_os/presentation/providers/internal/audit_provider.dart';
-import 'package:kendo_os/domain/entities/tournament_model.dart';
-import 'package:kendo_os/domain/entities/player_model.dart';
-import 'package:kendo_os/domain/entities/team_model.dart';
-import 'package:kendo_os/domain/entities/audit_log.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
+import 'package:kendo_os/admin/providers/audit_provider.dart';
+import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/domain/entities/team_model.dart';
+import 'package:kendo_os/shared/domain/entities/audit_log.dart';
 
 void main() {
   group('🛡️ マルチテナント（道場ID）隔離・同期不具合修正テスト要塞', () {

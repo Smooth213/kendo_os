@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/application/services/sound_service.dart';
+import 'package:kendo_os/shared/application/services/sound_service.dart';
 
 class FakeSoundService implements SoundService {
   @override

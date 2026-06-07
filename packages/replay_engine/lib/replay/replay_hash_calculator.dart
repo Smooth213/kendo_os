@@ -1,4 +1,4 @@
-import 'package:kendo_os/application/projections/match_projection.dart';
+import 'package:kendo_os/shared/application/projections/match_projection.dart';
 
 class ReplayHashCalculator {
   /// ★ Phase 2-2: Replay Hashの完全決定論的固定

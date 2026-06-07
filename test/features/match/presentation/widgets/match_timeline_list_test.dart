@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/presentation/operate/components/home/match_timeline_list.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/permission_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
-import 'package:kendo_os/application/usecases/match_application_service.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart'
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
+import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
     show
         tournamentProvider,
         customTeamNamesProvider,
         searchQueryProvider,
         isSearchVisibleProvider;
-import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 
 class FakeMatchApplicationService implements MatchApplicationService {
   List<MatchModel>? savedMatches;

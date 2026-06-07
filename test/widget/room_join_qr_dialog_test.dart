@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
-import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 void main() {
   group('🔒 現場安全弁 - 道場ルームID重複チェック＆警告ダイアログ検証テスト', () {

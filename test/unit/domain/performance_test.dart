@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 // ※testフォルダの構造に合わせてパスを調整（ここでは unit フォルダ内と想定）
 import '../../helpers/test_match_factory.dart';
 

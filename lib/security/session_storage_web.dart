@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:web/web.dart' as web;
-import '../../domain/entities/user_session.dart';
+import 'package:kendo_os/shared/domain/entities/user_session.dart';
 
 /// プロバイダー内部への直書きを禁止し、PWAの localStorage 永続化処理を隠蔽・一元統治する。
 class SessionStorage {

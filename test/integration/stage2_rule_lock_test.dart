@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
-import 'package:kendo_os/domain/match/match_context.dart';
-import 'package:kendo_os/domain/rules/standard_kendo_rules.dart';
-import 'package:kendo_os/domain/rules/rule_dsl_boundary.dart';
-import 'package:kendo_os/domain/rules/tournament_rule_config.dart';
-import 'package:kendo_os/presentation/internal/rule_config_panel.dart';
+import 'package:kendo_os/features/match/domain/match_context.dart';
+import 'package:kendo_os/features/match/domain/rules/standard_kendo_rules.dart';
+import 'package:kendo_os/features/match/domain/rules/rule_dsl_boundary.dart';
+import 'package:kendo_os/features/match/domain/rules/tournament_rule_config.dart';
+import 'package:kendo_os/admin/presentation/screens/rule_config_panel.dart';
 
 // テスト用のダミーコンテキスト
 class MockLimitScoringRule extends LimitScoringRule {

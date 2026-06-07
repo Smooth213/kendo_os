@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/entities/tournament_model.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
   group('🛡️ PHASE 18 — フルE2E要塞：大会運営シナリオ', () {

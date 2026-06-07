@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/user_role.dart';
-import '../../presentation/shared/providers/auth_session_provider.dart';
-import '../../presentation/shared/providers/current_user_role_provider.dart';
-import '../../presentation/shared/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 /// URLの直打ちや裏口からの特権画面進入をパケットレベルで監視・ブロックするルーティングゲート。
 class RouteGuard {

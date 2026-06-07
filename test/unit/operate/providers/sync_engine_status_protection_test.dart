@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/application/usecases/match_usecases.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/application/usecases/match_usecases.dart';
 
 // --------------------------------------------------
 // モック (Fake) クラスの定義

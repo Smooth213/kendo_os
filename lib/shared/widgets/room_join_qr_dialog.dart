@@ -2,9 +2,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:kendo_os/presentation/shared/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/security/pwa_storage_bridge.dart';
-import 'package:kendo_os/presentation/shared/providers/dojo_room_history_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
 
 // ★ テスト時にモック（FakeFirestore）を安全に注入するための専用Provider
 final roomFirestoreProvider = Provider<FirebaseFirestore>(

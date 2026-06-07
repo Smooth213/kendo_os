@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/match/match_state.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/match_state.dart';
 
 void main() {
   group('🛡️ Phase 1-5: MatchStateMachine Impossible State FSM Tests', () {

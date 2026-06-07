@@ -1,10 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/application/services/pdf/models/pdf_point_data.dart';
-import 'package:kendo_os/application/services/pdf/widgets/pdf_team_table.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/pdf/models/pdf_point_data.dart';
+import 'package:kendo_os/features/pdf/widgets/pdf_team_table.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 // Helper from pdf_league_table_test.dart

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 import 'package:kendo_os/shared/config/runtime_mode.dart';
-import 'package:kendo_os/presentation/match_router.dart';
+import 'package:kendo_os/shared/routing/match_router.dart';
 
 void main() {
   group('🛡️ [Phase 1] Feature Flag 完全統制セキュリティ検証テスト', () {

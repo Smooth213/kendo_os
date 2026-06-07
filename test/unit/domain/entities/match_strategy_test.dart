@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/services/match_strategy.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/services/match_strategy.dart';
 
 void main() {
   group('🛡️ MatchStrategy (試合ルールブック) の自動テスト', () {

@@ -3,7 +3,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:kendo_os/infrastructure/persistence/models/match_entity.dart';
+import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'dart:io';
 
 void main() {

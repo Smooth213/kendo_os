@@ -1,5 +1,5 @@
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 class HistoricEventsArchive {
   // Step 6-1: Golden Replay Archive

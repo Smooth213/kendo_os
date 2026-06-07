@@ -32,7 +32,7 @@ jobs:
         
       # --- PHASE 0: Documentation Audit ---
       - name: "📚 Step 1.5: Documentation Validator (Truth Check)"
-        run: dart run packages/governance_runtime/governance_lint/doc_validator.dart
+        run: dart run tools/governance/doc_validator.dart
 
       # --- PHASE 2: Screenshot Governance ---
       - name: "📸 Step 1.6: Screenshot Registry Audit"
@@ -59,14 +59,14 @@ jobs:
 
       # --- PHASE 7: Governance Integration ---
       - name: "🛡️ Step 1.10: Document Sync Validator (PR Audit)"
-        run: dart run packages/governance_runtime/governance_lint/doc_sync_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        run: dart run tools/governance/doc_sync_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
 
       # --- PHASE 1: Capability & Logic Audit ---
       - name: "🛡️ Step 2: AI Capability Check"
-        run: dart run packages/governance_runtime/governance_lint/capability_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        run: dart run tools/governance/capability_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: "🔍 Step 3: Governance Linter (API/State Audit)"
-        run: dart run packages/governance_runtime/governance_lint/lint.dart
+        run: dart run tools/governance/lint.dart
         
       - name: "🤖 Step 4: Validate Machine-readable YAML"
         run: dart run scripts/validate_governance_yaml.dart
@@ -77,18 +77,18 @@ jobs:
       # --- PHASE 2: Boundary & Drift Audit ---
       - name: "🕵️ Step 6: AI Output Diff Auditor (Boundary Audit)"
         id: auditor
-        run: dart run packages/governance_runtime/governance_lint/diff_analyzer.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        run: dart run tools/governance/diff_analyzer.dart ${{ steps.changed-files.outputs.all_changed_files }}
         
       - name: "🧪 Step 7: Semantic Drift Detector (Behavior Audit)"
-        run: dart run packages/governance_runtime/governance_lint/semantic_drift_detector.dart
+        run: dart run tools/governance/semantic_drift_detector.dart
         
       - name: "🛡️ Step 8: AI Sandbox Validator (Isolation Audit)"
-        run: dart run packages/governance_runtime/governance_lint/sandbox_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        run: dart run tools/governance/sandbox_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
         
       # --- PHASE 3: Risk Scoring & Reporting ---
       - name: "⚖️ Step 9: Governance Score Engine"
         id: score_engine
-        run: dart run packages/governance_runtime/governance_lint/score_engine.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        run: dart run tools/governance/score_engine.dart ${{ steps.changed-files.outputs.all_changed_files }}
         
       - name: "📝 Step 10: Unified Governance Report"
         if: github.event_name == 'pull_request'
@@ -118,14 +118,14 @@ jobs:
         
       - name: "🔐 Step 12: Governance Hardening & Security"
         run: |
-          dart run packages/governance_runtime/governance_lint/package_verifier.dart
-          dart run packages/governance_runtime/scripts/governance_backup.dart
+          dart run tools/governance/package_verifier.dart
+          dart run tools/governance/governance_backup.dart
         
       - name: "🏆 Step 13: Constitution Freeze Verification"
-        run: dart run scripts/final_chaos_replay.dart
+        run: dart run tools/final_chaos_replay.dart
         
       - name: "❄️ Step 14: Run Constitution Freeze Validator"
-        run: dart run packages/governance_runtime/governance_lint/freeze_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
+        run: dart run tools/governance/freeze_validator.dart ${{ steps.changed-files.outputs.all_changed_files }}
         env:
           # 動的評価によりVS Codeの静的解析器（Context access warning）を完全に無効化
           GOVERNANCE_HUMAN_TOKEN: ${{ fromJson(toJson(secrets))['GOVERNANCE_HUMAN_TOKEN'] }}

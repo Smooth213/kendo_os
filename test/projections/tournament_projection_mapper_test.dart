@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/entities/tournament_model.dart';
+import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 // 🛡️ 補正：未使用の tournament_projection.dart インポートを完全物理排除し、警告を撲滅
-import 'package:kendo_os/application/projections/match_projection.dart';
-import 'package:kendo_os/application/projections/tournament_projection_mapper.dart';
+import 'package:kendo_os/shared/application/projections/match_projection.dart';
+import 'package:kendo_os/shared/application/projections/tournament_projection_mapper.dart';
 
 void main() {
   group('🛡️ STEP 2-1: TournamentProjectionMapper 完全ユニットテスト要塞', () {

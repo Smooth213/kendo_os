@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // ★ 追加: ProviderContainer用
-import 'package:kendo_os/domain/match/match_model.dart'; // ★ 追加: MatchModel用
+import 'package:kendo_os/features/match/domain/match_model.dart'; // ★ 追加: MatchModel用
 
 // ============================================================================
 // Phase 7: Chaos & Operational Safety

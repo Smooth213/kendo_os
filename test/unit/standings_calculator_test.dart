@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/rules/match_rule.dart';
-import 'package:kendo_os/domain/services/standings_calculator.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/domain/services/standings_calculator.dart';
 
 void main() {
   group('🛡️ STEP 2-2: LeagueStandingsCalculator 全7パターン完全網羅テスト要塞', () {

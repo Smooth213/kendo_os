@@ -2,35 +2,35 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:kendo_os/presentation/operate/providers/match_provider.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/infrastructure/repository/match_repository.dart';
-import 'package:kendo_os/domain/entities/audit_log.dart';
-import 'package:kendo_os/presentation/providers/internal/audit_provider.dart';
-import 'package:kendo_os/application/services/sound_service.dart';
-import 'package:kendo_os/presentation/operate/providers/match_command_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/settings_provider.dart';
-import 'package:kendo_os/domain/entities/settings_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_provider.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/domain/entities/audit_log.dart';
+import 'package:kendo_os/admin/providers/audit_provider.dart';
+import 'package:kendo_os/shared/application/services/sound_service.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/settings_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import '../../../../helpers/test_match_factory.dart';
-import 'package:kendo_os/application/usecases/match_usecases.dart';
-import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/application/usecases/match_application_service.dart';
+import 'package:kendo_os/features/match/application/usecases/match_usecases.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 // ★ 追加: テスト用のモック追加
-import 'package:kendo_os/presentation/operate/providers/ui_message_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/sync_provider.dart';
-import 'package:kendo_os/infrastructure/repository/sync_engine.dart'
+import 'package:kendo_os/features/tournament/presentation/operate/providers/ui_message_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart'
     as new_sync;
 import 'package:kendo_os/shared/time/system_time_source.dart';
 // ★ 追加: ProjectionとIsarの警告を防ぐためのモック追加
-import 'package:kendo_os/application/projections/projection_store.dart'
+import 'package:kendo_os/shared/application/projections/projection_store.dart'
     as app_store;
-import 'package:kendo_os/domain/repositories/projection_store.dart'
+import 'package:kendo_os/shared/domain/repositories/projection_store.dart'
     as domain_store;
-import 'package:kendo_os/infrastructure/repository/in_memory_projection_store.dart'
+import 'package:kendo_os/shared/infrastructure/repository/in_memory_projection_store.dart'
     as in_memory_store;
-import 'package:kendo_os/application/projections/match_projection.dart';
+import 'package:kendo_os/shared/application/projections/match_projection.dart';
 
 class MockMatchRepository extends Mock implements MatchRepository {}
 

@@ -1,4 +1,4 @@
-import '../../domain/entities/user_role.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'security_level.dart';
 import 'role_permissions.dart';
 

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/domain/match/match_model.dart';
-import 'package:kendo_os/domain/score/score_event.dart';
-import 'package:kendo_os/presentation/operate/components/home/match_timeline_list.dart';
-import 'package:kendo_os/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 // ★ 適合修正: テスト環境から Isar 依存を完全パージするためのプロバイダインポート
-import 'package:kendo_os/presentation/operate/providers/timeline_provider.dart';
-import 'package:kendo_os/presentation/operate/screens/home_screen.dart';
-import 'package:kendo_os/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/presentation/public/viewer/viewer_home_screen.dart'
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart'
     as viewer;
 
 void main() {
