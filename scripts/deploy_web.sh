@@ -19,17 +19,17 @@ echo -e "${BLUE}==========================================${NC}"
 echo -e "${YELLOW}[1/4] Webビルド用の一時的なID置換を実行中...${NC}"
 # 🛡️ 補正：build_runnerによる復元不具合を物理断絶するため、確実に生ファイルをバックアップします
 mkdir -p .backup_g_dart
-cp lib/infrastructure/persistence/models/*.g.dart .backup_g_dart/
+cp lib/shared/infrastructure/persistence/models/*.g.dart .backup_g_dart/
 
 cat << 'EOF' > temp_id_hack.dart
 import 'dart:io';
 void main() {
   final files = [
-    'lib/infrastructure/persistence/models/match_entity.g.dart', 
-    'lib/infrastructure/persistence/models/local_stroke_model.g.dart',
-    'lib/infrastructure/persistence/models/match_comment_entity.g.dart',
-    'lib/infrastructure/persistence/models/match_command_entity.g.dart',
-    'lib/infrastructure/persistence/models/match_projection_entity.g.dart'
+    'lib/shared/infrastructure/persistence/models/match_entity.g.dart', 
+    'lib/shared/infrastructure/persistence/models/local_stroke_model.g.dart',
+    'lib/shared/infrastructure/persistence/models/match_comment_entity.g.dart',
+    'lib/shared/infrastructure/persistence/models/match_command_entity.g.dart',
+    'lib/shared/infrastructure/persistence/models/match_projection_entity.g.dart'
   ];
   int counter = 100;
   final regex = RegExp(r'id:\s*-?\d{10,20}'); // 全ての巨大IDを対象にする
@@ -62,7 +62,7 @@ fi
 # 4. ID復元 (物理バックアップからの確実な復元)
 echo -e "${YELLOW}[4/4] 設計図を本物の状態へ復元中 (Backup Restore)...${NC}"
 # 🛡️ 補正：build_runnerへの依存を全廃し、0秒で完全な元の状態（巨大ID）へロールバックします
-cp .backup_g_dart/*.g.dart lib/infrastructure/persistence/models/
+cp .backup_g_dart/*.g.dart lib/shared/infrastructure/persistence/models/
 rm -rf .backup_g_dart
 echo -e "${GREEN}✅ 物理復元完了${NC}"
 
