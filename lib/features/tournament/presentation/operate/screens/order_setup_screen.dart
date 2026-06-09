@@ -771,6 +771,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
                             // 並び替え可能なリスト
                             Container(
+                              clipBehavior: Clip.antiAlias,
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF1C1C1E)
@@ -778,72 +779,78 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(color: borderColor),
                               ),
-                              child: ReorderableListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: _leagueParticipants.length,
-                                onReorderItem: (oldIndex, newIndex) {
-                                  setState(() {
-                                    final item = _leagueParticipants.removeAt(
-                                      oldIndex,
-                                    );
-                                    _leagueParticipants.insert(newIndex, item);
-                                  });
-                                },
-                                itemBuilder: (context, index) {
-                                  final name = _leagueParticipants[index];
-                                  return ListTile(
-                                    key: ValueKey(name),
-                                    leading: CircleAvatar(
-                                      backgroundColor:
-                                          name.contains('自チーム') ||
-                                              name == rule.teamName
-                                          ? Colors.teal.shade100
-                                          : Colors.grey.shade200,
-                                      child: Text(
-                                        '${index + 1}',
-                                        style: TextStyle(
-                                          color: Colors.teal.shade900,
-                                          fontWeight: FontWeight.bold,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: ReorderableListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: _leagueParticipants.length,
+                                  onReorderItem: (oldIndex, newIndex) {
+                                    setState(() {
+                                      final item = _leagueParticipants.removeAt(
+                                        oldIndex,
+                                      );
+                                      _leagueParticipants.insert(
+                                        newIndex,
+                                        item,
+                                      );
+                                    });
+                                  },
+                                  itemBuilder: (context, index) {
+                                    final name = _leagueParticipants[index];
+                                    return ListTile(
+                                      key: ValueKey(name),
+                                      leading: CircleAvatar(
+                                        backgroundColor:
+                                            name.contains('自チーム') ||
+                                                name == rule.teamName
+                                            ? Colors.teal.shade100
+                                            : Colors.grey.shade200,
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            color: Colors.teal.shade900,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    title: Text(
-                                      name,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: textColor,
+                                      title: Text(
+                                        name,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: textColor,
+                                        ),
                                       ),
-                                    ),
-                                    trailing: const Icon(
-                                      Icons.drag_handle,
-                                      color: Colors.grey,
-                                    ),
-                                    onLongPress:
-                                        () {}, // ReorderableListViewのトリガー用
-                                    subtitle:
-                                        (name.contains('自チーム') ||
-                                            name == rule.teamName)
-                                        ? Text(
-                                            '（自チーム）',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: Colors.teal.shade700,
-                                            ),
-                                          )
-                                        : null,
-                                    onTap:
-                                        (name.contains('自チーム') ||
-                                            name == rule.teamName)
-                                        ? null
-                                        : () {
-                                            setState(
-                                              () => _leagueParticipants
-                                                  .removeAt(index),
-                                            );
-                                          },
-                                  );
-                                },
+                                      trailing: const Icon(
+                                        Icons.drag_handle,
+                                        color: Colors.grey,
+                                      ),
+                                      onLongPress:
+                                          () {}, // ReorderableListViewのトリガー用
+                                      subtitle:
+                                          (name.contains('自チーム') ||
+                                              name == rule.teamName)
+                                          ? Text(
+                                              '（自チーム）',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.teal.shade700,
+                                              ),
+                                            )
+                                          : null,
+                                      onTap:
+                                          (name.contains('自チーム') ||
+                                              name == rule.teamName)
+                                          ? null
+                                          : () {
+                                              setState(
+                                                () => _leagueParticipants
+                                                    .removeAt(index),
+                                              );
+                                            },
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                             const SizedBox(height: 32),

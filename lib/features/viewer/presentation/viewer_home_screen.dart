@@ -141,19 +141,6 @@ class ViewerHomeScreen extends ConsumerWidget {
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
-    if (kIsWeb) {
-      final currentTournamentId = ref.read(webCurrentTournamentIdProvider);
-      if (currentTournamentId != tournamentId) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(webCurrentTournamentIdProvider.notifier).state =
-              tournamentId;
-          debugPrint(
-            '🌐 [ViewerHomeScreen] Web direct route 用 currentTournamentId を設定: $tournamentId',
-          );
-        });
-      }
-    }
-
     try {
       // ★ 修正: activeMatchesProvider だとリーグ戦や勝ち抜き戦で最初の試合が終了すると
       // グループ全体がバナーから消えてしまう不具合があるため、専用の抽出ロジックに置き換え
@@ -1902,6 +1889,10 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                       int whiteWins = 0;
                                                                                       int whitePts = 0;
                                                                                       for (var m in bouts) {
+                                                                                        if (m.matchType ==
+                                                                                            '代表戦') {
+                                                                                          continue; // ★ 代表戦は合計に含めない
+                                                                                        }
                                                                                         final r = m.redScore;
                                                                                         final w = m.whiteScore;
                                                                                         redPts +=

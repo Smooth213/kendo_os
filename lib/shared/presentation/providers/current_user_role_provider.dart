@@ -1,19 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'auth_session_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 
 /// 既存の全画面・全テストとの完全互換性を100%維持しつつ、
 /// 体育館の電波瞬断やロードラグによる Viewer 強制遷移不具合を完全に封殺した、
 /// 鉄壁のハイブリッド権限統治プロバイダー。
 final currentUserRoleProvider = Provider<UserRole>((ref) {
-  // 1. URL/QRからの一時的な Viewer 置き換えを最優先で適用
-  final overrideRole = ref.watch(temporaryRoleOverrideProvider);
-  if (overrideRole == Role.viewer) {
-    return UserRole.viewer;
-  }
-
-  // 2. クラウドの Stream パケットを常に監視下に置く（リアクティブグラフの維持）
+  // 1. クラウドの Stream パケットを常に監視下に置く（リアクティブグラフの維持）
   final cloudRoleAsync = ref.watch(firestoreRoleStreamProvider);
   final localSession = ref.watch(authSessionProvider);
 
@@ -27,7 +20,7 @@ final currentUserRoleProvider = Provider<UserRole>((ref) {
     return localSession.role;
   }
 
-  // 3. ローカルが未認証、または一般Viewerの場合は、FirestoreのStreamからリアルタイム追従
+  // 2. ローカルが未認証、または一般Viewerの場合は、FirestoreのStreamからリアルタイム追従
   return cloudRoleAsync.when(
     data: (cloudRole) {
       ref.read(authSessionProvider.notifier).updateRoleFromCloud(cloudRole);

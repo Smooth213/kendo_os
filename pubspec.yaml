@@ -97,6 +97,7 @@ dev_dependencies:
   json_serializable: ^6.13.1
   fake_cloud_firestore: ^4.1.0+1
   mockito: ^5.6.4
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -137,3 +138,16 @@ flutter:
 # ★ Phase 9: SyncfusionとFlutter SDKの intl バージョン競合を強制解決
 dependency_overrides:
   intl: ^0.20.2
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  web:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+    background_color: "#1C1C1E"
+    theme_color: "#1C1C1E"
+  macos:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+  image_path: "assets/images/app_icon.png"

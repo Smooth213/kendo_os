@@ -987,6 +987,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
           const SizedBox(height: 16),
           Expanded(
             child: Container(
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
@@ -994,47 +995,50 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                 ),
               ),
-              child: _leagueParticipants.isEmpty
-                  ? Center(
-                      child: Text(
-                        '選手を追加してください',
-                        style: TextStyle(color: Colors.grey.shade500),
-                      ),
-                    )
-                  : ReorderableListView.builder(
-                      itemCount: _leagueParticipants.length,
-                      onReorderItem: (oldIndex, newIndex) {
-                        setState(() {
-                          final item = _leagueParticipants.removeAt(oldIndex);
-                          _leagueParticipants.insert(newIndex, item);
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        final p = _leagueParticipants[index];
-                        return ListTile(
-                          key: ValueKey(p),
-                          leading: CircleAvatar(
-                            backgroundColor: const Color(
-                              0xFF8B0000,
-                            ).withValues(alpha: 0.2),
-                            child: Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                color: Color(0xFF8B0000),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+              child: Material(
+                color: Colors.transparent,
+                child: _leagueParticipants.isEmpty
+                    ? Center(
+                        child: Text(
+                          '選手を追加してください',
+                          style: TextStyle(color: Colors.grey.shade500),
+                        ),
+                      )
+                    : ReorderableListView.builder(
+                        itemCount: _leagueParticipants.length,
+                        onReorderItem: (oldIndex, newIndex) {
+                          setState(() {
+                            final item = _leagueParticipants.removeAt(oldIndex);
+                            _leagueParticipants.insert(newIndex, item);
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final p = _leagueParticipants[index];
+                          return ListTile(
+                            key: ValueKey(p),
+                            leading: CircleAvatar(
+                              backgroundColor: const Color(
+                                0xFF8B0000,
+                              ).withValues(alpha: 0.2),
+                              child: Text(
+                                '${index + 1}',
+                                style: const TextStyle(
+                                  color: Color(0xFF8B0000),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                          title: Text(p),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.close, color: Colors.grey),
-                            onPressed: () =>
-                                setState(() => _leagueParticipants.remove(p)),
-                          ),
-                        );
-                      },
-                    ),
+                            title: Text(p),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.grey),
+                              onPressed: () =>
+                                  setState(() => _leagueParticipants.remove(p)),
+                            ),
+                          );
+                        },
+                      ),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -1142,6 +1146,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
           ),
           Expanded(
             child: Container(
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
@@ -1149,73 +1154,76 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                 ),
               ),
-              child: queue.isEmpty
-                  ? Center(
-                      child: Text(
-                        '選手を追加してください',
-                        style: TextStyle(color: Colors.grey.shade500),
-                      ),
-                    )
-                  : ReorderableListView.builder(
-                      itemCount: queue.length,
-                      onReorderItem: (oldIndex, newIndex) {
-                        ref
-                            .read(bunaiksenInfiniteQueueProvider.notifier)
-                            .reorder(oldIndex, newIndex);
-                      },
-                      itemBuilder: (context, index) {
-                        final p = queue[index];
-                        return ListTile(
-                          key: ValueKey(p),
-                          leading: CircleAvatar(
-                            backgroundColor: index < 2
-                                ? Colors.red.shade100
-                                : Colors.grey.shade300,
-                            child: Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                color: index < 2
-                                    ? Colors.red.shade800
-                                    : Colors.grey.shade700,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+              child: Material(
+                color: Colors.transparent,
+                child: queue.isEmpty
+                    ? Center(
+                        child: Text(
+                          '選手を追加してください',
+                          style: TextStyle(color: Colors.grey.shade500),
+                        ),
+                      )
+                    : ReorderableListView.builder(
+                        itemCount: queue.length,
+                        onReorderItem: (oldIndex, newIndex) {
+                          ref
+                              .read(bunaiksenInfiniteQueueProvider.notifier)
+                              .reorder(oldIndex, newIndex);
+                        },
+                        itemBuilder: (context, index) {
+                          final p = queue[index];
+                          return ListTile(
+                            key: ValueKey(p),
+                            leading: CircleAvatar(
+                              backgroundColor: index < 2
+                                  ? Colors.red.shade100
+                                  : Colors.grey.shade300,
+                              child: Text(
+                                '${index + 1}',
+                                style: TextStyle(
+                                  color: index < 2
+                                      ? Colors.red.shade800
+                                      : Colors.grey.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                          title: Text(
-                            p,
-                            style: TextStyle(
-                              fontWeight: index < 2
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                            title: Text(
+                              p,
+                              style: TextStyle(
+                                fontWeight: index < 2
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
                             ),
-                          ),
-                          subtitle: index == 0
-                              ? const Text(
-                                  '最初の赤選手',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.red,
-                                  ),
-                                )
-                              : index == 1
-                              ? const Text(
-                                  '最初の白選手',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.blueGrey,
-                                  ),
-                                )
-                              : null,
-                          trailing: IconButton(
-                            icon: const Icon(Icons.close, color: Colors.grey),
-                            onPressed: () => ref
-                                .read(bunaiksenInfiniteQueueProvider.notifier)
-                                .removePlayer(p),
-                          ),
-                        );
-                      },
-                    ),
+                            subtitle: index == 0
+                                ? const Text(
+                                    '最初の赤選手',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.red,
+                                    ),
+                                  )
+                                : index == 1
+                                ? const Text(
+                                    '最初の白選手',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.blueGrey,
+                                    ),
+                                  )
+                                : null,
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.grey),
+                              onPressed: () => ref
+                                  .read(bunaiksenInfiniteQueueProvider.notifier)
+                                  .removePlayer(p),
+                            ),
+                          );
+                        },
+                      ),
+              ),
             ),
           ),
           const SizedBox(height: 16),

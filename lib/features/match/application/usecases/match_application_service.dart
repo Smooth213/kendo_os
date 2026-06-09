@@ -29,6 +29,8 @@ import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/features/match/domain/services/match_domain_service.dart'; // ★ 追加
 import 'package:kendo_os/admin/providers/metrics_provider.dart'; // ★ 追加: メトリクス基盤
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // ★ 追加: Web環境での直接クエリ用
 
 // ==========================================
 // ★ ApplicationService設計：フローの完全集約と安全網
@@ -109,6 +111,77 @@ class MatchApplicationService {
     }
   }
 
+  // =========================================================================
+  // 🛡️ Webアプリ・スコア入力バグ完全修正パッチ
+  // Web環境では Isar をバイパスするため localRepo が null を返し、
+  // かつ matchListProvider が空になることがある。
+  // その場合、Firestore から直接最新の試合データを取得するヘルパーメソッド。
+  // =========================================================================
+  Future<MatchModel?> _getMatchSafely(String matchId) async {
+    final localRepo = _ref.read(localMatchRepositoryProvider);
+    MatchModel? match;
+    try {
+      match = await localRepo.getMatch(matchId);
+    } catch (_) {}
+
+    match ??= _ref
+        .read(matchListProvider)
+        .where((m) => m.id == matchId)
+        .firstOrNull;
+
+    if (match == null && kIsWeb) {
+      try {
+        final query = await FirebaseFirestore.instance
+            .collectionGroup('matches')
+            .where('id', isEqualTo: matchId)
+            .limit(1)
+            .get();
+        if (query.docs.isNotEmpty) {
+          final data = query.docs.first.data();
+          data['id'] = query.docs.first.id;
+
+          // Timestamp の安全な再帰的変換 (eventsの深い階層にある日付データも漏らさずパースする)
+          void safeConvertTimestamps(dynamic obj) {
+            if (obj is Map) {
+              for (var key in obj.keys.toList()) {
+                final value = obj[key];
+                if (value == null) continue;
+                if (value.runtimeType.toString() == 'Timestamp') {
+                  obj[key] = (value as Timestamp).toDate().toIso8601String();
+                } else {
+                  safeConvertTimestamps(value);
+                }
+              }
+            } else if (obj is List) {
+              for (int i = 0; i < obj.length; i++) {
+                final value = obj[i];
+                if (value == null) continue;
+                if (value.runtimeType.toString() == 'Timestamp') {
+                  obj[i] = (value as Timestamp).toDate().toIso8601String();
+                } else {
+                  safeConvertTimestamps(value);
+                }
+              }
+            }
+          }
+
+          safeConvertTimestamps(data);
+          match = MatchModel.fromJson(data);
+          debugPrint(
+            '🌐 [Web Sync] Firestoreから試合を復元成功: ${match.redName} vs ${match.whiteName}',
+          );
+        } else {
+          debugPrint(
+            '⚠️ [MatchApplicationService] Firestoreに試合データが存在しません: $matchId',
+          );
+        }
+      } catch (e, st) {
+        debugPrint('⚠️ [MatchApplicationService] Firestore直接取得エラー: $e\n$st');
+      }
+    }
+    return match;
+  }
+
   // --------------------------------------------------
   // 1. 一本入力フロー
   // --------------------------------------------------
@@ -119,13 +192,7 @@ class MatchApplicationService {
         // =========================================================================
         // 🛡️ 修正：Isarから直接最新状態を1件確実に取得（family化による型エラーを回避）
         // =========================================================================
-        final localRepo = _ref.read(localMatchRepositoryProvider);
-        final initialMatch =
-            await localRepo.getMatch(matchId) ??
-            _ref
-                .read(matchListProvider)
-                .where((m) => m.id == matchId)
-                .firstOrNull;
+        final initialMatch = await _getMatchSafely(matchId);
         if (initialMatch == null) {
           return;
         }
@@ -230,13 +297,7 @@ class MatchApplicationService {
         // =========================================================================
         // 🛡️ 修正：Isarから直接最新状態を1件確実に取得（family化による型エラーを回避）
         // =========================================================================
-        final localRepo = _ref.read(localMatchRepositoryProvider);
-        final initialMatch =
-            await localRepo.getMatch(matchId) ??
-            _ref
-                .read(matchListProvider)
-                .where((m) => m.id == matchId)
-                .firstOrNull;
+        final initialMatch = await _getMatchSafely(matchId);
         if (initialMatch == null) {
           return;
         }
@@ -332,13 +393,7 @@ class MatchApplicationService {
         // =========================================================================
         // 🛡️ 修正：Isarから直接最新状態を1件確実に取得（family化による型エラーを回避）
         // =========================================================================
-        final localRepo = _ref.read(localMatchRepositoryProvider);
-        final initialMatch =
-            await localRepo.getMatch(matchId) ??
-            _ref
-                .read(matchListProvider)
-                .where((m) => m.id == matchId)
-                .firstOrNull;
+        final initialMatch = await _getMatchSafely(matchId);
 
         if (initialMatch == null) {
           return;
@@ -442,7 +497,9 @@ class MatchApplicationService {
       id: const Uuid().v4(),
       matchId: match.id,
       version: match.events.length,
-      state: match,
+      // ★ 修正: スナップショットの無限ネスト（マトリョーシカ現象）による
+      // データ肥大化と Firestore保存エラー(invalid nested entity)を完全に防ぐ
+      state: match.copyWith(snapshots: const []),
       createdAt: DateTime.now(),
       reason: reason,
       events: List.from(match.events),
@@ -461,10 +518,7 @@ class MatchApplicationService {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(
       () async {
-        final match = _ref
-            .read(matchListProvider)
-            .where((m) => m.id == matchId)
-            .firstOrNull;
+        final match = await _getMatchSafely(matchId);
         if (match == null) {
           return;
         }
@@ -520,11 +574,17 @@ class MatchApplicationService {
   // --------------------------------------------------
   Future<void> saveMatch(MatchModel match) async {
     await _safeExecute(() async {
+      final dojoId = _ref.read(currentDojoIdProvider); // ★ 現在のテナント(道場)IDを取得
       // 既存の match.id が空の場合は UUID を自動生成して重複保存を防ぐ
       final matchWithId = match.id.isEmpty
           ? match.copyWith(id: const Uuid().v4())
           : match;
       final matchToSave = matchWithId.copyWith(
+        organizationId:
+            (matchWithId.organizationId == 'default_org' ||
+                matchWithId.organizationId.isEmpty)
+            ? dojoId
+            : matchWithId.organizationId, // ★ テナントIDを強制セット
         syncState: SyncState.localOnly,
         lastUpdatedAt: DateTime.now(),
       );
@@ -535,6 +595,23 @@ class MatchApplicationService {
         debugPrint(
           '🌐 [MatchApplicationService] Webモード: Firestoreへ直接保存します (matchId: ${matchToSave.id})',
         );
+
+        // ★ 追加: メモリ上のキャッシュを直接更新して即時反映させる (オプティミスティックUI更新)
+        final currentMatches = _ref.read(webCurrentTournamentMatchesProvider);
+        final index = currentMatches.indexWhere((m) => m.id == matchToSave.id);
+        if (index != -1) {
+          final newMatches = List<MatchModel>.from(currentMatches);
+          newMatches[index] = matchToSave;
+          _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+              newMatches;
+        } else {
+          _ref.read(webCurrentTournamentMatchesProvider.notifier).state = [
+            ...currentMatches,
+            matchToSave,
+          ];
+        }
+
+        // 通信を待たずにUIが更新された後、バックグラウンドでFirestoreへ保存する
         await _ref.read(matchRepositoryProvider).saveMatch(matchToSave);
         debugPrint('🌐 [MatchApplicationService] Webモード: Firestore直接保存完了');
       } else {
@@ -565,6 +642,9 @@ class MatchApplicationService {
         // 🛡️ Phase 1 補正：旧型 syncNow() を新設の自律再送 processQueue() へ結合
         // =========================================================================
         _ref.read(syncEngineProvider).processQueue();
+
+        // ★ 追加: メモリ上のリストを強制最新化し、新規作成した試合を即座にUIへ表示させる
+        _ref.invalidate(matchListProvider);
       }
     }, '保存に失敗しました');
   }
@@ -573,11 +653,17 @@ class MatchApplicationService {
   Future<void> saveMatchesBulk(List<MatchModel> newMatches) async {
     await _safeExecute(() async {
       if (newMatches.isEmpty) return;
+      final dojoId = _ref.read(currentDojoIdProvider); // ★ 現在のテナント(道場)IDを取得
 
       // ★ 修正: 一括保存時にも確実に syncState を localOnly に設定して、SyncEngineの対象にする！
       final preparedMatches = newMatches.map((m) {
         final mWithId = m.id.isEmpty ? m.copyWith(id: const Uuid().v4()) : m;
         return mWithId.copyWith(
+          organizationId:
+              (mWithId.organizationId == 'default_org' ||
+                  mWithId.organizationId.isEmpty)
+              ? dojoId
+              : mWithId.organizationId, // ★ テナントIDを強制セット
           syncState: SyncState.localOnly,
           lastUpdatedAt: DateTime.now(),
         );
@@ -589,6 +675,21 @@ class MatchApplicationService {
         debugPrint(
           '🌐 [MatchApplicationService] Webモード: Firestoreへ一括保存します (${preparedMatches.length}件)',
         );
+
+        // ★ 追加: オプティミスティックUI更新
+        var currentMatches = _ref.read(webCurrentTournamentMatchesProvider);
+        var newMatches = List<MatchModel>.from(currentMatches);
+        for (final m in preparedMatches) {
+          final index = newMatches.indexWhere((em) => em.id == m.id);
+          if (index != -1) {
+            newMatches[index] = m;
+          } else {
+            newMatches.add(m);
+          }
+        }
+        _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+            newMatches;
+
         for (final m in preparedMatches) {
           await _ref.read(matchRepositoryProvider).saveMatch(m);
         }
@@ -623,49 +724,38 @@ class MatchApplicationService {
         // 🛡️ Phase 1 補正：旧型 syncNow() を新設の自律再送 processQueue() へ結合
         // =========================================================================
         _ref.read(syncEngineProvider).processQueue();
+
+        // ★ 追加: メモリ上のリストを強制最新化し、新規作成した試合を即座にUIへ表示させる
+        _ref.invalidate(matchListProvider);
       }
     }, '一括保存に失敗しました');
   }
 
   Future<void> _saveAndSync(MatchModel match) async {
-    // =========================================================================
-    // 🛡️ Webアプリ・スコア入力不具合修正パッチ（ロードマップの思想を完全維持）
-    // Flutter Web環境（kIsWeb == true）のときは、Isarへの書き込みを安全にスキップし、
-    // 即座に直接クラウドへ同期させて UI のリアクティブ描画を点火させます。
-    // =========================================================================
-    if (kIsWeb) {
-      debugPrint(
-        '🌐 [Web Score Input Bypass] Web環境のため、Isarをバイパスしてクラウドへダイレクトに入力を伝播します: ${match.id}',
-      );
-      try {
-        final remoteRepository = _ref.read(matchRepositoryProvider);
-        await remoteRepository.saveMatch(match);
-      } catch (e) {
-        debugPrint('⚠️ [Web Direct Sync Error] クラウドへの即時スコア保存に失敗しました: $e');
-      }
-      return; // Web環境の処理はここで安全に終了（シミュレータ用のIsar防衛線には一切侵入させない）
-    }
+    if (!kIsWeb) {
+      // 🍏 ネイティブ環境（シミュレータ・iPad実機アプリ）の最強ローカルファースト防衛線は1文字も崩さず100%維持
+      final localRepo = _ref.read(localMatchRepositoryProvider);
 
-    // 🍏 ネイティブ環境（シミュレータ・iPad実機アプリ）の最強ローカルファースト防衛線は1文字も崩さず100%維持
-    final localRepo = _ref.read(localMatchRepositoryProvider);
-
-    final existingLocal = await localRepo.getMatch(match.id);
-    if (existingLocal != null) {
-      if ((existingLocal.events.length) > match.events.length) {
-        debugPrint(
-          '🛡️ [Conflict Resolution] 既存のローカルデータの方が新しいため、競合上書きをスキップしました: ${match.id}',
-        );
-        return;
+      final existingLocal = await localRepo.getMatch(match.id);
+      if (existingLocal != null) {
+        if ((existingLocal.events.length) > match.events.length) {
+          debugPrint(
+            '🛡️ [Conflict Resolution] 既存のローカルデータの方が新しいため、競合上書きをスキップしました: ${match.id}',
+          );
+          return;
+        }
       }
     }
 
     await saveMatch(match);
 
-    try {
-      final isarProjectionStore = _ref.read(isarProjectionStoreProvider);
-      await isarProjectionStore.saveMatchProjection(match);
-    } catch (e) {
-      debugPrint('⚠️ [Projection Cache] Isar Projection の書き込み失敗: $e');
+    if (!kIsWeb) {
+      try {
+        final isarProjectionStore = _ref.read(isarProjectionStoreProvider);
+        await isarProjectionStore.saveMatchProjection(match);
+      } catch (e) {
+        debugPrint('⚠️ [Projection Cache] Isar Projection の書き込み失敗: $e');
+      }
     }
   }
 
@@ -673,10 +763,7 @@ class MatchApplicationService {
   // ★ Phase 3: スコアラー権限（有効期限付きロック機構）
   // --------------------------------------------------
   Future<bool> claimScorer(String matchId, String userId) async {
-    final match = _ref
-        .read(matchListProvider)
-        .where((m) => m.id == matchId)
-        .firstOrNull;
+    final match = await _getMatchSafely(matchId);
     if (match == null) return false;
 
     final now = DateTime.now();
@@ -694,20 +781,14 @@ class MatchApplicationService {
   }
 
   Future<void> releaseScorer(String matchId, String userId) async {
-    final match = _ref
-        .read(matchListProvider)
-        .where((m) => m.id == matchId)
-        .firstOrNull;
+    final match = await _getMatchSafely(matchId);
     if (match != null && match.scorerId == userId) {
       await saveMatch(match.copyWith(scorerId: null, lockExpiresAt: null));
     }
   }
 
   Future<void> forceClaimScorer(String matchId, String userId) async {
-    final match = _ref
-        .read(matchListProvider)
-        .where((m) => m.id == matchId)
-        .firstOrNull;
+    final match = await _getMatchSafely(matchId);
     if (match == null) return;
 
     final expiresAt = DateTime.now().add(const Duration(minutes: 30));
@@ -721,10 +802,7 @@ class MatchApplicationService {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(
       () async {
-        final match = _ref
-            .read(matchListProvider)
-            .where((m) => m.id == matchId)
-            .firstOrNull;
+        final match = await _getMatchSafely(matchId);
         if (match == null) {
           return;
         }
@@ -739,13 +817,7 @@ class MatchApplicationService {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(
       () async {
-        final localRepo = _ref.read(localMatchRepositoryProvider);
-        final match =
-            await localRepo.getMatch(matchId) ??
-            _ref
-                .read(matchListProvider)
-                .where((m) => m.id == matchId)
-                .firstOrNull;
+        final match = await _getMatchSafely(matchId);
         if (match == null) {
           return;
         }
@@ -772,13 +844,7 @@ class MatchApplicationService {
     final traceId = const Uuid().v4(); // ★ Phase 2-3: トレースID発行
     await _safeExecute(
       () async {
-        final localRepo = _ref.read(localMatchRepositoryProvider);
-        final match =
-            await localRepo.getMatch(matchId) ??
-            _ref
-                .read(matchListProvider)
-                .where((m) => m.id == matchId)
-                .firstOrNull;
+        final match = await _getMatchSafely(matchId);
         if (match == null) {
           return;
         }

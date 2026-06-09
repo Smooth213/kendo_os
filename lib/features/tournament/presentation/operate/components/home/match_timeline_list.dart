@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
@@ -23,7 +24,16 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
+import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'tournament_header_card.dart';
+
+// ★ 画面間で共有する状態をここに集約
+final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
+final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
+final isSearchVisibleProvider = StateProvider.autoDispose<bool>((ref) => false);
+final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
+  return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
+});
 
 // =========================================================================
 // 🛡️ Webアプリ・リスト消失バグ完全修正パッチ
@@ -41,85 +51,99 @@ typedef SafeTimelineResult = ({
   String? errorMessage,
 });
 
-final safeTimelineProvider = Provider.family.autoDispose<SafeTimelineResult, String>((
-  ref,
-  String tournamentId,
-) {
-  final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
+final safeTimelineProvider = Provider.family
+    .autoDispose<SafeTimelineResult, String>((ref, String tournamentId) {
+      // ★ 修正: ネイティブ(Isar)とWeb(Firestore)でデータソースを最適化し、完全な仕様一致(即時反映)を実現します
+      List<MatchModel> matches = [];
+      bool isLoading = false;
+      bool hasError = false;
+      String? errorMessage;
 
-  final bool hasError = asyncMatches.hasError;
-  final String? errorMessage = asyncMatches.error?.toString();
+      if (kIsWeb) {
+        final asyncMatches = ref.watch(
+          matchListByTournamentProvider(tournamentId),
+        );
+        hasError = asyncMatches.hasError;
+        errorMessage = asyncMatches.error?.toString();
+        isLoading = asyncMatches.isLoading;
+        matches = List<MatchModel>.from(asyncMatches.valueOrNull ?? []);
+      } else {
+        // ネイティブアプリ(iOS/Android)はIsarから0ミリ秒で同期取得
+        matches = ref
+            .watch(matchListProvider)
+            .where((m) => m.tournamentId == tournamentId)
+            .toList();
+      }
 
-  if (hasError) {
-    debugPrint('🚨 [safeTimelineProvider] エラーを検知しました: $errorMessage');
-  } else if (!asyncMatches.isLoading) {
-    debugPrint(
-      '📊 [safeTimelineProvider] 試合リスト抽出完了: ${asyncMatches.valueOrNull?.length ?? 0} 件',
-    );
-    if ((asyncMatches.valueOrNull?.length ?? 0) == 0) {
-      debugPrint(
-        '🤔 [safeTimelineProvider] 試合が0件です。クラウド側でデータが作成されていないか、検索クエリ・大会IDの不一致の可能性があります。',
-      );
-    }
-  }
-
-  final matches = List<MatchModel>.from(asyncMatches.valueOrNull ?? [])
-    ..sort((a, b) => a.order.compareTo(b.order));
-
-  final searchQuery = ref
-      .watch(searchQueryProvider)
-      .replaceAll(RegExp(r'\s+'), '')
-      .toLowerCase();
-  final isSortAscending = ref.watch(categorySortProvider);
-
-  final matchedGroupNames = <String>{};
-  final matchedMatchIds = <String>{};
-
-  if (searchQuery.isNotEmpty) {
-    for (var m in matches) {
-      final rName = m.redName.replaceAll(RegExp(r'\s+'), '').toLowerCase();
-      final wName = m.whiteName.replaceAll(RegExp(r'\s+'), '').toLowerCase();
-      if (rName.contains(searchQuery) || wName.contains(searchQuery)) {
-        matchedMatchIds.add(m.id);
-        if (m.groupName != null && m.groupName!.isNotEmpty) {
-          matchedGroupNames.add(m.groupName!);
+      if (hasError) {
+        debugPrint('🚨 [safeTimelineProvider] エラーを検知しました: $errorMessage');
+      } else if (!isLoading) {
+        debugPrint('📊 [safeTimelineProvider] 試合リスト抽出完了: ${matches.length} 件');
+        if (matches.isEmpty) {
+          debugPrint(
+            '🤔 [safeTimelineProvider] 試合が0件です。クラウド側でデータが作成されていないか、検索クエリ・大会IDの不一致の可能性があります。',
+          );
         }
       }
-    }
-  }
 
-  final categoryMap = <String, List<MatchModel>>{};
-  for (var m in matches) {
-    if (searchQuery.isNotEmpty) {
-      bool isMatch =
-          matchedMatchIds.contains(m.id) ||
-          (m.groupName != null && matchedGroupNames.contains(m.groupName!));
-      if (!isMatch) continue;
-    }
-    final cat = (m.category != null && m.category!.isNotEmpty)
-        ? m.category!
-        : '未分類';
-    categoryMap.putIfAbsent(cat, () => []).add(m);
-  }
+      matches.sort((a, b) => a.order.compareTo(b.order));
 
-  final entries = categoryMap.entries.toList();
-  entries.sort((a, b) {
-    if (isSortAscending) {
-      return a.key.compareTo(b.key);
-    } else {
-      return b.key.compareTo(a.key);
-    }
-  });
+      final searchQuery = ref
+          .watch(searchQueryProvider)
+          .replaceAll(RegExp(r'\s+'), '')
+          .toLowerCase();
+      final isSortAscending = ref.watch(categorySortProvider);
 
-  return (
-    entries: entries,
-    matchedGroupNames: matchedGroupNames,
-    matchedMatchIds: matchedMatchIds,
-    isLoading: asyncMatches.isLoading,
-    hasError: hasError,
-    errorMessage: errorMessage,
-  );
-});
+      final matchedGroupNames = <String>{};
+      final matchedMatchIds = <String>{};
+
+      if (searchQuery.isNotEmpty) {
+        for (var m in matches) {
+          final rName = m.redName.replaceAll(RegExp(r'\s+'), '').toLowerCase();
+          final wName = m.whiteName
+              .replaceAll(RegExp(r'\s+'), '')
+              .toLowerCase();
+          if (rName.contains(searchQuery) || wName.contains(searchQuery)) {
+            matchedMatchIds.add(m.id);
+            if (m.groupName != null && m.groupName!.isNotEmpty) {
+              matchedGroupNames.add(m.groupName!);
+            }
+          }
+        }
+      }
+
+      final categoryMap = <String, List<MatchModel>>{};
+      for (var m in matches) {
+        if (searchQuery.isNotEmpty) {
+          bool isMatch =
+              matchedMatchIds.contains(m.id) ||
+              (m.groupName != null && matchedGroupNames.contains(m.groupName!));
+          if (!isMatch) continue;
+        }
+        final cat = (m.category != null && m.category!.isNotEmpty)
+            ? m.category!
+            : '未分類';
+        categoryMap.putIfAbsent(cat, () => []).add(m);
+      }
+
+      final entries = categoryMap.entries.toList();
+      entries.sort((a, b) {
+        if (isSortAscending) {
+          return a.key.compareTo(b.key);
+        } else {
+          return b.key.compareTo(a.key);
+        }
+      });
+
+      return (
+        entries: entries,
+        matchedGroupNames: matchedGroupNames,
+        matchedMatchIds: matchedMatchIds,
+        isLoading: isLoading,
+        hasError: hasError,
+        errorMessage: errorMessage,
+      );
+    });
 
 class MatchTimelineList extends ConsumerWidget {
   final String tournamentId;
@@ -129,6 +153,8 @@ class MatchTimelineList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final permissions = ref.watch(permissionProvider);
+    final bool isReadOnlyUI = permissions.isReadOnly;
+    final bool canManageTournamentUI = permissions.canManageTournament;
 
     final comments = ref.watch(commentStreamProvider(tournamentId)).value ?? [];
 
@@ -503,8 +529,15 @@ class MatchTimelineList extends ConsumerWidget {
 
                   final actualGroupedMatches = <String, List<MatchModel>>{};
                   for (var entry in catGroupedMatches.entries) {
-                    if (entry.value.length > 1 ||
-                        entry.value.first.isKachinuki) {
+                    final firstMatch = entry.value.first;
+                    // 選手・個人戦と明示されている性質のものは、件数に関わらず確実に個人戦アコーディオンへ強制パージ
+                    final bool isPureIndividual =
+                        firstMatch.matchType == 'individual' ||
+                        firstMatch.matchType == '選手' ||
+                        firstMatch.matchType.contains('個人戦');
+
+                    if (!isPureIndividual &&
+                        (entry.value.length > 1 || firstMatch.isKachinuki)) {
                       actualGroupedMatches[entry.key] = entry.value;
                     } else {
                       catIndividualMatches.addAll(entry.value);
@@ -635,7 +668,7 @@ class MatchTimelineList extends ConsumerWidget {
                                 ),
                               ),
 
-                              if (!permissions.isReadOnly) ...[
+                              if (!isReadOnlyUI) ...[
                                 IconButton(
                                   icon: Icon(
                                     Icons.add_comment,
@@ -669,7 +702,7 @@ class MatchTimelineList extends ConsumerWidget {
                                     );
                                   },
                                 ),
-                                if (permissions.canManageTournament)
+                                if (canManageTournamentUI)
                                   IconButton(
                                     icon: Icon(
                                       Icons.edit_note,
@@ -732,11 +765,9 @@ class MatchTimelineList extends ConsumerWidget {
                             return ReorderableListView(
                               shrinkWrap: true,
                               // ★ 修正: 閲覧専用の時はドラッグの物理的な動きを完全にロックし、誤タップによるブレを完全防止
-                              physics: permissions.isReadOnly
-                                  ? const NeverScrollableScrollPhysics()
-                                  : const NeverScrollableScrollPhysics(),
-                              buildDefaultDragHandles: !permissions
-                                  .isReadOnly, // ★ 追加: 閲覧モードの時はドラッグ用のハンドルをつまませない
+                              physics: const NeverScrollableScrollPhysics(),
+                              buildDefaultDragHandles:
+                                  !isReadOnlyUI, // ★ 追加: 閲覧モードの時はドラッグ用のハンドルをつまませない
                               onReorderItem: (oldIndex, newIndex) =>
                                   _onReorderTimeline(
                                     timelineItems,
@@ -793,17 +824,6 @@ class MatchTimelineList extends ConsumerWidget {
                                             ],
                                           ),
                                         );
-
-                                        if (!permissions.canManageTournament) {
-                                          return Container(
-                                            key: ValueKey('comment_${c.id}'),
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 8,
-                                            ),
-                                            child: commentWidget,
-                                          );
-                                        }
 
                                         return Container(
                                           key: ValueKey('comment_${c.id}'),
@@ -990,14 +1010,6 @@ class MatchTimelineList extends ConsumerWidget {
                                               m.status == 'finished' ||
                                               m.status == 'approved',
                                         );
-
-                                        final Color cardBg = allFinished
-                                            ? (isDark
-                                                  ? const Color(0xFF161618)
-                                                  : Colors.grey.shade100)
-                                            : (isDark
-                                                  ? const Color(0xFF1C1C1E)
-                                                  : Colors.white);
                                         final Color titleColor = allFinished
                                             ? (isDark
                                                   ? Colors.grey.shade600
@@ -1030,8 +1042,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                   key: ValueKey(
                                                     'group_${entry.key}',
                                                   ),
-                                                  enabled: permissions
-                                                      .canManageTournament,
+                                                  enabled:
+                                                      canManageTournamentUI,
                                                   endActionPane: ActionPane(
                                                     motion:
                                                         const ScrollMotion(),
@@ -1190,1572 +1202,1611 @@ class MatchTimelineList extends ConsumerWidget {
                                                           BorderRadius.circular(
                                                             11,
                                                           ),
-                                                      child: ExpansionTile(
-                                                        collapsedBackgroundColor:
-                                                            cardBg,
-                                                        backgroundColor: cardBg,
-                                                        title: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            // 🔼 【1行目】: 運営系ボタン・メモ一元化ライン
-                                                            Row(
-                                                              children: [
-                                                                if (firstMatch
-                                                                    .note
-                                                                    .isNotEmpty)
-                                                                  Expanded(
-                                                                    child: Padding(
-                                                                      padding:
-                                                                          const EdgeInsets.only(
-                                                                            right:
-                                                                                6,
-                                                                          ),
-                                                                      child: Text(
-                                                                        firstMatch
-                                                                            .note,
-                                                                        style: TextStyle(
-                                                                          fontSize:
-                                                                              11,
-                                                                          color:
-                                                                              subTitleColor,
-                                                                          fontWeight:
-                                                                              FontWeight.bold,
-                                                                        ),
-                                                                        overflow:
-                                                                            TextOverflow.ellipsis,
-                                                                        maxLines:
-                                                                            2,
-                                                                      ),
-                                                                    ),
-                                                                  )
-                                                                else
-                                                                  const Spacer(),
-                                                                // 簡易入力ボタン
-                                                                if (!permissions
-                                                                        .isReadOnly &&
-                                                                    !allFinished &&
-                                                                    !label
-                                                                        .contains(
-                                                                          '個人戦',
-                                                                        ) &&
-                                                                    !label.contains(
-                                                                      '勝ち抜き戦',
-                                                                    ) &&
-                                                                    !label
-                                                                        .contains(
-                                                                          'リーグ戦',
-                                                                        ) &&
-                                                                    !(ref
-                                                                                .read(
-                                                                                  customTeamNamesProvider,
-                                                                                )
-                                                                                .value ??
-                                                                            [])
-                                                                        .contains(
-                                                                          groupList
-                                                                              .first
-                                                                              .redName
-                                                                              .split(
-                                                                                ':',
-                                                                              )
-                                                                              .first
-                                                                              .trim(),
-                                                                        ) &&
-                                                                    !(ref
-                                                                                .read(
-                                                                                  customTeamNamesProvider,
-                                                                                )
-                                                                                .value ??
-                                                                            [])
-                                                                        .contains(
-                                                                          groupList
-                                                                              .first
-                                                                              .whiteName
-                                                                              .split(
-                                                                                ':',
-                                                                              )
-                                                                              .first
-                                                                              .trim(),
-                                                                        )) ...[
-                                                                  SizedBox(
-                                                                    height: 26,
-                                                                    child: OutlinedButton.icon(
-                                                                      onPressed: () => _showSummaryInputDialog(
-                                                                        context,
-                                                                        ref,
-                                                                        groupList,
-                                                                      ),
-                                                                      icon: Icon(
-                                                                        Icons
-                                                                            .flash_on,
-                                                                        size:
-                                                                            12,
-                                                                        color: Colors
-                                                                            .amber
-                                                                            .shade700,
-                                                                      ),
-                                                                      label: Text(
-                                                                        '簡易入力',
-                                                                        style: TextStyle(
-                                                                          fontSize:
-                                                                              9,
-                                                                          fontWeight:
-                                                                              FontWeight.bold,
-                                                                          color:
-                                                                              titleColor,
-                                                                        ),
-                                                                      ),
-                                                                      style: OutlinedButton.styleFrom(
-                                                                        padding: const EdgeInsets.symmetric(
-                                                                          horizontal:
-                                                                              6,
-                                                                        ),
-                                                                        side: BorderSide(
-                                                                          color: titleColor.withValues(
-                                                                            alpha:
-                                                                                0.2,
-                                                                          ),
-                                                                        ),
-                                                                        shape: RoundedRectangleBorder(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(
-                                                                                6,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  const SizedBox(
-                                                                    width: 6,
-                                                                  ),
-                                                                ],
-                                                                // ℹ️詳細マーク
-                                                                if (!allFinished)
-                                                                  Padding(
-                                                                    padding:
-                                                                        const EdgeInsets.only(
+                                                      child: ExpansionTileTheme(
+                                                        data: ExpansionTileThemeData(
+                                                          backgroundColor:
+                                                              isDark
+                                                              ? const Color(
+                                                                  0xFF1C1C1E,
+                                                                )
+                                                              : Colors.white,
+                                                          collapsedBackgroundColor:
+                                                              isDark
+                                                              ? const Color(
+                                                                  0xFF161618,
+                                                                )
+                                                              : Colors.white,
+                                                          iconColor: isDark
+                                                              ? Colors
+                                                                    .indigo
+                                                                    .shade300
+                                                              : Colors
+                                                                    .indigo
+                                                                    .shade700,
+                                                          collapsedIconColor:
+                                                              Colors.grey,
+                                                          textColor: isDark
+                                                              ? Colors.white
+                                                              : Colors.black87,
+                                                          collapsedTextColor:
+                                                              isDark
+                                                              ? Colors.white70
+                                                              : Colors.black54,
+                                                        ),
+                                                        child: ExpansionTile(
+                                                          key: ValueKey(
+                                                            'group_${entry.key}',
+                                                          ),
+                                                          shape: const Border(),
+                                                          collapsedShape:
+                                                              const Border(),
+                                                          childrenPadding:
+                                                              EdgeInsets.zero,
+                                                          tilePadding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 16,
+                                                              ),
+                                                          title: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              // 🔼 【1行目】: 運営系ボタン・メモ一元化ライン
+                                                              Row(
+                                                                children: [
+                                                                  if (firstMatch
+                                                                      .note
+                                                                      .isNotEmpty)
+                                                                    Expanded(
+                                                                      child: Padding(
+                                                                        padding: const EdgeInsets.only(
                                                                           right:
                                                                               6,
                                                                         ),
-                                                                    child: InkWell(
-                                                                      onTap: () => _showRuleInfoSheet(
-                                                                        context,
-                                                                        firstMatch,
-                                                                      ),
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                            12,
-                                                                          ),
-                                                                      child: Padding(
-                                                                        padding:
-                                                                            const EdgeInsets.all(
-                                                                              4.0,
-                                                                            ),
-                                                                        child: Icon(
-                                                                          Icons
-                                                                              .info_outline,
-                                                                          color:
-                                                                              isDark
-                                                                              ? Colors.grey.shade600
-                                                                              : Colors.grey.shade400,
-                                                                          size:
-                                                                              16,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                // 📊スコアボタン
-                                                                if (!label
-                                                                    .contains(
-                                                                      'リーグ戦',
-                                                                    )) ...[
-                                                                  SizedBox(
-                                                                    height: 26,
-                                                                    child: OutlinedButton(
-                                                                      onPressed: () {
-                                                                        final target =
-                                                                            (firstMatch.groupName !=
-                                                                                    null &&
-                                                                                firstMatch.groupName!.isNotEmpty)
-                                                                            ? firstMatch.groupName!
-                                                                            : firstMatch.id;
-                                                                        final encodedTarget =
-                                                                            Uri.encodeComponent(
-                                                                              target,
-                                                                            );
-                                                                        final tId =
-                                                                            firstMatch.tournamentId ??
-                                                                            '';
-                                                                        if (permissions
-                                                                            .isReadOnly) {
-                                                                          context.push(
-                                                                            firstMatch.isKachinuki
-                                                                                ? '/viewer-kachinuki/$encodedTarget?tournamentId=$tId'
-                                                                                : '/viewer-team/$encodedTarget?tournamentId=$tId',
-                                                                          );
-                                                                        } else {
-                                                                          context.push(
-                                                                            firstMatch.isKachinuki
-                                                                                ? '/kachinuki-scoreboard/$encodedTarget?tournamentId=$tId'
-                                                                                : '/team-scoreboard/$encodedTarget?tournamentId=$tId',
-                                                                          );
-                                                                        }
-                                                                      },
-                                                                      style: OutlinedButton.styleFrom(
-                                                                        padding: const EdgeInsets.symmetric(
-                                                                          horizontal:
-                                                                              8,
-                                                                        ),
-                                                                        side: BorderSide(
-                                                                          color: titleColor.withValues(
-                                                                            alpha:
-                                                                                0.2,
-                                                                          ),
-                                                                        ),
-                                                                        shape: RoundedRectangleBorder(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(
-                                                                                6,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                      child: Text(
-                                                                        'スコア',
-                                                                        style: TextStyle(
-                                                                          fontSize:
-                                                                              10,
-                                                                          fontWeight:
-                                                                              FontWeight.bold,
-                                                                          color:
-                                                                              titleColor,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  const SizedBox(
-                                                                    width: 6,
-                                                                  ),
-                                                                ],
-                                                                // 状態バナー
-                                                                Container(
-                                                                  padding:
-                                                                      const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            6,
-                                                                        vertical:
-                                                                            2,
-                                                                      ),
-                                                                  decoration: BoxDecoration(
-                                                                    color:
-                                                                        hasInProgress
-                                                                        ? Colors
-                                                                              .blue
-                                                                              .shade600
-                                                                        : (allFinished
-                                                                              ? (isDark
-                                                                                    ? Colors.grey.shade800
-                                                                                    : Colors.grey.shade300)
-                                                                              : (isDark
-                                                                                    ? const Color(
-                                                                                        0xFF2C2C2E,
-                                                                                      )
-                                                                                    : Colors.grey.shade200)),
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          4,
-                                                                        ),
-                                                                  ),
-                                                                  child: Text(
-                                                                    hasInProgress
-                                                                        ? '進行中'
-                                                                        : (allFinished
-                                                                              ? '終了'
-                                                                              : '待機中'),
-                                                                    style: TextStyle(
-                                                                      fontSize:
-                                                                          10,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      color:
-                                                                          hasInProgress
-                                                                          ? Colors.white
-                                                                          : (allFinished
-                                                                                ? (isDark
-                                                                                      ? Colors.grey.shade400
-                                                                                      : Colors.grey.shade600)
-                                                                                : (isDark
-                                                                                      ? Colors.grey.shade400
-                                                                                      : Colors.grey.shade700)),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 10,
-                                                            ),
-                                                            // 🔽 【2行目】: チーム合計スコア勝数(本数)ライン
-                                                            Builder(
-                                                              builder: (context) {
-                                                                // 団体戦グループ内の全ポジションから勝数・本数をリアルタイムに合算算出
-                                                                int redWins = 0;
-                                                                int redPts = 0;
-                                                                int whiteWins =
-                                                                    0;
-                                                                int whitePts =
-                                                                    0;
-
-                                                                for (var m
-                                                                    in groupList) {
-                                                                  final r = m
-                                                                      .redScore;
-                                                                  final w = m
-                                                                      .whiteScore;
-                                                                  redPts +=
-                                                                      (r as num)
-                                                                          .toInt();
-                                                                  whitePts +=
-                                                                      (w as num)
-                                                                          .toInt();
-                                                                  final mFinished =
-                                                                      m.status ==
-                                                                          'finished' ||
-                                                                      m.status ==
-                                                                          'approved';
-                                                                  if (mFinished) {
-                                                                    if (r > w) {
-                                                                      redWins++;
-                                                                    } else if (w >
-                                                                        r) {
-                                                                      whiteWins++;
-                                                                    }
-                                                                  }
-                                                                }
-
-                                                                final isRedOwn =
-                                                                    ownTeams
-                                                                        .contains(
-                                                                          rTeam,
-                                                                        );
-                                                                final isWhiteOwn =
-                                                                    ownTeams
-                                                                        .contains(
-                                                                          wTeam,
-                                                                        );
-
-                                                                // ★ 修正: リーグ戦と通常の団体戦のRow構造を完全分離し、はみ出しを100%防止
-                                                                if (label
-                                                                    .contains(
-                                                                      'リーグ戦',
-                                                                    )) {
-                                                                  return Row(
-                                                                    children: [
-                                                                      Expanded(
                                                                         child: Text(
-                                                                          _generateDescriptiveLeagueTitle(
-                                                                            groupList,
-                                                                            ownTeams,
-                                                                          ),
+                                                                          firstMatch
+                                                                              .note,
                                                                           style: TextStyle(
                                                                             fontSize:
-                                                                                13,
+                                                                                11,
+                                                                            color:
+                                                                                subTitleColor,
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                          ),
+                                                                          overflow:
+                                                                              TextOverflow.ellipsis,
+                                                                          maxLines:
+                                                                              2,
+                                                                        ),
+                                                                      ),
+                                                                    )
+                                                                  else
+                                                                    const Spacer(),
+                                                                  // 簡易入力ボタン
+                                                                  if (!isReadOnlyUI &&
+                                                                      !allFinished &&
+                                                                      !label.contains(
+                                                                        '個人戦',
+                                                                      ) &&
+                                                                      !label.contains(
+                                                                        '勝ち抜き戦',
+                                                                      ) &&
+                                                                      !label.contains(
+                                                                        'リーグ戦',
+                                                                      ) &&
+                                                                      !(ref
+                                                                                  .read(
+                                                                                    customTeamNamesProvider,
+                                                                                  )
+                                                                                  .value ??
+                                                                              [])
+                                                                          .contains(
+                                                                            groupList.first.redName
+                                                                                .split(
+                                                                                  ':',
+                                                                                )
+                                                                                .first
+                                                                                .trim(),
+                                                                          ) &&
+                                                                      !(ref
+                                                                                  .read(
+                                                                                    customTeamNamesProvider,
+                                                                                  )
+                                                                                  .value ??
+                                                                              [])
+                                                                          .contains(
+                                                                            groupList.first.whiteName
+                                                                                .split(
+                                                                                  ':',
+                                                                                )
+                                                                                .first
+                                                                                .trim(),
+                                                                          )) ...[
+                                                                    SizedBox(
+                                                                      height:
+                                                                          26,
+                                                                      child: OutlinedButton.icon(
+                                                                        onPressed: () => _showSummaryInputDialog(
+                                                                          context,
+                                                                          ref,
+                                                                          groupList,
+                                                                        ),
+                                                                        icon: Icon(
+                                                                          Icons
+                                                                              .flash_on,
+                                                                          size:
+                                                                              12,
+                                                                          color: Colors
+                                                                              .amber
+                                                                              .shade700,
+                                                                        ),
+                                                                        label: Text(
+                                                                          '簡易入力',
+                                                                          style: TextStyle(
+                                                                            fontSize:
+                                                                                9,
                                                                             fontWeight:
                                                                                 FontWeight.bold,
                                                                             color:
                                                                                 titleColor,
                                                                           ),
-                                                                          textAlign:
-                                                                              TextAlign.center,
-                                                                          maxLines:
-                                                                              1,
-                                                                          overflow:
-                                                                              TextOverflow.ellipsis, // 268pxの極小画面でも絶対に溢れず綺麗に省略
                                                                         ),
-                                                                      ),
-                                                                    ],
-                                                                  );
-                                                                } else {
-                                                                  return Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .center,
-                                                                    children: [
-                                                                      // 赤チーム名
-                                                                      Expanded(
-                                                                        child: Text(
-                                                                          rTeam,
-                                                                          style: TextStyle(
-                                                                            fontSize:
-                                                                                15,
-                                                                            fontWeight:
-                                                                                isRedOwn
-                                                                                ? FontWeight.w900
-                                                                                : FontWeight.bold,
-                                                                            color:
-                                                                                isRedOwn
-                                                                                ? Colors.amber.shade600
-                                                                                : titleColor,
+                                                                        style: OutlinedButton.styleFrom(
+                                                                          padding: const EdgeInsets.symmetric(
+                                                                            horizontal:
+                                                                                6,
                                                                           ),
-                                                                          textAlign:
-                                                                              TextAlign.end,
-                                                                          overflow:
-                                                                              TextOverflow.ellipsis,
-                                                                        ),
-                                                                      ),
-                                                                      // 中央合計スコア掲示（例: 3(5) - 1(2)）
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.symmetric(
-                                                                          horizontal:
-                                                                              16,
-                                                                        ),
-                                                                        child: Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.min,
-                                                                          children: [
-                                                                            Text(
-                                                                              '$redWins',
-                                                                              style: TextStyle(
-                                                                                fontSize: 16,
-                                                                                fontWeight: FontWeight.bold,
-                                                                                color: isDark
-                                                                                    ? Colors.red.shade300
-                                                                                    : Colors.red.shade700,
-                                                                              ),
+                                                                          side: BorderSide(
+                                                                            color: titleColor.withValues(
+                                                                              alpha: 0.2,
                                                                             ),
-                                                                            Text(
-                                                                              '($redPts)',
-                                                                              style: TextStyle(
-                                                                                fontSize: 11,
-                                                                                color: isDark
-                                                                                    ? Colors.grey.shade400
-                                                                                    : Colors.grey.shade600,
-                                                                              ),
-                                                                            ),
-                                                                            Padding(
-                                                                              padding: const EdgeInsets.symmetric(
-                                                                                horizontal: 6,
-                                                                              ),
-                                                                              child: Text(
-                                                                                'ー',
-                                                                                style: TextStyle(
-                                                                                  fontSize: 14,
-                                                                                  color: Colors.grey.shade400,
-                                                                                  fontWeight: FontWeight.bold,
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                            Text(
-                                                                              '$whiteWins',
-                                                                              style: TextStyle(
-                                                                                fontSize: 16,
-                                                                                fontWeight: FontWeight.bold,
-                                                                                color: isDark
-                                                                                    ? Colors.white
-                                                                                    : Colors.black87,
-                                                                              ),
-                                                                            ),
-                                                                            Text(
-                                                                              '($whitePts)',
-                                                                              style: TextStyle(
-                                                                                fontSize: 11,
-                                                                                color: isDark
-                                                                                    ? Colors.grey.shade400
-                                                                                    : Colors.grey.shade600,
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      // 白チーム名
-                                                                      Expanded(
-                                                                        child: Text(
-                                                                          wTeam,
-                                                                          style: TextStyle(
-                                                                            fontSize:
-                                                                                15,
-                                                                            fontWeight:
-                                                                                isWhiteOwn
-                                                                                ? FontWeight.w900
-                                                                                : FontWeight.bold,
-                                                                            color:
-                                                                                isWhiteOwn
-                                                                                ? Colors.amber.shade600
-                                                                                : titleColor,
                                                                           ),
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          overflow:
-                                                                              TextOverflow.ellipsis,
+                                                                          shape: RoundedRectangleBorder(
+                                                                            borderRadius: BorderRadius.circular(
+                                                                              6,
+                                                                            ),
+                                                                          ),
                                                                         ),
                                                                       ),
-                                                                    ],
-                                                                  );
-                                                                }
-                                                              },
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        children: (() {
-                                                          final List<Widget>
-                                                          childrenWidgets = [];
-                                                          final normalMatches =
-                                                              groupList
-                                                                  .where(
-                                                                    (m) => !m
-                                                                        .note
-                                                                        .contains(
-                                                                          '[順位決定戦]',
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 6,
+                                                                    ),
+                                                                  ],
+                                                                  // ℹ️詳細マーク
+                                                                  if (!allFinished)
+                                                                    Padding(
+                                                                      padding:
+                                                                          const EdgeInsets.only(
+                                                                            right:
+                                                                                6,
+                                                                          ),
+                                                                      child: InkWell(
+                                                                        onTap: () => _showRuleInfoSheet(
+                                                                          context,
+                                                                          firstMatch,
                                                                         ),
-                                                                  )
-                                                                  .toList();
-                                                          final tieBreakMatches =
-                                                              groupList
-                                                                  .where(
-                                                                    (m) => m
-                                                                        .note
-                                                                        .contains(
-                                                                          '[順位決定戦]',
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(
+                                                                              12,
+                                                                            ),
+                                                                        child: Padding(
+                                                                          padding: const EdgeInsets.all(
+                                                                            4.0,
+                                                                          ),
+                                                                          child: Icon(
+                                                                            Icons.info_outline,
+                                                                            color:
+                                                                                isDark
+                                                                                ? Colors.grey.shade600
+                                                                                : Colors.grey.shade400,
+                                                                            size:
+                                                                                16,
+                                                                          ),
                                                                         ),
-                                                                  )
-                                                                  .toList();
-                                                          final normalItems = item
-                                                              .sortedInnerItems
-                                                              .where((i) {
-                                                                if (i
-                                                                    is MatchModel) {
-                                                                  return !i.note
+                                                                      ),
+                                                                    ),
+                                                                  // 📊スコアボタン
+                                                                  if (!label
                                                                       .contains(
-                                                                        '[順位決定戦]',
-                                                                      );
-                                                                }
-                                                                return true;
-                                                              })
-                                                              .toList();
-
-                                                          if (label.contains(
-                                                                'リーグ戦',
-                                                              ) &&
-                                                              allFinished &&
-                                                              !label.contains(
-                                                                '個人戦',
-                                                              ) &&
-                                                              tieBreakMatches
-                                                                  .isEmpty) {
-                                                            final rule =
-                                                                firstMatch
-                                                                    .rule ??
-                                                                ref.read(
-                                                                  matchRuleProvider,
-                                                                );
-                                                            final tieGroups =
-                                                                <
-                                                                  List<dynamic>
-                                                                >[];
-                                                            // ★ 適合修正: 強制アンラップ (!) を排し、if による無害なヌルガードを緊縛して Lint 警告を完全消滅させます
-                                                            if (rule != null) {
-                                                              final stats =
-                                                                  KendoRuleEngine.calculateLeagueStandings(
-                                                                    normalMatches,
-                                                                    rule,
-                                                                  );
-                                                              if (stats.length >
-                                                                  1) {
-                                                                List<dynamic>
-                                                                currentTie = [
-                                                                  stats.first,
-                                                                ];
-                                                                for (
-                                                                  int i = 1;
-                                                                  i <
-                                                                      stats
-                                                                          .length;
-                                                                  i++
-                                                                ) {
-                                                                  final prev =
-                                                                      stats[i -
-                                                                          1];
-                                                                  final curr =
-                                                                      stats[i];
-                                                                  bool isTie =
-                                                                      (prev.customPoints -
-                                                                                  curr.customPoints)
-                                                                              .abs() <
-                                                                          0.001 &&
-                                                                      prev.matchWins ==
-                                                                          curr.matchWins &&
-                                                                      prev.individualWinners ==
-                                                                          curr.individualWinners &&
-                                                                      prev.totalPointsScored ==
-                                                                          curr.totalPointsScored;
-                                                                  if (isTie) {
-                                                                    currentTie
-                                                                        .add(
-                                                                          curr,
-                                                                        );
-                                                                  } else {
-                                                                    if (currentTie
-                                                                            .length >
-                                                                        1) {
-                                                                      tieGroups.add(
-                                                                        List.from(
-                                                                          currentTie,
+                                                                        'リーグ戦',
+                                                                      )) ...[
+                                                                    SizedBox(
+                                                                      height:
+                                                                          26,
+                                                                      child: OutlinedButton(
+                                                                        onPressed: () {
+                                                                          final target =
+                                                                              (firstMatch.groupName !=
+                                                                                      null &&
+                                                                                  firstMatch.groupName!.isNotEmpty)
+                                                                              ? firstMatch.groupName!
+                                                                              : firstMatch.id;
+                                                                          final encodedTarget = Uri.encodeComponent(
+                                                                            target,
+                                                                          );
+                                                                          final tId =
+                                                                              firstMatch.tournamentId ??
+                                                                              '';
+                                                                          context.push(
+                                                                            firstMatch.isKachinuki
+                                                                                ? '/kachinuki-scoreboard/$encodedTarget?tournamentId=$tId'
+                                                                                : '/team-scoreboard/$encodedTarget?tournamentId=$tId',
+                                                                          );
+                                                                        },
+                                                                        style: OutlinedButton.styleFrom(
+                                                                          padding: const EdgeInsets.symmetric(
+                                                                            horizontal:
+                                                                                8,
+                                                                          ),
+                                                                          side: BorderSide(
+                                                                            color: titleColor.withValues(
+                                                                              alpha: 0.2,
+                                                                            ),
+                                                                          ),
+                                                                          shape: RoundedRectangleBorder(
+                                                                            borderRadius: BorderRadius.circular(
+                                                                              6,
+                                                                            ),
+                                                                          ),
                                                                         ),
-                                                                      );
-                                                                    }
-                                                                    currentTie =
-                                                                        [curr];
-                                                                  }
-                                                                }
-                                                                if (currentTie
-                                                                        .length >
-                                                                    1) {
-                                                                  tieGroups.add(
-                                                                    currentTie,
-                                                                  );
-                                                                }
-                                                              }
-
-                                                              if (tieGroups
-                                                                  .isNotEmpty) {
-                                                                childrenWidgets.add(
+                                                                        child: Text(
+                                                                          'スコア',
+                                                                          style: TextStyle(
+                                                                            fontSize:
+                                                                                10,
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                            color:
+                                                                                titleColor,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 6,
+                                                                    ),
+                                                                  ],
+                                                                  // 状態バナー
                                                                   Container(
-                                                                    margin:
-                                                                        const EdgeInsets.all(
-                                                                          12,
-                                                                        ),
-                                                                    padding:
-                                                                        const EdgeInsets.all(
-                                                                          12,
-                                                                        ),
+                                                                    padding: const EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          6,
+                                                                      vertical:
+                                                                          2,
+                                                                    ),
                                                                     decoration: BoxDecoration(
                                                                       color:
-                                                                          isDark
-                                                                          ? Colors.orange.shade900.withValues(
-                                                                              alpha: 0.2,
-                                                                            )
-                                                                          : Colors.orange.shade50,
-                                                                      border: Border.all(
-                                                                        color: Colors
-                                                                            .orange
-                                                                            .shade300,
-                                                                      ),
+                                                                          hasInProgress
+                                                                          ? Colors.blue.shade600
+                                                                          : (allFinished
+                                                                                ? (isDark
+                                                                                      ? Colors.grey.shade800
+                                                                                      : Colors.grey.shade300)
+                                                                                : (isDark
+                                                                                      ? const Color(
+                                                                                          0xFF2C2C2E,
+                                                                                        )
+                                                                                      : Colors.grey.shade200)),
                                                                       borderRadius:
                                                                           BorderRadius.circular(
-                                                                            12,
+                                                                            4,
                                                                           ),
                                                                     ),
-                                                                    child: Column(
-                                                                      children: tieGroups.map((
-                                                                        group,
-                                                                      ) {
-                                                                        return ElevatedButton.icon(
-                                                                          onPressed: () => _showTieBreakDialog(
-                                                                            context,
-                                                                            ref,
-                                                                            firstMatch,
-                                                                            group,
-                                                                            rule,
-                                                                          ),
-                                                                          icon: const Icon(
-                                                                            Icons.add_circle,
-                                                                          ),
-                                                                          label: const Text(
-                                                                            '順位決定戦を作成',
-                                                                          ),
-                                                                          style: ElevatedButton.styleFrom(
-                                                                            backgroundColor:
-                                                                                Colors.orange.shade700,
-                                                                            foregroundColor:
-                                                                                Colors.white,
-                                                                          ),
-                                                                        );
-                                                                      }).toList(),
+                                                                    child: Text(
+                                                                      hasInProgress
+                                                                          ? '進行中'
+                                                                          : (allFinished
+                                                                                ? '終了'
+                                                                                : '待機中'),
+                                                                      style: TextStyle(
+                                                                        fontSize:
+                                                                            10,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                        color:
+                                                                            hasInProgress
+                                                                            ? Colors.white
+                                                                            : (allFinished
+                                                                                  ? (isDark
+                                                                                        ? Colors.grey.shade400
+                                                                                        : Colors.grey.shade600)
+                                                                                  : (isDark
+                                                                                        ? Colors.grey.shade400
+                                                                                        : Colors.grey.shade700)),
+                                                                      ),
                                                                     ),
                                                                   ),
-                                                                );
-                                                              }
-                                                            }
-                                                          }
+                                                                ],
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 10,
+                                                              ),
+                                                              // 🔽 【2行目】: チーム合計スコア勝数(本数)ライン
+                                                              Builder(
+                                                                builder: (context) {
+                                                                  // 団体戦グループ内の全ポジションから勝数・本数をリアルタイムに合算算出
+                                                                  int redWins =
+                                                                      0;
+                                                                  int redPts =
+                                                                      0;
+                                                                  int
+                                                                  whiteWins = 0;
+                                                                  int whitePts =
+                                                                      0;
 
-                                                          if (label.contains(
-                                                            'リーグ戦',
-                                                          )) {
-                                                            if (label.contains(
-                                                              '個人戦',
-                                                            )) {
-                                                              childrenWidgets.add(
-                                                                ReorderableListView(
-                                                                  shrinkWrap:
-                                                                      true,
-                                                                  physics:
-                                                                      const NeverScrollableScrollPhysics(),
-                                                                  buildDefaultDragHandles:
-                                                                      !permissions
-                                                                          .isReadOnly,
-                                                                  onReorderItem:
-                                                                      (
-                                                                        oldIndex,
-                                                                        newIndex,
-                                                                      ) => _onReorderInnerTimeline(
-                                                                        normalItems,
-                                                                        oldIndex,
-                                                                        newIndex,
-                                                                        ref,
-                                                                      ),
-                                                                  children: normalItems
-                                                                      .map<
-                                                                        Widget?
-                                                                      >((i) {
-                                                                        if (i
-                                                                            is MatchModel) {
-                                                                          // ★関数から独立型Widgetカードクラスへ100%完全同期置換
-                                                                          return Container(
-                                                                            key: ValueKey(
-                                                                              i.id,
-                                                                            ),
-                                                                            child: MatchListTileCard(
-                                                                              initialMatch: i,
-                                                                              isDeletable: true,
-                                                                            ),
-                                                                          );
-                                                                        } else if (i
-                                                                            is MatchCommentModel) {
-                                                                          return Container(
-                                                                            key: ValueKey(
-                                                                              'inner_comment_${i.id}',
-                                                                            ),
-                                                                            child: _buildInnerCommentWidget(
-                                                                              context,
-                                                                              ref,
-                                                                              i,
-                                                                              permissions,
-                                                                              isDark,
-                                                                            ),
-                                                                          );
-                                                                        }
-                                                                        return null;
-                                                                      })
-                                                                      .whereType<
-                                                                        Widget
-                                                                      >()
-                                                                      .toList(),
-                                                                ),
-                                                              );
-                                                            } else {
-                                                              final boutsByMatchup =
-                                                                  <
-                                                                    String,
-                                                                    List<
-                                                                      MatchModel
-                                                                    >
-                                                                  >{};
-                                                              final matchupOrder =
-                                                                  <String>[];
-                                                              for (var m
-                                                                  in normalMatches) {
-                                                                final matchupName =
-                                                                    '${m.redName.split(':').first.trim()} vs ${m.whiteName.split(':').first.trim()}';
-                                                                if (!boutsByMatchup
-                                                                    .containsKey(
-                                                                      matchupName,
-                                                                    )) {
-                                                                  matchupOrder.add(
-                                                                    matchupName,
-                                                                  );
-                                                                  boutsByMatchup[matchupName] =
-                                                                      [];
-                                                                }
-                                                                boutsByMatchup[matchupName]!
-                                                                    .add(m);
-                                                              }
-
-                                                              final combinedItems =
-                                                                  <dynamic>[];
-                                                              for (var name
-                                                                  in matchupOrder) {
-                                                                combinedItems.add({
-                                                                  'type':
-                                                                      'matchup',
-                                                                  'name': name,
-                                                                  'matches':
-                                                                      boutsByMatchup[name]!,
-                                                                  'order':
-                                                                      boutsByMatchup[name]!
-                                                                          .first
-                                                                          .order,
-                                                                });
-                                                              }
-                                                              for (var i
-                                                                  in normalItems) {
-                                                                if (i
-                                                                    is MatchCommentModel) {
-                                                                  combinedItems.add({
-                                                                    'type':
-                                                                        'comment',
-                                                                    'comment':
-                                                                        i,
-                                                                    'order':
-                                                                        i.order,
-                                                                  });
-                                                                }
-                                                              }
-                                                              combinedItems.sort(
-                                                                (a, b) =>
-                                                                    (a['order']
-                                                                            as double)
-                                                                        .compareTo(
-                                                                          b['order']
-                                                                              as double,
-                                                                        ),
-                                                              );
-
-                                                              childrenWidgets.add(
-                                                                Column(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .stretch,
-                                                                  children: combinedItems.map<Widget>((
-                                                                    cItem,
-                                                                  ) {
-                                                                    if (cItem['type'] ==
-                                                                        'comment') {
-                                                                      final c =
-                                                                          cItem['comment']
-                                                                              as MatchCommentModel;
-                                                                      return Container(
-                                                                        key: ValueKey(
-                                                                          'inner_comment_${c.id}',
-                                                                        ),
-                                                                        child: _buildInnerCommentWidget(
-                                                                          context,
-                                                                          ref,
-                                                                          c,
-                                                                          permissions,
-                                                                          isDark,
-                                                                        ),
-                                                                      );
+                                                                  for (var m
+                                                                      in groupList) {
+                                                                    if (m.matchType ==
+                                                                        '代表戦') {
+                                                                      continue; // ★ 代表戦のスコアは合計に含めない
                                                                     }
-                                                                    final name =
-                                                                        cItem['name']
-                                                                            as String;
-                                                                    final bouts =
-                                                                        cItem['matches']
-                                                                            as List<
-                                                                              MatchModel
-                                                                            >;
-                                                                    final bool
-                                                                    boutsInProgress =
-                                                                        bouts.any(
-                                                                          (m) =>
-                                                                              m.status ==
-                                                                              'in_progress',
-                                                                        );
-                                                                    final bool
-                                                                    boutsAllFinished = bouts.every(
-                                                                      (m) =>
-                                                                          m.status ==
-                                                                              'finished' ||
-                                                                          m.status ==
-                                                                              'approved',
-                                                                    );
-                                                                    final t1 = name
-                                                                        .split(
-                                                                          ' vs ',
-                                                                        )[0];
-                                                                    final t2 = name
-                                                                        .split(
-                                                                          ' vs ',
-                                                                        )[1];
-                                                                    final Color
-                                                                    mCardBg =
-                                                                        boutsAllFinished
-                                                                        ? (isDark
-                                                                              ? const Color(
-                                                                                  0xFF161618,
-                                                                                )
-                                                                              : Colors.grey.shade100)
-                                                                        : (isDark
-                                                                              ? const Color(
-                                                                                  0xFF1C1C1E,
-                                                                                )
-                                                                              : Colors.white);
-                                                                    final Color
-                                                                    mTitleColor =
-                                                                        boutsAllFinished
-                                                                        ? (isDark
-                                                                              ? Colors.grey.shade600
-                                                                              : Colors.grey.shade500)
-                                                                        : (isDark
-                                                                              ? Colors.white
-                                                                              : Colors.black87);
+                                                                    final r = m
+                                                                        .redScore;
+                                                                    final w = m
+                                                                        .whiteScore;
+                                                                    redPts +=
+                                                                        (r as num)
+                                                                            .toInt();
+                                                                    whitePts +=
+                                                                        (w as num)
+                                                                            .toInt();
+                                                                    final mFinished =
+                                                                        m.status ==
+                                                                            'finished' ||
+                                                                        m.status ==
+                                                                            'approved';
+                                                                    if (mFinished) {
+                                                                      if (r >
+                                                                          w) {
+                                                                        redWins++;
+                                                                      } else if (w >
+                                                                          r) {
+                                                                        whiteWins++;
+                                                                      }
+                                                                    }
+                                                                  }
 
-                                                                    return Container(
-                                                                      key: ValueKey(
-                                                                        'league_team_$name',
-                                                                      ),
-                                                                      margin: const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            8,
-                                                                        vertical:
-                                                                            4,
-                                                                      ),
-                                                                      decoration: BoxDecoration(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(
-                                                                              8,
+                                                                  final isRedOwn =
+                                                                      ownTeams
+                                                                          .contains(
+                                                                            rTeam,
+                                                                          );
+                                                                  final isWhiteOwn =
+                                                                      ownTeams
+                                                                          .contains(
+                                                                            wTeam,
+                                                                          );
+
+                                                                  // ★ 修正: リーグ戦と通常の団体戦のRow構造を完全分離し、はみ出しを100%防止
+                                                                  if (label
+                                                                      .contains(
+                                                                        'リーグ戦',
+                                                                      )) {
+                                                                    return Row(
+                                                                      children: [
+                                                                        Expanded(
+                                                                          child: Text(
+                                                                            _generateDescriptiveLeagueTitle(
+                                                                              groupList,
+                                                                              ownTeams,
                                                                             ),
-                                                                        border: Border.all(
-                                                                          color:
-                                                                              isDark
-                                                                              ? const Color(
-                                                                                  0xFF38383A,
-                                                                                )
-                                                                              : Colors.grey.shade300,
-                                                                          width:
-                                                                              1,
+                                                                            style: TextStyle(
+                                                                              fontSize: 13,
+                                                                              fontWeight: FontWeight.bold,
+                                                                              color: titleColor,
+                                                                            ),
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            maxLines:
+                                                                                1,
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis, // 268pxの極小画面でも絶対に溢れず綺麗に省略
+                                                                          ),
                                                                         ),
-                                                                        boxShadow:
-                                                                            boutsInProgress
-                                                                            ? [
-                                                                                BoxShadow(
-                                                                                  color: Colors.blue.withValues(
-                                                                                    alpha: 0.1,
-                                                                                  ),
-                                                                                  blurRadius: 4,
-                                                                                  offset: const Offset(
-                                                                                    0,
-                                                                                    2,
+                                                                      ],
+                                                                    );
+                                                                  } else {
+                                                                    return Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        // 赤チーム名
+                                                                        Expanded(
+                                                                          child: Text(
+                                                                            rTeam,
+                                                                            style: TextStyle(
+                                                                              fontSize: 15,
+                                                                              fontWeight: isRedOwn
+                                                                                  ? FontWeight.w900
+                                                                                  : FontWeight.bold,
+                                                                              color: isRedOwn
+                                                                                  ? Colors.amber.shade600
+                                                                                  : titleColor,
+                                                                            ),
+                                                                            textAlign:
+                                                                                TextAlign.end,
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                          ),
+                                                                        ),
+                                                                        // 中央合計スコア掲示（例: 3(5) - 1(2)）
+                                                                        Padding(
+                                                                          padding: const EdgeInsets.symmetric(
+                                                                            horizontal:
+                                                                                16,
+                                                                          ),
+                                                                          child: Row(
+                                                                            mainAxisSize:
+                                                                                MainAxisSize.min,
+                                                                            children: [
+                                                                              Text(
+                                                                                '$redWins',
+                                                                                style: TextStyle(
+                                                                                  fontSize: 16,
+                                                                                  fontWeight: FontWeight.bold,
+                                                                                  color: isDark
+                                                                                      ? Colors.red.shade300
+                                                                                      : Colors.red.shade700,
+                                                                                ),
+                                                                              ),
+                                                                              Text(
+                                                                                '($redPts)',
+                                                                                style: TextStyle(
+                                                                                  fontSize: 11,
+                                                                                  color: isDark
+                                                                                      ? Colors.grey.shade400
+                                                                                      : Colors.grey.shade600,
+                                                                                ),
+                                                                              ),
+                                                                              Padding(
+                                                                                padding: const EdgeInsets.symmetric(
+                                                                                  horizontal: 6,
+                                                                                ),
+                                                                                child: Text(
+                                                                                  'ー',
+                                                                                  style: TextStyle(
+                                                                                    fontSize: 14,
+                                                                                    color: Colors.grey.shade400,
+                                                                                    fontWeight: FontWeight.bold,
                                                                                   ),
                                                                                 ),
-                                                                              ]
-                                                                            : [],
-                                                                      ),
-                                                                      child: ClipRRect(
+                                                                              ),
+                                                                              Text(
+                                                                                '$whiteWins',
+                                                                                style: TextStyle(
+                                                                                  fontSize: 16,
+                                                                                  fontWeight: FontWeight.bold,
+                                                                                  color: isDark
+                                                                                      ? Colors.white
+                                                                                      : Colors.black87,
+                                                                                ),
+                                                                              ),
+                                                                              Text(
+                                                                                '($whitePts)',
+                                                                                style: TextStyle(
+                                                                                  fontSize: 11,
+                                                                                  color: isDark
+                                                                                      ? Colors.grey.shade400
+                                                                                      : Colors.grey.shade600,
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                        // 白チーム名
+                                                                        Expanded(
+                                                                          child: Text(
+                                                                            wTeam,
+                                                                            style: TextStyle(
+                                                                              fontSize: 15,
+                                                                              fontWeight: isWhiteOwn
+                                                                                  ? FontWeight.w900
+                                                                                  : FontWeight.bold,
+                                                                              color: isWhiteOwn
+                                                                                  ? Colors.amber.shade600
+                                                                                  : titleColor,
+                                                                            ),
+                                                                            textAlign:
+                                                                                TextAlign.start,
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    );
+                                                                  }
+                                                                },
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          children: (() {
+                                                            final List<Widget>
+                                                            childrenWidgets =
+                                                                [];
+                                                            final normalMatches =
+                                                                groupList
+                                                                    .where(
+                                                                      (m) => !m
+                                                                          .note
+                                                                          .contains(
+                                                                            '[順位決定戦]',
+                                                                          ),
+                                                                    )
+                                                                    .toList();
+                                                            final tieBreakMatches =
+                                                                groupList
+                                                                    .where(
+                                                                      (m) => m
+                                                                          .note
+                                                                          .contains(
+                                                                            '[順位決定戦]',
+                                                                          ),
+                                                                    )
+                                                                    .toList();
+                                                            final normalItems = item
+                                                                .sortedInnerItems
+                                                                .where((i) {
+                                                                  if (i
+                                                                      is MatchModel) {
+                                                                    return !i
+                                                                        .note
+                                                                        .contains(
+                                                                          '[順位決定戦]',
+                                                                        );
+                                                                  }
+                                                                  return true;
+                                                                })
+                                                                .toList();
+
+                                                            if (label.contains(
+                                                                  'リーグ戦',
+                                                                ) &&
+                                                                allFinished &&
+                                                                !label.contains(
+                                                                  '個人戦',
+                                                                ) &&
+                                                                tieBreakMatches
+                                                                    .isEmpty) {
+                                                              final rule =
+                                                                  firstMatch
+                                                                      .rule ??
+                                                                  ref.read(
+                                                                    matchRuleProvider,
+                                                                  );
+                                                              final tieGroups =
+                                                                  <
+                                                                    List<
+                                                                      dynamic
+                                                                    >
+                                                                  >[];
+                                                              // ★ 適合修正: 強制アンラップ (!) を排し、if による無害なヌルガードを緊縛して Lint 警告を完全消滅させます
+                                                              if (rule !=
+                                                                  null) {
+                                                                final stats =
+                                                                    KendoRuleEngine.calculateLeagueStandings(
+                                                                      normalMatches,
+                                                                      rule,
+                                                                    );
+                                                                if (stats
+                                                                        .length >
+                                                                    1) {
+                                                                  List<dynamic>
+                                                                  currentTie = [
+                                                                    stats.first,
+                                                                  ];
+                                                                  for (
+                                                                    int i = 1;
+                                                                    i <
+                                                                        stats
+                                                                            .length;
+                                                                    i++
+                                                                  ) {
+                                                                    final prev =
+                                                                        stats[i -
+                                                                            1];
+                                                                    final curr =
+                                                                        stats[i];
+                                                                    bool isTie =
+                                                                        (prev.customPoints -
+                                                                                    curr.customPoints)
+                                                                                .abs() <
+                                                                            0.001 &&
+                                                                        prev.matchWins ==
+                                                                            curr.matchWins &&
+                                                                        prev.individualWinners ==
+                                                                            curr.individualWinners &&
+                                                                        prev.totalPointsScored ==
+                                                                            curr.totalPointsScored;
+                                                                    if (isTie) {
+                                                                      currentTie
+                                                                          .add(
+                                                                            curr,
+                                                                          );
+                                                                    } else {
+                                                                      if (currentTie
+                                                                              .length >
+                                                                          1) {
+                                                                        tieGroups.add(
+                                                                          List.from(
+                                                                            currentTie,
+                                                                          ),
+                                                                        );
+                                                                      }
+                                                                      currentTie =
+                                                                          [curr];
+                                                                    }
+                                                                  }
+                                                                  if (currentTie
+                                                                          .length >
+                                                                      1) {
+                                                                    tieGroups.add(
+                                                                      currentTie,
+                                                                    );
+                                                                  }
+                                                                }
+
+                                                                if (tieGroups
+                                                                    .isNotEmpty) {
+                                                                  childrenWidgets.add(
+                                                                    Container(
+                                                                      margin:
+                                                                          const EdgeInsets.all(
+                                                                            12,
+                                                                          ),
+                                                                      padding:
+                                                                          const EdgeInsets.all(
+                                                                            12,
+                                                                          ),
+                                                                      decoration: BoxDecoration(
+                                                                        color:
+                                                                            isDark
+                                                                            ? Colors.orange.shade900.withValues(
+                                                                                alpha: 0.2,
+                                                                              )
+                                                                            : Colors.orange.shade50,
+                                                                        border: Border.all(
+                                                                          color: Colors
+                                                                              .orange
+                                                                              .shade300,
+                                                                        ),
                                                                         borderRadius:
                                                                             BorderRadius.circular(
-                                                                              7,
+                                                                              12,
                                                                             ),
-                                                                        child: Theme(
-                                                                          data:
-                                                                              Theme.of(
-                                                                                context,
-                                                                              ).copyWith(
-                                                                                dividerColor: Colors.transparent,
+                                                                      ),
+                                                                      child: Column(
+                                                                        children: tieGroups.map((
+                                                                          group,
+                                                                        ) {
+                                                                          return ElevatedButton.icon(
+                                                                            onPressed: () => _showTieBreakDialog(
+                                                                              context,
+                                                                              ref,
+                                                                              firstMatch,
+                                                                              group,
+                                                                              rule,
+                                                                            ),
+                                                                            icon: const Icon(
+                                                                              Icons.add_circle,
+                                                                            ),
+                                                                            label: const Text(
+                                                                              '順位決定戦を作成',
+                                                                            ),
+                                                                            style: ElevatedButton.styleFrom(
+                                                                              backgroundColor: Colors.orange.shade700,
+                                                                              foregroundColor: Colors.white,
+                                                                            ),
+                                                                          );
+                                                                        }).toList(),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              }
+                                                            }
+
+                                                            if (label.contains(
+                                                              'リーグ戦',
+                                                            )) {
+                                                              if (label
+                                                                  .contains(
+                                                                    '個人戦',
+                                                                  )) {
+                                                                childrenWidgets.add(
+                                                                  ReorderableListView(
+                                                                    shrinkWrap:
+                                                                        true,
+                                                                    physics:
+                                                                        const NeverScrollableScrollPhysics(),
+                                                                    buildDefaultDragHandles:
+                                                                        !isReadOnlyUI,
+                                                                    onReorderItem:
+                                                                        (
+                                                                          oldIndex,
+                                                                          newIndex,
+                                                                        ) => _onReorderInnerTimeline(
+                                                                          normalItems,
+                                                                          oldIndex,
+                                                                          newIndex,
+                                                                          ref,
+                                                                        ),
+                                                                    children: normalItems
+                                                                        .map<
+                                                                          Widget?
+                                                                        >((i) {
+                                                                          if (i
+                                                                              is MatchModel) {
+                                                                            // ★関数から独立型Widgetカードクラスへ100%完全同期置換
+                                                                            return Container(
+                                                                              key: ValueKey(
+                                                                                i.id,
                                                                               ),
-                                                                          child: ExpansionTile(
-                                                                            collapsedBackgroundColor:
-                                                                                mCardBg,
-                                                                            backgroundColor:
-                                                                                mCardBg,
-                                                                            title: Column(
-                                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                                              children: [
-                                                                                // 🔼 【中枠1行目】: コントロールボタン集約ライン
-                                                                                Row(
-                                                                                  children: [
-                                                                                    Text(
-                                                                                      '${bouts.length}ポジション',
-                                                                                      style: const TextStyle(
-                                                                                        fontSize: 11,
-                                                                                        color: Colors.grey,
-                                                                                        fontWeight: FontWeight.bold,
-                                                                                      ),
+                                                                              child: MatchListTileCard(
+                                                                                initialMatch: i,
+                                                                                isDeletable: true,
+                                                                              ),
+                                                                            );
+                                                                          } else if (i
+                                                                              is MatchCommentModel) {
+                                                                            return Container(
+                                                                              key: ValueKey(
+                                                                                'inner_comment_${i.id}',
+                                                                              ),
+                                                                              child: _buildInnerCommentWidget(
+                                                                                context,
+                                                                                ref,
+                                                                                i,
+                                                                                permissions,
+                                                                                isDark,
+                                                                              ),
+                                                                            );
+                                                                          }
+                                                                          return null;
+                                                                        })
+                                                                        .whereType<
+                                                                          Widget
+                                                                        >()
+                                                                        .toList(),
+                                                                  ),
+                                                                );
+                                                              } else {
+                                                                final boutsByMatchup =
+                                                                    <
+                                                                      String,
+                                                                      List<
+                                                                        MatchModel
+                                                                      >
+                                                                    >{};
+                                                                final matchupOrder =
+                                                                    <String>[];
+                                                                for (var m
+                                                                    in normalMatches) {
+                                                                  final matchupName =
+                                                                      '${m.redName.split(':').first.trim()} vs ${m.whiteName.split(':').first.trim()}';
+                                                                  if (!boutsByMatchup
+                                                                      .containsKey(
+                                                                        matchupName,
+                                                                      )) {
+                                                                    matchupOrder
+                                                                        .add(
+                                                                          matchupName,
+                                                                        );
+                                                                    boutsByMatchup[matchupName] =
+                                                                        [];
+                                                                  }
+                                                                  boutsByMatchup[matchupName]!
+                                                                      .add(m);
+                                                                }
+
+                                                                final combinedItems =
+                                                                    <dynamic>[];
+                                                                for (var name
+                                                                    in matchupOrder) {
+                                                                  combinedItems.add({
+                                                                    'type':
+                                                                        'matchup',
+                                                                    'name':
+                                                                        name,
+                                                                    'matches':
+                                                                        boutsByMatchup[name]!,
+                                                                    'order': boutsByMatchup[name]!
+                                                                        .first
+                                                                        .order,
+                                                                  });
+                                                                }
+                                                                for (var i
+                                                                    in normalItems) {
+                                                                  if (i
+                                                                      is MatchCommentModel) {
+                                                                    combinedItems.add({
+                                                                      'type':
+                                                                          'comment',
+                                                                      'comment':
+                                                                          i,
+                                                                      'order': i
+                                                                          .order,
+                                                                    });
+                                                                  }
+                                                                }
+                                                                combinedItems.sort(
+                                                                  (a, b) =>
+                                                                      (a['order']
+                                                                              as double)
+                                                                          .compareTo(
+                                                                            b['order']
+                                                                                as double,
+                                                                          ),
+                                                                );
+
+                                                                childrenWidgets.add(
+                                                                  Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .stretch,
+                                                                    children: combinedItems.map<Widget>((
+                                                                      cItem,
+                                                                    ) {
+                                                                      if (cItem['type'] ==
+                                                                          'comment') {
+                                                                        final c =
+                                                                            cItem['comment']
+                                                                                as MatchCommentModel;
+                                                                        return Container(
+                                                                          key: ValueKey(
+                                                                            'inner_comment_${c.id}',
+                                                                          ),
+                                                                          child: _buildInnerCommentWidget(
+                                                                            context,
+                                                                            ref,
+                                                                            c,
+                                                                            permissions,
+                                                                            isDark,
+                                                                          ),
+                                                                        );
+                                                                      }
+                                                                      final name =
+                                                                          cItem['name']
+                                                                              as String;
+                                                                      final bouts =
+                                                                          cItem['matches']
+                                                                              as List<
+                                                                                MatchModel
+                                                                              >;
+                                                                      final bool
+                                                                      boutsInProgress = bouts.any(
+                                                                        (m) =>
+                                                                            m.status ==
+                                                                            'in_progress',
+                                                                      );
+                                                                      final bool
+                                                                      boutsAllFinished = bouts.every(
+                                                                        (m) =>
+                                                                            m.status ==
+                                                                                'finished' ||
+                                                                            m.status ==
+                                                                                'approved',
+                                                                      );
+                                                                      final t1 =
+                                                                          name.split(
+                                                                            ' vs ',
+                                                                          )[0];
+                                                                      final t2 =
+                                                                          name.split(
+                                                                            ' vs ',
+                                                                          )[1];
+                                                                      final Color
+                                                                      mTitleColor =
+                                                                          boutsAllFinished
+                                                                          ? (isDark
+                                                                                ? Colors.grey.shade600
+                                                                                : Colors.grey.shade500)
+                                                                          : (isDark
+                                                                                ? Colors.white
+                                                                                : Colors.black87);
+
+                                                                      return Container(
+                                                                        key: ValueKey(
+                                                                          'league_team_$name',
+                                                                        ),
+                                                                        margin: const EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              8,
+                                                                          vertical:
+                                                                              4,
+                                                                        ),
+                                                                        decoration: BoxDecoration(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(
+                                                                                8,
+                                                                              ),
+                                                                          border: Border.all(
+                                                                            color:
+                                                                                isDark
+                                                                                ? const Color(
+                                                                                    0xFF38383A,
+                                                                                  )
+                                                                                : Colors.grey.shade300,
+                                                                            width:
+                                                                                1,
+                                                                          ),
+                                                                          boxShadow:
+                                                                              boutsInProgress
+                                                                              ? [
+                                                                                  BoxShadow(
+                                                                                    color: Colors.blue.withValues(
+                                                                                      alpha: 0.1,
                                                                                     ),
-                                                                                    const Spacer(),
-                                                                                    // 簡易入力
-                                                                                    Builder(
-                                                                                      builder:
-                                                                                          (
-                                                                                            context,
-                                                                                          ) {
-                                                                                            final ownT =
-                                                                                                ref
-                                                                                                    .read(
-                                                                                                      customTeamNamesProvider,
-                                                                                                    )
-                                                                                                    .value ??
-                                                                                                [];
-                                                                                            final rT = bouts.first.redName
-                                                                                                .split(
-                                                                                                  ':',
-                                                                                                )
-                                                                                                .first
-                                                                                                .trim();
-                                                                                            final wT = bouts.first.whiteName
-                                                                                                .split(
-                                                                                                  ':',
-                                                                                                )
-                                                                                                .first
-                                                                                                .trim();
-                                                                                            if (!permissions.isReadOnly &&
-                                                                                                !boutsAllFinished &&
-                                                                                                !(ownT.contains(
-                                                                                                      rT,
-                                                                                                    ) ||
-                                                                                                    bouts.first.redName.contains(
-                                                                                                      '自チーム',
-                                                                                                    )) &&
-                                                                                                !(ownT.contains(
-                                                                                                      wT,
-                                                                                                    ) ||
-                                                                                                    bouts.first.whiteName.contains(
-                                                                                                      '自チーム',
-                                                                                                    ))) {
-                                                                                              return Padding(
-                                                                                                padding: const EdgeInsets.only(
-                                                                                                  right: 6,
-                                                                                                ),
-                                                                                                child: SizedBox(
-                                                                                                  height: 24,
-                                                                                                  child: OutlinedButton.icon(
-                                                                                                    onPressed: () => _showSummaryInputDialog(
-                                                                                                      context,
-                                                                                                      ref,
-                                                                                                      bouts,
-                                                                                                    ),
-                                                                                                    icon: Icon(
-                                                                                                      Icons.flash_on,
-                                                                                                      size: 11,
-                                                                                                      color: Colors.amber.shade700,
-                                                                                                    ),
-                                                                                                    label: Text(
-                                                                                                      '簡易入力',
-                                                                                                      style: TextStyle(
-                                                                                                        fontSize: 9,
-                                                                                                        fontWeight: FontWeight.bold,
-                                                                                                        color: mTitleColor,
+                                                                                    blurRadius: 4,
+                                                                                    offset: const Offset(
+                                                                                      0,
+                                                                                      2,
+                                                                                    ),
+                                                                                  ),
+                                                                                ]
+                                                                              : [],
+                                                                        ),
+                                                                        child: ClipRRect(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(
+                                                                                7,
+                                                                              ),
+                                                                          child: ExpansionTileTheme(
+                                                                            data: ExpansionTileThemeData(
+                                                                              backgroundColor: isDark
+                                                                                  ? const Color(
+                                                                                      0xFF1C1C1E,
+                                                                                    )
+                                                                                  : Colors.white,
+                                                                              collapsedBackgroundColor: isDark
+                                                                                  ? const Color(
+                                                                                      0xFF161618,
+                                                                                    )
+                                                                                  : Colors.white,
+                                                                              iconColor: isDark
+                                                                                  ? Colors.indigo.shade300
+                                                                                  : Colors.indigo.shade700,
+                                                                              collapsedIconColor: Colors.grey,
+                                                                              textColor: isDark
+                                                                                  ? Colors.white
+                                                                                  : Colors.black87,
+                                                                              collapsedTextColor: isDark
+                                                                                  ? Colors.white70
+                                                                                  : Colors.black54,
+                                                                            ),
+                                                                            child: ExpansionTile(
+                                                                              key: ValueKey(
+                                                                                'tile_league_team_$name',
+                                                                              ),
+                                                                              backgroundColor: isDark
+                                                                                  ? const Color(
+                                                                                      0xFF1C1C1E,
+                                                                                    )
+                                                                                  : Colors.white,
+                                                                              collapsedBackgroundColor: isDark
+                                                                                  ? const Color(
+                                                                                      0xFF161618,
+                                                                                    )
+                                                                                  : Colors.white,
+                                                                              iconColor: isDark
+                                                                                  ? Colors.indigo.shade300
+                                                                                  : Colors.indigo.shade700,
+                                                                              collapsedIconColor: Colors.grey,
+                                                                              textColor: isDark
+                                                                                  ? Colors.white
+                                                                                  : Colors.black87,
+                                                                              collapsedTextColor: isDark
+                                                                                  ? Colors.white70
+                                                                                  : Colors.black54,
+                                                                              shape: const Border(),
+                                                                              collapsedShape: const Border(),
+                                                                              childrenPadding: EdgeInsets.zero,
+                                                                              tilePadding: const EdgeInsets.symmetric(
+                                                                                horizontal: 16,
+                                                                              ),
+                                                                              title: Column(
+                                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                children: [
+                                                                                  // 🔼 【中枠1行目】: コントロールボタン集約ライン
+                                                                                  Row(
+                                                                                    children: [
+                                                                                      Text(
+                                                                                        '${bouts.length}ポジション',
+                                                                                        style: const TextStyle(
+                                                                                          fontSize: 11,
+                                                                                          color: Colors.grey,
+                                                                                          fontWeight: FontWeight.bold,
+                                                                                        ),
+                                                                                      ),
+                                                                                      const Spacer(),
+                                                                                      // 簡易入力
+                                                                                      Builder(
+                                                                                        builder:
+                                                                                            (
+                                                                                              context,
+                                                                                            ) {
+                                                                                              final ownT =
+                                                                                                  ref
+                                                                                                      .read(
+                                                                                                        customTeamNamesProvider,
+                                                                                                      )
+                                                                                                      .value ??
+                                                                                                  [];
+                                                                                              final rT = bouts.first.redName
+                                                                                                  .split(
+                                                                                                    ':',
+                                                                                                  )
+                                                                                                  .first
+                                                                                                  .trim();
+                                                                                              final wT = bouts.first.whiteName
+                                                                                                  .split(
+                                                                                                    ':',
+                                                                                                  )
+                                                                                                  .first
+                                                                                                  .trim();
+                                                                                              if (!isReadOnlyUI &&
+                                                                                                  !boutsAllFinished &&
+                                                                                                  !(ownT.contains(
+                                                                                                        rT,
+                                                                                                      ) ||
+                                                                                                      bouts.first.redName.contains(
+                                                                                                        '自チーム',
+                                                                                                      )) &&
+                                                                                                  !(ownT.contains(
+                                                                                                        wT,
+                                                                                                      ) ||
+                                                                                                      bouts.first.whiteName.contains(
+                                                                                                        '自チーム',
+                                                                                                      ))) {
+                                                                                                return Padding(
+                                                                                                  padding: const EdgeInsets.only(
+                                                                                                    right: 6,
+                                                                                                  ),
+                                                                                                  child: SizedBox(
+                                                                                                    height: 24,
+                                                                                                    child: OutlinedButton.icon(
+                                                                                                      onPressed: () => _showSummaryInputDialog(
+                                                                                                        context,
+                                                                                                        ref,
+                                                                                                        bouts,
                                                                                                       ),
-                                                                                                    ),
-                                                                                                    style: OutlinedButton.styleFrom(
-                                                                                                      padding: const EdgeInsets.symmetric(
-                                                                                                        horizontal: 6,
+                                                                                                      icon: Icon(
+                                                                                                        Icons.flash_on,
+                                                                                                        size: 11,
+                                                                                                        color: Colors.amber.shade700,
                                                                                                       ),
-                                                                                                      side: BorderSide(
-                                                                                                        color: mTitleColor.withValues(
-                                                                                                          alpha: 0.2,
+                                                                                                      label: Text(
+                                                                                                        '簡易入力',
+                                                                                                        style: TextStyle(
+                                                                                                          fontSize: 9,
+                                                                                                          fontWeight: FontWeight.bold,
+                                                                                                          color: mTitleColor,
                                                                                                         ),
                                                                                                       ),
-                                                                                                      shape: RoundedRectangleBorder(
-                                                                                                        borderRadius: BorderRadius.circular(
-                                                                                                          6,
+                                                                                                      style: OutlinedButton.styleFrom(
+                                                                                                        padding: const EdgeInsets.symmetric(
+                                                                                                          horizontal: 6,
+                                                                                                        ),
+                                                                                                        side: BorderSide(
+                                                                                                          color: mTitleColor.withValues(
+                                                                                                            alpha: 0.2,
+                                                                                                          ),
+                                                                                                        ),
+                                                                                                        shape: RoundedRectangleBorder(
+                                                                                                          borderRadius: BorderRadius.circular(
+                                                                                                            6,
+                                                                                                          ),
                                                                                                         ),
                                                                                                       ),
                                                                                                     ),
                                                                                                   ),
-                                                                                                ),
-                                                                                              );
-                                                                                            }
-                                                                                            return const SizedBox.shrink();
-                                                                                          },
-                                                                                    ),
-                                                                                    // スコアボタン
-                                                                                    Padding(
-                                                                                      padding: const EdgeInsets.only(
-                                                                                        right: 6,
+                                                                                                );
+                                                                                              }
+                                                                                              return const SizedBox.shrink();
+                                                                                            },
                                                                                       ),
-                                                                                      child: SizedBox(
-                                                                                        height: 24,
-                                                                                        child: OutlinedButton(
-                                                                                          onPressed: () {
-                                                                                            final target =
-                                                                                                (bouts.first.groupName !=
-                                                                                                        null &&
-                                                                                                    bouts.first.groupName!.isNotEmpty)
-                                                                                                ? bouts.first.groupName!
-                                                                                                : bouts.first.id;
-                                                                                            final encodedTarget = Uri.encodeComponent(
-                                                                                              target,
-                                                                                            );
-                                                                                            final tId =
-                                                                                                bouts.first.tournamentId ??
-                                                                                                '';
-                                                                                            if (permissions.isReadOnly) {
-                                                                                              context.push(
-                                                                                                '/viewer-team/$encodedTarget?tournamentId=$tId',
+                                                                                      // スコアボタン
+                                                                                      Padding(
+                                                                                        padding: const EdgeInsets.only(
+                                                                                          right: 6,
+                                                                                        ),
+                                                                                        child: SizedBox(
+                                                                                          height: 24,
+                                                                                          child: OutlinedButton(
+                                                                                            onPressed: () {
+                                                                                              final target =
+                                                                                                  (bouts.first.groupName !=
+                                                                                                          null &&
+                                                                                                      bouts.first.groupName!.isNotEmpty)
+                                                                                                  ? bouts.first.groupName!
+                                                                                                  : bouts.first.id;
+                                                                                              final encodedTarget = Uri.encodeComponent(
+                                                                                                target,
                                                                                               );
-                                                                                            } else {
+                                                                                              final tId =
+                                                                                                  bouts.first.tournamentId ??
+                                                                                                  '';
                                                                                               context.push(
                                                                                                 '/team-scoreboard/$encodedTarget?tournamentId=$tId',
                                                                                               );
-                                                                                            }
-                                                                                          },
-                                                                                          style: OutlinedButton.styleFrom(
-                                                                                            padding: const EdgeInsets.symmetric(
-                                                                                              horizontal: 8,
-                                                                                            ),
-                                                                                            side: BorderSide(
-                                                                                              color: mTitleColor.withValues(
-                                                                                                alpha: 0.2,
+                                                                                            },
+                                                                                            style: OutlinedButton.styleFrom(
+                                                                                              padding: const EdgeInsets.symmetric(
+                                                                                                horizontal: 8,
+                                                                                              ),
+                                                                                              side: BorderSide(
+                                                                                                color: mTitleColor.withValues(
+                                                                                                  alpha: 0.2,
+                                                                                                ),
+                                                                                              ),
+                                                                                              shape: RoundedRectangleBorder(
+                                                                                                borderRadius: BorderRadius.circular(
+                                                                                                  6,
+                                                                                                ),
                                                                                               ),
                                                                                             ),
-                                                                                            shape: RoundedRectangleBorder(
-                                                                                              borderRadius: BorderRadius.circular(
-                                                                                                6,
+                                                                                            child: Text(
+                                                                                              'スコア',
+                                                                                              style: TextStyle(
+                                                                                                fontSize: 10,
+                                                                                                fontWeight: FontWeight.bold,
+                                                                                                color: mTitleColor,
                                                                                               ),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            'スコア',
-                                                                                            style: TextStyle(
-                                                                                              fontSize: 10,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              color: mTitleColor,
                                                                                             ),
                                                                                           ),
                                                                                         ),
                                                                                       ),
-                                                                                    ),
-                                                                                    // 状態バナー
-                                                                                    Container(
-                                                                                      padding: const EdgeInsets.symmetric(
-                                                                                        horizontal: 6,
-                                                                                        vertical: 2,
-                                                                                      ),
-                                                                                      decoration: BoxDecoration(
-                                                                                        color: boutsInProgress
-                                                                                            ? Colors.blue.shade600
-                                                                                            : (boutsAllFinished
-                                                                                                  ? (isDark
-                                                                                                        ? Colors.grey.shade800
-                                                                                                        : Colors.grey.shade300)
-                                                                                                  : (isDark
-                                                                                                        ? const Color(
-                                                                                                            0xFF2C2C2E,
-                                                                                                          )
-                                                                                                        : Colors.grey.shade200)),
-                                                                                        borderRadius: BorderRadius.circular(
-                                                                                          4,
+                                                                                      // 状態バナー
+                                                                                      Container(
+                                                                                        padding: const EdgeInsets.symmetric(
+                                                                                          horizontal: 6,
+                                                                                          vertical: 2,
                                                                                         ),
-                                                                                      ),
-                                                                                      child: Text(
-                                                                                        boutsInProgress
-                                                                                            ? '進行中'
-                                                                                            : (boutsAllFinished
-                                                                                                  ? '終了'
-                                                                                                  : '待機中'),
-                                                                                        style: TextStyle(
-                                                                                          fontSize: 10,
-                                                                                          fontWeight: FontWeight.bold,
+                                                                                        decoration: BoxDecoration(
                                                                                           color: boutsInProgress
-                                                                                              ? Colors.white
+                                                                                              ? Colors.blue.shade600
                                                                                               : (boutsAllFinished
                                                                                                     ? (isDark
-                                                                                                          ? Colors.grey.shade400
-                                                                                                          : Colors.grey.shade600)
+                                                                                                          ? Colors.grey.shade800
+                                                                                                          : Colors.grey.shade300)
                                                                                                     : (isDark
-                                                                                                          ? Colors.grey.shade400
-                                                                                                          : Colors.grey.shade700)),
+                                                                                                          ? const Color(
+                                                                                                              0xFF2C2C2E,
+                                                                                                            )
+                                                                                                          : Colors.grey.shade200)),
+                                                                                          borderRadius: BorderRadius.circular(
+                                                                                            4,
+                                                                                          ),
+                                                                                        ),
+                                                                                        child: Text(
+                                                                                          boutsInProgress
+                                                                                              ? '進行中'
+                                                                                              : (boutsAllFinished
+                                                                                                    ? '終了'
+                                                                                                    : '待機中'),
+                                                                                          style: TextStyle(
+                                                                                            fontSize: 10,
+                                                                                            fontWeight: FontWeight.bold,
+                                                                                            color: boutsInProgress
+                                                                                                ? Colors.white
+                                                                                                : (boutsAllFinished
+                                                                                                      ? (isDark
+                                                                                                            ? Colors.grey.shade400
+                                                                                                            : Colors.grey.shade600)
+                                                                                                      : (isDark
+                                                                                                            ? Colors.grey.shade400
+                                                                                                            : Colors.grey.shade700)),
+                                                                                          ),
                                                                                         ),
                                                                                       ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  height: 8,
-                                                                                ),
-                                                                                // 🔽 【中枠2行目】: リーグ内チーム対抗勝数(本数)掲示ライン
-                                                                                Builder(
-                                                                                  builder:
-                                                                                      (
-                                                                                        context,
-                                                                                      ) {
-                                                                                        int redWins = 0;
-                                                                                        int redPts = 0;
-                                                                                        int whiteWins = 0;
-                                                                                        int whitePts = 0;
-                                                                                        for (var m in bouts) {
-                                                                                          final r = m.redScore;
-                                                                                          final w = m.whiteScore;
-                                                                                          redPts +=
-                                                                                              (r
-                                                                                                      as num)
-                                                                                                  .toInt();
-                                                                                          whitePts +=
-                                                                                              (w
-                                                                                                      as num)
-                                                                                                  .toInt();
-                                                                                          if (m.status ==
-                                                                                                  'finished' ||
-                                                                                              m.status ==
-                                                                                                  'approved') {
-                                                                                            if (r >
-                                                                                                w) {
-                                                                                              redWins++;
-                                                                                            } else if (w >
-                                                                                                r) {
-                                                                                              whiteWins++;
+                                                                                    ],
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    height: 8,
+                                                                                  ),
+                                                                                  // 🔽 【中枠2行目】: リーグ内チーム対抗勝数(本数)掲示ライン
+                                                                                  Builder(
+                                                                                    builder:
+                                                                                        (
+                                                                                          context,
+                                                                                        ) {
+                                                                                          int redWins = 0;
+                                                                                          int redPts = 0;
+                                                                                          int whiteWins = 0;
+                                                                                          int whitePts = 0;
+                                                                                          for (var m in bouts) {
+                                                                                            final r = m.redScore;
+                                                                                            final w = m.whiteScore;
+                                                                                            redPts +=
+                                                                                                (r
+                                                                                                        as num)
+                                                                                                    .toInt();
+                                                                                            whitePts +=
+                                                                                                (w
+                                                                                                        as num)
+                                                                                                    .toInt();
+                                                                                            if (m.status ==
+                                                                                                    'finished' ||
+                                                                                                m.status ==
+                                                                                                    'approved') {
+                                                                                              if (r >
+                                                                                                  w) {
+                                                                                                redWins++;
+                                                                                              } else if (w >
+                                                                                                  r) {
+                                                                                                whiteWins++;
+                                                                                              }
                                                                                             }
                                                                                           }
-                                                                                        }
-                                                                                        final isRedOwn = ownTeams.contains(
-                                                                                          t1,
-                                                                                        );
-                                                                                        final isWhiteOwn = ownTeams.contains(
-                                                                                          t2,
-                                                                                        );
+                                                                                          final isRedOwn = ownTeams.contains(
+                                                                                            t1,
+                                                                                          );
+                                                                                          final isWhiteOwn = ownTeams.contains(
+                                                                                            t2,
+                                                                                          );
 
-                                                                                        return Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                                                          children: [
-                                                                                            Expanded(
-                                                                                              child: Text(
-                                                                                                t1,
-                                                                                                style: TextStyle(
-                                                                                                  fontSize: 14,
-                                                                                                  fontWeight: isRedOwn
-                                                                                                      ? FontWeight.w900
-                                                                                                      : FontWeight.bold,
-                                                                                                  color: isRedOwn
-                                                                                                      ? Colors.amber.shade600
-                                                                                                      : mTitleColor,
+                                                                                          return Row(
+                                                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                                                            children: [
+                                                                                              Expanded(
+                                                                                                child: Text(
+                                                                                                  t1,
+                                                                                                  style: TextStyle(
+                                                                                                    fontSize: 14,
+                                                                                                    fontWeight: isRedOwn
+                                                                                                        ? FontWeight.w900
+                                                                                                        : FontWeight.bold,
+                                                                                                    color: isRedOwn
+                                                                                                        ? Colors.amber.shade600
+                                                                                                        : mTitleColor,
+                                                                                                  ),
+                                                                                                  textAlign: TextAlign.end,
+                                                                                                  overflow: TextOverflow.ellipsis,
                                                                                                 ),
-                                                                                                textAlign: TextAlign.end,
-                                                                                                overflow: TextOverflow.ellipsis,
                                                                                               ),
-                                                                                            ),
-                                                                                            Padding(
-                                                                                              padding: const EdgeInsets.symmetric(
-                                                                                                horizontal: 12,
-                                                                                              ),
-                                                                                              child: Row(
-                                                                                                mainAxisSize: MainAxisSize.min,
-                                                                                                children: [
-                                                                                                  Text(
-                                                                                                    '$redWins',
-                                                                                                    style: TextStyle(
-                                                                                                      fontSize: 15,
-                                                                                                      fontWeight: FontWeight.bold,
-                                                                                                      color: isDark
-                                                                                                          ? Colors.red.shade300
-                                                                                                          : Colors.red.shade700,
-                                                                                                    ),
-                                                                                                  ),
-                                                                                                  Text(
-                                                                                                    '($redPts)',
-                                                                                                    style: TextStyle(
-                                                                                                      fontSize: 10,
-                                                                                                      color: Colors.grey.shade500,
-                                                                                                    ),
-                                                                                                  ),
-                                                                                                  Padding(
-                                                                                                    padding: const EdgeInsets.symmetric(
-                                                                                                      horizontal: 6,
-                                                                                                    ),
-                                                                                                    child: Text(
-                                                                                                      'ー',
+                                                                                              Padding(
+                                                                                                padding: const EdgeInsets.symmetric(
+                                                                                                  horizontal: 12,
+                                                                                                ),
+                                                                                                child: Row(
+                                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                                  children: [
+                                                                                                    Text(
+                                                                                                      '$redWins',
                                                                                                       style: TextStyle(
-                                                                                                        fontSize: 13,
-                                                                                                        color: Colors.grey.shade400,
+                                                                                                        fontSize: 15,
                                                                                                         fontWeight: FontWeight.bold,
+                                                                                                        color: isDark
+                                                                                                            ? Colors.red.shade300
+                                                                                                            : Colors.red.shade700,
                                                                                                       ),
                                                                                                     ),
-                                                                                                  ),
-                                                                                                  Text(
-                                                                                                    '$whiteWins',
-                                                                                                    style: TextStyle(
-                                                                                                      fontSize: 15,
-                                                                                                      fontWeight: FontWeight.bold,
-                                                                                                      color: isDark
-                                                                                                          ? Colors.white
-                                                                                                          : Colors.black87,
+                                                                                                    Text(
+                                                                                                      '($redPts)',
+                                                                                                      style: TextStyle(
+                                                                                                        fontSize: 10,
+                                                                                                        color: Colors.grey.shade500,
+                                                                                                      ),
                                                                                                     ),
-                                                                                                  ),
-                                                                                                  Text(
-                                                                                                    '($whitePts)',
-                                                                                                    style: TextStyle(
-                                                                                                      fontSize: 10,
-                                                                                                      color: Colors.grey.shade500,
+                                                                                                    Padding(
+                                                                                                      padding: const EdgeInsets.symmetric(
+                                                                                                        horizontal: 6,
+                                                                                                      ),
+                                                                                                      child: Text(
+                                                                                                        'ー',
+                                                                                                        style: TextStyle(
+                                                                                                          fontSize: 13,
+                                                                                                          color: Colors.grey.shade400,
+                                                                                                          fontWeight: FontWeight.bold,
+                                                                                                        ),
+                                                                                                      ),
                                                                                                     ),
-                                                                                                  ),
-                                                                                                ],
-                                                                                              ),
-                                                                                            ),
-                                                                                            Expanded(
-                                                                                              child: Text(
-                                                                                                t2,
-                                                                                                style: TextStyle(
-                                                                                                  fontSize: 14,
-                                                                                                  fontWeight: isWhiteOwn
-                                                                                                      ? FontWeight.w900
-                                                                                                      : FontWeight.bold,
-                                                                                                  color: isWhiteOwn
-                                                                                                      ? Colors.amber.shade600
-                                                                                                      : mTitleColor,
+                                                                                                    Text(
+                                                                                                      '$whiteWins',
+                                                                                                      style: TextStyle(
+                                                                                                        fontSize: 15,
+                                                                                                        fontWeight: FontWeight.bold,
+                                                                                                        color: isDark
+                                                                                                            ? Colors.white
+                                                                                                            : Colors.black87,
+                                                                                                      ),
+                                                                                                    ),
+                                                                                                    Text(
+                                                                                                      '($whitePts)',
+                                                                                                      style: TextStyle(
+                                                                                                        fontSize: 10,
+                                                                                                        color: Colors.grey.shade500,
+                                                                                                      ),
+                                                                                                    ),
+                                                                                                  ],
                                                                                                 ),
-                                                                                                textAlign: TextAlign.start,
-                                                                                                overflow: TextOverflow.ellipsis,
                                                                                               ),
-                                                                                            ),
-                                                                                          ],
-                                                                                        );
-                                                                                      },
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                            // ★関数から独立型Widgetカードクラスへ100%完全同期置換
-                                                                            children: bouts
-                                                                                .map(
-                                                                                  (
-                                                                                    m,
-                                                                                  ) => MatchListTileCard(
-                                                                                    initialMatch: m,
-                                                                                    isDeletable: false,
+                                                                                              Expanded(
+                                                                                                child: Text(
+                                                                                                  t2,
+                                                                                                  style: TextStyle(
+                                                                                                    fontSize: 14,
+                                                                                                    fontWeight: isWhiteOwn
+                                                                                                        ? FontWeight.w900
+                                                                                                        : FontWeight.bold,
+                                                                                                    color: isWhiteOwn
+                                                                                                        ? Colors.amber.shade600
+                                                                                                        : mTitleColor,
+                                                                                                  ),
+                                                                                                  textAlign: TextAlign.start,
+                                                                                                  overflow: TextOverflow.ellipsis,
+                                                                                                ),
+                                                                                              ),
+                                                                                            ],
+                                                                                          );
+                                                                                        },
                                                                                   ),
-                                                                                )
-                                                                                .toList(),
+                                                                                ],
+                                                                              ),
+                                                                              // ★関数から独立型Widgetカードクラスへ100%完全同期置換
+                                                                              children: bouts
+                                                                                  .map(
+                                                                                    (
+                                                                                      m,
+                                                                                    ) => MatchListTileCard(
+                                                                                      initialMatch: m,
+                                                                                      isDeletable: false,
+                                                                                    ),
+                                                                                  )
+                                                                                  .toList(),
+                                                                            ),
                                                                           ),
                                                                         ),
-                                                                      ),
-                                                                    );
-                                                                  }).toList(),
-                                                                ),
-                                                              );
-                                                            }
-                                                          } else {
-                                                            if (label.contains(
-                                                                  '個人戦',
-                                                                ) ||
-                                                                label.contains(
-                                                                  '選手',
-                                                                )) {
-                                                              childrenWidgets.add(
-                                                                ReorderableListView(
-                                                                  shrinkWrap:
-                                                                      true,
-                                                                  physics:
-                                                                      const NeverScrollableScrollPhysics(),
-                                                                  buildDefaultDragHandles:
-                                                                      !permissions
-                                                                          .isReadOnly,
-                                                                  onReorderItem:
-                                                                      (
-                                                                        oldIndex,
-                                                                        newIndex,
-                                                                      ) => _onReorderInnerTimeline(
-                                                                        normalItems,
-                                                                        oldIndex,
-                                                                        newIndex,
-                                                                        ref,
-                                                                      ),
-                                                                  children: normalItems
-                                                                      .map<
-                                                                        Widget?
-                                                                      >((i) {
-                                                                        if (i
-                                                                            is MatchModel) {
-                                                                          // ★関数から独立型Widgetカードクラスへ100%完全同期置換
-                                                                          return Container(
-                                                                            key: ValueKey(
-                                                                              i.id,
-                                                                            ),
-                                                                            child: MatchListTileCard(
-                                                                              initialMatch: i,
-                                                                              isDeletable: false,
-                                                                            ),
-                                                                          );
-                                                                        } else if (i
-                                                                            is MatchCommentModel) {
-                                                                          return Container(
-                                                                            key: ValueKey(
-                                                                              'inner_comment_${i.id}',
-                                                                            ),
-                                                                            child: _buildInnerCommentWidget(
-                                                                              context,
-                                                                              ref,
-                                                                              i,
-                                                                              permissions,
-                                                                              isDark,
-                                                                            ),
-                                                                          );
-                                                                        }
-                                                                        return null;
-                                                                      })
-                                                                      .whereType<
-                                                                        Widget
-                                                                      >()
-                                                                      .toList(),
-                                                                ),
-                                                              );
-                                                            } else {
-                                                              childrenWidgets.add(
-                                                                Column(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .stretch,
-                                                                  children: normalItems.map<Widget>((
-                                                                    i,
-                                                                  ) {
-                                                                    if (i
-                                                                        is MatchModel) {
-                                                                      return Container(
-                                                                        key: ValueKey(
-                                                                          i.id,
-                                                                        ),
-                                                                        child: MatchListTileCard(
-                                                                          initialMatch:
-                                                                              i,
-                                                                          isDeletable:
-                                                                              false,
-                                                                        ),
                                                                       );
-                                                                    } else if (i
-                                                                        is MatchCommentModel) {
-                                                                      return Container(
-                                                                        key: ValueKey(
-                                                                          'inner_comment_${i.id}',
-                                                                        ),
-                                                                        child: _buildInnerCommentWidget(
-                                                                          context,
-                                                                          ref,
-                                                                          i,
-                                                                          permissions,
-                                                                          isDark,
-                                                                        ),
-                                                                      );
-                                                                    }
-                                                                    return const SizedBox.shrink();
-                                                                  }).toList(),
-                                                                ),
-                                                              );
-                                                            }
-                                                          }
-
-                                                          if (tieBreakMatches
-                                                              .isNotEmpty) {
-                                                            childrenWidgets.add(
-                                                              const Divider(),
-                                                            );
-                                                            childrenWidgets.add(
-                                                              const Padding(
-                                                                padding:
-                                                                    EdgeInsets.all(
-                                                                      8,
-                                                                    ),
-                                                                child: Text(
-                                                                  '【順位決定戦】',
-                                                                  style: TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontSize:
-                                                                        12,
-                                                                    color: Colors
-                                                                        .orange,
+                                                                    }).toList(),
                                                                   ),
-                                                                ),
-                                                              ),
-                                                            );
-                                                            if (label.contains(
-                                                                  '個人戦',
-                                                                ) ||
-                                                                label.contains(
-                                                                  '選手',
-                                                                )) {
-                                                              childrenWidgets.add(
-                                                                ReorderableListView(
-                                                                  shrinkWrap:
-                                                                      true,
-                                                                  physics:
-                                                                      const NeverScrollableScrollPhysics(),
-                                                                  buildDefaultDragHandles:
-                                                                      !permissions
-                                                                          .isReadOnly,
-                                                                  onReorderItem:
-                                                                      (
-                                                                        oldIndex,
-                                                                        newIndex,
-                                                                      ) => _onReorderMatches(
-                                                                        tieBreakMatches,
-                                                                        oldIndex,
-                                                                        newIndex,
-                                                                        ref,
-                                                                      ),
-                                                                  // ★関数から独立型Widgetカードクラスへ100%完全同期置換
-                                                                  children: tieBreakMatches
-                                                                      .map(
+                                                                );
+                                                              }
+                                                            } else {
+                                                              if (label
+                                                                      .contains(
+                                                                        '個人戦',
+                                                                      ) ||
+                                                                  label
+                                                                      .contains(
+                                                                        '選手',
+                                                                      )) {
+                                                                childrenWidgets.add(
+                                                                  ReorderableListView(
+                                                                    shrinkWrap:
+                                                                        true,
+                                                                    physics:
+                                                                        const NeverScrollableScrollPhysics(),
+                                                                    buildDefaultDragHandles:
+                                                                        !isReadOnlyUI,
+                                                                    onReorderItem:
                                                                         (
-                                                                          m,
-                                                                        ) => Container(
+                                                                          oldIndex,
+                                                                          newIndex,
+                                                                        ) => _onReorderInnerTimeline(
+                                                                          normalItems,
+                                                                          oldIndex,
+                                                                          newIndex,
+                                                                          ref,
+                                                                        ),
+                                                                    children: normalItems
+                                                                        .map<
+                                                                          Widget?
+                                                                        >((i) {
+                                                                          if (i
+                                                                              is MatchModel) {
+                                                                            // ★関数から独立型Widgetカードクラスへ100%完全同期置換
+                                                                            return Container(
+                                                                              key: ValueKey(
+                                                                                i.id,
+                                                                              ),
+                                                                              child: MatchListTileCard(
+                                                                                initialMatch: i,
+                                                                                isDeletable: false,
+                                                                              ),
+                                                                            );
+                                                                          } else if (i
+                                                                              is MatchCommentModel) {
+                                                                            return Container(
+                                                                              key: ValueKey(
+                                                                                'inner_comment_${i.id}',
+                                                                              ),
+                                                                              child: _buildInnerCommentWidget(
+                                                                                context,
+                                                                                ref,
+                                                                                i,
+                                                                                permissions,
+                                                                                isDark,
+                                                                              ),
+                                                                            );
+                                                                          }
+                                                                          return null;
+                                                                        })
+                                                                        .whereType<
+                                                                          Widget
+                                                                        >()
+                                                                        .toList(),
+                                                                  ),
+                                                                );
+                                                              } else {
+                                                                childrenWidgets.add(
+                                                                  Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .stretch,
+                                                                    children: normalItems.map<Widget>((
+                                                                      i,
+                                                                    ) {
+                                                                      if (i
+                                                                          is MatchModel) {
+                                                                        return Container(
                                                                           key: ValueKey(
-                                                                            m.id,
+                                                                            i.id,
                                                                           ),
                                                                           child: MatchListTileCard(
                                                                             initialMatch:
-                                                                                m,
+                                                                                i,
                                                                             isDeletable:
-                                                                                true,
+                                                                                false,
                                                                           ),
-                                                                        ),
-                                                                      )
-                                                                      .toList(),
-                                                                ),
-                                                              );
-                                                            } else {
-                                                              final tieBoutsByMatchup =
-                                                                  <
-                                                                    String,
-                                                                    List<
-                                                                      MatchModel
-                                                                    >
-                                                                  >{};
-                                                              final tieMatchupOrder =
-                                                                  <String>[];
-                                                              for (var m
-                                                                  in tieBreakMatches) {
-                                                                final matchupName =
-                                                                    '${m.redName.split(':').first.trim()} vs ${m.whiteName.split(':').first.trim()}';
-                                                                if (!tieBoutsByMatchup
-                                                                    .containsKey(
-                                                                      matchupName,
-                                                                    )) {
-                                                                  tieMatchupOrder
-                                                                      .add(
-                                                                        matchupName,
-                                                                      );
-                                                                  tieBoutsByMatchup[matchupName] =
-                                                                      [];
-                                                                }
-                                                                tieBoutsByMatchup[matchupName]!
-                                                                    .add(m);
+                                                                        );
+                                                                      } else if (i
+                                                                          is MatchCommentModel) {
+                                                                        return Container(
+                                                                          key: ValueKey(
+                                                                            'inner_comment_${i.id}',
+                                                                          ),
+                                                                          child: _buildInnerCommentWidget(
+                                                                            context,
+                                                                            ref,
+                                                                            i,
+                                                                            permissions,
+                                                                            isDark,
+                                                                          ),
+                                                                        );
+                                                                      }
+                                                                      return const SizedBox.shrink();
+                                                                    }).toList(),
+                                                                  ),
+                                                                );
                                                               }
+                                                            }
+
+                                                            if (tieBreakMatches
+                                                                .isNotEmpty) {
                                                               childrenWidgets.add(
-                                                                Column(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .stretch,
-                                                                  children: tieMatchupOrder.map<Widget>((
-                                                                    name,
-                                                                  ) {
-                                                                    final bouts =
-                                                                        tieBoutsByMatchup[name]!;
-                                                                    // ★関数から独立型Widgetカードクラスへ100%完全同期置換
-                                                                    return Container(
-                                                                      key: ValueKey(
-                                                                        'tie_$name',
+                                                                const Divider(),
+                                                              );
+                                                              childrenWidgets.add(
+                                                                const Padding(
+                                                                  padding:
+                                                                      EdgeInsets.all(
+                                                                        8,
                                                                       ),
-                                                                      child: Column(
-                                                                        children: bouts
-                                                                            .map(
-                                                                              (
-                                                                                m,
-                                                                              ) => MatchListTileCard(
-                                                                                initialMatch: m,
-                                                                                isDeletable: false,
-                                                                              ),
-                                                                            )
-                                                                            .toList(),
-                                                                      ),
-                                                                    );
-                                                                  }).toList(),
+                                                                  child: Text(
+                                                                    '【順位決定戦】',
+                                                                    style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          12,
+                                                                      color: Colors
+                                                                          .orange,
+                                                                    ),
+                                                                  ),
                                                                 ),
                                                               );
+                                                              if (label
+                                                                      .contains(
+                                                                        '個人戦',
+                                                                      ) ||
+                                                                  label
+                                                                      .contains(
+                                                                        '選手',
+                                                                      )) {
+                                                                childrenWidgets.add(
+                                                                  ReorderableListView(
+                                                                    shrinkWrap:
+                                                                        true,
+                                                                    physics:
+                                                                        const NeverScrollableScrollPhysics(),
+                                                                    buildDefaultDragHandles:
+                                                                        !isReadOnlyUI,
+                                                                    onReorderItem:
+                                                                        (
+                                                                          oldIndex,
+                                                                          newIndex,
+                                                                        ) => _onReorderMatches(
+                                                                          tieBreakMatches,
+                                                                          oldIndex,
+                                                                          newIndex,
+                                                                          ref,
+                                                                        ),
+                                                                    // ★関数から独立型Widgetカードクラスへ100%完全同期置換
+                                                                    children: tieBreakMatches
+                                                                        .map(
+                                                                          (
+                                                                            m,
+                                                                          ) => Container(
+                                                                            key: ValueKey(
+                                                                              m.id,
+                                                                            ),
+                                                                            child: MatchListTileCard(
+                                                                              initialMatch: m,
+                                                                              isDeletable: true,
+                                                                            ),
+                                                                          ),
+                                                                        )
+                                                                        .toList(),
+                                                                  ),
+                                                                );
+                                                              } else {
+                                                                final tieBoutsByMatchup =
+                                                                    <
+                                                                      String,
+                                                                      List<
+                                                                        MatchModel
+                                                                      >
+                                                                    >{};
+                                                                final tieMatchupOrder =
+                                                                    <String>[];
+                                                                for (var m
+                                                                    in tieBreakMatches) {
+                                                                  final matchupName =
+                                                                      '${m.redName.split(':').first.trim()} vs ${m.whiteName.split(':').first.trim()}';
+                                                                  if (!tieBoutsByMatchup
+                                                                      .containsKey(
+                                                                        matchupName,
+                                                                      )) {
+                                                                    tieMatchupOrder
+                                                                        .add(
+                                                                          matchupName,
+                                                                        );
+                                                                    tieBoutsByMatchup[matchupName] =
+                                                                        [];
+                                                                  }
+                                                                  tieBoutsByMatchup[matchupName]!
+                                                                      .add(m);
+                                                                }
+                                                                childrenWidgets.add(
+                                                                  Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .stretch,
+                                                                    children: tieMatchupOrder.map<Widget>((
+                                                                      name,
+                                                                    ) {
+                                                                      final bouts =
+                                                                          tieBoutsByMatchup[name]!;
+                                                                      // ★関数から独立型Widgetカードクラスへ100%完全同期置換
+                                                                      return Container(
+                                                                        key: ValueKey(
+                                                                          'tie_$name',
+                                                                        ),
+                                                                        child: Column(
+                                                                          children: bouts
+                                                                              .map(
+                                                                                (
+                                                                                  m,
+                                                                                ) => MatchListTileCard(
+                                                                                  initialMatch: m,
+                                                                                  isDeletable: false,
+                                                                                ),
+                                                                              )
+                                                                              .toList(),
+                                                                        ),
+                                                                      );
+                                                                    }).toList(),
+                                                                  ),
+                                                                );
+                                                              }
                                                             }
-                                                          }
-                                                          return childrenWidgets;
-                                                        })(),
+                                                            return childrenWidgets;
+                                                          })(),
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
@@ -2847,13 +2898,6 @@ class MatchTimelineList extends ConsumerWidget {
                                   m.status == 'finished' ||
                                   m.status == 'approved',
                             );
-                            final Color pCardBg = pAllFinished
-                                ? (isDark
-                                      ? const Color(0xFF161618)
-                                      : Colors.grey.shade100)
-                                : (isDark
-                                      ? const Color(0xFF1C1C1E)
-                                      : Colors.white);
                             final Color pTitleColor = pAllFinished
                                 ? (isDark
                                       ? Colors.grey.shade600
@@ -2894,146 +2938,174 @@ class MatchTimelineList extends ConsumerWidget {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(11),
-                                child: ExpansionTile(
-                                  collapsedBackgroundColor: pCardBg,
-                                  backgroundColor: pCardBg,
-                                  leading: CircleAvatar(
-                                    backgroundColor: pAllFinished
-                                        ? (isDark
-                                              ? Colors.grey.shade800
-                                              : Colors.grey.shade300)
-                                        : Colors.orange.shade100,
-                                    child: Text(
-                                      playerName[0],
-                                      style: TextStyle(
-                                        color: pAllFinished
-                                            ? (isDark
-                                                  ? Colors.grey.shade500
-                                                  : Colors.grey.shade600)
-                                            : Colors.orange.shade800,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                child: ExpansionTileTheme(
+                                  data: ExpansionTileThemeData(
+                                    backgroundColor: isDark
+                                        ? const Color(0xFF1C1C1E)
+                                        : Colors.white,
+                                    collapsedBackgroundColor: isDark
+                                        ? const Color(0xFF161618)
+                                        : Colors.white,
+                                    iconColor: isDark
+                                        ? Colors.indigo.shade300
+                                        : Colors.indigo.shade700,
+                                    collapsedIconColor: Colors.grey,
+                                    textColor: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                    collapsedTextColor: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
                                   ),
-                                  title: Text(
-                                    playerName,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                      color: pTitleColor,
+                                  child: ExpansionTile(
+                                    key: ValueKey('player_$playerName'),
+                                    shape: const Border(),
+                                    collapsedShape: const Border(),
+                                    childrenPadding: EdgeInsets.zero,
+                                    tilePadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
                                     ),
-                                  ),
-                                  subtitle: Row(
-                                    children: [
-                                      Text(
-                                        '$label • ${playerMatches.length}試合',
+                                    leading: CircleAvatar(
+                                      backgroundColor: pAllFinished
+                                          ? (isDark
+                                                ? Colors.grey.shade800
+                                                : Colors.grey.shade300)
+                                          : Colors.orange.shade100,
+                                      child: Text(
+                                        playerName[0],
                                         style: TextStyle(
+                                          color: pAllFinished
+                                              ? (isDark
+                                                    ? Colors.grey.shade500
+                                                    : Colors.grey.shade600)
+                                              : Colors.orange.shade800,
                                           fontSize: 12,
-                                          color: pSubTitleColor,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: pInProgress
-                                              ? Colors.blue.shade600
-                                              : (pAllFinished
-                                                    ? (isDark
-                                                          ? Colors.grey.shade800
-                                                          : Colors
-                                                                .grey
-                                                                .shade300)
-                                                    : (isDark
-                                                          ? const Color(
-                                                              0xFF2C2C2E,
-                                                            )
-                                                          : Colors
-                                                                .grey
-                                                                .shade200)),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
+                                    ),
+                                    title: Text(
+                                      playerName,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: pTitleColor,
+                                      ),
+                                    ),
+                                    subtitle: Row(
+                                      children: [
+                                        Text(
+                                          '$label • ${playerMatches.length}試合',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: pSubTitleColor,
                                           ),
                                         ),
-                                        child: Text(
-                                          pInProgress
-                                              ? '進行中'
-                                              : (pAllFinished ? '終了' : '待機中'),
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
                                             color: pInProgress
-                                                ? Colors.white
+                                                ? Colors.blue.shade600
                                                 : (pAllFinished
                                                       ? (isDark
                                                             ? Colors
                                                                   .grey
-                                                                  .shade400
+                                                                  .shade800
                                                             : Colors
                                                                   .grey
-                                                                  .shade600)
+                                                                  .shade300)
                                                       : (isDark
-                                                            ? Colors
-                                                                  .grey
-                                                                  .shade400
+                                                            ? const Color(
+                                                                0xFF2C2C2E,
+                                                              )
                                                             : Colors
                                                                   .grey
-                                                                  .shade700)),
+                                                                  .shade200)),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            pInProgress
+                                                ? '進行中'
+                                                : (pAllFinished ? '終了' : '待機中'),
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: pInProgress
+                                                  ? Colors.white
+                                                  : (pAllFinished
+                                                        ? (isDark
+                                                              ? Colors
+                                                                    .grey
+                                                                    .shade400
+                                                              : Colors
+                                                                    .grey
+                                                                    .shade600)
+                                                        : (isDark
+                                                              ? Colors
+                                                                    .grey
+                                                                    .shade400
+                                                              : Colors
+                                                                    .grey
+                                                                    .shade700)),
+                                            ),
                                           ),
                                         ),
+                                      ],
+                                    ),
+                                    children: [
+                                      // ★ 修正: playerMatches のみのリストから、playerMixedItems（コメント混在リスト）に変更し、_onReorderInnerTimeline に接続
+                                      ReorderableListView(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        buildDefaultDragHandles: !isReadOnlyUI,
+                                        onReorderItem: (oldIndex, newIndex) =>
+                                            _onReorderInnerTimeline(
+                                              playerMixedItems,
+                                              oldIndex,
+                                              newIndex,
+                                              ref,
+                                            ),
+                                        children: playerMixedItems
+                                            .map<Widget?>((i) {
+                                              if (i is MatchModel) {
+                                                // ★関数から独立型Widgetカードクラスへ100%完全同期置換
+                                                return Container(
+                                                  key: ValueKey(i.id),
+                                                  child: MatchListTileCard(
+                                                    initialMatch: i,
+                                                    isDeletable: true,
+                                                  ),
+                                                );
+                                              } else if (i
+                                                  is MatchCommentModel) {
+                                                return Container(
+                                                  key: ValueKey(
+                                                    'inner_comment_${i.id}',
+                                                  ),
+                                                  child:
+                                                      _buildInnerCommentWidget(
+                                                        context,
+                                                        ref,
+                                                        i,
+                                                        permissions,
+                                                        isDark,
+                                                      ),
+                                                );
+                                              }
+                                              return null;
+                                            })
+                                            .whereType<Widget>()
+                                            .toList(),
                                       ),
                                     ],
                                   ),
-                                  children: [
-                                    // ★ 修正: playerMatches のみのリストから、playerMixedItems（コメント混在リスト）に変更し、_onReorderInnerTimeline に接続
-                                    ReorderableListView(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      buildDefaultDragHandles:
-                                          !permissions.isReadOnly,
-                                      onReorderItem: (oldIndex, newIndex) =>
-                                          _onReorderInnerTimeline(
-                                            playerMixedItems,
-                                            oldIndex,
-                                            newIndex,
-                                            ref,
-                                          ),
-                                      children: playerMixedItems
-                                          .map<Widget?>((i) {
-                                            if (i is MatchModel) {
-                                              // ★関数から独立型Widgetカードクラスへ100%完全同期置換
-                                              return Container(
-                                                key: ValueKey(i.id),
-                                                child: MatchListTileCard(
-                                                  initialMatch: i,
-                                                  isDeletable: true,
-                                                ),
-                                              );
-                                            } else if (i is MatchCommentModel) {
-                                              return Container(
-                                                key: ValueKey(
-                                                  'inner_comment_${i.id}',
-                                                ),
-                                                child: _buildInnerCommentWidget(
-                                                  context,
-                                                  ref,
-                                                  i,
-                                                  permissions,
-                                                  isDark,
-                                                ),
-                                              );
-                                            }
-                                            return null;
-                                          })
-                                          .whereType<Widget>()
-                                          .toList(),
-                                    ),
-                                  ],
                                 ),
                               ),
                             );
@@ -4131,18 +4203,6 @@ void _onReorderInnerTimeline(
   if (oldIndex == newIndex) {
     return;
   }
-  if (permissions.isReadOnly) {
-    return;
-  }
-  if (oldIndex == newIndex) {
-    return;
-  }
-  if (permissions.isReadOnly) {
-    return;
-  }
-  if (oldIndex == newIndex) {
-    return;
-  }
 
   final item = list[oldIndex];
   double newOrder;
@@ -4676,18 +4736,27 @@ class MatchListTileCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 🛡️ 自身の内部でグローバルな変化を強固に常時 watch 監視。
     // これにより、画面裏で Undo 操作（消去）が行われた瞬間、アコーディオンのキャッシュをぶち破って0ミリ秒で即座にタイルがリビルドされます。
-    // ★ Web対応修正: matchListProvider が Web環境では全件取得フリーズ対策で空配列を返すため、
-    // 代わりに大会ごとの安全なProviderを監視し、Webでもアコーディオン内更新を確実に発火させます。
-    final matches =
-        ref
-            .watch(
-              matchListByTournamentProvider(initialMatch.tournamentId ?? ''),
-            )
-            .value ??
-        [];
-    final match =
-        matches.where((m) => m.id == initialMatch.id).firstOrNull ??
-        initialMatch;
+    // ★ 修正: ネイティブ環境では最速の即時反映(matchListProvider)を使用し、Web環境でのみフォールバックさせます。
+    final matches = ref.watch(matchListProvider);
+    MatchModel? maybeMatch = matches
+        .where((m) => m.id == initialMatch.id)
+        .firstOrNull;
+
+    // Web では matchListProvider が初回に空を返すことがあるため、
+    // 大会単位プロバイダをフォールバックとして参照して対象試合を探す
+    if (maybeMatch == null &&
+        kIsWeb &&
+        (initialMatch.tournamentId != null &&
+            initialMatch.tournamentId!.isNotEmpty)) {
+      final webMatches =
+          ref
+              .watch(matchListByTournamentProvider(initialMatch.tournamentId!))
+              .value ??
+          [];
+      maybeMatch = webMatches.where((m) => m.id == initialMatch.id).firstOrNull;
+    }
+
+    final match = maybeMatch ?? initialMatch;
 
     final permissions = ref.watch(permissionProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -4877,15 +4946,9 @@ class MatchListTileCard extends ConsumerWidget {
                                 : match.id;
                             final encodedTarget = Uri.encodeComponent(target);
                             final tId = match.tournamentId ?? '';
-                            if (permissions.isReadOnly) {
-                              context.push(
-                                '/viewer-team/$encodedTarget?tournamentId=$tId',
-                              );
-                            } else {
-                              context.push(
-                                '/team-scoreboard/$encodedTarget?tournamentId=$tId',
-                              );
-                            }
+                            context.push(
+                              '/team-scoreboard/$encodedTarget?tournamentId=$tId',
+                            );
                           },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 8),

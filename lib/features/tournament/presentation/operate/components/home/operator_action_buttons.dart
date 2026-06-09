@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:kendo_os/shared/domain/entities/user_role.dart';
-import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 
 class OperatorActionButtons extends ConsumerWidget {
   final String tournamentId;
@@ -13,9 +12,8 @@ class OperatorActionButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ 修正: 古い permissionProvider を廃止し、最新のユーザーロールで判定
-    final currentRole = ref.watch(currentUserRoleProvider);
-    final isReadOnly = currentRole == UserRole.viewer;
+    final permissions = ref.watch(permissionProvider);
+    final bool isReadOnly = permissions.isReadOnly;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -70,7 +68,7 @@ class OperatorActionButtons extends ConsumerWidget {
               color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600,
             ),
             label: Text(
-              isReadOnly ? '大会プログラムを見る（閲覧専用）' : '大会プログラムの管理・追加',
+              '大会プログラムの管理・追加',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,

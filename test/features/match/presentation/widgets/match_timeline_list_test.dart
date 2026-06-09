@@ -9,11 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/time
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
-    show
-        tournamentProvider,
-        customTeamNamesProvider,
-        searchQueryProvider,
-        isSearchVisibleProvider;
+    show tournamentProvider;
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 
 class FakeMatchApplicationService implements MatchApplicationService {
@@ -71,6 +67,7 @@ void main() {
     return ProviderScope(
       overrides: [
         // ★ 修正: MatchTimelineListが依存する `matchListByTournamentProvider` をオーバーライドし、Isarへの依存を断ち切る
+        matchListProvider.overrideWith((ref) => matches),
         matchListByTournamentProvider.overrideWith(
           (ref, id) => Stream.value(matches),
         ),

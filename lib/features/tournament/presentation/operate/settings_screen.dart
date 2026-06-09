@@ -506,11 +506,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: dynamicCardColor,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(children: spacedChildren),
+      child: Material(
+        color: Colors.transparent,
+        child: Column(children: spacedChildren),
+      ),
     );
   }
 

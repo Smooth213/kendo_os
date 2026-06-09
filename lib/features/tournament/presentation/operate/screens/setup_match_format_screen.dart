@@ -395,97 +395,108 @@ class _SetupMatchFormatScreenState
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.75,
+        clipBehavior: Clip.antiAlias,
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          top: 16,
-          left: 24,
-          right: 24,
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 48,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(10),
-              ),
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              top: 16,
+              left: 24,
+              right: 24,
             ),
-            const SizedBox(height: 24),
-            Text(
-              '${posNames[index]} の選択',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: ListView(
-                children: [
-                  if (helperEntries.isNotEmpty) ...[
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        '手入力選手から選ぶ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ),
-                    ...helperEntries.map(
-                      (entry) => Card(
-                        color: Colors.orange.shade50,
-                        child: ListTile(
-                          title: Text(
-                            entry.value,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          trailing: Text(
-                            '${entry.key < posNames.length ? posNames[entry.key] : "補欠"}と入替',
-                            style: const TextStyle(
-                              fontSize: 11,
+            child: Column(
+              children: [
+                Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  '${posNames[index]} の選択',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      if (helperEntries.isNotEmpty) ...[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            '手入力選手から選ぶ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
                               color: Colors.orange,
                             ),
                           ),
-                          onTap: () => Navigator.pop(ctx, entry.value),
+                        ),
+                        ...helperEntries.map(
+                          (entry) => Card(
+                            color: Colors.orange.shade50,
+                            child: ListTile(
+                              title: Text(
+                                entry.value,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              trailing: Text(
+                                '${entry.key < posNames.length ? posNames[entry.key] : "補欠"}と入替',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                              onTap: () => Navigator.pop(ctx, entry.value),
+                            ),
+                          ),
+                        ),
+                      ],
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          '登録名簿から選ぶ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      '登録名簿から選ぶ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal,
-                      ),
-                    ),
+                      ...players.map((p) {
+                        final usedIdx = team.playerNames.indexOf(p.name);
+                        final isUsed = usedIdx != -1 && usedIdx != index;
+                        return ListTile(
+                          title: Text(p.name),
+                          trailing: isUsed
+                              ? Text(
+                                  '${usedIdx < posNames.length ? posNames[usedIdx] : "補欠"}と入替',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.orange,
+                                  ),
+                                )
+                              : null,
+                          onTap: () => Navigator.pop(ctx, p.name),
+                        );
+                      }),
+                    ],
                   ),
-                  ...players.map((p) {
-                    final usedIdx = team.playerNames.indexOf(p.name);
-                    final isUsed = usedIdx != -1 && usedIdx != index;
-                    return ListTile(
-                      title: Text(p.name),
-                      trailing: isUsed
-                          ? Text(
-                              '${usedIdx < posNames.length ? posNames[usedIdx] : "補欠"}と入替',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.orange,
-                              ),
-                            )
-                          : null,
-                      onTap: () => Navigator.pop(ctx, p.name),
-                    );
-                  }),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -541,32 +552,38 @@ class _SetupMatchFormatScreenState
   }) {
     return Container(
       margin: const EdgeInsets.only(top: 24),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: color),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                  fontSize: 16,
-                ),
+              Row(
+                children: [
+                  Icon(icon, color: color),
+                  const SizedBox(width: 8),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
+              const Divider(),
+              child,
             ],
           ),
-          const Divider(),
-          child,
-        ],
+        ),
       ),
     );
   }
@@ -1451,6 +1468,7 @@ class _SetupMatchFormatScreenState
         const SizedBox(height: 32),
 
         Container(
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: inputBgColor,
             borderRadius: BorderRadius.circular(12),
@@ -1458,22 +1476,25 @@ class _SetupMatchFormatScreenState
               color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
             ),
           ),
-          child: SwitchListTile(
-            title: Text(
-              '錬成会モードにする',
-              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-            ),
-            subtitle: Text(
-              'チェックを入れると専用のルール設定が表示されます。',
-              style: TextStyle(
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+          child: Material(
+            color: Colors.transparent,
+            child: SwitchListTile(
+              title: Text(
+                '錬成会モードにする',
+                style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
               ),
+              subtitle: Text(
+                'チェックを入れると専用のルール設定が表示されます。',
+                style: TextStyle(
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                ),
+              ),
+              value: _isRenseikai,
+              activeThumbColor: isDark
+                  ? Colors.teal.shade400
+                  : Colors.teal.shade600,
+              onChanged: (v) => setState(() => _isRenseikai = v),
             ),
-            value: _isRenseikai,
-            activeThumbColor: isDark
-                ? Colors.teal.shade400
-                : Colors.teal.shade600,
-            onChanged: (v) => setState(() => _isRenseikai = v),
           ),
         ),
       ],

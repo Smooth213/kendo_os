@@ -11,7 +11,6 @@ import 'package:kendo_os/features/match/application/usecases/match_usecases.dart
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:kendo_os/shared/application/projections/projection_store.dart';
 
 // ★ Phase 2: 自動バックアップ用のパッケージを追加
 import 'dart:convert';
@@ -61,15 +60,9 @@ final connectivityProvider = StreamProvider<bool>((ref) async* {
   // データを一切ダウンロードしなくなってしまう致命的バグに対する絶対防衛ライン。
   // ネイティブ環境ではFirestoreSDK自体の自動オフライン管理に完全委譲するため、常に true(オンライン) を返します。
   if (!kIsWeb) {
-    debugPrint('📡 [Connectivity] ネイティブバイパス起動: 強制的に true (オンライン) を通知します');
     yield true;
-    // ★ 修正: 単発の yield でストリームが静止してしまうと、ダウンストリーム同期（dojoRoomSyncProvider）の
-    // 内部実装によってはリッスンがタイムアウト、あるいは後続処理がフリーズしてしまうケースがあります。
-    // 永久に true を放出し続けるハートビート(脈拍)ストリームに切り替えて、同期パイプラインを強制的に駆動し続けます。
-    yield* Stream.periodic(const Duration(seconds: 3), (_) {
-      debugPrint('💓 [Connectivity] ハートビート送信: ダウンストリーム同期を駆動中...');
-      return true;
-    });
+    // ★ 修正: ストリームが即座に閉じてしまいオフラインと誤認されるのを防ぐため、待機させます
+    await Future.delayed(const Duration(days: 999));
     return;
   }
 
@@ -300,9 +293,9 @@ class SyncEngine {
               final isar = Isar.getInstance();
               if (isar != null) {
                 await isar.writeTxn(() async {
-                  await isar.clear();
+                  // ★ 修正: isar.clear() は監視ストリーム(watchLazy)を破壊しUI更新を永続停止させるため無効化
                 });
-                debugPrint('🧹 [Sync Engine] Isarローカルデータベースを完全ワイプしました');
+                debugPrint('🧹 [Sync Engine] Isarワイプをスキップしました（ストリーム保護）');
               } else {
                 debugPrint(
                   '⚠️ [Sync Engine] Isar.getInstance() が null です。フォールバックとして未送信データを削除します',
@@ -323,9 +316,6 @@ class SyncEngine {
               debugPrint('🔥 [Sync Engine] セーフティネット一括削除エラー: $e');
             }
           }
-          ref.invalidate(matchListProvider);
-          ref.invalidate(localMatchRepositoryProvider);
-          ref.invalidate(projectionStoreProvider);
           _isDone();
           return;
         } else if (lastDojoId == null || lastDojoId.isEmpty) {

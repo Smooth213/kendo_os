@@ -25,13 +25,13 @@ import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/tournament_list_screen.dart';
 import 'package:kendo_os/shared/routing/match_router.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_match_screen.dart';
+import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
 import 'package:kendo_os/admin/presentation/screens/master_management_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/create_tournament_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/setup_match_format_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/order_setup_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/team_scoreboard_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/screens/login_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/standings_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/official_record_screen.dart';
@@ -45,11 +45,9 @@ import 'package:kendo_os/shared/infrastructure/persistence/models/match_projecti
 import 'package:kendo_os/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/bunaiksen_setup_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/bunaiksen_official_record_screen.dart';
-import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_official_record_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_team_scoreboard_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_kachinuki_scoreboard_screen.dart';
-import 'package:kendo_os/features/viewer/screens/viewer_bunaiksen_home_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_bunaiksen_official_record_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/admin/providers/metrics_provider.dart';
@@ -57,6 +55,7 @@ import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/features/auth/presentation/screens/role_select_screen.dart';
 import 'package:kendo_os/features/auth/presentation/screens/pin_auth_screen.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart'
@@ -404,7 +403,7 @@ class AuthGuard extends ConsumerWidget {
     return authState.when(
       data: (user) {
         // 未ログインなら、要求された画面の「代わりに」ログイン画面をそのまま表示する
-        if (user == null) return const LoginScreen();
+        if (user == null) return const RoleSelectScreen();
         return child;
       },
       loading: () =>
@@ -489,6 +488,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.pathParameters['tournamentId']!,
         child: HomeScreen(tournamentId: state.pathParameters['tournamentId']!),
       ),
     ),
@@ -513,6 +513,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.uri.queryParameters['tournamentId'],
         child: MatchRouter(matchId: state.pathParameters['id']!),
       ),
     ),
@@ -521,6 +522,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.uri.queryParameters['tournamentId'],
         child: TeamScoreboardScreen(
           groupName: state.pathParameters['groupName']!,
         ),
@@ -531,6 +533,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.pathParameters['tournamentId']!,
         child: ViewerHomeScreen(
           tournamentId: state.pathParameters['tournamentId']!,
         ),
@@ -541,6 +544,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.pathParameters['tournamentId']!,
         child: ViewerOfficialRecordScreen(
           tournamentId: state.pathParameters['tournamentId']!,
         ),
@@ -551,6 +555,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.uri.queryParameters['tournamentId'],
         child: ViewerTeamScoreboardScreen(
           groupName: state.pathParameters['groupName']!,
         ),
@@ -561,6 +566,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.uri.queryParameters['tournamentId'],
         child: ViewerKachinukiScoreboardScreen(
           groupName: state.pathParameters['groupName']!,
         ),
@@ -571,6 +577,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.uri.queryParameters['tournamentId'],
         child: KachinukiScoreboardScreen(
           groupName: state.pathParameters['groupName']!,
         ),
@@ -624,9 +631,7 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: 'viewer', // ★強制的にViewer権限にダウングレード
         dojoId: state.uri.queryParameters['dojoId'],
-        child: ViewerBunaiksenHomeScreen(
-          tournamentId: state.pathParameters['tournamentId']!,
-        ),
+        child: const BunaiksenHomeScreen(),
       ),
     ),
     GoRoute(
@@ -770,11 +775,13 @@ class RoleInjector extends ConsumerStatefulWidget {
   final Widget child;
   final String? roleStr;
   final String? dojoId; // ★追加
+  final String? tournamentId;
   const RoleInjector({
     super.key,
     required this.child,
     this.roleStr,
     this.dojoId,
+    this.tournamentId,
   });
 
   @override
@@ -783,13 +790,10 @@ class RoleInjector extends ConsumerStatefulWidget {
 
 class _RoleInjectorState extends ConsumerState<RoleInjector> {
   bool _isReady = false;
-  late final ProviderContainer _container;
 
   @override
   void initState() {
     super.initState();
-    // ★ 初期化時にコンテナを安全に確保しておく（破棄時の復元用）
-    _container = ProviderScope.containerOf(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _applyRole();
@@ -797,17 +801,6 @@ class _RoleInjectorState extends ConsumerState<RoleInjector> {
   }
 
   void _applyRole() {
-    if (!mounted) return;
-    final targetRole = widget.roleStr == 'viewer' ? Role.viewer : null;
-    final currentRole = ref.read(temporaryRoleOverrideProvider);
-
-    if (currentRole != targetRole) {
-      ref.read(temporaryRoleOverrideProvider.notifier).state = targetRole;
-      debugPrint(
-        '🎭 [Role Injector] 権限を同期的に切り替えました: ${targetRole?.label ?? "通常モード"}',
-      );
-    }
-
     // ★ 追加: URLから道場IDが渡された場合、Viewerが迷子にならないよう同期先を確定させる
     if (widget.dojoId != null && widget.dojoId!.isNotEmpty) {
       ref.read(currentDojoIdProvider.notifier).state = widget.dojoId!;
@@ -816,18 +809,43 @@ class _RoleInjectorState extends ConsumerState<RoleInjector> {
       );
     }
 
+    // ★ 追加: Web環境でURLから直接試合画面や大会ホームにアクセスした際、
+    // どの大会を見ているのかをグローバルなプロバイダに記憶させる。
+    // これにより、各画面での冗長な初期化処理を完全に排除し、一元管理を実現します。
+    if (kIsWeb &&
+        widget.tournamentId != null &&
+        widget.tournamentId!.isNotEmpty) {
+      final currentTournamentId = ref.read(webCurrentTournamentIdProvider);
+      if (currentTournamentId != widget.tournamentId) {
+        ref.read(webCurrentTournamentIdProvider.notifier).state =
+            widget.tournamentId!;
+        debugPrint(
+          '🎯 [Role Injector] Web環境の大会IDを復元しました: ${widget.tournamentId}',
+        );
+      }
+    }
+
     // ★ 追加: RoleInjector が viewer 権限を要求している場合、認証セッション側にも
     // viewer セッションを確立しておく（Firestore側や各種 Provider が viewer 前提で
     // 動作できるようにする安全策）
     if (widget.roleStr == 'viewer') {
       try {
-        ref
-            .read(authSessionProvider.notifier)
-            .establishSession(
-              UserRole.viewer,
-              widget.dojoId ?? ref.read(currentDojoIdProvider),
-            );
-        debugPrint('🔐 [Role Injector] authSession を viewer として確立しました');
+        // ★ 修正: 既に最高管理者や記録者などの「強力な権限」でログインしているユーザーが、
+        // 一時的にプレビュー画面を開いた際にセッションが破壊（降格）されるのを防ぐ。
+        final currentSession = ref.read(authSessionProvider);
+        if (currentSession == null || currentSession.role == UserRole.viewer) {
+          ref
+              .read(authSessionProvider.notifier)
+              .establishSession(
+                UserRole.viewer,
+                widget.dojoId ?? ref.read(currentDojoIdProvider),
+              );
+          debugPrint('🔐 [Role Injector] authSession を viewer として確立しました');
+        } else {
+          debugPrint(
+            '🔐 [Role Injector] 既存の強力なセッション(${currentSession.role.name})を維持し、ダウングレードを回避しました',
+          );
+        }
       } catch (e) {
         debugPrint('⚠️ [Role Injector] authSession 確立に失敗: $e');
       }
@@ -842,23 +860,18 @@ class _RoleInjectorState extends ConsumerState<RoleInjector> {
 
   @override
   void dispose() {
-    // ★ 画面が閉じられた時（戻るボタン等）、自分がViewer権限にしていたなら通常モード(null)に戻す
-    final wasViewer = widget.roleStr == 'viewer';
-    if (wasViewer) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _container.read(temporaryRoleOverrideProvider.notifier).state = null;
-        debugPrint('🎭 [Role Injector] 権限を 通常モード に安全に復元しました');
-      });
-    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // ★ 真犯人対策：ref.watch を使わないことで、裏画面との状態の奪い合い（無限ループ）を物理的に遮断
     if (!_isReady) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
+    // ★ 修正: ProviderScope による Scoped Provider や temporaryRoleOverrideProvider の使用を完全に廃止。
+    // Viewerプレビュー時も「管理者」の権限を持ったまま、安全にハードコーディングされたViewer専用UIを表示する仕様に統一。
+    // これにより、ルーティングスタックの破壊（他画面から戻ると先祖返りするバグ）と、裏画面のチラつきを 100% 防止します。
     return widget.child;
   }
 }

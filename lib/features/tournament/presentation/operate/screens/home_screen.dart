@@ -8,10 +8,8 @@ import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 
-// ★ 古い permission_provider を排除し、新セキュリティ一元管理システムを導入
-import 'package:kendo_os/shared/domain/entities/user_role.dart';
-import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
@@ -19,7 +17,6 @@ import '../components/home/match_timeline_list.dart';
 import '../components/home/operator_action_buttons.dart';
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
 
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((
   ref,
@@ -43,19 +40,11 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ 状態を監視：現在のロールを取得
-    final currentRole = ref.watch(currentUserRoleProvider);
-
-    // ★ 核心: Viewerモードで入った場合は、自動的にViewer専用の美しい画面へルーティングする
-    if (currentRole == UserRole.viewer) {
-      return ViewerHomeScreen(tournamentId: tournamentId);
-    }
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
-    final bool isReadOnly = (currentRole == UserRole.viewer);
+    final permissions = ref.watch(permissionProvider);
+    final bool isReadOnly = permissions.isReadOnly;
     final Color textColor = isDark ? Colors.white : Colors.black;
-
     // 🌟 全環境共通：アーカイブデータ蓄積時のIsar全件監視ストールを防ぎ、試合リストが消失する不具合を解決。
     // 常に「対象大会のみ」をピンポイントで取得する専用プロバイダを使用して爆速化・安定化させます。
     final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
@@ -271,8 +260,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
 
-                    // --- 操作メニュー（権限に応じて表示自体を動的に制御するガードを適用） ---
-                    // ★ 修正: Viewer（閲覧専用）以外には、試合記録者を含めてすべてのボタンを表示する
+                    // --- 操作メニュー（権限に応じて表示を制御） ---
                     if (!isReadOnly)
                       Padding(
                         padding: const EdgeInsets.symmetric(

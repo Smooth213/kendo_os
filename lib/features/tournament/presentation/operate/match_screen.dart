@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart'; // ★ Phase 6: バイブレーション用
+import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -15,6 +16,7 @@ import 'package:kendo_os/features/match/presentation/providers/match_rule_provid
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 // ★ 追加: 通知司令塔
 import 'package:kendo_os/features/tournament/presentation/operate/providers/ui_message_provider.dart';
 // ★ Phase 7: UIのロジック委譲先
@@ -323,15 +325,38 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   Widget build(BuildContext context) {
     // ★ 修正: 消してしまった match 本体と teamMatches を復旧
     // （タイマー秒数の更新は分離されているため、これを監視しても毎秒リビルドはされません）
-    final match = ref.watch(
+    MatchModel? maybeMatch = ref.watch(
       matchListProvider.select(
         (list) => list.where((m) => m.id == widget.matchId).firstOrNull,
       ),
     );
 
-    if (match == null) {
+    // =========================================================================
+    // 🛡️ Webアプリ・スコア入力画面表示バグ修正パッチ
+    // Riverpodの ref.watch を条件分岐（if (maybeMatch == null)）の中に置くと、
+    // 一度値が取れた後に監視を解除してしまい、Firestoreのリアルタイム同期が止まる原因になります。
+    // そのため、Web環境では常に監視するように変更します。
+    // =========================================================================
+    if (kIsWeb) {
+      final tournamentId = GoRouterState.of(
+        context,
+      ).uri.queryParameters['tournamentId'];
+      if (tournamentId != null && tournamentId.isNotEmpty) {
+        // 常に監視することでFirestoreからのリアルタイムデータ流入（Stream）を途切れさせない
+        final webMatches =
+            ref.watch(matchListByTournamentProvider(tournamentId)).value ?? [];
+        maybeMatch ??= webMatches
+            .where((m) => m.id == widget.matchId)
+            .firstOrNull;
+      }
+    }
+
+    if (maybeMatch == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
+    // ★ ここで final な non-nullable 変数に確定させることで、クロージャー内での型プロモーション喪失エラーを一撃で完全解消します
+    final MatchModel match = maybeMatch;
 
     // ★ 追加: DBのタイマー稼働状態(timerIsRunning)が変化した時、ローカルの時計エンジンを同期して動かす
     ref.listen<bool?>(
@@ -373,7 +398,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     );
 
     // ★ 修正: 閲覧者はRouterで弾かれるため、ここでの isViewOnly は「他端末が操作中（ロック競合）」のみを意味する
-    final isViewOnly = match.scorerId != null && match.scorerId != _myUserId;
+    // ★ Phase 8: 万が一URL直叩きで入られた場合の完全ガード（RoleベースのReadOnlyも組み込む）
+    final permissions = ref.watch(permissionProvider);
+    final isSomeoneElseOperating =
+        match.scorerId != null && match.scorerId != _myUserId;
+    final isViewOnly = permissions.isReadOnly || isSomeoneElseOperating;
     final isInputLocked =
         isViewOnly || match.status == 'finished' || match.status == 'approved';
 
@@ -518,7 +547,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             ? CorruptedMatchBanner(matchId: match.id)
                             : const SizedBox.shrink();
 
-                        final viewOnlyBanner = (isViewOnly && !isApproved)
+                        final viewOnlyBanner =
+                            (isSomeoneElseOperating &&
+                                !isApproved &&
+                                !permissions.isReadOnly)
                             ? Container(
                                 width: double.infinity,
                                 color: Colors.red.shade900.withValues(

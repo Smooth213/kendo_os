@@ -1032,81 +1032,89 @@ class _MasterManagementScreenState
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.only(
-          top: 16,
-          bottom: 56,
-        ), // 下部の余白を増やして角丸との干渉を防ぐ
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(10),
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 16,
+              bottom: 56,
+            ), // 下部の余白を増やして角丸との干渉を防ぐ
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 48,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.purple.withValues(alpha: 0.1),
-                child: Icon(
-                  Icons.cleaning_services,
-                  color: Colors.purple.shade700,
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.purple.withValues(alpha: 0.1),
+                    child: Icon(
+                      Icons.cleaning_services,
+                      color: Colors.purple.shade700,
+                    ),
+                  ),
+                  title: Text(
+                    'データとストレージ管理',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'キャッシュクリアやデータのエクスポート・整理を行います',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showDataCleanupDialog(context, ref);
+                  },
                 ),
-              ),
-              title: Text(
-                'データとストレージ管理',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Divider(
+                    height: 1,
+                    color: isDark
+                        ? const Color(0xFF38383A)
+                        : Colors.grey.shade300,
+                  ),
                 ),
-              ),
-              subtitle: const Text(
-                'キャッシュクリアやデータのエクスポート・整理を行います',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showDataCleanupDialog(context, ref);
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(
-                height: 1,
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-              ),
-            ),
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.indigo.withValues(alpha: 0.1),
-                child: Icon(Icons.school, color: Colors.indigo.shade700),
-              ),
-              title: Text(
-                '新年度の一括進級',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.indigo.withValues(alpha: 0.1),
+                    child: Icon(Icons.school, color: Colors.indigo.shade700),
+                  ),
+                  title: Text(
+                    '新年度の一括進級',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'すべての選手の学年を1つ繰り上げます',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showPromoteConfirmDialog(context, ref);
+                  },
                 ),
-              ),
-              subtitle: const Text(
-                'すべての選手の学年を1つ繰り上げます',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showPromoteConfirmDialog(context, ref);
-              },
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // ★ 追加: ログイン状態の確認用
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
 
 enum Role { admin, scorer, viewer, editor }
 
@@ -47,33 +48,34 @@ final persistentRoleProvider = StateProvider<Role>((ref) {
   );
 });
 
-// 3. URL等による「一時的な上書き（QRからの閲覧者など）」を管理（他画面の参照エラー防止のため維持）
-final temporaryRoleOverrideProvider = StateProvider<Role?>((ref) => null);
+// ★ 修正: temporaryRoleOverrideProvider の定義はグローバルステート汚染の温床となるため完全にパージしました。
 
 // ==========================================
 // ★ Phase 1-Step 6: Viewer完全隔離（Zero Trust）
 // ==========================================
 // 今の「有効な役割」を導き出す唯一の真実
 final activeRoleProvider = Provider<Role>((ref) {
-  // 1. まず「システムとしてのログイン状態」を確認
-  final currentUser = FirebaseAuth.instance.currentUser;
+  // ★ 修正: Firebaseのログイン状態ではなく、アプリ独自の認証セッション(PINコード)を正とする
+  final session = ref.watch(authSessionProvider);
 
-  // 2. ログインしていない（ゲストユーザー）場合は、無条件で viewer に強制固定する
-  // これにより、URLを知っているだけの第三者が書き込み権限を得ることを物理的に防ぐ
-  if (currentUser == null) {
+  // 2. PIN認証セッションが確立していない場合は、無条件で viewer に強制固定する
+  // これにより、URLを知っているだけの第三者が書き込み権限を得ることを防ぐ
+  if (session == null) {
     return Role.viewer;
   }
 
-  // 3. ログインしている場合は、これまでの設定やモードに従う
+  // 3. ログインしている場合は、PIN認証セッションの権限を正とする
   final mode = ref.watch(operationModeProvider);
-  final base = ref.watch(persistentRoleProvider);
+  // ★ 修正: SharedPreferences への依存を排除し、PIN認証で得た確実なセッションのロールを使用
+  // これにより、Webブラウザとネイティブアプリでの権限の不一致を完全に解消します。
+  final base = session.role;
 
   if (mode == OperationMode.tournament) {
     // 【大会・錬成会モード】
-    return base == Role.admin ? Role.admin : Role.scorer;
+    return base == UserRole.admin ? Role.admin : Role.scorer;
   } else {
     // 【道場モード】
-    return base == Role.admin ? Role.editor : Role.viewer;
+    return base == UserRole.admin ? Role.editor : Role.viewer;
   }
 });
 

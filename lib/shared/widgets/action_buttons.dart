@@ -22,21 +22,16 @@ class ScoreActionPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ Step 3-6: 書き込み処理中フラグを直接監視
     final isProcessing = ref.watch(isMatchCommandProcessingProvider);
-    // 元々のロック条件に「処理中」を加える
     final effectiveLocked = isLocked || isProcessing;
 
     return Expanded(
       child: Padding(
-        // ★ 修正：ボタン群全体を囲う上下の固定余白を最小限(2px)に
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        padding: const EdgeInsets.all(4), // 全体を少し内側に寄せる
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildScoreBtn(
                     context,
@@ -46,7 +41,6 @@ class ScoreActionPanel extends ConsumerWidget {
                     'メ',
                     PointType.men,
                   ),
-                  const SizedBox(width: 6), // ★ ボタン同士の横の隙間も少し締める
                   _buildScoreBtn(
                     context,
                     ref,
@@ -58,10 +52,8 @@ class ScoreActionPanel extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 4), // ★ ボタン同士の縦の隙間を8pxから4pxに圧縮（ここで高さを確保）
             Expanded(
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildScoreBtn(
                     context,
@@ -71,7 +63,6 @@ class ScoreActionPanel extends ConsumerWidget {
                     'ド',
                     PointType.doIdo,
                   ),
-                  const SizedBox(width: 6),
                   _buildScoreBtn(
                     context,
                     ref,
@@ -83,10 +74,9 @@ class ScoreActionPanel extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 4),
-            Expanded(
+            SizedBox(
+              height: 60, // 反則ボタンは高さを固定
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildFoulBtn(
                     context,
@@ -112,17 +102,17 @@ class ScoreActionPanel extends ConsumerWidget {
     String mark,
     PointType type,
   ) {
+    // 共通のHoldConfirmButtonのロジックをボタンに適用
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(4.0),
+        padding: const EdgeInsets.all(2.0),
         child: HoldConfirmButton(
           label: label,
           color: color,
           textColor: textColor ?? Colors.white,
           disabled: effectiveLocked,
-          onConfirm: () {
-            ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
-          },
+          onConfirm: () =>
+              ref.read(matchCommandProvider).addScoreEvent(matchId, side, type),
         ),
       ),
     );
@@ -220,6 +210,24 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
     setState(() => _isHolding = false);
   }
 
+  Color _getDisplayColor(bool isDark) {
+    if (widget.disabled) {
+      return isDark ? Colors.grey.shade900 : Colors.grey.shade200;
+    }
+    return _isHolding
+        ? Color.lerp(widget.color, Colors.black, 0.2)!
+        : widget.color;
+  }
+
+  TextStyle _getTextStyle(bool isTablet, bool isDark) {
+    return TextStyle(
+      fontSize: widget.isFoul ? (isTablet ? 32 : 24) : (isTablet ? 56 : 48),
+      fontWeight: FontWeight.w900,
+      color: widget.disabled ? Colors.grey.shade600 : widget.textColor,
+      letterSpacing: 2.0,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isTablet = MediaQuery.of(context).size.width > 600;
@@ -232,102 +240,52 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          // ★ 視認性強化: 押し込んでいる間はボタンがわずかに縮み、色が濃くなる
           final scale = 1.0 - (_controller.value * 0.08);
-          final displayColor = widget.disabled
-              ? (isDark ? Colors.grey.shade900 : Colors.grey.shade200)
-              : (_isHolding
-                    ? Color.lerp(widget.color, Colors.black, 0.2)
-                    : widget.color);
 
+          // ボタンの外観を定義（ClipRRectで残像をカット）
           return Transform.scale(
             scale: scale,
-            child: Container(
-              constraints: const BoxConstraints(
-                minHeight: 72,
-              ), // ★ Phase 4-3: 高齢者向けに絶対に押し間違えない巨大ボタン化(72dp)
-              decoration: BoxDecoration(
-                color: displayColor,
-                borderRadius: BorderRadius.circular(
-                  12,
-                ), // 角を少し鋭くして、タップ領域を視覚的に広く見せる
-                boxShadow: widget.disabled || _isHolding
-                    ? []
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                border: Border.all(
-                  // ★ 高コントラスト: 押し込んでいる間は外枠を白く光らせる
-                  color: _isHolding
-                      ? Colors.white
-                      : (isDark ? Colors.white12 : Colors.black12),
-                  width: _isHolding ? 4 : 1,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 72),
+                decoration: BoxDecoration(
+                  color: _getDisplayColor(isDark),
+                  border: Border.all(
+                    color: _isHolding
+                        ? Colors.white
+                        : (isDark ? Colors.white12 : Colors.black12),
+                    width: _isHolding ? 4 : 1,
+                  ),
                 ),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // ★ 修正: ボタンが長方形でも、最小辺に合わせた「完璧な真円」のゲージにする
-                  if (_isHolding)
-                    Positioned.fill(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          // 短い方の辺に合わせて正方形のサイズを決定
-                          final size =
-                              constraints.maxWidth < constraints.maxHeight
-                              ? constraints.maxWidth
-                              : constraints.maxHeight;
-                          return Center(
-                            child: SizedBox(
-                              width: size * 0.9, // ボタン枠ギリギリを避けるため少し小さめに
-                              height: size * 0.9,
-                              child: CircularProgressIndicator(
-                                value: _controller.value,
-                                strokeWidth: 8.0, // 高齢補助員にも見えやすく少し太めに
-                                backgroundColor: Colors.black12,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.white70,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  // ★ 修正: 文字がボタン枠からはみ出さないように FittedBox で自動縮小させる
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
+                child: Stack(
+                  fit: StackFit.expand, // 子要素を親に合わせる
+                  alignment: Alignment.center,
+                  children: [
+                    // 1. ボタン本体のテキスト
+                    Center(
                       child: Text(
                         widget.isFoul ? '反則' : widget.label,
-                        style: TextStyle(
-                          fontSize: widget.isFoul
-                              ? (isTablet ? 32 : 24)
-                              : (isTablet ? 56 : 48),
-                          fontWeight: FontWeight.w900,
-                          color: widget.disabled
-                              ? Colors.grey.shade600
-                              : (widget.isFoul && !isDark
-                                    ? Colors.black87
-                                    : widget.textColor),
-                          letterSpacing: 2.0,
-                          shadows: [
-                            Shadow(
-                              offset: const Offset(1, 1),
-                              blurRadius: 2,
-                              color: Colors.black.withValues(alpha: 0.3),
-                            ),
-                          ],
-                        ),
+                        style: _getTextStyle(isTablet, isDark),
                       ),
                     ),
-                  ),
-                ],
+                    // 2. ゲージ（最前面）
+                    if (_isHolding)
+                      Center(
+                        child: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: CircularProgressIndicator(
+                            value: _controller.value,
+                            strokeWidth: 6,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           );

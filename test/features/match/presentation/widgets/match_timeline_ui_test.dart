@@ -9,7 +9,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 // ★ 適合修正: テスト環境から Isar 依存を完全パージするためのプロバイダインポート
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
+    hide customTeamNamesProvider;
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart'
     as viewer;
@@ -58,6 +59,7 @@ void main() {
         ProviderScope(
           overrides: [
             // ★ 修正: MatchListTileCardが依存する `matchListByTournamentProvider` をオーバーライドする
+            matchListProvider.overrideWith((ref) => [mockMatch]),
             matchListByTournamentProvider.overrideWith(
               (ref, id) => Stream.value([mockMatch]),
             ),
@@ -106,6 +108,7 @@ void main() {
           ProviderScope(
             overrides: [
               // ★ 修正: MatchListTileCardが依存する `matchListByTournamentProvider` をオーバーライドする
+              matchListProvider.overrideWith((ref) => [mockMatch]),
               matchListByTournamentProvider.overrideWith(
                 (ref, id) => Stream.value([mockMatch]),
               ),
@@ -154,6 +157,7 @@ void main() {
           ProviderScope(
             overrides: [
               // ★ 修正: MatchListTileCardが依存する `matchListByTournamentProvider` をオーバーライドする
+              matchListProvider.overrideWith((ref) => [mockMatch]),
               matchListByTournamentProvider.overrideWith(
                 (ref, id) => Stream.value([mockMatch]),
               ),
@@ -213,16 +217,15 @@ void main() {
           events: [],
         );
 
-        // 🛡️ リアクティブな状態変化をテストするため、StreamControllerを使用
-        final streamController = StreamController<List<MatchModel>>.broadcast();
-        addTearDown(streamController.close);
+        final matchesProviderNotifier = StateProvider<List<MatchModel>>(
+          (ref) => [mockMatchWithIppon],
+        );
 
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              // ★ 修正: StreamControllerからのStreamを `matchListByTournamentProvider` に提供
-              matchListByTournamentProvider.overrideWith(
-                (ref, id) => streamController.stream,
+              matchListProvider.overrideWith(
+                (ref) => ref.watch(matchesProviderNotifier),
               ),
               isarProvider.overrideWithValue(null), // ★ Isar未初期化エラーを解決
               customTeamNamesProvider.overrideWith(
@@ -251,12 +254,15 @@ void main() {
         );
 
         // 初期状態で有効一本の「メ」が確実にレンダリングされていることを確認
-        streamController.add([mockMatchWithIppon]);
         await tester.pumpAndSettle();
         expect(find.text('メ'), findsOneWidget);
 
-        // 🔄 【Undo発動シミュレート】: Streamに新しい状態（Undo後）を流す
-        streamController.add([mockMatchAfterUndo]);
+        final element = tester.element(find.byType(MatchListTileCard));
+        ProviderScope.containerOf(
+          element,
+        ).read(matchesProviderNotifier.notifier).state = [
+          mockMatchAfterUndo,
+        ];
 
         // Flutter のレンダリングフレームを回して即時再描画を要求
         await tester.pumpAndSettle();
@@ -322,6 +328,7 @@ void main() {
           ProviderScope(
             overrides: [
               // ★ 修正: MatchTimelineListが依存する `matchListByTournamentProvider` をオーバーライドする
+              matchListProvider.overrideWith((ref) => groupedMatches),
               matchListByTournamentProvider.overrideWith(
                 (ref, id) => Stream.value(groupedMatches),
               ),
@@ -387,6 +394,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            matchListProvider.overrideWith((ref) => [mockMatch]),
             matchListByTournamentProvider.overrideWith(
               (ref, id) => Stream.value([mockMatch]),
             ),
@@ -452,6 +460,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            matchListProvider.overrideWith((ref) => [mockMatch]),
             matchListByTournamentProvider.overrideWith(
               (ref, id) => Stream.value([mockMatch]),
             ),
@@ -511,6 +520,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            matchListProvider.overrideWith((ref) => [mockMatch]),
             matchListByTournamentProvider.overrideWith(
               (ref, id) => Stream.value([mockMatch]),
             ),

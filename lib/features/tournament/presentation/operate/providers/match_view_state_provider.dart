@@ -6,6 +6,7 @@ import 'sync_provider.dart';
 import 'match_command_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart'; // ★ 追加
 import 'match_status_provider.dart'; // ★ 追加
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 
 // ★ テスト時にFirebase依存を回避するため、ユーザーIDの取得をProviderに分離
 final matchViewStateUserIdProvider = Provider<String>((ref) {
@@ -106,8 +107,10 @@ final matchViewStateProvider = Provider.family<MatchViewState, String>((
   final now = DateTime.now();
   final isLockExpired =
       match.lockExpiresAt != null && match.lockExpiresAt!.isBefore(now);
+  final permissions = ref.watch(permissionProvider);
   final isViewOnly =
-      match.scorerId != null && match.scorerId != myUserId && !isLockExpired;
+      permissions.isReadOnly ||
+      (match.scorerId != null && match.scorerId != myUserId && !isLockExpired);
 
   final isApproved = match.status == 'approved';
   final rMiss = match.redName.contains('欠員');

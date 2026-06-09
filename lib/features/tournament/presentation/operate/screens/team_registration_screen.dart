@@ -1004,6 +1004,7 @@ class _TeamRegistrationScreenState
         const SizedBox(height: 32),
         _buildSectionTitle('オーダー編成（タップして選択）'),
         Container(
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: inputBgColor,
             borderRadius: BorderRadius.circular(12),
@@ -1018,117 +1019,128 @@ class _TeamRegistrationScreenState
                     ),
                   ],
           ),
-          child: Column(
-            children: List.generate(playerCount, (index) {
-              // ★ 補欠かどうかの判定
-              final bool isSubstitute =
-                  index >= (playerCount - _substituteCount);
+          child: Material(
+            color: Colors.transparent,
+            child: Column(
+              children: List.generate(playerCount, (index) {
+                // ★ 補欠かどうかの判定
+                final bool isSubstitute =
+                    index >= (playerCount - _substituteCount);
 
-              return Column(
-                children: [
-                  ListTile(
-                    // ★ 真の解決：ダイアログ終了後に自動でフォーカスが戻ってサジェストが暴発する「ゴーストフォーカス」を完全に殺す
-                    onTap: () async {
-                      FocusManager.instance.primaryFocus?.unfocus(); // 開く前に殺す
-                      await _selectPlayerDialog(index, players, posNames);
-                      if (!mounted) return;
-                      FocusManager.instance.primaryFocus
-                          ?.unfocus(); // 閉じた直後に確実にもう一度殺す
-                    },
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    leading: CircleAvatar(
-                      radius: 22,
-                      // 補欠枠は少し色を変えて差別化
-                      backgroundColor: isSubstitute
-                          ? (isDark
-                                ? Colors.orange.shade900.withValues(alpha: 0.3)
-                                : Colors.orange.shade50)
-                          : (isDark
-                                ? Colors.teal.shade900.withValues(alpha: 0.3)
-                                : Colors.teal.shade50),
-                      child: Text(
-                        isSubstitute ? '補' : posNames[index].substring(0, 1),
-                        style: TextStyle(
-                          color: isSubstitute
-                              ? (isDark
-                                    ? Colors.orange.shade400
-                                    : Colors.orange.shade700)
-                              : (isDark
-                                    ? Colors.teal.shade400
-                                    : Colors.teal.shade700),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                return Column(
+                  children: [
+                    ListTile(
+                      // ★ 真の解決：ダイアログ終了後に自動でフォーカスが戻ってサジェストが暴発する「ゴーストフォーカス」を完全に殺す
+                      onTap: () async {
+                        FocusManager.instance.primaryFocus?.unfocus(); // 開く前に殺す
+                        await _selectPlayerDialog(index, players, posNames);
+                        if (!mounted) return;
+                        FocusManager.instance.primaryFocus
+                            ?.unfocus(); // 閉じた直後に確実にもう一度殺す
+                      },
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      leading: CircleAvatar(
+                        radius: 22,
+                        // 補欠枠は少し色を変えて差別化
+                        backgroundColor: isSubstitute
+                            ? (isDark
+                                  ? Colors.orange.shade900.withValues(
+                                      alpha: 0.3,
+                                    )
+                                  : Colors.orange.shade50)
+                            : (isDark
+                                  ? Colors.teal.shade900.withValues(alpha: 0.3)
+                                  : Colors.teal.shade50),
+                        child: Text(
+                          isSubstitute ? '補' : posNames[index].substring(0, 1),
+                          style: TextStyle(
+                            color: isSubstitute
+                                ? (isDark
+                                      ? Colors.orange.shade400
+                                      : Colors.orange.shade700)
+                                : (isDark
+                                      ? Colors.teal.shade400
+                                      : Colors.teal.shade700),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                    ),
-                    title: Text(
-                      _tempSelectedPlayers[index] ?? '未選択',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: _tempSelectedPlayers[index] == null
-                            ? (isDark
-                                  ? Colors.grey.shade600
-                                  : Colors.grey.shade400)
-                            : textColor,
+                      title: Text(
+                        _tempSelectedPlayers[index] ?? '未選択',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: _tempSelectedPlayers[index] == null
+                              ? (isDark
+                                    ? Colors.grey.shade600
+                                    : Colors.grey.shade400)
+                              : textColor,
+                        ),
                       ),
-                    ),
-                    subtitle: Text(
-                      posNames[index],
-                      style: TextStyle(
-                        color: isSubstitute
-                            ? Colors.orange.shade600
-                            : Colors.teal.shade600,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                      subtitle: Text(
+                        posNames[index],
+                        style: TextStyle(
+                          color: isSubstitute
+                              ? Colors.orange.shade600
+                              : Colors.teal.shade600,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    // 補欠行には「削除」ボタンを表示
-                    trailing: isSubstitute
-                        ? IconButton(
-                            icon: const Icon(
-                              Icons.remove_circle_outline,
-                              color: Colors.redAccent,
-                            ),
-                            tooltip: 'この補欠枠を削除',
-                            onPressed: () {
-                              setState(() {
-                                // ★ 削除時の詰め処理を汎用化（MAX4名など複数対応）
-                                for (int i = index; i < playerCount - 1; i++) {
-                                  if (_tempSelectedPlayers.containsKey(i + 1)) {
-                                    _tempSelectedPlayers[i] =
-                                        _tempSelectedPlayers[i + 1]!;
-                                  } else {
-                                    _tempSelectedPlayers.remove(i);
+                      // 補欠行には「削除」ボタンを表示
+                      trailing: isSubstitute
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                color: Colors.redAccent,
+                              ),
+                              tooltip: 'この補欠枠を削除',
+                              onPressed: () {
+                                setState(() {
+                                  // ★ 削除時の詰め処理を汎用化（MAX4名など複数対応）
+                                  for (
+                                    int i = index;
+                                    i < playerCount - 1;
+                                    i++
+                                  ) {
+                                    if (_tempSelectedPlayers.containsKey(
+                                      i + 1,
+                                    )) {
+                                      _tempSelectedPlayers[i] =
+                                          _tempSelectedPlayers[i + 1]!;
+                                    } else {
+                                      _tempSelectedPlayers.remove(i);
+                                    }
                                   }
-                                }
-                                // 一番後ろの枠を消去
-                                _tempSelectedPlayers.remove(playerCount - 1);
-                                _substituteCount--;
-                              });
-                            },
-                          )
-                        : const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                            color: Colors.grey,
-                          ),
-                  ),
-                  if (index < playerCount - 1)
-                    Divider(
-                      height: 1,
-                      indent: 20,
-                      endIndent: 20,
-                      color: isDark
-                          ? const Color(0xFF38383A)
-                          : Colors.grey.shade100,
+                                  // 一番後ろの枠を消去
+                                  _tempSelectedPlayers.remove(playerCount - 1);
+                                  _substituteCount--;
+                                });
+                              },
+                            )
+                          : const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
                     ),
-                ],
-              );
-            }),
+                    if (index < playerCount - 1)
+                      Divider(
+                        height: 1,
+                        indent: 20,
+                        endIndent: 20,
+                        color: isDark
+                            ? const Color(0xFF38383A)
+                            : Colors.grey.shade100,
+                      ),
+                  ],
+                );
+              }),
+            ),
           ),
         ),
 

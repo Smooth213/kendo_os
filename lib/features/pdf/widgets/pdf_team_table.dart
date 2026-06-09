@@ -63,6 +63,10 @@ class PdfTeamTable {
       int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
       dynamic daihyo;
       for (var m in matches) {
+        if (m.matchType == '代表戦') {
+          daihyo = m;
+          continue; // ★ 修正: 代表戦のスコアはチームの合計(勝数/本数)には含めない
+        }
         final rs = (m.redScore as num).toInt();
         final ws = (m.whiteScore as num).toInt();
         rPts += rs;
@@ -71,9 +75,6 @@ class PdfTeamTable {
           rWins++;
         } else if (ws > rs) {
           wWins++;
-        }
-        if (m.matchType == '代表戦') {
-          daihyo = m;
         }
       }
       if (rWins > wWins) {
@@ -473,6 +474,7 @@ class PdfTeamTable {
   ) {
     int wins = 0, pts = 0;
     for (var m in ms) {
+      if (m.matchType == '代表戦') continue; // ★ 修正: 代表戦は合算しない
       final r = (m.redScore as num).toInt();
       final w = (m.whiteScore as num).toInt();
       pts += isRed ? r : w;

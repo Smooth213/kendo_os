@@ -47,7 +47,8 @@ Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
 
 final dojoRoomSyncProvider = Provider<void>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
-  final store = ref.watch(projectionStoreProvider);
+  // ★ 修正: watchだと集計データが更新されるたびに通信リスナーが再起動（無限ループ）してしまうため、readに変更
+  final store = ref.read(projectionStoreProvider);
 
   debugPrint('📡 [DojoRoomSync] ダウンストリーム同期起動: 道場ID = $dojoId');
 
@@ -83,9 +84,9 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
             final isar = Isar.getInstance();
             if (isar != null) {
               await isar.writeTxn(() async {
-                await isar.clear(); // Isarの全データを安全にクリア
+                // ★ 修正: isar.clear() は監視ストリームを破壊しUIの更新を止めてしまうため無効化
               });
-              debugPrint('🧹 [DojoRoomSync] Isarローカルデータベースを完全ワイプしました');
+              debugPrint('🧹 [DojoRoomSync] Isarワイプをスキップしました（ストリーム保護）');
             } else {
               debugPrint(
                 '⚠️ [DojoRoomSync] Isar.getInstance() が null です。セーフティネットとして手動削除を実行します',
@@ -105,16 +106,6 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
           } catch (e) {
             debugPrint('🔥 [DojoRoomSync] Isarのワイプに失敗しました: $e');
           }
-        }
-
-        // メモリ上に残存している古い道場の状態（リスト、キャッシュ等）を完全に吹き飛ばす
-        try {
-          ref.invalidate(matchListProvider);
-          ref.invalidate(projectionStoreProvider);
-          ref.invalidate(localMatchRepositoryProvider);
-          debugPrint('🧹 [DojoRoomSync] メモリ上のプロバイダ状態を強制リセットしました');
-        } catch (e) {
-          debugPrint('⚠️ [DojoRoomSync] Invalidateエラー: $e');
         }
       }
 

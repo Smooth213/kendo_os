@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/main.dart' as legacy_main;
 import 'package:kendo_os/bootstrap/app_startup.dart';
 import 'package:kendo_os/shared/errors/global_error_handler.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 
 /// ============================================================================
 /// 📱 Viewer App Entry Point (Phase 5: 観客・保護者向け)
@@ -20,8 +21,9 @@ void main() async {
       final container = await AppStartup.initialize();
 
       // ★ アプリの起動時点から、全体を強制的に「Viewer(閲覧専用)」権限で固定する
-      container.read(temporaryRoleOverrideProvider.notifier).state =
-          Role.viewer;
+      container
+          .read(authSessionProvider.notifier)
+          .establishSession(UserRole.viewer, 'default_org');
 
       runApp(
         UncontrolledProviderScope(
