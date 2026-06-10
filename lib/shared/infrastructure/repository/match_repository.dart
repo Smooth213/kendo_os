@@ -2,18 +2,32 @@ import 'package:flutter/foundation.dart'; // ★ debugPrintを使うために追
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 final matchRepositoryProvider = Provider<MatchRepository>((ref) {
-  return MatchRepository(FirebaseFirestore.instance);
+  final dojoId = ref.watch(currentDojoIdProvider);
+  return MatchRepository(FirebaseFirestore.instance, dojoId);
 });
 
 class MatchRepository {
   final FirebaseFirestore _firestore;
-  MatchRepository(this._firestore);
+  final String _dojoId;
+  MatchRepository(this._firestore, this._dojoId);
+
+  // ★ 対象となるテナントのコレクション参照を取得するヘルパー
+  CollectionReference<Map<String, dynamic>> get _collectionRef {
+    if (_dojoId.isNotEmpty && _dojoId != 'default_org') {
+      return _firestore
+          .collection('organizations')
+          .doc(_dojoId)
+          .collection('matches');
+    }
+    return _firestore.collection('matches');
+  }
 
   // ★ 1-C. 全試合をリアルタイム監視（主にWeb観客席用）
   Stream<List<MatchModel>> watchAllMatches() {
-    return _firestore.collection('matches').snapshots().map((snapshot) {
+    return _collectionRef.snapshots().map((snapshot) {
       final validMatches = <MatchModel>[];
       for (final doc in snapshot.docs) {
         try {
@@ -32,8 +46,7 @@ class MatchRepository {
 
   // 1-A. 進行中と待機中（新規追加）の試合をリアルタイム監視（パケット節約と追加検知を両立）
   Stream<List<MatchModel>> watchActiveMatches() {
-    return _firestore
-        .collection('matches')
+    return _collectionRef
         .where('status', whereIn: ['in_progress', 'waiting'])
         .snapshots()
         .map((snapshot) {
@@ -58,8 +71,7 @@ class MatchRepository {
 
   // 1-B. 終了済みの試合を1回だけ取得（キャッシュ用）
   Future<List<MatchModel>> getStaticMatches() async {
-    final snapshot = await _firestore
-        .collection('matches')
+    final snapshot = await _collectionRef
         .where('status', whereIn: ['finished', 'approved'])
         .get();
 
@@ -80,7 +92,7 @@ class MatchRepository {
 
   // 2. 特定の1試合をリアルタイム監視（MatchProviderで使用）
   Stream<MatchModel> watchSingleMatch(String matchId) {
-    return _firestore.collection('matches').doc(matchId).snapshots().map((doc) {
+    return _collectionRef.doc(matchId).snapshots().map((doc) {
       return MatchModel.fromJson(<String, dynamic>{
         ...doc.data() ?? {},
         'id': doc.id,
@@ -91,7 +103,20 @@ class MatchRepository {
   // 3. 試合を保存・更新
   // ★ Phase 0-3: トランザクション等の詳細ロジックをリポジトリ内に隠蔽する
   Future<void> saveMatch(MatchModel match) async {
-    final docRef = _firestore.collection('matches').doc(match.id);
+    // ★ モデルに organizationId が設定されている場合はそちらを優先する（安全策）
+    final targetOrgId =
+        (match.organizationId.isNotEmpty &&
+            match.organizationId != 'default_org')
+        ? match.organizationId
+        : _dojoId;
+
+    final docRef = (targetOrgId.isNotEmpty && targetOrgId != 'default_org')
+        ? _firestore
+              .collection('organizations')
+              .doc(targetOrgId)
+              .collection('matches')
+              .doc(match.id)
+        : _firestore.collection('matches').doc(match.id);
 
     try {
       await _firestore.runTransaction((transaction) async {

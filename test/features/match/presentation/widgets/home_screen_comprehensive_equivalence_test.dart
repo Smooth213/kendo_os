@@ -11,6 +11,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
   // 1. 決定論的テスト用の共通モック試合データ（個人戦データ）
@@ -22,8 +24,8 @@ void main() {
       groupName: '助っ人101',
       redName: '助っ人101 : 剣道太郎',
       whiteName: '相手101 : 相手選手',
-      matchType: '選手', // ピュア個人戦フラグ
-      status: 'in_progress',
+      matchType: '個人戦', // ピュア個人戦フラグ
+      status: 'waiting',
       order: 1.0,
       note: '',
     ),
@@ -65,10 +67,14 @@ void main() {
     testWidgets('[$roleName 権限] ネイティブアプリ基準のデザイン・階層・コンポーネント配置の完全等価性検証', (
       WidgetTester tester,
     ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
       // 3. 権限プロバイダおよびデータプロバイダの強制オーバーライド
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
             matchListByTournamentProvider.overrideWith(
               (ref, id) => Stream.value(mockMatches),
             ),
@@ -83,8 +89,12 @@ void main() {
             searchQueryProvider.overrideWith((ref) => ''),
             isSearchVisibleProvider.overrideWith((ref) => false),
           ],
-          child: const MaterialApp(
-            home: HomeScreen(tournamentId: 'target_tournament_123'),
+          child: MaterialApp(
+            theme: ThemeData(
+              brightness: Brightness.dark,
+              splashFactory: NoSplash.splashFactory,
+            ),
+            home: const HomeScreen(tournamentId: 'target_tournament_123'),
           ),
         ),
       );
@@ -130,6 +140,26 @@ void main() {
       // -----------------------------------------------------------------------
       // 📌 監査項目④: リストカードコンポーネントの配置同一性検証
       // -----------------------------------------------------------------------
+      // アコーディオンが閉じている場合を考慮して展開を試みる
+      if (find.byType(MatchListTileCard).evaluate().isEmpty) {
+        final tileFinder = find.byType(ExpansionTile);
+        if (tileFinder.evaluate().isNotEmpty) {
+          final tile = tileFinder.first;
+          await tester.ensureVisible(tile);
+          await tester.pumpAndSettle();
+          final listTileFinder = find.descendant(
+            of: tile,
+            matching: find.byType(ListTile),
+          );
+          if (listTileFinder.evaluate().isNotEmpty) {
+            await tester.tap(listTileFinder.first);
+          } else {
+            await tester.tap(tile);
+          }
+          await tester.pumpAndSettle();
+        }
+      }
+
       // 反映漏れや消失を防ぐため、独立型 Widget である MatchListTileCard が正しくマウントされているか
       expect(find.byType(MatchListTileCard), findsWidgets);
 

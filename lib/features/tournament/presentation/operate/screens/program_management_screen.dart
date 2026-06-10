@@ -221,15 +221,27 @@ class _ProgramManagementScreenState
                                             ),
                                           ],
                                         )
-                                      : (kIsWeb && file.bytes != null)
-                                      ? Image.memory(
-                                          file.bytes!,
-                                          fit: BoxFit.contain,
-                                        )
-                                      : Image.file(
-                                          File(file.path!),
-                                          fit: BoxFit.contain,
-                                        ),
+                                      : kIsWeb
+                                      ? (file.bytes != null
+                                            ? Image.memory(
+                                                file.bytes!,
+                                                fit: BoxFit.contain,
+                                              )
+                                            : const Icon(
+                                                Icons.broken_image,
+                                                color: Colors.white,
+                                                size: 64,
+                                              ))
+                                      : (file.path != null
+                                            ? Image.file(
+                                                File(file.path!),
+                                                fit: BoxFit.contain,
+                                              )
+                                            : const Icon(
+                                                Icons.broken_image,
+                                                color: Colors.white,
+                                                size: 64,
+                                              )),
                                 ),
                               );
                             },
@@ -359,7 +371,10 @@ class _ProgramManagementScreenState
                         final file = orderedFiles[index];
                         final isSelected = selectedIndex == index;
                         return ListTile(
-                          key: ValueKey(file.path ?? file.name),
+                          // Web環境で path にアクセスすると例外が飛ぶため、安全な fallback に変更
+                          key: ValueKey(
+                            kIsWeb ? file.name : (file.path ?? file.name),
+                          ),
                           selected: isSelected,
                           selectedTileColor: Colors.indigo.shade50,
                           leading: CircleAvatar(

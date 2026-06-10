@@ -8,6 +8,7 @@ import '../providers/sync_provider.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイル上部
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -24,6 +25,8 @@ class TournamentListScreen extends ConsumerWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final permissions = ref.watch(permissionProvider);
+    final isReadOnly = permissions.isReadOnly;
 
     // iOS Native: イメージカラー「今日の大会(ブルー)」「過去の大会(グレー)」を完全復元
     final Color accentColor = isArchive
@@ -166,7 +169,13 @@ class TournamentListScreen extends ConsumerWidget {
                               ),
                       ),
                       child: InkWell(
-                        onTap: () => context.push('/home/$id'),
+                        onTap: () {
+                          if (isReadOnly) {
+                            context.push('/viewer-home/$id');
+                          } else {
+                            context.push('/home/$id');
+                          }
+                        },
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
                           padding: const EdgeInsets.all(16),

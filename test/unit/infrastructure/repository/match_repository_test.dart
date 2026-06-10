@@ -12,7 +12,7 @@ void main() {
     setUp(() async {
       // 1. 本物のFirestoreの代わりに、超高速なダミー(Fake)を用意する
       fakeFirestore = FakeFirebaseFirestore();
-      repository = MatchRepository(fakeFirestore);
+      repository = MatchRepository(fakeFirestore, 'default_org');
 
       // 2. テスト用のダミーデータを投入（ステータスがバラバラの3試合）
       final matchesCollection = fakeFirestore.collection('matches');

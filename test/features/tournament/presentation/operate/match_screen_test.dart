@@ -74,41 +74,45 @@ void main() {
           ],
         );
 
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            matchListProvider.overrideWith((ref) => [mockMatch]),
+            matchViewStateProvider('test_match_1').overrideWith(
+              (ref) => MatchViewState(
+                scoreText: '0 - 0',
+                redScore: 0,
+                whiteScore: 0,
+                isEncho: false,
+                winner: null,
+                lastEventText: '',
+                canUndo: false,
+                statusText: '待機中',
+                syncStatus: SyncStatus.synced,
+                isViewOnly: false,
+                isInputLocked: false,
+                isAllDone: false,
+                isTie: false,
+                redCleanName: '赤選手',
+                whiteCleanName: '白選手',
+              ),
+            ),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+            isarProvider.overrideWithValue(null),
+          ],
+        );
+
         await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              matchListProvider.overrideWith((ref) => [mockMatch]),
-              matchViewStateProvider('test_match_1').overrideWith(
-                (ref) => MatchViewState(
-                  scoreText: '0 - 0',
-                  redScore: 0,
-                  whiteScore: 0,
-                  isEncho: false,
-                  winner: null,
-                  lastEventText: '',
-                  canUndo: false,
-                  statusText: '待機中',
-                  syncStatus: SyncStatus.synced,
-                  isViewOnly: false,
-                  isInputLocked: false,
-                  isAllDone: false,
-                  isTie: false,
-                  redCleanName: '赤選手',
-                  whiteCleanName: '白選手',
-                ),
-              ),
-              permissionProvider.overrideWith(
-                (ref) => const AppPermissions(
-                  isReadOnly: false,
-                  canManageTournament: true,
-                  canCreateMatch: true,
-                  canChangeSettings: true,
-                  canDeleteData: true,
-                ),
-              ),
-              isarProvider.overrideWithValue(null),
-            ],
+          UncontrolledProviderScope(
+            container: container,
             child: MaterialApp.router(
               routerConfig: router,
               theme: ThemeData.light(),
@@ -122,6 +126,14 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsNothing);
         // ヘッダーやテキストが正しく抽出・表示されていることを確認
         expect(find.text('赤選手 vs 白選手'), findsOneWidget);
+
+        // テストが終わる前に別のWidgetをPumpし、現在の画面をdisposeさせる。
+        // ProviderContainer は UncontrolledProviderScope の外で管理しているため破棄されない。
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+
+        // テスト終了前に手動でコンテナを破棄し、内部のTimer(SyncEngineなど)を確実にキャンセルする
+        container.dispose();
       },
     );
   });
