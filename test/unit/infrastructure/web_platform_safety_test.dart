@@ -8,6 +8,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart'
     as new_sync;
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
@@ -614,5 +616,47 @@ void main() {
             'Web環境のViewerHomeScreenでは、すべての階層(root, sub, org)を並行して網羅検索できる matchListByTournamentProvider にストリームを完全に委譲しなければならない。',
       );
     });
+
+    test(
+      '21. Member Role Auto-Registration Enforcement (権限登録漏れによるPermission Denied再発防止)',
+      () async {
+        // ⚠️ 注意：これは単なるドキュメントではなく、アーキテクチャの構造的制約を強制するテストです。
+        // 【歴史】匿名ログインや再インストール直後など、Firestoreの `members/{uid}` に自身のRoleデータが存在しない状態で
+        // 大会作成などの書き込み操作を行うと、セキュリティルールの `getUserRole()` で弾かれて Permission Denied になる致命的エラーが発生した。
+        // これを防ぐため、PIN認証の完了直後に必ず `members` コレクションへ `{role: 'admin'}` 等を書き込み、
+        // かつ その完了を「awaitで待ってから」画面遷移しなければならない。
+
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        final notifier = container.read(authSessionProvider.notifier);
+
+        // 1. establishSession を呼び出した際、戻り値が必ず Future<void> であることを型レベルで検証
+        // これにより、将来誰かがこのメソッドを void に戻してしまい、
+        // pin_auth_screen 側で await できなくなる（タイミング負けが再発する）デグレを永遠に防ぎます。
+        final result = notifier.establishSession(
+          UserRole.admin,
+          'test_dojo_id',
+        );
+
+        expect(
+          result,
+          isA<Future<void>>(),
+          reason:
+              'establishSession は必ず Future を返し、呼び出し元のUI側で await できるようにしなければならない（タイミング負けによるPermission Denied再発防止）',
+        );
+
+        // 2. 実際に非同期処理が完了するまで待機できることを検証
+        await result;
+
+        // 3. 待機後、確実にインメモリのセッションも確立されていること
+        final session = container.read(authSessionProvider);
+        expect(session, isNotNull);
+        expect(session!.role, UserRole.admin);
+
+        // ※ 実際の Firestore (members/{uid}) への書き込みは Firebase SDK 側に委譲されるため、
+        // ここでは「非同期で完了を待つことができる設計（Futureベースの同期バリア）」が維持されていることを保証します。
+      },
+    );
   });
 }

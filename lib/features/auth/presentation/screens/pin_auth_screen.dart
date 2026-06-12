@@ -146,15 +146,17 @@ class PinAuthScreen extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
-                              onPressed: () {
+                              onPressed: () async {
                                 if (PinGuard.validate(role, controller.text)) {
-                                  ref
+                                  await ref
                                       .read(authSessionProvider.notifier)
                                       .establishSession(
                                         role,
                                         ref.read(currentDojoIdProvider),
                                       );
-                                  context.go('/');
+                                  if (context.mounted) {
+                                    context.go('/');
+                                  }
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(

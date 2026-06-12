@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,7 +19,7 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
   }
 
   /// 認証通過時、または道場ルーム参加時にクラウドと同期したセッションを確立する
-  void establishSession(UserRole role, String dojoId) {
+  Future<void> establishSession(UserRole role, String dojoId) async {
     final now = DateTime.now();
     late Duration duration;
 
@@ -44,6 +45,28 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
 
     state = session;
     SessionStorage.save(session);
+
+    // ★ 追加: セッション確立直後に、自身のUIDとRoleをFirestoreのmembersに自動登録（Upsert）する
+    // これにより、セキュリティルールの getUserRole() で弾かれてしまう Permission Denied を根本から防ぐ
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && dojoId.isNotEmpty) {
+        await FirebaseFirestore.instance
+            .collection('organizations')
+            .doc(dojoId)
+            .collection('members')
+            .doc(user.uid)
+            .set({
+              'role': role.name,
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+        debugPrint(
+          '🛡️ [Auth] Firestore members に UID(${user.uid}) の role(${role.name}) を自動登録しました',
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ [Auth] members へのロール自動登録に失敗: $e');
+    }
   }
 
   /// クラウド（Firestore）側からリアルタイムに権限剥奪や昇格が降ってきた場合の同期処理

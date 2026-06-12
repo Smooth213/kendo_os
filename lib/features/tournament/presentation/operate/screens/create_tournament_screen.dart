@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 class CreateTournamentScreen extends ConsumerStatefulWidget {
   const CreateTournamentScreen({super.key});
@@ -442,27 +444,44 @@ class _CreateTournamentScreenState
                   );
                 } else {
                   if (_formKey.currentState!.validate()) {
-                    final newTournament = TournamentModel(
-                      id: '',
-                      organizationId: ref.read(settingsProvider).organizationId,
-                      name: _nameController.text,
-                      date: _selectedDate,
-                      venue: _venueController.text,
-                      categories: const [],
-                      notes: _notesController.text.trim(),
-                    );
+                    try {
+                      // ★ デバッグ：現在の道場IDを出力
+                      final dojoId = ref.read(currentDojoIdProvider);
+                      debugPrint('🔥 [DEBUG] 現在の道場ID: "$dojoId"');
+                      final uid = FirebaseAuth.instance.currentUser?.uid;
+                      debugPrint('🔥 [DEBUG] 現在のUID: "$uid"');
 
-                    final newId = await ref
-                        .read(tournamentRepositoryProvider)
-                        .saveTournament(newTournament);
+                      final newTournament = TournamentModel(
+                        id: '',
+                        organizationId: ref
+                            .read(settingsProvider)
+                            .organizationId,
+                        name: _nameController.text,
+                        date: _selectedDate,
+                        venue: _venueController.text,
+                        categories: const [],
+                        notes: _notesController.text.trim(),
+                      );
 
-                    if (!mounted) return;
+                      final newId = await ref
+                          .read(tournamentRepositoryProvider)
+                          .saveTournament(newTournament);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('基本情報を保存しました！')),
-                    );
+                      if (!mounted) return;
 
-                    context.push('/team-registration/$newId');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('基本情報を保存しました！')),
+                      );
+
+                      context.push('/team-registration/$newId');
+                    } catch (e) {
+                      debugPrint('🔥 [ERROR] 大会保存エラー: $e');
+                      if (mounted) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text('保存エラー: $e')));
+                      }
+                    }
                   }
                 }
               },

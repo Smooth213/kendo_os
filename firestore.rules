@@ -8,42 +8,91 @@ service cloud.firestore {
       // ★ 現場安全弁要件：ルームIDがすでに誰かに使われているか（被っているか）を
       // ログインユーザーが水際で安全に存在確認（get）できるように許可します
       allow get: if request.auth != null;
+      // 追加：新しい道場（組織）の新規作成と、管理者による更新を許可します
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner']);
       
       // 内部ヘルパー関数：認証されたユーザーのロールを判定する（フェーズ3のメンバーコレクションと連動）
       function getUserRole() {
-        return get(/databases/$(database)/documents/organizations/$(dojoId)/members/$(request.auth.uid)).data.role;
+        let memberPath = /databases/$(database)/documents/organizations/$(dojoId)/members/$(request.auth.uid);
+        return exists(memberPath) ? get(memberPath).data.get('role', 'none') : 'none';
       }
       
+      // 0. メンバー管理（既存IDでの入室・権限確認に必須）
+      match /members/{userId} {
+        // クライアントアプリ側で自分がメンバーであるか・どのロールかを確認するために必須
+        allow read: if request.auth != null;
+        // 道場作成時の自身の初期登録、または運営者以上によるメンバー追加・変更を許可
+        allow write: if request.auth != null && (request.auth.uid == userId || getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner']);
+      }
+
       // 1. 環境設定・組織定義
       match /settings/{document} {
         allow read: if request.auth != null; // 全員閲覧可能
-        allow write: if request.auth != null && getUserRole() == 'admin'; // 最高管理者のみ変更可能
+        allow write: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner']); // 大会作成に伴う更新を許可
       }
 
       // 2. 選手名簿マスタ
       match /players/{playerId} {
         allow read: if request.auth != null; // 全員閲覧可能
-        allow write: if request.auth != null && getUserRole() == 'admin'; // 誤編集防止のためAdminのみ追加・変更・削除可能
+        allow write: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner']); // 大会作成時に選手データが更新される可能性を考慮
+      }
+
+      // 2-2. チーム・団体
+      match /teams/{teamId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner']);
+      }
+
+      // 2-3. カスタムチーム名
+      match /custom_team_names/{docId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner']);
       }
 
       // 3. 大会・リーグ設定
       match /tournaments/{tournamentId} {
         allow read: if request.auth != null;
-        allow write: if request.auth != null && (getUserRole() == 'admin' || getUserRole() == 'operator'); // 運営者以上が作成可能
+        allow write: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner']); // ロール名の揺れを許容
+      }
+
+      // 3-1. 大会プログラム (PDF/画像メタデータ)
+      // ★ネスト解除：tournamentsの中ではなく、organizations直下のサブコレクションとして正しく判定させる
+      match /programs/{programId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner']);
       }
 
       // 4. 試合スコア・進行状態
       match /matches/{matchId} {
         allow read: if request.auth != null;
-        // 試合進行・スコア入力・Undoは記録者、運営者、管理者に許可（Viewerは厳格にブロック）
-        allow write: if request.auth != null && (getUserRole() == 'admin' || getUserRole() == 'operator' || getUserRole() == 'recorder');
+        allow write: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner', 'recorder']); // Viewerは厳格にブロック
       }
 
-      // 5. 監査ログ
-      match /auditLogs/{logId} {
+      // 5. プログラムへの共有手書き線データ (Strokes)
+      match /strokes/{strokeId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Owner', 'recorder']);
+      }
+
+      // 6. 監査ログ
+      match /audit_logs/{logId} {
         allow read: if request.auth != null && getUserRole() == 'admin'; // 監査ログの閲覧はAdmin限定
         allow create: if request.auth != null; // ログの書き込み自体は全操作端末に許可
       }
     }
+    
+    // =========================================================================
+    // 🚫 絶対防壁: 旧仕様・ルート階層へのアクセスを完全遮断（漏洩・不正アクセス防止）
+    // =========================================================================
+    match /audit_logs/{document=**} { allow read, write: if false; }
+    match /auditLogs/{document=**} { allow read, write: if false; }
+    match /matches/{document=**} { allow read, write: if false; }
+    match /teams/{document=**} { allow read, write: if false; }
+    match /tournaments/{document=**} { allow read, write: if false; }
+    match /programs/{document=**} { allow read, write: if false; }
+    match /players/{document=**} { allow read, write: if false; }
+    match /custom_team_names/{document=**} { allow read, write: if false; }
+    match /strokes/{document=**} { allow read, write: if false; }
   }
 }

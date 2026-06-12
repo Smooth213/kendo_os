@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,11 +7,14 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
 import 'package:kendo_os/admin/providers/audit_provider.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/domain/entities/audit_log.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
   group('🛡️ マルチテナント（道場ID）隔離・同期不具合修正テスト要塞', () {
@@ -40,6 +44,12 @@ void main() {
             }),
             teamRepositoryProvider.overrideWith((ref) {
               return TeamRepository(
+                dojoId: ref.watch(currentDojoIdProvider),
+                firestore: fakeFirestore,
+              );
+            }),
+            programRepositoryProvider.overrideWith((ref) {
+              return ProgramRepository(
                 dojoId: ref.watch(currentDojoIdProvider),
                 firestore: fakeFirestore,
               );
@@ -141,6 +151,12 @@ void main() {
                 firestore: fakeFirestore,
               );
             }),
+            programRepositoryProvider.overrideWith((ref) {
+              return ProgramRepository(
+                dojoId: ref.watch(currentDojoIdProvider),
+                firestore: fakeFirestore,
+              );
+            }),
             auditFirestoreProvider.overrideWithValue(fakeFirestore),
           ],
         );
@@ -148,7 +164,9 @@ void main() {
         final tournamentRepo = container.read(tournamentRepositoryProvider);
         final playerRepo = container.read(playerRepositoryProvider);
         final teamRepo = container.read(teamRepositoryProvider);
+        final matchRepo = MatchRepository(fakeFirestore, targetDojoId);
         final auditService = container.read(auditProvider);
+        final programRepo = container.read(programRepositoryProvider);
 
         // 1. 試合以外の各種データを保存（Firestoreの書き込みをエミュレート）
         await tournamentRepo.saveTournament(
@@ -188,6 +206,33 @@ void main() {
           action: AuditAction.addScore,
           details: 'test_score',
         );
+
+        // 試合・スコア・公式記録データの保存検証
+        await matchRepo.saveMatch(
+          const MatchModel(
+            id: 'm1',
+            matchType: '個人戦',
+            redName: '赤',
+            whiteName: '白',
+            redScore: 2,
+            whiteScore: 1,
+            status: 'approved', // 公式記録として確定済み
+            organizationId: 'test_dojo_tenant_123',
+          ),
+        );
+
+        // 大会プログラムデータの保存検証
+        try {
+          await programRepo.uploadProgram(
+            tournamentId: 't1',
+            title: 'テストプログラム',
+            fileType: 'pdf',
+            pageCount: 1,
+            bytes: Uint8List(0), // ダミーデータ
+          );
+        } catch (_) {
+          // Storageのモックがないテスト環境では例外が出ますが、Firestoreへの初期保存は完了しているため無視して階層を検証します
+        }
 
         // 2. 検証：データが道場専用の「organizations/{dojoId}/xxx」に保存されているか
         final tournamentsSnapshot = await fakeFirestore
@@ -242,6 +287,33 @@ void main() {
           equals('test_score'),
         );
 
+        final matchesSnapshot = await fakeFirestore
+            .collection('organizations')
+            .doc(targetDojoId)
+            .collection('matches')
+            .get();
+        expect(
+          matchesSnapshot.docs.length,
+          equals(1),
+          reason: '試合がテナント層に保存されていること',
+        );
+        expect(matchesSnapshot.docs.first.data()['status'], equals('approved'));
+        expect(matchesSnapshot.docs.first.data()['redScore'], equals(2));
+
+        final programsSnapshot = await fakeFirestore
+            .collection('organizations')
+            .doc(targetDojoId)
+            .collection('tournaments')
+            .doc('t1')
+            .collection('programs')
+            .get();
+        expect(
+          programsSnapshot.docs.length,
+          equals(1),
+          reason: '大会プログラムがテナント層に保存されていること',
+        );
+        expect(programsSnapshot.docs.first.data()['title'], equals('テストプログラム'));
+
         // 3. 絶対防壁：旧仕様のルートコレクションにデータが1件も「漏洩」していないことの証明
         expect(
           (await fakeFirestore.collection('tournaments').get()).docs.isEmpty,
@@ -262,6 +334,16 @@ void main() {
           (await fakeFirestore.collection('audit_logs').get()).docs.isEmpty,
           isTrue,
           reason: '旧仕様のログ階層に漏れていないこと',
+        );
+        expect(
+          (await fakeFirestore.collection('matches').get()).docs.isEmpty,
+          isTrue,
+          reason: '旧仕様の試合階層に漏れていないこと',
+        );
+        expect(
+          (await fakeFirestore.collection('programs').get()).docs.isEmpty,
+          isTrue,
+          reason: '旧仕様のプログラム階層に漏れていないこと',
         );
       },
     );

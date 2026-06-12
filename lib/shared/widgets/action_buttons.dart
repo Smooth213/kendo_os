@@ -27,7 +27,8 @@ class ScoreActionPanel extends ConsumerWidget {
 
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(4), // 全体を少し内側に寄せる
+        // ★ 左右の余白を完全にゼロ化し、縦のクッションをタイトに締める
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
         child: Column(
           children: [
             Expanded(
@@ -75,7 +76,8 @@ class ScoreActionPanel extends ConsumerWidget {
               ),
             ),
             SizedBox(
-              height: 60, // 反則ボタンは高さを固定
+              // ★ 反則ボタンの高さを60から46に縮小し、19.5:9の垂直全収まりを物理保証
+              height: 46,
               child: Row(
                 children: [
                   _buildFoulBtn(
@@ -105,7 +107,8 @@ class ScoreActionPanel extends ConsumerWidget {
     // 共通のHoldConfirmButtonのロジックをボタンに適用
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(2.0),
+        // ★ 左右の隙間を1.0に詰め、ボタン自体の横幅を最大化
+        padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
         child: HoldConfirmButton(
           label: label,
           color: color,
@@ -127,7 +130,8 @@ class ScoreActionPanel extends ConsumerWidget {
   ) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(4.0),
+        // ★ 反則ボタンの横隙間も完全にフィットさせる
+        padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
         child: HoldConfirmButton(
           label: label,
           color: Colors.amber.shade600,

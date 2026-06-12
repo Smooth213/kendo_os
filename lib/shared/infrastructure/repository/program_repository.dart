@@ -4,13 +4,27 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 // ★ プロバイダーの定義
-final programRepositoryProvider = Provider((ref) => ProgramRepository());
+final programRepositoryProvider = Provider((ref) {
+  final dojoId = ref.watch(currentDojoIdProvider);
+  return ProgramRepository(dojoId: dojoId);
+});
 
 class ProgramRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage? _injectedStorage;
+  final String dojoId;
+
+  FirebaseStorage get _storage => _injectedStorage ?? FirebaseStorage.instance;
+
+  ProgramRepository({
+    required this.dojoId,
+    FirebaseFirestore? firestore,
+    FirebaseStorage? storage,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _injectedStorage = storage;
 
   // 1. プログラムのアップロードとFirestoreへの保存
   Future<String> uploadProgram({
@@ -21,8 +35,18 @@ class ProgramRepository {
     required String fileType,
     required int pageCount,
   }) async {
+    if (dojoId.isEmpty) {
+      throw Exception('コンテナ(道場ID)が設定されていません');
+    }
+
     // 1. IDを発行
-    final docRef = _firestore.collection('programs').doc();
+    final docRef = _firestore
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('tournaments')
+        .doc(tournamentId)
+        .collection('programs')
+        .doc();
     final programId = docRef.id;
 
     // 2. 【重要】先に「仮のデータ」をFirestoreに保存する（AIのエラーを防ぐため！）
@@ -48,7 +72,10 @@ class ProgramRepository {
       fileName = '${DateTime.now().millisecondsSinceEpoch}_web_upload.$ext';
     }
 
-    final storageRef = _storage.ref().child('programs/$programId/$fileName');
+    // ★ Storageへの保存もコンテナ（道場）ごとに分離する
+    final storageRef = _storage.ref().child(
+      'organizations/$dojoId/programs/$programId/$fileName',
+    );
 
     String downloadUrl;
     if (kIsWeb && bytes != null) {
@@ -72,6 +99,10 @@ class ProgramRepository {
   // 2. 特定の大会のプログラム一覧をリアルタイム取得
   Stream<List<ProgramModel>> watchPrograms(String tournamentId) {
     return _firestore
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('tournaments')
+        .doc(tournamentId)
         .collection('programs')
         .where('tournamentId', isEqualTo: tournamentId)
         .orderBy('createdAt', descending: false)
@@ -96,10 +127,19 @@ class ProgramRepository {
     }
 
     // Firestoreから削除
-    await _firestore.collection('programs').doc(program.id).delete();
+    await _firestore
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('tournaments')
+        .doc(program.tournamentId)
+        .collection('programs')
+        .doc(program.id)
+        .delete();
 
     // 紐づく共有ストローク（線）も削除するバッチ処理
     final strokesSnapshot = await _firestore
+        .collection('organizations')
+        .doc(dojoId)
         .collection('strokes')
         .where('programId', isEqualTo: program.id)
         .get();
@@ -116,6 +156,8 @@ class ProgramRepository {
     int pageIndex,
   ) {
     return _firestore
+        .collection('organizations')
+        .doc(dojoId)
         .collection('strokes')
         .where('programId', isEqualTo: programId)
         .where('pageIndex', isEqualTo: pageIndex)
@@ -130,12 +172,21 @@ class ProgramRepository {
 
   // 5. 共有ハイライトの保存
   Future<void> saveSharedStroke(StrokeModel stroke) async {
-    final docRef = _firestore.collection('strokes').doc(stroke.id);
+    final docRef = _firestore
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('strokes')
+        .doc(stroke.id);
     await docRef.set(stroke.toJson());
   }
 
   // 6. 共有ハイライトの削除（消しゴム用）
   Future<void> deleteSharedStroke(String strokeId) async {
-    await _firestore.collection('strokes').doc(strokeId).delete();
+    await _firestore
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('strokes')
+        .doc(strokeId)
+        .delete();
   }
 }

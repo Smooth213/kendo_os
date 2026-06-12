@@ -169,11 +169,11 @@ void main() {
                   child: Column(
                     children: [
                       SizedBox(
-                        height: 400,
+                        height: (config['size'] as Size).height,
                         child: const MatchScreen(matchId: testMatchId),
                       ),
                       SizedBox(
-                        height: 400,
+                        height: (config['size'] as Size).height,
                         child: ProgramViewerScreen(
                           programs: [
                             ProgramModel(

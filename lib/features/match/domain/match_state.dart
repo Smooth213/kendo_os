@@ -52,105 +52,98 @@ class MatchStateMachine {
         if (event == StateTransitionEvent.startMatch) {
           return MatchLifecycleState.inProgress;
         }
-        break;
+        throw InvalidStateException(
+          'notStarted状態からはplayersReadyまたはstartMatchのみ許可されています。Event: $event',
+        );
 
       case MatchLifecycleState.waitingForPlayers:
         if (event == StateTransitionEvent.playersReady) {
           return MatchLifecycleState.ready;
         }
-        break;
+        throw InvalidStateException(
+          'waitingForPlayers状態からはplayersReadyのみ許可されています。Event: $event',
+        );
 
       case MatchLifecycleState.ready:
         if (event == StateTransitionEvent.startMatch) {
           return MatchLifecycleState.inProgress;
         }
-        if (event == StateTransitionEvent.decideWinner) {
-          return MatchLifecycleState.fusen;
-        }
-        break;
+        throw InvalidStateException(
+          'ready状態からはstartMatchのみ許可されています。Event: $event',
+        );
 
       case MatchLifecycleState.inProgress:
         if (event == StateTransitionEvent.addScore) {
           return MatchLifecycleState.inProgress;
         }
+        if (event == StateTransitionEvent.pause) {
+          return MatchLifecycleState.paused;
+        }
         if (event == StateTransitionEvent.timeUp) {
+          return MatchLifecycleState.completed;
+        }
+        if (event == StateTransitionEvent.decideWinner) {
           return MatchLifecycleState.completed;
         }
         if (event == StateTransitionEvent.startEncho) {
           return MatchLifecycleState.encho;
         }
-        if (event == StateTransitionEvent.decideWinner) {
-          return MatchLifecycleState.completed;
-        }
-        if (event == StateTransitionEvent.pause) {
-          return MatchLifecycleState.paused;
-        }
-        if (event == StateTransitionEvent.requestHantei) {
-          return MatchLifecycleState.hanteiPending;
-        }
-        if (event == StateTransitionEvent.undo) {
-          return MatchLifecycleState.inProgress;
-        }
-        break;
+        throw InvalidStateException(
+          'inProgress状態からはaddScore, pause, timeUp, decideWinner, startEnchoのみ許可されています。Event: $event',
+        );
 
       case MatchLifecycleState.paused:
         if (event == StateTransitionEvent.resume) {
           return MatchLifecycleState.inProgress;
         }
         if (event == StateTransitionEvent.undo) {
-          return MatchLifecycleState.paused;
+          return MatchLifecycleState.inProgress;
         }
-        break;
+        throw InvalidStateException(
+          'paused状態からはresumeまたはundoのみ許可されています。Event: $event',
+        );
 
       case MatchLifecycleState.encho:
         if (event == StateTransitionEvent.addScore) {
           return MatchLifecycleState.encho;
         }
-        if (event == StateTransitionEvent.decideWinner) {
-          return MatchLifecycleState.completed;
+        if (event == StateTransitionEvent.pause) {
+          return MatchLifecycleState.paused;
         }
         if (event == StateTransitionEvent.timeUp) {
           return MatchLifecycleState.completed;
         }
-        if (event == StateTransitionEvent.pause) {
-          return MatchLifecycleState.paused;
+        if (event == StateTransitionEvent.decideWinner) {
+          return MatchLifecycleState.completed;
         }
-        if (event == StateTransitionEvent.requestHantei) {
-          return MatchLifecycleState.hanteiPending;
-        }
-        if (event == StateTransitionEvent.undo) {
-          return MatchLifecycleState.encho;
-        }
-        break;
+        throw InvalidStateException(
+          'encho状態からはaddScore, pause, timeUp, decideWinnerのみ許可されています。Event: $event',
+        );
 
       case MatchLifecycleState.hanteiPending:
         if (event == StateTransitionEvent.decideWinner) {
           return MatchLifecycleState.completed;
         }
-        if (event == StateTransitionEvent.undo) {
-          return MatchLifecycleState.inProgress;
-        }
-        break;
+        throw InvalidStateException(
+          'hanteiPending状態からはdecideWinnerのみ許可されています。Event: $event',
+        );
 
       case MatchLifecycleState.completed:
-      case MatchLifecycleState.fusen:
         if (event == StateTransitionEvent.approve) {
           return MatchLifecycleState.completed;
         }
         if (event == StateTransitionEvent.undo) {
           return MatchLifecycleState.inProgress;
-        } // 勝敗取り消しで進行中へ戻る
-        break;
+        }
+        throw InvalidStateException(
+          'completed状態からはapproveまたはundoのみ許可されています。Event: $event',
+        );
 
       case MatchLifecycleState.canceled:
       case MatchLifecycleState.corrupted:
-        break;
+      case MatchLifecycleState.fusen:
+        throw InvalidStateException('終了状態からの不正な状態遷移イベントは拒否されます。Event: $event');
     }
-
-    // 遷移テーブルに定義されていない組み合わせは「不正」として弾く
-    throw InvalidStateException(
-      '不正な状態遷移です: 状態[$currentState]からイベント[$event]への遷移は許可されていません。',
-    );
   }
 }
 

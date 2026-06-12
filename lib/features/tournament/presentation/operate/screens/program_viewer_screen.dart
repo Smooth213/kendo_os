@@ -117,9 +117,14 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentProgram = widget.programs[_currentIndex];
+    // ★ 材料データ化（URL未生成）のプログラムであるか安全に判定
+    final isMaterialOnly =
+        currentProgram.fileUrl.isEmpty ||
+        !currentProgram.fileUrl.startsWith('http');
     final isFilePdf =
-        currentProgram.fileType == 'pdf' ||
-        currentProgram.fileUrl.toLowerCase().contains('.pdf');
+        !isMaterialOnly &&
+        (currentProgram.fileType == 'pdf' ||
+            currentProgram.fileUrl.toLowerCase().contains('.pdf'));
 
     final programId = currentProgram.id.isNotEmpty
         ? currentProgram.id
@@ -439,6 +444,62 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 }),
                 itemBuilder: (context, index) {
                   final program = widget.programs[index];
+
+                  // ★ 超重要：材料データ化によるファイルURL欠損時のクラッシュ防止ガード
+                  final isItemMaterialOnly =
+                      program.fileUrl.isEmpty ||
+                      !program.fileUrl.startsWith('http');
+                  if (isItemMaterialOnly) {
+                    return Center(
+                      child: Container(
+                        margin: const EdgeInsets.all(32),
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1C1C1E)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.grey.shade800
+                                : Colors.grey.shade300,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              program.fileType == 'pdf'
+                                  ? Icons.picture_as_pdf_outlined
+                                  : Icons.image_not_supported_outlined,
+                              size: 64,
+                              color: Colors.indigo.shade400,
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              program.title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              '【材料データ同期済み】\nオフラインファースト最適化の規約に基づき、通信帯域を圧迫する実ファイル（バイナリ）の自動ロードは行われません。プログラムの構成情報は安全に保護されています。',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                                height: 1.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
                   final isFilePdf =
                       program.fileType == 'pdf' ||
                       program.fileUrl.toLowerCase().contains('.pdf');
@@ -668,25 +729,55 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   ) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // ★ 追加: ボトムシートの高さ制限を解除
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'ペンの選択',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                if (canUseSharedPen) ...[
+            padding: EdgeInsets.only(
+              top: 20.0,
+              left: 20.0,
+              right: 20.0,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20.0,
+            ),
+            child: SingleChildScrollView(
+              // ★ 追加: はみ出しを防ぐためスクロール可能に
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   const Text(
-                    '📢 共有ペン (全員の画面に反映されます)',
+                    'ペンの選択',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  if (canUseSharedPen) ...[
+                    const Text(
+                      '📢 共有ペン (全員の画面に反映されます)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildLargePenOption(
+                          context,
+                          Colors.redAccent,
+                          '赤ペン (共有)',
+                        ),
+                        const SizedBox(width: 10),
+                        _buildLargePenOption(context, Colors.amber, '黄ペン (共有)'),
+                      ],
+                    ),
+                    const SizedBox(height: 25),
+                  ],
+                  const Text(
+                    '📝 個人ペン (自分だけのメモです)',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.black87,
@@ -698,37 +789,16 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     children: [
                       _buildLargePenOption(
                         context,
-                        Colors.redAccent,
-                        '赤ペン (共有)',
+                        Colors.blueAccent,
+                        '青ペン (個人)',
                       ),
                       const SizedBox(width: 10),
-                      _buildLargePenOption(context, Colors.amber, '黄ペン (共有)'),
+                      _buildLargePenOption(context, Colors.black87, '黒ペン (個人)'),
                     ],
                   ),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 10),
                 ],
-                const Text(
-                  '📝 個人ペン (自分だけのメモです)',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    _buildLargePenOption(
-                      context,
-                      Colors.blueAccent,
-                      '青ペン (個人)',
-                    ),
-                    const SizedBox(width: 10),
-                    _buildLargePenOption(context, Colors.black87, '黒ペン (個人)'),
-                  ],
-                ),
-                const SizedBox(height: 10),
-              ],
+              ),
             ),
           ),
         );
