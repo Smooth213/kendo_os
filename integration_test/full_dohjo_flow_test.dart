@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import '../helpers/mock_data.dart';
+import '../test/helpers/mock_data.dart';
 
 void main() {
   group('🛡️ フェーズ6 — 実機フロー・オフライン復帰 統合テスト要塞', () {

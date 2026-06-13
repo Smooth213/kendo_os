@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/rules/rule_factory.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
-import '../helpers/test_match_factory.dart';
+import '../test/helpers/test_match_factory.dart';
 
 // ==========================================
 // ★ Phase 11: Chaos Test (ルール爆発・クラッシュ耐性)

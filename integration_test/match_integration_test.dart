@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
-import '../helpers/event_factory.dart';
+import '../test/helpers/event_factory.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart'; // ★ Adapterのimport追加
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/domain/entities/role_permission.dart'; // ★ 追加

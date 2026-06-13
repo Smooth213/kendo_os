@@ -3,10 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/domain/entities/user_session.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
+import '../helpers/test_app.dart';
 
 void main() {
   group('🔒 Phase 14 - PWA実運用セッション永続化＆タイムアウト防衛テスト', () {
     late ProviderContainer container;
+
+    setUpAll(() async {
+      await setupTestFirebase();
+    });
 
     setUp(() {
       container = ProviderContainer();

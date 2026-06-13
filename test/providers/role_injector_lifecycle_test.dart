@@ -3,8 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import '../helpers/test_app.dart';
 
 void main() {
+  setUpAll(() async {
+    await setupTestFirebase();
+  });
+
   group('🛡️ RoleInjector Riverpod Lifecycle Safety Test', () {
     test(
       '✅ 1. URL パラメータ role=viewer が正しく解析され authSessionProvider に反映されること',

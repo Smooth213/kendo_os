@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/application/usecases/match_usecases.dart
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
-import '../helpers/test_match_factory.dart';
+import '../test/helpers/test_match_factory.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';

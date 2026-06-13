@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
-import '../helpers/test_match_factory.dart';
+import '../test/helpers/test_match_factory.dart';
 
 // サーバー通信のモック
 class MockFirestoreAdapter extends Mock {

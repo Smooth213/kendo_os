@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/shared/domain/entities/role_permission.dart';
-import '../helpers/test_match_factory.dart';
+import '../test/helpers/test_match_factory.dart';
 
 void main() {
   group('🌪️ Phase 7: シミュレーションテスト (同時操作・競合の検証)', () {

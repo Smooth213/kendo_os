@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../helpers/test_app.dart';
+import '../test/helpers/test_app.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart';
 import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
