@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // ★ 追加: Timestamp型を明示的に使用するため
 import 'package:kendo_os/shared/infrastructure/persistence/converters/json_converters.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -19,14 +20,67 @@ class SafeTimestampConverter implements JsonConverter<DateTime?, dynamic> {
   @override
   DateTime? fromJson(dynamic json) {
     if (json == null) return null; // 確実に null として扱う
-    return const TimestampConverter().fromJson(json);
+    // 過去データや様々な型からの復元を安全に吸収する防波堤
+    try {
+      if (json is Timestamp) return json.toDate();
+      if (json is int) return DateTime.fromMillisecondsSinceEpoch(json);
+      if (json is String) return DateTime.tryParse(json) ?? DateTime.now();
+      return const TimestampConverter().fromJson(json);
+    } catch (_) {
+      return DateTime.now();
+    }
   }
 
   @override
   dynamic toJson(DateTime? object) {
     if (object == null) return null;
-    return const TimestampConverter().toJson(object);
+    // ★ 修正: Web(JS interop)環境での converted Future クラッシュを【完全に】根絶するため、
+    // Dart側で Timestamp インスタンスを生成して渡すのをやめ、
+    // JS 側が 100% 安全に解釈できる絶対的なプリミティブ型（ミリ秒 int）として渡します。
+    return object.millisecondsSinceEpoch;
   }
+}
+
+// ★ 追加: Web環境における配列のシリアライズ漏れを「物理的」に防ぐ絶対防壁コンバーター
+// build.yaml のキャッシュなどで explicit_to_json が効かなかった場合でも、
+// 確実に ScoreEvent を Map に変換してから Firestore の JS レイヤーに渡します。
+class ScoreEventListConverter
+    implements JsonConverter<List<ScoreEvent>, List<dynamic>> {
+  const ScoreEventListConverter();
+
+  @override
+  List<ScoreEvent> fromJson(List<dynamic> json) =>
+      json.map((e) => ScoreEvent.fromJson(e as Map<String, dynamic>)).toList();
+
+  @override
+  List<dynamic> toJson(List<ScoreEvent> object) =>
+      object.map((e) => e.toJson()).toList();
+}
+
+// ★ 追加: スナップショット履歴も確実に純粋なMapに変換
+class MatchSnapshotListConverter
+    implements JsonConverter<List<MatchSnapshot>, List<dynamic>> {
+  const MatchSnapshotListConverter();
+
+  @override
+  List<MatchSnapshot> fromJson(List<dynamic> json) => json
+      .map((e) => MatchSnapshot.fromJson(e as Map<String, dynamic>))
+      .toList();
+
+  @override
+  List<dynamic> toJson(List<MatchSnapshot> object) =>
+      object.map((e) => e.toJson()).toList();
+}
+
+// ★ 追加: 複雑なルールオブジェクトも確実に純粋なMapに変換
+class MatchRuleConverter
+    implements JsonConverter<MatchRule?, Map<String, dynamic>?> {
+  const MatchRuleConverter();
+  @override
+  MatchRule? fromJson(Map<String, dynamic>? json) =>
+      json == null ? null : MatchRule.fromJson(json);
+  @override
+  Map<String, dynamic>? toJson(MatchRule? object) => object?.toJson();
 }
 
 // ★ Phase 4-2: 同期ステータスの厳密化 (partディレクティブの下に配置)
@@ -54,12 +108,12 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
     @Default(0) int redScore,
     @Default(0) int whiteScore,
     @Default('waiting') String status,
-    @Default([]) List<ScoreEvent> events,
-    @Default([]) List<MatchSnapshot> snapshots,
+    @ScoreEventListConverter() @Default([]) List<ScoreEvent> events,
+    @MatchSnapshotListConverter() @Default([]) List<MatchSnapshot> snapshots,
 
     // ★ Phase 4: isDirtyを廃止し、厳密なSyncStateと差分キュー(pendingEvents)を導入
     @Default(SyncState.synced) SyncState syncState,
-    @Default([]) List<ScoreEvent> pendingEvents,
+    @ScoreEventListConverter() @Default([]) List<ScoreEvent> pendingEvents,
 
     @SafeTimestampConverter() DateTime? lastUpdatedAt,
     @Default([]) List<String> refereeNames,
@@ -87,7 +141,7 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
     @Default(0) int accumulatedPauseDurationMs,
     @Default('') String note,
     @Default(false) bool isKachinuki,
-    MatchRule? rule,
+    @MatchRuleConverter() MatchRule? rule,
     @Default([]) List<String> redRemaining,
     @Default([]) List<String> whiteRemaining,
   }) = _MatchModel;

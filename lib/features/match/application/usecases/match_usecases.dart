@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -139,7 +140,7 @@ class AddScoreUseCase {
       accumulatedPauseDurationMs: updatedMatch.accumulatedPauseDurationMs,
       status: currentState.toLegacyString(),
       syncState: SyncState.localOnly,
-      pendingEvents: updatedPendingEvents,
+      pendingEvents: kIsWeb ? <ScoreEvent>[] : updatedPendingEvents,
       lastUpdatedAt: _timeSource.now(),
     );
   }
@@ -203,7 +204,7 @@ class UndoScoreUseCase {
     return currentMatch.copyWith(
       events: updatedEvents,
       status: currentState.toLegacyString(),
-      pendingEvents: updatedPendingEvents,
+      pendingEvents: kIsWeb ? <ScoreEvent>[] : updatedPendingEvents,
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
       syncState: SyncState.localOnly,
@@ -277,7 +278,7 @@ class RedoScoreUseCase {
     return currentMatch.copyWith(
       events: updatedEvents,
       status: currentState.toLegacyString(),
-      pendingEvents: updatedPendingEvents,
+      pendingEvents: kIsWeb ? <ScoreEvent>[] : updatedPendingEvents,
       redScore: analysis.context.redIppon,
       whiteScore: analysis.context.whiteIppon,
       syncState: SyncState.localOnly,

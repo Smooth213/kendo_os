@@ -24,6 +24,31 @@ enum PointType {
 // ★ Phase 1-Step 2: バージョン定数の定義
 const int currentEventVersion = 2;
 
+// ==========================================
+// ★ 追加：Web(PWA)版のFirestore配列内クラッシュを完全に防ぐ専用コンバーター
+// 配列内の時刻データをFirestoreの `Timestamp` に頼らず、純粋な `int` (ミリ秒) として安全に保存・復元します。
+// ==========================================
+class EpochDateTimeConverter implements JsonConverter<DateTime, dynamic> {
+  const EpochDateTimeConverter();
+
+  @override
+  DateTime fromJson(dynamic json) {
+    if (json is int) return DateTime.fromMillisecondsSinceEpoch(json);
+    if (json is String) return DateTime.tryParse(json) ?? DateTime.now();
+    // 過去のデータが Timestamp の場合への安全なフォールバック
+    try {
+      return const TimestampConverter().fromJson(json);
+    } catch (_) {
+      return DateTime.now();
+    }
+  }
+
+  @override
+  dynamic toJson(DateTime object) {
+    return object.millisecondsSinceEpoch;
+  }
+}
+
 @freezed
 abstract class ScoreEvent with _$ScoreEvent {
   const ScoreEvent._();
@@ -46,7 +71,8 @@ abstract class ScoreEvent with _$ScoreEvent {
     @Default(false) bool isUndo,
     @Default(false) bool isRestore,
 
-    @TimestampConverter() required DateTime timestamp,
+    @EpochDateTimeConverter()
+    required DateTime timestamp, // ★ 修正: 安全なコンバーターへ差し替え
     String? userId,
     @Default(0) int sequence,
     @Default(false) bool isCanceled,

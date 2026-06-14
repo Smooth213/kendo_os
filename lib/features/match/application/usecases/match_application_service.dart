@@ -182,6 +182,31 @@ class MatchApplicationService {
     return match;
   }
 
+  // =========================================================================
+  // 🛡️ Webアプリ・保存リトライ防波堤 (1秒制限・一瞬の通信断の克服)
+  // =========================================================================
+  Future<void> _saveToFirestoreWithRetry(
+    MatchModel match, {
+    int maxAttempts = 3,
+  }) async {
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await _ref.read(matchRepositoryProvider).saveMatch(match);
+        return; // 成功したら抜ける
+      } catch (e) {
+        if (attempt == maxAttempts) {
+          rethrow; // 最終的にダメなら上位に投げて UI エラーとする
+        }
+        final delayMs =
+            500 * attempt; // 500ms, 1000ms... と待機時間を増やす (Exponential Backoff)
+        debugPrint(
+          '⚠️ [MatchApplicationService] Firestore保存をリトライします ($attempt/$maxAttempts) ${delayMs}ms後: $e',
+        );
+        await Future.delayed(Duration(milliseconds: delayMs));
+      }
+    }
+  }
+
   // --------------------------------------------------
   // 1. 一本入力フロー
   // --------------------------------------------------
@@ -596,23 +621,27 @@ class MatchApplicationService {
           '🌐 [MatchApplicationService] Webモード: Firestoreへ直接保存します (matchId: ${matchToSave.id})',
         );
 
+        // ★ 修正: Web(JS Interop)クラッシュとFirestoreの1MB制限超過を防ぐため、
+        // 通信用ペイロードからローカル専用の snapshots を完全にパージする
+        final webSafeMatch = matchToSave.copyWith(snapshots: const []);
+
         // ★ 追加: メモリ上のキャッシュを直接更新して即時反映させる (オプティミスティックUI更新)
         final currentMatches = _ref.read(webCurrentTournamentMatchesProvider);
-        final index = currentMatches.indexWhere((m) => m.id == matchToSave.id);
+        final index = currentMatches.indexWhere((m) => m.id == webSafeMatch.id);
         if (index != -1) {
           final newMatches = List<MatchModel>.from(currentMatches);
-          newMatches[index] = matchToSave;
+          newMatches[index] = webSafeMatch;
           _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
               newMatches;
         } else {
           _ref.read(webCurrentTournamentMatchesProvider.notifier).state = [
             ...currentMatches,
-            matchToSave,
+            webSafeMatch,
           ];
         }
 
-        // 通信を待たずにUIが更新された後、バックグラウンドでFirestoreへ保存する
-        await _ref.read(matchRepositoryProvider).saveMatch(matchToSave);
+        // ★ 修正: 通信を待たずにUIが更新された後、防波堤を通してFirestoreへ保存する
+        await _saveToFirestoreWithRetry(webSafeMatch);
         debugPrint('🌐 [MatchApplicationService] Webモード: Firestore直接保存完了');
       } else {
         // Mobile版: Isar に保存して同期エンジンに委譲
@@ -676,10 +705,15 @@ class MatchApplicationService {
           '🌐 [MatchApplicationService] Webモード: Firestoreへ一括保存します (${preparedMatches.length}件)',
         );
 
+        // ★ 修正: Firestore保存前に snapshots をパージしてJS相互運用エラーを防ぐ
+        final webSafeMatches = preparedMatches
+            .map((m) => m.copyWith(snapshots: const []))
+            .toList();
+
         // ★ 追加: オプティミスティックUI更新
         var currentMatches = _ref.read(webCurrentTournamentMatchesProvider);
         var newMatches = List<MatchModel>.from(currentMatches);
-        for (final m in preparedMatches) {
+        for (final m in webSafeMatches) {
           final index = newMatches.indexWhere((em) => em.id == m.id);
           if (index != -1) {
             newMatches[index] = m;
@@ -690,8 +724,8 @@ class MatchApplicationService {
         _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
             newMatches;
 
-        for (final m in preparedMatches) {
-          await _ref.read(matchRepositoryProvider).saveMatch(m);
+        for (final m in webSafeMatches) {
+          await _saveToFirestoreWithRetry(m);
         }
         debugPrint('🌐 [MatchApplicationService] Webモード: Firestore一括保存完了');
       } else {

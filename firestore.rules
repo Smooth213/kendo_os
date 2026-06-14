@@ -85,9 +85,14 @@ service cloud.firestore {
     // =========================================================================
     // 🚫 絶対防壁: 旧仕様・ルート階層へのアクセスを完全遮断（漏洩・不正アクセス防止）
     // =========================================================================
+
+    // 🌐 Web版フォールバック用: matches サブコレクションに対する網羅検索（collectionGroup等）を許可
+    match /{path=**}/matches/{matchId} {
+      allow read: if request.auth != null;
+    }
+
     match /audit_logs/{document=**} { allow read, write: if false; }
     match /auditLogs/{document=**} { allow read, write: if false; }
-    match /matches/{document=**} { allow read, write: if false; }
     match /teams/{document=**} { allow read, write: if false; }
     match /tournaments/{document=**} { allow read, write: if false; }
     match /programs/{document=**} { allow read, write: if false; }

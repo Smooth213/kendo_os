@@ -18,7 +18,8 @@ mixin _$ScoreEvent {
  String get id;// ★ 修正: JSONにschemaVersionが無い昔のデータは「1」として読み込み、
 // 新しくDart内で生成されるイベントは最新の「2(currentEventVersion)」にする魔法の記述
 @JsonKey(defaultValue: 1) int get schemaVersion; Side get side;// --- 新しいDDDの意味ベース構造 ---
- StrikeType get strikeType; bool get isIppon; bool get isHansoku; bool get isFusen; bool get isHantei; bool get isUndo; bool get isRestore;@TimestampConverter() DateTime get timestamp; String? get userId; int get sequence; bool get isCanceled;// ==========================================
+ StrikeType get strikeType; bool get isIppon; bool get isHansoku; bool get isFusen; bool get isHantei; bool get isUndo; bool get isRestore;@EpochDateTimeConverter() DateTime get timestamp;// ★ 修正: 安全なコンバーターへ差し替え
+ String? get userId; int get sequence; bool get isCanceled;// ==========================================
 // ★ Phase 3-2: Append-only Event Sourcing (相殺イベント用)
 // 過去のイベントを直接 isCanceled=true に書き換えるのをやめ、
 // 「この targetId のイベントを取り消す」という新しいイベントを追記する方式へ移行。
@@ -69,7 +70,7 @@ abstract mixin class $ScoreEventCopyWith<$Res>  {
   factory $ScoreEventCopyWith(ScoreEvent value, $Res Function(ScoreEvent) _then) = _$ScoreEventCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(defaultValue: 1) int schemaVersion, Side side, StrikeType strikeType, bool isIppon, bool isHansoku, bool isFusen, bool isHantei, bool isUndo, bool isRestore,@TimestampConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled, String targetId, int ruleVersion, String deviceId, int logicalClock, String signature
+ String id,@JsonKey(defaultValue: 1) int schemaVersion, Side side, StrikeType strikeType, bool isIppon, bool isHansoku, bool isFusen, bool isHantei, bool isUndo, bool isRestore,@EpochDateTimeConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled, String targetId, int ruleVersion, String deviceId, int logicalClock, String signature
 });
 
 
@@ -192,7 +193,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isHantei,  bool isUndo,  bool isRestore, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScoreEvent() when $default != null:
 return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature);case _:
@@ -213,7 +214,7 @@ return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.i
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isHantei,  bool isUndo,  bool isRestore, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEvent():
 return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature);case _:
@@ -233,7 +234,7 @@ return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.i
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isHantei,  bool isUndo,  bool isRestore, @TimestampConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)?  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEvent() when $default != null:
 return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature);case _:
@@ -248,7 +249,7 @@ return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.i
 @JsonSerializable()
 
 class _ScoreEvent extends ScoreEvent {
-  const _ScoreEvent({this.id = '', @JsonKey(defaultValue: 1) this.schemaVersion = currentEventVersion, required this.side, this.strikeType = StrikeType.none, this.isIppon = false, this.isHansoku = false, this.isFusen = false, this.isHantei = false, this.isUndo = false, this.isRestore = false, @TimestampConverter() required this.timestamp, this.userId, this.sequence = 0, this.isCanceled = false, this.targetId = '', this.ruleVersion = 1, this.deviceId = 'local_device', this.logicalClock = 0, this.signature = ''}): super._();
+  const _ScoreEvent({this.id = '', @JsonKey(defaultValue: 1) this.schemaVersion = currentEventVersion, required this.side, this.strikeType = StrikeType.none, this.isIppon = false, this.isHansoku = false, this.isFusen = false, this.isHantei = false, this.isUndo = false, this.isRestore = false, @EpochDateTimeConverter() required this.timestamp, this.userId, this.sequence = 0, this.isCanceled = false, this.targetId = '', this.ruleVersion = 1, this.deviceId = 'local_device', this.logicalClock = 0, this.signature = ''}): super._();
   factory _ScoreEvent.fromJson(Map<String, dynamic> json) => _$ScoreEventFromJson(json);
 
 @override@JsonKey() final  String id;
@@ -264,7 +265,8 @@ class _ScoreEvent extends ScoreEvent {
 @override@JsonKey() final  bool isHantei;
 @override@JsonKey() final  bool isUndo;
 @override@JsonKey() final  bool isRestore;
-@override@TimestampConverter() final  DateTime timestamp;
+@override@EpochDateTimeConverter() final  DateTime timestamp;
+// ★ 修正: 安全なコンバーターへ差し替え
 @override final  String? userId;
 @override@JsonKey() final  int sequence;
 @override@JsonKey() final  bool isCanceled;
@@ -325,7 +327,7 @@ abstract mixin class _$ScoreEventCopyWith<$Res> implements $ScoreEventCopyWith<$
   factory _$ScoreEventCopyWith(_ScoreEvent value, $Res Function(_ScoreEvent) _then) = __$ScoreEventCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(defaultValue: 1) int schemaVersion, Side side, StrikeType strikeType, bool isIppon, bool isHansoku, bool isFusen, bool isHantei, bool isUndo, bool isRestore,@TimestampConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled, String targetId, int ruleVersion, String deviceId, int logicalClock, String signature
+ String id,@JsonKey(defaultValue: 1) int schemaVersion, Side side, StrikeType strikeType, bool isIppon, bool isHansoku, bool isFusen, bool isHantei, bool isUndo, bool isRestore,@EpochDateTimeConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled, String targetId, int ruleVersion, String deviceId, int logicalClock, String signature
 });
 
 
