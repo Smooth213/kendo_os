@@ -1,6 +1,20 @@
 # Firestore Public Schema
 
-- organizations/
-- tournaments/
-- matches/
-- viewer_sessions/
+```text
+/organizations
+  └─ {dojoId}
+       ├─ members
+       │    └─ {userId}
+       ├─ players
+       │    └─ {playerId}
+       ├─ teams
+       │    └─ {teamId}
+       └─ tournaments
+            └─ {tournamentId}
+                 ├─ programs
+                 │    └─ {programId}
+                 ├─ matches
+                 │    └─ {matchId}
+                 └─ audit_logs
+                      └─ {logId}
+```

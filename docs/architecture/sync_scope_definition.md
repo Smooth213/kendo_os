@@ -8,10 +8,11 @@
 
 * **選手名簿 (players)**: 道場に所属する選手マスタ。本部での追加・修正が即座に全端末へ反映。
 * **大会・リーグ戦定義 (tournaments)**: 開催中の大会情報、リーグ・トーナメント構造。
-* **試合ステータス・スコア (matches)**: 進行中の試合、取得本数、経過時間、勝敗。
-* **打突履歴・タイムライン (timelines/events)**: メ、コ、ド、反則、Undoなどの1打突ごとのログ。
+* **試合ステータス・スコア (matches)**: `organizations/{dojoId}/tournaments/{tournamentId}/matches` に配置。進行中の試合、取得本数、経過時間、勝敗。
+* **打突履歴・タイムライン (timelines/events)**: メ、コ、ド、反則、Undoなどの1打突ごとのログ。（matchesドキュメント内に内包）
 * **道場環境設定 (settings)**: ダークモード切替や、LiquidGlassの活性化状態など空間全体の意匠。
 * **Viewer同期状態 (syncState)**: 現在どの試合がメインコートで進行しているか等の案内状態。
+* **操作監査ログ (audit_logs)**: `organizations/{dojoId}/tournaments/{tournamentId}/audit_logs` に配置。
 
 ## 3. 非同期スコープ（個人端末の内部状態に留め、クラウドへ送らないもの）
 以下の情報は、端末個人のUI状態であり、Firestoreへの書き込みおよび他端末への同期を一切禁止する。

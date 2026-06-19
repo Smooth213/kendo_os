@@ -33,6 +33,12 @@
 
   <title>kendo_sync</title>
   <link rel="manifest" href="manifest.json">
+  <!-- Syncfusion Flutter PDF Viewer for Web -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <script>
+    var pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+  </script>
 </head>
 <body>
   <!--

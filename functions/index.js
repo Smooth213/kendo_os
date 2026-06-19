@@ -6,10 +6,10 @@ const vision = require("@google-cloud/vision");
 admin.initializeApp();
 const visionClient = new vision.ImageAnnotatorClient();
 
-// リージョンを「大阪」に固定
-setGlobalOptions({ region: "asia-northeast2" });
+// リージョンをStorageと同じ「東京」に固定
+setGlobalOptions({ region: "asia-northeast1" });
 
-exports.processimageocr = onObjectFinalized(async (event) => {
+exports.processProgramImageOCR = onObjectFinalized(async (event) => {
   const object = event.data;
   const filePath = object.name; // 例: programs/ID または programs/ID/file.jpg
   
@@ -22,16 +22,17 @@ exports.processimageocr = onObjectFinalized(async (event) => {
     return;
   }
 
-  // ★ 修正：パスの解析を柔軟に（programs フォルダに入っていればOK）
+  // パスの解析（organizations/{dojoId}/tournaments/{tournamentId}/programs/{programId}/...）
   const pathParts = filePath.split('/');
-  if (pathParts[0] !== 'programs' || pathParts.length < 2) {
+  if (pathParts.length < 7 || pathParts[0] !== 'organizations' || pathParts[2] !== 'tournaments' || pathParts[4] !== 'programs') {
     console.log("対象外のフォルダです。");
     return;
   }
   
-  // 2番目の要素を ID として取得
-  const programId = pathParts[1];
-  console.log(`OCR開始！ Program ID: ${programId}`);
+  const dojoId = pathParts[1];
+  const tournamentId = pathParts[3];
+  const programId = pathParts[5];
+  console.log(`OCR開始！ Dojo ID: ${dojoId}, Tournament ID: ${tournamentId}, Program ID: ${programId}`);
 
   const gcsUri = `gs://${object.bucket}/${filePath}`;
 
@@ -51,7 +52,10 @@ exports.processimageocr = onObjectFinalized(async (event) => {
     }
 
     // Firestoreを更新（isOcrProcessed を確実に true にする）
-    await admin.firestore().collection('programs').doc(programId).update({
+    await admin.firestore()
+      .collection('organizations').doc(dojoId)
+      .collection('tournaments').doc(tournamentId)
+      .collection('programs').doc(programId).update({
       isOcrProcessed: true,
       ocrText: fullText,
       ocrWords: wordsData,

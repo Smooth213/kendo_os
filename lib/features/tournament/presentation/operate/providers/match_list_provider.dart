@@ -248,8 +248,9 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
           firestore
               .collection('organizations')
               .doc(dojoId)
+              .collection('tournaments')
+              .doc(tournamentId)
               .collection('matches')
-              .where('tournamentId', isEqualTo: tournamentId)
               .snapshots()
               .listen(
                 (snap) {

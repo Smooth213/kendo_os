@@ -1029,6 +1029,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         overrides: [
                                           scoreboardMatchIdProvider
                                               .overrideWithValue(match.id),
+                                          scoreboardMatchProvider // ★ 追加: 最新のMatchModelを注入
+                                              .overrideWithValue(match),
                                           scoreboardNameTapProvider
                                               .overrideWithValue(
                                                 (side) =>

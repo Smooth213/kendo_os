@@ -22,6 +22,7 @@ import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart
 import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repository.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
 
 // 🛡️ 追加: StrokeRepositoryのダミーモッククラス
 class FakeStrokeRepository implements StrokeRepository {
@@ -57,6 +58,17 @@ class FakeMatchApplicationService implements MatchApplicationService {
   Future<bool> claimScorer(String matchId, String userId) async => true;
   @override
   Future<void> releaseScorer(String matchId, String userId) async {}
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+// 🛡️ 追加: ProgramRepositoryのダミーモッククラス
+class FakeProgramRepository implements ProgramRepository {
+  @override
+  Stream<List<ProgramModel>> watchPrograms(String tournamentId) {
+    return Stream.value(<ProgramModel>[]);
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -214,6 +226,9 @@ void main() {
                 matchApplicationServiceProvider.overrideWithValue(
                   FakeMatchApplicationService(),
                 ), // 🛡️ Isar書き込みクラッシュを解決
+                programRepositoryProvider.overrideWithValue(
+                  FakeProgramRepository(),
+                ), // 🛡️ FirebaseFirestore未初期化エラーを解決
               ],
             ),
           );

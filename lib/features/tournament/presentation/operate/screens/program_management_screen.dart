@@ -37,6 +37,16 @@ class _ProgramManagementScreenState
   // ignore: prefer_final_fields
   bool _isGridView = false; // ★ グリッド/リストの切り替えスイッチ
 
+  // ★ 追加: setStateの度にURLが変わり全画像が再レンダリングされるのを防ぐための固定セッションID
+  final int _sessionBuster = DateTime.now().millisecondsSinceEpoch;
+
+  // ★ 追加: Web特有のCORSエラーキャッシュを回避するURLジェネレーター
+  String _getSafeUrl(String url) {
+    if (!kIsWeb || url.isEmpty || !url.startsWith('http')) return url;
+    final separator = url.contains('?') ? '&' : '?';
+    return '$url${separator}_cb=$_sessionBuster';
+  }
+
   void _showPickerMenu() {
     showModalBottomSheet(
       context: context,
@@ -114,18 +124,17 @@ class _ProgramManagementScreenState
             ? '$title (${i + 1}/${orderedFiles.length})'
             : title;
 
-        // =========================================================================
-        // 🛡️ Phase 2 - STEP 2-1 & 2-2 要件：PDFバイナリ保存の全面禁止と材料データ化
-        // ネットワークへの巨大なPDF送信を完全遮断。Web環境ではバイナリを送信せず、
-        // タイトルや設定などの「材料データ（メタデータ）」のみを瞬時にクラウド保存します。
-        // =========================================================================
+        // ★ 修正: ファイルアップロード時に null ではなく、正しくデータを渡すように修正。
+        // Web環境(kIsWeb)では bytes を、ネイティブ環境では File(path) を確実に引き渡します。
         await ref
             .read(programRepositoryProvider)
             .uploadProgram(
               tournamentId: widget.tournamentId,
               title: displayTitle,
-              file: null,
-              bytes: null,
+              file: kIsWeb || platformFile.path == null
+                  ? null
+                  : File(platformFile.path!),
+              bytes: platformFile.bytes,
               fileType: fileType,
               pageCount: 1,
             );
@@ -254,7 +263,7 @@ class _ProgramManagementScreenState
                               bottom: 0,
                               child: Icon(
                                 Icons.chevron_left,
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: Colors.white.withAlpha(128),
                                 size: 32,
                               ),
                             ),
@@ -264,7 +273,7 @@ class _ProgramManagementScreenState
                               bottom: 0,
                               child: Icon(
                                 Icons.chevron_right,
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: Colors.white.withAlpha(128),
                                 size: 32,
                               ),
                             ),
@@ -560,12 +569,18 @@ class _ProgramManagementScreenState
       itemCount: programs.length,
       itemBuilder: (context, index) {
         final program = programs[index];
+        final isUploading = program.fileUrl.contains('placehold.co');
+
         return InkWell(
-          // ★ タップ時、リスト全体と「タップした画像のインデックス」を渡す
-          onTap: () => context.push(
-            '/program-viewer',
-            extra: {'programs': programs, 'index': index},
-          ),
+          // ★ 修正: アップロード中の場合はタップを無効化し、Viewer画面での無限クルクルを防ぐ
+          onTap: isUploading
+              ? () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('アップロード中です。完了するまでお待ちください。')),
+                )
+              : () => context.push(
+                  '/program-viewer',
+                  extra: {'programs': programs, 'index': index},
+                ),
           child: Card(
             clipBehavior: Clip.antiAlias,
             shape: RoundedRectangleBorder(
@@ -585,14 +600,24 @@ class _ProgramManagementScreenState
                           color: Colors.redAccent,
                         ),
                       )
-                    : Image.network(program.fileUrl, fit: BoxFit.cover),
+                    : Image.network(
+                        _getSafeUrl(program.fileUrl),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey.shade200,
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
                 // タイトルと削除ボタンのオーバーレイ
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
                   child: Container(
-                    color: Colors.black.withValues(alpha: 0.6),
+                    color: Colors.black.withAlpha(153),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 6,
@@ -634,6 +659,8 @@ class _ProgramManagementScreenState
       itemCount: programs.length,
       itemBuilder: (context, index) {
         final program = programs[index];
+        final isUploading = program.fileUrl.contains('placehold.co');
+
         return ListTile(
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -643,7 +670,18 @@ class _ProgramManagementScreenState
               color: Colors.grey.shade200,
               child: program.fileType == 'pdf'
                   ? const Icon(Icons.picture_as_pdf, color: Colors.redAccent)
-                  : Image.network(program.fileUrl, fit: BoxFit.cover),
+                  : Image.network(
+                      _getSafeUrl(program.fileUrl),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              color: Colors.grey,
+                              size: 24,
+                            ),
+                          ),
+                    ),
             ),
           ),
           title: Text(
@@ -655,11 +693,15 @@ class _ProgramManagementScreenState
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _confirmDelete(program),
           ),
-          // ★ タップ時、リスト全体とインデックスを渡す
-          onTap: () => context.push(
-            '/program-viewer',
-            extra: {'programs': programs, 'index': index},
-          ),
+          // ★ 修正: アップロード中の場合はタップを無効化し、Viewer画面での無限クルクルを防ぐ
+          onTap: isUploading
+              ? () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('アップロード中です。完了するまでお待ちください。')),
+                )
+              : () => context.push(
+                  '/program-viewer',
+                  extra: {'programs': programs, 'index': index},
+                ),
         );
       },
     );

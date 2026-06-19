@@ -16,6 +16,8 @@ final scoreboardMatchIdProvider = Provider<String>(
 final scoreboardNameTapProvider = Provider<void Function(String side)?>(
   (ref) => null,
 );
+// ★ 追加: 親ウィジェットから直接最新のMatchModelを注入するためのProvider
+final scoreboardMatchProvider = Provider<MatchModel?>((ref) => null);
 
 // ★ 追加: Firestoreから受信したデータを確実にMatchModelにパースするための再帰的サニタイズ関数
 Map<String, dynamic> _sanitizeWebFirestoreData(Map<String, dynamic> data) {
@@ -78,7 +80,10 @@ class MatchScoreboard extends ConsumerWidget {
     final matchId = ref.watch(scoreboardMatchIdProvider);
     final onNameTap = ref.watch(scoreboardNameTapProvider);
 
-    final match = kIsWeb
+    // ★ 修正: 親から直接最新のMatchModelが注入されていればそれを優先使用する (Webでの入力遅延防止)
+    MatchModel? match = ref.watch(scoreboardMatchProvider);
+
+    match ??= kIsWeb
         ? ref.watch(webScoreboardMatchProvider(matchId)).value
         : ref.watch(
             matchListProvider.select(

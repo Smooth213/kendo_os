@@ -27,7 +27,7 @@ class ProgramRepository {
        _injectedStorage = storage;
 
   // 1. プログラムのアップロードとFirestoreへの保存
-  Future<String> uploadProgram({
+  Future<ProgramModel> uploadProgram({
     required String tournamentId,
     required String title,
     File? file, // ★ Web対応のため Nullable に変更
@@ -37,6 +37,11 @@ class ProgramRepository {
   }) async {
     if (dojoId.isEmpty) {
       throw Exception('コンテナ(道場ID)が設定されていません');
+    }
+
+    // ★ 追加: Firestoreに仮保存する前に、アップロードデータが存在するか確実にチェックする
+    if (file == null && (bytes == null || bytes.isEmpty)) {
+      throw Exception('アップロードするデータがありません。ファイルが正しく選択されているか確認してください。');
     }
 
     // 1. IDを発行
@@ -54,46 +59,54 @@ class ProgramRepository {
       id: programId,
       tournamentId: tournamentId,
       title: title,
-      fileUrl: '', // アップロード前なので一旦空にしておく
+      // ★ 修正: 空文字('')だとUI側でNetworkImageがクラッシュ(No host specified)するため、安全なダミーURLを設定
+      fileUrl:
+          'https://placehold.co/400x600/E8E8E8/808080.png?text=Uploading...',
       fileType: fileType,
       pageCount: pageCount,
       createdAt: DateTime.now(),
     );
     await docRef.set(program.toJson());
 
-    // 3. Storageにアップロード（ここでAIが裏で走り始める）
+    // 3. Storageへのアップロード（★ 非同期にせず、完了を確実に待機する）
     final String fileName;
     if (file != null) {
       fileName =
           '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
     } else {
-      // Webの場合はファイルパスがないため、ダミーのファイル名を生成
       final ext = fileType == 'pdf' ? 'pdf' : 'jpg';
       fileName = '${DateTime.now().millisecondsSinceEpoch}_web_upload.$ext';
     }
 
-    // ★ Storageへの保存もコンテナ（道場）ごとに分離する
     final storageRef = _storage.ref().child(
-      'organizations/$dojoId/programs/$programId/$fileName',
+      'organizations/$dojoId/tournaments/$tournamentId/programs/$programId/$fileName',
+    );
+
+    // ★ 追加: Web環境でPDFビューアがフリーズするのを防ぐため、明示的にMIMEタイプを設定する
+    final metadata = SettableMetadata(
+      contentType: fileType == 'pdf' ? 'application/pdf' : 'image/jpeg',
     );
 
     String downloadUrl;
-    if (kIsWeb && bytes != null) {
-      // ★ Webの場合：bytes（バイナリ）を使って直接アップロード
-      final uploadTask = await storageRef.putData(bytes);
-      downloadUrl = await uploadTask.ref.getDownloadURL();
-    } else if (file != null) {
-      // ★ モバイルの場合：Fileを使ってアップロード
-      final uploadTask = await storageRef.putFile(file);
-      downloadUrl = await uploadTask.ref.getDownloadURL();
-    } else {
-      throw Exception('アップロードするデータがありません。');
+    try {
+      if (bytes != null && bytes.isNotEmpty) {
+        final uploadTask = await storageRef.putData(bytes, metadata);
+        downloadUrl = await uploadTask.ref.getDownloadURL();
+      } else {
+        final uploadTask = await storageRef.putFile(file!, metadata);
+        downloadUrl = await uploadTask.ref.getDownloadURL();
+      }
+
+      await docRef.update({'fileUrl': downloadUrl});
+      return program.copyWith(fileUrl: downloadUrl);
+    } catch (e) {
+      await docRef.update({
+        'fileUrl':
+            'https://placehold.co/400x600/f8d7da/c82333.png?text=Upload+Failed',
+      });
+      debugPrint('Storageアップロードエラー: $e');
+      throw Exception('アップロードに失敗しました。Storageのルールや通信状況を確認してください。詳細: $e');
     }
-
-    // 4. URLが取得できたら、仮データに画像URLを「追記（update）」する
-    await docRef.update({'fileUrl': downloadUrl});
-
-    return programId;
   }
 
   // 2. 特定の大会のプログラム一覧をリアルタイム取得
@@ -104,7 +117,6 @@ class ProgramRepository {
         .collection('tournaments')
         .doc(tournamentId)
         .collection('programs')
-        .where('tournamentId', isEqualTo: tournamentId)
         .orderBy('createdAt', descending: false)
         .snapshots()
         .map(

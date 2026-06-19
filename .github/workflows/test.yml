@@ -30,3 +30,16 @@ jobs:
 
       - name: 📸 ゴールデン画像の最終自動検証（手動見逃しの物理排除）
         run: flutter test --update-goldens
+
+      - name: ⚙️ Node.js環境の構築 (Cloud Functions 用)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: 📦 Cloud Functions 依存パッケージの解決
+        run: npm ci
+        working-directory: ./functions
+
+      - name: 🧪 Cloud Functions 自動ユニットテスト (Jest)
+        run: npm test
+        working-directory: ./functions

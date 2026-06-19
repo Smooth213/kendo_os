@@ -83,11 +83,11 @@ class TournamentRepository {
         : _firestore
               .collection('organizations')
               .doc(dojoId)
+              .collection('tournaments')
+              .doc(id)
               .collection('matches');
 
-    final matchesSnapshot = await matchesRef
-        .where('tournamentId', isEqualTo: id)
-        .get();
+    final matchesSnapshot = await matchesRef.get();
 
     for (var doc in matchesSnapshot.docs) {
       batch.delete(doc.reference);
