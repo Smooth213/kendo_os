@@ -118,10 +118,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
   // ★ 追加：環境に応じてリポジトリを安全に切り替える調停メソッド
   dynamic _getActiveRepository(WidgetRef ref) {
-    if (kIsWeb) {
-      return ref.read(localStrokeRepositoryProvider); // Web版はメモリ版を使用
-    }
-    return ref.read(strokeRepositoryProvider); // iOS/Android版はIsar版を使用
+    return ref.read(strokeRepositoryProvider); // Web/ネイティブ共通でFirestoreを使用
   }
 
   @override
@@ -665,26 +662,15 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         // --- 中層：描画レイヤー（共有 ＋ 個人） ---
                         Positioned.fill(
                           child: StreamBuilder<List<StrokeModel>>(
-                            // ★ 物理調停パッチ：Web環境下（Isar非対応）においては、Isar依存リポジトリの評価を完全にバイパスし、
-                            // 安全な空の不変ストリームを流し込むことで、Null check operator 競合を完全封殺します。
-                            stream: kIsWeb
-                                ? Stream<List<StrokeModel>>.value(
-                                    <StrokeModel>[],
-                                  )
-                                : ref
-                                      .watch(strokeRepositoryProvider)
-                                      .watchStrokes(programId),
+                            stream: ref
+                                .watch(strokeRepositoryProvider)
+                                .watchStrokes(programId),
                             builder: (context, sharedSnapshot) {
                               final sharedStrokes = sharedSnapshot.data ?? [];
                               return StreamBuilder<List<LocalStrokeModel>>(
-                                // ★ 物理調停パッチ：内側の個人線ストリームも同様に、Web環境下では空のストリームへ安全に逃がします。
-                                stream: kIsWeb
-                                    ? Stream<List<LocalStrokeModel>>.value(
-                                        <LocalStrokeModel>[],
-                                      )
-                                    : ref
-                                          .watch(localStrokeRepositoryProvider)
-                                          .watchStrokes(programId),
+                                stream: ref
+                                    .watch(localStrokeRepositoryProvider)
+                                    .watchStrokes(programId),
                                 builder: (context, privateSnapshot) {
                                   final privateStrokes =
                                       privateSnapshot.data ?? [];
@@ -731,6 +717,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                       points: pointsToSave,
                                       color: activePenColor,
                                       strokeWidth: penWidth,
+                                      isShared: activeIsShared,
+                                      pageIndex: _currentIndex,
                                     );
                                     await _getActiveRepository(
                                       ref,

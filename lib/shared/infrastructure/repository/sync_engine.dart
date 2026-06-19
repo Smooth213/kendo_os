@@ -2,10 +2,15 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
+import 'package:uuid/uuid.dart';
 
 class SyncEngine {
   final Ref _ref;
@@ -13,9 +18,15 @@ class SyncEngine {
   bool _isProcessing = false;
   int _retryCount = 0;
 
+  // ダウンストリーム監視用のサブスクリプション
+  StreamSubscription? _matchesSubscription;
+  StreamSubscription? _bunaiksenSubscription;
+
   SyncEngine(this._ref) {
     // 🌟 起動と同時に自動ポーリング同期ループを開始
     _startSyncLoop();
+    // 🌟 Firestoreダウンストリーム監視の初期設定
+    _setupFirestoreDownstream();
   }
 
   void _startSyncLoop() {
@@ -23,6 +34,281 @@ class SyncEngine {
     _syncTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
       await processQueue();
     });
+  }
+
+  void _setupFirestoreDownstream() {
+    // DojoId または TournamentId が変わったときに再バインドする
+    _ref.listen<String>(
+      currentDojoIdProvider,
+      (prev, next) => _bindListeners(),
+    );
+    _ref.listen<String>(
+      currentTournamentIdProvider,
+      (prev, next) => _bindListeners(),
+    );
+    _ref.listen<String?>(
+      webCurrentTournamentIdProvider,
+      (prev, next) => _bindListeners(),
+    );
+
+    // 初回バインド
+    _bindListeners();
+  }
+
+  void _bindListeners() {
+    _matchesSubscription?.cancel();
+    _bunaiksenSubscription?.cancel();
+    _matchesSubscription = null;
+    _bunaiksenSubscription = null;
+
+    final dojoId = _ref.read(currentDojoIdProvider);
+    final tournamentId = _ref.read(currentTournamentIdProvider);
+    final webTournamentId = _ref.read(webCurrentTournamentIdProvider);
+
+    final activeTournamentId = (tournamentId.isNotEmpty)
+        ? tournamentId
+        : (webTournamentId ?? '');
+
+    if (dojoId.isEmpty || activeTournamentId.isEmpty) {
+      debugPrint(
+        '📢 [Sync Engine] dojoId または tournamentId が未確定のため、Firestore監視を保留します。',
+      );
+      return;
+    }
+
+    debugPrint(
+      '🚀 [Sync Engine] Firestoreダウンストリーム監視を開始します (dojoId: $dojoId, tournamentId: $activeTournamentId)',
+    );
+
+    // 1. 通常のトーナメント戦の試合データ監視
+    final matchesCollection = FirebaseFirestore.instance
+        .collection('organizations')
+        .doc(dojoId)
+        .collection('tournaments')
+        .doc(activeTournamentId)
+        .collection('matches');
+
+    _matchesSubscription = matchesCollection.snapshots().listen(
+      (snapshot) async {
+        await _syncFirestoreToIsar(snapshot);
+      },
+      onError: (e) {
+        debugPrint('⚠️ [Sync Engine Downstream] トーナメント試合監視エラー: $e');
+      },
+    );
+
+    // 2. 特設コレクション (bunaiksen) の包括サブリスナー（ドキュメント監視）
+    if (activeTournamentId.startsWith('bunaiksen_') ||
+        activeTournamentId == 'bunaiksen') {
+      final bunaiksenDoc = FirebaseFirestore.instance
+          .collection('organizations')
+          .doc(dojoId)
+          .collection('tournaments')
+          .doc(activeTournamentId);
+
+      _bunaiksenSubscription = bunaiksenDoc.snapshots().listen(
+        (snapshot) async {
+          if (snapshot.exists && snapshot.data() != null) {
+            debugPrint(
+              '⚡ [Sync Engine Downstream] 特設部内大会ドキュメントの更新を受信しました: ${snapshot.id}',
+            );
+            await _syncBunaiksenDocToIsar(snapshot);
+          }
+        },
+        onError: (e) {
+          debugPrint(
+            '⚠️ [Sync Engine Downstream] 特設(bunaiksen)ドキュメント監視エラー: $e',
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> _syncBunaiksenDocToIsar(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+  ) async {
+    try {
+      final data = snapshot.data();
+      if (data == null) return;
+
+      // ドキュメント内に直接 'matches' リストが含まれている場合の安全同期フォールバック
+      if (data.containsKey('matches') && data['matches'] is List) {
+        final matchesList = data['matches'] as List;
+        final matches = <MatchModel>[];
+        for (final item in matchesList) {
+          if (item is Map<String, dynamic>) {
+            try {
+              final sanitized = _sanitizeFirestoreData(item);
+              final id =
+                  sanitized['id']?.toString() ??
+                  'bunaiksen_match_${DateTime.now().millisecondsSinceEpoch}';
+              final match = MatchModel.fromJson({...sanitized, 'id': id});
+              matches.add(match);
+            } catch (e) {
+              debugPrint(
+                '⚠️ [Sync Engine Downstream] bunaiksen doc inner match parse error: $e',
+              );
+            }
+          }
+        }
+
+        if (matches.isNotEmpty) {
+          final healedMatches = matches.map(_healMatchSignatures).toList();
+          final localRepo = _ref.read(localMatchRepositoryProvider);
+          await localRepo.saveMatchesBulk(healedMatches);
+          debugPrint(
+            '⚡ [Sync Engine Downstream] bunaiksenドキュメント直下のリストから ${healedMatches.length} 件の試合データをIsarに同期しました。',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint(
+        '🔥 [Sync Engine Downstream Critical] bunaiksenドキュメント同期中にエラーが発生しました: $e',
+      );
+    }
+  }
+
+  Future<void> _syncFirestoreToIsar(
+    QuerySnapshot<Map<String, dynamic>> snapshot,
+  ) async {
+    try {
+      final matches = <MatchModel>[];
+      for (final doc in snapshot.docs) {
+        try {
+          final sanitized = _sanitizeFirestoreData(doc.data());
+          final match = MatchModel.fromJson({...sanitized, 'id': doc.id});
+          matches.add(match);
+        } catch (e) {
+          debugPrint(
+            '⚠️ [Sync Engine Downstream] Match parsing failed for doc ${doc.id}: $e',
+          );
+        }
+      }
+
+      if (matches.isNotEmpty) {
+        final healedMatches = matches.map(_healMatchSignatures).toList();
+        final localRepo = _ref.read(localMatchRepositoryProvider);
+        await localRepo.saveMatchesBulk(healedMatches);
+        debugPrint(
+          '⚡ [Sync Engine Downstream] Firestoreから ${healedMatches.length} 件の試合データをIsarに同期しました。',
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        '🔥 [Sync Engine Downstream Critical] Isarへのバルクインサート中にエラーが発生しました: $e',
+      );
+    }
+  }
+
+  MatchModel _healMatchSignatures(MatchModel match) {
+    try {
+      final healedEvents = match.events.map((event) {
+        try {
+          if (ScoreEventLegacyAdapter.verifySignature(
+            event,
+            'kendo_os_secret_key_v1',
+          )) {
+            return event;
+          }
+          final eventId = event.id.isNotEmpty ? event.id : const Uuid().v4();
+          final uid = event.userId ?? 'unknown_user';
+          final payload =
+              '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
+          final signature = ScoreEventLegacyAdapter.generateSignature(
+            payload,
+            'kendo_os_secret_key_v1',
+          );
+          return event.copyWith(id: eventId, signature: signature);
+        } catch (e) {
+          debugPrint(
+            '⚠️ [Sync Engine Downstream] Failed to verify/heal single event signature: $e',
+          );
+          final eventId = event.id.isNotEmpty ? event.id : const Uuid().v4();
+          final uid = event.userId ?? 'unknown_user';
+          final payload =
+              '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
+          final signature = ScoreEventLegacyAdapter.generateSignature(
+            payload,
+            'kendo_os_secret_key_v1',
+          );
+          return event.copyWith(id: eventId, signature: signature);
+        }
+      }).toList();
+
+      final healedPendingEvents = match.pendingEvents.map((event) {
+        try {
+          if (ScoreEventLegacyAdapter.verifySignature(
+            event,
+            'kendo_os_secret_key_v1',
+          )) {
+            return event;
+          }
+          final eventId = event.id.isNotEmpty ? event.id : const Uuid().v4();
+          final uid = event.userId ?? 'unknown_user';
+          final payload =
+              '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
+          final signature = ScoreEventLegacyAdapter.generateSignature(
+            payload,
+            'kendo_os_secret_key_v1',
+          );
+          return event.copyWith(id: eventId, signature: signature);
+        } catch (e) {
+          debugPrint(
+            '⚠️ [Sync Engine Downstream] Failed to verify/heal single pending event signature: $e',
+          );
+          final eventId = event.id.isNotEmpty ? event.id : const Uuid().v4();
+          final uid = event.userId ?? 'unknown_user';
+          final payload =
+              '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
+          final signature = ScoreEventLegacyAdapter.generateSignature(
+            payload,
+            'kendo_os_secret_key_v1',
+          );
+          return event.copyWith(id: eventId, signature: signature);
+        }
+      }).toList();
+
+      return match.copyWith(
+        events: healedEvents,
+        pendingEvents: healedPendingEvents,
+      );
+    } catch (e) {
+      debugPrint(
+        '⚠️ [Sync Engine Downstream] Error in _healMatchSignatures: $e',
+      );
+      return match;
+    }
+  }
+
+  Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
+    final Map<String, dynamic> result = {};
+    data.forEach((key, value) {
+      if (value is Timestamp) {
+        result[key] = value.toDate().toIso8601String();
+      } else if (value is Map<String, dynamic>) {
+        result[key] = _sanitizeFirestoreData(value);
+      } else if (value is List) {
+        result[key] = value.map((e) {
+          if (e is Map<String, dynamic>) return _sanitizeFirestoreData(e);
+          if (e is Timestamp) return e.toDate().toIso8601String();
+          return e;
+        }).toList();
+      } else if ((key == 'order' ||
+              key == 'matchTimeMinutes' ||
+              key == 'extensionTimeMinutes' ||
+              key == 'enchoTimeMinutes') &&
+          value is num) {
+        result[key] = value.toDouble();
+      } else if ((key == 'redScore' ||
+              key == 'whiteScore' ||
+              key == 'matchOrder') &&
+          value is num) {
+        result[key] = value.toInt();
+      } else {
+        result[key] = value;
+      }
+    });
+    return result;
   }
 
   // =========================================================================
@@ -90,6 +376,8 @@ class SyncEngine {
 
   void dispose() {
     _syncTimer?.cancel();
+    _matchesSubscription?.cancel();
+    _bunaiksenSubscription?.cancel();
   }
 }
 

@@ -175,11 +175,14 @@ class ProgramRepository {
         .where('pageIndex', isEqualTo: pageIndex)
         .where('isShared', isEqualTo: true) // 共有フラグが立っているものだけ
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => StrokeModel.fromJson({...doc.data(), 'id': doc.id}))
-              .toList(),
-        );
+        .map((snapshot) {
+          final uniqueStrokes = <String, StrokeModel>{};
+          for (var doc in snapshot.docs) {
+            final stroke = StrokeModel.fromJson({...doc.data(), 'id': doc.id});
+            uniqueStrokes[stroke.id] = stroke;
+          }
+          return uniqueStrokes.values.toList();
+        });
   }
 
   // 5. 共有ハイライトの保存

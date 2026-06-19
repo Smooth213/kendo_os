@@ -335,9 +335,16 @@ class SyncEngine {
         final match = await localRepo.getMatch(pendingMatch.id);
         if (match == null) continue;
 
+        final targetTournamentId =
+            (match.tournamentId != null && match.tournamentId!.isNotEmpty)
+            ? match.tournamentId!
+            : 'default_tournament';
+
         final docRef = firestore
             .collection('organizations')
             .doc(dojoId)
+            .collection('tournaments')
+            .doc(targetTournamentId)
             .collection('matches')
             .doc(match.id);
 

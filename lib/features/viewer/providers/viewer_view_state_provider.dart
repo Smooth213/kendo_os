@@ -72,9 +72,16 @@ final viewerMatchProjectionProvider = StreamProvider.family<MatchProjection?, St
     // 対象の1試合のみをFirestoreからピンポイントでリアルタイム監視して爆速化します。
     final firestore = ref.watch(firestoreProvider);
     final dojoId = ref.watch(currentDojoIdProvider);
+    final tournamentId = ref.watch(currentTournamentIdProvider);
+    final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
+    final tournament = tournamentId.isNotEmpty
+        ? tournamentId
+        : 'default_tournament';
     final stream = firestore
         .collection('organizations')
-        .doc(dojoId)
+        .doc(dojo)
+        .collection('tournaments')
+        .doc(tournament)
         .collection('matches')
         .doc(matchId)
         .snapshots();
@@ -228,39 +235,29 @@ final viewerTournamentProjectionProvider =
 final bunaiksenMatchesProvider = StreamProvider.family<List<MatchModel>, String>((
   ref,
   tournamentId,
-) {
+) async* {
+  if (!kIsWeb) {
+    final asyncVal = ref.watch(matchListByTournamentProvider(tournamentId));
+    if (asyncVal.hasValue) {
+      yield asyncVal.value!;
+    }
+    return;
+  }
+
   ref.watch(dojoRoomSyncProvider);
   final dojoId = ref.watch(currentDojoIdProvider);
 
-  // ★ 修正: 道場IDが判明している場合はインデックス不要の通常コレクションから取得する
-  if (dojoId.isNotEmpty) {
-    return FirebaseFirestore.instance
-        .collection('organizations')
-        .doc(dojoId)
-        .collection('matches')
-        .where('tournamentId', isEqualTo: tournamentId)
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) {
-                try {
-                  final data = _sanitizeFirestoreData(doc.data());
-                  return MatchModel.fromJson({...data, 'id': doc.id});
-                } catch (e, stack) {
-                  debugPrint(
-                    '⚠️ [bunaiksenMatchesProvider] Error parsing match ${doc.id}: $e\n$stack',
-                  );
-                  return null;
-                }
-              })
-              .whereType<MatchModel>()
-              .toList();
-        });
-  }
+  final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
+  final tournament = tournamentId.isNotEmpty
+      ? tournamentId
+      : 'default_tournament';
 
-  return FirebaseFirestore.instance
-      .collectionGroup('matches')
-      .where('tournamentId', isEqualTo: tournamentId)
+  yield* FirebaseFirestore.instance
+      .collection('organizations')
+      .doc(dojo)
+      .collection('tournaments')
+      .doc(tournament)
+      .collection('matches')
       .snapshots()
       .map((snapshot) {
         return snapshot.docs

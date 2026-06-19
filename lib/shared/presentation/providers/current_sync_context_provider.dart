@@ -31,6 +31,15 @@ final currentDojoIdProvider = StateProvider<String>((ref) {
   }
 });
 
+final currentTournamentIdProvider = StateProvider<String>((ref) {
+  try {
+    final saved = PwaStorage.getItem('kendo_os_active_tournament_id');
+    return (saved != null && saved.isNotEmpty) ? saved : '';
+  } catch (_) {
+    return '';
+  }
+});
+
 final currentSyncContextProvider = Provider<CurrentSyncContext>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
   final session = ref.watch(authSessionProvider);

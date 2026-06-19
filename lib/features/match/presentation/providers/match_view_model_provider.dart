@@ -185,6 +185,9 @@ final timelineMatchesByCategoryProvider = Provider.family
 // 部内戦（Bunaiksen）用：進行中を上部、終了を下部に並び替えた試合リスト
 final bunaiksenMatchesProvider = Provider.family
     .autoDispose<List<MatchModel>, String>((ref, tournamentId) {
+      // 🌟 Ensure the background Firestore downstream sync listener in matchListByTournamentProvider is active
+      ref.watch(matchListByTournamentProvider(tournamentId));
+
       final matches = ref.watch(matchListProvider);
       final filtered = matches
           .where((m) => m.tournamentId == tournamentId)

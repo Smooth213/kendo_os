@@ -131,14 +131,25 @@ class MatchApplicationService {
 
     if (match == null && kIsWeb) {
       try {
-        final query = await FirebaseFirestore.instance
-            .collectionGroup('matches')
-            .where('id', isEqualTo: matchId)
-            .limit(1)
+        final dojoId = _ref.read(currentDojoIdProvider);
+        final tournamentId = _ref.read(currentTournamentIdProvider);
+        final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
+        final tournament = tournamentId.isNotEmpty
+            ? tournamentId
+            : 'default_tournament';
+
+        final docSnapshot = await FirebaseFirestore.instance
+            .collection('organizations')
+            .doc(dojo)
+            .collection('tournaments')
+            .doc(tournament)
+            .collection('matches')
+            .doc(matchId)
             .get();
-        if (query.docs.isNotEmpty) {
-          final data = query.docs.first.data();
-          data['id'] = query.docs.first.id;
+
+        if (docSnapshot.exists) {
+          final data = docSnapshot.data()!;
+          data['id'] = docSnapshot.id;
 
           // Timestamp の安全な再帰的変換 (eventsの深い階層にある日付データも漏らさずパースする)
           void safeConvertTimestamps(dynamic obj) {

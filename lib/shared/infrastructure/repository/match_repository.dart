@@ -6,23 +6,28 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 
 final matchRepositoryProvider = Provider<MatchRepository>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
-  return MatchRepository(FirebaseFirestore.instance, dojoId);
+  final tournamentId = ref.watch(currentTournamentIdProvider);
+  return MatchRepository(FirebaseFirestore.instance, dojoId, tournamentId);
 });
 
 class MatchRepository {
   final FirebaseFirestore _firestore;
   final String _dojoId;
-  MatchRepository(this._firestore, this._dojoId);
+  final String _tournamentId;
+  MatchRepository(this._firestore, this._dojoId, [this._tournamentId = '']);
 
   // ★ 対象となるテナントのコレクション参照を取得するヘルパー
   CollectionReference<Map<String, dynamic>> get _collectionRef {
-    if (_dojoId.isNotEmpty && _dojoId != 'default_org') {
-      return _firestore
-          .collection('organizations')
-          .doc(_dojoId)
-          .collection('matches');
-    }
-    return _firestore.collection('matches');
+    final dojo = _dojoId.isNotEmpty ? _dojoId : 'default_org';
+    final tournament = _tournamentId.isNotEmpty
+        ? _tournamentId
+        : 'default_tournament';
+    return _firestore
+        .collection('organizations')
+        .doc(dojo)
+        .collection('tournaments')
+        .doc(tournament)
+        .collection('matches');
   }
 
   // ★ 1-C. 全試合をリアルタイム監視（主にWeb観客席用）
@@ -110,13 +115,18 @@ class MatchRepository {
         ? match.organizationId
         : _dojoId;
 
-    final docRef = (targetOrgId.isNotEmpty && targetOrgId != 'default_org')
-        ? _firestore
-              .collection('organizations')
-              .doc(targetOrgId)
-              .collection('matches')
-              .doc(match.id)
-        : _firestore.collection('matches').doc(match.id);
+    final targetTournamentId =
+        (match.tournamentId != null && match.tournamentId!.isNotEmpty)
+        ? match.tournamentId!
+        : (_tournamentId.isNotEmpty ? _tournamentId : 'default_tournament');
+
+    final docRef = _firestore
+        .collection('organizations')
+        .doc(targetOrgId)
+        .collection('tournaments')
+        .doc(targetTournamentId)
+        .collection('matches')
+        .doc(match.id);
 
     try {
       await _firestore.runTransaction((transaction) async {

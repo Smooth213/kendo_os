@@ -461,6 +461,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+          floatingActionButton: null,
         ),
       ),
     );

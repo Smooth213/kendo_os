@@ -15,7 +15,12 @@ void main() {
       repository = MatchRepository(fakeFirestore, 'default_org');
 
       // 2. テスト用のダミーデータを投入（ステータスがバラバラの3試合）
-      final matchesCollection = fakeFirestore.collection('matches');
+      final matchesCollection = fakeFirestore
+          .collection('organizations')
+          .doc('default_org')
+          .collection('tournaments')
+          .doc('default_tournament')
+          .collection('matches');
 
       await matchesCollection.doc('match_active').set({
         'matchType': '先鋒',

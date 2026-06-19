@@ -21,21 +21,25 @@ import 'package:kendo_os/admin/providers/metrics_provider.dart';
 
 class AppStartup {
   static Future<ProviderContainer> initialize() async {
+    WidgetsFlutterBinding.ensureInitialized();
     // ★ URLパスから「#」を取り除き、Webのディープリンクを正常に処理させる
     usePathUrlStrategy();
 
-    // 🌟 修正核心：Firebase初期化の重複呼び出しを物理ブロック＆エラーの握り潰し
-    if (Firebase.apps.isEmpty) {
-      try {
+    try {
+      if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
         );
-      } catch (e) {
-        // 重複呼び出し（duplicate-app）エラーが発生した場合は安全に無視して続行
-        if (!e.toString().contains('duplicate-app')) {
-          rethrow;
-        }
+        debugPrint('🚀 Firebase [DEFAULT] をクリーンに新規初期化しました。');
+      } else {
+        // すでにインスタンスが存在する場合は、ネイティブ例外を避けるために呼び出し自体を完全にスキップする
+        debugPrint(
+          '📢 Firebase [DEFAULT] はすでに常駐しているため、初期化呼び出しを完全にスキップして既存インスタンスを安全に100%再利用します。',
+        );
       }
+    } catch (e) {
+      debugPrint('⚠️ Firebase初期化のキャッチ: $e');
+      // 万が一想定外のエラーが発生した場合も、既存の常駐インスタンスに命を預けて後続のrunAppへ安全に流す
     }
 
     // Crash監視プロトコル

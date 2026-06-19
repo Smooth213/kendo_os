@@ -2,7 +2,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
@@ -198,6 +200,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           const SizedBox(height: 32),
                           _buildRoleRow(
                             context,
+                            ref,
                             '最高管理者 (Admin)',
                             UserRole.admin,
                             Colors.purple,
@@ -205,6 +208,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           const SizedBox(height: 16),
                           _buildRoleRow(
                             context,
+                            ref,
                             '大会運営者 (Operator)',
                             UserRole.operator,
                             Colors.teal,
@@ -212,6 +216,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           const SizedBox(height: 16),
                           _buildRoleRow(
                             context,
+                            ref,
                             '試合記録者 (Recorder)',
                             UserRole.recorder,
                             Colors.indigo,
@@ -219,6 +224,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           const SizedBox(height: 16),
                           _buildRoleRow(
                             context,
+                            ref,
                             '一般観客席 (Viewer) [PIN不要]',
                             UserRole.viewer,
                             Colors.blueGrey,
@@ -238,6 +244,7 @@ class RoleSelectScreen extends ConsumerWidget {
 
   Widget _buildRoleRow(
     BuildContext context,
+    WidgetRef ref,
     String title,
     UserRole role,
     Color color,
@@ -253,9 +260,20 @@ class RoleSelectScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        onPressed: () {
+        onPressed: () async {
           if (role == UserRole.viewer) {
-            context.go('/?role=viewer');
+            if (FirebaseAuth.instance.currentUser == null) {
+              await FirebaseAuth.instance.signInAnonymously();
+            }
+            await ref
+                .read(authSessionProvider.notifier)
+                .establishSession(
+                  UserRole.viewer,
+                  ref.read(currentDojoIdProvider),
+                );
+            if (context.mounted) {
+              context.go('/');
+            }
           } else {
             context.push('/pin-auth?role=${role.name}');
           }

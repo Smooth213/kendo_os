@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
+import 'package:uuid/uuid.dart';
 
 // =========================================================================
 // 🛡️ 補正：プロジェクト全域でUndefinedエラーを吐いている firestoreProvider をここで安全に定義
@@ -120,47 +122,48 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     final firestore = ref.watch(firestoreProvider);
     final dojoId = ref.watch(currentDojoIdProvider);
 
+    // ★ セーフガード: 引数やProviderから値を安全にフォールバック取得
+    final safeDojoId = dojoId.isNotEmpty ? dojoId : 'default_org';
+    final safeTournamentId = tournamentId.isNotEmpty
+        ? tournamentId
+        : (ref.watch(currentTournamentIdProvider).isNotEmpty
+              ? ref.watch(currentTournamentIdProvider)
+              : 'default_tournament');
+
     debugPrint(
-      '🌐 [matchListByTournamentProvider] Webモード監視開始 - dojoId: "$dojoId", tournamentId: "$tournamentId"',
+      '🌐 [matchListByTournamentProvider] Webモード監視開始 - dojoId: "$safeDojoId", tournamentId: "$safeTournamentId"',
     );
     debugPrint(
       '🌐 [matchListByTournamentProvider] Firestore instance: ${firestore.app.name}',
     );
 
-    // ★ Web環境キャッシュ補正: 現在の大会IDを更新し、古い大会データを誤って再利用しないようにする
-    // ★ Web環境のリスト消失完全対策：
-    // collectionGroup クエリは手動で複合インデックスを作成しないと、キャッシュ（0件）のみを返して通信エラーをサイレントに握り潰す特性があります。
-    // これを回避するため、Firestoreが自動でインデックスを作成する「通常のコレクション検索」を網羅的に並行監視し、
-    // どこか1つのパスでもデータが取得できたら即座にUIへ反映する最強のフォールバック・ストリームを構築します。
+    // ★ セーフガード: 双方向同期
+    final webTid = ref.watch(webCurrentTournamentIdProvider);
+    if (webTid != null && webTid.isNotEmpty) {
+      Future.microtask(() {
+        if (ref.read(currentTournamentIdProvider) != webTid) {
+          ref.read(currentTournamentIdProvider.notifier).state = webTid;
+        }
+      });
+    }
+    final curTid = ref.watch(currentTournamentIdProvider);
+    if (curTid.isNotEmpty) {
+      Future.microtask(() {
+        if (ref.read(webCurrentTournamentIdProvider) != curTid) {
+          ref.read(webCurrentTournamentIdProvider.notifier).state = curTid;
+        }
+      });
+    }
+
     final controller = StreamController<List<MatchModel>>();
     final List<StreamSubscription> subs = [];
-    final Map<String, List<MatchModel>> cache = {
-      'root': [],
-      'sub': [],
-      'org': [],
-    };
-    final Set<String> respondedSources = {};
+    final Map<String, List<MatchModel>> cache = {'org': []};
 
-    final currentTournamentKey = tournamentId;
-
-    bool hasAllSourcesResponded() {
-      final expectedSources = dojoId.isNotEmpty ? 4 : 3;
-      return respondedSources.length >= expectedSources;
-    }
+    final currentTournamentKey = safeTournamentId;
 
     void emitBestMatches() {
       if (controller.isClosed) return;
-      // 取得できたデータ件数が最も多いパスのデータを正として採用
-      final bestMatches = cache.values.reduce(
-        (a, b) => a.length > b.length ? a : b,
-      );
-      if (bestMatches.isEmpty && !hasAllSourcesResponded()) {
-        debugPrint(
-          '🌐 [matchListByTournamentProvider] まだ全てのWeb検索結果が揃っていません。currentTournamentId=$currentTournamentKey, responded=${respondedSources.join(', ')}',
-        );
-        return;
-      }
-
+      final bestMatches = cache['org'] ?? [];
       controller.add(bestMatches);
 
       // ★ 追加: メモリ上のグローバルキャッシュにも最新データを保存し、スコア画面などでの迷子を防止
@@ -187,129 +190,31 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
 
     controller.onListen = () {
       debugPrint(
-        '🌐 [matchListByTournamentProvider] onListen called - setting up subscriptions',
-      );
-      // 1. ルートコレクション (単一フィールド検索のため自動インデックスで必ず動作)
-      subs.add(
-        firestore
-            .collection('matches')
-            .where('tournamentId', isEqualTo: tournamentId)
-            .snapshots()
-            .listen(
-              (snap) {
-                debugPrint(
-                  '🌐 [matchListByTournamentProvider] root snapshot size: ${snap.docs.length}',
-                );
-                respondedSources.add('root');
-                cache['root'] = snap.docs
-                    .map(parseMatch)
-                    .whereType<MatchModel>()
-                    .toList();
-                emitBestMatches();
-              },
-              onError: (e) {
-                debugPrint('🚨 [Match Query Error] root: $e');
-                respondedSources.add('root');
-                emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
-              },
-            ),
+        '🌐 [matchListByTournamentProvider] onListen called - setting up nested subscription',
       );
 
-      // 2. 大会サブコレクション (検索条件すら不要のためインデックス完全不要)
       subs.add(
         firestore
+            .collection('organizations')
+            .doc(safeDojoId)
             .collection('tournaments')
-            .doc(tournamentId)
+            .doc(safeTournamentId)
             .collection('matches')
             .snapshots()
             .listen(
               (snap) {
                 debugPrint(
-                  '🌐 [matchListByTournamentProvider] sub snapshot size: ${snap.docs.length}',
+                  '🌐 [matchListByTournamentProvider] org snapshot size: ${snap.docs.length}',
                 );
-                respondedSources.add('sub');
-                cache['sub'] = snap.docs
+                cache['org'] = snap.docs
                     .map(parseMatch)
                     .whereType<MatchModel>()
                     .toList();
                 emitBestMatches();
               },
               onError: (e) {
-                debugPrint('🚨 [Match Query Error] sub: $e');
-                respondedSources.add('sub');
+                debugPrint('🚨 [Match Query Error] org: $e');
                 emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
-              },
-            ),
-      );
-
-      // 3. 道場サブコレクション
-      if (dojoId.isNotEmpty) {
-        subs.add(
-          firestore
-              .collection('organizations')
-              .doc(dojoId)
-              .collection('tournaments')
-              .doc(tournamentId)
-              .collection('matches')
-              .snapshots()
-              .listen(
-                (snap) {
-                  debugPrint(
-                    '🌐 [matchListByTournamentProvider] org snapshot size: ${snap.docs.length}',
-                  );
-                  respondedSources.add('org');
-                  cache['org'] = snap.docs
-                      .map(parseMatch)
-                      .whereType<MatchModel>()
-                      .toList();
-                  emitBestMatches();
-                },
-                onError: (e) {
-                  debugPrint('🚨 [Match Query Error] org: $e');
-                  respondedSources.add('org');
-                  emitBestMatches(); // ★ エラー時もローディングを強制終了させてフリーズを回避
-                },
-              ),
-        );
-      }
-
-      // 4. フォールバック: collectionGroup で大会ID一致のマッチを探索（道場IDが不明な場合の最終手段）
-      subs.add(
-        firestore
-            .collectionGroup('matches')
-            .where('tournamentId', isEqualTo: tournamentId)
-            .snapshots()
-            .listen(
-              (snap) {
-                debugPrint(
-                  '🌐 [matchListByTournamentProvider] collectionGroup matches snapshot size: ${snap.docs.length}',
-                );
-                respondedSources.add('group');
-                cache['group'] = snap.docs
-                    .map((doc) {
-                      try {
-                        final data = _sanitizeFirestoreData(
-                          (doc.data() as Map<String, dynamic>?) ?? {},
-                        );
-                        return MatchModel.fromJson({
-                          ...data,
-                          'id': (doc as DocumentSnapshot).id,
-                        });
-                      } catch (e) {
-                        debugPrint(
-                          '🚨 [Parse Error - collectionGroup match] ${doc.id} -> $e',
-                        );
-                        return null;
-                      }
-                    })
-                    .whereType<MatchModel>()
-                    .toList();
-                emitBestMatches();
-              },
-              onError: (e) {
-                debugPrint('🚨 [Match Query Error] collectionGroup: $e');
-                respondedSources.add('group');
-                emitBestMatches();
               },
             ),
       );
@@ -332,5 +237,155 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
   }
 
   final localRepository = ref.watch(localMatchRepositoryProvider);
+  final dojoId = ref.watch(currentDojoIdProvider);
+
+  if (dojoId.isNotEmpty && tournamentId.isNotEmpty) {
+    final firestore = ref.watch(firestoreProvider);
+    final safeDojoId = dojoId;
+    final safeTournamentId = tournamentId;
+
+    final isBunaiksen =
+        safeTournamentId.startsWith('bunaiksen_') ||
+        safeTournamentId == 'bunaiksen';
+    debugPrint(
+      '📱 [matchListByTournamentProvider] Native mode background listener start - dojoId: "$safeDojoId", tournamentId: "$safeTournamentId" (isBunaiksen: $isBunaiksen)',
+    );
+
+    final matchesCollection = firestore
+        .collection('organizations')
+        .doc(safeDojoId)
+        .collection('tournaments')
+        .doc(safeTournamentId)
+        .collection('matches');
+
+    final sub = matchesCollection.snapshots().listen(
+      (snap) async {
+        try {
+          final matches = <MatchModel>[];
+          for (final doc in snap.docs) {
+            try {
+              final sanitized = _sanitizeFirestoreData(doc.data());
+              final match = MatchModel.fromJson({...sanitized, 'id': doc.id});
+              matches.add(match);
+            } catch (e) {
+              debugPrint(
+                '⚠️ [Native Downstream Sync] Match parsing failed for doc ${doc.id}: $e',
+              );
+            }
+          }
+
+          if (matches.isNotEmpty) {
+            final healedMatches = matches.map((match) {
+              try {
+                final healedEvents = match.events.map((event) {
+                  try {
+                    if (ScoreEventLegacyAdapter.verifySignature(
+                      event,
+                      'kendo_os_secret_key_v1',
+                    )) {
+                      return event;
+                    }
+                    final eventId = event.id.isNotEmpty
+                        ? event.id
+                        : const Uuid().v4();
+                    final uid = event.userId ?? 'unknown_user';
+                    final payload =
+                        '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
+                    final signature = ScoreEventLegacyAdapter.generateSignature(
+                      payload,
+                      'kendo_os_secret_key_v1',
+                    );
+                    return event.copyWith(id: eventId, signature: signature);
+                  } catch (e) {
+                    debugPrint(
+                      '⚠️ [Native Downstream Sync] Failed to verify/heal single event signature: $e',
+                    );
+                    final eventId = event.id.isNotEmpty
+                        ? event.id
+                        : const Uuid().v4();
+                    final uid = event.userId ?? 'unknown_user';
+                    final payload =
+                        '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
+                    final signature = ScoreEventLegacyAdapter.generateSignature(
+                      payload,
+                      'kendo_os_secret_key_v1',
+                    );
+                    return event.copyWith(id: eventId, signature: signature);
+                  }
+                }).toList();
+
+                final healedPendingEvents = match.pendingEvents.map((event) {
+                  try {
+                    if (ScoreEventLegacyAdapter.verifySignature(
+                      event,
+                      'kendo_os_secret_key_v1',
+                    )) {
+                      return event;
+                    }
+                    final eventId = event.id.isNotEmpty
+                        ? event.id
+                        : const Uuid().v4();
+                    final uid = event.userId ?? 'unknown_user';
+                    final payload =
+                        '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
+                    final signature = ScoreEventLegacyAdapter.generateSignature(
+                      payload,
+                      'kendo_os_secret_key_v1',
+                    );
+                    return event.copyWith(id: eventId, signature: signature);
+                  } catch (e) {
+                    debugPrint(
+                      '⚠️ [Native Downstream Sync] Failed to verify/heal single pending event signature: $e',
+                    );
+                    final eventId = event.id.isNotEmpty
+                        ? event.id
+                        : const Uuid().v4();
+                    final uid = event.userId ?? 'unknown_user';
+                    final payload =
+                        '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
+                    final signature = ScoreEventLegacyAdapter.generateSignature(
+                      payload,
+                      'kendo_os_secret_key_v1',
+                    );
+                    return event.copyWith(id: eventId, signature: signature);
+                  }
+                }).toList();
+
+                return match.copyWith(
+                  events: healedEvents,
+                  pendingEvents: healedPendingEvents,
+                );
+              } catch (e) {
+                debugPrint(
+                  '⚠️ [Native Downstream Sync] Error in healing signatures for match ${match.id}: $e',
+                );
+                return match;
+              }
+            }).toList();
+
+            await localRepository.saveMatchesBulk(healedMatches);
+            debugPrint(
+              '⚡ [Native Downstream Sync] Firestoreから ${healedMatches.length} 件の試合データをIsarに同期しました。',
+            );
+          }
+        } catch (e) {
+          debugPrint(
+            '🔥 [Native Downstream Sync Critical] Isarへのバルクインサート中にエラーが発生しました: $e',
+          );
+        }
+      },
+      onError: (e) {
+        debugPrint('🚨 [Native Downstream Sync] Firestore listen error: $e');
+      },
+    );
+
+    ref.onDispose(() {
+      debugPrint(
+        '📱 [matchListByTournamentProvider] Native mode background listener disposed for tournamentId: $safeTournamentId',
+      );
+      sub.cancel();
+    });
+  }
+
   return localRepository.watchLocalMatches(tournamentId);
 });

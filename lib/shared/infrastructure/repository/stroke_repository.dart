@@ -2,16 +2,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
-final strokeRepositoryProvider = Provider((ref) => StrokeRepository());
+final strokeRepositoryProvider = Provider((ref) {
+  final dojoId = ref.watch(currentDojoIdProvider);
+  return StrokeRepository(dojoId: dojoId);
+});
 
 class StrokeRepository {
-  final _db = FirebaseFirestore.instance;
+  final String dojoId;
+  final FirebaseFirestore _db;
+
+  StrokeRepository({required this.dojoId, FirebaseFirestore? firestore})
+    : _db = firestore ?? FirebaseFirestore.instance;
+
+  CollectionReference<Map<String, dynamic>> get _strokesCollection =>
+      _db.collection('organizations').doc(dojoId).collection('strokes');
 
   /// 新しい線をFirestoreに保存する
   Future<void> addStroke(StrokeModel stroke) async {
     try {
-      await _db.collection('strokes').doc(stroke.id).set(stroke.toMap());
+      await _strokesCollection.doc(stroke.id).set(stroke.toMap());
       debugPrint('✅ 線を保存しました: ID=${stroke.id}, ProgramID=${stroke.programId}');
     } catch (e) {
       debugPrint('❌ 保存エラー: $e');
@@ -20,16 +31,22 @@ class StrokeRepository {
 
   /// 特定のプログラムに引かれた線をリアルタイムで取得する
   Stream<List<StrokeModel>> watchStrokes(String programId) {
-    // ★重要: 先ほど作成したインデックス（createdAt 降順）に合わせて並び替えます
-    return _db
-        .collection('strokes')
+    // ★物理調停：インデックス(programId ASC, createdAt ASC)に合わせて昇順でソートし、
+    // 重複IDの排除とisSharedフィルタリングをインメモリで安全に行います。
+    return _strokesCollection
         .where('programId', isEqualTo: programId)
-        .orderBy('createdAt', descending: true) // ここを Descending (降順) に合わせる
+        .orderBy('createdAt', descending: false)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => StrokeModel.fromMap(doc.data()))
-              .toList();
+          final uniqueStrokes = <String, StrokeModel>{};
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
+            final stroke = StrokeModel.fromMap({...data, 'id': doc.id});
+            if (stroke.isShared) {
+              uniqueStrokes[stroke.id] = stroke;
+            }
+          }
+          return uniqueStrokes.values.toList();
         });
   }
 
@@ -37,8 +54,7 @@ class StrokeRepository {
   Future<void> clearStrokes(String programId) async {
     try {
       debugPrint('🧹 全消去命令を送信: ProgramID=$programId');
-      final snapshot = await _db
-          .collection('strokes')
+      final snapshot = await _strokesCollection
           .where('programId', isEqualTo: programId)
           .get();
 
@@ -62,8 +78,7 @@ class StrokeRepository {
     try {
       debugPrint('🔙 Undo命令を送信: ProgramID=$programId');
 
-      final querySnapshot = await _db
-          .collection('strokes')
+      final querySnapshot = await _strokesCollection
           .where('programId', isEqualTo: programId)
           .orderBy('createdAt', descending: true)
           .limit(1)

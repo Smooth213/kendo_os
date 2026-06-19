@@ -49,6 +49,7 @@ import 'package:kendo_os/features/viewer/screens/viewer_official_record_screen.d
 import 'package:kendo_os/features/viewer/screens/viewer_team_scoreboard_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_kachinuki_scoreboard_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_bunaiksen_official_record_screen.dart';
+import 'package:kendo_os/features/viewer/screens/viewer_bunaiksen_home_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/admin/providers/metrics_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
@@ -96,53 +97,96 @@ final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
 void main() {
   // 🛡️ 起動シーケンスの完全カプセル化（Zone mismatch & 未初期化エラーを同時リセット）
   GlobalErrorHandler.runWithZone(() async {
+    WidgetsFlutterBinding.ensureInitialized();
     // ★ URLパスから「#」を取り除き、Webのディープリンクを正常に処理させる（ホワイトアウト対策1）
     usePathUrlStrategy();
 
-    try {
-      // 🌟 修正核心：Firebase初期化の重複呼び出しを物理ブロック＆エラーの握り潰し
-      if (Firebase.apps.isEmpty) {
-        try {
-          await Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform,
+    SharedPreferences? prefs;
+    Isar? isar;
+
+    // 非同期初期化処理をカプセル化したローカル関数
+    Future<void> runInitialization() async {
+      // 1. Firebase初期化（先行フォールバック同期仕様 + 非同期同期完了待ち + no-app防止ガード）
+      try {
+        // Hot Restart時、ネイティブ側に存在する既存アプリ情報がプラットフォームチャネル経由で
+        // Dart側の Firebase.apps に同期されるまで数ミリ秒のラグがあるため、少し待機して自動同期を待つ
+        for (int i = 0; i < 15; i++) {
+          if (Firebase.apps.isNotEmpty) {
+            debugPrint(
+              '⚡ [Sync] ネイティブのFirebaseインスタンスとの自動同期が完了しました (apps: ${Firebase.apps.length})',
+            );
+            break;
+          }
+          await Future.delayed(const Duration(milliseconds: 20));
+        }
+
+        if (Firebase.apps.isEmpty) {
+          try {
+            // Hot Restart時、ネイティブにすでにアプリが存在しているなら、optionsなしで呼ぶと
+            // ネイティブがアサートクラッシュせず、既存の [DEFAULT] をそのまま Dart に同期して返します。
+            await Firebase.initializeApp();
+            debugPrint('⚡ [Sync] optionsなしでネイティブの既存 [DEFAULT] をロード同期しました。');
+          } catch (_) {
+            // ネイティブにまだ存在しない場合 (コールドスタート等) は plist がなく失敗するので、
+            // 正規の options を与えてクリーンに新規初期化します。
+            await Firebase.initializeApp(
+              options: DefaultFirebaseOptions.currentPlatform,
+            );
+            debugPrint('🚀 Firebase [DEFAULT] をオプション指定でクリーンに新規初期化しました。');
+          }
+        } else {
+          debugPrint(
+            '📢 Firebase [DEFAULT] はすでに常駐しているため、初期化呼び出しを完全にスキップして既存インスタンスを安全に100%再利用します。',
           );
-        } catch (e) {
-          // 重複呼び出し（duplicate-app）エラーが発生した場合は安全に無視して続行
-          if (!e.toString().contains('duplicate-app')) {
-            rethrow;
+        }
+      } catch (e) {
+        final errorStr = e.toString();
+        debugPrint('⚠️ Firebase初期化のキャッチ: $e');
+
+        // もし duplicate-app が発生した場合、ネイティブ側には確実にアプリが存在するので、
+        // Dart側へ同期されるまで再度待機して no-app 例外の誘発を100%防ぐ
+        if (errorStr.contains('duplicate-app') ||
+            errorStr.contains('already exists')) {
+          debugPrint('🛡️ [duplicate-app] を検知。既存インスタンスのロード同期完了を待ちます...');
+          for (int i = 0; i < 15; i++) {
+            if (Firebase.apps.isNotEmpty) {
+              debugPrint('🛡️ [duplicate-app] 既存インスタンスのロード同期に成功しました。');
+              break;
+            }
+            await Future.delayed(const Duration(milliseconds: 20));
           }
         }
       }
 
-      // =========================================================================
-      // 🛡️ Phase 6 - STEP 6-3 要件：Crash監視プロトコル
-      // 体育館現場での予期せぬブラウザエラーやクラッシュをリアルタイム検知。
-      // Web環境（Firebase Web）での例外スタックトレースを安全にアナリティクスへハイドレーションします。
-      // =========================================================================
-      if (!kIsWeb) {
-        FlutterError.onError = (errorDetails) {
-          try {
-            FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-          } catch (_) {
-            // テスト環境などでFirebase未初期化の場合は安全に無視
-          }
-        };
-        PlatformDispatcher.instance.onError = (error, stack) {
-          try {
-            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-          } catch (_) {
-            // テスト環境などでFirebase未初期化の場合は安全に無視
-          }
-          return true;
-        };
-        debugPrint('🚀 [Crashlytics] ネイティブ環境の致命的クラッシュ監視ラインを活性化しました');
-      } else {
-        debugPrint('🚀 [Web WebAnalytics] Webアプリ版のブラウザ例外例外トラックを確立しました');
+      // 2. Crashlyticsの設定
+      try {
+        if (!kIsWeb) {
+          FlutterError.onError = (errorDetails) {
+            try {
+              FirebaseCrashlytics.instance.recordFlutterFatalError(
+                errorDetails,
+              );
+            } catch (_) {}
+          };
+          PlatformDispatcher.instance.onError = (error, stack) {
+            try {
+              FirebaseCrashlytics.instance.recordError(
+                error,
+                stack,
+                fatal: true,
+              );
+            } catch (_) {}
+            return true;
+          };
+          debugPrint('🚀 [Crashlytics] ネイティブ環境の致命的クラッシュ監視ラインを活性化しました');
+        } else {
+          debugPrint('🚀 [Web WebAnalytics] Webアプリ版のブラウザ例外例外トラックを確立しました');
+        }
+      } catch (e) {
+        debugPrint('⚠️ [Crashlytics] 初期化に失敗: $e');
       }
 
-      // 🌟 修正核心：未ログイン状態での「通信エラー（実は権限エラー）」を物理ブロックする
-      // ルーム参加時など、まだPINコードを入れていない状態でもFirestoreにアクセスできるよう
-      // アプリ起動時に「匿名ログイン（ゲスト認証）」を自動的に行います。
+      // 3. 匿名ログイン（ゲスト認証）
       try {
         if (FirebaseAuth.instance.currentUser == null) {
           await FirebaseAuth.instance.signInAnonymously();
@@ -152,145 +196,154 @@ void main() {
         debugPrint('⚠️ [Auth] 匿名認証に失敗: $e');
       }
 
-      // =========================================================================
-      // 🛡️ STEP 5-1 要件：体育館などの電波障害・オフライン環境に耐えるための
-      // Firestore ローカルディスク永続化キャッシュキャッシュプロトコルを活性化
-      // (※Web環境ではブラウザのIndexedDB制限によるクラッシュを防ぐため無効化します)
-      // =========================================================================
-      // ★ 再修正: Firebase Web SDK のバグ（インデックス不足時にエラーを吐かずフリーズする）を
-      // 回避するため、Web環境のキャッシュ機能を無効化（デフォルト）に戻しました。
-      // これにより、確実にFirestoreサーバーへ接続され、必要なデータが瞬時に流れるようになります。
-      if (kIsWeb) {
-        // FirebaseFirestore.instance.settings = const Settings(
-        //   persistenceEnabled: true,
-        // );
+      // 4. SharedPreferencesの初期化
+      try {
+        prefs = await SharedPreferences.getInstance();
+      } catch (e) {
+        debugPrint('⚠️ [SharedPreferences] 取得失敗、モックで代替します: $e');
+        // ignore: invalid_use_of_visible_for_testing_member
+        SharedPreferences.setMockInitialValues({});
+        prefs = await SharedPreferences.getInstance();
       }
 
-      // ★ 修正：SharedPreferences のインスタンスをここで確実に取得する
-      final prefs = await SharedPreferences.getInstance();
-
-      if (!kIsWeb) {
-        // ★ 復旧パッチ: 過去の「キャッシュ設定の二重化」バグで沈黙（スタック）してしまった
-        // ネイティブ環境のFirestoreキャッシュを一度だけ強制ワイプし、同期パイプラインを再開通させる
-        final hasCleared =
-            prefs.getBool('has_cleared_corrupted_firestore_cache_v3') ?? false;
-        if (!hasCleared) {
-          try {
-            // ★ 修正: Firestoreがバックグラウンドで既に起動（Active）状態の場合、
-            // clearPersistence が failed-precondition エラーで弾かれるため、一度強制停止(terminate)してからワイプします。
-            await FirebaseFirestore.instance.terminate();
-            await FirebaseFirestore.instance.clearPersistence();
-            await prefs.setBool(
-              'has_cleared_corrupted_firestore_cache_v3',
-              true,
-            );
-            debugPrint('🧹 [Firestore] 古いローカルキャッシュを強制ワイプしました（スタック完全解消 v3）');
-          } catch (e) {
-            debugPrint('⚠️ [Firestore] キャッシュワイプに失敗: $e');
+      // 5. Firestoreキャッシュクリア＆強制オンライン化
+      try {
+        if (!kIsWeb && prefs != null) {
+          final hasCleared =
+              prefs!.getBool('has_cleared_corrupted_firestore_cache_v3') ??
+              false;
+          if (!hasCleared) {
+            try {
+              await FirebaseFirestore.instance.terminate();
+              await FirebaseFirestore.instance.clearPersistence();
+              await prefs!.setBool(
+                'has_cleared_corrupted_firestore_cache_v3',
+                true,
+              );
+              debugPrint('🧹 [Firestore] 古いローカルキャッシュを強制ワイプしました（スタック完全解消 v3）');
+            } catch (e) {
+              debugPrint('⚠️ [Firestore] キャッシュワイプに失敗: $e');
+            }
           }
-        }
 
-        // ★ 強制オンライン化: iOSシミュレータの通信状態誤検知によるFirestoreのオフライン固着を防ぐ
-        try {
           await FirebaseFirestore.instance.enableNetwork();
           debugPrint('🌐 [Firestore] ネットワーク接続を強制的に有効化しました');
 
-          // ★ ダウンストリーム強制点火パッチ:
-          // Firestoreのネイティブコネクションがスリープしたまま固着するのを防ぐため、ダミーリスナーを設置して物理的に叩き起こします。
           FirebaseFirestore.instance
               .collectionGroup('matches')
               .limit(1)
               .snapshots()
               .listen((_) {});
-        } catch (_) {}
+        }
+      } catch (e) {
+        debugPrint('⚠️ [Firestore Settings] 失敗: $e');
       }
 
-      // ★ Phase 1-4: Isar（ローカルDB）の起動
-      Isar? isar;
-      if (kIsWeb) {
-        // ★ 修正: Isarのv3系はWeb環境を公式サポートしていないため、
-        // Webアクセス時（ブラウザ）はIsarを初期化せずnullとし、Viewer(観客)専用として動作させます。
-        isar = null;
-      } else {
-        // ★ iOS/Android環境の場合：従来通り端末内のDocumentsフォルダを取得
-        final dir = await getApplicationDocumentsDirectory();
+      // 6. Isar DBの衝突回避オープン
+      try {
+        if (!kIsWeb) {
+          final dir = await getApplicationDocumentsDirectory();
 
-        // =========================================================================
-        // 🧹 [ワイプ手順] Isar内データを強制リセットしてクリーンな状態で検証したい場合は、
-        // 以下のフラグを true にして1度だけ起動してください。
-        // =========================================================================
-        const bool forceWipeIsar = false;
-        // ignore: dead_code
-        if (forceWipeIsar) {
-          try {
-            final isarDir = Directory(dir.path);
-            if (isarDir.existsSync()) {
-              for (var file in isarDir.listSync()) {
-                if (file.path.endsWith('.isar') ||
-                    file.path.endsWith('.isar.lock')) {
-                  file.deleteSync();
+          const bool forceWipeIsar = false;
+          // ignore: dead_code
+          if (forceWipeIsar) {
+            try {
+              final isarDir = Directory(dir.path);
+              if (isarDir.existsSync()) {
+                for (var file in isarDir.listSync()) {
+                  if (file.path.endsWith('.isar') ||
+                      file.path.endsWith('.isar.lock')) {
+                    file.deleteSync();
+                  }
                 }
               }
+              debugPrint('🧹 [Isar] データベースファイルを強制リセットしました');
+            } catch (e) {
+              debugPrint('⚠️ [Isar Wipe] エラー: $e');
             }
-            debugPrint('🧹 [Isar] データベースファイルを強制リセット（クリーンワイプ）しました');
-          } catch (e) {
-            debugPrint('⚠️ [Isar] ワイプエラー: $e');
+          }
+
+          final existingIsar = Isar.getInstance();
+          if (existingIsar != null) {
+            isar = existingIsar;
+            debugPrint('📢 [Isar] 既存のIsarインスタンスを安全に100%再利用します。');
+          } else {
+            isar = await Isar.open([
+              MatchEntitySchema,
+              LocalStrokeModelSchema,
+              MatchCommentEntitySchema,
+              MatchProjectionEntitySchema,
+              MatchCommandEntitySchema,
+            ], directory: dir.path);
+            debugPrint('🚀 [Isar] 新規にIsarインスタンスをオープンしました。');
           }
         }
-
-        isar = await Isar.open([
-          MatchEntitySchema,
-          LocalStrokeModelSchema,
-          MatchCommentEntitySchema, // ★ Phase 2: コメント用スキーマ追加
-          MatchProjectionEntitySchema, // ★ Phase 8: 投影モデル用スキーマ追加
-          MatchCommandEntitySchema, // ★ 同期エンジンのキュー処理用スキーマ追加
-        ], directory: dir.path);
+      } catch (e) {
+        debugPrint('⚠️ [Isar Init] エラー: $e');
       }
+    }
 
-      // ★ Phase 2-4: ProviderContainer を自前で作成し、システム全体からアクセス可能にする
+    // 🌟 タイムアウト安全弁（3秒で強制カット＆フォールバック起動。孤立例外によるクラッシュを完全に防ぐ catchError 付き）
+    try {
+      await Future.any([
+        runInitialization().catchError((e) {
+          debugPrint('⚠️ [Background Init Error] バックグラウンド初期化中に例外が発生しました: $e');
+        }),
+        Future.delayed(const Duration(seconds: 3)).then((_) {
+          debugPrint('⚠️ [Timeout] アプリの初期化が3秒以内に完了しなかったため、安全弁が起動しました。');
+        }),
+      ]);
+    } catch (e) {
+      debugPrint('⚠️ [Initialization Warning/Timeout]: $e');
+    }
+
+    // タイムアウトなどでSharedPreferencesが取得できなかった場合の防衛策
+    if (prefs == null) {
+      try {
+        debugPrint('🛡️ [Fallback] SharedPreferencesのモックを取得して起動を続行します');
+        // ignore: invalid_use_of_visible_for_testing_member
+        SharedPreferences.setMockInitialValues({});
+        prefs = await SharedPreferences.getInstance();
+      } catch (e) {
+        debugPrint('🔥 [Critical Fallback Failed] SharedPreferencesの取得に失敗: $e');
+      }
+    }
+
+    try {
+      // ProviderContainer作成
       final container = ProviderContainer(
         overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          // ★ 修正: Web環境で isar が null の場合でも正しくオーバーライドし、UnimplementedErrorを防ぐ
+          if (prefs != null)
+            sharedPreferencesProvider.overrideWithValue(prefs!),
           isarProvider.overrideWithValue(isar),
         ],
       );
 
-      // ★ 1. 描画やUI関連のエラーをキャッチしてフリーズを防ぐ
+      // UIエラーキャッチ
       FlutterError.onError = (FlutterErrorDetails details) {
         FlutterError.presentError(details);
         if (!kIsWeb) {
           try {
-            FirebaseCrashlytics.instance.recordFlutterFatalError(
-              details,
-            ); // ★ Phase 9-3: 致命的なUIエラーをFirebaseへ送信
-          } catch (_) {
-            // テスト環境でFirebase未初期化の場合は安全に無視
-          }
+            FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+          } catch (_) {}
         }
-        container.read(metricsProvider).recordError(); // ★ UIエラーをメトリクスのエラー率に加算
+        container.read(metricsProvider).recordError();
         debugPrint('⚠️ UIエラー: ${details.exception}');
       };
 
-      // ★ 2. 非同期処理や裏側のエラーをキャッチしてアプリのクラッシュを防ぐ
+      // 非同期例外キャッチ
       PlatformDispatcher.instance.onError = (error, stack) {
         if (!kIsWeb) {
           try {
-            FirebaseCrashlytics.instance.recordError(
-              error,
-              stack,
-              fatal: true,
-            ); // ★ Phase 9-3: 裏側のクラッシュもFirebaseへ送信
-          } catch (_) {
-            // テスト環境でFirebase未初期化の場合は安全に無視
-          }
+            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+          } catch (_) {}
         }
-        container.read(metricsProvider).recordError(); // ★ 裏側エラーをメトリクスのエラー率に加算
+        container.read(metricsProvider).recordError();
         debugPrint('⚠️ 裏側エラー: $error');
         return true;
       };
 
-      // ★ 3. 恐ろしい「赤いエラー画面（本番は真っ白）」を最強のデバッガー（X線画面）に進化させる
+      // 最強のエラー画面表示
       ErrorWidget.builder = (FlutterErrorDetails details) {
         return Scaffold(
           body: SafeArea(
@@ -400,10 +453,16 @@ class AuthGuard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
+    final session = ref.watch(authSessionProvider);
     return authState.when(
       data: (user) {
-        // 未ログインなら、要求された画面の「代わりに」ログイン画面をそのまま表示する
-        if (user == null) return const RoleSelectScreen();
+        // 未ログインであっても、一般観客席 (UserRole.viewer) セッションが確立している場合は通過させる
+        if (user == null) {
+          if (session != null && session.role == UserRole.viewer) {
+            return child;
+          }
+          return const RoleSelectScreen();
+        }
         return child;
       },
       loading: () =>
@@ -631,7 +690,9 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: 'viewer', // ★強制的にViewer権限にダウングレード
         dojoId: state.uri.queryParameters['dojoId'],
-        child: const BunaiksenHomeScreen(),
+        child: ViewerBunaiksenHomeScreen(
+          tournamentId: state.pathParameters['tournamentId']!,
+        ),
       ),
     ),
     GoRoute(

@@ -200,7 +200,18 @@ class StartScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => context.push('/bunaiksen-home'),
+                      onPressed: () {
+                        if (currentRole == UserRole.viewer) {
+                          final now = DateTime.now();
+                          final yyyy = now.year.toString();
+                          final mm = now.month.toString().padLeft(2, '0');
+                          final dd = now.day.toString().padLeft(2, '0');
+                          final dateId = 'bunaiksen_$yyyy$mm$dd';
+                          context.push('/bunaiksen-viewer-home/$dateId');
+                        } else {
+                          context.push('/bunaiksen-home');
+                        }
+                      },
                       icon: const Icon(
                         Icons.local_fire_department,
                         color: Colors.white,

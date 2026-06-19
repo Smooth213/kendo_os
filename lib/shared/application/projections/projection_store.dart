@@ -25,9 +25,16 @@ class ProjectionStore {
   /// 1試合のデータをリアルタイム監視し、MatchProjectionへと変換する
   Stream<MatchProjection?> watch(String matchId) {
     final dojoId = ref.read(currentDojoIdProvider);
+    final tournamentId = ref.read(currentTournamentIdProvider);
+    final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
+    final tournament = tournamentId.isNotEmpty
+        ? tournamentId
+        : 'default_tournament';
     return FirebaseFirestore.instance
         .collection('organizations')
-        .doc(dojoId)
+        .doc(dojo)
+        .collection('tournaments')
+        .doc(tournament)
         .collection('matches')
         .doc(matchId)
         .snapshots()
@@ -47,11 +54,16 @@ class ProjectionStore {
   /// 大会に紐づく試合一覧をリアルタイム監視し、MatchListProjectionへと変換する
   Stream<List<MatchListProjection>> watchByTournament(String tournamentId) {
     final dojoId = ref.read(currentDojoIdProvider);
+    final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
+    final tournament = tournamentId.isNotEmpty
+        ? tournamentId
+        : 'default_tournament';
     return FirebaseFirestore.instance
         .collection('organizations')
-        .doc(dojoId)
+        .doc(dojo)
+        .collection('tournaments')
+        .doc(tournament)
         .collection('matches')
-        .where('tournamentId', isEqualTo: tournamentId)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs.map((doc) {

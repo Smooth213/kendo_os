@@ -229,6 +229,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
       fontWeight: FontWeight.w900,
       color: widget.disabled ? Colors.grey.shade600 : widget.textColor,
       letterSpacing: 2.0,
+      height: 1.3,
     );
   }
 
@@ -252,6 +253,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Container(
+                alignment: Alignment.center,
                 constraints: const BoxConstraints(minHeight: 72),
                 decoration: BoxDecoration(
                   color: _getDisplayColor(isDark),
@@ -267,11 +269,22 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
                   alignment: Alignment.center,
                   children: [
                     // 1. ボタン本体のテキスト
-                    Center(
-                      child: Text(
-                        widget.isFoul ? '反則' : widget.label,
-                        style: _getTextStyle(isTablet, isDark),
-                      ),
+                    Column(
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              widget.isFoul ? '反則' : widget.label,
+                              textAlign: TextAlign.center,
+                              style: _getTextStyle(isTablet, isDark),
+                              strutStyle: const StrutStyle(
+                                forceStrutHeight: true,
+                                height: 1.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     // 2. ゲージ（最前面）
                     if (_isHolding)
