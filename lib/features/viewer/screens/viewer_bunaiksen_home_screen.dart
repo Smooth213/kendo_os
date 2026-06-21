@@ -11,7 +11,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
-import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
+import 'package:intl/intl.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   final String tournamentId;
@@ -151,6 +153,69 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                   )
                 : null, // ★ QR等直リンクの場合は何も表示しない
             actions: [
+              IconButton(
+                icon: const Icon(Icons.calendar_month),
+                tooltip: '日付を選択して過去の記録を見る',
+                onPressed: () async {
+                  DateTime initialDate = DateTime.now();
+                  if (tournamentId.startsWith('bunaiksen_') &&
+                      tournamentId.length == 18) {
+                    final dateStr = tournamentId.substring(10);
+                    if (dateStr.length == 8) {
+                      final parsed = DateTime.tryParse(dateStr);
+                      if (parsed != null) {
+                        initialDate = parsed;
+                      }
+                    }
+                  }
+
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: initialDate,
+                    firstDate: DateTime(2024),
+                    lastDate: DateTime.now(),
+                    selectableDayPredicate: (DateTime date) {
+                      return true; // 🛡️ 全環境完全開放：観客席側も過去カレンダーのグレーアウトロックを完全に撤廃
+                    },
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: isDark
+                              ? const ColorScheme.dark(
+                                  primary: Color(0xFF8B0000),
+                                  onPrimary: Colors.white,
+                                  surface: Color(0xFF1C1C1E),
+                                  onSurface: Colors.white,
+                                )
+                              : const ColorScheme.light(
+                                  primary: Color(0xFF8B0000),
+                                  onPrimary: Colors.white,
+                                  surface: Colors.white,
+                                  onSurface: Colors.black87,
+                                ),
+                          dialogTheme: DialogThemeData(
+                            backgroundColor: isDark
+                                ? const Color(0xFF1C1C1E)
+                                : Colors.white,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+
+                  if (picked != null) {
+                    ref.read(bunaiksenViewDateProvider.notifier).state = picked;
+                    final nextTournamentId =
+                        'bunaiksen_${DateFormat('yyyyMMdd').format(picked)}';
+                    final dojoId = ref.read(currentDojoIdProvider);
+                    if (!context.mounted) return;
+                    context.pushReplacement(
+                      '/bunaiksen-viewer-home/$nextTournamentId?role=viewer&dojoId=$dojoId',
+                    );
+                  }
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.settings),
                 tooltip: '表示設定',

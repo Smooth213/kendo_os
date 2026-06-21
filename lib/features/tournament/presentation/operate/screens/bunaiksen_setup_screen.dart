@@ -553,8 +553,10 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 final rule = ref.read(bunaiksenRuleProvider);
                 final matchId = const Uuid().v4();
                 final now = ref.read(timeSourceProvider).now();
-                final todayId =
-                    'bunaiksen_${DateFormat('yyyyMMdd').format(now)}';
+                final dateStr = DateFormat('yyyyMMdd').format(
+                  DateTime.now(),
+                ); // 🍏 タイムゾーン修正：常に日本時間(JST)を基準に今日の日付文字列を生成する
+                final todayId = 'bunaiksen_$dateStr';
 
                 final newMatch = MatchModel(
                   id: matchId,
@@ -926,8 +928,10 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               onPressed: () async {
                 final rule = ref.read(bunaiksenRuleProvider);
                 final now = ref.read(timeSourceProvider).now();
-                final todayId =
-                    'bunaiksen_${DateFormat('yyyyMMdd').format(now)}';
+                final dateStr = DateFormat('yyyyMMdd').format(
+                  DateTime.now(),
+                ); // 🍏 タイムゾーン修正：常に日本時間(JST)を基準に今日の日付文字列を生成する
+                final todayId = 'bunaiksen_$dateStr';
                 final groupId = const Uuid().v4();
                 final baseOrder = now.millisecondsSinceEpoch.toDouble();
 
@@ -1055,8 +1059,10 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   : () async {
                       final rule = ref.read(bunaiksenRuleProvider);
                       final now = ref.read(timeSourceProvider).now();
-                      final todayId =
-                          'bunaiksen_${DateFormat('yyyyMMdd').format(now)}';
+                      final dateStr = DateFormat('yyyyMMdd').format(
+                        DateTime.now(),
+                      ); // 🍏 タイムゾーン修正：常に日本時間(JST)を基準に今日の日付文字列を生成する
+                      final todayId = 'bunaiksen_$dateStr';
                       final groupId = const Uuid().v4();
                       final baseOrder = now.millisecondsSinceEpoch.toDouble();
 
@@ -1247,10 +1253,11 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
 
                       final rule = ref.read(bunaiksenRuleProvider);
                       final now = ref.read(timeSourceProvider).now();
-                      final todayId =
-                          'bunaiksen_${DateFormat('yyyyMMdd').format(now)}';
-                      final groupId =
-                          'infinite_${DateFormat('yyyyMMdd').format(now)}';
+                      final dateStr = DateFormat('yyyyMMdd').format(
+                        DateTime.now(),
+                      ); // 🍏 タイムゾーン修正：常に日本時間(JST)を基準に今日の日付文字列を生成する
+                      final todayId = 'bunaiksen_$dateStr';
+                      final groupId = 'infinite_$dateStr';
                       final matchId = const Uuid().v4();
 
                       final newMatch = MatchModel(

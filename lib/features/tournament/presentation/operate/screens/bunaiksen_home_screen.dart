@@ -17,7 +17,6 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
-import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -157,35 +156,30 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               icon: const Icon(Icons.calendar_month),
               tooltip: '日付を選択して過去の記録を見る',
               onPressed: () async {
-                final allMatchDates = ref
-                    .read(matchListProvider)
-                    .where(
-                      (m) =>
-                          m.tournamentId != null &&
-                          m.tournamentId!.startsWith('bunaiksen_'),
-                    )
-                    .map((m) => m.tournamentId!.replaceFirst('bunaiksen_', ''))
-                    .toSet();
-
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: viewDate,
                   firstDate: DateTime(2024),
                   lastDate: DateTime.now(),
                   selectableDayPredicate: (DateTime date) {
-                    final dStr = DateFormat('yyyyMMdd').format(date);
-                    return DateFormat('yyyyMMdd').format(date) ==
-                            DateFormat('yyyyMMdd').format(DateTime.now()) ||
-                        allMatchDates.contains(dStr);
+                    return true; // 🛡️ 全環境完全開放：部内戦はオンデマンドで全過去データをFirestore/Isarから直接リッスンできるため、事前キャッシュチェックによるロックを完全撤廃
                   },
                   builder: (context, child) {
                     return Theme(
                       data: Theme.of(context).copyWith(
-                        colorScheme: ColorScheme.light(
-                          primary: const Color(0xFF8B0000),
-                          onPrimary: Colors.white,
-                          onSurface: isDark ? Colors.white : Colors.black,
-                        ),
+                        colorScheme: isDark
+                            ? const ColorScheme.dark(
+                                primary: Color(0xFF8B0000),
+                                onPrimary: Colors.white,
+                                surface: Color(0xFF1C1C1E),
+                                onSurface: Colors.white,
+                              )
+                            : const ColorScheme.light(
+                                primary: Color(0xFF8B0000),
+                                onPrimary: Colors.white,
+                                surface: Colors.white,
+                                onSurface: Colors.black87,
+                              ),
                         dialogTheme: DialogThemeData(
                           backgroundColor: isDark
                               ? const Color(0xFF1C1C1E)

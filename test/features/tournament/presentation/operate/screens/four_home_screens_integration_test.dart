@@ -24,6 +24,8 @@ import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 
 class MockTournamentRepository extends Mock implements TournamentRepository {}
 
@@ -214,6 +216,7 @@ void main() {
             currentTournamentIdProvider.overrideWith((ref) => bunaiksenDateId),
             bunaiksenViewDateProvider.overrideWith((ref) => bunaiksenDate),
             matchListProvider.overrideWith((ref) => bunaiksenMatches),
+            currentUserRoleProvider.overrideWith((ref) => UserRole.admin),
           ],
           child: const MaterialApp(home: BunaiksenHomeScreen()),
         ),

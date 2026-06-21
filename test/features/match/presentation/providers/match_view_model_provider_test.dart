@@ -240,44 +240,51 @@ void main() {
       expect(resultDesc.entries[2].key, '小学生1年');
     });
 
-    test('5. bunaiksenMatchesProvider: 進行中 -> 待機中 -> 終了済み の優先度でソートされること', () {
-      final m1 = createMatch(
-        id: '1',
-        tournamentId: 'b1',
-        redName: 'A',
-        whiteName: 'B',
-        status: 'finished',
-        order: 10.0,
-      );
-      final m2 = createMatch(
-        id: '2',
-        tournamentId: 'b1',
-        redName: 'C',
-        whiteName: 'D',
-        status: 'in_progress',
-        order: 20.0,
-      );
-      final m3 = createMatch(
-        id: '3',
-        tournamentId: 'b1',
-        redName: 'E',
-        whiteName: 'F',
-        status: 'waiting',
-        order: 30.0,
-      );
+    test(
+      '5. bunaiksenMatchesProvider: 進行中 -> 待機中 -> 終了済み の優先度でソートされること',
+      () async {
+        final m1 = createMatch(
+          id: '1',
+          tournamentId: 'b1',
+          redName: 'A',
+          whiteName: 'B',
+          status: 'finished',
+          order: 10.0,
+        );
+        final m2 = createMatch(
+          id: '2',
+          tournamentId: 'b1',
+          redName: 'C',
+          whiteName: 'D',
+          status: 'in_progress',
+          order: 20.0,
+        );
+        final m3 = createMatch(
+          id: '3',
+          tournamentId: 'b1',
+          redName: 'E',
+          whiteName: 'F',
+          status: 'waiting',
+          order: 30.0,
+        );
 
-      container = ProviderContainer(
-        overrides: [
-          matchListProvider.overrideWith((ref) => [m1, m2, m3]),
-        ],
-      );
+        container = ProviderContainer(
+          overrides: [
+            matchListProvider.overrideWith((ref) => [m1, m2, m3]),
+            bunaiksenMatchesStreamProvider.overrideWith(
+              (ref, arg) => Stream.value(<MatchModel>[]),
+            ),
+          ],
+        );
 
-      final result = container.read(bunaiksenMatchesProvider('b1'));
+        await container.read(bunaiksenMatchesStreamProvider('b1').future);
+        final result = container.read(bunaiksenMatchesProvider('b1'));
 
-      expect(result.length, 3);
-      expect(result[0].id, '2', reason: 'in_progressが最優先で上にくる');
-      expect(result[1].id, '3', reason: 'waitingが次点');
-      expect(result[2].id, '1', reason: 'finishedが最下部に配置される');
-    });
+        expect(result.length, 3);
+        expect(result[0].id, '2', reason: 'in_progressが最優先で上にくる');
+        expect(result[1].id, '3', reason: 'waitingが次点');
+        expect(result[2].id, '1', reason: 'finishedが最下部に配置される');
+      },
+    );
   });
 }

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+export 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'
+    show bunaiksenMatchesProvider;
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 
 // 大会ごとの試合リスト（オーダー順ソート済み）
@@ -180,29 +182,6 @@ final timelineMatchesByCategoryProvider = Provider.family
         matchedGroupNames: matchedGroupNames,
         matchedMatchIds: matchedMatchIds,
       );
-    });
-
-// 部内戦（Bunaiksen）用：進行中を上部、終了を下部に並び替えた試合リスト
-final bunaiksenMatchesProvider = Provider.family
-    .autoDispose<List<MatchModel>, String>((ref, tournamentId) {
-      // 🌟 Ensure the background Firestore downstream sync listener in matchListByTournamentProvider is active
-      ref.watch(matchListByTournamentProvider(tournamentId));
-
-      final matches = ref.watch(matchListProvider);
-      final filtered = matches
-          .where((m) => m.tournamentId == tournamentId)
-          .toList();
-      return filtered..sort((a, b) {
-        final aFinished = a.status == 'finished' || a.status == 'approved';
-        final bFinished = b.status == 'finished' || b.status == 'approved';
-        final aInProgress = a.status == 'in_progress';
-        final bInProgress = b.status == 'in_progress';
-        if (aFinished && !bFinished) return 1;
-        if (!aFinished && bFinished) return -1;
-        if (aInProgress && !bInProgress) return -1;
-        if (!aInProgress && bInProgress) return 1;
-        return b.order.compareTo(a.order);
-      });
     });
 
 // 部内戦成績出力用：カテゴリごとのグループ化済みデータ

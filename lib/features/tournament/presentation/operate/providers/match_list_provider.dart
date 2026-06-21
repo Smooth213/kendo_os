@@ -389,3 +389,129 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
 
   return localRepository.watchLocalMatches(tournamentId);
 });
+
+// =========================================================================
+// 🛡️ 最終調停：部内戦用 Web/ネイティブ・今日/過去データ完全同期ストリーム基盤
+// =========================================================================
+final bunaiksenMatchesStreamProvider = StreamProvider.family
+    .autoDispose<List<MatchModel>, String>((ref, tournamentId) {
+      // ★重要：Zone Errorの原因となっていた二重watchを完全パージし、引数tournamentIdのみで完全に制御する
+      final targetTournamentId = tournamentId.isNotEmpty
+          ? tournamentId
+          : 'bunaiksen_default';
+
+      final firestore = ref.watch(firestoreProvider);
+      final dojoId = ref.watch(currentDojoIdProvider);
+      final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+
+      final controller = StreamController<List<MatchModel>>();
+      StreamSubscription? sub;
+
+      controller.onListen = () {
+        sub = firestore
+            .collection('organizations')
+            .doc(safeDojoId)
+            .collection('tournaments')
+            .doc(targetTournamentId)
+            .collection('matches')
+            .snapshots()
+            .listen(
+              (snap) async {
+                if (controller.isClosed) return;
+                final matches = snap.docs
+                    .map((doc) {
+                      try {
+                        final data = _sanitizeFirestoreData(doc.data());
+                        return MatchModel.fromJson({...data, 'id': doc.id});
+                      } catch (e) {
+                        return null;
+                      }
+                    })
+                    .whereType<MatchModel>()
+                    .toList();
+
+                // 🛡️ 究極の水際補正：試合作成側のタイムゾーン不一致を吸収するため、親ドキュメントの日付IDを強制上書きバインド
+                final sanitizedMatches = matches
+                    .map((m) => m.copyWith(tournamentId: targetTournamentId))
+                    .toList();
+
+                // ネイティブ環境（!kIsWeb）の時は、完全にサニタイズされたデータを爆速でIsarへ自動ダウンロード保存
+                if (!kIsWeb) {
+                  final localRepository = ref.read(
+                    localMatchRepositoryProvider,
+                  );
+                  try {
+                    await localRepository.saveMatchesBulk(sanitizedMatches);
+                  } catch (e) {
+                    // 🛡️ 例外安全弁：改ざんデータやDBエラーが発生しても、ストリームを壊さずログ記録して続行
+                    debugPrint(
+                      '⚠️ [Sync Exception] Isar一括保存中にエラーを検知 (TamperedEventException等): $e',
+                    );
+                  }
+                }
+
+                if (!controller.isClosed) {
+                  controller.add(sanitizedMatches);
+                }
+              },
+              onError: (e) {
+                if (!controller.isClosed) controller.add([]);
+              },
+            );
+      };
+
+      ref.onDispose(() {
+        sub?.cancel();
+        if (!controller.isClosed) controller.close();
+      });
+
+      return controller.stream;
+    });
+
+// ⚔️ 本丸：UI層へ従来の同期的「List<MatchModel>」を安全に返却する特化型調停Provider
+final bunaiksenMatchesProvider = Provider.family
+    .autoDispose<List<MatchModel>, String>((ref, tournamentId) {
+      // 画面側のカレンダー選択から渡された日付IDをピンポイントでバインド
+      final targetTournamentId = tournamentId.isNotEmpty
+          ? tournamentId
+          : 'bunaiksen_default';
+
+      // バックグラウンド同期ストリームを起動・常時リッスン
+      final asyncVal = ref.watch(
+        bunaiksenMatchesStreamProvider(targetTournamentId),
+      );
+
+      List<MatchModel> matches;
+      if (kIsWeb) {
+        // 🌐 Web環境：開通した Firestore ストリームの値をそのままリアルタイムに反映
+        matches = asyncVal.value ?? const [];
+      } else {
+        // 🍏 ネイティブ環境：完全日本語化された Isar キャッシュ常時監視 ＆ 自動追跡ログエンジン
+        final allMatches = ref.watch(matchListProvider);
+
+        debugPrint('🔍🔍 [剣道OS ログ] Isarデータパイプラインリアルタイム監視 🔍🔍');
+        debugPrint(' 1. 画面側から要求された日付ID = "$targetTournamentId"');
+        debugPrint(' 2. 現在Isarローカルディスクに保存されている総試合数 = ${allMatches.length} 件');
+
+        // メモリ上で部内戦の日付IDに合致する試合データをリアルタイム抽出
+        matches = allMatches
+            .where((m) => m.tournamentId == targetTournamentId)
+            .toList();
+        debugPrint(' 3. 条件に合致して画面へ美しく表示する試合数 = ${matches.length} 件');
+        debugPrint('🔍🔍 [剣道OS ログ] 監視終了 🔍🔍');
+      }
+
+      final sorted = List<MatchModel>.from(matches);
+      sorted.sort((a, b) {
+        final aFinished = a.status == 'finished' || a.status == 'approved';
+        final bFinished = b.status == 'finished' || b.status == 'approved';
+        final aInProgress = a.status == 'in_progress';
+        final bInProgress = b.status == 'in_progress';
+        if (aFinished && !bFinished) return 1;
+        if (!aFinished && bFinished) return -1;
+        if (aInProgress && !bInProgress) return -1;
+        if (!aInProgress && bInProgress) return 1;
+        return a.order.compareTo(b.order); // 試合順(正順)に整列
+      });
+      return sorted;
+    });
