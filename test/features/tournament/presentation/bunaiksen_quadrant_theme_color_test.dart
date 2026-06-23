@@ -25,7 +25,6 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
-import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 import 'package:kendo_os/features/viewer/providers/viewer_view_state_provider.dart'

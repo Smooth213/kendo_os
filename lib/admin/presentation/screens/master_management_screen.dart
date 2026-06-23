@@ -1688,265 +1688,260 @@ class _MasterManagementScreenState
   void _showDataCleanupDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (ctx) => Container(
-        // fake padding to avoid breaking the dialog contract but make the dialog standard styling
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ), // ★ フェーズ2：角丸の統一
-          title: Row(
-            children: [
-              Icon(Icons.cleaning_services, color: Colors.purple.shade700),
-              const SizedBox(width: 8),
-              const Text(
-                'データとストレージ管理',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'アプリの動作が重い場合や、ストレージ容量を空けたい場合に実行してください。',
-                style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
-              ),
-              const SizedBox(height: 24),
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ), // ★ フェーズ2：角丸の統一
+        title: Row(
+          children: [
+            Icon(Icons.cleaning_services, color: Colors.purple.shade700),
+            const SizedBox(width: 8),
+            const Text(
+              'データとストレージ管理',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'アプリの動作が重い場合や、ストレージ容量を空けたい場合に実行してください。',
+              style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
+            ),
+            const SizedBox(height: 24),
 
-              // 1. キャッシュクリア
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
+            // 1. キャッシュクリア
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: Colors.purple.shade50,
+                child: Icon(Icons.cached, color: Colors.purple.shade700),
+              ),
+              title: const Text(
+                '一時キャッシュをクリア',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              subtitle: const Text(
+                '表示を軽くします（データは消えません）',
+                style: TextStyle(fontSize: 12),
+              ),
+              trailing: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('キャッシュをクリアし、メモリを解放しました ✨')),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple.shade50,
-                  child: Icon(Icons.cached, color: Colors.purple.shade700),
-                ),
-                title: const Text(
-                  '一時キャッシュをクリア',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                subtitle: const Text(
-                  '表示を軽くします（データは消えません）',
-                  style: TextStyle(fontSize: 12),
-                ),
-                trailing: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('キャッシュをクリアし、メモリを解放しました ✨')),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple.shade50,
-                    foregroundColor: Colors.purple.shade800,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  foregroundColor: Colors.purple.shade800,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    '実行',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                ),
+                child: const Text(
+                  '実行',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
-              const Divider(height: 24),
+            ),
+            const Divider(height: 24),
 
-              // ★ Phase 2: JSONエクスポート（物理バックアップ）
+            // ★ Phase 2: JSONエクスポート（物理バックアップ）
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue.shade50,
+                child: Icon(Icons.download, color: Colors.blue.shade700),
+              ),
+              title: const Text(
+                '全データをJSONでバックアップ',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              subtitle: const Text(
+                '端末内に完全な状態のファイルを書き出します',
+                style: TextStyle(fontSize: 12),
+              ),
+              trailing: ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  try {
+                    // 全試合データを取得してJSON文字列に変換
+                    final matches = ref.read(matchListProvider);
+                    // ★ 修正：Timestamp型のエンencodeエラーを回避する変換ルールを追加
+                    final jsonStr = jsonEncode(
+                      matches.map((m) => m.toJson()).toList(),
+                      toEncodable: (dynamic item) {
+                        if (item is DateTime) return item.toIso8601String();
+                        if (item.runtimeType.toString() == 'Timestamp') {
+                          try {
+                            return (item as dynamic).toDate().toIso8601String();
+                          } catch (_) {
+                            return item.toString();
+                          }
+                        }
+                        return item.toString();
+                      },
+                    );
+
+                    // 端末のドキュメントディレクトリに保存
+                    final dir = await getApplicationDocumentsDirectory();
+                    final file = File(
+                      '${dir.path}/kendo_backup_${DateTime.now().millisecondsSinceEpoch}.json',
+                    );
+                    await file.writeAsString(jsonStr);
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✅ バックアップ完了\n${file.path}'),
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('❌ バックアップ失敗: $e')));
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade50,
+                  foregroundColor: Colors.blue.shade800,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  '書き出し',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const Divider(height: 24),
+
+            if (FeatureGate.canManageMaster(
+              ref.read(currentUserRoleProvider),
+              ref.read(securityLevelProvider),
+            ))
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
-                  backgroundColor: Colors.blue.shade50,
-                  child: Icon(Icons.download, color: Colors.blue.shade700),
+                  backgroundColor: Colors.red.shade50,
+                  child: const Icon(Icons.delete_sweep, color: Colors.red),
                 ),
                 title: const Text(
-                  '全データをJSONでバックアップ',
+                  '1年以上前の大会を削除',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 subtitle: const Text(
-                  '端末内に完全な状態のファイルを書き出します',
+                  '古いデータを完全に消去し容量を空けます',
                   style: TextStyle(fontSize: 12),
                 ),
                 trailing: ElevatedButton(
                   onPressed: () async {
                     Navigator.pop(ctx);
-                    try {
-                      // 全試合データを取得してJSON文字列に変換
-                      final matches = ref.read(matchListProvider);
-                      // ★ 修正：Timestamp型のエンencodeエラーを回避する変換ルールを追加
-                      final jsonStr = jsonEncode(
-                        matches.map((m) => m.toJson()).toList(),
-                        toEncodable: (dynamic item) {
-                          if (item is DateTime) return item.toIso8601String();
-                          if (item.runtimeType.toString() == 'Timestamp') {
-                            try {
-                              return (item as dynamic)
-                                  .toDate()
-                                  .toIso8601String();
-                            } catch (_) {
-                              return item.toString();
-                            }
-                          }
-                          return item.toString();
-                        },
-                      );
-
-                      // 端末のドキュメントディレクトリに保存
-                      final dir = await getApplicationDocumentsDirectory();
-                      final file = File(
-                        '${dir.path}/kendo_backup_${DateTime.now().millisecondsSinceEpoch}.json',
-                      );
-                      await file.writeAsString(jsonStr);
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('✅ バックアップ完了\n${file.path}'),
-                            duration: const Duration(seconds: 4),
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (c) => AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        title: const Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.red,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              '警告',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        content: const Text(
+                          '1年以上前の「大会」と「試合データ」をすべて完全に削除します。\nこの操作は元に戻せません。実行しますか？',
+                          style: TextStyle(height: 1.5),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(c, false),
+                            child: const Text(
+                              'キャンセル',
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ),
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('❌ バックアップ失敗: $e')),
-                        );
-                      }
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: () => Navigator.pop(c, true),
+                            child: const Text(
+                              '完全に削除する',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      if (!context.mounted) return;
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (_) =>
+                            const Center(child: CircularProgressIndicator()),
+                      );
+
+                      await Future.delayed(const Duration(seconds: 2));
+
+                      if (!context.mounted) return;
+                      Navigator.pop(context); // ぐるぐるを閉じる
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('古いデータを一括削除し、ストレージを最適化しました 🗑️'),
+                        ),
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade50,
-                    foregroundColor: Colors.blue.shade800,
+                    backgroundColor: Colors.red.shade50,
+                    foregroundColor: Colors.red.shade700,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: const Text(
-                    '書き出し',
+                    '削除',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-              const Divider(height: 24),
-
-              if (FeatureGate.canManageMaster(
-                ref.read(currentUserRoleProvider),
-                ref.read(securityLevelProvider),
-              ))
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.red.shade50,
-                    child: const Icon(Icons.delete_sweep, color: Colors.red),
-                  ),
-                  title: const Text(
-                    '1年以上前の大会を削除',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  subtitle: const Text(
-                    '古いデータを完全に消去し容量を空けます',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  trailing: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (c) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          title: const Row(
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                color: Colors.red,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                '警告',
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          content: const Text(
-                            '1年以上前の「大会」と「試合データ」をすべて完全に削除します。\nこの操作は元に戻せません。実行しますか？',
-                            style: TextStyle(height: 1.5),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(c, false),
-                              child: const Text(
-                                'キャンセル',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
-                              ),
-                              onPressed: () => Navigator.pop(c, true),
-                              child: const Text(
-                                '完全に削除する',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (confirm == true) {
-                        if (!context.mounted) return;
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (_) =>
-                              const Center(child: CircularProgressIndicator()),
-                        );
-
-                        await Future.delayed(const Duration(seconds: 2));
-
-                        if (!context.mounted) return;
-                        Navigator.pop(context); // ぐるぐるを閉じる
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('古いデータを一括削除し、ストレージを最適化しました 🗑️'),
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade50,
-                      foregroundColor: Colors.red.shade700,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      '削除',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
-            ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
+          ),
+        ],
       ),
     );
   }
