@@ -21,10 +21,30 @@ import 'package:flutter_slidable/flutter_slidable.dart'; // ★ iPhoneライク�
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // 選手一覧のProvider
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
-  return ref.watch(playerRepositoryProvider).getPlayers();
+  final dojoId = ref.watch(currentDojoIdProvider);
+  final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+  FirebaseFirestore? firestore;
+  try {
+    firestore = ref.watch(firestoreProvider);
+  } catch (_) {}
+  if (firestore == null) {
+    return Stream.value([]);
+  }
+  return firestore
+      .collection('organizations')
+      .doc(safeDojoId)
+      .collection('players')
+      .snapshots()
+      .map(
+        (snap) => snap.docs
+            .map((doc) => PlayerModel.fromMap(doc.data(), doc.id))
+            .toList(),
+      );
 });
 
 class MasterManagementScreen extends ConsumerStatefulWidget {
@@ -47,6 +67,7 @@ class _MasterManagementScreenState
   @override
   Widget build(BuildContext context) {
     final playerListAsync = ref.watch(playerListProvider);
+    final cloudDojoName = ref.watch(currentDojoNameProvider).value ?? '';
 
     // ★ 状態のリアルタイム監視をバインド
     final currentRole = ref.watch(currentUserRoleProvider);
@@ -130,7 +151,7 @@ class _MasterManagementScreenState
         body: playerListAsync.when(
           data: (players) {
             // ★ 直感UX改修：Empty Stateも「透かしアイコン」の世界観に完全統一
-            if (players.isEmpty) {
+            if (players.isEmpty && cloudDojoName.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -152,7 +173,7 @@ class _MasterManagementScreenState
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      '最初の選手を登録して、\n道場・学校の名簿を作りましょう！',
+                      '選手を追加する前に、まずはあなたたちの道場名・学校名を登録することから始めましょう！',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.grey,
@@ -162,14 +183,17 @@ class _MasterManagementScreenState
                     ),
                     const SizedBox(height: 32),
                     if (!isReadOnly)
-                      GlassButton(
-                        onPressed: () => _showPlayerBottomSheet(context, ref),
-                        color: primaryColor,
-                        icon: Icons.person_add,
-                        label: '最初の選手を登録する',
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
+                      SizedBox(
+                        width: 240,
+                        child: GlassButton(
+                          onPressed: () => _showInitialOrgBottomSheet(context),
+                          color: primaryColor,
+                          icon: Icons.account_balance,
+                          label: '道場名を登録する',
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
                         ),
                       ),
                   ],
@@ -177,8 +201,12 @@ class _MasterManagementScreenState
               );
             }
 
-            players.sort((a, b) => a.grade.compareTo(b.grade));
-            final orgName = players.first.organization;
+            if (players.isNotEmpty) {
+              players.sort((a, b) => a.grade.compareTo(b.grade));
+            }
+            final orgName = players.isNotEmpty
+                ? players.first.organization
+                : cloudDojoName;
 
             Map<String, List<PlayerModel>> groupedPlayers = {};
             if (_groupingMode == 0) {
@@ -368,7 +396,17 @@ class _MasterManagementScreenState
         floatingActionButton: isReadOnly || _isSelectionMode || !canManageMaster
             ? null
             : FloatingActionButton.extended(
-                onPressed: () => _showPlayerBottomSheet(context, ref),
+                onPressed: () {
+                  if (cloudDojoName.isEmpty) {
+                    _showMustRegisterOrgDialog(context);
+                  } else {
+                    _showPlayerBottomSheet(
+                      context,
+                      ref,
+                      cloudDojoName: cloudDojoName,
+                    );
+                  }
+                },
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
                 elevation: 4,
@@ -563,8 +601,12 @@ class _MasterManagementScreenState
         motion: const ScrollMotion(),
         children: [
           SlidableAction(
-            onPressed: (context) =>
-                _showPlayerBottomSheet(context, ref, player: player),
+            onPressed: (context) => _showPlayerBottomSheet(
+              context,
+              ref,
+              player: player,
+              cloudDojoName: player.organization,
+            ),
             backgroundColor: Colors.blueAccent,
             foregroundColor: Colors.white,
             icon: Icons.edit,
@@ -587,6 +629,7 @@ class _MasterManagementScreenState
     BuildContext context,
     WidgetRef ref, {
     PlayerModel? player,
+    required String cloudDojoName,
   }) {
     final isEdit = player != null;
     final lastNameController = TextEditingController(
@@ -914,7 +957,12 @@ class _MasterManagementScreenState
                         ElevatedButton.icon(
                           onPressed: () async {
                             if (lastNameController.text.trim().isEmpty) return;
-                            final repo = ref.read(playerRepositoryProvider);
+                            final dojoId = ref.read(currentDojoIdProvider);
+                            final safeDojoId = dojoId.isNotEmpty
+                                ? dojoId
+                                : 'test201';
+                            final firestore = ref.read(firestoreProvider);
+
                             final pData = {
                               'lastName': lastNameController.text.trim(),
                               'firstName': firstNameController.text.trim(),
@@ -925,46 +973,43 @@ class _MasterManagementScreenState
                               'grade': selectedGrade,
                               'gender': selectedGender,
                               'isBeginner': isBeginner,
+                              'organization': cloudDojoName.isNotEmpty
+                                  ? cloudDojoName
+                                  : 'テスト道場',
                             };
+
                             if (isEdit) {
-                              await repo.updatePlayer(
-                                player.copyWith(
-                                  lastName: pData['lastName'] as String,
-                                  firstName: pData['firstName'] as String,
-                                  lastNameKana: pData['lastNameKana'] as String,
-                                  firstNameKana:
-                                      pData['firstNameKana'] as String,
-                                  grade: pData['grade'] as int,
-                                  gender: pData['gender'] as String,
-                                  isBeginner: pData['isBeginner'] as bool,
-                                ),
-                              );
+                              await firestore
+                                  .collection('organizations')
+                                  .doc(safeDojoId)
+                                  .collection('players')
+                                  .doc(player.id)
+                                  .set(pData, SetOptions(merge: true));
                             } else {
-                              await repo.addPlayer(
-                                PlayerModel(
-                                  id: '',
-                                  lastName: pData['lastName'] as String,
-                                  firstName: pData['firstName'] as String,
-                                  lastNameKana: pData['lastNameKana'] as String,
-                                  firstNameKana:
-                                      pData['firstNameKana'] as String,
-                                  grade: pData['grade'] as int,
-                                  gender: pData['gender'] as String,
-                                  isBeginner: pData['isBeginner'] as bool,
-                                ),
-                              );
+                              await firestore
+                                  .collection('organizations')
+                                  .doc(safeDojoId)
+                                  .collection('players')
+                                  .add(pData);
                             }
                             if (context.mounted) Navigator.pop(context);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
                               vertical: 16,
                             ),
                           ),
-                          icon: const Icon(Icons.save),
-                          label: const Text('保存して登録'),
+                          icon: const Icon(Icons.save, color: Colors.white),
+                          label: const Text(
+                            '保存して登録',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -975,6 +1020,191 @@ class _MasterManagementScreenState
           },
         );
       },
+    );
+  }
+
+  // ★ 初期道場名入力専用ボトムシート
+  void _showInitialOrgBottomSheet(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
+    final dialogBgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final inputBgColor = isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade50;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
+    final initialName = ref.read(currentDojoNameProvider).value ?? '';
+    final controller = TextEditingController(text: initialName);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: dialogBgColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.only(
+          top: 16,
+          left: 24,
+          right: 24,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                '道場名・学校名の登録',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.purpleAccent : Colors.purple.shade800,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '選手を追加する前に、道場名または学校名を入力してください。',
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                style: TextStyle(color: textColor),
+                decoration: InputDecoration(
+                  labelText: '道場名・学校名',
+                  prefixIcon: Icon(
+                    Icons.account_balance,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: inputBgColor,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: Text(
+                      'キャンセル',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey.shade400 : Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                    ),
+                    icon: const Icon(Icons.check),
+                    label: const Text('登録'),
+                    onPressed: () async {
+                      final newName = TextSanitizer.clean(controller.text);
+                      if (newName.isEmpty) return;
+
+                      final dojoId = ref.read(currentDojoIdProvider);
+                      final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+                      final firestore = ref.read(firestoreProvider);
+
+                      await firestore
+                          .collection('organizations')
+                          .doc(safeDojoId)
+                          .set({'name': newName}, SetOptions(merge: true));
+
+                      if (ctx.mounted) {
+                        Navigator.pop(ctx);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ★ 先行入力強制ダイアログ
+  void _showMustRegisterOrgDialog(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700),
+            const SizedBox(width: 8),
+            Text(
+              '道場名の登録が必要です',
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          '選手を登録する前に、まずは道場名・学校名を登録してください。',
+          style: TextStyle(height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _showInitialOrgBottomSheet(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              '道場名を入力',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1211,7 +1441,15 @@ class _MasterManagementScreenState
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref.read(playerRepositoryProvider).deletePlayer(player.id);
+              final dojoId = ref.read(currentDojoIdProvider);
+              final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+              final firestore = ref.read(firestoreProvider);
+              await firestore
+                  .collection('organizations')
+                  .doc(safeDojoId)
+                  .collection('players')
+                  .doc(player.id)
+                  .delete();
             },
             child: const Text(
               '削除',
@@ -1242,9 +1480,21 @@ class _MasterManagementScreenState
               final idsToDelete = _selectedPlayerIds.toList();
               Navigator.pop(ctx);
 
+              final dojoId = ref.read(currentDojoIdProvider);
+              final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+              final firestore = ref.read(firestoreProvider);
+              final batch = firestore.batch();
+
               for (final id in idsToDelete) {
-                await ref.read(playerRepositoryProvider).deletePlayer(id);
+                final docRef = firestore
+                    .collection('organizations')
+                    .doc(safeDojoId)
+                    .collection('players')
+                    .doc(id);
+                batch.delete(docRef);
               }
+
+              await batch.commit();
 
               setState(() {
                 _isSelectionMode = false;
@@ -1379,13 +1629,32 @@ class _MasterManagementScreenState
                       );
 
                       try {
-                        // 全選手の所属名を更新
-                        final repo = ref.read(playerRepositoryProvider);
+                        final dojoId = ref.read(currentDojoIdProvider);
+                        final safeDojoId = dojoId.isNotEmpty
+                            ? dojoId
+                            : 'test201';
+                        final firestore = ref.read(firestoreProvider);
+
+                        // まずは organization 自体の名前を更新
+                        await firestore
+                            .collection('organizations')
+                            .doc(safeDojoId)
+                            .set({'name': newName}, SetOptions(merge: true));
+
+                        // そして全選手の所属名を一括更新
+                        final batch = firestore.batch();
                         for (var p in players) {
-                          await repo.updatePlayer(
-                            p.copyWith(organization: newName),
-                          );
+                          final docRef = firestore
+                              .collection('organizations')
+                              .doc(safeDojoId)
+                              .collection('players')
+                              .doc(p.id);
+                          batch.set(docRef, {
+                            'organization': newName,
+                          }, SetOptions(merge: true));
                         }
+                        await batch.commit();
+
                         if (context.mounted) Navigator.pop(context); // ぐるぐるを閉じる
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1419,260 +1688,265 @@ class _MasterManagementScreenState
   void _showDataCleanupDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ), // ★ フェーズ2：角丸の統一
-        title: Row(
-          children: [
-            Icon(Icons.cleaning_services, color: Colors.purple.shade700),
-            const SizedBox(width: 8),
-            const Text(
-              'データとストレージ管理',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'アプリの動作が重い場合や、ストレージ容量を空けたい場合に実行してください。',
-              style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
-            ),
-            const SizedBox(height: 24),
+      builder: (ctx) => Container(
+        // fake padding to avoid breaking the dialog contract but make the dialog standard styling
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ), // ★ フェーズ2：角丸の統一
+          title: Row(
+            children: [
+              Icon(Icons.cleaning_services, color: Colors.purple.shade700),
+              const SizedBox(width: 8),
+              const Text(
+                'データとストレージ管理',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'アプリの動作が重い場合や、ストレージ容量を空けたい場合に実行してください。',
+                style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
+              ),
+              const SizedBox(height: 24),
 
-            // 1. キャッシュクリア
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                backgroundColor: Colors.purple.shade50,
-                child: Icon(Icons.cached, color: Colors.purple.shade700),
-              ),
-              title: const Text(
-                '一時キャッシュをクリア',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              subtitle: const Text(
-                '表示を軽くします（データは消えません）',
-                style: TextStyle(fontSize: 12),
-              ),
-              trailing: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('キャッシュをクリアし、メモリを解放しました ✨')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple.shade50,
-                  foregroundColor: Colors.purple.shade800,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  '実行',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            const Divider(height: 24),
-
-            // ★ Phase 2: JSONエクスポート（物理バックアップ）
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                backgroundColor: Colors.blue.shade50,
-                child: Icon(Icons.download, color: Colors.blue.shade700),
-              ),
-              title: const Text(
-                '全データをJSONでバックアップ',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              subtitle: const Text(
-                '端末内に完全な状態のファイルを書き出します',
-                style: TextStyle(fontSize: 12),
-              ),
-              trailing: ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(ctx);
-                  try {
-                    // 全試合データを取得してJSON文字列に変換
-                    final matches = ref.read(matchListProvider);
-                    // ★ 修正：Timestamp型のエンコードエラーを回避する変換ルールを追加
-                    final jsonStr = jsonEncode(
-                      matches.map((m) => m.toJson()).toList(),
-                      toEncodable: (dynamic item) {
-                        if (item is DateTime) return item.toIso8601String();
-                        if (item.runtimeType.toString() == 'Timestamp') {
-                          try {
-                            return (item as dynamic).toDate().toIso8601String();
-                          } catch (_) {
-                            return item.toString();
-                          }
-                        }
-                        return item.toString();
-                      },
-                    );
-
-                    // 端末のドキュメントディレクトリに保存
-                    final dir = await getApplicationDocumentsDirectory();
-                    final file = File(
-                      '${dir.path}/kendo_backup_${DateTime.now().millisecondsSinceEpoch}.json',
-                    );
-                    await file.writeAsString(jsonStr);
-
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('✅ バックアップ完了\n${file.path}'),
-                          duration: const Duration(seconds: 4),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text('❌ バックアップ失敗: $e')));
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade50,
-                  foregroundColor: Colors.blue.shade800,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  '書き出し',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            const Divider(height: 24),
-
-            if (FeatureGate.canManageMaster(
-              ref.read(currentUserRoleProvider),
-              ref.read(securityLevelProvider),
-            ))
+              // 1. キャッシュクリア
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
-                  backgroundColor: Colors.red.shade50,
-                  child: const Icon(Icons.delete_sweep, color: Colors.red),
+                  backgroundColor: Colors.purple.shade50,
+                  child: Icon(Icons.cached, color: Colors.purple.shade700),
                 ),
                 title: const Text(
-                  '1年以上前の大会を削除',
+                  '一時キャッシュをクリア',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 subtitle: const Text(
-                  '古いデータを完全に消去し容量を空けます',
+                  '表示を軽くします（データは消えません）',
                   style: TextStyle(fontSize: 12),
                 ),
                 trailing: ElevatedButton(
-                  onPressed: () async {
+                  onPressed: () {
                     Navigator.pop(ctx);
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (c) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        title: const Row(
-                          children: [
-                            Icon(
-                              Icons.warning_amber_rounded,
-                              color: Colors.red,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              '警告',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        content: const Text(
-                          '1年以上前の「大会」と「試合データ」をすべて完全に削除します。\nこの操作は元に戻せません。実行しますか？',
-                          style: TextStyle(height: 1.5),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(c, false),
-                            child: const Text(
-                              'キャンセル',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            onPressed: () => Navigator.pop(c, true),
-                            child: const Text(
-                              '完全に削除する',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('キャッシュをクリアし、メモリを解放しました ✨')),
                     );
-
-                    if (confirm == true) {
-                      if (!context.mounted) return;
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (_) =>
-                            const Center(child: CircularProgressIndicator()),
-                      );
-
-                      await Future.delayed(const Duration(seconds: 2));
-
-                      if (!context.mounted) return;
-                      Navigator.pop(context); // ぐるぐるを閉じる
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('古いデータを一括削除し、ストレージを最適化しました 🗑️'),
-                        ),
-                      );
-                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade50,
-                    foregroundColor: Colors.red.shade700,
+                    backgroundColor: Colors.purple.shade50,
+                    foregroundColor: Colors.purple.shade800,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: const Text(
-                    '削除',
+                    '実行',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
+              const Divider(height: 24),
+
+              // ★ Phase 2: JSONエクスポート（物理バックアップ）
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: CircleAvatar(
+                  backgroundColor: Colors.blue.shade50,
+                  child: Icon(Icons.download, color: Colors.blue.shade700),
+                ),
+                title: const Text(
+                  '全データをJSONでバックアップ',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                subtitle: const Text(
+                  '端末内に完全な状態のファイルを書き出します',
+                  style: TextStyle(fontSize: 12),
+                ),
+                trailing: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    try {
+                      // 全試合データを取得してJSON文字列に変換
+                      final matches = ref.read(matchListProvider);
+                      // ★ 修正：Timestamp型のエンencodeエラーを回避する変換ルールを追加
+                      final jsonStr = jsonEncode(
+                        matches.map((m) => m.toJson()).toList(),
+                        toEncodable: (dynamic item) {
+                          if (item is DateTime) return item.toIso8601String();
+                          if (item.runtimeType.toString() == 'Timestamp') {
+                            try {
+                              return (item as dynamic)
+                                  .toDate()
+                                  .toIso8601String();
+                            } catch (_) {
+                              return item.toString();
+                            }
+                          }
+                          return item.toString();
+                        },
+                      );
+
+                      // 端末のドキュメントディレクトリに保存
+                      final dir = await getApplicationDocumentsDirectory();
+                      final file = File(
+                        '${dir.path}/kendo_backup_${DateTime.now().millisecondsSinceEpoch}.json',
+                      );
+                      await file.writeAsString(jsonStr);
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('✅ バックアップ完了\n${file.path}'),
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('❌ バックアップ失敗: $e')),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade50,
+                    foregroundColor: Colors.blue.shade800,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    '書き出し',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const Divider(height: 24),
+
+              if (FeatureGate.canManageMaster(
+                ref.read(currentUserRoleProvider),
+                ref.read(securityLevelProvider),
+              ))
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.red.shade50,
+                    child: const Icon(Icons.delete_sweep, color: Colors.red),
+                  ),
+                  title: const Text(
+                    '1年以上前の大会を削除',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  subtitle: const Text(
+                    '古いデータを完全に消去し容量を空けます',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (c) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: const Row(
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.red,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                '警告',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          content: const Text(
+                            '1年以上前の「大会」と「試合データ」をすべて完全に削除します。\nこの操作は元に戻せません。実行しますか？',
+                            style: TextStyle(height: 1.5),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(c, false),
+                              child: const Text(
+                                'キャンセル',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: () => Navigator.pop(c, true),
+                              child: const Text(
+                                '完全に削除する',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirm == true) {
+                        if (!context.mounted) return;
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) =>
+                              const Center(child: CircularProgressIndicator()),
+                        );
+
+                        await Future.delayed(const Duration(seconds: 2));
+
+                        if (!context.mounted) return;
+                        Navigator.pop(context); // ぐるぐるを閉じる
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('古いデータを一括削除し、ストレージを最適化しました 🗑️'),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade50,
+                      foregroundColor: Colors.red.shade700,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      '削除',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
-          ),
-        ],
       ),
     );
   }

@@ -14,6 +14,7 @@ import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dar
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
@@ -27,6 +28,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
+import 'package:kendo_os/features/viewer/presentation/viewer_match_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_bunaiksen_home_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/start_screen.dart';
@@ -167,6 +169,7 @@ void main() {
             firestoreRoleStreamProvider.overrideWith(
               (ref) => Stream.value(UserRole.viewer),
             ),
+            matchViewStateUserIdProvider.overrideWith((ref) => 'mock_user_123'),
           ],
           child: const KendoOSApp(),
         ),
@@ -254,6 +257,7 @@ void main() {
             firestoreRoleStreamProvider.overrideWith(
               (ref) => Stream.value(UserRole.viewer),
             ),
+            matchViewStateUserIdProvider.overrideWith((ref) => 'mock_user_123'),
           ],
           child: const KendoOSApp(),
         ),
@@ -275,6 +279,22 @@ void main() {
       expect(find.byType(ViewerBunaiksenHomeScreen), findsOneWidget);
       // BunaiksenHomeScreenがマウントされていないことを検証
       expect(find.byType(BunaiksenHomeScreen), findsNothing);
+
+      // 試合カードをタップし、クエリパラメータが伝播して /match/:matchId に遷移することを検証
+      final cardFinder = find.byKey(
+        const Key('viewer_match_card_bunaiksen_match_1'),
+      );
+      expect(cardFinder, findsOneWidget);
+      await tester.tap(cardFinder);
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // ViewerMatchScreenがマウントされていることを検証
+      expect(find.byType(ViewerMatchScreen), findsOneWidget);
+
+      // 次のテストへの状態リークを防ぐため、ルーターを初期位置に戻しておく
+      GoRouter.of(routerContext).go('/');
+      await tester.pumpAndSettle();
     });
 
     testWidgets('3. 一般観客セッション（PINなし通過）の連動テスト：StartScreenから自動で観客席専用パスへ遷移すること', (
@@ -330,6 +350,7 @@ void main() {
             firestoreRoleStreamProvider.overrideWith(
               (ref) => Stream.value(UserRole.viewer),
             ),
+            matchViewStateUserIdProvider.overrideWith((ref) => 'mock_user_123'),
           ],
           child: const KendoOSApp(),
         ),

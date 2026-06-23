@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb用
 
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/features/viewer/providers/viewer_view_state_provider.dart';
@@ -28,9 +29,25 @@ class ViewerMatchScreen extends ConsumerWidget {
     final viewStateAsync = kIsWeb
         ? null
         : ref.watch(viewerMatchProjectionProvider(matchId));
-    final asyncWebMatch = kIsWeb
-        ? ref.watch(webScoreboardMatchProvider(matchId))
+
+    final tournamentId =
+        GoRouterState.of(context).uri.queryParameters['tournamentId'] ?? '';
+    final asyncWebMatches = kIsWeb && tournamentId.isNotEmpty
+        ? ref.watch(matchListByTournamentProvider(tournamentId))
         : null;
+
+    final MatchModel? webMatch = asyncWebMatches?.value
+        ?.where((m) => m.id == matchId)
+        .firstOrNull;
+
+    final localMatch = kIsWeb
+        ? null
+        : ref
+              .watch(matchListProvider)
+              .where((m) => m.id == matchId)
+              .firstOrNull;
+
+    final MatchModel? activeMatch = kIsWeb ? webMatch : localMatch;
 
     // 🌟 ずっとクルクルする（無限ローディング）不具合修正パッチ
     // Projectionストリームの初回パケットを待機中で loading に陥っている場合でも、
@@ -38,36 +55,31 @@ class ViewerMatchScreen extends ConsumerWidget {
     // 画面のフリーズを完全回避する最強のフォールバック防衛線。
     MatchProjection? fallbackProjection;
     if (kIsWeb) {
-      if (asyncWebMatch?.value != null) {
-        final match = asyncWebMatch!.value!;
+      if (webMatch != null) {
         try {
           final engine = KendoRuleEngine();
           final analysis = engine.analyzeHistory(
-            match.events,
-            match,
-            match.rule,
+            webMatch.events,
+            webMatch,
+            webMatch.rule,
           );
           fallbackProjection = MatchProjectionMapper.toProjection(
-            match,
+            webMatch,
             analysis,
           );
         } catch (_) {}
       }
     } else if (viewStateAsync!.isLoading || viewStateAsync.value == null) {
-      final match = ref
-          .watch(matchListProvider)
-          .where((m) => m.id == matchId)
-          .firstOrNull;
-      if (match != null) {
+      if (localMatch != null) {
         try {
           final engine = KendoRuleEngine();
           final analysis = engine.analyzeHistory(
-            match.events,
-            match,
-            match.rule,
+            localMatch.events,
+            localMatch,
+            localMatch.rule,
           );
           fallbackProjection = MatchProjectionMapper.toProjection(
-            match,
+            localMatch,
             analysis,
           );
         } catch (_) {}
@@ -75,23 +87,25 @@ class ViewerMatchScreen extends ConsumerWidget {
     }
 
     if (kIsWeb) {
-      if (asyncWebMatch!.isLoading && fallbackProjection == null) {
+      if (asyncWebMatches != null &&
+          asyncWebMatches.isLoading &&
+          fallbackProjection == null) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
-      } else if (asyncWebMatch.hasError) {
+      } else if (asyncWebMatches != null && asyncWebMatches.hasError) {
         return Scaffold(
-          body: Center(child: Text('エラーが発生しました: ${asyncWebMatch.error}')),
+          body: Center(child: Text('エラーが発生しました: ${asyncWebMatches.error}')),
         );
       } else {
         if (fallbackProjection == null) {
           return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
         }
-        return _buildScreen(context, ref, fallbackProjection);
+        return _buildScreen(context, ref, fallbackProjection, activeMatch);
       }
     } else {
       return viewStateAsync!.when(
         loading: () {
           if (fallbackProjection != null) {
-            return _buildScreen(context, ref, fallbackProjection);
+            return _buildScreen(context, ref, fallbackProjection, activeMatch);
           }
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
@@ -103,7 +117,7 @@ class ViewerMatchScreen extends ConsumerWidget {
           if (target == null) {
             return const Scaffold(body: Center(child: Text('試合データが見つかりません')));
           }
-          return _buildScreen(context, ref, target);
+          return _buildScreen(context, ref, target, activeMatch);
         },
       );
     }
@@ -113,6 +127,7 @@ class ViewerMatchScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     MatchProjection projection,
+    MatchModel? activeMatch,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final iconColor = isDark ? Colors.white : Colors.indigo.shade900;
@@ -159,6 +174,8 @@ class ViewerMatchScreen extends ConsumerWidget {
                 overrides: [
                   scoreboardMatchIdProvider.overrideWithValue(matchId),
                   scoreboardNameTapProvider.overrideWithValue(null),
+                  if (activeMatch != null)
+                    scoreboardMatchProvider.overrideWithValue(activeMatch),
                 ],
                 child: const MatchScoreboard(),
               ),

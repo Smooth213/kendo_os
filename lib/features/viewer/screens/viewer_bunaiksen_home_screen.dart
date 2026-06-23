@@ -123,6 +123,9 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
       }
     }
 
+    final availableDates =
+        ref.watch(bunaiksenAvailableDatesProvider).value ?? const <String>{};
+
     final matches = ref.watch(bunaiksenMatchesProvider(tournamentId));
 
     final hasInfiniteKachinuki = matches.any(
@@ -136,22 +139,32 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             automaticallyImplyLeading: false, // 標準の戻るボタンを消す
-            backgroundColor: enableLiquidGlass
-                ? Colors.transparent
-                : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-            foregroundColor: isDark ? Colors.white : const Color(0xFF8B0000),
+            backgroundColor: isDark
+                ? (enableLiquidGlass
+                      ? Colors.transparent
+                      : const Color(0xFF1C1C1E))
+                : (enableLiquidGlass
+                      ? Colors.transparent
+                      : Colors.teal.shade700),
+            foregroundColor: isDark
+                ? Colors.teal.shade300
+                : (enableLiquidGlass ? Colors.teal.shade700 : Colors.white),
             title: Text(
               '$dateDisplay の記録 (観戦)',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             elevation: 0,
             centerTitle: true,
-            leading: GoRouter.of(context).canPop()
-                ? IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                    onPressed: () => context.pop(),
-                  )
-                : null, // ★ QR等直リンクの場合は何も表示しない
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+              onPressed: () {
+                if (GoRouter.of(context).canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/'); // 日付変更でスタックが切れた場合の安全なフォールバック
+                }
+              },
+            ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.calendar_month),
@@ -175,20 +188,26 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                     firstDate: DateTime(2024),
                     lastDate: DateTime.now(),
                     selectableDayPredicate: (DateTime date) {
-                      return true; // 🛡️ 全環境完全開放：観客席側も過去カレンダーのグレーアウトロックを完全に撤廃
+                      // 🍏 厳密なるカレンダー制限仕様 of 完成：観客席側も試合の実在する過去日だけを正確に自動点灯
+                      final dStr = DateFormat('yyyyMMdd').format(date);
+                      final todayStr = DateFormat(
+                        'yyyyMMdd',
+                      ).format(DateTime.now());
+
+                      return dStr == todayStr || availableDates.contains(dStr);
                     },
                     builder: (context, child) {
                       return Theme(
                         data: Theme.of(context).copyWith(
                           colorScheme: isDark
-                              ? const ColorScheme.dark(
-                                  primary: Color(0xFF8B0000),
+                              ? ColorScheme.dark(
+                                  primary: Colors.teal.shade300,
                                   onPrimary: Colors.white,
-                                  surface: Color(0xFF1C1C1E),
+                                  surface: const Color(0xFF1C1C1E),
                                   onSurface: Colors.white,
                                 )
-                              : const ColorScheme.light(
-                                  primary: Color(0xFF8B0000),
+                              : ColorScheme.light(
+                                  primary: Colors.teal.shade700,
                                   onPrimary: Colors.white,
                                   surface: Colors.white,
                                   onSurface: Colors.black87,
@@ -379,9 +398,12 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                               // ★ STEP 1, 5, 9：ウィジェット内部の構造変更に左右されない安定したテスト Keys 規約の適用
                               key: Key('viewer_match_card_${match.id}'),
                               borderRadius: BorderRadius.circular(16),
-                              onTap: () => context.push(
-                                '/viewer/${match.id}',
-                              ), // ★ Viewer用の試合画面へ
+                              onTap: () {
+                                final dojoId = ref.read(currentDojoIdProvider);
+                                context.push(
+                                  '/match/${match.id}?role=viewer&tournamentId=$tournamentId&dojoId=$dojoId',
+                                );
+                              },
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(

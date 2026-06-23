@@ -127,10 +127,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         DateFormat('yyyyMMdd').format(viewDate) ==
         DateFormat('yyyyMMdd').format(DateTime.now());
 
+    final availableDates =
+        ref.watch(bunaiksenAvailableDatesProvider).value ?? const <String>{};
+
     // 選択された日の部内戦のみ表示
     final matches = ref.watch(bunaiksenMatchesProvider(dateId));
 
-    // 無限勝ち抜きモードの試合が存在するかどうか
+    // 無限勝ち抜きモード of 試合が存在するかどうか
     final hasInfiniteKachinuki = matches.any(
       (m) => m.isKachinuki && m.matchType == '無限勝ち抜き',
     );
@@ -162,7 +165,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   firstDate: DateTime(2024),
                   lastDate: DateTime.now(),
                   selectableDayPredicate: (DateTime date) {
-                    return true; // 🛡️ 全環境完全開放：部内戦はオンデマンドで全過去データをFirestore/Isarから直接リッスンできるため、事前キャッシュチェックによるロックを完全撤廃
+                    // 🍏 厳密なるカレンダー制限仕様の完成：全 OS 全期間にわたり、試合のあった日だけを美しく点灯させます
+                    final dStr = DateFormat('yyyyMMdd').format(date);
+                    final todayStr = DateFormat(
+                      'yyyyMMdd',
+                    ).format(DateTime.now());
+
+                    return dStr == todayStr || availableDates.contains(dStr);
                   },
                   builder: (context, child) {
                     return Theme(
@@ -199,9 +208,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               icon: const Icon(Icons.visibility),
               tooltip: '観客席プレビュー',
               onPressed: () {
+                ref.read(bunaiksenViewDateProvider.notifier).state = viewDate;
                 final dojoId = ref.read(currentDojoIdProvider);
                 context.push(
-                  '/bunaiksen-viewer-home/$dateId?role=viewer&dojoId=$dojoId',
+                  '/bunaiksen-viewer-home/$dateId?role=viewer&dojoId=$dojoId&tournamentId=$dateId',
                 );
               },
             ),
@@ -383,7 +393,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             ),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              onTap: () => context.push('/match/${match.id}'),
+                              onTap: () {
+                                final dojoId = ref.read(currentDojoIdProvider);
+                                context.push(
+                                  '/match/${match.id}?tournamentId=$dateId&dojoId=$dojoId',
+                                );
+                              },
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
