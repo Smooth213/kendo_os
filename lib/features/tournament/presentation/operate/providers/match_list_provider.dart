@@ -159,7 +159,13 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     MatchModel? parseMatch(DocumentSnapshot<Map<String, dynamic>> doc) {
       try {
         final data = _sanitizeFirestoreData(doc.data() ?? {});
-        final match = MatchModel.fromJson({...data, 'id': doc.id});
+        // 🛡️ 水際矯正パッチ：Firestoreデータ内部の tournamentId フィールドが過去の大会IDのまま汚染されて残っていても、
+        // URL由来の現在要求されている正しい大会ID（safeTournamentId）へMap段階で100%強制上書き結合します。
+        final match = MatchModel.fromJson({
+          ...data,
+          'id': doc.id,
+          'tournamentId': safeTournamentId,
+        });
         return _healRepresentativeMatch(match);
       } catch (e) {
         debugPrint('🚨 [Parse Error] ID:${doc.id} -> $e');
@@ -386,156 +392,187 @@ final bunaiksenMatchesStreamProvider = StreamProvider.family.autoDispose<List<Ma
   final dojoId = ref.watch(currentDojoIdProvider);
   final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
 
-  final controller = StreamController<List<MatchModel>>();
-  StreamSubscription? sub;
-
-  controller.onListen = () {
-    sub = firestore
+  if (kIsWeb) {
+    return firestore
         .collection('organizations')
         .doc(safeDojoId)
         .collection('tournaments')
         .doc(targetTournamentId)
         .collection('matches')
         .snapshots()
-        .listen(
-          (snap) async {
-            if (controller.isClosed) return;
-            final matches = snap.docs
-                .map((doc) {
-                  try {
-                    final data = _sanitizeFirestoreData(doc.data());
-                    final match = MatchModel.fromJson({...data, 'id': doc.id});
-                    return _healRepresentativeMatch(match);
-                  } catch (e) {
-                    return null;
-                  }
-                })
-                .whereType<MatchModel>()
-                .toList();
+        .map((snap) {
+          return snap.docs
+              .map((doc) {
+                try {
+                  final data = _sanitizeFirestoreData(doc.data());
+                  // 🛡️ 水際矯正パッチ：部内戦データ側も、データ内部のフィールドをURL由来の正しい日付ID（targetTournamentId）へ強制上書き結合します。
+                  final match = MatchModel.fromJson({
+                    ...data,
+                    'id': doc.id,
+                    'tournamentId': targetTournamentId,
+                  });
+                  return _healRepresentativeMatch(match);
+                } catch (e) {
+                  return null;
+                }
+              })
+              .whereType<MatchModel>()
+              .toList();
+        });
+  } else {
+    final localRepository = ref.watch(localMatchRepositoryProvider);
+    final controller = StreamController<List<MatchModel>>();
+    StreamSubscription? sub;
 
-            // 🛡️ 究極の水際補正：試合作成側のタイムゾーン不一致を吸収するため、親ドキュメントの日付IDを強制上書きバインド
-            final sanitizedMatches = matches
-                .map((m) => m.copyWith(tournamentId: targetTournamentId))
-                .toList();
-
-            // 🛡️ 署名自動修復（Heal）エンジン
-            final healedMatches = sanitizedMatches.map((match) {
-              try {
-                final healedEvents = match.events.map((event) {
-                  try {
-                    if (ScoreEventLegacyAdapter.verifySignature(
-                      event,
-                      'kendo_os_secret_key_v1',
-                    )) {
-                      return event;
+    controller.onListen = () {
+      sub = firestore
+          .collection('organizations')
+          .doc(safeDojoId)
+          .collection('tournaments')
+          .doc(targetTournamentId)
+          .collection('matches')
+          .snapshots()
+          .listen(
+            (snap) async {
+              if (controller.isClosed) return;
+              final matches = snap.docs
+                  .map((doc) {
+                    try {
+                      final data = _sanitizeFirestoreData(doc.data());
+                      // 🛡️ 水際矯正パッチ：部内戦データ側も、データ内部のフィールドをURL由来の正しい日付ID（targetTournamentId）へ強制上書き結合します。
+                      final match = MatchModel.fromJson({
+                        ...data,
+                        'id': doc.id,
+                        'tournamentId': targetTournamentId,
+                      });
+                      return _healRepresentativeMatch(match);
+                    } catch (e) {
+                      return null;
                     }
-                    final eventId = event.id.isNotEmpty
-                        ? event.id
-                        : const Uuid().v4();
-                    final uid = event.userId ?? 'unknown_user';
-                    final payload =
-                        '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
-                    final signature = ScoreEventLegacyAdapter.generateSignature(
-                      payload,
-                      'kendo_os_secret_key_v1',
-                    );
-                    return event.copyWith(id: eventId, signature: signature);
-                  } catch (e) {
-                    debugPrint(
-                      '⚠️ [部内戦同期 警告] Failed to verify/heal single event signature: $e',
-                    );
-                    final eventId = event.id.isNotEmpty
-                        ? event.id
-                        : const Uuid().v4();
-                    final uid = event.userId ?? 'unknown_user';
-                    final payload =
-                        '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
-                    final signature = ScoreEventLegacyAdapter.generateSignature(
-                      payload,
-                      'kendo_os_secret_key_v1',
-                    );
-                    return event.copyWith(id: eventId, signature: signature);
-                  }
-                }).toList();
+                  })
+                  .whereType<MatchModel>()
+                  .toList();
 
-                final healedPendingEvents = match.pendingEvents.map((event) {
-                  try {
-                    if (ScoreEventLegacyAdapter.verifySignature(
-                      event,
-                      'kendo_os_secret_key_v1',
-                    )) {
-                      return event;
+              // 🛡️ 署名自動修復（Heal）エンジン
+              final healedMatches = matches.map((match) {
+                try {
+                  final healedEvents = match.events.map((event) {
+                    try {
+                      if (ScoreEventLegacyAdapter.verifySignature(
+                        event,
+                        'kendo_os_secret_key_v1',
+                      )) {
+                        return event;
+                      }
+                      final eventId = event.id.isNotEmpty
+                          ? event.id
+                          : const Uuid().v4();
+                      final uid = event.userId ?? 'unknown_user';
+                      final payload =
+                          '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
+                      final signature =
+                          ScoreEventLegacyAdapter.generateSignature(
+                            payload,
+                            'kendo_os_secret_key_v1',
+                          );
+                      return event.copyWith(id: eventId, signature: signature);
+                    } catch (e) {
+                      debugPrint(
+                        '⚠️ [部内戦同期 警告] Failed to verify/heal single event signature: $e',
+                      );
+                      final eventId = event.id.isNotEmpty
+                          ? event.id
+                          : const Uuid().v4();
+                      final uid = event.userId ?? 'unknown_user';
+                      final payload =
+                          '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
+                      final signature =
+                          ScoreEventLegacyAdapter.generateSignature(
+                            payload,
+                            'kendo_os_secret_key_v1',
+                          );
+                      return event.copyWith(id: eventId, signature: signature);
                     }
-                    final eventId = event.id.isNotEmpty
-                        ? event.id
-                        : const Uuid().v4();
-                    final uid = event.userId ?? 'unknown_user';
-                    final payload =
-                        '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
-                    final signature = ScoreEventLegacyAdapter.generateSignature(
-                      payload,
-                      'kendo_os_secret_key_v1',
-                    );
-                    return event.copyWith(id: eventId, signature: signature);
-                  } catch (e) {
-                    debugPrint(
-                      '⚠️ [部内戦同期 警告] Failed to verify/heal single pending event signature: $e',
-                    );
-                    final eventId = event.id.isNotEmpty
-                        ? event.id
-                        : const Uuid().v4();
-                    final uid = event.userId ?? 'unknown_user';
-                    final payload =
-                        '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
-                    final signature = ScoreEventLegacyAdapter.generateSignature(
-                      payload,
-                      'kendo_os_secret_key_v1',
-                    );
-                    return event.copyWith(id: eventId, signature: signature);
-                  }
-                }).toList();
+                  }).toList();
 
-                return match.copyWith(
-                  events: healedEvents,
-                  pendingEvents: healedPendingEvents,
-                );
-              } catch (e) {
-                debugPrint(
-                  '⚠️ [部内戦同期 警告] Error in healing signatures for match ${match.id}: $e',
-                );
-                return match;
-              }
-            }).toList();
+                  final healedPendingEvents = match.pendingEvents.map((event) {
+                    try {
+                      if (ScoreEventLegacyAdapter.verifySignature(
+                        event,
+                        'kendo_os_secret_key_v1',
+                      )) {
+                        return event;
+                      }
+                      final eventId = event.id.isNotEmpty
+                          ? event.id
+                          : const Uuid().v4();
+                      final uid = event.userId ?? 'unknown_user';
+                      final payload =
+                          '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
+                      final signature =
+                          ScoreEventLegacyAdapter.generateSignature(
+                            payload,
+                            'kendo_os_secret_key_v1',
+                          );
+                      return event.copyWith(id: eventId, signature: signature);
+                    } catch (e) {
+                      debugPrint(
+                        '⚠️ [部内戦同期 警告] Failed to verify/heal single pending event signature: $e',
+                      );
+                      final eventId = event.id.isNotEmpty
+                          ? event.id
+                          : const Uuid().v4();
+                      final uid = event.userId ?? 'unknown_user';
+                      final payload =
+                          '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
+                      final signature =
+                          ScoreEventLegacyAdapter.generateSignature(
+                            payload,
+                            'kendo_os_secret_key_v1',
+                          );
+                      return event.copyWith(id: eventId, signature: signature);
+                    }
+                  }).toList();
 
-            // ネイティブ環境（!kIsWeb）の時は、完全にサニタイズされたデータを爆速でIsarへ自動ダウンロード保存
-            if (!kIsWeb) {
-              final localRepository = ref.read(localMatchRepositoryProvider);
+                  return match.copyWith(
+                    events: healedEvents,
+                    pendingEvents: healedPendingEvents,
+                  );
+                } catch (e) {
+                  debugPrint(
+                    '⚠️ [部内戦同期 警告] Error in healing signatures for match ${match.id}: $e',
+                  );
+                  return match;
+                }
+              }).toList();
+
+              // ネイティブ環境（!kIsWeb）の時は、完全にサニタイズされたデータを爆速でIsarへ自動ダウンロード保存
               try {
                 await localRepository.saveMatchesBulk(healedMatches);
               } catch (e) {
-                // 🛡️ 例外安全弁：改ざんデータやDBエラーが発生しても、ストリームを壊さずログ記録して続行
+                // 🛡️ 例外安全弁
                 debugPrint(
                   '⚠️ [Sync Exception] Isar一括保存中にエラーを検知 (TamperedEventException等): $e',
                 );
               }
-            }
 
-            if (!controller.isClosed) {
-              controller.add(healedMatches);
-            }
-          },
-          onError: (e) {
-            if (!controller.isClosed) controller.add([]);
-          },
-        );
-  };
+              if (!controller.isClosed) {
+                controller.add(healedMatches);
+              }
+            },
+            onError: (e) {
+              if (!controller.isClosed) controller.add([]);
+            },
+          );
+    };
 
-  ref.onDispose(() {
-    sub?.cancel();
-    if (!controller.isClosed) controller.close();
-  });
+    ref.onDispose(() {
+      sub?.cancel();
+      if (!controller.isClosed) controller.close();
+    });
 
-  return controller.stream;
+    return controller.stream;
+  }
 });
 
 // 🛡️ 最終調停版：Web/ネイティブ共通でインデックスエラーを100%回避し、全期間の部内戦存在日付(YYYYMMDD)のみをリアルタイム自動収集する超軽量ストリーム

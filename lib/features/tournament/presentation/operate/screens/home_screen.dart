@@ -292,8 +292,9 @@ class HomeScreen extends ConsumerWidget {
     String tournamentId,
   ) {
     final dojoId = ref.read(currentDojoIdProvider);
+    // 🛡️ ドメイン同期パッチ：管理スタッフ用の大会ホーム（HomeScreen）側QR共有リンクも、確実に本物のベータ環境（kendo-os-beta.web.app）を指すように修正
     final String shareUrl =
-        'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
+        'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

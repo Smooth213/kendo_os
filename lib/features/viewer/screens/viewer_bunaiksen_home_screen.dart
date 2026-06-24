@@ -112,6 +112,8 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    // 🛡️ QRアクセス防衛判定：外部のQRコード（直リンク）からスタックなしで直接ブラウザで開かれた場合のみ true と判定
+    final isQrAccess = !GoRouter.of(context).canPop();
 
     // tournamentId から日付をパース (例: bunaiksen_20241010)
     String dateDisplay = '部内戦';
@@ -155,86 +157,87 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
             ),
             elevation: 0,
             centerTitle: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-              onPressed: () {
-                if (GoRouter.of(context).canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/'); // 日付変更でスタックが切れた場合の安全なフォールバック
-                }
-              },
-            ),
+            // 🛡️ UI防衛：QRから直接開かれた一般観客の場合は戻るボタンを完全に消滅させ、迷子や不正操作を防止
+            leading: isQrAccess
+                ? null
+                : IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                    onPressed: () => context.pop(),
+                  ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.calendar_month),
-                tooltip: '日付を選択して過去の記録を見る',
-                onPressed: () async {
-                  DateTime initialDate = DateTime.now();
-                  if (tournamentId.startsWith('bunaiksen_') &&
-                      tournamentId.length == 18) {
-                    final dateStr = tournamentId.substring(10);
-                    if (dateStr.length == 8) {
-                      final parsed = DateTime.tryParse(dateStr);
-                      if (parsed != null) {
-                        initialDate = parsed;
+              // 🛡️ UI防衛：QRから直接開かれた一般観客の場合はカレンダーボタンを非表示にし、その日の試合のみにスコープを固定
+              if (!isQrAccess)
+                IconButton(
+                  icon: const Icon(Icons.calendar_month),
+                  tooltip: '日付を選択して過去の記録を見る',
+                  onPressed: () async {
+                    DateTime initialDate = DateTime.now();
+                    if (tournamentId.startsWith('bunaiksen_') &&
+                        tournamentId.length == 18) {
+                      final dateStr = tournamentId.substring(10);
+                      if (dateStr.length == 8) {
+                        final parsed = DateTime.tryParse(dateStr);
+                        if (parsed != null) {
+                          initialDate = parsed;
+                        }
                       }
                     }
-                  }
 
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: initialDate,
-                    firstDate: DateTime(2024),
-                    lastDate: DateTime.now(),
-                    selectableDayPredicate: (DateTime date) {
-                      // 🍏 厳密なるカレンダー制限仕様 of 完成：観客席側も試合の実在する過去日だけを正確に自動点灯
-                      final dStr = DateFormat('yyyyMMdd').format(date);
-                      final todayStr = DateFormat(
-                        'yyyyMMdd',
-                      ).format(DateTime.now());
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: initialDate,
+                      firstDate: DateTime(2024),
+                      lastDate: DateTime.now(),
+                      selectableDayPredicate: (DateTime date) {
+                        // 🍏 厳密なるカレンダー制限仕様 of 完成：観客席側も試合の実在する過去日だけを正確に自動点灯
+                        final dStr = DateFormat('yyyyMMdd').format(date);
+                        final todayStr = DateFormat(
+                          'yyyyMMdd',
+                        ).format(DateTime.now());
 
-                      return dStr == todayStr || availableDates.contains(dStr);
-                    },
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: isDark
-                              ? ColorScheme.dark(
-                                  primary: Colors.teal.shade300,
-                                  onPrimary: Colors.white,
-                                  surface: const Color(0xFF1C1C1E),
-                                  onSurface: Colors.white,
-                                )
-                              : ColorScheme.light(
-                                  primary: Colors.teal.shade700,
-                                  onPrimary: Colors.white,
-                                  surface: Colors.white,
-                                  onSurface: Colors.black87,
-                                ),
-                          dialogTheme: DialogThemeData(
-                            backgroundColor: isDark
-                                ? const Color(0xFF1C1C1E)
-                                : Colors.white,
+                        return dStr == todayStr ||
+                            availableDates.contains(dStr);
+                      },
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: isDark
+                                ? ColorScheme.dark(
+                                    primary: Colors.teal.shade300,
+                                    onPrimary: Colors.white,
+                                    surface: const Color(0xFF1C1C1E),
+                                    onSurface: Colors.white,
+                                  )
+                                : ColorScheme.light(
+                                    primary: Colors.teal.shade700,
+                                    onPrimary: Colors.white,
+                                    surface: Colors.white,
+                                    onSurface: Colors.black87,
+                                  ),
+                            dialogTheme: DialogThemeData(
+                              backgroundColor: isDark
+                                  ? const Color(0xFF1C1C1E)
+                                  : Colors.white,
+                            ),
                           ),
-                        ),
-                        child: child!,
-                      );
-                    },
-                  );
-
-                  if (picked != null) {
-                    ref.read(bunaiksenViewDateProvider.notifier).state = picked;
-                    final nextTournamentId =
-                        'bunaiksen_${DateFormat('yyyyMMdd').format(picked)}';
-                    final dojoId = ref.read(currentDojoIdProvider);
-                    if (!context.mounted) return;
-                    context.pushReplacement(
-                      '/bunaiksen-viewer-home/$nextTournamentId?role=viewer&dojoId=$dojoId',
+                          child: child!,
+                        );
+                      },
                     );
-                  }
-                },
-              ),
+
+                    if (picked != null) {
+                      ref.read(bunaiksenViewDateProvider.notifier).state =
+                          picked;
+                      final nextTournamentId =
+                          'bunaiksen_${DateFormat('yyyyMMdd').format(picked)}';
+                      final dojoId = ref.read(currentDojoIdProvider);
+                      if (!context.mounted) return;
+                      context.pushReplacement(
+                        '/bunaiksen-viewer-home/$nextTournamentId?role=viewer&dojoId=$dojoId',
+                      );
+                    }
+                  },
+                ),
               IconButton(
                 icon: const Icon(Icons.settings),
                 tooltip: '表示設定',
@@ -561,8 +564,9 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
     String dateDisplay,
   ) {
     final dojoId = ref.read(currentDojoIdProvider);
+    // 🛡️ ドメイン同期パッチ：部内戦の観客ホーム（ViewerBunaiksenHomeScreen）側QR共有リンクも、確実に本物のベータ環境（kendo-os-beta.web.app）を指すように修正
     final String shareUrl =
-        'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
+        'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
 
     showDialog(
       context: context,

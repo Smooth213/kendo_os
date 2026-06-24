@@ -45,6 +45,25 @@ class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
 class MockTournamentRepository extends Mock implements TournamentRepository {}
 
+class FakeGoRouter extends Fake implements GoRouter {
+  final bool mockCanPop;
+  FakeGoRouter({this.mockCanPop = false});
+
+  @override
+  bool canPop() => mockCanPop;
+
+  @override
+  void pop<T extends Object?>([T? result]) {}
+
+  @override
+  Future<T?> pushReplacement<T extends Object?>(
+    String location, {
+    Object? extra,
+  }) {
+    return Future.value(null);
+  }
+}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(<MatchModel>[]);
@@ -155,6 +174,7 @@ void main() {
       required Widget child,
       required bool isDark,
       List<Override> customOverrides = const [],
+      GoRouter? goRouter,
     }) {
       final baseOverrides = [
         sharedPreferencesProvider.overrideWithValue(prefs),
@@ -192,20 +212,39 @@ void main() {
         matchViewStateUserIdProvider.overrideWith((ref) => 'test_user_id'),
       ];
 
-      final router = GoRouter(
-        initialLocation: '/',
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => Scaffold(body: child),
-          ),
-        ],
-      );
+      final router =
+          goRouter ??
+          GoRouter(
+            initialLocation: '/',
+            routes: [
+              GoRoute(
+                path: '/',
+                builder: (context, state) => Scaffold(body: child),
+              ),
+            ],
+          );
 
       return ProviderScope(
         overrides: [...baseOverrides, ...customOverrides],
         child: Builder(
           builder: (context) {
+            if (goRouter != null) {
+              return MaterialApp(
+                themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+                theme: ThemeData(
+                  brightness: Brightness.light,
+                  splashFactory: NoSplash.splashFactory,
+                ),
+                darkTheme: ThemeData(
+                  brightness: Brightness.dark,
+                  splashFactory: NoSplash.splashFactory,
+                ),
+                home: InheritedGoRouter(
+                  goRouter: goRouter,
+                  child: Scaffold(body: child),
+                ),
+              );
+            }
             return MaterialApp.router(
               themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
               theme: ThemeData(
@@ -454,6 +493,7 @@ void main() {
         await tester.pumpWidget(
           buildTestableWidget(
             isDark: false,
+            goRouter: FakeGoRouter(mockCanPop: true),
             child: const ViewerBunaiksenHomeScreen(
               tournamentId: 'bunaiksen_20260623',
             ),
@@ -492,6 +532,7 @@ void main() {
         await tester.pumpWidget(
           buildTestableWidget(
             isDark: true,
+            goRouter: FakeGoRouter(mockCanPop: true),
             child: const ViewerBunaiksenHomeScreen(
               tournamentId: 'bunaiksen_20260623',
             ),

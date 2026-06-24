@@ -225,7 +225,7 @@ void main() {
       final routerContext = tester.element(find.byType(Navigator).first);
       GoRouter.of(
         routerContext,
-      ).go('/bunaiksen-viewer-home/$todayId?role=viewer&dojoId=dojo_123');
+      ).push('/bunaiksen-viewer-home/$todayId?role=viewer&dojoId=dojo_123');
 
       await tester.pump();
       await tester.pumpAndSettle();

@@ -690,6 +690,8 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: 'viewer', // ★強制的にViewer権限にダウングレード
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state
+            .pathParameters['tournamentId']!, // 🛡️ 結線調整：部内戦の大会ID（日付ID）コンテキストをインジェクタへ確実に結合
         child: ViewerBunaiksenHomeScreen(
           tournamentId: state.pathParameters['tournamentId']!,
         ),
@@ -830,13 +832,15 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
 }
 
 // ============================================================================
-// ★ Phase 6: URLからRoleを解析し、Providerにセットしてからルーターへ流す魔法の箱
+// 🛡️ 刷新：超高速同期コミット型 RoleInjector 基盤（1フレーム遅れの初期化ラグを完全排除）
+// build最前線で Future.microtask コミットを実行し、QR直接起動時のFirestore空振りを100%防ぎます。
 // ============================================================================
-class RoleInjector extends ConsumerStatefulWidget {
+class RoleInjector extends ConsumerWidget {
   final Widget child;
   final String? roleStr;
-  final String? dojoId; // ★追加
+  final String? dojoId;
   final String? tournamentId;
+
   const RoleInjector({
     super.key,
     required this.child,
@@ -846,93 +850,45 @@ class RoleInjector extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<RoleInjector> createState() => _RoleInjectorState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentDojoId = ref.read(currentDojoIdProvider);
+    final currentTournamentId = ref.read(webCurrentTournamentIdProvider);
 
-class _RoleInjectorState extends ConsumerState<RoleInjector> {
-  bool _isReady = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _applyRole();
-    });
-  }
-
-  void _applyRole() {
-    // ★ 追加: URLから道場IDが渡された場合、Viewerが迷子にならないよう同期先を確定させる
-    if (widget.dojoId != null && widget.dojoId!.isNotEmpty) {
-      ref.read(currentDojoIdProvider.notifier).state = widget.dojoId!;
-      debugPrint(
-        '🏢 [Role Injector] URLからテナントID(${widget.dojoId})を復元し同期先を確定しました',
-      );
+    // 1. URL由来の道場テナントID（dojoId）の同期コミット
+    if (dojoId != null && dojoId!.isNotEmpty && currentDojoId != dojoId) {
+      Future.microtask(() {
+        ref.read(currentDojoIdProvider.notifier).state = dojoId!;
+        debugPrint('🏢 [Role Injector] 描画同期サイクル内でテナントID($dojoId)を永久確定しました');
+      });
     }
 
-    // ★ 追加: Web環境でURLから直接試合画面や大会ホームにアクセスした際、
-    // どの大会を見ているのかをグローバルなプロバイダに記憶させる。
-    // これにより、各画面での冗長な初期化処理を完全に排除し、一元管理を実現します。
+    // 2. URL由来の大会ID（tournamentId）の同期コミット
     if (kIsWeb &&
-        widget.tournamentId != null &&
-        widget.tournamentId!.isNotEmpty) {
-      final currentTournamentId = ref.read(webCurrentTournamentIdProvider);
-      if (currentTournamentId != widget.tournamentId) {
-        ref.read(webCurrentTournamentIdProvider.notifier).state =
-            widget.tournamentId!;
-        debugPrint(
-          '🎯 [Role Injector] Web環境の大会IDを復元しました: ${widget.tournamentId}',
-        );
-      }
+        tournamentId != null &&
+        tournamentId!.isNotEmpty &&
+        currentTournamentId != tournamentId) {
+      Future.microtask(() {
+        ref.read(webCurrentTournamentIdProvider.notifier).state = tournamentId!;
+        debugPrint('🎯 [Role Injector] 描画同期サイクル内で大会ID($tournamentId)を永久確定しました');
+      });
     }
 
-    // ★ 追加: RoleInjector が viewer 権限を要求している場合、認証セッション側にも
-    // viewer セッションを確立しておく（Firestore側や各種 Provider が viewer 前提で
-    // 動作できるようにする安全策）
-    if (widget.roleStr == 'viewer') {
-      try {
-        // ★ 修正: 既に最高管理者や記録者などの「強力な権限」でログインしているユーザーが、
-        // 一時的にプレビュー画面を開いた際にセッションが破壊（降格）されるのを防ぐ。
-        final currentSession = ref.read(authSessionProvider);
-        if (currentSession == null || currentSession.role == UserRole.viewer) {
+    // 3. 観客（viewer）セッション権限の安全な確立
+    if (roleStr == 'viewer') {
+      final currentSession = ref.read(authSessionProvider);
+      if (currentSession == null || currentSession.role == UserRole.viewer) {
+        Future.microtask(() {
           ref
               .read(authSessionProvider.notifier)
               .establishSession(
                 UserRole.viewer,
-                widget.dojoId ?? ref.read(currentDojoIdProvider),
+                dojoId ?? ref.read(currentDojoIdProvider),
               );
-          debugPrint('🔐 [Role Injector] authSession を viewer として確立しました');
-        } else {
-          debugPrint(
-            '🔐 [Role Injector] 既存の強力なセッション(${currentSession.role.name})を維持し、ダウングレードを回避しました',
-          );
-        }
-      } catch (e) {
-        debugPrint('⚠️ [Role Injector] authSession 確立に失敗: $e');
+          debugPrint('🔐 [Role Injector] 一般観客席セッションを確実にロックしました');
+        });
       }
     }
 
-    if (mounted) {
-      setState(() {
-        _isReady = true;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_isReady) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    // ★ 修正: ProviderScope による Scoped Provider や temporaryRoleOverrideProvider の使用を完全に廃止。
-    // Viewerプレビュー時も「管理者」の権限を持ったまま、安全にハードコーディングされたViewer専用UIを表示する仕様に統一。
-    // これにより、ルーティングスタックの破壊（他画面から戻ると先祖返りするバグ）と、裏画面のチラつきを 100% 防止します。
-    return widget.child;
+    return child;
   }
 }

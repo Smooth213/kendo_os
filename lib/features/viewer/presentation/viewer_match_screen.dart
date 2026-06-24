@@ -30,8 +30,13 @@ class ViewerMatchScreen extends ConsumerWidget {
         ? null
         : ref.watch(viewerMatchProjectionProvider(matchId));
 
-    final tournamentId =
+    final queryTournamentId =
         GoRouterState.of(context).uri.queryParameters['tournamentId'] ?? '';
+    // 🛡️ 救済コンテキストフォールバック：URLパラメータに無い場合は、RoleInjectorがガッチリ保持しているグローバルキャッシュから安全に復元取得
+    final tournamentId = queryTournamentId.isNotEmpty
+        ? queryTournamentId
+        : (ref.watch(webCurrentTournamentIdProvider) ?? '');
+
     final asyncWebMatches = kIsWeb && tournamentId.isNotEmpty
         ? ref.watch(matchListByTournamentProvider(tournamentId))
         : null;
@@ -305,9 +310,10 @@ class ViewerMatchScreen extends ConsumerWidget {
   ) {
     final dojoId = ref.read(currentDojoIdProvider);
     final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
+    // 🛡️ ドメイン同期パッチ：QRコードから他の端末がスキャンした際にも、確実に正しいベータ環境（kendo-os-beta.web.app）の部屋に直着陸できるように修正
     final String shareUrl = isBunaiksen
-        ? 'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId'
-        : 'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
+        ? 'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId'
+        : 'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
 
     showDialog(
       context: context,

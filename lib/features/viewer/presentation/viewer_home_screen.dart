@@ -3001,9 +3001,9 @@ void _showShareDialog(
   String tournamentId,
 ) {
   final dojoId = ref.read(currentDojoIdProvider);
-  // ★ 修正：テナントID(dojoId)を含めることでViewerが全検索ルートを回避し一発で表示できるようにする
+  // 🛡️ ドメイン同期パッチ：大会ホーム画面側のQRコード共有URLも、確実に本物のベータ環境（kendo-os-beta.web.app）を指すように修正
   final String shareUrl =
-      'https://kendo-os.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
+      'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
 
   showDialog(
     context: context,

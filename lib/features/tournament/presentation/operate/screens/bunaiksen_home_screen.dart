@@ -678,8 +678,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     String dateDisplay,
   ) {
     final dojoId = ref.read(currentDojoIdProvider);
+    // 🛡️ ドメイン同期パッチ：部内戦の管理ホーム（BunaiksenHomeScreen）側QR共有リンクも、確実に本物のベータ環境（kendo-os-beta.web.app）を指すように修正
     final String shareUrl =
-        'https://kendo-os.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
+        'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
 
     showDialog(
       context: context,
