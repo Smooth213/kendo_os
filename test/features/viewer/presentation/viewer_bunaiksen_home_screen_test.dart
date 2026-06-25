@@ -5,19 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mockito/mockito.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus_platform_interface/share_plus_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_bunaiksen_home_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
-// GoRouterのスタック状態をモックするためのフェイククラス
+// GoRouterのスタック状態および遷移先パスを精密に追跡する拡張フェイククラス
 class FakeGoRouter extends Fake implements GoRouter {
   final bool mockCanPop;
+  String? lastPushedPath; // 進入した遷移先URLをガッチリ捕捉する記録スタック
+
   FakeGoRouter({this.mockCanPop = false});
 
   @override
@@ -25,6 +27,20 @@ class FakeGoRouter extends Fake implements GoRouter {
 
   @override
   void pop<T extends Object?>([T? result]) {}
+
+  @override
+  Future<T?> push<T extends Object?>(String location, {Object? extra}) {
+    lastPushedPath = location; // 画面から発行されたパスを物理フック
+    return Future.value(null);
+  }
+
+  @override
+  Future<T?> pushReplacement<T extends Object?>(
+    String location, {
+    Object? extra,
+  }) {
+    return Future.value(null);
+  }
 }
 
 // SharePlatform の呼び出しを検証するためのフェイククラス
@@ -59,7 +75,7 @@ void main() {
         redScore: 0,
         whiteScore: 0,
         status: 'in_progress',
-        order: 1.0,
+        order: 1,
         matchType: '部内戦',
         events: [],
       );
@@ -68,7 +84,6 @@ void main() {
       SharePlatform.instance = fakeSharePlatform;
     });
 
-    // 共通のテスト環境構築ヘルパー
     Widget createTestWidget({
       required GoRouter router,
       required List<Override> overrides,
@@ -90,7 +105,7 @@ void main() {
     testWidgets('①-a 【QR直接アクセス時】スタックが無い状態では、物理的に＜ボタンとカレンダーボタンが消滅すること', (
       WidgetTester tester,
     ) async {
-      final fakeRouter = FakeGoRouter(mockCanPop: false); // スタックなし（QR直接起動）
+      final fakeRouter = FakeGoRouter(mockCanPop: false);
 
       await tester.pumpWidget(
         createTestWidget(
@@ -108,7 +123,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 🛡️ アサート: QRアクセス時は戻るボタン(arrow_back_ios_new)もカレンダー(calendar_month)も存在しないこと
       expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
       expect(find.byIcon(Icons.calendar_month), findsNothing);
     });
@@ -116,7 +130,7 @@ void main() {
     testWidgets('①-b 【アプリ内遷移時】通常の画面遷移スタックがある状態では、＜ボタンとカレンダーボタンが正常表示されること', (
       WidgetTester tester,
     ) async {
-      final fakeRouter = FakeGoRouter(mockCanPop: true); // スタックあり
+      final fakeRouter = FakeGoRouter(mockCanPop: true);
 
       await tester.pumpWidget(
         createTestWidget(
@@ -134,7 +148,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 🛡️ アサート: 通常遷移時はボタンが物理的に存在すること
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
       expect(find.byIcon(Icons.calendar_month), findsOneWidget);
     });
@@ -160,23 +173,19 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 共有ボタン（QRコードアイコン）をタップしてダイアログを開く
         final shareButton = find.byIcon(Icons.qr_code_2);
         expect(shareButton, findsOneWidget);
         await tester.tap(shareButton);
         await tester.pumpAndSettle();
 
-        // 🛡️ アサート: ダイアログ内に QrImageView が存在すること
         final qrFinder = find.byType(QrImageView);
         expect(qrFinder, findsOneWidget);
 
-        // 「LINEやSNSでURLを送る」ボタンをタップして共有を実行
         final sendButton = find.text('LINEやSNSでURLを送る');
         expect(sendButton, findsOneWidget);
         await tester.tap(sendButton);
         await tester.pumpAndSettle();
 
-        // 🛡️ アサート: 共有されたテキストに正しいURLドメインおよびdojoIdが含まれていること
         expect(fakeSharePlatform.sharedText, isNotNull);
         expect(
           fakeSharePlatform.sharedText,
@@ -207,7 +216,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 🛡️ アサート: 専用画面の主要要素（タイトル、試合カード、選手名、VS、ステータス）がエラーなく描画されていること
       expect(find.text('2026/06/20 の記録 (観戦)'), findsOneWidget);
       expect(find.text('第1試合'), findsOneWidget);
       expect(find.text('山田 太郎'), findsOneWidget);
@@ -215,5 +223,77 @@ void main() {
       expect(find.text('VS'), findsOneWidget);
       expect(find.text('進行中'), findsOneWidget);
     });
+
+    testWidgets(
+      '④ 【UI形状同期検証】試合カードの margin が EdgeInsets.zero であり、操作員画面とサイズが完全一致していること',
+      (WidgetTester tester) async {
+        final fakeRouter = FakeGoRouter(mockCanPop: false);
+
+        await tester.pumpWidget(
+          createTestWidget(
+            router: fakeRouter,
+            overrides: [
+              bunaiksenMatchesProvider(
+                targetTournamentId,
+              ).overrideWithValue([testMatch]),
+              bunaiksenAvailableDatesProvider.overrideWith(
+                (ref) => Stream.value({'20260620'}),
+              ),
+              currentDojoIdProvider.overrideWith((ref) => 'test201'),
+            ],
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 🛡️ アサート: Cardを見つけ出し、余白の重複が排除され margin が零(zero)であることを徹底検証
+        final cardFinder = find.byType(Card);
+        expect(cardFinder, findsOneWidget);
+        final cardWidget = tester.widget<Card>(cardFinder);
+        expect(cardWidget.margin, EdgeInsets.zero);
+      },
+    );
+
+    testWidgets(
+      '⑤ 【閲覧スコープ防衛検証】試合カードをタップした際、スコア入力画面(/match)ではなく閲覧専用詳細画面(/viewer)へ遷移すること',
+      (WidgetTester tester) async {
+        final fakeRouter = FakeGoRouter(mockCanPop: false);
+
+        await tester.pumpWidget(
+          createTestWidget(
+            router: fakeRouter,
+            overrides: [
+              bunaiksenMatchesProvider(
+                targetTournamentId,
+              ).overrideWithValue([testMatch]),
+              bunaiksenAvailableDatesProvider.overrideWith(
+                (ref) => Stream.value({'20260620'}),
+              ),
+              currentDojoIdProvider.overrideWith((ref) => 'test201'),
+            ],
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // テスト用Keyで試合カード（InkWell）をピンポイント捕捉
+        final cardInkWellFinder = find.byKey(
+          Key('viewer_match_card_test_match_001'),
+        );
+        expect(cardInkWellFinder, findsOneWidget);
+
+        // タップを執行
+        await tester.tap(cardInkWellFinder);
+        await tester.pumpAndSettle();
+
+        // 🛡️ アサート: 操作員用パス '/match/' が完全に拒絶され、一般観客用の安全な一本速報パス '/viewer/' へ向かっていることを検証
+        expect(fakeRouter.lastPushedPath, isNotNull);
+        expect(fakeRouter.lastPushedPath, startsWith('/viewer/'));
+        expect(fakeRouter.lastPushedPath, contains('role=viewer'));
+        expect(fakeRouter.lastPushedPath, contains('dojoId=test201'));
+        expect(
+          fakeRouter.lastPushedPath,
+          isNot(contains('/match/')),
+        ); // 操作員画面への進入漏洩が0%であることを確定
+      },
+    );
   });
 }

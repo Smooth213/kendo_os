@@ -383,10 +383,8 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                             vertical: 4.0,
                           ),
                           child: Card(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
+                            margin: EdgeInsets
+                                .zero, // 🛡️ 整合性パッチ：操作員画面(bunaiksen_home_screen)の設計と1ミリの狂いもなく横幅・サイズを完全統一
                             elevation: 0,
                             color: bg,
                             shape: RoundedRectangleBorder(
@@ -403,8 +401,9 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(16),
                               onTap: () {
                                 final dojoId = ref.read(currentDojoIdProvider);
+                                // 🛡️ 閲覧スコープ防衛：観客席プレビューからの遷移のため、スコア入力画面(/match)ではなく、閲覧専用の一本速報詳細画面(/viewer)へ正しくルーティング
                                 context.push(
-                                  '/match/${match.id}?role=viewer&tournamentId=$tournamentId&dojoId=$dojoId',
+                                  '/viewer/${match.id}?role=viewer&tournamentId=$tournamentId&dojoId=$dojoId',
                                 );
                               },
                               child: Padding(
