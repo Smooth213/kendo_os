@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:isar_community/isar.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:async'; // 🌟 TimeoutExceptionのために追加
 
 import 'package:kendo_os/firebase_options.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
@@ -22,7 +23,6 @@ import 'package:kendo_os/admin/providers/metrics_provider.dart';
 class AppStartup {
   static Future<ProviderContainer> initialize() async {
     WidgetsFlutterBinding.ensureInitialized();
-    // ★ URLパスから「#」を取り除き、Webのディープリンクを正常に処理させる
     usePathUrlStrategy();
 
     try {
@@ -32,17 +32,14 @@ class AppStartup {
         );
         debugPrint('🚀 Firebase [DEFAULT] をクリーンに新規初期化しました。');
       } else {
-        // すでにインスタンスが存在する場合は、ネイティブ例外を避けるために呼び出し自体を完全にスキップする
         debugPrint(
           '📢 Firebase [DEFAULT] はすでに常駐しているため、初期化呼び出しを完全にスキップして既存インスタンスを安全に100%再利用します。',
         );
       }
     } catch (e) {
       debugPrint('⚠️ Firebase初期化のキャッチ: $e');
-      // 万が一想定外のエラーが発生した場合も、既存の常駐インスタンスに命を預けて後続のrunAppへ安全に流す
     }
 
-    // Crash監視プロトコル
     if (!kIsWeb) {
       FlutterError.onError = (errorDetails) {
         try {
@@ -60,46 +57,56 @@ class AppStartup {
       debugPrint('🚀 [Web WebAnalytics] Webアプリ版のブラウザ例外例外トラックを確立しました');
     }
 
-    // 匿名ログイン（ゲスト認証）
-    try {
-      if (FirebaseAuth.instance.currentUser == null) {
-        await FirebaseAuth.instance.signInAnonymously();
-        debugPrint('🛡️ [Auth] 匿名ゲスト認証を自動確立しました（ルーム参加準備完了）');
+    // 🛡️ オフライン時の起動ストール防止パッチ（型安全完全版）
+    () async {
+      try {
+        if (FirebaseAuth.instance.currentUser == null) {
+          // timeout時は例外をスローさせ、下のcatchブロックで安全にハンドリングして進行
+          await FirebaseAuth.instance.signInAnonymously().timeout(
+            const Duration(seconds: 2),
+            onTimeout: () {
+              throw TimeoutException('Auth 認証タイムアウト（オフライン運用に切り替えます）');
+            },
+          );
+          debugPrint('🛡️ [Auth] 匿名ゲスト認証を自動確立しました（ルーム参加準備完了）');
+        }
+      } catch (e) {
+        debugPrint('⚠️ [Auth] 匿名認証をスキップしてオフライン起動を継続します: $e');
       }
-    } catch (e) {
-      debugPrint('⚠️ [Auth] 匿名認証に失敗: $e');
-    }
+    }();
 
     // SharedPreferences
     final prefs = await SharedPreferences.getInstance();
 
-    if (!kIsWeb) {
-      final hasCleared =
-          prefs.getBool('has_cleared_corrupted_firestore_cache_v3') ?? false;
-      if (!hasCleared) {
-        try {
+    // 🌐 Web/ネイティブ両面の「現場継続エンジン」をここで安全に点火します
+    try {
+      if (kIsWeb) {
+        // Web（PWA）アプリ用のブラウザ永続キャッシュ（IndexedDB）を有効化
+        FirebaseFirestore.instance.settings = const Settings(
+          persistenceEnabled: true,
+          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+        );
+        debugPrint('🌐 [Firestore Web] ブラウザ永続キャッシュ（IndexedDB）を正常に活性化しました。');
+      } else {
+        // ネイティブアプリ（iOS/Android）用のキャッシュクリア＆ネットワーク開通設定
+        final hasCleared =
+            prefs.getBool('has_cleared_corrupted_firestore_cache_v3') ?? false;
+        if (!hasCleared) {
           await FirebaseFirestore.instance.terminate();
           await FirebaseFirestore.instance.clearPersistence();
           await prefs.setBool('has_cleared_corrupted_firestore_cache_v3', true);
-          debugPrint('🧹 [Firestore] 古いローカルキャッシュを強制ワイプしました（スタック完全解消 v3）');
-        } catch (e) {
-          debugPrint('⚠️ [Firestore] キャッシュワイプに失敗: $e');
+          debugPrint('🧹 [Firestore] 古いローカルキャッシュを強制ワイプしました');
         }
+        await FirebaseFirestore.instance.enableNetwork().timeout(
+          const Duration(seconds: 1),
+          onTimeout: () =>
+              debugPrint('⏳ [Firestore] ネットワーク開通接続タイムアウト（ローカルモード移行）'),
+        );
       }
-
-      try {
-        await FirebaseFirestore.instance.enableNetwork();
-        debugPrint('🌐 [Firestore] ネットワーク接続を強制的に有効化しました');
-
-        FirebaseFirestore.instance
-            .collectionGroup('matches')
-            .limit(1)
-            .snapshots()
-            .listen((_) {});
-      } catch (_) {}
+    } catch (e) {
+      debugPrint('⚠️ [Firestore] 現場継続エンジンの初期化をスキップして起動を継続します: $e');
     }
 
-    // Isar（ローカルDB）の起動
     Isar? isar;
     if (kIsWeb) {
       isar = null;
@@ -114,7 +121,6 @@ class AppStartup {
       ], directory: dir.path);
     }
 
-    // ProviderContainer作成
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),

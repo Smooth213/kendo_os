@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
@@ -34,6 +35,13 @@ final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
   return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
 });
 
+// 🌟 物理ネットワーク接続を監視するプロバイダ
+final connectivityProvider = StreamProvider.autoDispose<bool>((ref) {
+  return Connectivity().onConnectivityChanged.map((result) {
+    return result.contains(ConnectivityResult.none);
+  });
+});
+
 class HomeScreen extends ConsumerWidget {
   final String tournamentId;
   const HomeScreen({super.key, required this.tournamentId});
@@ -45,9 +53,22 @@ class HomeScreen extends ConsumerWidget {
     final permissions = ref.watch(permissionProvider);
     final bool isReadOnly = permissions.isReadOnly;
     final Color textColor = isDark ? Colors.white : Colors.black;
-    // 🌟 全環境共通：アーカイブデータ蓄積時のIsar全件監視ストールを防ぎ、試合リストが消失する不具合を解決。
-    // 常に「対象大会のみ」をピンポイントで取得する専用プロバイダを使用して爆速化・安定化させます。
+
     final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
+
+    // =========================================================================
+    // 🔍 【原因特定用】デバッグログ強制出力セクション
+    // =========================================================================
+    final isPhysicalOffline = ref.watch(connectivityProvider).value ?? false;
+    debugPrint('╔═══════════════ kendo_os OFFLINE DEBUG ═══════════════╗');
+    debugPrint('║ 📡 物理ネットワーク切断フラグ (isPhysicalOffline): $isPhysicalOffline');
+    debugPrint('║ 📊 Firestoreストリーム状態 (matchState):');
+    debugPrint('║    - isLoading: ${asyncMatches.isLoading}');
+    debugPrint('║    - hasError: ${asyncMatches.hasError}');
+    debugPrint('║    - hasValue: ${asyncMatches.hasValue}');
+    debugPrint('║    - 件数: ${asyncMatches.value?.length ?? 0}件');
+    debugPrint('╚══════════════════════════════════════════════════════╝');
+
     final allMatchesList = List<MatchModel>.from(asyncMatches.value ?? [])
       ..sort((a, b) => a.order.compareTo(b.order));
 
@@ -89,15 +110,18 @@ class HomeScreen extends ConsumerWidget {
           children: [
             // =========================================================================
             // 🛡️ Phase 3 - STEP 3-3 要件：オフライン画面防衛インジケータバナー
-            // 試合中に通信が途絶した際、操作員に「Isarによる现场継続エンジンが正常稼働していること」を
-            // 明示し、視覚的な安心感を提供します。画面サイズを崩さないオーバーレイバー設計です。
             // =========================================================================
             Builder(
               builder: (context) {
-                // 将来的に connectivity_plus または SyncEngine の保留キュー件数からリアルタイム判定
-                // 暫定的にローカルDBストリームの異常状態をネットワーク切断として扱う
-                final hasNetworkIssue = ref.watch(matchStreamProvider).hasError;
-                if (!hasNetworkIssue) return const SizedBox.shrink();
+                // どのような条件であっても、ログに上がった状態を元にジャンプ判定を執行
+                final isOfflineMode =
+                    isPhysicalOffline ||
+                    asyncMatches.hasError ||
+                    asyncMatches.isLoading;
+
+                if (!isOfflineMode) {
+                  return const SizedBox.shrink();
+                }
 
                 return SafeArea(
                   bottom: false,
@@ -202,7 +226,6 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 body: Column(
                   children: [
-                    // --- アクティブバナー ---
                     if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
                       Container(
                         width: double.infinity,
@@ -220,8 +243,7 @@ class HomeScreen extends ConsumerWidget {
                           ],
                         ),
                         child: Column(
-                          mainAxisSize:
-                              MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             if (uniqueInProgress.isNotEmpty)
                               _buildCallRow(
@@ -259,8 +281,6 @@ class HomeScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
-
-                    // --- 操作メニュー（権限に応じて表示を制御） ---
                     if (!isReadOnly)
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -271,8 +291,6 @@ class HomeScreen extends ConsumerWidget {
                           tournamentId: tournamentId,
                         ),
                       ),
-
-                    // --- タイムラインリスト（スクロール領域） ---
                     Expanded(
                       child: MatchTimelineList(tournamentId: tournamentId),
                     ),
@@ -292,7 +310,6 @@ class HomeScreen extends ConsumerWidget {
     String tournamentId,
   ) {
     final dojoId = ref.read(currentDojoIdProvider);
-    // 🛡️ ドメイン同期パッチ：管理スタッフ用の大会ホーム（HomeScreen）側QR共有リンクも、確実に本物のベータ環境（kendo-os-beta.web.app）を指すように修正
     final String shareUrl =
         'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
     showDialog(
@@ -357,7 +374,7 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildCallRow(String label, dynamic match, Color textColor) {
     return Column(
-      mainAxisSize: MainAxisSize.min, // ★ 修正: Web特有のレイアウト（無限高）エラー対策
+      mainAxisSize: MainAxisSize.min,
       children: [
         if (match.note.isNotEmpty)
           Text(

@@ -80,11 +80,13 @@ class LocalMatchRepository {
     } catch (e, stack) {
       // ★ Phase 7: 万が一ローカルDBが破損していた場合の緊急回避
       debugPrint('🔥 [Critical] ローカルDBからの読み込みに失敗しました(破損の可能性): $e');
-      FirebaseCrashlytics.instance.recordError(
-        e,
-        stack,
-        reason: 'Local DB Read Failure',
-      );
+      FirebaseCrashlytics.instance
+          .recordError(e, stack, reason: 'Local DB Read Failure')
+          .catchError((crashlyticsError) {
+            debugPrint(
+              '⚠️ [Crashlytics] recordError 送信失敗(モック環境等): $crashlyticsError',
+            );
+          });
       return null;
     }
   }
@@ -122,11 +124,13 @@ class LocalMatchRepository {
       });
     } catch (e, stack) {
       debugPrint('🔥 [Storage Error] ローカルDBへの保存に失敗しました: $e');
-      FirebaseCrashlytics.instance.recordError(
-        e,
-        stack,
-        reason: 'Local DB Save Failure',
-      );
+      FirebaseCrashlytics.instance
+          .recordError(e, stack, reason: 'Local DB Save Failure')
+          .catchError((crashlyticsError) {
+            debugPrint(
+              '⚠️ [Crashlytics] recordError 送信失敗(モック環境等): $crashlyticsError',
+            );
+          });
 
       // ★ Phase 7: 最後の一線 - DBがロックされていても、JSONとして緊急避難保存を試みる
       try {
@@ -142,11 +146,13 @@ class LocalMatchRepository {
         );
       } catch (innerE, innerStack) {
         debugPrint('🚨 [Fatal] 緊急バックアップすら失敗しました: $innerE');
-        FirebaseCrashlytics.instance.recordError(
-          innerE,
-          innerStack,
-          reason: 'Emergency Backup Failure',
-        );
+        FirebaseCrashlytics.instance
+            .recordError(innerE, innerStack, reason: 'Emergency Backup Failure')
+            .catchError((crashlyticsError) {
+              debugPrint(
+                '⚠️ [Crashlytics] recordError 送信失敗(モック環境等): $crashlyticsError',
+              );
+            });
       }
 
       rethrow;

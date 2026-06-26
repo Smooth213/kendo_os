@@ -481,7 +481,7 @@ packages:
     source: hosted
     version: "4.11.0"
   firebase_core_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: firebase_core_platform_interface
       sha256: "913e7c96ef83a80ad7e1c3f8a059167b3de23b5d5e07fa3ed8f11abe24de98b6"
@@ -505,7 +505,7 @@ packages:
     source: hosted
     version: "5.2.4"
   firebase_crashlytics_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: firebase_crashlytics_platform_interface
       sha256: cbedfe34081c4ad5c4e0558165383d4fa6b8fd70ae6e696190aad345adbb346c
@@ -1124,7 +1124,7 @@ packages:
     source: hosted
     version: "2.2.1"
   path_provider_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: path_provider_platform_interface
       sha256: "484838772624c3a4b94f1e44a3e19897fee738f2d5c4ce448443b0417f7c9dda"
