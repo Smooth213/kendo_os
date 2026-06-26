@@ -211,6 +211,10 @@ void main() {
       late Directory documentsDir;
 
       setUpAll(() async {
+        // ネットワーク通信をシミュレートする場合、HttpOverridesをnullにするか、
+        // 特定のMockクライアントを用意してください。
+        HttpOverrides.global = null; // 物理通信をシミュレート可能にする
+
         // Firebase Platform の差し替えを行い、initializeApp() を安全に成功させる
         FirebasePlatform.instance = FakeFirebasePlatform();
         await Firebase.initializeApp();
