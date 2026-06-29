@@ -530,15 +530,10 @@ class MatchTimelineList extends ConsumerWidget {
                   final actualGroupedMatches = <String, List<MatchModel>>{};
                   for (var entry in catGroupedMatches.entries) {
                     final firstMatch = entry.value.first;
-                    // ★ 修正: 「リーグ戦フラグ」を明示的にチェック
                     final bool isLeagueMatch = firstMatch.note.contains(
                       '[リーグ戦]',
                     );
-
-                    // 選手・個人戦と明示されている性質のものは、件数に関わらず確実に個人戦アコーディオンへ強制パージ
-                    // ただし、リーグ戦や勝ち抜き戦の一部である場合はこの強制パージから除外する
                     final bool isPureIndividual =
-                        !isLeagueMatch &&
                         !firstMatch.isKachinuki &&
                         (firstMatch.matchType == 'individual' ||
                             firstMatch.matchType == '選手' ||
@@ -548,7 +543,6 @@ class MatchTimelineList extends ConsumerWidget {
                         (entry.value.length > 1 || firstMatch.isKachinuki)) {
                       actualGroupedMatches[entry.key] = entry.value;
                     } else if (isLeagueMatch) {
-                      // リーグ戦であれば、個人戦であってもグループ構造を維持する
                       actualGroupedMatches[entry.key] = entry.value;
                     } else {
                       catIndividualMatches.addAll(entry.value);

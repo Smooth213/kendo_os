@@ -734,7 +734,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [Locale('ja', 'JP')],
+      supportedLocales: const [Locale('ja', 'JP'), Locale('en', 'US')],
       // 🔒 遷移後の画面（child）の真上を強制的にジャックし、どの画面にいてもバナーを最前面へ絶対露出させます
       builder: (context, child) {
         if (child == null) return const SizedBox.shrink();

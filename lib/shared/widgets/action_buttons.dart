@@ -265,26 +265,20 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
                   ),
                 ),
                 child: Stack(
-                  fit: StackFit.expand, // 子要素を親に合わせる
                   alignment: Alignment.center,
                   children: [
-                    // 1. ボタン本体のテキスト
-                    Column(
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              widget.isFoul ? '反則' : widget.label,
-                              textAlign: TextAlign.center,
-                              style: _getTextStyle(isTablet, isDark),
-                              strutStyle: const StrutStyle(
-                                forceStrutHeight: true,
-                                height: 1.0,
-                              ),
-                            ),
-                          ),
+                    // 1. ボタン本体のテキスト（上下左右完全中央ロック構造）
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      alignment: Alignment.center, // 🌟 垂直・水平方向の完全な中央に強制整列
+                      child: Text(
+                        widget.isFoul ? '反則' : widget.label,
+                        textAlign: TextAlign.center,
+                        style: _getTextStyle(isTablet, isDark).copyWith(
+                          height: 1.0, // 🌟 フォント固有の暗黙の上下余白（ベースラインの遊び）を完全に均等化
                         ),
-                      ],
+                      ),
                     ),
                     // 2. ゲージ（最前面）
                     if (_isHolding)

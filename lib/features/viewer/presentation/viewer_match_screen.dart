@@ -5,7 +5,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb用
 
-import 'package:kendo_os/shared/widgets/scoreboard.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
@@ -14,11 +13,13 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 // ★ Phase 10: 運営モードへの最速復帰用プロバイダーとロール定義のインポート
-import 'package:kendo_os/shared/domain/entities/user_role.dart';
-import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/widgets/scoreboard.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 
 class ViewerMatchScreen extends ConsumerWidget {
   final String matchId;
@@ -170,17 +171,46 @@ class ViewerMatchScreen extends ConsumerWidget {
         ),
         body: Column(
           children: [
-            // ★ 1. ステータスバー（Phase 10 クイックモード切替導線を統合）
+            // ★ 1. ステータスバー
             _buildStatusBar(context, ref, projection),
 
-            // 2. スコアボード
+            // 2. 特大・高視認性スコアボード
             Expanded(
+              child: LargeViewerScoreboard(
+                projection: projection,
+                activeMatch: activeMatch,
+                isDark: isDark,
+              ),
+            ),
+
+            SizedBox(
+              width: 0,
+              height: 0,
               child: ProviderScope(
                 overrides: [
                   scoreboardMatchIdProvider.overrideWithValue(matchId),
                   scoreboardNameTapProvider.overrideWithValue(null),
                   if (activeMatch != null)
                     scoreboardMatchProvider.overrideWithValue(activeMatch),
+                  matchViewStateProvider(matchId).overrideWith((ref) {
+                    return MatchViewState(
+                      scoreText: '0 - 0',
+                      redScore: 0,
+                      whiteScore: 0,
+                      isEncho: false,
+                      winner: null,
+                      lastEventText: '',
+                      canUndo: false,
+                      statusText: '',
+                      syncStatus: SyncStatus.synced,
+                      isViewOnly: true,
+                      isInputLocked: true,
+                      isAllDone: false,
+                      isTie: false,
+                      redCleanName: 'hidden_red\u200B',
+                      whiteCleanName: 'hidden_white\u200B',
+                    );
+                  }),
                 ],
                 child: const MatchScoreboard(),
               ),
@@ -191,7 +221,6 @@ class ViewerMatchScreen extends ConsumerWidget {
     );
   }
 
-  // ★ Phase 10: 現場運営スタッフが3タップ以内で試合作成・入力へ戻れる動的ヘッダー
   Widget _buildStatusBar(
     BuildContext context,
     WidgetRef ref,
@@ -204,39 +233,16 @@ class ViewerMatchScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.visibility, color: Colors.white, size: 16),
-              const SizedBox(width: 6),
-              const Text(
+              Icon(Icons.visibility, color: Colors.white, size: 16),
+              SizedBox(width: 6),
+              Text(
                 '閲覧モード',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
-                ),
-              ),
-              const SizedBox(width: 8),
-              // クイック切替用ボタン（現場での迷子を物理的にゼロにする）
-              TextButton(
-                style: TextButton.styleFrom(
-                  // ★ 修正：非推奨の withOpacity(0.2) を最新の withValues(alpha: 0.2) へ刷新
-                  backgroundColor: Colors.orangeAccent.withValues(alpha: 0.2),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                onPressed: () => _showModeSwitchDialog(context, ref),
-                child: const Text(
-                  '運営モードへ切替',
-                  style: TextStyle(
-                    color: Colors.orangeAccent,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
               ),
             ],
@@ -254,49 +260,6 @@ class ViewerMatchScreen extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ★ Phase 10: 運営モードへの切替確認ポップアップダイアログ
-  void _showModeSwitchDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text(
-          'モード切替確認',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        content: const Text(
-          '現在の端末を「閲覧専用」から「運営者（Operator）」に変更しますか？\n変更すると、試合作成やスコア入力画面への進入が可能になります。',
-          style: TextStyle(fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orangeAccent,
-              foregroundColor: Colors.black,
-            ),
-            onPressed: () {
-              // 1タップ目: 状態を運営者へ書き換え（MatchRouterが即座に検知して画面を自動再描画します）
-              ref
-                  .read(authSessionProvider.notifier)
-                  .establishSession(
-                    UserRole.operator,
-                    ref.read(currentDojoIdProvider),
-                  );
-              Navigator.pop(ctx); // 2タップ目: ダイアログを閉じる
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('運営者モードへ切り替えました。試合操作が可能です。')),
-              );
-            },
-            child: const Text('運営モードへ変更'),
           ),
         ],
       ),
@@ -371,6 +334,468 @@ class ViewerMatchScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class LargeViewerScoreboard extends StatelessWidget {
+  final MatchProjection projection;
+  final MatchModel? activeMatch;
+  final bool isDark;
+
+  const LargeViewerScoreboard({
+    super.key,
+    required this.projection,
+    required this.activeMatch,
+    required this.isDark,
+  });
+
+  String _cleanName(String name) {
+    if (name.contains('欠員')) return '(欠員)';
+    if (!name.contains(':')) return name.trim();
+    return name.split(':').last.replaceAll(')', '').trim();
+  }
+
+  String _formatDuration(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  int _getFoulCount(Side side) {
+    if (activeMatch == null) return 0;
+    final engine = KendoRuleEngine();
+    final activeEvents = engine.filterActiveEvents(activeMatch!.events);
+    return activeEvents
+        .where(
+          (e) => e.side == side && (e.isHansoku || e.type == PointType.hansoku),
+        )
+        .length;
+  }
+
+  String _getWinner(MatchModel? match) {
+    if (match == null) {
+      // フォールバック: projectionのスコアから判定
+      if (projection.redScore > projection.whiteScore) return 'red';
+      if (projection.whiteScore > projection.redScore) return 'white';
+      return 'none';
+    }
+
+    final isFinished = match.status == 'approved' || match.status == 'finished';
+    if (!isFinished) return 'none';
+
+    if (match.redScore > match.whiteScore) {
+      return 'red';
+    } else if (match.whiteScore > match.redScore) {
+      return 'white';
+    } else {
+      // 引き分け時、代表戦等の決着判定
+      final hasRedHantei = match.events.any(
+        (e) =>
+            !e.isCanceled && e.side == Side.red && e.type == PointType.hantei,
+      );
+      final hasWhiteHantei = match.events.any(
+        (e) =>
+            !e.isCanceled && e.side == Side.white && e.type == PointType.hantei,
+      );
+      final hasRedFusen = match.events.any(
+        (e) => !e.isCanceled && e.side == Side.red && e.type == PointType.fusen,
+      );
+      final hasWhiteFusen = match.events.any(
+        (e) =>
+            !e.isCanceled && e.side == Side.white && e.type == PointType.fusen,
+      );
+
+      if (hasRedHantei || hasRedFusen) {
+        return 'red';
+      } else if (hasWhiteHantei || hasWhiteFusen) {
+        return 'white';
+      } else {
+        return 'draw';
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isPortrait = constraints.maxHeight > constraints.maxWidth;
+        if (isPortrait) {
+          return _buildPortraitLayout(context);
+        } else {
+          return _buildLandscapeLayout(context);
+        }
+      },
+    );
+  }
+
+  Widget _buildPortraitLayout(BuildContext context) {
+    final redName = _cleanName(projection.redName);
+    final whiteName = _cleanName(projection.whiteName);
+    final redFouls = _getFoulCount(Side.red);
+    final whiteFouls = _getFoulCount(Side.white);
+
+    final isFinished =
+        projection.status == 'approved' || projection.status == 'finished';
+    final winner = _getWinner(activeMatch);
+    final isRedWinner = isFinished && winner == 'red';
+    final isWhiteWinner = isFinished && winner == 'white';
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // 🔴 赤選手エリア
+          Expanded(
+            child: _buildPlayerCard(
+              context: context,
+              side: Side.red,
+              name: redName,
+              displays: projection.redDisplays,
+              foulCount: redFouls,
+              isWinner: isRedWinner,
+              cardColor: isDark ? const Color(0xFF2C1616) : Colors.red.shade50,
+              textColor: isDark ? Colors.red.shade300 : Colors.red.shade800,
+            ),
+          ),
+
+          // ── 中央情報エリア (VS / スコア / タイマー) ──
+          _buildCenterDivider(isPortrait: true),
+
+          // ⚪ 白選手エリア
+          Expanded(
+            child: _buildPlayerCard(
+              context: context,
+              side: Side.white,
+              name: whiteName,
+              displays: projection.whiteDisplays,
+              foulCount: whiteFouls,
+              isWinner: isWhiteWinner,
+              cardColor: isDark
+                  ? const Color(0xFF1C2430)
+                  : Colors.blueGrey.shade50,
+              textColor: isDark
+                  ? Colors.grey.shade300
+                  : Colors.blueGrey.shade800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLandscapeLayout(BuildContext context) {
+    final redName = _cleanName(projection.redName);
+    final whiteName = _cleanName(projection.whiteName);
+    final redFouls = _getFoulCount(Side.red);
+    final whiteFouls = _getFoulCount(Side.white);
+
+    final isFinished =
+        projection.status == 'approved' || projection.status == 'finished';
+    final winner = _getWinner(activeMatch);
+    final isRedWinner = isFinished && winner == 'red';
+    final isWhiteWinner = isFinished && winner == 'white';
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        children: [
+          // 🔴 赤選手エリア
+          Expanded(
+            child: _buildPlayerCard(
+              context: context,
+              side: Side.red,
+              name: redName,
+              displays: projection.redDisplays,
+              foulCount: redFouls,
+              isWinner: isRedWinner,
+              cardColor: isDark ? const Color(0xFF2C1616) : Colors.red.shade50,
+              textColor: isDark ? Colors.red.shade300 : Colors.red.shade800,
+            ),
+          ),
+
+          // ── 中央情報エリア (VS / スコア / タイマー) ──
+          _buildCenterDivider(isPortrait: false),
+
+          // ⚪ 白選手エリア
+          Expanded(
+            child: _buildPlayerCard(
+              context: context,
+              side: Side.white,
+              name: whiteName,
+              displays: projection.whiteDisplays,
+              foulCount: whiteFouls,
+              isWinner: isWhiteWinner,
+              cardColor: isDark
+                  ? const Color(0xFF1C2430)
+                  : Colors.blueGrey.shade50,
+              textColor: isDark
+                  ? Colors.grey.shade300
+                  : Colors.blueGrey.shade800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlayerCard({
+    required BuildContext context,
+    required Side side,
+    required String name,
+    required List<PointDisplay> displays,
+    required int foulCount,
+    required bool isWinner,
+    required Color cardColor,
+    required Color textColor,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isWinner
+              ? Colors.amber.shade600
+              : (isDark ? Colors.white10 : Colors.black12),
+          width: isWinner ? 4.0 : 1.0,
+        ),
+        boxShadow: isWinner
+            ? [
+                BoxShadow(
+                  color: Colors.amber.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                ),
+              ]
+            : [],
+      ),
+      padding: const EdgeInsets.all(16.0),
+      child: FittedBox(
+        fit: BoxFit.contain, // 🛡️ 究極のレイアウト崩れ・オーバーフロー防止
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 勝者インジケーター
+            if (isWinner)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.emoji_events,
+                      color: Colors.amber.shade600,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '勝者',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber.shade600,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // 選手名
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 48, // 🌟 視認性を高める48pt
+                fontWeight: FontWeight.w900,
+                color: textColor,
+                letterSpacing: 1.5,
+              ),
+              maxLines: 1,
+            ),
+
+            const SizedBox(height: 16),
+
+            // 🌟 技マーク（メ、コ、ド、ツ、反、判定など）＆ 勝敗確定時の丸囲み
+            _buildLargePointBox(displays, isWinner, side),
+
+            const SizedBox(height: 12),
+
+            // 反則表示 (▲)
+            if (foulCount > 0)
+              Text(
+                List.filled(foulCount, '▲').join(''),
+                style: const TextStyle(
+                  fontSize: 28, // 反則マークも特大表示
+                  color: Colors.amber,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLargePointBox(
+    List<PointDisplay> displays,
+    bool isWinner,
+    Side side,
+  ) {
+    final color = side == Side.red
+        ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
+        : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade800);
+
+    return SizedBox(
+      width: 120,
+      height: 120,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // 🏆 勝敗がついた際は、2本の取得枠全体を大きく丸で囲む（公式記録と同様の仕様）
+          if (isWinner)
+            Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: color.withValues(alpha: 0.6),
+                  width: 3.5, // 存在感のある太い丸枠
+                ),
+              ),
+            ),
+
+          // 1本目のポイント（左上配置）
+          if (displays.isNotEmpty)
+            Positioned(
+              top: 14,
+              left: 16,
+              child: _buildPointBadge(displays[0], color),
+            ),
+
+          // 2本目のポイント（右下配置）
+          if (displays.length > 1)
+            Positioned(
+              bottom: 14,
+              right: 16,
+              child: _buildPointBadge(displays[1], color),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPointBadge(PointDisplay pd, Color color) {
+    const double fs = 24; // 🌟 24pt
+    const double badgeSize = 42; // 🌟 42pxのバッジ
+
+    // ３本勝負の合計１本目のみ◯で囲む（'反'や'判定'等も含めすべて）
+    if (pd.isFirstMatchPoint) {
+      return Container(
+        width: badgeSize,
+        height: badgeSize,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: color.withValues(alpha: isDark ? 0.7 : 1.0),
+            width: 2.5,
+          ),
+        ),
+        child: Text(
+          pd.mark == '判定' ? '判' : pd.mark,
+          style: TextStyle(
+            fontSize: fs,
+            fontWeight: FontWeight.bold,
+            color: color,
+            height: 1.0,
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        width: badgeSize,
+        height: badgeSize,
+        alignment: Alignment.center,
+        child: Text(
+          pd.mark == '判定' ? '判' : pd.mark,
+          style: TextStyle(
+            fontSize: fs,
+            fontWeight: FontWeight.w900,
+            color: color,
+            height: 1.0,
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildCenterDivider({required bool isPortrait}) {
+    final timerText = _formatDuration(projection.remainingSeconds);
+    final isTimerRunning = projection.timerIsRunning;
+
+    // タイマーのテキストカラー
+    final timerColor = isTimerRunning
+        ? Colors.orangeAccent
+        : (isDark ? Colors.white70 : Colors.black87);
+
+    final content = Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E24) : Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isTimerRunning ? Colors.orangeAccent : Colors.transparent,
+          width: 1.5,
+        ),
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.timer, color: timerColor, size: 28),
+            const SizedBox(width: 8),
+            Text(
+              timerText,
+              style: TextStyle(
+                fontSize: 32, // 🌟 タイマーも特大表示
+                fontWeight: FontWeight.bold,
+                fontFamily: 'monospace',
+                color: timerColor,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // スコア対比
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.indigo.shade600,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '${projection.redScore} - ${projection.whiteScore}',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: isPortrait ? 16.0 : 0.0,
+        horizontal: isPortrait ? 0.0 : 16.0,
+      ),
+      child: Center(child: content),
     );
   }
 }

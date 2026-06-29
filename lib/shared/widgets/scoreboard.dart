@@ -80,7 +80,7 @@ class MatchScoreboard extends ConsumerWidget {
     final matchId = ref.watch(scoreboardMatchIdProvider);
     final onNameTap = ref.watch(scoreboardNameTapProvider);
 
-    // ★ 修正: 親から直接最新のMatchModelが注入されていればそれを優先使用する (Webでの入力遅延防止)
+    // ★ 修正: 親から直接最新 of MatchModelが注入されていればそれを優先使用する (Webでの入力遅延防止)
     MatchModel? match = ref.watch(scoreboardMatchProvider);
 
     match ??= kIsWeb
@@ -98,36 +98,47 @@ class MatchScoreboard extends ConsumerWidget {
     final ptsMap = calculatePointDisplays.execute(match);
     final viewState = ref.watch(matchViewStateProvider(matchId));
 
-    // ★修正：Columnの柔軟性を確保するために、ここを Stack に戻します
-    // ただし、インジケーターは「結果がある時だけ」浮かび上がるようにします。
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // スコアボード本体
-        Row(
-          children: [
-            _buildScoreColumn(
-              context,
-              Side.red,
-              match,
-              ptsMap,
-              viewState,
-              onNameTap,
-            ),
-            _buildScoreColumn(
-              context,
-              Side.white,
-              match,
-              ptsMap,
-              viewState,
-              onNameTap,
-            ),
-          ],
-        ),
-        // 結果表示用：結果がある時だけ表示（Stackで重ねることでレイアウト崩れを防ぐ）
-        if (viewState.winner != null || viewState.isTie)
-          _buildResultOverlay(context, viewState),
-      ],
+    final scoreboardRow = SizedBox(
+      width: 800,
+      height: 320, // ★ 高さの無駄な余白を詰めるため 380 から 320 に圧縮
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildScoreColumn(
+            context,
+            Side.red,
+            match,
+            ptsMap,
+            viewState,
+            onNameTap,
+          ),
+          _buildScoreColumn(
+            context,
+            Side.white,
+            match,
+            ptsMap,
+            viewState,
+            onNameTap,
+          ),
+        ],
+      ),
+    );
+
+    // ★修正：二段（結果バッジが上、スコアボードが下）になるようにColumnで配置し、上に被らないようにする
+    final showResult = viewState.winner != null || viewState.isTie;
+
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: showResult
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildResultOverlay(context, viewState),
+                const SizedBox(height: 16),
+                scoreboardRow,
+              ],
+            )
+          : scoreboardRow,
     );
   }
 
@@ -150,134 +161,145 @@ class MatchScoreboard extends ConsumerWidget {
         ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
         : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade800);
 
-    return Expanded(
-      child: FittedBox(
-        fit: BoxFit.contain, // ★ BoxFit.scaleDown から変更
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(height: isFinished ? 72 : 24),
-            GestureDetector(
-              onTap: onNameTap != null ? () => onNameTap(side.name) : null,
-              child: Container(
-                height: 44,
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF1C1C1E)
-                      : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown, // ★ 枠からはみ出る長い名前のみ縮小し、短い名前は最大サイズで左右統一
-                  child: Text(
-                    side == Side.red
-                        ? viewState.redCleanName
-                        : viewState.whiteCleanName,
-                    style: TextStyle(
-                      fontSize: 28, // ★ 左右共通の最大フォントサイズに設定
-                      fontWeight: FontWeight.w900,
-                      color: nameColor,
-                      letterSpacing: 1.2,
-                    ),
-                    textAlign: TextAlign.center,
+    return SizedBox(
+      width: 380, // 左右均等な幅を明示的に確保
+      height: 320, // ★ 380 から 320 に圧縮
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center, // 垂直中央ロックの前提
+        children: [
+          const SizedBox(height: 16), // ★ 余白圧縮 (24 -> 16)
+          GestureDetector(
+            onTap: onNameTap != null ? () => onNameTap(side.name) : null,
+            child: Container(
+              height: 54, // ★ 選手名表示サイズに合わせて高さを拡張
+              alignment: side == Side.red
+                  ? Alignment
+                        .centerRight // 赤側は右寄せで中央に対比
+                  : Alignment.centerLeft, // 白側は左寄せで中央に対比
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown, // 🌟 基本は40ptで表示、長い名前の時だけ自動縮小
+                alignment: side == Side.red
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Text(
+                  side == Side.red
+                      ? viewState.redCleanName
+                      : viewState.whiteCleanName,
+                  style: TextStyle(
+                    fontSize: 40, // 🌟 視認性をさらに高める40ptへサイズアップ
+                    fontWeight: FontWeight.w900, // 力強い超太字 (w900)
+                    color: nameColor,
+                    height: 1.2,
+                    letterSpacing: 1.2,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis, // 🛡️ 究極のレイアウト崩れ防衛
+                  textAlign: side == Side.red
+                      ? TextAlign.right
+                      : TextAlign.left,
                 ),
               ),
             ),
+          ),
 
-            const SizedBox(height: 16),
-            // ポイントアイコンの拡大
-            SizedBox(
-              width: 180,
-              height: 180,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  if (isFinished && isWinner)
-                    Container(
-                      width: 180,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: nameColor.withValues(alpha: 0.6),
-                          width: 6,
-                        ),
+          const SizedBox(height: 10), // ★ 余白圧縮 (16 -> 10)
+          // ポイントアイコンの拡大
+          SizedBox(
+            width: 180,
+            height: 180,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (isFinished && isWinner)
+                  Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: nameColor.withValues(alpha: 0.6),
+                        width: 6,
                       ),
                     ),
-
-                  SizedBox(
-                    width: 100,
-                    height: 100,
-                    child: Stack(
-                      children: [
-                        if (pts.isNotEmpty)
-                          Positioned(
-                            top: 0,
-                            left: 0,
-                            child: _buildPoint(
-                              context,
-                              pts[0],
-                              isDark,
-                              nameColor,
-                            ),
-                          ),
-                        if (pts.length > 1)
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: _buildPoint(
-                              context,
-                              pts[1],
-                              isDark,
-                              nameColor,
-                            ),
-                          ),
-                        if (pts.length > 2)
-                          Positioned(
-                            top: 25,
-                            left: 25,
-                            child: _buildPoint(
-                              context,
-                              pts[2],
-                              isDark,
-                              nameColor,
-                            ),
-                          ),
-                      ],
-                    ),
                   ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 12),
-
-            SizedBox(
-              height: 36,
-              child: Builder(
-                builder: (context) {
-                  // ★ 修正: KendoRuleEngineを使用して、Undoされた反則イベントを正確に除外してカウントする
-                  final engine = KendoRuleEngine();
-                  final activeEvents = engine.filterActiveEvents(match.events);
-                  final hansokuCount = activeEvents
-                      .where(
-                        (e) =>
-                            e.side == side &&
-                            (e.isHansoku || e.type == PointType.hansoku),
-                      )
-                      .length;
-                  return Text(
-                    List.filled(hansokuCount, '▲').join(''),
-                    style: const TextStyle(fontSize: 24, color: Colors.amber),
-                  );
-                },
-              ),
+                SizedBox(
+                  width: 130, // ★ 内側の技マーク配置エリアを大幅に拡張 (100 -> 130)
+                  height: 130,
+                  child: Stack(
+                    children: [
+                      if (pts.isNotEmpty)
+                        Positioned(
+                          top: 6, // ★ 130x130の円周にあわせ配置調整
+                          left: 6,
+                          child: _buildPoint(
+                            context,
+                            pts[0],
+                            isDark,
+                            nameColor,
+                          ),
+                        ),
+                      if (pts.length > 1)
+                        Positioned(
+                          bottom: 6, // ★ 130x130の円周にあわせ配置調整
+                          right: 6,
+                          child: _buildPoint(
+                            context,
+                            pts[1],
+                            isDark,
+                            nameColor,
+                          ),
+                        ),
+                      if (pts.length > 2)
+                        Positioned(
+                          top: 35, // ★ 中央に配置
+                          left: 35,
+                          child: _buildPoint(
+                            context,
+                            pts[2],
+                            isDark,
+                            nameColor,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // 反則表示 (▲)
+          Builder(
+            builder: (context) {
+              final engine = KendoRuleEngine();
+              final activeEvents = engine.filterActiveEvents(match.events);
+              final hansokuCount = activeEvents
+                  .where(
+                    (e) =>
+                        e.side == side &&
+                        (e.isHansoku || e.type == PointType.hansoku),
+                  )
+                  .length;
+              if (hansokuCount == 0)
+                return const SizedBox.shrink(); // ★ 反則なし時は完全に高さを0にして余白を消滅させる
+              return Container(
+                height: 36,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  List.filled(hansokuCount, '▲').join(''),
+                  style: const TextStyle(fontSize: 24, color: Colors.amber),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -290,19 +312,19 @@ class MatchScoreboard extends ConsumerWidget {
     bool isDark,
     Color color,
   ) {
-    const double fs = 26;
+    const double fs = 38; // ★ 技マークフォントサイズを大幅に大きく (26 -> 38)
     Widget pointWidget;
 
     if (pd.isFirstMatchPoint) {
       pointWidget = Container(
-        width: 42,
-        height: 42,
+        width: 60, // ★ 技マークバッジの直径を大きく拡張 (42 -> 60)
+        height: 60,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: color.withValues(alpha: isDark ? 0.6 : 1.0),
-            width: 2.5,
+            color: color.withValues(alpha: isDark ? 0.7 : 1.0),
+            width: 3.5, // ★ 枠線も視認性を高める太さに変更 (2.5 -> 3.5)
           ),
         ),
         child: Text(
@@ -317,8 +339,8 @@ class MatchScoreboard extends ConsumerWidget {
       );
     } else {
       pointWidget = SizedBox(
-        width: 42,
-        height: 42,
+        width: 60, // ★ 技マークバッジの大きさを大きく拡張 (42 -> 60)
+        height: 60,
         child: Center(
           child: Text(
             pd.mark,
@@ -354,36 +376,33 @@ class MatchScoreboard extends ConsumerWidget {
     if (viewState.winner == 'red') resultText = '赤 の勝ち';
     if (viewState.winner == 'white') resultText = '白 の勝ち';
 
-    return Positioned(
-      top: 10,
-      child: Container(
-        height: 64, // ★ 高さを大きく拡張
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 40), // ★ 横幅に余裕を持たせる
-        decoration: BoxDecoration(
-          color: isDark ? Colors.indigo.shade900 : Colors.indigo.shade700,
-          borderRadius: BorderRadius.circular(32), // ★ 丸みを大きく
-          border: isDark
-              ? Border.all(color: Colors.indigo.shade400, width: 1.5)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: FittedBox(
-          // ★ 文字が絶対にはみ出さないようガード
-          child: Text(
-            resultText,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 32, // ★ フォントサイズを大幅に大きく
-              letterSpacing: 1.5,
-            ),
+    return Container(
+      height: 60, // ★ 二段配置になったため、重なりを気にせず視認性の高い60pxまで拡大
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 40), // ★ 横幅にゆとりを持たせる
+      decoration: BoxDecoration(
+        color: isDark ? Colors.indigo.shade900 : Colors.indigo.shade700,
+        borderRadius: BorderRadius.circular(30), // ★ 角丸を調整
+        border: isDark
+            ? Border.all(color: Colors.indigo.shade400, width: 1.5)
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FittedBox(
+        // ★ 文字が絶対にはみ出さないようガード
+        child: Text(
+          resultText,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 28, // ★ 堂々とした28pt特大サイズへ拡大
+            letterSpacing: 1.5,
           ),
         ),
       ),

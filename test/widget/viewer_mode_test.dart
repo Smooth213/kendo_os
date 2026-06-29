@@ -23,6 +23,7 @@ import 'package:kendo_os/features/viewer/screens/viewer_team_scoreboard_screen.d
 
 // ★ 追加：Projectionをモックするために必要なimport
 import 'package:kendo_os/shared/domain/repositories/projection_store.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/infrastructure/repository/in_memory_projection_store.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/application/projections/projection_store.dart'
@@ -727,7 +728,8 @@ void main() {
 
         // ローディング状態であっても、キャッシュにデータがあるためUIがフォールバック描画されることを確認
         expect(find.text('試合状況 (観戦)'), findsOneWidget);
-        expect(find.text('運営モードへ切替'), findsOneWidget);
+        expect(find.text('閲覧モード'), findsOneWidget);
+        expect(find.text('運営モードへ切替'), findsNothing);
       },
     );
 
@@ -936,5 +938,87 @@ void main() {
       await tester.pumpAndSettle(const Duration(milliseconds: 200));
       expect(pdfButtonFinder, findsWidgets);
     });
+
+    // =========================================================================
+    // 【描写検証】ViewerMatchScreenにおける特大レイアウト描画および各画面サイズでのオーバーフロー防止検証
+    // =========================================================================
+    testWidgets(
+      '12. 【描写検証】ViewerMatchScreenにおける特大レイアウト描画および各画面サイズでのオーバーフロー防止検証',
+      (WidgetTester tester) async {
+        final mockProj = MatchProjection(
+          id: 'test_render_match_1',
+          tournamentId: 'test_tournament_1',
+          matchOrder: 1,
+          matchType: '個人戦',
+          status: 'finished',
+          groupName: '個人',
+          isKachinuki: false,
+          redName: '青龍道場 : 山田',
+          whiteName: '白虎剣友会 : 鈴木',
+          redRemaining: const [],
+          whiteRemaining: const [],
+          redScore: 2,
+          whiteScore: 1,
+          redDisplays: [
+            PointDisplay('メ', true), // 1本目先取
+            PointDisplay('コ', false),
+          ],
+          whiteDisplays: [PointDisplay('反', false)],
+          firstPointSide: 'red',
+          redPointMarks: const ['メ', 'コ'],
+          whitePointMarks: const ['反'],
+          remainingSeconds: 120,
+          timerIsRunning: false,
+          note: '',
+        );
+
+        // (A) コンパクトな縦画面サイズ (540x960) での検証
+        tester.view.physicalSize = const Size(540, 960);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await tester.pumpWidget(
+          createTestableWidget(
+            const ViewerMatchScreen(matchId: 'test_render_match_1'),
+            overrides: [
+              viewerMatchProjectionProvider.overrideWith((ref, id) {
+                return Stream.value(mockProj);
+              }),
+            ],
+          ),
+        );
+
+        // レンダリングを1回完走させる
+        await tester.pump();
+        await tester.pumpAndSettle();
+
+        // 1. 各文字情報および技名が描画されていることを確認
+        expect(find.text('山田'), findsWidgets);
+        expect(find.text('鈴木'), findsWidgets);
+        expect(find.text('メ'), findsWidgets);
+        expect(find.text('コ'), findsWidgets);
+        expect(find.text('反'), findsWidgets);
+
+        // 2. 縦画面時にレイアウトエラー (RenderFlex overflow 等) が発生していないことを確認
+        expect(tester.takeException(), isNull);
+
+        // 3. 運営モードへの切替ボタンが存在しないことを厳密に検証
+        expect(find.text('運営モードへ切替'), findsNothing);
+
+        // (B) 横画面サイズ (960x540) での検証
+        tester.view.physicalSize = const Size(960, 540);
+        await tester.pump();
+        await tester.pumpAndSettle();
+
+        // 各情報が正しく再レイアウトされ、オーバーフロー例外が発生していないことを確認
+        expect(find.text('山田'), findsWidgets);
+        expect(find.text('鈴木'), findsWidgets);
+        expect(find.text('運営モードへ切替'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }

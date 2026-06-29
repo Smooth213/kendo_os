@@ -728,6 +728,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                             final matchesByTeam = <String, List<MatchModel>>{};
 
                             final groupToOwnTeams = <String, Set<String>>{};
+                            final groupToRepresentativeTeam =
+                                <String, String>{};
+
                             for (var m in catMatches) {
                               if (m.groupName != null &&
                                   m.groupName!.isNotEmpty) {
@@ -747,6 +750,19 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       .putIfAbsent(m.groupName!, () => {})
                                       .add(wTeam);
                                 }
+
+                                // 🌟 リーグ個人戦一極集中ガード: グループの代表チームを固定し、同じリーグが所属選手ごとに引き裂かれるのを100%防ぐ
+                                if (!groupToRepresentativeTeam.containsKey(
+                                  m.groupName!,
+                                )) {
+                                  groupToRepresentativeTeam[m.groupName!] =
+                                      rTeam.isNotEmpty && !rTeam.contains('代表')
+                                      ? rTeam
+                                      : (wTeam.isNotEmpty &&
+                                                !wTeam.contains('代表')
+                                            ? wTeam
+                                            : '設定なし');
+                                }
                               }
                             }
 
@@ -762,12 +778,21 @@ class ViewerHomeScreen extends ConsumerWidget {
                               bool isWhiteOwn = ownTeams.contains(wTeam);
 
                               if (m.groupName != null &&
-                                  m.groupName!.isNotEmpty &&
-                                  groupToOwnTeams.containsKey(m.groupName!)) {
-                                for (String team
-                                    in groupToOwnTeams[m.groupName!]!) {
+                                  m.groupName!.isNotEmpty) {
+                                if (groupToOwnTeams.containsKey(m.groupName!)) {
+                                  for (String team
+                                      in groupToOwnTeams[m.groupName!]!) {
+                                    matchesByTeam
+                                        .putIfAbsent(team, () => [])
+                                        .add(m);
+                                  }
+                                } else {
+                                  // 🌟 観客・他チーム視点時もリーグ個人戦がバラバラに解体されないよう、代表キーへ全試合を完全に集約ホールドする
+                                  final repTeam =
+                                      groupToRepresentativeTeam[m.groupName!] ??
+                                      '設定なし';
                                   matchesByTeam
-                                      .putIfAbsent(team, () => [])
+                                      .putIfAbsent(repTeam, () => [])
                                       .add(m);
                                 }
                               } else {
@@ -781,7 +806,6 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       .putIfAbsent(wTeam, () => [])
                                       .add(m);
                                 }
-                                // ★ 修正: 観客（どちらのチームにも属さない）場合、赤チーム名が空だとリストから消滅する不具合を修正
                                 if (!isRedOwn && !isWhiteOwn) {
                                   final keyTeam =
                                       rTeam.isNotEmpty && !rTeam.contains('代表')
@@ -842,9 +866,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                           ? '個人戦/リーグ戦'
                                           : '団体戦/リーグ戦';
                                     }
-                                    if (isKachinuki) {
-                                      return '団体戦/勝ち抜き戦';
-                                    }
+                                    if (isKachinuki) return '団体戦/勝ち抜き戦';
                                     return isIndividual ? '個人戦' : '団体戦';
                                   }
 
@@ -875,8 +897,23 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   final actualGroupedMatches =
                                       <String, List<MatchModel>>{};
                                   for (var entry in catGroupedMatches.entries) {
-                                    if (entry.value.length > 1 ||
-                                        entry.value.first.isKachinuki) {
+                                    final firstMatch = entry.value.first;
+                                    final bool isLeagueMatch = firstMatch.note
+                                        .contains('[リーグ戦]');
+                                    final bool isPureIndividual =
+                                        !firstMatch.isKachinuki &&
+                                        (firstMatch.matchType == 'individual' ||
+                                            firstMatch.matchType == '選手' ||
+                                            firstMatch.matchType.contains(
+                                              '個人戦',
+                                            ));
+
+                                    if (!isPureIndividual &&
+                                        (entry.value.length > 1 ||
+                                            firstMatch.isKachinuki)) {
+                                      actualGroupedMatches[entry.key] =
+                                          entry.value;
+                                    } else if (isLeagueMatch) {
                                       actualGroupedMatches[entry.key] =
                                           entry.value;
                                     } else {
@@ -1213,6 +1250,12 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                             11,
                                                           ),
                                                       child: ExpansionTile(
+                                                        key:
+                                                            PageStorageKey<
+                                                              String
+                                                            >(
+                                                              'group_${entry.key}',
+                                                            ),
                                                         collapsedBackgroundColor:
                                                             cardBg,
                                                         backgroundColor: cardBg,

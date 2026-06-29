@@ -157,5 +157,48 @@ void main() {
         );
       }
     });
+
+    testWidgets(
+      'Text inside HoldConfirmButton is precisely centered vertically and horizontally',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 200,
+                  height: 100,
+                  child: HoldConfirmButton(
+                    label: 'メ',
+                    color: Colors.blue,
+                    textColor: Colors.white,
+                    disabled: false,
+                    onConfirm: () {},
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final buttonFinder = find.byType(HoldConfirmButton);
+        final textFinder = find.text('メ');
+
+        final buttonCenter = tester.getCenter(buttonFinder);
+        final textCenter = tester.getCenter(textFinder);
+
+        // 許容誤差範囲（丸め処理等による1px未満の極小のズレを考慮し、微小誤差の範囲でアサート）
+        expect(
+          (textCenter.dx - buttonCenter.dx).abs(),
+          lessThan(1.0),
+          reason: '横方向の位置が中心からずれています',
+        );
+        expect(
+          (textCenter.dy - buttonCenter.dy).abs(),
+          lessThan(1.0),
+          reason: '縦方向の位置が中心からずれています',
+        );
+      },
+    );
   });
 }
