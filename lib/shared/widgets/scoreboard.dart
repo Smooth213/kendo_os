@@ -286,8 +286,9 @@ class MatchScoreboard extends ConsumerWidget {
                         (e.isHansoku || e.type == PointType.hansoku),
                   )
                   .length;
-              if (hansokuCount == 0)
+              if (hansokuCount == 0) {
                 return const SizedBox.shrink(); // ★ 反則なし時は完全に高さを0にして余白を消滅させる
+              }
               return Container(
                 height: 36,
                 alignment: Alignment.center,
