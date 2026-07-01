@@ -255,7 +255,8 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
     }
 
     bool isUnlimited =
-        matchType == '代表戦' || (matchType == '延長戦' && baseSeconds == 0);
+        (matchType == '代表戦' && baseSeconds == 0) ||
+        (matchType == '延長戦' && baseSeconds == 0);
     if (isUnlimited) {
       return baseSeconds + (elapsedMs / 1000).floor();
     }
@@ -281,7 +282,8 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
 
     final baseSeconds = (matchTimeMinutes * 60).toInt();
     bool isUnlimited =
-        matchType == '代表戦' || (matchType == '延長戦' && baseSeconds == 0);
+        (matchType == '代表戦' && baseSeconds == 0) ||
+        (matchType == '延長戦' && baseSeconds == 0);
     int newElapsedMs;
     if (isUnlimited) {
       newElapsedMs = (newSeconds - baseSeconds) * 1000;

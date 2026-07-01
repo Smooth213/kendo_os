@@ -357,6 +357,15 @@ class TeamScoreboardScreen extends ConsumerWidget {
                         final now = ref.read(timeSourceProvider).now();
                         final nextMatchId =
                             'match_${now.millisecondsSinceEpoch}';
+                        final rule = first.rule;
+                        final isDaihyoIppon = rule?.isDaihyoIpponShobu ?? true;
+                        final hasExt = rule != null
+                            ? (rule.isEnchoUnlimited || rule.enchoCount > 0)
+                            : true;
+                        final double daihyoTime = isDaihyoIppon
+                            ? 0.0
+                            : first.matchTimeMinutes.toDouble();
+
                         final newMatch = first.copyWith(
                           id: nextMatchId,
                           order: teamMatches.last.order + 1,
@@ -367,6 +376,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                           redScore: 0,
                           whiteScore: 0,
                           events: [],
+                          matchTimeMinutes: daihyoTime,
+                          hasExtension: hasExt,
                         );
                         await ref.read(matchCommandProvider).addMatch(newMatch);
 

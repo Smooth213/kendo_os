@@ -13,11 +13,11 @@ class PlayerRepository {
   final FirebaseFirestore _firestore;
   final String dojoId;
 
-  PlayerRepository({required this.dojoId, FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  PlayerRepository({required String dojoId, FirebaseFirestore? firestore})
+    : dojoId = dojoId.isNotEmpty ? dojoId : 'test201',
+      _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _playersCollection {
-    if (dojoId.isEmpty) return _firestore.collection('players');
     return _firestore
         .collection('organizations')
         .doc(dojoId)
@@ -25,7 +25,6 @@ class PlayerRepository {
   }
 
   CollectionReference<Map<String, dynamic>> get _customTeamsCollection {
-    if (dojoId.isEmpty) return _firestore.collection('custom_team_names');
     return _firestore
         .collection('organizations')
         .doc(dojoId)
@@ -34,15 +33,11 @@ class PlayerRepository {
 
   // ① 選手一覧を取得する（道上剣友会のメンバーだけを取るなど）
   Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) {
-    return _playersCollection
-        .where('organization', isEqualTo: organization)
-        // .orderBy('grade') // ★ここをコメントアウト（無効化）！
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => PlayerModel.fromMap(doc.data(), doc.id))
-              .toList();
-        });
+    return _playersCollection.snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => PlayerModel.fromMap(doc.data(), doc.id))
+          .toList();
+    });
   }
 
   // ② 選手を新しく追加する

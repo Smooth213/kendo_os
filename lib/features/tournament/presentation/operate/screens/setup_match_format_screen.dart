@@ -750,6 +750,64 @@ class _SetupMatchFormatScreenState
     ];
   }
 
+  List<Widget> _buildDaihyoRuleSettings(Color accentColor) {
+    return [
+      const Padding(
+        padding: EdgeInsets.only(top: 8, bottom: 4),
+        child: Text(
+          '代表戦の勝敗数',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            color: Colors.grey,
+          ),
+        ),
+      ),
+      RadioGroup<bool>(
+        groupValue: _isDaihyoIpponShobu,
+        onChanged: (v) {
+          if (v != null) setState(() => _isDaihyoIpponShobu = v);
+        },
+        child: Row(
+          children: [
+            Expanded(
+              child: RadioListTile<bool>(
+                title: const Text('1本', style: TextStyle(fontSize: 14)),
+                value: true,
+                activeColor: accentColor,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            Expanded(
+              child: RadioListTile<bool>(
+                title: const Text('3本', style: TextStyle(fontSize: 14)),
+                value: false,
+                activeColor: accentColor,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
+        ),
+      ),
+      const Divider(),
+      SwitchListTile(
+        title: const Text('延長戦を行う'),
+        value: _hasExtension,
+        activeThumbColor: accentColor,
+        onChanged: (v) => setState(() => _hasExtension = v),
+        contentPadding: EdgeInsets.zero,
+      ),
+      if (_hasExtension) ..._buildExtensionSettings(accentColor),
+      SwitchListTile(
+        title: const Text('延長戦で決着がつかない場合に「判定」を行う'),
+        value: _hasHantei,
+        activeThumbColor: accentColor,
+        onChanged: (v) => setState(() => _hasHantei = v),
+        contentPadding: EdgeInsets.zero,
+      ),
+    ];
+  }
+
   // ★ 共通の美しいChip構築メソッド（_buildTimeChipをアップグレードして汎用化）
   Widget _buildStyledChoiceChip(
     String label,
@@ -1775,6 +1833,10 @@ class _SetupMatchFormatScreenState
                       onChanged: (v) => setState(() => _hasLeagueDaihyo = v),
                       contentPadding: EdgeInsets.zero,
                     ),
+                    if (_hasLeagueDaihyo) ...[
+                      const Divider(),
+                      ..._buildDaihyoRuleSettings(Colors.teal.shade600),
+                    ],
                     const Divider(),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),

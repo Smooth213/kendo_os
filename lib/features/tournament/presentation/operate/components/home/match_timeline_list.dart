@@ -3842,9 +3842,11 @@ Future<void> _createTieBreakMatch(
           order: 999.0 + (i * 10) + p,
           note: '[順位決定戦] ${isDaihyo ? "代表戦" : "再試合"}',
           matchTimeMinutes: isDaihyo
-              ? 0.0
+              ? (baseRule.isDaihyoIpponShobu
+                    ? 0.0
+                    : baseRule.matchTimeMinutes.toDouble())
               : baseRule.matchTimeMinutes.toDouble(),
-          hasExtension: true,
+          hasExtension: baseRule.isEnchoUnlimited || baseRule.enchoCount > 0,
           rule: baseRule.copyWith(
             positions: [positions[p]],
             isKachinuki: false,

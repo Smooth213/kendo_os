@@ -496,5 +496,84 @@ void main() {
       // そのExpansionTileのタイトルが、自チーム名になっていることを確認
       expect(find.text('赤龍館'), findsOneWidget);
     });
+
+    testWidgets('3. リーグ団体戦終了時に同点の場合、決定戦の作成ダイアログと各選択肢（代表戦、再試合、何もしない）が表示されること', (
+      WidgetTester tester,
+    ) async {
+      // 2チームが完全に引き分けた対戦データを作成
+      final leagueMatches = [
+        MatchModel(
+          id: 'm1',
+          tournamentId: 't1',
+          category: '一般',
+          groupName: '男子リーグA',
+          matchType: 'リーグ戦',
+          note: '[リーグ戦]',
+          order: 10.0,
+          redName: '赤龍館 : 先鋒',
+          whiteName: '青龍会 : 先鋒',
+          status: 'finished',
+          redScore: 2,
+          whiteScore: 1,
+          rule: const MatchRule(
+            isLeague: true,
+            winPoint: 1.0,
+            lossPoint: 0.0,
+            drawPoint: 0.5,
+          ),
+        ),
+        MatchModel(
+          id: 'm2',
+          tournamentId: 't1',
+          category: '一般',
+          groupName: '男子リーグA',
+          matchType: 'リーグ戦',
+          note: '[リーグ戦]',
+          order: 20.0,
+          redName: '赤龍館 : 中堅',
+          whiteName: '青龍会 : 中堅',
+          status: 'finished',
+          redScore: 1,
+          whiteScore: 2,
+          rule: const MatchRule(
+            isLeague: true,
+            winPoint: 1.0,
+            lossPoint: 0.0,
+            drawPoint: 0.5,
+          ),
+        ),
+      ];
+
+      // ビルドと描画
+      await tester.pumpWidget(
+        buildTestableWidget(leagueMatches, customTeamNames: []),
+      );
+      await tester.pumpAndSettle();
+
+      // ExpansionTileを展開するためにタップする
+      expect(find.byType(ExpansionTile), findsOneWidget);
+      await tester.tap(find.byType(ExpansionTile));
+      await tester.pumpAndSettle();
+
+      // 同点を解消するための「順位決定戦を作成」ボタンが表示されることを確認
+      expect(find.text('順位決定戦を作成'), findsOneWidget);
+
+      // ボタンをタップしてダイアログを開く
+      await tester.tap(find.text('順位決定戦を作成'));
+      await tester.pumpAndSettle();
+
+      // ダイアログとその選択肢（代表戦、チーム再試合、何もしない）が表示されていることを確認
+      expect(find.text('決定戦の形式を選択'), findsOneWidget);
+      expect(find.text('代表戦（1名）'), findsOneWidget);
+      expect(find.text('チーム再試合'), findsOneWidget);
+      expect(find.text('何もしない'), findsOneWidget);
+
+      // 「何もしない」をタップしてダイアログを閉じる
+      await tester.tap(find.text('何もしない'));
+      await tester.pumpAndSettle();
+
+      // ダイアログが消えたことを確認
+      expect(find.text('決定戦の形式を選択'), findsNothing);
+    });
   });
 }
