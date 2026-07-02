@@ -926,7 +926,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                           .read(
                                                             commentCommandProvider,
                                                           )
-                                                          .deleteComment(c.id);
+                                                          .deleteComment(
+                                                            c.id,
+                                                            c.tournamentId ??
+                                                                tournamentId,
+                                                          );
                                                     }
                                                   },
                                                   backgroundColor:
@@ -4643,7 +4647,9 @@ Widget _buildInnerCommentWidget(
                 ),
               );
               if (confirm == true) {
-                await ref.read(commentCommandProvider).deleteComment(c.id);
+                await ref
+                    .read(commentCommandProvider)
+                    .deleteComment(c.id, c.tournamentId ?? '');
               }
             },
             backgroundColor: Colors.redAccent,

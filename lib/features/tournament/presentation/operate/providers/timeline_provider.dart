@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/comment_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_comment_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
@@ -18,10 +20,13 @@ final localCommentRepositoryProvider = Provider<LocalCommentRepository>((ref) {
 });
 
 // ==========================================
-// 2. コメントのストリーム監視 (Local DB)
+// 2. コメントのストリーム監視 (Local DB & Firestore for Web)
 // ==========================================
 final commentStreamProvider =
     StreamProvider.family<List<MatchCommentModel>, String>((ref, tournamentId) {
+      if (kIsWeb) {
+        return ref.watch(commentRepositoryProvider).watchComments(tournamentId);
+      }
       final repo = ref.watch(localCommentRepositoryProvider);
       return repo.watchComments(tournamentId);
     });
@@ -31,11 +36,12 @@ final commentStreamProvider =
 // ==========================================
 class CommentCommandService {
   final LocalCommentRepository _repo;
+  final CommentRepository _remoteRepo;
   final TimeSource _timeSource;
   final List<CommentEvent> _eventStore =
       []; // ★ Phase 4: Append-only Event Store
 
-  CommentCommandService(this._repo, this._timeSource);
+  CommentCommandService(this._repo, this._remoteRepo, this._timeSource);
 
   Future<void> addComment({
     required String tournamentId,
@@ -65,6 +71,7 @@ class CommentCommandService {
     final comment = _rebuildSingle(commentId);
     if (comment != null) {
       await _repo.saveComment(comment);
+      await _remoteRepo.saveComment(comment);
     }
   }
 
@@ -87,6 +94,7 @@ class CommentCommandService {
     if (updated != null) {
       final withSync = updated.copyWith(syncState: SyncState.localOnly);
       await _repo.saveComment(withSync);
+      await _remoteRepo.saveComment(withSync);
     }
   }
 
@@ -106,10 +114,11 @@ class CommentCommandService {
     if (updated != null) {
       final withSync = updated.copyWith(syncState: SyncState.localOnly);
       await _repo.saveComment(withSync);
+      await _remoteRepo.saveComment(withSync);
     }
   }
 
-  Future<void> deleteComment(String id) async {
+  Future<void> deleteComment(String id, String tournamentId) async {
     final event = CommentEvent(
       id: const Uuid().v4(),
       commentId: id,
@@ -121,6 +130,7 @@ class CommentCommandService {
 
     _eventStore.add(event);
     await _repo.deleteComment(id);
+    await _remoteRepo.deleteComment(tournamentId, id);
   }
 
   // ★ Phase 4: timeline replay rebuild
@@ -158,6 +168,7 @@ class CommentCommandService {
 final commentCommandProvider = Provider<CommentCommandService>((ref) {
   return CommentCommandService(
     ref.watch(localCommentRepositoryProvider),
+    ref.watch(commentRepositoryProvider),
     ref.watch(timeSourceProvider), // ★ 追加
   );
 });

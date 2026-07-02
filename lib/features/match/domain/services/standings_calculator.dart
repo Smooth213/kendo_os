@@ -31,10 +31,28 @@ class LeagueStandingsCalculator
   List<LeagueTeamStat> calculate(List<MatchModel> matches, MatchRule rule) {
     final Map<String, LeagueTeamStat> statsMap = {};
 
+    final isIndiv = matches.any(
+      (m) =>
+          m.matchType == 'individual' ||
+          m.matchType == '選手' ||
+          m.matchType.contains('個人戦'),
+    );
+
+    String getEntityName(String fullName) {
+      if (isIndiv) {
+        return fullName.contains(':')
+            ? fullName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
+            : fullName.trim();
+      }
+      return fullName.contains(':')
+          ? fullName.split(':').first.trim()
+          : fullName.trim();
+    }
+
     final Set<String> participants = {};
     for (var m in matches) {
-      participants.add(m.redName.split(':').first.trim());
-      participants.add(m.whiteName.split(':').first.trim());
+      participants.add(getEntityName(m.redName));
+      participants.add(getEntityName(m.whiteName));
     }
     for (var p in participants) {
       statsMap[p] = LeagueTeamStat(name: p);
@@ -42,8 +60,8 @@ class LeagueStandingsCalculator
 
     final Map<String, List<MatchModel>> pairings = {};
     for (var m in matches) {
-      final t1 = m.redName.split(':').first.trim();
-      final t2 = m.whiteName.split(':').first.trim();
+      final t1 = getEntityName(m.redName);
+      final t2 = getEntityName(m.whiteName);
       final key = [t1, t2]..sort();
       pairings.putIfAbsent(key.join(' vs '), () => []).add(m);
     }
@@ -52,12 +70,12 @@ class LeagueStandingsCalculator
       final bouts = entry.value;
       if (bouts.isEmpty || bouts.every((m) => m.status == 'waiting')) continue;
 
-      final t1 = bouts.first.redName.split(':').first.trim();
-      final t2 = bouts.first.whiteName.split(':').first.trim();
+      final t1 = getEntityName(bouts.first.redName);
+      final t2 = getEntityName(bouts.first.whiteName);
 
       int t1Wins = 0, t2Wins = 0, t1Pts = 0, t2Pts = 0;
       for (var b in bouts) {
-        final bool isT1Red = b.redName.split(':').first.trim() == t1;
+        final bool isT1Red = getEntityName(b.redName) == t1;
         final int rS = (b.redScore as num).toInt();
         final int wS = (b.whiteScore as num).toInt();
         t1Pts += isT1Red ? rS : wS;

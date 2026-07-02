@@ -75,6 +75,12 @@ service cloud.firestore {
           allow update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder']);
         }
 
+        // 4-2. コメント（見出し）
+        match /comments/{commentId} {
+          allow read: if request.auth != null;
+          allow create, update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder']);
+        }
+
         // 6. 監査ログ
         match /audit_logs/{logId} {
           allow read: if request.auth != null && (getUserRole() in ['admin', 'Admin', 'owner', 'Owner']); // 監査ログの閲覧は管理者限定

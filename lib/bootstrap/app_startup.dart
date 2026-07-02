@@ -85,8 +85,11 @@ class AppStartup {
         FirebaseFirestore.instance.settings = const Settings(
           persistenceEnabled: true,
           cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+          webExperimentalAutoDetectLongPolling: true,
         );
-        debugPrint('🌐 [Firestore Web] ブラウザ永続キャッシュ（IndexedDB）を正常に活性化しました。');
+        debugPrint(
+          '🌐 [Firestore Web] ブラウザ永続キャッシュ（IndexedDB）と自動ロングポーリング検知を活性化しました。',
+        );
       } else {
         // ネイティブアプリ（iOS/Android）用のキャッシュクリア＆ネットワーク開通設定
         final hasCleared =

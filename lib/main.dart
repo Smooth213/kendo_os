@@ -333,63 +333,71 @@ void main() {
               final isOffline =
                   ref.watch(globalConnectivityProvider).value ?? false;
 
-              return Directionality(
-                textDirection: TextDirection.ltr,
-                child: Overlay(
-                  initialEntries: [
-                    OverlayEntry(
-                      builder: (context) => Stack(
-                        children: [
-                          const KendoOSApp(),
-                          // 🔒 どの画面のロード状態がハングしていようとも、物理的に切断されていれば最前面に強制出現
-                          if (isOffline)
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              child: MediaQuery(
-                                data: MediaQueryData.fromView(
-                                  PlatformDispatcher.instance.views.first,
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: Container(
-                                    width: double.infinity,
-                                    color: Colors.amber.shade900,
-                                    padding: const EdgeInsets.only(
-                                      top: 34,
-                                      bottom: 8,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.wifi_off_rounded,
-                                          color: Colors.white,
-                                          size: 18,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          '⚠️ 体育館オフライン運営モード：ローカルキャッシュへ即時保存中',
-                                          style: TextStyle(
+              return Localizations(
+                locale: PlatformDispatcher.instance.locale,
+                delegates: const [
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                child: Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Overlay(
+                    initialEntries: [
+                      OverlayEntry(
+                        builder: (context) => Stack(
+                          children: [
+                            const KendoOSApp(),
+                            // 🔒 どの画面のロード状態がハングしていようとも、物理的に切断されていれば最前面に強制出現
+                            if (isOffline)
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                child: MediaQuery(
+                                  data: MediaQueryData.fromView(
+                                    PlatformDispatcher.instance.views.first,
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: Container(
+                                      width: double.infinity,
+                                      color: Colors.amber.shade900,
+                                      padding: const EdgeInsets.only(
+                                        top: 34,
+                                        bottom: 8,
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.wifi_off_rounded,
                                             color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                            decoration: TextDecoration.none,
+                                            size: 18,
                                           ),
-                                        ),
-                                      ],
+                                          SizedBox(width: 8),
+                                          Text(
+                                            '⚠️ 体育館オフライン運営モード：ローカルキャッシュへ即時保存中',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                              decoration: TextDecoration.none,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

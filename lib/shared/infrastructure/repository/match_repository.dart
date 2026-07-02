@@ -97,12 +97,16 @@ class MatchRepository {
 
   // 2. 特定の1試合をリアルタイム監視（MatchProviderで使用）
   Stream<MatchModel> watchSingleMatch(String matchId) {
-    return _collectionRef.doc(matchId).snapshots().map((doc) {
-      return MatchModel.fromJson(<String, dynamic>{
-        ...doc.data() ?? {},
-        'id': doc.id,
-      });
-    });
+    return _collectionRef
+        .doc(matchId)
+        .snapshots()
+        .where((doc) => doc.exists)
+        .map((doc) {
+          return MatchModel.fromJson(<String, dynamic>{
+            ...doc.data() ?? {},
+            'id': doc.id,
+          });
+        });
   }
 
   // 3. 試合を保存・更新
