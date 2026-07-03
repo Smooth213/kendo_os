@@ -1138,6 +1138,54 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                   HapticFeedback.heavyImpact();
                                                 }
 
+                                                // ★ 修正: 無限勝ち抜きモードの場合は、確定ボタンでも専用の終了・次試合生成処理へ誘導する！
+                                                if (match.isKachinuki &&
+                                                    match.matchType ==
+                                                        '無限勝ち抜き') {
+                                                  if (settings
+                                                      .showConfirmDialog) {
+                                                    final confirmed =
+                                                        await _showConfirmDialog(
+                                                          '記録の確定',
+                                                          'この試合の記録を確定して次に進みますか？\n確定後は点数の修正ができなくなります。',
+                                                        );
+                                                    if (!confirmed) return;
+                                                  }
+                                                  String winnerColor = 'draw';
+                                                  if ((match.redScore as num)
+                                                          .toInt() >
+                                                      (match.whiteScore as num)
+                                                          .toInt()) {
+                                                    winnerColor = 'red';
+                                                  } else if ((match.whiteScore
+                                                              as num)
+                                                          .toInt() >
+                                                      (match.redScore as num)
+                                                          .toInt()) {
+                                                    winnerColor = 'white';
+                                                  }
+
+                                                  if (!mounted ||
+                                                      !context.mounted) {
+                                                    return;
+                                                  }
+                                                  showDialog(
+                                                    context: context,
+                                                    barrierDismissible: false,
+                                                    builder: (_) => const Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                  );
+                                                  await _handleMatchFinish(
+                                                    context,
+                                                    ref,
+                                                    match,
+                                                    winnerColor,
+                                                  );
+                                                  return;
+                                                }
+
                                                 if (settings
                                                     .showConfirmDialog) {
                                                   final confirmed =
@@ -3267,6 +3315,20 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               ],
             ),
             actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  ref
+                      .read(bunaiksenInfiniteQueueProvider.notifier)
+                      .setPlayers([]);
+                  ref.read(bunaiksenInfiniteStreakProvider.notifier).clearAll();
+                  context.pop();
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red.shade600,
+                ),
+                child: const Text('無限稽古を終了'),
+              ),
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();

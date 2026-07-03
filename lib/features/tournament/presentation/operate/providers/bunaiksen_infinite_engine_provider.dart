@@ -55,6 +55,12 @@ class BunaiksenInfiniteEngine {
       redScore: 0,
       whiteScore: 0,
       status: 'waiting',
+      events: const [], // 🛡️ スコア履歴（アクション履歴）を完全に初期化
+      snapshots: const [], // 🛡️ スナップショット履歴を初期化
+      pendingEvents: const [], // 🛡️ 未送信同期バッファを初期化
+      timerStartedAt: null, // 🛡️ タイマー状態を初期化
+      timerPausedAt: null,
+      accumulatedPauseDurationMs: 0,
       order: DateTime.now().millisecondsSinceEpoch.toDouble(),
     );
   }

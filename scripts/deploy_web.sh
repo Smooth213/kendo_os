@@ -11,6 +11,11 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+# 🛡️ 補正：実行元ディレクトリに関わらず、スクリプト基準でプロジェクトルートを割り出し、移動します
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_ROOT"
+
 echo -e "${BLUE}==========================================${NC}"
 echo -e "${BLUE}   🛡️  Kendo OS Web Deploy Protocol v2.0   ${NC}"
 echo -e "${BLUE}==========================================${NC}"

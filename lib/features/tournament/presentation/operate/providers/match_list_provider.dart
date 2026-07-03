@@ -33,7 +33,7 @@ final webCurrentTournamentIdProvider = StateProvider<String?>((ref) => null);
 // =========================================================================
 final matchStreamProvider = StreamProvider<List<MatchModel>>((ref) {
   // Webブラウザ環境（kIsWeb == true）のとき、Isarディスク監視を安全にバイパス
-  if (kIsWeb) {
+  if (kIsWeb || debugIsWebOverride) {
     debugPrint('🌐 [Web Environment Detected] Isarの代わりにメモリ/クラウド監視ラインを確立します');
     // 🌟 Webアプリ表示不具合修正パッチ（アーカイブフリーズ完全防止）
     // 全試合の snapshots() はアーカイブが増大するとブラウザを数分間フリーズさせるため、
@@ -119,7 +119,7 @@ MatchModel _healRepresentativeMatch(MatchModel match) {
 }
 
 final matchListProvider = Provider<List<MatchModel>>((ref) {
-  if (kIsWeb) {
+  if (kIsWeb || debugIsWebOverride) {
     // ★ 修正: Web環境の場合は、現在開いている大会の最新キャッシュを返す
     // これにより、遷移先のスコア画面（運営・観戦問わず）で matchListProvider を参照した際にも対象の試合が見つかり、フリーズしません。
     final currentTournamentId = ref.watch(webCurrentTournamentIdProvider);
@@ -392,7 +392,7 @@ final bunaiksenMatchesStreamProvider = StreamProvider.family.autoDispose<List<Ma
   final dojoId = ref.watch(currentDojoIdProvider);
   final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
 
-  if (kIsWeb) {
+  if (kIsWeb || debugIsWebOverride) {
     return firestore
         .collection('organizations')
         .doc(safeDojoId)
@@ -641,7 +641,7 @@ final bunaiksenMatchesProvider = Provider.family
       );
 
       List<MatchModel> matches;
-      if (kIsWeb) {
+      if (kIsWeb || debugIsWebOverride) {
         // 🌐 Web環境：開通した Firestore ストリームの値をそのままリアルタイムに反映
         matches = asyncVal.value ?? const [];
       } else {

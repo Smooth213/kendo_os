@@ -190,7 +190,7 @@ final bunaiksenRecordCategoryGroupsProvider = Provider.family
       ref,
       tournamentId,
     ) {
-      final matches = ref.watch(tournamentMatchesProvider(tournamentId));
+      final matches = ref.watch(bunaiksenMatchesProvider(tournamentId));
       final categoryGroups = <String, Map<String, List<MatchModel>>>{};
       for (var m in matches) {
         final cat = (m.category != null && m.category!.isNotEmpty)

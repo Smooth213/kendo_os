@@ -159,19 +159,29 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               icon: const Icon(Icons.calendar_month),
               tooltip: '日付を選択して過去の記録を見る',
               onPressed: () async {
+                // 🛡️ クラッシュ防止仕様：初期表示日(initialDate)は必ず選択可能(selectableDayPredicateがtrueを返す)でなければならない。
+                // 選択された日付(viewDate)が、今日の道場IDにおける「試合がある日」または「今日」に含まれていない場合、
+                // アサーションエラーを回避するために DateTime.now() にフォールバックする。
+                final todayStr = DateFormat('yyyyMMdd').format(DateTime.now());
+                final viewDateStr = DateFormat('yyyyMMdd').format(viewDate);
+                final bool isViewDateSelectable =
+                    viewDateStr == todayStr ||
+                    availableDates.contains(viewDateStr);
+                final safeInitialDate = isViewDateSelectable
+                    ? viewDate
+                    : DateTime.now();
+
                 final picked = await showDatePicker(
                   context: context,
-                  initialDate: viewDate,
+                  initialDate: safeInitialDate,
                   firstDate: DateTime(2024),
                   lastDate: DateTime.now(),
                   selectableDayPredicate: (DateTime date) {
                     // 🍏 厳密なるカレンダー制限仕様の完成：全 OS 全期間にわたり、試合のあった日だけを美しく点灯させます
                     final dStr = DateFormat('yyyyMMdd').format(date);
-                    final todayStr = DateFormat(
-                      'yyyyMMdd',
-                    ).format(DateTime.now());
+                    final tStr = DateFormat('yyyyMMdd').format(DateTime.now());
 
-                    return dStr == todayStr || availableDates.contains(dStr);
+                    return dStr == tStr || availableDates.contains(dStr);
                   },
                   builder: (context, child) {
                     return Theme(
