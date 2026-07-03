@@ -5,6 +5,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/widgets/smart_player_input.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 void main() {
   group('Player Candidate Integration Tests under Any Dojo Name', () {
@@ -126,6 +127,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              firestoreProvider.overrideWithValue(fakeFirestore),
               currentDojoIdProvider.overrideWith((ref) => 'chiyoda_dojo_id'),
               playerRepositoryProvider.overrideWith((ref) {
                 final dojoId = ref.watch(currentDojoIdProvider);
@@ -198,6 +200,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              firestoreProvider.overrideWithValue(fakeFirestore),
               currentDojoIdProvider.overrideWith(
                 (ref) => '',
               ), // empty string to trigger fallback

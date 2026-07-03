@@ -1,11 +1,91 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
-// 1. ゲスト選手メモリ（手入力された出稽古・ゲスト等の名前を一時記憶）
-final bunaiksenGuestProvider = StateProvider<List<String>>((ref) => []);
+// 1. ゲスト選手メモリ（Firestore上の対象日時の出稽古・ゲスト等の名前をリアルタイム同期）
+class BunaiksenGuestNotifier extends StateNotifier<List<String>> {
+  final Ref _ref;
+  StreamSubscription? _sub;
+
+  BunaiksenGuestNotifier(this._ref) : super([]) {
+    _listenToGuests();
+  }
+
+  void _listenToGuests() {
+    _sub?.cancel();
+    final dojoId = _ref.watch(currentDojoIdProvider);
+    final viewDate = _ref.watch(bunaiksenViewDateProvider);
+
+    final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+    final dateStr = DateFormat('yyyyMMdd').format(viewDate);
+    final targetTournamentId = 'bunaiksen_$dateStr';
+
+    _sub = _ref
+        .watch(firestoreProvider)
+        .collection('organizations')
+        .doc(safeDojoId)
+        .collection('tournaments')
+        .doc(targetTournamentId)
+        .collection('bunaiksen_guests')
+        .snapshots()
+        .listen((snap) {
+          state = snap.docs.map((doc) => doc.data()['name'] as String).toList();
+        });
+  }
+
+  Future<void> addGuest(String name) async {
+    final dojoId = _ref.read(currentDojoIdProvider);
+    final viewDate = _ref.read(bunaiksenViewDateProvider);
+
+    final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+    final dateStr = DateFormat('yyyyMMdd').format(viewDate);
+    final targetTournamentId = 'bunaiksen_$dateStr';
+    final docId = name.trim();
+    if (docId.isEmpty) return;
+
+    if (!state.contains(docId)) {
+      state = [...state, docId];
+    }
+
+    await _ref
+        .read(firestoreProvider)
+        .collection('organizations')
+        .doc(safeDojoId)
+        .collection('tournaments')
+        .doc(targetTournamentId)
+        .collection('bunaiksen_guests')
+        .doc(docId)
+        .set({'name': name.trim(), 'createdAt': FieldValue.serverTimestamp()});
+  }
+
+  void update(List<String> Function(List<String>) fn) {
+    final newItems = fn(state);
+    for (var name in newItems) {
+      if (!state.contains(name)) {
+        addGuest(name);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+}
+
+final bunaiksenGuestProvider =
+    StateNotifierProvider<BunaiksenGuestNotifier, List<String>>((ref) {
+      return BunaiksenGuestNotifier(ref);
+    });
 
 // 部内戦の基本ルール設定
 final bunaiksenRuleProvider = StateProvider<MatchRule>((ref) {
+  ref.watch(currentDojoIdProvider);
   return const MatchRule(
     matchTimeMinutes: 3,
     enchoTimeMinutes: 0, // 基本延長なし
@@ -62,6 +142,7 @@ class BunaiksenInfiniteQueueNotifier extends StateNotifier<List<String>> {
 
 final bunaiksenInfiniteQueueProvider =
     StateNotifierProvider<BunaiksenInfiniteQueueNotifier, List<String>>((ref) {
+      ref.watch(currentDojoIdProvider);
       return BunaiksenInfiniteQueueNotifier();
     });
 
@@ -79,6 +160,7 @@ final bunaiksenInfiniteStreakProvider =
     StateNotifierProvider<BunaiksenInfiniteStreakNotifier, Map<String, int>>((
       ref,
     ) {
+      ref.watch(currentDojoIdProvider);
       return BunaiksenInfiniteStreakNotifier();
     });
 
