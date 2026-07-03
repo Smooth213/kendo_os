@@ -425,6 +425,11 @@ class KendoRuleEngine {
     MatchRule? rule,
     Map<String, dynamic>? lastSettings,
   ) {
+    if (currentMatch.status != 'finished' &&
+        currentMatch.status != 'approved') {
+      return GroupMatchStatus(isAllDone: false, isTie: false);
+    }
+
     bool isTie = false;
     bool isAllDone = false;
 

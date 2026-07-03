@@ -4,6 +4,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/bunaiksen_infinite_engine_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
   group('🛡️ BunaiksenInfiniteEngine Score carry-over & Rotation Tests', () {
@@ -85,6 +87,55 @@ void main() {
         final streaks = container.read(bunaiksenInfiniteStreakProvider);
         expect(streaks['選手A'], equals(1));
         expect(streaks['選手B'] ?? 0, equals(0));
+      },
+    );
+
+    test(
+      'Verify that KendoRuleEngine does not evaluate an in-progress infinite kachinuki match as a tie',
+      () {
+        final engine = KendoRuleEngine();
+        final rule = const MatchRule(
+          matchTimeMinutes: 3,
+          enchoTimeMinutes: 0,
+          isEnchoUnlimited: false,
+          isKachinuki: true,
+        );
+
+        // 1. Match is in progress (status: in_progress) at 0-0 score
+        final inProgressMatch = MatchModel(
+          id: 'test_match',
+          redName: '選手A',
+          whiteName: '選手B',
+          redScore: 0,
+          whiteScore: 0,
+          status: 'in_progress',
+          matchType: '無限勝ち抜き',
+          isKachinuki: true,
+          redRemaining: const [],
+          whiteRemaining: const [],
+        );
+
+        final inProgressStatus = engine.analyzeGroupStatus(
+          currentMatch: inProgressMatch,
+          groupMatches: [inProgressMatch],
+          rule: rule,
+        );
+
+        // Should NOT be evaluated as a tie or finished
+        expect(inProgressStatus.isAllDone, isFalse);
+        expect(inProgressStatus.isTie, isFalse);
+
+        // 2. Match is finished (status: finished) at 0-0 score
+        final finishedMatch = inProgressMatch.copyWith(status: 'finished');
+        final finishedStatus = engine.analyzeGroupStatus(
+          currentMatch: finishedMatch,
+          groupMatches: [finishedMatch],
+          rule: rule,
+        );
+
+        // Should be evaluated as a finished tie/draw since scores are equal and no extensions remain
+        expect(finishedStatus.isAllDone, isTrue);
+        expect(finishedStatus.isTie, isTrue);
       },
     );
   });
