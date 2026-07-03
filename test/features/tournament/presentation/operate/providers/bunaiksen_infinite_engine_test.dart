@@ -138,5 +138,127 @@ void main() {
         expect(finishedStatus.isTie, isTrue);
       },
     );
+
+    test(
+      'Verify queue restoration on return to list / break after win or draw',
+      () async {
+        // --- Scenario 1: Red Wins ---
+        {
+          final container = ProviderContainer();
+          final queueNotifier = container.read(
+            bunaiksenInfiniteQueueProvider.notifier,
+          );
+          queueNotifier.setPlayers(['Tanaka', 'Suzuki']);
+
+          final engine = container.read(bunaiksenInfiniteEngineProvider);
+
+          final finishedMatch = MatchModel(
+            id: 'match_1',
+            redName: 'Yamada',
+            whiteName: 'Sato',
+            redScore: 2,
+            whiteScore: 1,
+            status: 'finished',
+            matchType: '無限勝ち抜き',
+            isKachinuki: true,
+          );
+
+          // Process Yamada (Red) win
+          final nextMatch = await engine.processMatchResult(
+            finishedMatch,
+            'red',
+          );
+          expect(nextMatch, isNotNull);
+          expect(nextMatch!.redName, 'Yamada'); // winner
+          expect(
+            nextMatch.whiteName,
+            'Tanaka',
+          ); // next challenger popped from queue
+
+          // Queue state right now is [Suzuki, Sato (loser)]
+          expect(container.read(bunaiksenInfiniteQueueProvider), [
+            'Suzuki',
+            'Sato',
+          ]);
+
+          // Simulate "Return to List (Break)" logic
+          final currentQueue = container.read(bunaiksenInfiniteQueueProvider);
+          final filteredQueue = currentQueue
+              .where((p) => p != nextMatch.redName && p != nextMatch.whiteName)
+              .toList();
+          queueNotifier.setPlayers([
+            nextMatch.redName,
+            nextMatch.whiteName,
+            ...filteredQueue,
+          ]);
+
+          // Expected queue after break: Yamada (winner) at front, Tanaka (challenger) second, Suzuki third, Sato (loser) at end
+          expect(container.read(bunaiksenInfiniteQueueProvider), [
+            'Yamada',
+            'Tanaka',
+            'Suzuki',
+            'Sato',
+          ]);
+        }
+
+        // --- Scenario 2: Draw ---
+        {
+          final container = ProviderContainer();
+          final queueNotifier = container.read(
+            bunaiksenInfiniteQueueProvider.notifier,
+          );
+          queueNotifier.setPlayers(['Tanaka', 'Suzuki', 'Watanabe']);
+
+          final engine = container.read(bunaiksenInfiniteEngineProvider);
+
+          final finishedMatch = MatchModel(
+            id: 'match_2',
+            redName: 'Yamada',
+            whiteName: 'Sato',
+            redScore: 1,
+            whiteScore: 1,
+            status: 'finished',
+            matchType: '無限勝ち抜き',
+            isKachinuki: true,
+          );
+
+          // Process Draw
+          final nextMatch = await engine.processMatchResult(
+            finishedMatch,
+            'draw',
+          );
+          expect(nextMatch, isNotNull);
+          expect(nextMatch!.redName, 'Tanaka'); // first challenger popped
+          expect(nextMatch.whiteName, 'Suzuki'); // second challenger popped
+
+          // Queue state right now is [Watanabe, Yamada (loser1), Sato (loser2)]
+          expect(container.read(bunaiksenInfiniteQueueProvider), [
+            'Watanabe',
+            'Yamada',
+            'Sato',
+          ]);
+
+          // Simulate "Return to List (Break)" logic
+          final currentQueue = container.read(bunaiksenInfiniteQueueProvider);
+          final filteredQueue = currentQueue
+              .where((p) => p != nextMatch.redName && p != nextMatch.whiteName)
+              .toList();
+          queueNotifier.setPlayers([
+            nextMatch.redName,
+            nextMatch.whiteName,
+            ...filteredQueue,
+          ]);
+
+          // Expected queue after break: Tanaka & Suzuki (next challengers) at front, Watanabe, then Yamada & Sato (losers) at end
+          expect(container.read(bunaiksenInfiniteQueueProvider), [
+            'Tanaka',
+            'Suzuki',
+            'Watanabe',
+            'Yamada',
+            'Sato',
+          ]);
+        }
+      },
+    );
   });
 }

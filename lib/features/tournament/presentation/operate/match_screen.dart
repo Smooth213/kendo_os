@@ -3332,6 +3332,22 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
+                  // 準備されていた次の2選手を待機列の先頭に戻す（重複防止フィルタリング付き）
+                  final queueNotifier = ref.read(
+                    bunaiksenInfiniteQueueProvider.notifier,
+                  );
+                  final currentQueue = ref.read(bunaiksenInfiniteQueueProvider);
+                  final filteredQueue = currentQueue
+                      .where(
+                        (p) =>
+                            p != nextMatch.redName && p != nextMatch.whiteName,
+                      )
+                      .toList();
+                  queueNotifier.setPlayers([
+                    nextMatch.redName,
+                    nextMatch.whiteName,
+                    ...filteredQueue,
+                  ]);
                   context.pop(); // 一覧に戻る
                 },
                 child: const Text('一覧に戻る（休憩）'),
