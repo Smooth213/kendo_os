@@ -6,7 +6,6 @@ import 'dart:async';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart'; // ★ Phase 6: バイブレーション用
 import 'package:flutter/foundation.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -31,7 +30,6 @@ import 'package:kendo_os/features/match/domain/services/match_strategy.dart'; //
 import 'package:kendo_os/shared/application/services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart'; // ★ 追加: KendoRuleEngineを使用するため
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加: TimeSource
-import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 // ★ Phase 3: 分割したWidget群
 import 'package:kendo_os/shared/widgets/timer_widget.dart';
