@@ -46,6 +46,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/last_used_settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/bunaiksen_infinite_engine_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/share_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 
@@ -892,17 +893,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         children: [
                                           Expanded(
                                             child: OutlinedButton.icon(
-                                              onPressed: () {
-                                                // ★ 修正: 共有URLにテナントIDを含めてViewerが直接アクセスできるようにする
-                                                final dojoId = ref.read(
-                                                  currentDojoIdProvider,
-                                                );
-                                                final shareText =
-                                                    '${match.redName} vs ${match.whiteName} の試合状況:\nhttps://kendo-os.web.app/viewer/${match.id}?dojoId=$dojoId';
-                                                SharePlus.instance.share(
-                                                  ShareParams(text: shareText),
-                                                );
-                                              },
+                                              onPressed: () => ref
+                                                  .read(shareProvider)
+                                                  .shareMatch(match),
                                               icon: const Icon(
                                                 Icons.ios_share,
                                                 size: 16,

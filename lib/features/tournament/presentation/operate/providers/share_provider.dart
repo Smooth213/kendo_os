@@ -2,6 +2,7 @@ import 'package:flutter/services.dart'; // ★ クリップボード操作用
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 // ★ Phase 3: アプリ全体から呼び出せる共有機能の合鍵
 final shareProvider = Provider((ref) => ShareService(ref));
@@ -17,7 +18,8 @@ class ShareService {
   /// をすべて全自動で同時に執行し、現地共有の手間を完全ゼロ化します。
   Future<void> shareMatch(MatchModel match) async {
     const String baseUrl = 'https://kendo-os.web.app';
-    final String matchUrl = '$baseUrl/viewer/${match.id}';
+    final dojoId = ref.read(currentDojoIdProvider);
+    final String matchUrl = '$baseUrl/viewer/${match.id}?dojoId=$dojoId';
 
     // クリップボードへ共有URLを先回りして自動強制格納（コピーの手間を破壊）
     await Clipboard.setData(ClipboardData(text: matchUrl));
