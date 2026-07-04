@@ -136,5 +136,92 @@ void main() {
         container.dispose();
       },
     );
+
+    testWidgets('✅ 3. 「観戦URLを共有」ボタンが表示され、タップできること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      const mockMatch = MatchModel(
+        id: 'test_match_share_1',
+        tournamentId: 'tourney_1',
+        matchType: '個人戦',
+        redName: '佐々木 武',
+        whiteName: '選手',
+        status: 'waiting',
+      );
+
+      final router = GoRouter(
+        initialLocation: '/match/test_match_share_1',
+        routes: [
+          GoRoute(
+            path: '/match/:id',
+            builder: (context, state) =>
+                MatchScreen(matchId: state.pathParameters['id']!),
+          ),
+        ],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          matchListProvider.overrideWith((ref) => [mockMatch]),
+          matchViewStateProvider('test_match_share_1').overrideWith(
+            (ref) => MatchViewState(
+              scoreText: '0 - 0',
+              redScore: 0,
+              whiteScore: 0,
+              isEncho: false,
+              winner: null,
+              lastEventText: '',
+              canUndo: false,
+              statusText: '待機中',
+              syncStatus: SyncStatus.synced,
+              isViewOnly: false,
+              isInputLocked: false,
+              isAllDone: false,
+              isTie: false,
+              redCleanName: '佐々木 武',
+              whiteCleanName: '選手',
+            ),
+          ),
+          permissionProvider.overrideWith(
+            (ref) => const AppPermissions(
+              isReadOnly: false,
+              canManageTournament: true,
+              canCreateMatch: true,
+              canChangeSettings: true,
+              canDeleteData: true,
+            ),
+          ),
+          isarProvider.overrideWithValue(null),
+        ],
+      );
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+            theme: ThemeData.light(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 観戦URLを共有ボタンが表示されていることを検証
+      final shareBtnFinder = find.text('観戦URLを共有');
+      expect(shareBtnFinder, findsOneWidget);
+
+      // タップしてもエラーにならず正常終了することを検証
+      await tester.tap(shareBtnFinder);
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+      container.dispose();
+    });
   });
 }
