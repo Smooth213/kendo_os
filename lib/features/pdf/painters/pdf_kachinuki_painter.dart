@@ -101,8 +101,9 @@ class PdfKachinukiPainter {
         double x2,
         double y2, {
         double w = 1.0,
+        PdfColor color = PdfColors.black,
       }) {
-        canvas.setStrokeColor(PdfColors.black);
+        canvas.setStrokeColor(color);
         canvas.setLineWidth(w);
         canvas.drawLine(x1, invY(y1), x2, invY(y2));
         canvas.strokePath();
@@ -122,11 +123,15 @@ class PdfKachinukiPainter {
 
       for (var span in redSpans) {
         double left = startX + (span.startIndex * dx);
-        if (span.startIndex > 0) drawLine(left, y0, left, y1);
+        if (span.startIndex > 0) {
+          drawLine(left, y0, left, y1, color: PdfColors.red700);
+        }
       }
       for (var span in whiteSpans) {
         double left = startX + (span.startIndex * dx);
-        if (span.startIndex > 0) drawLine(left, y2, left, y3);
+        if (span.startIndex > 0) {
+          drawLine(left, y2, left, y3, color: PdfColors.black);
+        }
       }
 
       for (int i = 0; i < matches.length; i++) {
@@ -171,6 +176,7 @@ class PdfKachinukiPainter {
       pw.Font font, {
       bool isBold = false,
       double fSize = 9,
+      PdfColor color = PdfColors.black,
     }) {
       final chars = text.split('');
       return pw.Positioned(
@@ -187,7 +193,7 @@ class PdfKachinukiPainter {
                   return pw.Container(
                     width: 1,
                     height: fSize * 0.8,
-                    color: PdfColors.black,
+                    color: color,
                     margin: const pw.EdgeInsets.symmetric(vertical: 1),
                   );
                 }
@@ -198,6 +204,7 @@ class PdfKachinukiPainter {
                       font: font,
                       fontSize: fSize * 0.8,
                       fontWeight: isBold ? pw.FontWeight.bold : null,
+                      color: color,
                     ),
                   );
                 }
@@ -207,6 +214,7 @@ class PdfKachinukiPainter {
                     font: font,
                     fontSize: fSize,
                     fontWeight: isBold ? pw.FontWeight.bold : null,
+                    color: color,
                   ),
                 );
               }).toList(),
@@ -217,21 +225,45 @@ class PdfKachinukiPainter {
     }
 
     textWidgets.add(
-      vertText(rTeam, 0, y0, startX, y1 - y0, ttfBold, isBold: true, fSize: 11),
+      vertText(
+        rTeam,
+        0,
+        y0,
+        startX,
+        y1 - y0,
+        ttfBold,
+        isBold: true,
+        fSize: 11,
+        color: PdfColors.red700,
+      ),
     );
     textWidgets.add(
-      vertText(wTeam, 0, y2, startX, y3 - y2, ttfBold, isBold: true, fSize: 11),
+      vertText(
+        wTeam,
+        0,
+        y2,
+        startX,
+        y3 - y2,
+        ttfBold,
+        isBold: true,
+        fSize: 11,
+        color: PdfColors.black,
+      ),
     );
 
     for (var span in redSpans) {
       double left = startX + (span.startIndex * dx);
       double w = ((span.endIndex - span.startIndex) + 1) * dx;
-      textWidgets.add(vertText(span.name, left, y0, w, y1 - y0, ttf));
+      textWidgets.add(
+        vertText(span.name, left, y0, w, y1 - y0, ttf, color: PdfColors.red700),
+      );
     }
     for (var span in whiteSpans) {
       double left = startX + (span.startIndex * dx);
       double w = ((span.endIndex - span.startIndex) + 1) * dx;
-      textWidgets.add(vertText(span.name, left, y2, w, y3 - y2, ttf));
+      textWidgets.add(
+        vertText(span.name, left, y2, w, y3 - y2, ttf, color: PdfColors.black),
+      );
     }
 
     for (int i = 0; i < matches.length; i++) {
@@ -246,7 +278,13 @@ class PdfKachinukiPainter {
             top: y1 + 5,
             child: pw.Container(
               width: dx,
-              child: pw.Center(child: _pdfScoreColumn(ptsMap['red']!, ttfBold)),
+              child: pw.Center(
+                child: _pdfScoreColumn(
+                  ptsMap['red']!,
+                  ttfBold,
+                  color: PdfColors.red700,
+                ),
+              ),
             ),
           ),
         );
@@ -262,6 +300,7 @@ class PdfKachinukiPainter {
                   ptsMap['white']!,
                   ttfBold,
                   reverse: true,
+                  color: PdfColors.black,
                 ),
               ),
             ),
@@ -307,11 +346,12 @@ class PdfKachinukiPainter {
     List<PdfPointData> pts,
     pw.Font ttfBold, {
     bool reverse = false,
+    PdfColor color = PdfColors.black,
   }) {
     final widgets = pts.map((p) {
       final text = pw.Text(
         p.mark,
-        style: pw.TextStyle(font: ttfBold, fontSize: 9),
+        style: pw.TextStyle(font: ttfBold, fontSize: 9, color: color),
       );
       if (p.isFirstOverall && p.mark != '◯') {
         return pw.Container(
@@ -319,7 +359,7 @@ class PdfKachinukiPainter {
           padding: const pw.EdgeInsets.all(2),
           decoration: pw.BoxDecoration(
             shape: pw.BoxShape.circle,
-            border: pw.Border.all(color: PdfColors.black, width: 1),
+            border: pw.Border.all(color: color, width: 1),
           ),
           child: text,
         );
