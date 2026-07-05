@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
+import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
@@ -188,6 +189,15 @@ class HomeScreen extends ConsumerWidget {
                   elevation: 0,
                   iconTheme: IconThemeData(color: textColor),
                   actions: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications_outlined),
+                      tooltip: '通知履歴',
+                      onPressed: () => AnnounceHistoryBottomSheet.show(
+                        context,
+                        tournamentId,
+                        true,
+                      ),
+                    ),
                     if (!isReadOnly)
                       Padding(
                         padding: const EdgeInsets.symmetric(

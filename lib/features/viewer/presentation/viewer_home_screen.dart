@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
+import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 
 // ドメイン・インフラ・リポジトリ層
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -239,6 +240,16 @@ class ViewerHomeScreen extends ConsumerWidget {
                   : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
               elevation: 0,
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined),
+                  color: isDark ? Colors.white : Colors.indigo.shade900,
+                  tooltip: '通知履歴',
+                  onPressed: () => AnnounceHistoryBottomSheet.show(
+                    context,
+                    tournamentId,
+                    false,
+                  ),
+                ),
                 ManualHelpButton(
                   manualPath: 'docs/manuals/faq/viewer_faq.md',
                   color: isDark ? Colors.white : Colors.indigo.shade900,
