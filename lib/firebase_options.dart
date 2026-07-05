@@ -41,12 +41,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCAL6MtoCV6s5RAD6cOAr4QO4bVEZd7OnQ',
-    appId: '1:779304236953:web:a46a5e18d8a2913f404508',
-    messagingSenderId: '779304236953',
-    projectId: 'kendo-os',
-    authDomain: 'kendo-os.firebaseapp.com',
-    storageBucket: 'kendo-os.firebasestorage.app',
+    apiKey: 'AIzaSyAkV9sojMHGhFtwBTDAzUgx7qRxEWkWnRM',
+    appId: '1:164010781926:web:55ac5f475727d7dc0d5f27',
+    messagingSenderId: '164010781926',
+    projectId: 'kendo-os-beta',
+    authDomain: 'kendo-os-beta.firebaseapp.com',
+    storageBucket: 'kendo-os-beta.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -58,20 +58,20 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDb716n_0IomzzeCnsQSjMB31AdXyOzNO4',
-    appId: '1:779304236953:ios:ff3ce534b071263d404508',
-    messagingSenderId: '779304236953',
-    projectId: 'kendo-os',
-    storageBucket: 'kendo-os.firebasestorage.app',
+    apiKey: 'AIzaSyCXXpcYc_FcusnRzQSstW7u6c4STw9Nm4s',
+    appId: '1:164010781926:ios:26d0f7b6e99b918d0d5f27',
+    messagingSenderId: '164010781926',
+    projectId: 'kendo-os-beta',
+    storageBucket: 'kendo-os-beta.firebasestorage.app',
     iosBundleId: 'com.example.kendoOs',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDb716n_0IomzzeCnsQSjMB31AdXyOzNO4',
-    appId: '1:779304236953:ios:ff3ce534b071263d404508',
-    messagingSenderId: '779304236953',
-    projectId: 'kendo-os',
-    storageBucket: 'kendo-os.firebasestorage.app',
+    apiKey: 'AIzaSyCXXpcYc_FcusnRzQSstW7u6c4STw9Nm4s',
+    appId: '1:164010781926:ios:26d0f7b6e99b918d0d5f27',
+    messagingSenderId: '164010781926',
+    projectId: 'kendo-os-beta',
+    storageBucket: 'kendo-os-beta.firebasestorage.app',
     iosBundleId: 'com.example.kendoOs',
   );
 
