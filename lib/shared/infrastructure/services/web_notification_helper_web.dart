@@ -1,12 +1,12 @@
-import 'dart:js' as js;
+import 'dart:js_interop';
+
+@JS('Notification.requestPermission')
+external JSAny? _jsRequestPermission();
 
 void triggerWebNotificationPermission() {
   try {
-    final notification = js.context['Notification'];
-    if (notification != null) {
-      notification.callMethod('requestPermission');
-    }
+    _jsRequestPermission();
   } catch (_) {
-    // Suppress errors if browser does not support Notification API
+    // Suppress errors if Notification API is not supported in browser
   }
 }
