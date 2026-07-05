@@ -50,6 +50,20 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script>
+    // 🔔 iOS/Safari PWAユーザー主導アクション用通知許可ダイアログ起動ヘルパー
+    window.requestNotificationPermission = function () {
+      console.log('🔔 [Web JS] requestNotificationPermission triggered by user gesture.');
+      if ('Notification' in window) {
+        Notification.requestPermission().then(function (permission) {
+          console.log('🔔 [Web JS] Notification permission result:', permission);
+        }).catch(function (err) {
+          console.error('⚠️ [Web JS] Notification permission request error:', err);
+        });
+      } else {
+        console.warn('⚠️ [Web JS] Notifications not supported in this browser.');
+      }
+    };
+
     // =========================================================================
     // 🛡️ Phase 3 - STEP 3-2 要件：Service Workerアセットキャッシュの強化
     // アプリのコア（JS、フォント、アイコン）は完全ローカルキャッシュしオフライン起動を保証。

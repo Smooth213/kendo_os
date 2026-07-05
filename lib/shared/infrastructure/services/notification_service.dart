@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/infrastructure/services/web_notification_helper.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +23,7 @@ class NotificationService {
     try {
       if (kIsWeb) {
         // Web環境（Chrome/Safari）での通知パーミッション要求
+        triggerWebNotificationPermission();
         await FirebaseMessaging.instance.requestPermission(
           alert: true,
           badge: true,
