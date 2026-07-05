@@ -2,8 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+
+/// 🌟 既読にしたアナウンスIDのローカル状態を管理・永続化するプロバイダー
+final readAnnouncementsProvider =
+    StateNotifierProvider<ReadAnnouncementsNotifier, List<String>>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return ReadAnnouncementsNotifier(prefs);
+    });
+
+class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
+  final SharedPreferences _prefs;
+  static const _key = 'kendo_os_read_announcements';
+
+  ReadAnnouncementsNotifier(this._prefs)
+    : super(_prefs.getStringList(_key) ?? []);
+
+  Future<void> markAsRead(String id) async {
+    if (!state.contains(id)) {
+      final updated = [...state, id];
+      state = updated;
+      await _prefs.setStringList(_key, updated);
+    }
+  }
+}
 
 class AnnounceHistoryBottomSheet extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -38,9 +63,6 @@ class AnnounceHistoryBottomSheet extends ConsumerStatefulWidget {
 
 class _AnnounceHistoryBottomSheetState
     extends ConsumerState<AnnounceHistoryBottomSheet> {
-  // ローカルで既読化した通知のIDをキャッシュ（UIの即時反映用防壁）
-  final Set<String> _localReadIds = {};
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -62,6 +84,8 @@ class _AnnounceHistoryBottomSheetState
     if (!widget.isStaffRoom) {
       query = query.where('target', isEqualTo: 'all');
     }
+
+    final readIds = ref.watch(readAnnouncementsProvider);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
@@ -134,22 +158,16 @@ class _AnnounceHistoryBottomSheetState
                       'id': doc.id,
                     });
 
-                    // Firestore上のフラグ、またはローカル既読キャッシュにあれば既読とみなす
-                    final bool isRead =
-                        announce.isRead || _localReadIds.contains(announce.id);
+                    // ローカル既読キャッシュ（SharedPreferences）にあれば既読とみなす
+                    final bool isRead = readIds.contains(announce.id);
                     final bool isStaffOnly = data['target'] == 'staff';
 
                     return InkWell(
                       onTap: () {
                         if (!isRead) {
-                          setState(() {
-                            _localReadIds.add(announce.id);
-                          });
-                          // Firestore側へも既読フラグを安全に書き込み
-                          firestore
-                              .collection('announcements')
-                              .doc(announce.id)
-                              .update({'isRead': true});
+                          ref
+                              .read(readAnnouncementsProvider.notifier)
+                              .markAsRead(announce.id);
                         }
                       },
                       child: Container(
@@ -303,18 +321,23 @@ class NotificationBellButton extends ConsumerWidget {
 
     Query query = firestore
         .collection('announcements')
-        .where('tournamentId', isEqualTo: tournamentId)
-        .where('isRead', isEqualTo: false);
+        .where('tournamentId', isEqualTo: tournamentId);
 
     if (!isStaffRoom) {
       query = query.where('target', isEqualTo: 'all');
     }
 
+    final readIds = ref.watch(readAnnouncementsProvider);
+
     return StreamBuilder<QuerySnapshot>(
       stream: query.snapshots(),
       builder: (context, snapshot) {
-        final bool hasUnread =
-            snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+        if (!snapshot.hasData) return bellIcon;
+
+        // 🌟 既読リストに含まれないお知らせがあるかをローカルで判定
+        final bool hasUnread = snapshot.data!.docs.any(
+          (doc) => !readIds.contains(doc.id),
+        );
 
         return Stack(
           alignment: Alignment.center,

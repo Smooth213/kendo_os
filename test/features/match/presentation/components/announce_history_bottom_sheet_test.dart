@@ -200,9 +200,12 @@ void main() {
         // Pink dot should disappear (local read cache updates UI immediately)
         expect(pinkDotFinder, findsNothing);
 
-        // Verify Firestore database doc got updated
+        // Verify local state notifier got updated with read doc ID
+        expect(container.read(readAnnouncementsProvider), contains(docRef.id));
+
+        // Verify Firestore database doc remains unchanged (false) to preserve local-only read state
         final updatedSnapshot = await docRef.get();
-        expect(updatedSnapshot.data()?['isRead'], isTrue);
+        expect(updatedSnapshot.data()?['isRead'], isFalse);
       },
     );
 
