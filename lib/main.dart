@@ -58,6 +58,7 @@ import 'package:kendo_os/features/auth/presentation/screens/role_select_screen.d
 import 'package:kendo_os/features/auth/presentation/screens/pin_auth_screen.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
 
 import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart'
@@ -282,6 +283,13 @@ void main() {
           isarProvider.overrideWithValue(isar),
         ],
       );
+
+      // 🌟 プッシュ通知インフラの起動時初期化（ネイティブ端末用）
+      try {
+        container.read(notificationServiceProvider).initializeNotification();
+      } catch (e) {
+        debugPrint('⚠️ [Notification] Startup initialization failed: $e');
+      }
 
       FlutterError.onError = (FlutterErrorDetails details) {
         FlutterError.presentError(details);

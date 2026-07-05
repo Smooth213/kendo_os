@@ -8,6 +8,7 @@ import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファ�
 import 'package:kendo_os/shared/widgets/liquid_background.dart'; // ★ 追加
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/security/feature_gate.dart';
+import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -209,6 +210,78 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ]),
                   _buildSectionFooter(context, 'ポイント入力時や試合終了時に音や振動で知らせます。'),
+                  const SizedBox(height: 24),
+
+                  // ==========================================
+                  // 2-2. プッシュ通知設定
+                  // ==========================================
+                  _buildSectionHeader(context, 'プッシュ通知設定 (iPhone/iPad/Web対応)'),
+                  _buildSettingsBlock(context, [
+                    _buildSwitchTile(
+                      context,
+                      '緊急連絡・本部アナウンスの通知',
+                      settings.notifyOnEmergency,
+                      (val) async {
+                        notifier.updateField(notifyOnEmergency: val);
+                        if (val) {
+                          await ref
+                              .read(notificationServiceProvider)
+                              .initializeNotification();
+                        }
+                      },
+                      icon: Icons.emergency_share,
+                      iconBgColor: Colors.red,
+                    ),
+                    _buildSwitchTile(
+                      context,
+                      '新着試合追加の通知',
+                      settings.notifyOnMatchAdded,
+                      (val) async {
+                        notifier.updateField(notifyOnMatchAdded: val);
+                        if (val) {
+                          await ref
+                              .read(notificationServiceProvider)
+                              .initializeNotification();
+                        }
+                      },
+                      icon: Icons.add_alert,
+                      iconBgColor: Colors.indigo,
+                    ),
+                    _buildSwitchTile(
+                      context,
+                      '試合開始の通知',
+                      settings.notifyOnMatchStarted,
+                      (val) async {
+                        notifier.updateField(notifyOnMatchStarted: val);
+                        if (val) {
+                          await ref
+                              .read(notificationServiceProvider)
+                              .initializeNotification();
+                        }
+                      },
+                      icon: Icons.play_circle_outline,
+                      iconBgColor: Colors.green,
+                    ),
+                    _buildSwitchTile(
+                      context,
+                      '試合結果・終了の通知',
+                      settings.notifyOnResult,
+                      (val) async {
+                        notifier.updateField(notifyOnResult: val);
+                        if (val) {
+                          await ref
+                              .read(notificationServiceProvider)
+                              .initializeNotification();
+                        }
+                      },
+                      icon: Icons.emoji_events,
+                      iconBgColor: Colors.amber,
+                    ),
+                  ]),
+                  _buildSectionFooter(
+                    context,
+                    '※ iPhone/Safariで通知を受信するには、必ず「ホーム画面に追加」して起動し、通知スイッチをオンにして表示される「通知の許可」を承諾してください。',
+                  ),
                   const SizedBox(height: 24),
 
                   // ==========================================
