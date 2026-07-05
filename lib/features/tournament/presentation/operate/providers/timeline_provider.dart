@@ -9,6 +9,9 @@ import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
 import 'package:kendo_os/features/match/domain/events/comment_event.dart'; // ★ 修正: 一本化された events 側の正しいパスへ完全同期
 import 'package:uuid/uuid.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'dart:async';
 
 // ==========================================
 // 1. Local Repository Provider
@@ -22,14 +25,71 @@ final localCommentRepositoryProvider = Provider<LocalCommentRepository>((ref) {
 // ==========================================
 // 2. コメントのストリーム監視 (Local DB & Firestore for Web)
 // ==========================================
-final commentStreamProvider =
-    StreamProvider.family<List<MatchCommentModel>, String>((ref, tournamentId) {
-      if (kIsWeb) {
-        return ref.watch(commentRepositoryProvider).watchComments(tournamentId);
+final commentStreamProvider = StreamProvider.family<List<MatchCommentModel>, String>((
+  ref,
+  tournamentId,
+) {
+  if (kIsWeb) {
+    return ref.watch(commentRepositoryProvider).watchComments(tournamentId);
+  }
+
+  final repo = ref.watch(localCommentRepositoryProvider);
+  final dojoId = ref.watch(currentDojoIdProvider);
+  final safeDojoId = dojoId.isNotEmpty ? dojoId : 'default_dojo_room';
+  final safeTournamentId = tournamentId.isNotEmpty
+      ? tournamentId
+      : 'default_tournament';
+
+  // 🍏 ネイティブ環境：FirestoreからコメントをバックグラウンドでIsarへリアルタイム同期するリスナーをバインド
+  final firestore = FirebaseFirestore.instance;
+  final commentsCollection = firestore
+      .collection('organizations')
+      .doc(safeDojoId)
+      .collection('tournaments')
+      .doc(safeTournamentId)
+      .collection('comments');
+
+  final sub = commentsCollection.snapshots().listen(
+    (snapshot) async {
+      for (final change in snapshot.docChanges) {
+        final doc = change.doc;
+        final data = doc.data();
+        if (data == null) continue;
+        final commentId = doc.id;
+        try {
+          if (change.type == DocumentChangeType.removed) {
+            await repo.deleteComment(commentId);
+            debugPrint(
+              '⚡ [Comment Stream Downstream] Firestoreから削除されたコメントをIsarから削除しました: $commentId',
+            );
+          } else {
+            final comment = MatchCommentModel.fromJson({
+              ...data,
+              'id': commentId,
+            });
+            await repo.saveComment(comment);
+            debugPrint(
+              '⚡ [Comment Stream Downstream] FirestoreからコメントをIsarに同期しました: $commentId',
+            );
+          }
+        } catch (e) {
+          debugPrint('⚠️ [Comment Stream Downstream] コメント同期中にエラーが発生しました: $e');
+        }
       }
-      final repo = ref.watch(localCommentRepositoryProvider);
-      return repo.watchComments(tournamentId);
-    });
+    },
+    onError: (e) {
+      debugPrint('⚠️ [Comment Stream Downstream] コメント監視エラー: $e');
+    },
+  );
+
+  // プロバイダ廃棄時にサブスクリプションを自動クローズしてメモリリークを完全遮断
+  ref.onDispose(() {
+    sub.cancel();
+  });
+
+  // UI層へはIsarのローカルリアルタイムストリームを返却
+  return repo.watchComments(tournamentId);
+});
 
 // ==========================================
 // 3. コメント操作用の Command Service
