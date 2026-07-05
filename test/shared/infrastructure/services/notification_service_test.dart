@@ -2,8 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
-import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 
 class MockRef extends Mock implements Ref {}
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -53,6 +52,8 @@ void listenGlobalAnnouncements(
           if (shownAnnounceIds.contains(announce.id) || !isRecent) return;
 
           shownAnnounceIds.add(announce.id);
+
+          if (!context.mounted) return;
 
           // 🌟 白ベース×サクラピンク差し色の格調高いダイアログ
           showDialog(
