@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meta/meta.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-
-import 'package:meta/meta.dart';
+import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 
 // 🛡️ アクティブなストリームサブスクリプションを追跡（画面再構築時の重複購読を完全に防止）
 final Map<String, StreamSubscription> _activeSubscriptions = {};
@@ -70,6 +70,10 @@ void listenGlobalAnnouncements(
           }
 
           final announce = AnnounceModel.fromJson({...data, 'id': doc.id});
+
+          // 🛡️ 防衛線：既にローカルで既読済みのアナウンスである場合はポップアップを表示しない
+          final readIds = ref.read(readAnnouncementsProvider);
+          if (announce.isRead || readIds.contains(announce.id)) return;
 
           // 過去30分以上前の古いアナウンスはポップアップ対象から除外する時間防壁
           final bool isRecent =
@@ -151,6 +155,10 @@ void listenGlobalAnnouncements(
                         elevation: 0,
                       ),
                       onPressed: () {
+                        // 🌟 既読にしたことを端末ローカルに保存（再度画面に入った際に表示させないため）
+                        ref
+                            .read(readAnnouncementsProvider.notifier)
+                            .markAsRead(announce.id);
                         _isAnnounceDialogShowing = false;
                         Navigator.pop(ctx);
                       },
