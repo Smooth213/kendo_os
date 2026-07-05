@@ -671,6 +671,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       title: title,
       icon: icon,
       iconBgColor: iconBgColor,
+      onTap: () {
+        final newVal = !value;
+        onChanged(newVal); // 🌟 先頭で同期実行し、ブラウザのUser Gestureを確実に維持
+        HapticFeedback.lightImpact();
+      },
       trailing: Switch(
         value: value,
         activeThumbColor: Colors.white,
@@ -680,8 +685,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ? const Color(0xFF38383A)
             : const Color(0xFFE9E9EA),
         onChanged: (val) {
+          onChanged(val); // 🌟 先頭で同期実行し、ブラウザのUser Gestureを確実に維持
           if (value != val) HapticFeedback.lightImpact();
-          onChanged(val);
         },
       ),
     );
