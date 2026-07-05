@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
@@ -48,6 +49,12 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 🌟 ステップ3：本部一斉ポップアップ監視トリガーをアタッチ
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        listenGlobalAnnouncements(context, ref, tournamentId);
+      }
+    });
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final permissions = ref.watch(permissionProvider);

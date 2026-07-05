@@ -7,6 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 
 // ドメイン・インフラ・リポジトリ層
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -136,6 +137,12 @@ class ViewerHomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 🌟 ステップ3：観客席側 一斉ポップアップ監視トリガーをアタッチ
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        listenGlobalAnnouncements(context, ref, tournamentId);
+      }
+    });
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
