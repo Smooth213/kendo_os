@@ -14,6 +14,7 @@ void main() {
     late SharedPreferences prefs;
 
     setUp(() async {
+      resetAnnouncePopupManager();
       SharedPreferences.setMockInitialValues({});
       prefs = await SharedPreferences.getInstance();
       fakeFirestore = FakeFirebaseFirestore();

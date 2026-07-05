@@ -1,8 +1,31 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+
+import 'package:meta/meta.dart';
+
+// 🛡️ アクティブなストリームサブスクリプションを追跡（画面再構築時の重複購読を完全に防止）
+final Map<String, StreamSubscription> _activeSubscriptions = {};
+
+// 表示済みのポップアップID（同一IDの再表示を完全に防止）
+final Set<String> _shownAnnounceIds = {};
+
+// ポップアップダイアログ表示中フラグ（累積スタック・多重モーダルの発生を防止）
+bool _isAnnounceDialogShowing = false;
+
+/// 🛡️ テスト環境用の状態リセット関数
+@visibleForTesting
+void resetAnnouncePopupManager() {
+  for (final sub in _activeSubscriptions.values) {
+    sub.cancel();
+  }
+  _activeSubscriptions.clear();
+  _shownAnnounceIds.clear();
+  _isAnnounceDialogShowing = false;
+}
 
 /// 🌟 各画面の最外殻でアナウンスのFirestoreを監視し、全員向け/スタッフ向けの送り分けを安全に制御する
 void listenGlobalAnnouncements(
@@ -15,12 +38,14 @@ void listenGlobalAnnouncements(
     final settings = ref.read(settingsProvider);
     if (!settings.notifyOnEmergency) return;
 
-    // ポップアップ表示済みのIDを重複ガード
-    final Set<String> shownAnnounceIds = {};
+    final key = '${tournamentId}_$isStaffRoom';
+    if (_activeSubscriptions.containsKey(key)) {
+      return; // 🛡️ 防衛線：既にこの画面種別でストリーム購読済みの場合は即時リターン（重複を回避）
+    }
 
     final firestore = ref.read(firestoreProvider);
 
-    firestore
+    final subscription = firestore
         .collection('announcements')
         .where('tournamentId', isEqualTo: tournamentId)
         .where('type', isEqualTo: 'emergency')
@@ -49,11 +74,13 @@ void listenGlobalAnnouncements(
           // 過去30分以上前の古いアナウンスはポップアップ対象から除外する時間防壁
           final bool isRecent =
               DateTime.now().difference(announce.timestamp).inMinutes < 30;
-          if (shownAnnounceIds.contains(announce.id) || !isRecent) return;
+          if (_shownAnnounceIds.contains(announce.id) || !isRecent) return;
 
-          shownAnnounceIds.add(announce.id);
+          // 🛡️ 防衛線：既にポップアップ表示中であるか、画面がアンマウントされていれば表示をスキップ
+          if (_isAnnounceDialogShowing || !context.mounted) return;
 
-          if (!context.mounted) return;
+          _shownAnnounceIds.add(announce.id);
+          _isAnnounceDialogShowing = true;
 
           // 🌟 白ベース×サクラピンク差し色の格調高いダイアログ
           showDialog(
@@ -72,9 +99,9 @@ void listenGlobalAnnouncements(
                 ),
                 title: Row(
                   children: [
-                    Icon(
-                      isStaffOnlyNotice ? Icons.security : Icons.campaign,
-                      color: const Color(0xFFFF69B4), // 🌟 差し色：サクラピンク
+                    const Icon(
+                      Icons.campaign,
+                      color: Color(0xFFFF69B4), // 🌟 差し色：サクラピンク
                       size: 28,
                     ),
                     const SizedBox(width: 10),
@@ -123,7 +150,10 @@ void listenGlobalAnnouncements(
                         ),
                         elevation: 0,
                       ),
-                      onPressed: () => Navigator.pop(ctx),
+                      onPressed: () {
+                        _isAnnounceDialogShowing = false;
+                        Navigator.pop(ctx);
+                      },
                       child: const Text(
                         '内容を確認しました',
                         style: TextStyle(
@@ -138,6 +168,8 @@ void listenGlobalAnnouncements(
             },
           );
         });
+
+    _activeSubscriptions[key] = subscription;
   } catch (e) {
     debugPrint(
       '⚠️ [listenGlobalAnnouncements] Firestore connection skipped: $e',
