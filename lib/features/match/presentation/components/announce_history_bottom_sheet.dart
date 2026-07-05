@@ -255,3 +255,87 @@ class _AnnounceHistoryBottomSheetState
     );
   }
 }
+
+/// 🌟 未読のアナウンスがある場合にサクラピンクのバッジ（赤丸）を右上へ点火するベルアイコンボタン
+class NotificationBellButton extends ConsumerWidget {
+  final String tournamentId;
+  final bool isStaffRoom;
+  final Color? color;
+
+  const NotificationBellButton({
+    super.key,
+    required this.tournamentId,
+    required this.isStaffRoom,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 🛡️ Safe Firestore Instance (prevents crashes in tests where Firebase is not initialized)
+    FirebaseFirestore? firestore;
+    try {
+      firestore = ref.read(firestoreProvider);
+    } catch (_) {
+      try {
+        firestore = FirebaseFirestore.instance;
+      } catch (_) {
+        firestore = null;
+      }
+    }
+
+    final Widget bellIcon = IconButton(
+      icon: Icon(
+        Icons.notifications_outlined,
+        color:
+            color ??
+            (Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.indigo.shade900),
+      ),
+      tooltip: '通知履歴',
+      onPressed: () =>
+          AnnounceHistoryBottomSheet.show(context, tournamentId, isStaffRoom),
+    );
+
+    if (firestore == null) {
+      return bellIcon;
+    }
+
+    Query query = firestore
+        .collection('announcements')
+        .where('tournamentId', isEqualTo: tournamentId)
+        .where('isRead', isEqualTo: false);
+
+    if (!isStaffRoom) {
+      query = query.where('target', isEqualTo: 'all');
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: query.snapshots(),
+      builder: (context, snapshot) {
+        final bool hasUnread =
+            snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            bellIcon,
+            if (hasUnread)
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF69B4), // 🌟 差し色：サクラピンクの未読赤丸
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}

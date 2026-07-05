@@ -189,14 +189,9 @@ class HomeScreen extends ConsumerWidget {
                   elevation: 0,
                   iconTheme: IconThemeData(color: textColor),
                   actions: [
-                    IconButton(
-                      icon: const Icon(Icons.notifications_outlined),
-                      tooltip: '通知履歴',
-                      onPressed: () => AnnounceHistoryBottomSheet.show(
-                        context,
-                        tournamentId,
-                        true,
-                      ),
+                    NotificationBellButton(
+                      tournamentId: tournamentId,
+                      isStaffRoom: true,
                     ),
                     if (!isReadOnly)
                       Padding(

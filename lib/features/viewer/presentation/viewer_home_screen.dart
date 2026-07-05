@@ -240,15 +240,10 @@ class ViewerHomeScreen extends ConsumerWidget {
                   : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
               elevation: 0,
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
+                NotificationBellButton(
+                  tournamentId: tournamentId,
+                  isStaffRoom: false,
                   color: isDark ? Colors.white : Colors.indigo.shade900,
-                  tooltip: '通知履歴',
-                  onPressed: () => AnnounceHistoryBottomSheet.show(
-                    context,
-                    tournamentId,
-                    false,
-                  ),
                 ),
                 ManualHelpButton(
                   manualPath: 'docs/manuals/faq/viewer_faq.md',

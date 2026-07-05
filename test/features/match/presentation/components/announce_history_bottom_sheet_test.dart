@@ -205,5 +205,63 @@ void main() {
         expect(updatedSnapshot.data()?['isRead'], isTrue);
       },
     );
+
+    testWidgets(
+      '4. NotificationBellButton should display sakura pink dot if unread notifications exist',
+      (WidgetTester tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            firestoreProvider.overrideWithValue(fakeFirestore),
+          ],
+        );
+
+        // Render NotificationBellButton directly
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(
+              home: Scaffold(
+                body: NotificationBellButton(
+                  tournamentId: 'tourney_999',
+                  isStaffRoom: true,
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 1. Initial State: No unread documents
+        final badgeDotFinder = find.byWidgetPredicate((widget) {
+          if (widget is Container && widget.decoration is BoxDecoration) {
+            final boxDec = widget.decoration as BoxDecoration;
+            return boxDec.color == const Color(0xFFFF69B4) &&
+                boxDec.shape == BoxShape.circle;
+          }
+          return false;
+        });
+
+        expect(badgeDotFinder, findsNothing);
+
+        // 2. Add unread document
+        await fakeFirestore.collection('announcements').add({
+          'tournamentId': 'tourney_999',
+          'title': '新着通知',
+          'body': '未読のアナウンスがあります。',
+          'timestamp': Timestamp.now(),
+          'type': 'emergency',
+          'target': 'all',
+          'isRead': false,
+        });
+
+        // Trigger stream update
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpAndSettle();
+
+        // 3. Dot should appear
+        expect(badgeDotFinder, findsOneWidget);
+      },
+    );
   });
 }
