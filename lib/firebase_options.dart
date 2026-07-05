@@ -41,12 +41,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAkV9sojMHGhFtwBTDAzUgx7qRxEWkWnRM',
-    appId: '1:164010781926:web:55ac5f475727d7dc0d5f27',
-    messagingSenderId: '164010781926',
-    projectId: 'kendo-os-beta',
-    authDomain: 'kendo-os-beta.firebaseapp.com',
-    storageBucket: 'kendo-os-beta.firebasestorage.app',
+    apiKey: 'AIzaSyCAL6MtoCV6s5RAD6cOAr4QO4bVEZd7OnQ',
+    appId: '1:779304236953:web:a46a5e18d8a2913f404508',
+    messagingSenderId: '779304236953',
+    projectId: 'kendo-os',
+    authDomain: 'kendo-os.firebaseapp.com',
+    storageBucket: 'kendo-os.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
