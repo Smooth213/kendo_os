@@ -49,10 +49,15 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 🌟 ステップ3：本部一斉ポップアップ監視トリガーをアタッチ
+    // 🌟 ステップ3：本部一斉ポップアップ監視トリガーをアタッチ（運営スタッフ用フラグ: true）
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.mounted) {
-        listenGlobalAnnouncements(context, ref, tournamentId);
+        listenGlobalAnnouncements(
+          context,
+          ref,
+          tournamentId,
+          isStaffRoom: true,
+        );
       }
     });
     final isDark = Theme.of(context).brightness == Brightness.dark;

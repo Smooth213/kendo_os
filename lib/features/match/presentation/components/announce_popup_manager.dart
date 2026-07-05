@@ -3,21 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
-/// 🌟 各画面の最外殻でアナウンスのFirestoreを監視し、ポップアップを安全に制御する関数
+/// 🌟 各画面の最外殻でアナウンスのFirestoreを監視し、全員向け/スタッフ向けの送り分けを安全に制御する
 void listenGlobalAnnouncements(
   BuildContext context,
   WidgetRef ref,
-  String tournamentId,
-) {
+  String tournamentId, {
+  required bool isStaffRoom,
+}) {
   try {
     final settings = ref.read(settingsProvider);
-    // ユーザーの設定で「緊急通知ポップアップ」がOFFにされている場合は、ストリーム監視自体をスキップして防衛
     if (!settings.notifyOnEmergency) return;
 
-    // すでにポップアップ表示済みのIDをセッション内で重複ガード
+    // ポップアップ表示済みのIDを重複ガード
     final Set<String> shownAnnounceIds = {};
 
     final firestore = ref.read(firestoreProvider);
@@ -33,51 +32,66 @@ void listenGlobalAnnouncements(
           if (snapshot.docs.isEmpty) return;
 
           final doc = snapshot.docs.first;
-          final announce = AnnounceModel.fromJson({
-            ...doc.data(),
-            'id': doc.id,
-          });
+          final data = doc.data();
 
-          // 🌟 重複表示の防止、および過去30分以上前の古いアナウンスはポップアップ対象から除外する時間防壁
+          // 🌟 送り分けターゲットの抽出（デフォルトは全員向け 'all'）
+          final String target = data['target'] as String? ?? 'all';
+
+          // 🛡️ 防衛線：スタッフ限定通知（staff）であり、かつ現在の画面が観客席（isStaffRoom == false）なら完全スルー
+          if (target == 'staff' && !isStaffRoom) {
+            debugPrint(
+              '🛡️ [PopupManager] スタッフ限定アナウンスを検知したため、観客席でのポップアップをスキップしました。',
+            );
+            return;
+          }
+
+          final announce = AnnounceModel.fromJson({...data, 'id': doc.id});
+
+          // 過去30分以上前の古いアナウンスはポップアップ対象から除外する時間防壁
           final bool isRecent =
               DateTime.now().difference(announce.timestamp).inMinutes < 30;
           if (shownAnnounceIds.contains(announce.id) || !isRecent) return;
 
           shownAnnounceIds.add(announce.id);
 
-          // 🌟 A4縦型マニュアル・デザイン規約（白ベース×ピンク差し色）を100%継承した格調高いダイアログ
+          // 🌟 白ベース×サクラピンク差し色の格調高いダイアログ
           showDialog(
             context: context,
-            barrierDismissible: false, // 現場での見逃しを防ぐため、枠外タップでの離脱を厳禁化
+            barrierDismissible: false,
             builder: (ctx) {
               final isDark = Theme.of(ctx).brightness == Brightness.dark;
+              final bool isStaffOnlyNotice = target == 'staff';
 
               return AlertDialog(
                 backgroundColor: isDark
                     ? const Color(0xFF1C1C1E)
-                    : Colors.white, // 90%のクリーンな白ベース
+                    : Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 title: Row(
                   children: [
-                    const Icon(
-                      Icons.campaign,
-                      color: Color(0xFFFF69B4), // 🌟 差し色：サクラピンクで最重要アラートをハック
+                    Icon(
+                      isStaffOnlyNotice ? Icons.security : Icons.campaign,
+                      color: const Color(0xFFFF69B4), // 🌟 差し色：サクラピンク
                       size: 28,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        announce.title.isNotEmpty
-                            ? announce.title
-                            : '大会本部からのお知らせ',
+                        isStaffOnlyNotice
+                            ? '【スタッフ限定業務連絡】'
+                            : (announce.title.isNotEmpty
+                                  ? announce.title
+                                  : '大会本部からのお知らせ'),
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF2C3E50),
+                          color: isStaffOnlyNotice
+                              ? Colors.deepOrange
+                              : (isDark
+                                    ? Colors.white
+                                    : const Color(0xFF2C3E50)),
                         ),
                       ),
                     ),
@@ -101,7 +115,7 @@ void listenGlobalAnnouncements(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(
                           0xFF00796B,
-                        ), // 引き締め役のTealグリーン
+                        ), // 引き締めTealグリーン
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),

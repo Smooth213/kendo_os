@@ -22,6 +22,7 @@ void main() {
     Widget createTestTarget({
       required ProviderContainer container,
       required String tournamentId,
+      required bool isStaffRoom,
     }) {
       return UncontrolledProviderScope(
         container: container,
@@ -33,7 +34,12 @@ void main() {
                   // Trigger listenGlobalAnnouncements
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (context.mounted) {
-                      listenGlobalAnnouncements(context, ref, tournamentId);
+                      listenGlobalAnnouncements(
+                        context,
+                        ref,
+                        tournamentId,
+                        isStaffRoom: isStaffRoom,
+                      );
                     }
                   });
                   return const Text('Home Screen Content');
@@ -45,52 +51,57 @@ void main() {
       );
     }
 
-    testWidgets('1. Should show dialog for recent emergency announcement', (
-      WidgetTester tester,
-    ) async {
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          firestoreProvider.overrideWithValue(fakeFirestore),
-        ],
-      );
+    testWidgets(
+      '1. Should show dialog for recent emergency announcement (target: all)',
+      (WidgetTester tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            firestoreProvider.overrideWithValue(fakeFirestore),
+          ],
+        );
 
-      // Create screen
-      await tester.pumpWidget(
-        createTestTarget(container: container, tournamentId: 'tourney_123'),
-      );
-      await tester.pumpAndSettle();
+        // Create screen (Viewer / non-staff room)
+        await tester.pumpWidget(
+          createTestTarget(
+            container: container,
+            tournamentId: 'tourney_123',
+            isStaffRoom: false,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(AlertDialog), findsNothing);
+        expect(find.byType(AlertDialog), findsNothing);
 
-      // Add emergency announcement doc
-      await fakeFirestore.collection('announcements').add({
-        'tournamentId': 'tourney_123',
-        'title': '避難警報',
-        'body': '落雷の恐れがあるため体育館内に避難してください。',
-        'timestamp': Timestamp.now(),
-        'type': 'emergency',
-        'isRead': false,
-      });
+        // Add emergency announcement doc targeting 'all'
+        await fakeFirestore.collection('announcements').add({
+          'tournamentId': 'tourney_123',
+          'title': '避難警報',
+          'body': '落雷の恐れがあるため体育館内に避難してください。',
+          'timestamp': Timestamp.now(),
+          'type': 'emergency',
+          'target': 'all',
+          'isRead': false,
+        });
 
-      // Pump to trigger snapshot stream listener
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+        // Pump to trigger snapshot stream listener
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpAndSettle();
 
-      // Dialog should appear
-      expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('避難警報'), findsOneWidget);
-      expect(find.text('落雷の恐れがあるため体育館内に避難してください。'), findsOneWidget);
+        // Dialog should appear
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.text('避難警報'), findsOneWidget);
 
-      // Tap confirm button to close
-      final confirmBtn = find.text('内容を確認しました');
-      expect(confirmBtn, findsOneWidget);
-      await tester.tap(confirmBtn);
-      await tester.pumpAndSettle();
+        // Tap confirm button to close
+        final confirmBtn = find.text('内容を確認しました');
+        expect(confirmBtn, findsOneWidget);
+        await tester.tap(confirmBtn);
+        await tester.pumpAndSettle();
 
-      // Dialog should be gone
-      expect(find.byType(AlertDialog), findsNothing);
-    });
+        // Dialog should be gone
+        expect(find.byType(AlertDialog), findsNothing);
+      },
+    );
 
     testWidgets(
       '2. Should NOT show dialog if notifyOnEmergency settings is disabled',
@@ -110,7 +121,11 @@ void main() {
 
         // Build target
         await tester.pumpWidget(
-          createTestTarget(container: container, tournamentId: 'tourney_123'),
+          createTestTarget(
+            container: container,
+            tournamentId: 'tourney_123',
+            isStaffRoom: true,
+          ),
         );
         await tester.pumpAndSettle();
 
@@ -121,6 +136,7 @@ void main() {
           'body': 'テスト緊急本文',
           'timestamp': Timestamp.now(),
           'type': 'emergency',
+          'target': 'all',
           'isRead': false,
         });
 
@@ -143,7 +159,11 @@ void main() {
         );
 
         await tester.pumpWidget(
-          createTestTarget(container: container, tournamentId: 'tourney_123'),
+          createTestTarget(
+            container: container,
+            tournamentId: 'tourney_123',
+            isStaffRoom: true,
+          ),
         );
         await tester.pumpAndSettle();
 
@@ -155,6 +175,7 @@ void main() {
           'body': 'これは古い内容です。',
           'timestamp': Timestamp.fromDate(oldTime),
           'type': 'emergency',
+          'target': 'all',
           'isRead': false,
         });
 
@@ -162,6 +183,63 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(AlertDialog), findsNothing);
+      },
+    );
+
+    testWidgets(
+      '4. Staff target announcement: Should show in staff room, but skip in non-staff room',
+      (WidgetTester tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            firestoreProvider.overrideWithValue(fakeFirestore),
+          ],
+        );
+
+        // Case A: Non-staff room (ViewerHomeScreen)
+        await tester.pumpWidget(
+          createTestTarget(
+            container: container,
+            tournamentId: 'tourney_123',
+            isStaffRoom: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Add staff-only emergency announcement
+        await fakeFirestore.collection('announcements').add({
+          'tournamentId': 'tourney_123',
+          'title': '本部業務連絡',
+          'body': '第2コートのスコア用紙を回収してください。',
+          'timestamp': Timestamp.now(),
+          'type': 'emergency',
+          'target': 'staff',
+          'isRead': false,
+        });
+
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpAndSettle();
+
+        // Dialog should NOT appear on non-staff screen (skipped)
+        expect(find.byType(AlertDialog), findsNothing);
+
+        // Case B: Staff room (HomeScreen)
+        await tester.pumpWidget(
+          createTestTarget(
+            container: container,
+            tournamentId: 'tourney_123',
+            isStaffRoom: true,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpAndSettle();
+
+        // Dialog should now appear on staff screen
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.text('【スタッフ限定業務連絡】'), findsOneWidget);
+        expect(find.text('第2コートのスコア用紙を回収してください。'), findsOneWidget);
       },
     );
   });
