@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -697,7 +698,7 @@ class MatchTimelineList extends ConsumerWidget {
                                     if (minOrder != double.infinity) {
                                       topOrder = minOrder - 100.0;
                                     }
-                                    _showAddCommentDialog(
+                                    showUnifiedAnnounceDialog(
                                       context,
                                       ref,
                                       tournamentId,
@@ -4331,7 +4332,7 @@ void _onReorderTimeline(
   }
 }
 
-void _showAddCommentDialog(
+void showUnifiedAnnounceDialog(
   BuildContext context,
   WidgetRef ref,
   String tournamentId,
@@ -4340,71 +4341,221 @@ void _showAddCommentDialog(
   double order, {
   String? matchGroupId,
 }) {
-  final controller = TextEditingController();
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final titleController = TextEditingController();
+  final bodyController = TextEditingController();
+  String selectedTarget = 'all'; // デフォルトは全員向け
+
   showDialog(
     context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      title: Text(
-        '見出し（コメント）の追加',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: isDark ? Colors.white : Colors.black87,
-        ),
-      ),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-        decoration: InputDecoration(
-          hintText: '見出しやコメントを入力',
-          hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
-          filled: true,
-          fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        maxLines: 2,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            final text = controller.text.trim();
-            if (text.isNotEmpty) {
-              await ref
-                  .read(commentCommandProvider)
-                  .addComment(
-                    tournamentId: tournamentId,
-                    category: category,
-                    groupName: groupName,
-                    matchGroupId: matchGroupId,
-                    text: text,
-                    order: order,
-                  );
-            }
-            if (ctx.mounted) {
-              Navigator.pop(ctx);
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.indigo,
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          child: const Text(
-            '追加',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    ),
+    builder: (dialogCtx) {
+      return StatefulBuilder(
+        builder: (context, setDialogState) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+
+          return AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.add_alert, color: Color(0xFFFF69B4)), // 差し色：サクラピンク
+                SizedBox(width: 8),
+                Text(
+                  '公式アナウンス・コメントの一斉発信',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'タイトル（例：【緊急】会場変更）',
+                      hintText: '空欄の場合は自動で見出しになります',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: bodyController,
+                    maxLines: 3,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'アナウンス本文内容',
+                      hintText: '例：3会場へ移動になりました。選手は速やかに移動してください。',
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 🏢 全員向け / スタッフ限定 の完全送り分け選択UIセクション
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF2C2C2E)
+                          : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                '📢 全員に通知',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: selectedTarget == 'all'
+                                      ? (isDark ? Colors.white : Colors.black87)
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ),
+                            selected: selectedTarget == 'all',
+                            selectedColor: const Color(
+                              0xFFFF69B4,
+                            ).withValues(alpha: 0.2), // サクラピンクの淡い選択色
+                            onSelected: (val) {
+                              if (val) {
+                                setDialogState(() => selectedTarget = 'all');
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                '🔒 スタッフ限定',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: selectedTarget == 'staff'
+                                      ? (isDark ? Colors.white : Colors.black87)
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ),
+                            selected: selectedTarget == 'staff',
+                            selectedColor: Colors.deepOrange.withValues(
+                              alpha: 0.2,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setDialogState(() => selectedTarget = 'staff');
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogCtx),
+                child: const Text(
+                  'キャンセル',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00796B), // 安全のTealグリーン
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () async {
+                  final String title = titleController.text.trim();
+                  final String body = bodyController.text.trim();
+                  if (body.isEmpty) return;
+
+                  final String finalTitle = title.isNotEmpty
+                      ? title
+                      : '大会本部からのお知らせ';
+
+                  // Firestore client instance safe logic inside test context
+                  FirebaseFirestore firestore;
+                  try {
+                    firestore = ref.read(firestoreProvider);
+                  } catch (_) {
+                    firestore = FirebaseFirestore.instance;
+                  }
+
+                  final String announceId = firestore
+                      .collection('announcements')
+                      .doc()
+                      .id;
+
+                  // 🚀 1連動：Firestoreの通知コレクションへ爆送書き込み（ステップ3, 4, 5が一斉リアルタイム着火）
+                  await firestore
+                      .collection('announcements')
+                      .doc(announceId)
+                      .set({
+                        'id': announceId,
+                        'tournamentId': tournamentId,
+                        'title': finalTitle,
+                        'body': body,
+                        'timestamp': FieldValue.serverTimestamp(),
+                        'type': 'emergency',
+                        'target': selectedTarget, // all または staff を完全送り分け
+                        'isRead': false,
+                      });
+
+                  // 🚀 2連動：既存のタイムライン側への「見出しコメント」としての同時追記（Isar/Firestore同期）
+                  final String commentText = title.isNotEmpty
+                      ? '$title\n$body'
+                      : body;
+                  await ref
+                      .read(commentCommandProvider)
+                      .addComment(
+                        tournamentId: tournamentId,
+                        category: category,
+                        groupName: groupName,
+                        matchGroupId: matchGroupId,
+                        text: commentText,
+                        order: order,
+                      );
+
+                  if (dialogCtx.mounted) {
+                    Navigator.pop(dialogCtx);
+                  }
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          selectedTarget == 'staff'
+                              ? 'スタッフ限定業務連絡を発信しました'
+                              : '全員向け緊急アナウンスを一斉配信しました',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: const Text(
+                  '一斉発信して保存',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    },
   );
 }
 
