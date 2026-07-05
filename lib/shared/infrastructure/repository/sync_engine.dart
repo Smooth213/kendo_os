@@ -10,6 +10,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class SyncEngine {
@@ -21,6 +23,7 @@ class SyncEngine {
   // ダウンストリーム監視用のサブスクリプション
   StreamSubscription? _matchesSubscription;
   StreamSubscription? _bunaiksenSubscription;
+  StreamSubscription? _commentsSubscription;
 
   SyncEngine(this._ref) {
     // 🌟 起動と同時に自動ポーリング同期ループを開始
@@ -58,8 +61,10 @@ class SyncEngine {
   void _bindListeners() {
     _matchesSubscription?.cancel();
     _bunaiksenSubscription?.cancel();
+    _commentsSubscription?.cancel();
     _matchesSubscription = null;
     _bunaiksenSubscription = null;
+    _commentsSubscription = null;
 
     final dojoId = _ref.read(currentDojoIdProvider);
     final tournamentId = _ref.read(currentTournamentIdProvider);
@@ -119,6 +124,25 @@ class SyncEngine {
           debugPrint(
             '⚠️ [Sync Engine Downstream] 特設(bunaiksen)ドキュメント監視エラー: $e',
           );
+        },
+      );
+    }
+
+    if (!kIsWeb) {
+      // 3. コメントデータ監視 (Web以外でIsarと同期するため)
+      final commentsCollection = FirebaseFirestore.instance
+          .collection('organizations')
+          .doc(dojoId)
+          .collection('tournaments')
+          .doc(activeTournamentId)
+          .collection('comments');
+
+      _commentsSubscription = commentsCollection.snapshots().listen(
+        (snapshot) async {
+          await _syncFirestoreCommentsToIsar(snapshot);
+        },
+        onError: (e) {
+          debugPrint('⚠️ [Sync Engine Downstream] コメント監視エラー: $e');
         },
       );
     }
@@ -197,6 +221,39 @@ class SyncEngine {
       debugPrint(
         '🔥 [Sync Engine Downstream Critical] Isarへのバルクインサート中にエラーが発生しました: $e',
       );
+    }
+  }
+
+  Future<void> _syncFirestoreCommentsToIsar(
+    QuerySnapshot<Map<String, dynamic>> snapshot,
+  ) async {
+    try {
+      final localRepo = _ref.read(localCommentRepositoryProvider);
+      for (final change in snapshot.docChanges) {
+        final doc = change.doc;
+        final data = doc.data();
+        if (data == null) continue;
+
+        final commentId = doc.id;
+
+        if (change.type == DocumentChangeType.removed) {
+          await localRepo.deleteComment(commentId);
+          debugPrint(
+            '⚡ [Sync Engine Downstream] Firestoreから削除されたコメントをIsarから削除しました: $commentId',
+          );
+        } else {
+          final comment = MatchCommentModel.fromJson({
+            ...data,
+            'id': commentId,
+          });
+          await localRepo.saveComment(comment);
+          debugPrint(
+            '⚡ [Sync Engine Downstream] FirestoreからコメントをIsarに同期しました: $commentId',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('🔥 [Sync Engine Downstream Critical] コメント同期中にエラーが発生しました: $e');
     }
   }
 
