@@ -65,6 +65,10 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     bool? experimentalFeatures, // ★ 修正: この1行を引数に追加
     int? securityLevel,
     String? adminPasscode,
+    bool? notifyOnEmergency,
+    bool? notifyOnMatchAdded,
+    bool? notifyOnMatchStarted,
+    bool? notifyOnResult,
   }) async {
     final oldState = state;
     final newState = state.copyWith(
@@ -84,6 +88,10 @@ class SettingsNotifier extends Notifier<SettingsModel> {
           state.experimentalFeatures, // ★ 修正: この1行を代入に追加
       securityLevel: securityLevel ?? state.securityLevel,
       adminPasscode: adminPasscode ?? state.adminPasscode,
+      notifyOnEmergency: notifyOnEmergency ?? state.notifyOnEmergency,
+      notifyOnMatchAdded: notifyOnMatchAdded ?? state.notifyOnMatchAdded,
+      notifyOnMatchStarted: notifyOnMatchStarted ?? state.notifyOnMatchStarted,
+      notifyOnResult: notifyOnResult ?? state.notifyOnResult,
     );
 
     await updateSettings(newState);
@@ -132,6 +140,10 @@ class SettingsNotifier extends Notifier<SettingsModel> {
           themeMode: 'system',
           enableLiquidGlass: true,
           securityLevel: 2,
+          notifyOnEmergency: true,
+          notifyOnMatchAdded: true,
+          notifyOnMatchStarted: true,
+          notifyOnResult: false,
         ),
       );
     } else if (presetName == 'renseikai') {
@@ -149,6 +161,10 @@ class SettingsNotifier extends Notifier<SettingsModel> {
           themeMode: 'system',
           enableLiquidGlass: true,
           securityLevel: 1,
+          notifyOnEmergency: true,
+          notifyOnMatchAdded: true,
+          notifyOnMatchStarted: true,
+          notifyOnResult: false,
         ),
       );
     } else if (presetName == 'practice') {
@@ -166,6 +182,10 @@ class SettingsNotifier extends Notifier<SettingsModel> {
           themeMode: 'system',
           enableLiquidGlass: true,
           securityLevel: 1,
+          notifyOnEmergency: true,
+          notifyOnMatchAdded: true,
+          notifyOnMatchStarted: true,
+          notifyOnResult: false,
         ),
       );
     }
