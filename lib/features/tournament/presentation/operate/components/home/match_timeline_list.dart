@@ -4357,13 +4357,22 @@ void showUnifiedAnnounceDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.add_alert, color: Color(0xFFFF69B4)), // 差し色：サクラピンク
-                SizedBox(width: 8),
-                Text(
-                  '公式アナウンス・コメントの一斉発信',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                const Icon(
+                  Icons.add_alert,
+                  color: Color(0xFFFF69B4),
+                ), // 差し色：サクラピンク
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '公式アナウンス・コメントの一斉発信',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
                 ),
               ],
             ),
