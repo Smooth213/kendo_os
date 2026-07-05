@@ -9,6 +9,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart'; // ★ 追加
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/security/feature_gate.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
+import 'package:kendo_os/shared/infrastructure/services/web_notification_helper.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -221,10 +222,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context,
                       '緊急連絡・本部アナウンスの通知',
                       settings.notifyOnEmergency,
-                      (val) async {
+                      (val) {
+                        if (val) {
+                          triggerWebNotificationPermission();
+                        }
                         notifier.updateField(notifyOnEmergency: val);
                         if (val) {
-                          await ref
+                          ref
                               .read(notificationServiceProvider)
                               .initializeNotification();
                         }
@@ -236,10 +240,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context,
                       '新着試合追加の通知',
                       settings.notifyOnMatchAdded,
-                      (val) async {
+                      (val) {
+                        if (val) {
+                          triggerWebNotificationPermission();
+                        }
                         notifier.updateField(notifyOnMatchAdded: val);
                         if (val) {
-                          await ref
+                          ref
                               .read(notificationServiceProvider)
                               .initializeNotification();
                         }
@@ -251,10 +258,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context,
                       '試合開始の通知',
                       settings.notifyOnMatchStarted,
-                      (val) async {
+                      (val) {
+                        if (val) {
+                          triggerWebNotificationPermission();
+                        }
                         notifier.updateField(notifyOnMatchStarted: val);
                         if (val) {
-                          await ref
+                          ref
                               .read(notificationServiceProvider)
                               .initializeNotification();
                         }
@@ -266,10 +276,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context,
                       '試合結果・終了の通知',
                       settings.notifyOnResult,
-                      (val) async {
+                      (val) {
+                        if (val) {
+                          triggerWebNotificationPermission();
+                        }
                         notifier.updateField(notifyOnResult: val);
                         if (val) {
-                          await ref
+                          ref
                               .read(notificationServiceProvider)
                               .initializeNotification();
                         }
