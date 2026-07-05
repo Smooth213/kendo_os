@@ -192,7 +192,7 @@ void main() {
         try {
           if (FirebaseAuth.instance.currentUser == null) {
             await FirebaseAuth.instance.signInAnonymously().timeout(
-              const Duration(seconds: 1),
+              const Duration(seconds: 15),
               onTimeout: () => throw TimeoutException('Auth Timeout'),
             );
             debugPrint('🛡️ [Auth] 匿名ゲスト認証を自動確立しました');

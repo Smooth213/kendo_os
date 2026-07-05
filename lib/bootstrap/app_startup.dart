@@ -63,7 +63,7 @@ class AppStartup {
         if (FirebaseAuth.instance.currentUser == null) {
           // timeout時は例外をスローさせ、下のcatchブロックで安全にハンドリングして進行
           await FirebaseAuth.instance.signInAnonymously().timeout(
-            const Duration(seconds: 2),
+            const Duration(seconds: 15),
             onTimeout: () {
               throw TimeoutException('Auth 認証タイムアウト（オフライン運用に切り替えます）');
             },

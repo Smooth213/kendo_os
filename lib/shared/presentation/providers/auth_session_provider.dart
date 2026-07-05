@@ -49,7 +49,14 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
     // ★ 追加: セッション確立直後に、自身のUIDとRoleをFirestoreのmembersに自動登録（Upsert）する
     // これにより、セキュリティルールの getUserRole() で弾かれてしまう Permission Denied を根本から防ぐ
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      var user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        debugPrint(
+          '🛡️ [Auth] Current user is null. Performing fallback anonymous sign-in...',
+        );
+        final creds = await FirebaseAuth.instance.signInAnonymously();
+        user = creds.user;
+      }
       if (user != null && dojoId.isNotEmpty) {
         await FirebaseFirestore.instance
             .collection('organizations')
