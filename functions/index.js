@@ -1,4 +1,5 @@
 const { onObjectFinalized } = require("firebase-functions/v2/storage");
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const admin = require("firebase-admin");
 const vision = require("@google-cloud/vision");
@@ -67,3 +68,84 @@ exports.processProgramImageOCR = onObjectFinalized(async (event) => {
     console.error("OCRエラー発生:", error);
   }
 });
+
+// 🔔 アナウンス作成トリガー: Firestoreに登録された緊急お知らせをNative FCMトピックおよびWeb FCMトークンにプッシュ配信する
+exports.onAnnouncementCreated = onDocumentCreated(
+  {
+    document: "announcements/{announceId}",
+    region: "asia-northeast1",
+  },
+  async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) return;
+    const data = snapshot.data();
+    if (!data) return;
+
+    const tournamentId = data.tournamentId;
+    const title = data.title || "大会本部からのお知らせ";
+    const body = data.body || "";
+    const target = data.target || "all";
+
+    console.log(`🔔 onAnnouncementCreated 起動! ID: ${event.params.announceId}, Tournament: ${tournamentId}`);
+
+    // 1. ネイティブ (iOS/Android) 向けトピック配信用のペイロードを作成
+    const topic = target === "staff"
+      ? `tournament_${tournamentId}_staff`
+      : `tournament_${tournamentId}_all`;
+
+    const topicPayload = {
+      notification: {
+        title: title,
+        body: body,
+      },
+      data: {
+        type: "emergency",
+        tournamentId: tournamentId,
+        target: target,
+      },
+      topic: topic,
+    };
+
+    try {
+      const response = await admin.messaging().send(topicPayload);
+      console.log(`Successfully sent message to Native topic ${topic}:`, response);
+    } catch (error) {
+      console.error(`Error sending message to Native topic ${topic}:`, error);
+    }
+
+    // 2. Web (PWA) 向けに fcm_tokens からデバイスを取得しマルチキャスト配信を実行
+    try {
+      let query = admin.firestore()
+        .collection("fcm_tokens")
+        .where("tournamentId", "==", tournamentId);
+
+      if (target === "staff") {
+        query = query.where("isStaff", "==", true);
+      }
+
+      const tokenSnapshot = await query.get();
+      if (!tokenSnapshot.empty) {
+        const tokens = tokenSnapshot.docs.map(doc => doc.data().token).filter(t => !!t);
+        if (tokens.length > 0) {
+          const webPayload = {
+            notification: {
+              title: title,
+              body: body,
+            },
+            data: {
+              type: "emergency",
+              tournamentId: tournamentId,
+              target: target,
+            },
+            tokens: tokens,
+          };
+
+          const response = await admin.messaging().sendEachForMulticast(webPayload);
+          console.log(`Successfully sent message to Web tokens count ${tokens.length}:`, response.successCount);
+        }
+      }
+    } catch (error) {
+      console.error(`Error sending Web push notifications:`, error);
+    }
+  }
+);

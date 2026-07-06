@@ -4,6 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // firestoreProvider
 
 /// 🌟 アプリがバックグラウンドや完全に閉じている時にFCMを受信した際のトップレベルハンドラ
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -136,6 +138,73 @@ class NotificationService {
       });
     } catch (e) {
       debugPrint('⚠️ [NotificationService] Failed to set up FCM listener: $e');
+    }
+  }
+
+  /// 🌟 端末のプッシュ通知受信用にトピック購読（Native）またはFCMトークン保存（Web）を行う
+  Future<void> registerPushNotification({
+    required String tournamentId,
+    required bool isStaff,
+  }) async {
+    try {
+      final messaging = FirebaseMessaging.instance;
+
+      if (kIsWeb) {
+        // Web/PWA環境: Web Push用のFCMトークンを取得してFirestoreに保存
+        final String? token = await messaging
+            .getToken(
+              vapidKey: const String.fromEnvironment(
+                'FCM_VAPID_KEY',
+                defaultValue: '',
+              ),
+            )
+            .catchError((e) {
+              debugPrint(
+                '⚠️ [NotificationService] Failed to get Web FCM Token: $e',
+              );
+              return null;
+            });
+
+        if (token != null && token.isNotEmpty) {
+          FirebaseFirestore firestore;
+          try {
+            firestore = _ref.read(firestoreProvider);
+          } catch (_) {
+            firestore = FirebaseFirestore.instance;
+          }
+
+          await firestore.collection('fcm_tokens').doc(token).set({
+            'token': token,
+            'tournamentId': tournamentId,
+            'isStaff': isStaff,
+            'platform': 'web',
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+          debugPrint(
+            '🔔 [NotificationService] Web FCM Token registered successfully on Firestore',
+          );
+        }
+      } else {
+        // ネイティブ環境 (iOS/Android): FCMトピックの購読を実行
+        // 全員向けのアナウンス用トピックを購読
+        await messaging.subscribeToTopic('tournament_${tournamentId}_all');
+
+        // スタッフ限定のアナウンス用トピックの購読制御
+        if (isStaff) {
+          await messaging.subscribeToTopic('tournament_${tournamentId}_staff');
+        } else {
+          await messaging.unsubscribeFromTopic(
+            'tournament_${tournamentId}_staff',
+          );
+        }
+        debugPrint(
+          '🔔 [NotificationService] Subscribed to Native FCM topics for tournament: $tournamentId (isStaff: $isStaff)',
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        '⚠️ [NotificationService] Failed to register push notification: $e',
+      );
     }
   }
 }

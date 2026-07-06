@@ -6,6 +6,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
 
 // 🛡️ アクティブなストリームサブスクリプションを追跡（画面再構築時の重複購読を完全に防止）
 final Map<String, StreamSubscription> _activeSubscriptions = {};
@@ -172,6 +173,14 @@ void listenGlobalAnnouncements(
       debugPrint('📢 [listenGlobalAnnouncements] 既に監視中のためスキップ - key: "$key"');
       return; // 🛡️ 防衛線：既にこの画面種別でストリーム購読済みの場合は即時リターン（重複を回避）
     }
+
+    // 🔔 プッシュ通知受信用にトピック購読（Native）またはFCMトークン保存（Web）を実行
+    ref
+        .read(notificationServiceProvider)
+        .registerPushNotification(
+          tournamentId: tournamentId,
+          isStaff: isStaffRoom,
+        );
 
     final firestore = ref.read(firestoreProvider);
     final DateTime listenerStartTime = DateTime.now();
