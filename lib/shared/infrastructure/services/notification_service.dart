@@ -150,14 +150,41 @@ class NotificationService {
       final messaging = FirebaseMessaging.instance;
 
       if (kIsWeb) {
+        FirebaseFirestore firestore;
+        try {
+          firestore = _ref.read(firestoreProvider);
+        } catch (_) {
+          firestore = FirebaseFirestore.instance;
+        }
+
         // Web/PWA環境: Web Push用のFCMトークンを取得してFirestoreに保存
+        // 🌟 開発者ビルド時以外の環境でも動作可能にするため、VAPIDキーをFirestoreの /fcm_config/web ドキュメントから動的に取得します
+        String vapidKey = const String.fromEnvironment(
+          'FCM_VAPID_KEY',
+          defaultValue: '',
+        );
+        if (vapidKey.isEmpty) {
+          try {
+            final configDoc = await firestore
+                .collection('fcm_config')
+                .doc('web')
+                .get();
+            final dbKey = configDoc.data()?['vapidKey'] as String?;
+            if (dbKey != null && dbKey.isNotEmpty) {
+              vapidKey = dbKey;
+              debugPrint(
+                '🔔 [NotificationService] Loaded VAPID Key from Firestore: $vapidKey',
+              );
+            }
+          } catch (e) {
+            debugPrint(
+              '⚠️ [NotificationService] Failed to load VAPID Key from Firestore: $e',
+            );
+          }
+        }
+
         final String? token = await messaging
-            .getToken(
-              vapidKey: const String.fromEnvironment(
-                'FCM_VAPID_KEY',
-                defaultValue: '',
-              ),
-            )
+            .getToken(vapidKey: vapidKey.isNotEmpty ? vapidKey : null)
             .catchError((e) {
               debugPrint(
                 '⚠️ [NotificationService] Failed to get Web FCM Token: $e',
@@ -166,13 +193,6 @@ class NotificationService {
             });
 
         if (token != null && token.isNotEmpty) {
-          FirebaseFirestore firestore;
-          try {
-            firestore = _ref.read(firestoreProvider);
-          } catch (_) {
-            firestore = FirebaseFirestore.instance;
-          }
-
           await firestore.collection('fcm_tokens').doc(token).set({
             'token': token,
             'tournamentId': tournamentId,
