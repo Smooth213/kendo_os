@@ -117,6 +117,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false;
     }
+
+    match /client_logs/{logId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+    }
     
     // =========================================================================
     // 🚫 絶対防壁: 旧仕様・ルート階層へのアクセスを完全遮断（漏洩・不正アクセス防止）

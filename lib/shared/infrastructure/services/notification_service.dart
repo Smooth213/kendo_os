@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // firestoreProvider
+import 'package:firebase_core/firebase_core.dart';
 
 /// 🌟 アプリがバックグラウンドや完全に閉じている時にFCMを受信した際のトップレベルハンドラ
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -146,17 +147,25 @@ class NotificationService {
     required String tournamentId,
     required bool isStaff,
   }) async {
+    // 🛡️ テスト環境などFirebase未初期化時のクラッシュを水際で防止
+    if (Firebase.apps.isEmpty) {
+      debugPrint(
+        '⚠️ [NotificationService] Firebase is not initialized. Skipping push registration.',
+      );
+      return;
+    }
+
+    FirebaseFirestore firestore;
+    try {
+      firestore = _ref.read(firestoreProvider);
+    } catch (_) {
+      firestore = FirebaseFirestore.instance;
+    }
+
     try {
       final messaging = FirebaseMessaging.instance;
 
       if (kIsWeb) {
-        FirebaseFirestore firestore;
-        try {
-          firestore = _ref.read(firestoreProvider);
-        } catch (_) {
-          firestore = FirebaseFirestore.instance;
-        }
-
         // Web/PWA環境: Web Push用のFCMトークンを取得してFirestoreに保存
         // 🌟 開発者ビルド時以外の環境でも動作可能にするため、VAPIDキーをFirestoreの /fcm_config/web ドキュメントから動的に取得します
         String vapidKey = const String.fromEnvironment(
@@ -189,6 +198,13 @@ class NotificationService {
               debugPrint(
                 '⚠️ [NotificationService] Failed to get Web FCM Token: $e',
               );
+              // Firestoreにエラーを記録
+              firestore.collection('client_logs').add({
+                'action': 'getToken',
+                'error': e.toString(),
+                'platform': 'web',
+                'timestamp': FieldValue.serverTimestamp(),
+              });
               return null;
             });
 
@@ -225,6 +241,14 @@ class NotificationService {
       debugPrint(
         '⚠️ [NotificationService] Failed to register push notification: $e',
       );
+      try {
+        await firestore.collection('client_logs').add({
+          'action': 'registerPushNotification',
+          'error': e.toString(),
+          'platform': kIsWeb ? 'web' : 'native',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      } catch (_) {}
     }
   }
 }
