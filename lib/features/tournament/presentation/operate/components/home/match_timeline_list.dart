@@ -4488,7 +4488,7 @@ void showUnifiedAnnounceDialog(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: () async {
+                onPressed: () {
                   final String title = titleController.text.trim();
                   final String body = bodyController.text.trim();
                   if (body.isEmpty) return;
@@ -4497,76 +4497,80 @@ void showUnifiedAnnounceDialog(
                       ? title
                       : '大会本部からのお知らせ';
 
-                  // Firestore client instance safe logic inside test context
-                  FirebaseFirestore firestore;
-                  try {
-                    firestore = ref.read(firestoreProvider);
-                  } catch (_) {
-                    firestore = FirebaseFirestore.instance;
+                  // 🌟 即座にダイアログを閉じることで、タップした瞬間にスッと画面が消える心地よいUXを実現
+                  if (dialogCtx.mounted) {
+                    Navigator.pop(dialogCtx);
                   }
 
-                  final String announceId = firestore
-                      .collection('announcements')
-                      .doc()
-                      .id;
+                  // 🌟 非同期のFirestoreおよびIsarへの書き込み処理はバックグラウンドで実行
+                  Future(() async {
+                    // Firestore client instance safe logic inside test context
+                    FirebaseFirestore firestore;
+                    try {
+                      firestore = ref.read(firestoreProvider);
+                    } catch (_) {
+                      firestore = FirebaseFirestore.instance;
+                    }
 
-                  try {
-                    // 🚀 1連動：Firestoreの通知コレクションへ爆送書き込み（ステップ3, 4, 5が一斉リアルタイム着火）
-                    await firestore
+                    final String announceId = firestore
                         .collection('announcements')
-                        .doc(announceId)
-                        .set({
-                          'id': announceId,
-                          'tournamentId': tournamentId,
-                          'title': finalTitle,
-                          'body': body,
-                          'timestamp': FieldValue.serverTimestamp(),
-                          'type': 'emergency',
-                          'target': selectedTarget, // all または staff を完全送り分け
-                          'isRead': false,
-                        });
+                        .doc()
+                        .id;
 
-                    // 🚀 2連動：既存のタイムライン側への「見出しコメント」としての同時追記（Isar/Firestore同期）
-                    final String commentText = title.isNotEmpty
-                        ? '$title\n$body'
-                        : body;
-                    await ref
-                        .read(commentCommandProvider)
-                        .addComment(
-                          tournamentId: tournamentId,
-                          category: category,
-                          groupName: groupName,
-                          matchGroupId: matchGroupId,
-                          text: commentText,
-                          order: order,
-                        );
+                    try {
+                      // 🚀 1連動：Firestoreの通知コレクションへ爆送書き込み（ステップ3, 4, 5が一斉リアルタイム着火）
+                      await firestore
+                          .collection('announcements')
+                          .doc(announceId)
+                          .set({
+                            'id': announceId,
+                            'tournamentId': tournamentId,
+                            'title': finalTitle,
+                            'body': body,
+                            'timestamp': FieldValue.serverTimestamp(),
+                            'type': 'emergency',
+                            'target': selectedTarget, // all または staff を完全送り分け
+                            'isRead': false,
+                          });
 
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            selectedTarget == 'staff'
-                                ? 'スタッフ限定業務連絡を発信しました'
-                                : '全員向け緊急アナウンスを一斉配信しました',
+                      // 🚀 2連動：既存のタイムライン側への「見出しコメント」としての同時追記（Isar/Firestore同期）
+                      final String commentText = title.isNotEmpty
+                          ? '$title\n$body'
+                          : body;
+                      await ref
+                          .read(commentCommandProvider)
+                          .addComment(
+                            tournamentId: tournamentId,
+                            category: category,
+                            groupName: groupName,
+                            matchGroupId: matchGroupId,
+                            text: commentText,
+                            order: order,
+                          );
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              selectedTarget == 'staff'
+                                  ? 'スタッフ限定業務連絡を発信しました'
+                                  : '全員向け緊急アナウンスを一斉配信しました',
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
+                    } catch (e) {
+                      debugPrint('🚨 [AnnounceDialog] 送信エラー: $e');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('送信に失敗しました: ${e.toString()}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
-                  } catch (e) {
-                    debugPrint('🚨 [AnnounceDialog] 送信エラー: $e');
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('送信に失敗しました: ${e.toString()}'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  } finally {
-                    if (dialogCtx.mounted) {
-                      Navigator.pop(dialogCtx);
-                    }
-                  }
+                  });
                 },
                 child: const Text(
                   '一斉発信して保存',
