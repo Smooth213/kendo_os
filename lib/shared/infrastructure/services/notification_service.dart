@@ -249,11 +249,13 @@ class NotificationService {
             });
 
         if (token != null && token.isNotEmpty) {
+          final currentUser = FirebaseAuth.instance.currentUser;
           await firestore.collection('fcm_tokens').doc(token).set({
             'token': token,
             'tournamentId': tournamentId,
             'isStaff': isStaff,
             'platform': 'web',
+            'userId': currentUser?.uid,
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
           debugPrint(

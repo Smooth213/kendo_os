@@ -100,7 +100,9 @@ export const onAnnouncementCreated = onDocumentCreated(
     const body = data.body || "";
     const target = data.target || "all";
 
-    console.log(`🔔 onAnnouncementCreated 起動! ID: ${event.params.announceId}, Tournament: ${tournamentId}`);
+    const senderId = data.createdBy || null;
+
+    console.log(`🔔 onAnnouncementCreated 起動! ID: ${event.params.announceId}, Tournament: ${tournamentId}, Sender: ${senderId}`);
 
     // 1. ネイティブ (iOS/Android) 向けトピック配信用のペイロードを作成
     const topic = target === "staff"
@@ -139,7 +141,18 @@ export const onAnnouncementCreated = onDocumentCreated(
 
       const tokenSnapshot = await query.get();
       if (!tokenSnapshot.empty) {
-        const tokens = tokenSnapshot.docs.map(doc => doc.data().token).filter(t => !!t);
+        const tokens = tokenSnapshot.docs
+          .filter(doc => {
+            const tokenData = doc.data();
+            // 送信者自身のトークンは除外
+            if (senderId && tokenData.userId === senderId) {
+              return false;
+            }
+            return true;
+          })
+          .map(doc => doc.data().token as string)
+          .filter(t => !!t);
+
         if (tokens.length > 0) {
           const webPayload = {
             notification: {
@@ -155,7 +168,7 @@ export const onAnnouncementCreated = onDocumentCreated(
           };
 
           const response = await admin.messaging().sendEachForMulticast(webPayload);
-          console.log(`Successfully sent message to Web tokens count ${tokens.length}:`, response.successCount);
+          console.log(`Successfully sent message to Web tokens count ${tokens.length} (excluded sender: ${senderId}):`, response.successCount);
         }
       }
     } catch (error) {

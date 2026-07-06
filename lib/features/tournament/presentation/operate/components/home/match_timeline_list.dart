@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -4535,6 +4536,13 @@ void showUnifiedAnnounceDialog(
                             'type': 'emergency',
                             'target': selectedTarget, // all または staff を完全送り分け
                             'isRead': false,
+                            'createdBy': () {
+                              try {
+                                return FirebaseAuth.instance.currentUser?.uid;
+                              } catch (_) {
+                                return null;
+                              }
+                            }(),
                           });
 
                       // 🚀 2連動：既存のタイムライン側への「見出しコメント」としての同時追記（Isar/Firestore同期）
