@@ -28,6 +28,21 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
       await _prefs.setStringList(_key, updated);
     }
   }
+
+  Future<void> markAllAsRead(List<String> ids) async {
+    final List<String> updated = List.from(state);
+    bool changed = false;
+    for (final id in ids) {
+      if (!updated.contains(id)) {
+        updated.add(id);
+        changed = true;
+      }
+    }
+    if (changed) {
+      state = updated;
+      await _prefs.setStringList(_key, updated);
+    }
+  }
 }
 
 class AnnounceHistoryBottomSheet extends ConsumerStatefulWidget {
@@ -93,183 +108,209 @@ class _AnnounceHistoryBottomSheetState
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white, // 90%のクリーンな白ベース
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Column(
-        children: [
-          // ボトムシートの引手（インジケータ）
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.notifications_active_outlined,
-                  color: isDark ? Colors.white : const Color(0xFF2C3E50),
+      child: StreamBuilder<QuerySnapshot>(
+        stream: query.snapshots(),
+        builder: (context, snapshot) {
+          final docs = snapshot.data?.docs ?? [];
+          final allIds = docs.map((d) => d.id).toList();
+          final unreadIds = allIds
+              .where((id) => !readIds.contains(id))
+              .toList();
+
+          return Column(
+            children: [
+              // ボトムシートの引手（インジケータ）
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  widget.isStaffRoom ? '新着通知一覧 (スタッフ専用)' : '新着通知一覧',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : const Color(0xFF2C3E50),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.notifications_active_outlined,
+                      color: isDark ? Colors.white : const Color(0xFF2C3E50),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        widget.isStaffRoom ? '新着通知一覧 (スタッフ専用)' : '新着通知一覧',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF2C3E50),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // 🌟 未読があれば「すべて既読にする」ボタンを表示
+                    if (unreadIds.isNotEmpty)
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          foregroundColor: const Color(0xFFFF69B4),
+                        ),
+                        onPressed: () {
+                          ref
+                              .read(readAnnouncementsProvider.notifier)
+                              .markAllAsRead(unreadIds);
+                        },
+                        icon: const Icon(Icons.done_all, size: 18),
+                        label: const Text(
+                          'すべて既読',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              Expanded(child: _buildList(context, snapshot, readIds)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildList(
+    BuildContext context,
+    AsyncSnapshot<QuerySnapshot> snapshot,
+    List<String> readIds,
+  ) {
+    if (snapshot.hasError) {
+      return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
+    }
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
+      return const Center(
+        child: Text('新しい通知はありません', style: TextStyle(color: Colors.grey)),
+      );
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: snapshot.data!.docs.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final doc = snapshot.data!.docs[index];
+        final data = doc.data() as Map<String, dynamic>;
+        final announce = AnnounceModel.fromJson({...data, 'id': doc.id});
+
+        // ローカル既読キャッシュ（SharedPreferences）にあれば既読とみなす
+        final bool isRead = readIds.contains(announce.id);
+        final bool isStaffOnly = data['target'] == 'staff';
+
+        return InkWell(
+          onTap: () {
+            if (!isRead) {
+              ref
+                  .read(readAnnouncementsProvider.notifier)
+                  .markAsRead(announce.id);
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF8F9FA),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: !isRead
+                    ? const Color(0xFFFF69B4).withValues(
+                        alpha: 0.4,
+                      ) // 未読時はサクラピンクの淡い輪郭
+                    : (isDark ? const Color(0xFF38383A) : Colors.grey.shade200),
+                width: 1.2,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 🌟 サクラピンク差し色ハック：未読の通知の左端にだけ「●ドット」を鮮やかに点火
+                if (!isRead)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, right: 8),
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFF69B4), // サクラピンク
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              isStaffOnly ? '【スタッフ限定】' : announce.title,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: !isRead
+                                    ? FontWeight.w900
+                                    : FontWeight.bold,
+                                color: isStaffOnly
+                                    ? Colors.deepOrange
+                                    : (isDark ? Colors.white : Colors.black87),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            DateFormat('HH:mm').format(announce.timestamp),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        announce.body,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: isDark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: query.snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      '新しい通知はありません',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: snapshot.data!.docs.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final doc = snapshot.data!.docs[index];
-                    final data = doc.data() as Map<String, dynamic>;
-                    final announce = AnnounceModel.fromJson({
-                      ...data,
-                      'id': doc.id,
-                    });
-
-                    // ローカル既読キャッシュ（SharedPreferences）にあれば既読とみなす
-                    final bool isRead = readIds.contains(announce.id);
-                    final bool isStaffOnly = data['target'] == 'staff';
-
-                    return InkWell(
-                      onTap: () {
-                        if (!isRead) {
-                          ref
-                              .read(readAnnouncementsProvider.notifier)
-                              .markAsRead(announce.id);
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF2C2C2E)
-                              : const Color(0xFFF8F9FA),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: !isRead
-                                ? const Color(0xFFFF69B4).withValues(
-                                    alpha: 0.4,
-                                  ) // 未読時はサクラピンクの淡い輪郭
-                                : (isDark
-                                      ? const Color(0xFF38383A)
-                                      : Colors.grey.shade200),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 🌟 サクラピンク差し色ハック：未読の通知の左端にだけ「●ドット」を鮮やかに点火
-                            if (!isRead)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 4,
-                                  right: 8,
-                                ),
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFFF69B4), // サクラピンク
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          isStaffOnly
-                                              ? '【スタッフ限定】'
-                                              : announce.title,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: !isRead
-                                                ? FontWeight.w900
-                                                : FontWeight.bold,
-                                            color: isStaffOnly
-                                                ? Colors.deepOrange
-                                                : (isDark
-                                                      ? Colors.white
-                                                      : Colors.black87),
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Text(
-                                        DateFormat(
-                                          'HH:mm',
-                                        ).format(announce.timestamp),
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    announce.body,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      height: 1.4,
-                                      color: isDark
-                                          ? Colors.grey.shade400
-                                          : Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
