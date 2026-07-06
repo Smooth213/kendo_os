@@ -7,6 +7,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // firestoreProvider
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// 🌟 アプリがバックグラウンドや完全に閉じている時にFCMを受信した際のトップレベルハンドラ
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -154,6 +155,15 @@ class NotificationService {
       );
       return;
     }
+
+    // 🌟 重要：匿名認証等の認証処理が完了するまで最大5秒待機する（未認証によるFirestoreパーミッション拒否を防止）
+    try {
+      int retryCount = 0;
+      while (FirebaseAuth.instance.currentUser == null && retryCount < 10) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        retryCount++;
+      }
+    } catch (_) {}
 
     FirebaseFirestore firestore;
     try {
