@@ -14,9 +14,16 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationTitle = payload.notification?.title || '大会本部からのお知らせ';
+  
+  // 🛡️ 二重通知防止：通知ペイロード（notification）が最初から含まれている場合、
+  // ブラウザがバックグラウンドで自動表示するため、ServiceWorker側での手動表示（showNotification）はスキップします。
+  if (payload.notification) {
+    return;
+  }
+
+  const notificationTitle = '大会本部からのお知らせ';
   const notificationOptions = {
-    body: payload.notification?.body || '',
+    body: payload.data?.body || '',
     icon: '/favicon.png'
   };
 
