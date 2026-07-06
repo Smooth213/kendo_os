@@ -4510,49 +4510,62 @@ void showUnifiedAnnounceDialog(
                       .doc()
                       .id;
 
-                  // 🚀 1連動：Firestoreの通知コレクションへ爆送書き込み（ステップ3, 4, 5が一斉リアルタイム着火）
-                  await firestore
-                      .collection('announcements')
-                      .doc(announceId)
-                      .set({
-                        'id': announceId,
-                        'tournamentId': tournamentId,
-                        'title': finalTitle,
-                        'body': body,
-                        'timestamp': FieldValue.serverTimestamp(),
-                        'type': 'emergency',
-                        'target': selectedTarget, // all または staff を完全送り分け
-                        'isRead': false,
-                      });
+                  try {
+                    // 🚀 1連動：Firestoreの通知コレクションへ爆送書き込み（ステップ3, 4, 5が一斉リアルタイム着火）
+                    await firestore
+                        .collection('announcements')
+                        .doc(announceId)
+                        .set({
+                          'id': announceId,
+                          'tournamentId': tournamentId,
+                          'title': finalTitle,
+                          'body': body,
+                          'timestamp': FieldValue.serverTimestamp(),
+                          'type': 'emergency',
+                          'target': selectedTarget, // all または staff を完全送り分け
+                          'isRead': false,
+                        });
 
-                  // 🚀 2連動：既存のタイムライン側への「見出しコメント」としての同時追記（Isar/Firestore同期）
-                  final String commentText = title.isNotEmpty
-                      ? '$title\n$body'
-                      : body;
-                  await ref
-                      .read(commentCommandProvider)
-                      .addComment(
-                        tournamentId: tournamentId,
-                        category: category,
-                        groupName: groupName,
-                        matchGroupId: matchGroupId,
-                        text: commentText,
-                        order: order,
-                      );
+                    // 🚀 2連動：既存のタイムライン側への「見出しコメント」としての同時追記（Isar/Firestore同期）
+                    final String commentText = title.isNotEmpty
+                        ? '$title\n$body'
+                        : body;
+                    await ref
+                        .read(commentCommandProvider)
+                        .addComment(
+                          tournamentId: tournamentId,
+                          category: category,
+                          groupName: groupName,
+                          matchGroupId: matchGroupId,
+                          text: commentText,
+                          order: order,
+                        );
 
-                  if (dialogCtx.mounted) {
-                    Navigator.pop(dialogCtx);
-                  }
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          selectedTarget == 'staff'
-                              ? 'スタッフ限定業務連絡を発信しました'
-                              : '全員向け緊急アナウンスを一斉配信しました',
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            selectedTarget == 'staff'
+                                ? 'スタッフ限定業務連絡を発信しました'
+                                : '全員向け緊急アナウンスを一斉配信しました',
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
+                  } catch (e) {
+                    debugPrint('🚨 [AnnounceDialog] 送信エラー: $e');
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('送信に失敗しました: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  } finally {
+                    if (dialogCtx.mounted) {
+                      Navigator.pop(dialogCtx);
+                    }
                   }
                 },
                 child: const Text(
