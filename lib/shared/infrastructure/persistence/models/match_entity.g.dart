@@ -15,7 +15,7 @@ extension GetMatchEntityCollection on Isar {
 
 const MatchEntitySchema = CollectionSchema(
   name: r'MatchEntity',
-  id: 100,
+  id: 1961780345530759423,
   properties: {
     r'accumulatedPauseDurationMs': PropertySchema(
       id: 0,
@@ -190,7 +190,7 @@ const MatchEntitySchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'firestoreId': IndexSchema(
-      id: 101,
+      id: 1863077355534729001,
       name: r'firestoreId',
       unique: true,
       replace: true,
@@ -5657,7 +5657,7 @@ extension GetMatchCommandEntityCollection on Isar {
 
 const MatchCommandEntitySchema = CollectionSchema(
   name: r'MatchCommandEntity',
-  id: 102,
+  id: 3650304974403129038,
   properties: {
     r'commandId': PropertySchema(
       id: 0,
@@ -5685,7 +5685,7 @@ const MatchCommandEntitySchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'commandId': IndexSchema(
-      id: 103,
+      id: -4064098501468219660,
       name: r'commandId',
       unique: true,
       replace: false,
@@ -6913,7 +6913,7 @@ extension MatchCommandEntityQueryProperty
 
 const ScoreEventEntitySchema = Schema(
   name: r'ScoreEventEntity',
-  id: 104,
+  id: -3959885099761782625,
   properties: {
     r'deviceId': PropertySchema(
       id: 0,
@@ -8102,7 +8102,7 @@ extension ScoreEventEntityQueryObject
 
 const MatchSnapshotEntitySchema = Schema(
   name: r'MatchSnapshotEntity',
-  id: 105,
+  id: -2426652353465081499,
   properties: {
     r'createdAt': PropertySchema(
       id: 0,

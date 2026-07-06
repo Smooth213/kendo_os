@@ -16,7 +16,7 @@ extension GetMatchCommentEntityCollection on Isar {
 
 const MatchCommentEntitySchema = CollectionSchema(
   name: r'MatchCommentEntity',
-  id: 108,
+  id: 4914048968579226046,
   properties: {
     r'category': PropertySchema(
       id: 0,
@@ -65,7 +65,7 @@ const MatchCommentEntitySchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'commentId': IndexSchema(
-      id: 109,
+      id: 3609824276468662262,
       name: r'commentId',
       unique: true,
       replace: false,
@@ -78,7 +78,7 @@ const MatchCommentEntitySchema = CollectionSchema(
       ],
     ),
     r'tournamentId': IndexSchema(
-      id: 110,
+      id: -716810079468899455,
       name: r'tournamentId',
       unique: false,
       replace: false,

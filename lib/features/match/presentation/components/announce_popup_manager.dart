@@ -36,10 +36,14 @@ void listenGlobalAnnouncements(
 }) {
   try {
     final settings = ref.read(settingsProvider);
+    debugPrint(
+      '📢 [listenGlobalAnnouncements] 開始 - tournamentId: "$tournamentId", isStaffRoom: $isStaffRoom, notifyOnEmergency: ${settings.notifyOnEmergency}',
+    );
     if (!settings.notifyOnEmergency) return;
 
     final key = '${tournamentId}_$isStaffRoom';
     if (_activeSubscriptions.containsKey(key)) {
+      debugPrint('📢 [listenGlobalAnnouncements] 既に監視中のためスキップ - key: "$key"');
       return; // 🛡️ 防衛線：既にこの画面種別でストリーム購読済みの場合は即時リターン（重複を回避）
     }
 
@@ -52,10 +56,13 @@ void listenGlobalAnnouncements(
         .limit(10)
         .snapshots()
         .listen((snapshot) {
+          debugPrint(
+            '📢 [listenGlobalAnnouncements] Firestore受信 - docs数: ${snapshot.docs.length}',
+          );
           if (snapshot.docs.isEmpty) return;
 
           // 🛡️ インデックス安全パッチ：クエリでの複合インデックス要件を回避するため、
-          // クライアント側で最新の type == 'emergency' アナウンスを探す
+          // クライアント側で最新 of type == 'emergency' アナウンスを探す
           DocumentSnapshot<Map<String, dynamic>>? targetDoc;
           for (final doc in snapshot.docs) {
             final data = doc.data();
@@ -65,13 +72,21 @@ void listenGlobalAnnouncements(
             }
           }
 
-          if (targetDoc == null) return;
+          if (targetDoc == null) {
+            debugPrint(
+              '📢 [listenGlobalAnnouncements] 警告: emergency タイプのドキュメントが見つかりませんでした。',
+            );
+            return;
+          }
           final doc = targetDoc;
           final data = doc.data();
           if (data == null) return;
 
           // 🌟 送り分けターゲットの抽出（デフォルトは全員向け 'all'）
           final String target = data['target'] as String? ?? 'all';
+          debugPrint(
+            '📢 [listenGlobalAnnouncements] ドキュメント判定 - ID: ${doc.id}, target: $target',
+          );
 
           // 🛡️ 防衛線：スタッフ限定通知（staff）であり、かつ現在の画面が観客席（isStaffRoom == false）なら完全スルー
           if (target == 'staff' && !isStaffRoom) {
@@ -85,14 +100,33 @@ void listenGlobalAnnouncements(
 
           // 🛡️ 防衛線：既にローカルで既読済みのアナウンスである場合はポップアップを表示しない
           final readIds = ref.read(readAnnouncementsProvider);
-          if (announce.isRead || readIds.contains(announce.id)) return;
+          final bool isAlreadyRead =
+              announce.isRead || readIds.contains(announce.id);
+          debugPrint(
+            '📢 [listenGlobalAnnouncements] 既読チェック - isRead: ${announce.isRead}, contains: ${readIds.contains(announce.id)}',
+          );
+          if (isAlreadyRead) return;
 
-          // 過去30分以上前の古いアナウンスはポップアップ対象から除外する時間防壁
-          final bool isRecent =
-              DateTime.now().difference(announce.timestamp).inMinutes < 30;
-          if (_shownAnnounceIds.contains(announce.id) || !isRecent) return;
+          // 🌟 タイムゾーン/時計のズレに100%強い、ミリ秒エポック基準の絶対時間差チェック（30分 = 1800000ms）
+          final int nowMs = DateTime.now().millisecondsSinceEpoch;
+          final int announceMs = announce.timestamp.millisecondsSinceEpoch;
+          final int diffMs = (nowMs - announceMs).abs();
+          final bool isRecent = diffMs < 30 * 60 * 1000;
+          debugPrint(
+            '📢 [listenGlobalAnnouncements] 時間差チェック - nowMs: $nowMs, announceMs: $announceMs, diffMinutes: ${diffMs / 60000.0}, isRecent: $isRecent',
+          );
+
+          if (_shownAnnounceIds.contains(announce.id) || !isRecent) {
+            debugPrint(
+              '📢 [listenGlobalAnnouncements] 既に表示済みまたは30分以上前のためスキップ - shown: ${_shownAnnounceIds.contains(announce.id)}, isRecent: $isRecent',
+            );
+            return;
+          }
 
           // 🛡️ 防衛線：既にポップアップ表示中であるか、画面がアンマウントされていれば表示をスキップ
+          debugPrint(
+            '📢 [listenGlobalAnnouncements] 表示前最終チェック - _isAnnounceDialogShowing: $_isAnnounceDialogShowing, context.mounted: ${context.mounted}',
+          );
           if (_isAnnounceDialogShowing || !context.mounted) return;
 
           _shownAnnounceIds.add(announce.id);

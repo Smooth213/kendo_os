@@ -15,7 +15,7 @@ extension GetLocalStrokeModelCollection on Isar {
 
 const LocalStrokeModelSchema = CollectionSchema(
   name: r'LocalStrokeModel',
-  id: 106,
+  id: -1760441421689311977,
   properties: {
     r'colorValue': PropertySchema(
       id: 0,
@@ -56,7 +56,7 @@ const LocalStrokeModelSchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'programId': IndexSchema(
-      id: 107,
+      id: 8658639611369428834,
       name: r'programId',
       unique: false,
       replace: false,
