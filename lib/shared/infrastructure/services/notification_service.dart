@@ -194,12 +194,41 @@ class NotificationService {
               debugPrint(
                 '🔔 [NotificationService] Loaded VAPID Key from Firestore: $vapidKey',
               );
+            } else {
+              try {
+                await firestore.collection('client_logs').add({
+                  'action': 'loadVapidKey',
+                  'error':
+                      'VAPID key is empty or null in Firestore document /fcm_config/web (data: ${configDoc.data()})',
+                  'platform': 'web',
+                  'timestamp': FieldValue.serverTimestamp(),
+                });
+              } catch (_) {}
             }
           } catch (e) {
             debugPrint(
               '⚠️ [NotificationService] Failed to load VAPID Key from Firestore: $e',
             );
+            try {
+              await firestore.collection('client_logs').add({
+                'action': 'loadVapidKey',
+                'error': 'Failed to load from Firestore: $e',
+                'platform': 'web',
+                'timestamp': FieldValue.serverTimestamp(),
+              });
+            } catch (_) {}
           }
+        }
+
+        if (vapidKey.isEmpty) {
+          try {
+            await firestore.collection('client_logs').add({
+              'action': 'getToken_precheck',
+              'error': 'Calling getToken with empty VAPID key',
+              'platform': 'web',
+              'timestamp': FieldValue.serverTimestamp(),
+            });
+          } catch (_) {}
         }
 
         final String? token = await messaging
@@ -211,7 +240,8 @@ class NotificationService {
               // Firestoreにエラーを記録
               firestore.collection('client_logs').add({
                 'action': 'getToken',
-                'error': e.toString(),
+                'error':
+                    'FCM Token retrieval failed: $e (VAPID key used: $vapidKey)',
                 'platform': 'web',
                 'timestamp': FieldValue.serverTimestamp(),
               });
