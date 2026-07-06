@@ -13,19 +13,25 @@ class LocalCommentRepository {
     // ★ Web環境ではIsarが無効なため処理をスキップ
     if (kIsWeb || _isar == null) return;
 
-    final entity = MatchCommentEntity()
-      ..commentId = comment.id
-      ..tournamentId = comment.tournamentId
-      ..category = comment.category
-      ..groupName = comment.groupName
-      ..matchGroupId = comment
-          .matchGroupId // ★ 追加
-      ..text = comment.text
-      ..order = comment.order
-      ..syncState = comment.syncState
-      ..lastUpdatedAt = comment.lastUpdatedAt;
-
     await _isar.writeTxn(() async {
+      // 🛡️ 防衛線：既に同じ commentId のレコードが存在するか検索し、あれば上書き更新する
+      final existing = await _isar.matchCommentEntitys
+          .filter()
+          .commentIdEqualTo(comment.id)
+          .findFirst();
+
+      final entity = existing ?? MatchCommentEntity();
+      entity
+        ..commentId = comment.id
+        ..tournamentId = comment.tournamentId
+        ..category = comment.category
+        ..groupName = comment.groupName
+        ..matchGroupId = comment.matchGroupId
+        ..text = comment.text
+        ..order = comment.order
+        ..syncState = comment.syncState
+        ..lastUpdatedAt = comment.lastUpdatedAt;
+
       await _isar.matchCommentEntitys.put(entity);
     });
   }

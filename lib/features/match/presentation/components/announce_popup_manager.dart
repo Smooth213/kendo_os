@@ -16,6 +16,10 @@ final Set<String> _shownAnnounceIds = {};
 // ポップアップダイアログ表示中フラグ（累積スタック・多重モーダルの発生を防止）
 bool _isAnnounceDialogShowing = false;
 
+// 🌟 キューイング用：ポップアップ表示中に受信した最新のアナウンスを保留するバッファ
+AnnounceModel? _pendingAnnounce;
+String? _pendingTarget;
+
 /// 🛡️ テスト環境用の状態リセット関数
 @visibleForTesting
 void resetAnnouncePopupManager() {
@@ -25,6 +29,119 @@ void resetAnnouncePopupManager() {
   _activeSubscriptions.clear();
   _shownAnnounceIds.clear();
   _isAnnounceDialogShowing = false;
+  _pendingAnnounce = null;
+  _pendingTarget = null;
+}
+
+/// 🌟 ダイアログを安全に表示し、閉じられた後に保留中のアナウンスがあれば連鎖起動するヘルパー
+void _showAnnounceDialog(
+  BuildContext context,
+  WidgetRef ref,
+  AnnounceModel announce,
+  String target,
+) {
+  _shownAnnounceIds.add(announce.id);
+  _isAnnounceDialogShowing = true;
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) {
+      final isDark = Theme.of(ctx).brightness == Brightness.dark;
+      final bool isStaffOnlyNotice = target == 'staff';
+
+      return AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.campaign,
+              color: Color(0xFFFF69B4), // 🌟 差し色：サクラピンク
+              size: 28,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                isStaffOnlyNotice
+                    ? '【スタッフ限定業務連絡】'
+                    : (announce.title.isNotEmpty
+                          ? announce.title
+                          : '大会本部からのお知らせ'),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: isStaffOnlyNotice
+                      ? Colors.deepOrange
+                      : (isDark ? Colors.white : const Color(0xFF2C3E50)),
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          announce.body,
+          style: TextStyle(
+            fontSize: 14,
+            height: 1.5,
+            color: isDark ? Colors.grey.shade300 : const Color(0xFF2C3E50),
+          ),
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00796B), // 引き締めTealグリーン
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () {
+                // 🌟 既読にしたことを端末ローカルに保存（再度画面に入った際に表示させないため）
+                ref
+                    .read(readAnnouncementsProvider.notifier)
+                    .markAsRead(announce.id);
+                Navigator.pop(ctx);
+              },
+              child: const Text(
+                '内容を確認しました',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  ).then((_) {
+    debugPrint(
+      '📢 [PopupManager] ダイアログが閉じられました。_isAnnounceDialogShowing を false にリセットします。',
+    );
+    _isAnnounceDialogShowing = false;
+
+    // 🌟 閉じた直後、もし表示待機中（保留中）の別のアナウンスがあれば連鎖表示を開始
+    if (_pendingAnnounce != null && _pendingTarget != null) {
+      final pending = _pendingAnnounce!;
+      final pendingTarget = _pendingTarget!;
+      _pendingAnnounce = null;
+      _pendingTarget = null;
+
+      final int nowMs = DateTime.now().millisecondsSinceEpoch;
+      final int announceMs = pending.timestamp.millisecondsSinceEpoch;
+      final int diffMs = (nowMs - announceMs).abs();
+      final bool isRecent = diffMs < 30 * 60 * 1000;
+
+      if (isRecent &&
+          !_shownAnnounceIds.contains(pending.id) &&
+          context.mounted) {
+        debugPrint('📢 [PopupManager] 保留されていた次のアナウンスを連鎖表示します: ${pending.id}');
+        _showAnnounceDialog(context, ref, pending, pendingTarget);
+      }
+    }
+  });
 }
 
 /// 🌟 各画面の最外殻でアナウンスのFirestoreを監視し、全員向け/スタッフ向けの送り分けを安全に制御する
@@ -123,104 +240,22 @@ void listenGlobalAnnouncements(
             return;
           }
 
-          // 🛡️ 防衛線：既にポップアップ表示中であるか、画面がアンマウントされていれば表示をスキップ
+          // 🛡️ 防衛線：既に別のポップアップが表示中である場合、このお知らせを保留バッファに格納してスルーする（連鎖表示へ）
           debugPrint(
             '📢 [listenGlobalAnnouncements] 表示前最終チェック - _isAnnounceDialogShowing: $_isAnnounceDialogShowing, context.mounted: ${context.mounted}',
           );
-          if (_isAnnounceDialogShowing || !context.mounted) return;
+          if (_isAnnounceDialogShowing) {
+            debugPrint(
+              '📢 [listenGlobalAnnouncements] 警告: 既にダイアログが表示中のため、この通知を保留します。ID: ${announce.id}',
+            );
+            _pendingAnnounce = announce;
+            _pendingTarget = target;
+            return;
+          }
 
-          _shownAnnounceIds.add(announce.id);
-          _isAnnounceDialogShowing = true;
+          if (!context.mounted) return;
 
-          // 🌟 白ベース×サクラピンク差し色の格調高いダイアログ
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (ctx) {
-              final isDark = Theme.of(ctx).brightness == Brightness.dark;
-              final bool isStaffOnlyNotice = target == 'staff';
-
-              return AlertDialog(
-                backgroundColor: isDark
-                    ? const Color(0xFF1C1C1E)
-                    : Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                title: Row(
-                  children: [
-                    const Icon(
-                      Icons.campaign,
-                      color: Color(0xFFFF69B4), // 🌟 差し色：サクラピンク
-                      size: 28,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        isStaffOnlyNotice
-                            ? '【スタッフ限定業務連絡】'
-                            : (announce.title.isNotEmpty
-                                  ? announce.title
-                                  : '大会本部からのお知らせ'),
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: isStaffOnlyNotice
-                              ? Colors.deepOrange
-                              : (isDark
-                                    ? Colors.white
-                                    : const Color(0xFF2C3E50)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                content: Text(
-                  announce.body,
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1.5,
-                    color: isDark
-                        ? Colors.grey.shade300
-                        : const Color(0xFF2C3E50),
-                  ),
-                ),
-                actions: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(
-                          0xFF00796B,
-                        ), // 引き締めTealグリーン
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 0,
-                      ),
-                      onPressed: () {
-                        // 🌟 既読にしたことを端末ローカルに保存（再度画面に入った際に表示させないため）
-                        ref
-                            .read(readAnnouncementsProvider.notifier)
-                            .markAsRead(announce.id);
-                        _isAnnounceDialogShowing = false;
-                        Navigator.pop(ctx);
-                      },
-                      child: const Text(
-                        '内容を確認しました',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
+          _showAnnounceDialog(context, ref, announce, target);
         });
 
     _activeSubscriptions[key] = subscription;
