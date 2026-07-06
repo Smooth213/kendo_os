@@ -174,6 +174,7 @@ void listenGlobalAnnouncements(
     }
 
     final firestore = ref.read(firestoreProvider);
+    final DateTime listenerStartTime = DateTime.now();
 
     final subscription = firestore
         .collection('announcements')
@@ -241,9 +242,20 @@ void listenGlobalAnnouncements(
           );
           if (isAlreadyRead) return;
 
+          final int announceMs = announce.timestamp.millisecondsSinceEpoch;
+
+          // 🛡️ 防衛線：起動直後に過去の古い通知が再度ポップアップするのを完全に防止（サーバーと端末の微小な時計誤差を吸収するため2秒の猶予を持たせる）
+          final int listenerStartMs =
+              listenerStartTime.millisecondsSinceEpoch - 2000;
+          if (announceMs < listenerStartMs) {
+            debugPrint(
+              '📢 [listenGlobalAnnouncements] 監視開始前の過去のお知らせのためスキップします - ID: ${announce.id}, announceMs: $announceMs, listenerStartMs: $listenerStartMs',
+            );
+            return;
+          }
+
           // 🌟 タイムゾーン/時計のズレに100%強い、ミリ秒エポック基準の絶対時間差チェック（30分 = 1800000ms）
           final int nowMs = DateTime.now().millisecondsSinceEpoch;
-          final int announceMs = announce.timestamp.millisecondsSinceEpoch;
           final int diffMs = (nowMs - announceMs).abs();
           final bool isRecent = diffMs < 30 * 60 * 1000;
           debugPrint(
