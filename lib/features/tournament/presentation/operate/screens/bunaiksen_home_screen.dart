@@ -17,6 +17,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -132,6 +133,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
 
     // 選択された日の部内戦のみ表示
     final matches = ref.watch(bunaiksenMatchesProvider(dateId));
+
+    // 🌟 本部一斉ポップアップ監視トリガーをアタッチ（運営スタッフ用フラグ: true）
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        listenGlobalAnnouncements(context, ref, dateId, isStaffRoom: true);
+      }
+    });
 
     // 無限勝ち抜きモード of 試合が存在するかどうか
     final hasInfiniteKachinuki = matches.any(

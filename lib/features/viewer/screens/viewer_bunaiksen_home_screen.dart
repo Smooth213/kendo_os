@@ -11,6 +11,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -129,6 +130,18 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
         ref.watch(bunaiksenAvailableDatesProvider).value ?? const <String>{};
 
     final matches = ref.watch(bunaiksenMatchesProvider(tournamentId));
+
+    // 🌟 本部一斉ポップアップ監視トリガーをアタッチ（運営スタッフ用フラグ: false）
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        listenGlobalAnnouncements(
+          context,
+          ref,
+          tournamentId,
+          isStaffRoom: false,
+        );
+      }
+    });
 
     final hasInfiniteKachinuki = matches.any(
       (m) => m.isKachinuki && m.matchType == '無限勝ち抜き',
