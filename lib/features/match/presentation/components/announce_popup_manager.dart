@@ -5,6 +5,7 @@ import 'package:kendo_os/features/match/domain/announce_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // 🛡️ アクティブなストリームサブスクリプションを追跡（画面再構築時の重複購読を完全に防止）
 final Map<String, StreamSubscription> _activeSubscriptions = {};
@@ -47,15 +48,27 @@ void listenGlobalAnnouncements(
     final subscription = firestore
         .collection('announcements')
         .where('tournamentId', isEqualTo: tournamentId)
-        .where('type', isEqualTo: 'emergency')
         .orderBy('timestamp', descending: true)
-        .limit(1)
+        .limit(10)
         .snapshots()
         .listen((snapshot) {
           if (snapshot.docs.isEmpty) return;
 
-          final doc = snapshot.docs.first;
+          // 🛡️ インデックス安全パッチ：クエリでの複合インデックス要件を回避するため、
+          // クライアント側で最新の type == 'emergency' アナウンスを探す
+          DocumentSnapshot<Map<String, dynamic>>? targetDoc;
+          for (final doc in snapshot.docs) {
+            final data = doc.data();
+            if (data['type'] == 'emergency') {
+              targetDoc = doc;
+              break;
+            }
+          }
+
+          if (targetDoc == null) return;
+          final doc = targetDoc;
           final data = doc.data();
+          if (data == null) return;
 
           // 🌟 送り分けターゲットの抽出（デフォルトは全員向け 'all'）
           final String target = data['target'] as String? ?? 'all';
