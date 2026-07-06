@@ -23,6 +23,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart'; // ★ 追加
 
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
@@ -4516,6 +4517,9 @@ void showUnifiedAnnounceDialog(
                         .collection('announcements')
                         .doc()
                         .id;
+
+                    // 🛡️ 防衛線：自分自身が送信したアナウンスが自分自身に対してポップアップ表示されるのを防ぐため、IDをローカル登録する
+                    registerMySentAnnounceId(announceId);
 
                     try {
                       // 🚀 1連動：Firestoreの通知コレクションへ爆送書き込み（ステップ3, 4, 5が一斉リアルタイム着火）

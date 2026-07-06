@@ -20,6 +20,14 @@ bool _isAnnounceDialogShowing = false;
 AnnounceModel? _pendingAnnounce;
 String? _pendingTarget;
 
+// 🌟 自身が送信したアナウンスIDのキャッシュ（自分の送信によるポップアップ表示を防ぐため）
+final Set<String> _mySentAnnounceIds = {};
+
+// 🌟 自身が送信したアナウンスIDをキャッシュへ安全に登録する関数
+void registerMySentAnnounceId(String id) {
+  _mySentAnnounceIds.add(id);
+}
+
 /// 🛡️ テスト環境用の状態リセット関数
 @visibleForTesting
 void resetAnnouncePopupManager() {
@@ -31,6 +39,7 @@ void resetAnnouncePopupManager() {
   _isAnnounceDialogShowing = false;
   _pendingAnnounce = null;
   _pendingTarget = null;
+  _mySentAnnounceIds.clear();
 }
 
 /// 🌟 ダイアログを安全に表示し、閉じられた後に保留中のアナウンスがあれば連鎖起動するヘルパー
@@ -214,6 +223,14 @@ void listenGlobalAnnouncements(
           }
 
           final announce = AnnounceModel.fromJson({...data, 'id': doc.id});
+
+          // 🛡️ 防衛線：自分自身が発信したお知らせである場合はポップアップを表示しない
+          if (_mySentAnnounceIds.contains(announce.id)) {
+            debugPrint(
+              '📢 [listenGlobalAnnouncements] 自身が送信したアナウンスのためスキップします - ID: ${announce.id}',
+            );
+            return;
+          }
 
           // 🛡️ 防衛線：既にローカルで既読済みのアナウンスである場合はポップアップを表示しない
           final readIds = ref.read(readAnnouncementsProvider);
