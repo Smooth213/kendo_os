@@ -243,5 +243,50 @@ void main() {
         expect(find.text('第2コートのスコア用紙を回収してください。'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      '5. Should NOT show dialog for announcements sent by the user themselves',
+      (WidgetTester tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            firestoreProvider.overrideWithValue(fakeFirestore),
+          ],
+        );
+
+        // Build target
+        await tester.pumpWidget(
+          createTestTarget(
+            container: container,
+            tournamentId: 'tourney_123',
+            isStaffRoom: true,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        const myAnnounceId = 'my_special_announce_id';
+
+        // Pre-register the ID as sent by myself
+        registerMySentAnnounceId(myAnnounceId);
+
+        // Add announcement doc with that ID
+        await fakeFirestore.collection('announcements').doc(myAnnounceId).set({
+          'id': myAnnounceId,
+          'tournamentId': 'tourney_123',
+          'title': '自分が書いた緊急連絡',
+          'body': 'テスト本文',
+          'timestamp': Timestamp.now(),
+          'type': 'emergency',
+          'target': 'all',
+          'isRead': false,
+        });
+
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pumpAndSettle();
+
+        // Should NOT display the dialog (skipped because isMySentAnnounceId was true)
+        expect(find.byType(AlertDialog), findsNothing);
+      },
+    );
   });
 }

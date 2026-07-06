@@ -31,5 +31,21 @@ void main() {
       final service = container.read(notificationServiceProvider);
       expect(service, isNotNull);
     });
+
+    test(
+      '3. registerPushNotification returns safely if Firebase is not initialized',
+      () async {
+        final service = NotificationService(mockRef);
+        // Firebase is not initialized in standard unit tests, so this should execute
+        // the safety boundary condition and return cleanly without throwing exceptions.
+        await expectLater(
+          service.registerPushNotification(
+            tournamentId: 'test_tournament_123',
+            isStaff: true,
+          ),
+          completes,
+        );
+      },
+    );
   });
 }
