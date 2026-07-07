@@ -584,8 +584,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade600;
 
-    // ★ Phase 8-3: キーボードが開いているかを検知
-    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    // ★ Phase 8-3: キーボードが開いているかを検知（Webでのフォーカス状態も考慮）
+    final hasFocus = FocusScope.of(context).focusedChild != null;
+    final isKeyboardOpen =
+        MediaQuery.of(context).viewInsets.bottom > 0 || hasFocus;
 
     return LiquidBackground(
       child: Scaffold(
@@ -605,20 +607,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
         ),
         body: Column(
           children: [
-            // ★ キーボードが開いた時はヘッダーをスッと隠す
-            AnimatedSize(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
-              child: isKeyboardOpen
-                  ? const SizedBox.shrink()
-                  : _buildStaticHeader(),
-            ),
             Expanded(
               child: playerListAsync.when(
                 // ★ Phase 8-1: ColumnをListViewに変更し、画面全体をスクロール可能にして縦幅エラー(63px)を解消
+                // ヘッダーをスクロール可能なListViewの中に移動し、入力枠が圧迫されるのを防ぐ
                 data: (masterPlayers) => ListView(
                   padding: EdgeInsets.zero,
                   children: [
+                    _buildStaticHeader(),
                     Container(
                       padding: const EdgeInsets.all(16),
                       color: isDark
