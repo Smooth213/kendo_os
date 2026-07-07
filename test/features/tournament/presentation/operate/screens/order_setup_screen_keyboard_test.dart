@@ -8,7 +8,6 @@ import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart
 import 'package:kendo_os/features/tournament/presentation/operate/screens/order_setup_screen.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 class MockPlayerRepository extends Mock implements PlayerRepository {}
 
