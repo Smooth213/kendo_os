@@ -1118,6 +1118,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                           context,
                                           ref,
                                           match,
+                                          isViewOnly,
                                         );
                                       }
 
@@ -2515,21 +2516,98 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     BuildContext context,
     WidgetRef ref,
     MatchModel match,
+    bool isViewOnly,
   ) {
     final masterTime = ref.watch(
       renseikaiMasterTimerProvider(match.groupName ?? ''),
     );
     final isTimeUp = masterTime == 0;
     final isInputLocked = match.scorerId != null && match.scorerId != _myUserId;
+    final settings = ref.watch(settingsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GlassButton(
-      onPressed: (isInputLocked || isTimeUp)
-          ? null
-          : () => _showNextMatchDialog(context, ref, match),
-      color: Colors.teal,
-      icon: Icons.autorenew,
-      label: '次の対戦者を追加して継続',
-      padding: const EdgeInsets.symmetric(vertical: 16),
+    final confirmAction = isViewOnly
+        ? null
+        : () async {
+            if (settings.haptic) {
+              HapticFeedback.heavyImpact();
+            }
+
+            if (settings.showConfirmDialog) {
+              final confirmed = await _showConfirmDialog(
+                '記録の確定',
+                'この試合の記録を確定して終了しますか？\n確定後は点数の修正ができなくなります。',
+              );
+              if (!confirmed) return;
+            }
+
+            await ref
+                .read(matchApplicationServiceProvider)
+                .approveMatch(match.id);
+
+            if (!context.mounted) return;
+            _showMatchFinishedDialog(context, match, null);
+          };
+
+    return Row(
+      children: [
+        Expanded(
+          child: GlassButton(
+            onPressed: (isInputLocked || isTimeUp)
+                ? null
+                : () => _showNextMatchDialog(context, ref, match),
+            color: Colors.teal,
+            icon: Icons.autorenew,
+            label: '追加して継続',
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: GestureDetector(
+            onDoubleTap: settings.confirmBehavior == 'double'
+                ? confirmAction
+                : null,
+            child: ElevatedButton.icon(
+              onPressed: settings.confirmBehavior == 'single'
+                  ? confirmAction
+                  : (isViewOnly
+                        ? null
+                        : () => ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                settings.confirmBehavior == 'double'
+                                    ? 'ダブルタップで確定してください'
+                                    : '長押しで確定してください',
+                              ),
+                              duration: const Duration(milliseconds: 1500),
+                            ),
+                          )),
+              onLongPress: settings.confirmBehavior == 'long'
+                  ? confirmAction
+                  : null,
+              icon: const Icon(Icons.verified, size: 24),
+              label: const Text(
+                '確定して終了',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark
+                    ? Colors.indigo.shade700
+                    : Colors.indigo,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
