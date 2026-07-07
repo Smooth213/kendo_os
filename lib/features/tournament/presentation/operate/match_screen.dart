@@ -2554,15 +2554,41 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         .where((m) => m.groupName == currentMatch.groupName)
         .toList();
 
+    // 自チームが赤か白か判定
+    bool isRedOwnTeam =
+        rTeam == ownTeamName ||
+        rTeam == '自チーム' ||
+        rTeam.contains('自') ||
+        rTeam.contains('錬成') ||
+        currentMatch.redName.startsWith(ownTeamName);
+    bool isWhiteOwnTeam =
+        wTeam == ownTeamName ||
+        wTeam == '自チーム' ||
+        wTeam.contains('自') ||
+        wTeam.contains('錬成') ||
+        currentMatch.whiteName.startsWith(ownTeamName);
+
+    // どちらのフラグも立たなかった場合のフォールバック（相手という文字列の有無で判定）
+    if (!isRedOwnTeam && !isWhiteOwnTeam) {
+      if (wTeam.contains('相手') && !rTeam.contains('相手')) {
+        isRedOwnTeam = true;
+      } else if (rTeam.contains('相手') && !wTeam.contains('相手')) {
+        isWhiteOwnTeam = true;
+      } else {
+        isRedOwnTeam = true; // デフォルトで赤を自チームとする
+      }
+    }
+
+    // 確定した自チームの名称
+    final actualOwnTeamName = isRedOwnTeam ? rTeam : wTeam;
+
     List<String> ownTeamPlayers = [];
     for (final m in teamMatches) {
       if (m.redName.contains(':')) {
         final parts = m.redName.split(':');
         final tName = parts.first.trim();
         final pName = parts.last.trim();
-        if ((tName == ownTeamName ||
-                tName == '自チーム' ||
-                m.redName.startsWith(ownTeamName)) &&
+        if (tName == actualOwnTeamName &&
             pName.isNotEmpty &&
             !pName.contains('未定') &&
             !pName.contains('欠員') &&
@@ -2574,9 +2600,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         final parts = m.whiteName.split(':');
         final tName = parts.first.trim();
         final pName = parts.last.trim();
-        if ((tName == ownTeamName ||
-                tName == '自チーム' ||
-                m.whiteName.startsWith(ownTeamName)) &&
+        if (tName == actualOwnTeamName &&
             pName.isNotEmpty &&
             !pName.contains('未定') &&
             !pName.contains('欠員') &&
@@ -2587,14 +2611,15 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     }
     ownTeamPlayers = ownTeamPlayers.toSet().toList();
 
-    final bool isRedOwnTeam =
-        rTeam == ownTeamName ||
-        rTeam == '自チーム' ||
-        currentMatch.redName.startsWith(ownTeamName);
-    final bool isWhiteOwnTeam =
-        wTeam == ownTeamName ||
-        wTeam == '自チーム' ||
-        currentMatch.whiteName.startsWith(ownTeamName);
+    // 最終フォールバック：登録選手一覧（playerListProvider）から全選手を候補とする
+    if (ownTeamPlayers.isEmpty) {
+      final localPlayers = ref.read(playerListProvider).value ?? [];
+      ownTeamPlayers = localPlayers
+          .map((p) => p.name.trim())
+          .where((n) => n.isNotEmpty)
+          .toSet()
+          .toList();
+    }
 
     final redCtrl = TextEditingController();
     final whiteCtrl = TextEditingController();
@@ -2658,7 +2683,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   const SizedBox(height: 24),
                   Expanded(
                     child: ListView(
+                      clipBehavior: Clip.none,
                       children: [
+                        const SizedBox(height: 12),
                         // --- Red Team Player Selection ---
                         if (isRedOwnTeam && ownTeamPlayers.isNotEmpty) ...[
                           Text(
@@ -2719,6 +2746,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             labelStyle: const TextStyle(color: Colors.grey),
                             filled: true,
                             fillColor: inputBgColor,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 16,
+                            ),
                             prefixIcon: const Icon(
                               Icons.person_outline,
                               size: 20,
@@ -2798,6 +2829,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             labelStyle: const TextStyle(color: Colors.grey),
                             filled: true,
                             fillColor: inputBgColor,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 16,
+                            ),
                             prefixIcon: const Icon(
                               Icons.person_outline,
                               size: 20,
@@ -2838,13 +2873,14 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               onPressed: () => Navigator.pop(ctx),
                               child: const Text(
                                 'キャンセル',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            flex: 2,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: isDark
@@ -2915,6 +2951,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               },
                               child: const Text(
                                 '決定して開始',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
