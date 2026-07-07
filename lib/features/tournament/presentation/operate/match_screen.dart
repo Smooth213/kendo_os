@@ -396,6 +396,21 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       ),
     );
 
+    // 錬成会（時間制）のマスタータイマーの初期化
+    final groupName = match.groupName ?? '';
+    if (groupName.isNotEmpty &&
+        rule.isRenseikai &&
+        rule.renseikaiType == '時間制') {
+      final currentMaster = ref.read(renseikaiMasterTimerProvider(groupName));
+      if (currentMaster == -1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref
+              .read(renseikaiMasterTimerProvider(groupName).notifier)
+              .initialize(rule.overallTimeMinutes * 60);
+        });
+      }
+    }
+
     // ★ 修正: 閲覧者はRouterで弾かれるため、ここでの isViewOnly は「他端末が操作中（ロック競合）」のみを意味する
     // ★ Phase 8: 万が一URL直叩きで入られた場合の完全ガード（RoleベースのReadOnlyも組み込む）
     final permissions = ref.watch(permissionProvider);
@@ -872,10 +887,49 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   ],
                                 );
 
-                                final timerPart = TimerWidget(
-                                  matchId: match.id,
-                                  isInputLocked: isInputLocked,
-                                );
+                                final isRenseikaiTimeBased =
+                                    rule.isRenseikai &&
+                                    rule.renseikaiType == '時間制';
+
+                                final timerPart = isRenseikaiTimeBased
+                                    ? Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 2,
+                                          horizontal: 16,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Flexible(
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: TimerWidget(
+                                                  matchId: match.id,
+                                                  isInputLocked: isInputLocked,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Flexible(
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child:
+                                                    _RenseikaiMasterTimerWidget(
+                                                      groupName:
+                                                          match.groupName ?? '',
+                                                      isInputLocked:
+                                                          isInputLocked,
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : TimerWidget(
+                                        matchId: match.id,
+                                        isInputLocked: isInputLocked,
+                                      );
 
                                 // ★ 修正: ボタンの並び順を「URL共有・復元 / スコア・ルール」に変更
                                 final groupButtonPart = Padding(
@@ -3780,5 +3834,111 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       );
       context.pop();
     }
+  }
+}
+
+class _RenseikaiMasterTimerWidget extends ConsumerWidget {
+  final String groupName;
+  final bool isInputLocked;
+
+  const _RenseikaiMasterTimerWidget({
+    required this.groupName,
+    required this.isInputLocked,
+  });
+
+  String _formatTime(int seconds) {
+    if (seconds < 0) return '0:00';
+    final m = (seconds / 60).floor();
+    final s = seconds % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final masterTime = ref.watch(renseikaiMasterTimerProvider(groupName));
+    final isRunning = ref.watch(isMasterTimerRunningProvider(groupName));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTimeUp = masterTime == 0;
+
+    final timerBgColor = isRunning
+        ? (isDark
+              ? Colors.teal.shade900.withValues(alpha: 0.4)
+              : Colors.teal.shade50)
+        : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+    final timerBorderColor = isRunning
+        ? (isDark ? Colors.teal.shade400 : Colors.teal.shade500)
+        : (isDark ? const Color(0xFF38383A) : Colors.teal.shade200);
+    final timerTextColor = isRunning
+        ? (isDark ? Colors.teal.shade300 : Colors.teal.shade900)
+        : (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: isInputLocked
+          ? null
+          : () {
+              ref
+                  .read(renseikaiMasterTimerProvider(groupName).notifier)
+                  .toggleTimer();
+            },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+        decoration: BoxDecoration(
+          color: timerBgColor,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: isTimeUp
+                ? Colors.red
+                : (isInputLocked
+                      ? Colors.grey.withValues(alpha: 0.3)
+                      : timerBorderColor),
+            width: (isRunning && !isInputLocked) ? 4 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isRunning ? Icons.pause_circle : Icons.play_circle,
+              color: isTimeUp
+                  ? Colors.red
+                  : (isRunning
+                        ? (isDark ? Colors.teal.shade400 : Colors.teal.shade600)
+                        : Colors.grey),
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'トータル',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: isTimeUp
+                        ? Colors.red
+                        : (isDark
+                              ? Colors.teal.shade200
+                              : Colors.teal.shade800),
+                  ),
+                ),
+                Text(
+                  _formatTime(masterTime),
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    height: 1.1,
+                    color: isTimeUp ? Colors.red : timerTextColor,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

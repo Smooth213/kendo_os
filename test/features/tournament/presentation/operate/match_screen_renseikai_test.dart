@@ -34,6 +34,31 @@ class MockSettingsNotifier extends SettingsNotifier {
   SettingsModel build() => initialSettings;
 }
 
+class MockRenseikaiMasterTimerNotifier extends RenseikaiMasterTimerNotifier {
+  final int initialValue;
+  MockRenseikaiMasterTimerNotifier(this.initialValue);
+
+  @override
+  int build(String arg) {
+    state = initialValue;
+    return initialValue;
+  }
+
+  @override
+  void initialize(int initialSeconds) {
+    state = initialValue;
+  }
+
+  @override
+  void start() {}
+
+  @override
+  void pause() {}
+
+  @override
+  void toggleTimer() {}
+}
+
 void main() {
   group('🛡️ MatchScreen Renseikai ChoiceChips Player Selection Widget Tests', () {
     testWidgets(
@@ -97,8 +122,8 @@ void main() {
               ),
             ),
             lastUsedSettingsProvider.overrideWith((ref) => {'matchTime': 3.0}),
-            renseikaiMasterTimerProvider('団体A').overrideWith(
-              (ref) => 1800, // Non-zero master timer to keep button active
+            renseikaiMasterTimerProvider.overrideWith(
+              () => MockRenseikaiMasterTimerNotifier(1800),
             ),
             matchViewStateProvider('test_match_renseikai').overrideWith(
               (ref) => MatchViewState(
@@ -247,7 +272,9 @@ void main() {
               ),
             ),
             lastUsedSettingsProvider.overrideWith((ref) => {'matchTime': 3.0}),
-            renseikaiMasterTimerProvider('団体A').overrideWith((ref) => 1800),
+            renseikaiMasterTimerProvider.overrideWith(
+              () => MockRenseikaiMasterTimerNotifier(1800),
+            ),
             settingsProvider.overrideWith(
               () => MockSettingsNotifier(
                 const SettingsModel(

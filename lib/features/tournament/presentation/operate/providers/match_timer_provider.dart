@@ -6,6 +6,7 @@ import 'package:kendo_os/features/match/application/usecases/match_application_s
 import 'package:kendo_os/features/match/domain/match_state.dart'; // ★ Phase 1 & 3: FSM連携用
 import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint用
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 // ★ 修正1: 監視(watch)ではなく、画面を開いた時の初期値の読み取り(read)に変更。
 // これにより、通信のたびに秒数がリセットされるバグが消滅します。
@@ -22,9 +23,110 @@ final liveRemainingSecondsProvider = StateProvider.family<int, String>((
   return match?.calculateRemainingSeconds(now) ?? 0;
 });
 
-final renseikaiMasterTimerProvider = StateProvider.family<int, String>(
-  (ref, groupName) => -1,
-);
+final renseikaiMasterTimerProvider =
+    NotifierProvider.family<RenseikaiMasterTimerNotifier, int, String>(() {
+      return RenseikaiMasterTimerNotifier();
+    });
+
+class RenseikaiMasterTimerNotifier extends FamilyNotifier<int, String> {
+  Timer? _timer;
+
+  @override
+  int build(String arg) {
+    ref.onDispose(() {
+      _timer?.cancel();
+    });
+
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final isRunning = prefs.getBool('master_timer_running_$arg') ?? false;
+    final savedSeconds = prefs.getInt('master_timer_seconds_$arg') ?? -1;
+
+    if (savedSeconds != -1) {
+      if (isRunning) {
+        final lastTickStr = prefs.getString('master_timer_last_tick_$arg');
+        if (lastTickStr != null) {
+          final lastTick = DateTime.tryParse(lastTickStr);
+          if (lastTick != null) {
+            final elapsed = DateTime.now().difference(lastTick).inSeconds;
+            final remaining = savedSeconds - elapsed;
+            if (remaining > 0) {
+              state = remaining;
+              Future.microtask(() => start());
+              return remaining;
+            } else {
+              state = 0;
+              return 0;
+            }
+          }
+        }
+      }
+      state = savedSeconds;
+      return savedSeconds;
+    }
+
+    return -1;
+  }
+
+  void initialize(int initialSeconds) {
+    if (state == -1) {
+      state = initialSeconds;
+      _saveState();
+    }
+  }
+
+  void _saveState() {
+    final prefs = ref.read(sharedPreferencesProvider);
+    prefs.setInt('master_timer_seconds_$arg', state);
+    final isRunning = _timer != null && _timer!.isActive;
+    prefs.setBool('master_timer_running_$arg', isRunning);
+    if (isRunning) {
+      prefs.setString(
+        'master_timer_last_tick_$arg',
+        DateTime.now().toIso8601String(),
+      );
+    }
+  }
+
+  void toggleTimer() {
+    if (_timer != null && _timer!.isActive) {
+      pause();
+    } else {
+      start();
+    }
+  }
+
+  void start() {
+    _timer?.cancel();
+    if (state <= 0) return;
+
+    ref.read(isMasterTimerRunningProvider(arg).notifier).state = true;
+    _saveState();
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (state > 0) {
+        state--;
+        _saveState();
+      } else {
+        state = 0;
+        t.cancel();
+        ref.read(isMasterTimerRunningProvider(arg).notifier).state = false;
+        _saveState();
+      }
+    });
+  }
+
+  void pause() {
+    _timer?.cancel();
+    ref.read(isMasterTimerRunningProvider(arg).notifier).state = false;
+    _saveState();
+  }
+
+  void setSeconds(int seconds) {
+    state = seconds;
+    _saveState();
+  }
+}
+
 final isMasterTimerRunningProvider = StateProvider.family<bool, String>(
   (ref, groupName) => false,
 );
