@@ -2554,10 +2554,82 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         .where((m) => m.groupName == currentMatch.groupName)
         .toList();
 
+    // 赤チームの対戦履歴（teamMatches）から選手を抽出
+    List<String> redPlayers = [];
+    for (final m in teamMatches) {
+      if (m.redName.contains(':')) {
+        final parts = m.redName.split(':');
+        final tName = parts.first.trim();
+        final pName = parts.last.trim();
+        if (tName == rTeam &&
+            pName.isNotEmpty &&
+            !pName.contains('未定') &&
+            !pName.contains('欠員') &&
+            !pName.contains('代表選手')) {
+          redPlayers.add(pName);
+        }
+      }
+      if (m.whiteName.contains(':')) {
+        final parts = m.whiteName.split(':');
+        final tName = parts.first.trim();
+        final pName = parts.last.trim();
+        if (tName == rTeam &&
+            pName.isNotEmpty &&
+            !pName.contains('未定') &&
+            !pName.contains('欠員') &&
+            !pName.contains('代表選手')) {
+          redPlayers.add(pName);
+        }
+      }
+    }
+    redPlayers = redPlayers.toSet().toList();
+
+    // 白チームの対戦履歴（teamMatches）から選手を抽出
+    List<String> whitePlayers = [];
+    for (final m in teamMatches) {
+      if (m.redName.contains(':')) {
+        final parts = m.redName.split(':');
+        final tName = parts.first.trim();
+        final pName = parts.last.trim();
+        if (tName == wTeam &&
+            pName.isNotEmpty &&
+            !pName.contains('未定') &&
+            !pName.contains('欠員') &&
+            !pName.contains('代表選手')) {
+          whitePlayers.add(pName);
+        }
+      }
+      if (m.whiteName.contains(':')) {
+        final parts = m.whiteName.split(':');
+        final tName = parts.first.trim();
+        final pName = parts.last.trim();
+        if (tName == wTeam &&
+            pName.isNotEmpty &&
+            !pName.contains('未定') &&
+            !pName.contains('欠員') &&
+            !pName.contains('代表選手')) {
+          whitePlayers.add(pName);
+        }
+      }
+    }
+    whitePlayers = whitePlayers.toSet().toList();
+
+    // どちらが自チーム所属側（Owner）かの判定
+    List<PlayerModel> localPlayers = [];
+    try {
+      localPlayers = ref.read(playerListProvider).value ?? [];
+    } catch (_) {
+      // ユニットテスト環境やオフラインなどのフェールセーフ
+    }
+    final List<String> localPlayerNames = localPlayers
+        .map((p) => p.name.trim())
+        .where((n) => n.isNotEmpty)
+        .toSet()
+        .toList();
+
     bool isRedOwnTeam = false;
     bool isWhiteOwnTeam = false;
 
-    // 1. ルール設定で選択された自チーム名と厳密一致するか判定
     if (selectedTeamName.isNotEmpty) {
       if (rTeam == selectedTeamName) {
         isRedOwnTeam = true;
@@ -2566,35 +2638,15 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       }
     }
 
-    // 2. ルール設定で未選択、あるいは一致しなかった場合のフォールバック（ローカル選手データベースと対戦履歴の照合）
     if (!isRedOwnTeam && !isWhiteOwnTeam) {
-      final localPlayers = ref.read(playerListProvider).value ?? [];
-      final localPlayerNames = localPlayers.map((p) => p.name.trim()).toSet();
-
-      int redMatchCount = 0;
-      int whiteMatchCount = 0;
-
-      for (final m in teamMatches) {
-        if (m.redName.contains(':')) {
-          final pName = m.redName.split(':').last.trim();
-          if (localPlayerNames.contains(pName)) {
-            redMatchCount++;
-          }
-        }
-        if (m.whiteName.contains(':')) {
-          final pName = m.whiteName.split(':').last.trim();
-          if (localPlayerNames.contains(pName)) {
-            whiteMatchCount++;
-          }
-        }
-      }
-
-      if (redMatchCount > whiteMatchCount) {
+      final localSet = localPlayerNames.toSet();
+      int redMatch = redPlayers.where((p) => localSet.contains(p)).length;
+      int whiteMatch = whitePlayers.where((p) => localSet.contains(p)).length;
+      if (redMatch > whiteMatch) {
         isRedOwnTeam = true;
-      } else if (whiteMatchCount > redMatchCount) {
+      } else if (whiteMatch > redMatch) {
         isWhiteOwnTeam = true;
       } else {
-        // どちらも選手がいない、または同数の場合は、ルール側が空なら '自チーム' という文字列一致を試みる
         final String ownTeamName = selectedTeamName.isNotEmpty
             ? selectedTeamName
             : '自チーム';
@@ -2605,52 +2657,17 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             currentMatch.whiteName.startsWith(ownTeamName)) {
           isWhiteOwnTeam = true;
         } else {
-          // 最終手段として赤を自チームとする
           isRedOwnTeam = true;
         }
       }
     }
 
-    // 確定した自チームの名称
-    final actualOwnTeamName = isRedOwnTeam ? rTeam : wTeam;
-
-    List<String> ownTeamPlayers = [];
-    for (final m in teamMatches) {
-      if (m.redName.contains(':')) {
-        final parts = m.redName.split(':');
-        final tName = parts.first.trim();
-        final pName = parts.last.trim();
-        if (tName == actualOwnTeamName &&
-            pName.isNotEmpty &&
-            !pName.contains('未定') &&
-            !pName.contains('欠員') &&
-            !pName.contains('代表選手')) {
-          ownTeamPlayers.add(pName);
-        }
-      }
-      if (m.whiteName.contains(':')) {
-        final parts = m.whiteName.split(':');
-        final tName = parts.first.trim();
-        final pName = parts.last.trim();
-        if (tName == actualOwnTeamName &&
-            pName.isNotEmpty &&
-            !pName.contains('未定') &&
-            !pName.contains('欠員') &&
-            !pName.contains('代表選手')) {
-          ownTeamPlayers.add(pName);
-        }
-      }
+    // 自チーム（Owner）の候補選手が空の場合は、ローカル登録選手一覧をデフォルト候補とする
+    if (isRedOwnTeam && redPlayers.isEmpty) {
+      redPlayers = localPlayerNames;
     }
-    ownTeamPlayers = ownTeamPlayers.toSet().toList();
-
-    // 最終フォールバック：登録選手一覧（playerListProvider）から全選手を候補とする
-    if (ownTeamPlayers.isEmpty) {
-      final localPlayers = ref.read(playerListProvider).value ?? [];
-      ownTeamPlayers = localPlayers
-          .map((p) => p.name.trim())
-          .where((n) => n.isNotEmpty)
-          .toSet()
-          .toList();
+    if (isWhiteOwnTeam && whitePlayers.isEmpty) {
+      whitePlayers = localPlayerNames;
     }
 
     final redCtrl = TextEditingController();
@@ -2719,7 +2736,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       children: [
                         const SizedBox(height: 12),
                         // --- Red Team Player Selection ---
-                        if (isRedOwnTeam && ownTeamPlayers.isNotEmpty) ...[
+                        if (redPlayers.isNotEmpty) ...[
                           Text(
                             '$rTeam の選手を選択:',
                             style: TextStyle(
@@ -2734,7 +2751,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: ownTeamPlayers
+                            children: redPlayers
                                 .map(
                                   (p) => ChoiceChip(
                                     label: Text(p),
@@ -2802,7 +2819,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         const SizedBox(height: 24),
 
                         // --- White Team Player Selection ---
-                        if (isWhiteOwnTeam && ownTeamPlayers.isNotEmpty) ...[
+                        if (whitePlayers.isNotEmpty) ...[
                           Text(
                             '$wTeam の選手を選択:',
                             style: TextStyle(
@@ -2817,7 +2834,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: ownTeamPlayers
+                            children: whitePlayers
                                 .map(
                                   (p) => ChoiceChip(
                                     label: Text(p),
