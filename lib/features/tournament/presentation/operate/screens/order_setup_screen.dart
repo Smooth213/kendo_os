@@ -69,6 +69,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   @override
   void initState() {
     super.initState();
+    FocusManager.instance.addListener(_onFocusChange);
+
     final rule = ref.read(matchRuleProvider);
     _positions = List.from(rule.positions);
 
@@ -87,11 +89,18 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
   @override
   void dispose() {
+    FocusManager.instance.removeListener(_onFocusChange);
     _opponentTeamController.dispose();
     _opponentTeamFocusNode.dispose(); // ★ 追加：メモリリーク防止
     _addParticipantController.dispose();
     _addParticipantFocusNode.dispose(); // ★ 追加：メモリリーク防止
     super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<String?> _showManualInputDialog() async {
@@ -584,8 +593,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade600;
 
-    // ★ Phase 8-3: キーボードが開いているかを検知（Webでのフォーカス状態も考慮）
-    final hasFocus = FocusScope.of(context).focusedChild != null;
+    // ★ Phase 8-3: キーボードが開いているかを検知（全体のフォーカス状態を考慮）
+    final primaryFocus = FocusManager.instance.primaryFocus;
+    final hasFocus =
+        primaryFocus != null &&
+        primaryFocus.hasFocus &&
+        primaryFocus.parent != null &&
+        primaryFocus is! FocusScopeNode;
     final isKeyboardOpen =
         MediaQuery.of(context).viewInsets.bottom > 0 || hasFocus;
 
