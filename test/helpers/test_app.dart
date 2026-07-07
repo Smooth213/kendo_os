@@ -4,6 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+
+class FakeSyncEngine implements SyncEngine {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
+}
 
 Widget _baseRouterTestApp(Widget child, List<Override> overrides) {
   final router = GoRouter(
@@ -11,8 +17,12 @@ Widget _baseRouterTestApp(Widget child, List<Override> overrides) {
     routes: [GoRoute(path: '/', builder: (context, state) => child)],
   );
 
+  final defaultOverrides = [
+    syncEngineProvider.overrideWithValue(FakeSyncEngine()),
+  ];
+
   return ProviderScope(
-    overrides: overrides,
+    overrides: [...defaultOverrides, ...overrides],
     child: MaterialApp.router(routerConfig: router),
   );
 }

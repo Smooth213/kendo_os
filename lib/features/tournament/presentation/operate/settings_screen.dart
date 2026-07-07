@@ -136,16 +136,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     _buildSwitchTile(
                       context,
-                      'iOS風すりガラス効果 (Liquid Glass)',
-                      settings.enableLiquidGlass,
-                      (val) => notifier.updateField(enableLiquidGlass: val),
-                      icon: Icons.blur_on,
-                      iconBgColor: Colors.tealAccent.shade400,
+                      '省エネモード（背景アニメーション停止）',
+                      !settings.enableLiquidGlass,
+                      (val) => notifier.updateField(enableLiquidGlass: !val),
+                      icon: Icons.eco,
+                      iconBgColor: Colors.green,
                     ),
                   ]),
                   _buildSectionFooter(
                     context,
-                    'ダークモードは端末本体の設定に連動させることもできます。スリープ防止をオンにすると、長時間の試合記録中に画面が暗くなるのを防ぎます。\nすりガラス効果をOFFにすると軽量モードになり、古い端末でも快適に動作します。',
+                    'ダークモードは端末本体の設定に連動させることもできます。スリープ防止をオンにすると、長時間の試合記録中に画面が暗くなるのを防ぎます。\n省エネモードをオンにする、または端末のバッテリー残量が20%以下になると自動的に省エネモード（背景アニメーション停止）になり、パフォーマンスを最優先します。',
                   ),
                   const SizedBox(height: 24),
 

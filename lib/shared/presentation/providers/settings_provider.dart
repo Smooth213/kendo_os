@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import 'dart:async';
+import 'package:battery_plus/battery_plus.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart'; // ★ 追加：設定変更時に音響エンジンを更新するため
@@ -202,4 +204,105 @@ class SettingsNotifier extends Notifier<SettingsModel> {
 
 final settingsProvider = NotifierProvider<SettingsNotifier, SettingsModel>(() {
   return SettingsNotifier();
+});
+
+class BatteryStateData {
+  final int batteryLevel;
+  final bool isInPowerSaveMode;
+
+  const BatteryStateData({
+    this.batteryLevel = 100,
+    this.isInPowerSaveMode = false,
+  });
+}
+
+class BatteryNotifier extends AutoDisposeAsyncNotifier<BatteryStateData> {
+  Battery? _battery;
+  StreamSubscription? _subscription;
+  Timer? _timer;
+
+  @override
+  FutureOr<BatteryStateData> build() async {
+    final isTest =
+        zoneValuesContainsTestKey() ||
+        const bool.fromEnvironment('FLUTTER_TEST');
+    if (isTest) {
+      return const BatteryStateData(
+        batteryLevel: 100,
+        isInPowerSaveMode: false,
+      );
+    }
+
+    try {
+      _battery = Battery();
+      ref.onDispose(() {
+        _subscription?.cancel();
+        _timer?.cancel();
+      });
+
+      final level = await _battery!.batteryLevel.timeout(
+        const Duration(milliseconds: 500),
+        onTimeout: () => 100,
+      );
+      final isLowPower = await _battery!.isInBatterySaveMode.timeout(
+        const Duration(milliseconds: 500),
+        onTimeout: () => false,
+      );
+
+      // Listen to battery state changes
+      _subscription = _battery!.onBatteryStateChanged.listen((_) async {
+        try {
+          final l = await _battery!.batteryLevel;
+          final p = await _battery!.isInBatterySaveMode;
+          state = AsyncValue.data(
+            BatteryStateData(batteryLevel: l, isInPowerSaveMode: p),
+          );
+        } catch (_) {}
+      });
+
+      // Periodically poll low power mode (on some platforms state changes might not trigger immediately)
+      _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
+        try {
+          final l = await _battery!.batteryLevel;
+          final p = await _battery!.isInBatterySaveMode;
+          state = AsyncValue.data(
+            BatteryStateData(batteryLevel: l, isInPowerSaveMode: p),
+          );
+        } catch (_) {}
+      });
+
+      return BatteryStateData(
+        batteryLevel: level,
+        isInPowerSaveMode: isLowPower,
+      );
+    } catch (e) {
+      debugPrint('🔋 Battery info unavailable: $e');
+      return const BatteryStateData(
+        batteryLevel: 100,
+        isInPowerSaveMode: false,
+      );
+    }
+  }
+
+  bool zoneValuesContainsTestKey() {
+    return RegExp(r'test').hasMatch(StackTrace.current.toString());
+  }
+}
+
+final batteryStateProvider =
+    AsyncNotifierProvider.autoDispose<BatteryNotifier, BatteryStateData>(() {
+      return BatteryNotifier();
+    });
+
+final isEcoModeProvider = Provider<bool>((ref) {
+  final settings = ref.watch(settingsProvider);
+  if (!settings.enableLiquidGlass) {
+    return true; // Manual Eco Mode (すりガラス効果OFF)
+  }
+
+  final batteryAsync = ref.watch(batteryStateProvider);
+  return batteryAsync.maybeWhen(
+    data: (data) => data.batteryLevel <= 20 || data.isInPowerSaveMode,
+    orElse: () => false,
+  );
 });

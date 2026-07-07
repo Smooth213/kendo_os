@@ -63,6 +63,7 @@ dependencies:
   shared_preferences: ^2.5.5
   wakelock_plus: ^1.5.1
   connectivity_plus: ^6.0.3 # ★ Phase 4: オフライン/オンラインの検知センサー
+  battery_plus: ^6.0.2 # ★ エコモード用のバッテリー状態監視
   qr_flutter: ^4.1.0
   firebase_storage: ^13.2.0 # ★ Phase 9: authのバージョンと足並みを揃えるため v13.2 へ引き上げ
   file_picker: ^8.0.0 # ★ Phase 9: PDF・画像ファイルの選択
