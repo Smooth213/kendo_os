@@ -2545,6 +2545,57 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         ? currentMatch.whiteName.split(':').first.trim()
         : '白';
 
+    final rule = ref.read(matchRuleProvider);
+    final ownTeamName = rule.teamName.isNotEmpty ? rule.teamName : '自チーム';
+
+    // この試合（groupName）に出ている選手の一覧を取得
+    final allMatches = ref.read(matchListProvider);
+    final teamMatches = allMatches
+        .where((m) => m.groupName == currentMatch.groupName)
+        .toList();
+
+    List<String> ownTeamPlayers = [];
+    for (final m in teamMatches) {
+      if (m.redName.contains(':')) {
+        final parts = m.redName.split(':');
+        final tName = parts.first.trim();
+        final pName = parts.last.trim();
+        if ((tName == ownTeamName ||
+                tName == '自チーム' ||
+                m.redName.startsWith(ownTeamName)) &&
+            pName.isNotEmpty &&
+            !pName.contains('未定') &&
+            !pName.contains('欠員') &&
+            !pName.contains('代表選手')) {
+          ownTeamPlayers.add(pName);
+        }
+      }
+      if (m.whiteName.contains(':')) {
+        final parts = m.whiteName.split(':');
+        final tName = parts.first.trim();
+        final pName = parts.last.trim();
+        if ((tName == ownTeamName ||
+                tName == '自チーム' ||
+                m.whiteName.startsWith(ownTeamName)) &&
+            pName.isNotEmpty &&
+            !pName.contains('未定') &&
+            !pName.contains('欠員') &&
+            !pName.contains('代表選手')) {
+          ownTeamPlayers.add(pName);
+        }
+      }
+    }
+    ownTeamPlayers = ownTeamPlayers.toSet().toList();
+
+    final bool isRedOwnTeam =
+        rTeam == ownTeamName ||
+        rTeam == '自チーム' ||
+        currentMatch.redName.startsWith(ownTeamName);
+    final bool isWhiteOwnTeam =
+        wTeam == ownTeamName ||
+        wTeam == '自チーム' ||
+        currentMatch.whiteName.startsWith(ownTeamName);
+
     final redCtrl = TextEditingController();
     final whiteCtrl = TextEditingController();
 
@@ -2559,134 +2610,246 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: bgColor,
-        title: Text(
-          '次の試合を追加 (錬成会)',
-          style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: redCtrl,
-              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                labelText: '$rTeam の選手',
-                labelStyle: const TextStyle(color: Colors.grey),
-                filled: true,
-                fillColor: inputBgColor,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: borderColor),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: bgColor,
+            title: Text(
+              '次の試合を追加 (錬成会)',
+              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isRedOwnTeam && ownTeamPlayers.isNotEmpty) ...[
+                    Text(
+                      '選手を選択:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ownTeamPlayers
+                          .map(
+                            (p) => ChoiceChip(
+                              label: Text(p),
+                              selected: redCtrl.text == p,
+                              selectedColor: isDark
+                                  ? Colors.teal.shade700
+                                  : Colors.teal.shade100,
+                              backgroundColor: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : Colors.grey.shade100,
+                              labelStyle: TextStyle(
+                                color: redCtrl.text == p
+                                    ? (isDark
+                                          ? Colors.white
+                                          : Colors.teal.shade900)
+                                    : textColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() {
+                                    redCtrl.text = p;
+                                  });
+                                }
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  TextField(
+                    controller: redCtrl,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    onChanged: (val) => setState(() {}),
+                    decoration: InputDecoration(
+                      labelText: '$rTeam の選手',
+                      labelStyle: const TextStyle(color: Colors.grey),
+                      filled: true,
+                      fillColor: inputBgColor,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.indigo.shade400,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (isWhiteOwnTeam && ownTeamPlayers.isNotEmpty) ...[
+                    Text(
+                      '選手を選択:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ownTeamPlayers
+                          .map(
+                            (p) => ChoiceChip(
+                              label: Text(p),
+                              selected: whiteCtrl.text == p,
+                              selectedColor: isDark
+                                  ? Colors.teal.shade700
+                                  : Colors.teal.shade100,
+                              backgroundColor: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : Colors.grey.shade100,
+                              labelStyle: TextStyle(
+                                color: whiteCtrl.text == p
+                                    ? (isDark
+                                          ? Colors.white
+                                          : Colors.teal.shade900)
+                                    : textColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() {
+                                    whiteCtrl.text = p;
+                                  });
+                                }
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  TextField(
+                    controller: whiteCtrl,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    onChanged: (val) => setState(() {}),
+                    decoration: InputDecoration(
+                      labelText: '$wTeam の選手',
+                      labelStyle: const TextStyle(color: Colors.grey),
+                      filled: true,
+                      fillColor: inputBgColor,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.indigo.shade400,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text(
+                  'キャンセル',
+                  style: TextStyle(color: Colors.grey),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.indigo.shade400,
-                    width: 2,
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark
+                      ? Colors.indigo.shade600
+                      : Colors.indigo,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: whiteCtrl,
-              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                labelText: '$wTeam の選手',
-                labelStyle: const TextStyle(color: Colors.grey),
-                filled: true,
-                fillColor: inputBgColor,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: borderColor),
+                onPressed: () async {
+                  if (!ctx.mounted) return;
+                  showDialog(
+                    context: ctx,
+                    barrierDismissible: false,
+                    builder: (_) =>
+                        const Center(child: CircularProgressIndicator()),
+                  );
+
+                  final nextMatchId = const Uuid().v4();
+                  final newRed =
+                      '$rTeam : ${redCtrl.text.trim().isEmpty ? '選手' : redCtrl.text.trim()}';
+                  final newWhite =
+                      '$wTeam : ${whiteCtrl.text.trim().isEmpty ? '選手' : whiteCtrl.text.trim()}';
+
+                  final rule = ref.read(matchRuleProvider);
+                  // ★ 追加：ルールの分数（int切り捨て）ではなく、設定に保存された正確な小数（double）を読み込む
+                  final lastSettings = ref.read(lastUsedSettingsProvider);
+                  final double exactMatchTime =
+                      (lastSettings['matchTime'] as num?)?.toDouble() ??
+                      rule.matchTimeMinutes.toDouble();
+
+                  final nextMatch = MatchModel(
+                    id: nextMatchId,
+                    tournamentId: currentMatch.tournamentId,
+                    category: currentMatch.category,
+                    groupName: currentMatch.groupName,
+                    matchType: '錬成会',
+                    redName: newRed,
+                    whiteName: newWhite,
+                    status: 'waiting',
+                    matchTimeMinutes: exactMatchTime,
+                    isRunningTime: rule.isRunningTime,
+                    order: currentMatch.order + 0.1,
+                    note: currentMatch.note,
+                  ); // ★ remainingSeconds初期化を削除（自動でbaseSecondsが使われるため）
+
+                  await ref
+                      .read(matchApplicationServiceProvider)
+                      .saveMatch(nextMatch); // ★ 修正
+
+                  if (!ctx.mounted) return;
+                  // ★ Phase 8-1: GoRouterクラッシュ対策。ローディングダイアログを確実に閉じる
+                  Navigator.of(ctx, rootNavigator: true).pop();
+                  if (!ctx.mounted) {
+                    return;
+                  }
+                  Navigator.pop(ctx); // ダイアログ閉じる
+
+                  if (!context.mounted) {
+                    return;
+                  }
+                  context.pushReplacement('/match/$nextMatchId');
+                },
+                child: const Text(
+                  '決定して開始',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.indigo.shade400,
-                    width: 2,
-                  ),
-                ),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDark ? Colors.indigo.shade600 : Colors.indigo,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () async {
-              if (!ctx.mounted) return;
-              showDialog(
-                context: ctx,
-                barrierDismissible: false,
-                builder: (_) =>
-                    const Center(child: CircularProgressIndicator()),
-              );
-
-              final nextMatchId = const Uuid().v4();
-              final newRed =
-                  '$rTeam : ${redCtrl.text.trim().isEmpty ? '選手' : redCtrl.text.trim()}';
-              final newWhite =
-                  '$wTeam : ${whiteCtrl.text.trim().isEmpty ? '選手' : whiteCtrl.text.trim()}';
-
-              final rule = ref.read(matchRuleProvider);
-              // ★ 追加：ルールの分数（int切り捨て）ではなく、設定に保存された正確な小数（double）を読み込む
-              final lastSettings = ref.read(lastUsedSettingsProvider);
-              final double exactMatchTime =
-                  (lastSettings['matchTime'] as num?)?.toDouble() ??
-                  rule.matchTimeMinutes.toDouble();
-
-              final nextMatch = MatchModel(
-                id: nextMatchId,
-                tournamentId: currentMatch.tournamentId,
-                category: currentMatch.category,
-                groupName: currentMatch.groupName,
-                matchType: '錬成会',
-                redName: newRed,
-                whiteName: newWhite,
-                status: 'waiting',
-                matchTimeMinutes: exactMatchTime,
-                isRunningTime: rule.isRunningTime,
-                order: currentMatch.order + 0.1,
-                note: currentMatch.note,
-              ); // ★ remainingSeconds初期化を削除（自動でbaseSecondsが使われるため）
-
-              await ref
-                  .read(matchApplicationServiceProvider)
-                  .saveMatch(nextMatch); // ★ 修正
-
-              if (!ctx.mounted) return;
-              // ★ Phase 8-1: GoRouterクラッシュ対策。ローディングダイアログを確実に閉じる
-              Navigator.of(ctx, rootNavigator: true).pop();
-              if (!ctx.mounted) {
-                return;
-              }
-              Navigator.pop(ctx); // ダイアログ閉じる
-
-              if (!context.mounted) {
-                return;
-              }
-              context.pushReplacement('/match/$nextMatchId');
-            },
-            child: const Text(
-              '決定して開始',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
