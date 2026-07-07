@@ -79,5 +79,7 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>164010781926-edhio21bgkije5lhoj4s6vh1tcso82sp.apps.googleusercontent.com</string>
+	<key>FLTEnableImpeller</key>
+	<true/>
 </dict>
 </plist>
