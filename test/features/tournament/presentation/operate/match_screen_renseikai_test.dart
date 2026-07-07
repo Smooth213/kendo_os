@@ -146,26 +146,40 @@ void main() {
         // Verify the dialog is displayed
         expect(find.text('次の試合を追加 (錬成会)'), findsOneWidget);
 
-        // Verify that own team is identified (Red in this case) and presents ChoiceChips
-        // with the participating own-team players (武田 修二, 佐藤 健)
+        // Verify that Red team players (武田 修二, 佐藤 健) are presented as ChoiceChips
         final chipTakedafinder = find.widgetWithText(ChoiceChip, '武田 修二');
         final chipSatofinder = find.widgetWithText(ChoiceChip, '佐藤 健');
         expect(chipTakedafinder, findsOneWidget);
         expect(chipSatofinder, findsOneWidget);
+
+        // Verify that White team players (選手A, 選手B) are presented as ChoiceChips
+        final chipAFinder = find.widgetWithText(ChoiceChip, '選手A');
+        final chipBFinder = find.widgetWithText(ChoiceChip, '選手B');
+        expect(chipAFinder, findsOneWidget);
+        expect(chipBFinder, findsOneWidget);
 
         // Initially, the text fields are empty
         final textFields = find.byType(TextField);
         expect(textFields, findsNWidgets(2));
 
         final redTextField = tester.widget<TextField>(textFields.first);
+        final whiteTextField = tester.widget<TextField>(textFields.last);
         expect(redTextField.controller?.text, isEmpty);
+        expect(whiteTextField.controller?.text, isEmpty);
 
-        // Tap the '佐藤 健' chip to select that player
+        // Tap the '佐藤 健' chip to select that player for Red
         await tester.tap(chipSatofinder);
         await tester.pumpAndSettle();
 
         // Verify that the red team TextField has been populated with '佐藤 健'
         expect(redTextField.controller?.text, '佐藤 健');
+
+        // Tap the '選手B' chip to select that player for White
+        await tester.tap(chipBFinder);
+        await tester.pumpAndSettle();
+
+        // Verify that the white team TextField has been populated with '選手B'
+        expect(whiteTextField.controller?.text, '選手B');
 
         // Clean up
         await tester.pumpWidget(const SizedBox());
