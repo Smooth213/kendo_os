@@ -3106,6 +3106,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   category: currentMatch.category,
                                   groupName: currentMatch.groupName,
                                   matchType: '錬成会',
+                                  rule: currentMatch.rule ?? rule,
                                   redName: newRed,
                                   whiteName: newWhite,
                                   status: 'waiting',
