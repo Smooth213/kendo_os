@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/timer_widget.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 
@@ -337,6 +338,120 @@ void main() {
 
         // Verify the final "対戦終了" dialog pops up
         expect(find.text('対戦終了'), findsOneWidget);
+
+        // Clean up
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+        container.dispose();
+      },
+    );
+
+    testWidgets(
+      '3. Renseikai time-based mode should display side-by-side timers (Match Timer and Total Timer)',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        const mockMatch = MatchModel(
+          id: 'test_match_renseikai_timer',
+          tournamentId: 'tourney_1',
+          matchType: '錬成会',
+          redName: '自チーム : 武田 修二',
+          whiteName: '相手 : 選手A',
+          status: 'in_progress',
+          groupName: '団体A',
+          order: 1.0,
+        );
+
+        final router = GoRouter(
+          initialLocation: '/match/test_match_renseikai_timer',
+          routes: [
+            GoRoute(
+              path: '/match/:id',
+              builder: (context, state) =>
+                  MatchScreen(matchId: state.pathParameters['id']!),
+            ),
+          ],
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            matchListProvider.overrideWith((ref) => [mockMatch]),
+            matchRuleProvider.overrideWith(
+              () => MockMatchRuleNotifier(
+                const MatchRule(
+                  teamName: '自チーム',
+                  isRenseikai: true,
+                  renseikaiType: '時間制',
+                  positions: ['先鋒', '大将'],
+                  overallTimeMinutes: 30,
+                ),
+              ),
+            ),
+            lastUsedSettingsProvider.overrideWith((ref) => {'matchTime': 3.0}),
+            renseikaiMasterTimerProvider.overrideWith(
+              () => MockRenseikaiMasterTimerNotifier(1800),
+            ),
+            matchViewStateProvider('test_match_renseikai_timer').overrideWith(
+              (ref) => MatchViewState(
+                scoreText: '0 - 0',
+                redScore: 0,
+                whiteScore: 0,
+                isEncho: false,
+                winner: '',
+                lastEventText: '',
+                canUndo: false,
+                statusText: '進行中',
+                syncStatus: SyncStatus.synced,
+                isViewOnly: false,
+                isInputLocked: false,
+                isAllDone: false,
+                isTie: false,
+                redCleanName: '武田 修二',
+                whiteCleanName: '選手A',
+              ),
+            ),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+            isarProvider.overrideWithValue(null),
+          ],
+        );
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              theme: ThemeData.light(),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. 試合用タイマーが表示されていることを確認
+        // (操作用のタイマーである TimerWidget を探す)
+        expect(find.byType(TimerWidget), findsOneWidget);
+
+        // 2. トータルタイマーが表示されていることを確認
+        // プライベートクラス _RenseikaiMasterTimerWidget なのでテキストで特定する
+        expect(find.text('トータル'), findsOneWidget);
+        expect(find.text('30:00'), findsOneWidget);
 
         // Clean up
         await tester.pumpWidget(const SizedBox());
