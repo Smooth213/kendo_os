@@ -2559,6 +2559,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             color: Colors.teal,
             icon: Icons.autorenew,
             label: '追加して継続',
+            expandContent: false,
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
         ),
