@@ -2546,7 +2546,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         : '白';
 
     final rule = ref.read(matchRuleProvider);
-    final ownTeamName = rule.teamName.isNotEmpty ? rule.teamName : '自チーム';
+    final String selectedTeamName = rule.teamName.trim();
 
     // この試合（groupName）に出ている選手の一覧を取得
     final allMatches = ref.read(matchListProvider);
@@ -2554,28 +2554,60 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         .where((m) => m.groupName == currentMatch.groupName)
         .toList();
 
-    // 自チームが赤か白か判定
-    bool isRedOwnTeam =
-        rTeam == ownTeamName ||
-        rTeam == '自チーム' ||
-        rTeam.contains('自') ||
-        rTeam.contains('錬成') ||
-        currentMatch.redName.startsWith(ownTeamName);
-    bool isWhiteOwnTeam =
-        wTeam == ownTeamName ||
-        wTeam == '自チーム' ||
-        wTeam.contains('自') ||
-        wTeam.contains('錬成') ||
-        currentMatch.whiteName.startsWith(ownTeamName);
+    bool isRedOwnTeam = false;
+    bool isWhiteOwnTeam = false;
 
-    // どちらのフラグも立たなかった場合のフォールバック（相手という文字列の有無で判定）
-    if (!isRedOwnTeam && !isWhiteOwnTeam) {
-      if (wTeam.contains('相手') && !rTeam.contains('相手')) {
+    // 1. ルール設定で選択された自チーム名と厳密一致するか判定
+    if (selectedTeamName.isNotEmpty) {
+      if (rTeam == selectedTeamName) {
         isRedOwnTeam = true;
-      } else if (rTeam.contains('相手') && !wTeam.contains('相手')) {
+      } else if (wTeam == selectedTeamName) {
+        isWhiteOwnTeam = true;
+      }
+    }
+
+    // 2. ルール設定で未選択、あるいは一致しなかった場合のフォールバック（ローカル選手データベースと対戦履歴の照合）
+    if (!isRedOwnTeam && !isWhiteOwnTeam) {
+      final localPlayers = ref.read(playerListProvider).value ?? [];
+      final localPlayerNames = localPlayers.map((p) => p.name.trim()).toSet();
+
+      int redMatchCount = 0;
+      int whiteMatchCount = 0;
+
+      for (final m in teamMatches) {
+        if (m.redName.contains(':')) {
+          final pName = m.redName.split(':').last.trim();
+          if (localPlayerNames.contains(pName)) {
+            redMatchCount++;
+          }
+        }
+        if (m.whiteName.contains(':')) {
+          final pName = m.whiteName.split(':').last.trim();
+          if (localPlayerNames.contains(pName)) {
+            whiteMatchCount++;
+          }
+        }
+      }
+
+      if (redMatchCount > whiteMatchCount) {
+        isRedOwnTeam = true;
+      } else if (whiteMatchCount > redMatchCount) {
         isWhiteOwnTeam = true;
       } else {
-        isRedOwnTeam = true; // デフォルトで赤を自チームとする
+        // どちらも選手がいない、または同数の場合は、ルール側が空なら '自チーム' という文字列一致を試みる
+        final String ownTeamName = selectedTeamName.isNotEmpty
+            ? selectedTeamName
+            : '自チーム';
+        if (rTeam == ownTeamName ||
+            currentMatch.redName.startsWith(ownTeamName)) {
+          isRedOwnTeam = true;
+        } else if (wTeam == ownTeamName ||
+            currentMatch.whiteName.startsWith(ownTeamName)) {
+          isWhiteOwnTeam = true;
+        } else {
+          // 最終手段として赤を自チームとする
+          isRedOwnTeam = true;
+        }
       }
     }
 
