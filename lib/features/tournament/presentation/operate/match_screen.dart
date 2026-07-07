@@ -35,9 +35,11 @@ import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加: TimeSourc
 import 'package:kendo_os/shared/widgets/timer_widget.dart';
 import 'package:kendo_os/shared/widgets/action_buttons.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
+import 'package:kendo_os/features/match/domain/match_state.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
-import 'package:kendo_os/features/match/domain/match_state.dart';
 
 // ★ 追加：システム設定プロバイダの読み込み
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -459,7 +461,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     });
 
     // ★ Phase 3 修正版: ナビゲーションの復旧と、競合しないスワイプUndoの完成
-    return LiquidBackground(
+    final activeRole = ref.watch(activeRoleProvider);
+    final showSyncBar = activeRole != Role.viewer;
+
+    final layoutWidget = LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -1929,6 +1934,16 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         ), // LayoutBuilder
       ), // Scaffold
     ); // LiquidBackground
+
+    if (showSyncBar) {
+      return Column(
+        children: [
+          const SyncStatusBar(),
+          Expanded(child: layoutWidget),
+        ],
+      );
+    }
+    return layoutWidget;
   }
 
   // ★ 直感UX改修：試合中の選手変更を、状況（自チーム/相手チーム）に応じて分岐するモダンなボトムシートへ昇格

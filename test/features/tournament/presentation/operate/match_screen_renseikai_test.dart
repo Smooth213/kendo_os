@@ -18,6 +18,8 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/widgets/timer_widget.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
 
 class MockMatchRuleNotifier extends MatchRuleNotifier {
   final MatchRule initialRule;
@@ -58,6 +60,11 @@ class MockRenseikaiMasterTimerNotifier extends RenseikaiMasterTimerNotifier {
 
   @override
   void toggleTimer() {}
+}
+
+class FakeSyncEngine implements SyncEngine {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
 }
 
 void main() {
@@ -457,6 +464,149 @@ void main() {
         await tester.pumpWidget(const SizedBox());
         await tester.pumpAndSettle();
         container.dispose();
+      },
+    );
+
+    testWidgets(
+      '4. SyncStatusBar should be rendered for operators (scorer/admin) and hidden for viewers',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        const mockMatch = MatchModel(
+          id: 'test_match_sync_bar',
+          tournamentId: 'tourney_1',
+          matchType: '錬成会',
+          redName: '自チーム : 武田 修二',
+          whiteName: '相手 : 選手A',
+          status: 'in_progress',
+          groupName: '団体A',
+          order: 1.0,
+        );
+
+        final router = GoRouter(
+          initialLocation: '/match/test_match_sync_bar',
+          routes: [
+            GoRoute(
+              path: '/match/:id',
+              builder: (context, state) =>
+                  MatchScreen(matchId: state.pathParameters['id']!),
+            ),
+          ],
+        );
+
+        Future<ProviderContainer> buildWithRole(Role role) async {
+          final container = ProviderContainer(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              matchListProvider.overrideWith((ref) => [mockMatch]),
+              matchRuleProvider.overrideWith(
+                () => MockMatchRuleNotifier(
+                  const MatchRule(
+                    teamName: '自チーム',
+                    isRenseikai: true,
+                    renseikaiType: '時間制',
+                    positions: ['先鋒', '大将'],
+                  ),
+                ),
+              ),
+              lastUsedSettingsProvider.overrideWith(
+                (ref) => {'matchTime': 3.0},
+              ),
+              renseikaiMasterTimerProvider.overrideWith(
+                () => MockRenseikaiMasterTimerNotifier(1800),
+              ),
+              matchViewStateProvider('test_match_sync_bar').overrideWith(
+                (ref) => MatchViewState(
+                  scoreText: '0 - 0',
+                  redScore: 0,
+                  whiteScore: 0,
+                  isEncho: false,
+                  winner: '',
+                  lastEventText: '',
+                  canUndo: false,
+                  statusText: '進行中',
+                  syncStatus: SyncStatus.synced,
+                  isViewOnly: false,
+                  isInputLocked: false,
+                  isAllDone: false,
+                  isTie: false,
+                  redCleanName: '武田 修二',
+                  whiteCleanName: '選手A',
+                ),
+              ),
+              permissionProvider.overrideWith(
+                (ref) => const AppPermissions(
+                  isReadOnly: false,
+                  canManageTournament: true,
+                  canCreateMatch: true,
+                  canChangeSettings: true,
+                  canDeleteData: true,
+                ),
+              ),
+              isarProvider.overrideWithValue(null),
+              activeRoleProvider.overrideWithValue(role),
+              connectivityProvider.overrideWith((ref) => Stream.value(true)),
+              syncEngineProvider.overrideWith((ref) => FakeSyncEngine()),
+            ],
+          );
+          return container;
+        }
+
+        // Test Scorer role (Operator) -> SyncStatusBar must be shown
+        final containerScorer = await buildWithRole(Role.scorer);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: containerScorer,
+            child: MaterialApp.router(
+              routerConfig: router,
+              theme: ThemeData.light(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(SyncStatusBar), findsOneWidget);
+
+        // Clean up scorer widget
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+        containerScorer.dispose();
+
+        // Test Viewer role -> SyncStatusBar must be hidden
+        final containerViewer = await buildWithRole(Role.viewer);
+        final router2 = GoRouter(
+          initialLocation: '/match/test_match_sync_bar',
+          routes: [
+            GoRoute(
+              path: '/match/:id',
+              builder: (context, state) =>
+                  MatchScreen(matchId: state.pathParameters['id']!),
+            ),
+          ],
+        );
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: containerViewer,
+            child: MaterialApp.router(
+              routerConfig: router2,
+              theme: ThemeData.light(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(SyncStatusBar), findsNothing);
+
+        // Clean up viewer widget
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+        containerViewer.dispose();
       },
     );
   });
