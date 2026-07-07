@@ -19,6 +19,27 @@ class MockDeadLetterQueueNotifier extends DeadLetterQueueNotifier {
   List<MatchCommandModel> build() => []; // テスト用に空のエラーキュー状態を確定
 }
 
+class MockDeadLetterQueueNotifierWithItems extends DeadLetterQueueNotifier {
+  final List<MatchCommandModel> items;
+  MockDeadLetterQueueNotifierWithItems(this.items);
+
+  @override
+  List<MatchCommandModel> build() => items;
+
+  bool wasRetryCalled = false;
+  bool wasDiscardCalled = false;
+
+  @override
+  Future<void> retryCommand(MatchCommandModel cmd) async {
+    wasRetryCalled = true;
+  }
+
+  @override
+  Future<void> discardCommand(MatchCommandModel cmd) async {
+    wasDiscardCalled = true;
+  }
+}
+
 void main() {
   group('🛡️ [Phase 3] Observability 統一ロケーション隔離検証テスト', () {
     testWidgets('同期バーが、一般ユーザー向けに定義された安心日本語表現（保存済み）を出力すること', (
@@ -66,6 +87,116 @@ void main() {
 
     test('内部メトリクスプロバイダがUI露出禁止（showInternalMetrics == false）に完全統制されていること', () {
       expect(BetaFeatureFlags.showInternalMetrics, false);
+    });
+
+    testWidgets('同期バーがオフラインの際、オフラインの文言とクラウドオフアイコンを表示すること', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            syncEngineProvider.overrideWith((ref) => MockSyncEngine()),
+            deadLetterQueueProvider.overrideWith(
+              () => MockDeadLetterQueueNotifier(),
+            ),
+            activeRoleProvider.overrideWith((ref) => Role.scorer),
+            operationModeProvider.overrideWith(
+              (ref) => OperationMode.tournament,
+            ),
+            syncStatusProvider.overrideWith((ref) => SyncStatus.synced),
+            isOnlineProvider.overrideWith((ref) => false),
+            isSyncingStateProvider.overrideWith((ref) => false),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(bottomNavigationBar: SyncStatusBar()),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.text('オフライン'), findsOneWidget);
+      expect(find.byIcon(Icons.cloud_off), findsOneWidget);
+    });
+
+    testWidgets('同期バーが同期中の際、同期中の文言を表示すること', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            syncEngineProvider.overrideWith((ref) => MockSyncEngine()),
+            deadLetterQueueProvider.overrideWith(
+              () => MockDeadLetterQueueNotifier(),
+            ),
+            activeRoleProvider.overrideWith((ref) => Role.scorer),
+            operationModeProvider.overrideWith(
+              (ref) => OperationMode.tournament,
+            ),
+            syncStatusProvider.overrideWith((ref) => SyncStatus.syncing),
+            isOnlineProvider.overrideWith((ref) => true),
+            isSyncingStateProvider.overrideWith((ref) => false),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(bottomNavigationBar: SyncStatusBar()),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.text('同期中'), findsOneWidget);
+    });
+
+    testWidgets('送信エラー（デッドレター）が存在する場合、再接続中を表示し、タップでエラーキュー詳細および再送ボタンが動作すること', (
+      WidgetTester tester,
+    ) async {
+      final mockCommand = MatchCommandModel(
+        id: 'test_cmd_123',
+        type: CommandType.addScore,
+        payload: const {'matchId': 'match_999'},
+        createdAt: DateTime(2026, 7, 7, 10, 30),
+      );
+
+      final mockNotifier = MockDeadLetterQueueNotifierWithItems([mockCommand]);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            syncEngineProvider.overrideWith((ref) => MockSyncEngine()),
+            deadLetterQueueProvider.overrideWith(() => mockNotifier),
+            activeRoleProvider.overrideWith((ref) => Role.scorer),
+            operationModeProvider.overrideWith(
+              (ref) => OperationMode.tournament,
+            ),
+            syncStatusProvider.overrideWith((ref) => SyncStatus.synced),
+            isOnlineProvider.overrideWith((ref) => true),
+            isSyncingStateProvider.overrideWith((ref) => false),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(bottomNavigationBar: SyncStatusBar()),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      // 1. 「再接続中」（デッドレターエラー状態）が表示されていることを確認
+      expect(find.text('再接続中'), findsOneWidget);
+
+      // 2. タップしてエラーキュー詳細ボトムシートを開く
+      await tester.tap(find.text('再接続中'));
+      await tester.pumpAndSettle();
+
+      // 3. ボトムシート内のメッセージとエラーリストが表示されていることを確認
+      expect(find.text('☁️ クラウド同期ステータス'), findsOneWidget);
+      expect(find.textContaining('[10:30] 得点追加'), findsOneWidget);
+
+      // 4. 「再送」ボタンをタップしてモックが反応するか検証
+      final retryBtnFinder = find.widgetWithText(ElevatedButton, '再送');
+      expect(retryBtnFinder, findsOneWidget);
+      await tester.tap(retryBtnFinder);
+      await tester.pumpAndSettle();
+
+      expect(mockNotifier.wasRetryCalled, true);
     });
   });
 }
