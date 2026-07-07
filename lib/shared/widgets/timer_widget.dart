@@ -157,11 +157,13 @@ class TimerWidget extends ConsumerWidget {
     // これにより、試合終了後もタイマーの枠（最終時間）がそのまま残り、下のボタンが上に伸びるレイアウト崩れが消滅します。
     // ※ 操作ロック（isInputLocked）は親から渡されているため、終了後に誤ってタイマーを動かしてしまう心配はありません。
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2), // ★ 画面の圧迫を防ぐため余白をスリム化
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: _buildTimerContent(context, ref),
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2), // ★ 画面の圧迫を防ぐため余白をスリム化
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: _buildTimerContent(context, ref),
+        ),
       ),
     );
   }

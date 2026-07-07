@@ -3888,71 +3888,75 @@ class _RenseikaiMasterTimerWidget extends ConsumerWidget {
         ? (isDark ? Colors.teal.shade300 : Colors.teal.shade900)
         : (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: isInputLocked
-          ? null
-          : () {
-              ref
-                  .read(renseikaiMasterTimerProvider(groupName).notifier)
-                  .toggleTimer();
-            },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-        decoration: BoxDecoration(
-          color: timerBgColor,
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(
-            color: isTimeUp
-                ? Colors.red
-                : (isInputLocked
-                      ? Colors.grey.withValues(alpha: 0.3)
-                      : timerBorderColor),
-            width: (isRunning && !isInputLocked) ? 4 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isRunning ? Icons.pause_circle : Icons.play_circle,
+    return RepaintBoundary(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: isInputLocked
+            ? null
+            : () {
+                ref
+                    .read(renseikaiMasterTimerProvider(groupName).notifier)
+                    .toggleTimer();
+              },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+          decoration: BoxDecoration(
+            color: timerBgColor,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(
               color: isTimeUp
                   ? Colors.red
-                  : (isRunning
-                        ? (isDark ? Colors.teal.shade400 : Colors.teal.shade600)
-                        : Colors.grey),
-              size: 28,
+                  : (isInputLocked
+                        ? Colors.grey.withValues(alpha: 0.3)
+                        : timerBorderColor),
+              width: (isRunning && !isInputLocked) ? 4 : 1,
             ),
-            const SizedBox(width: 12),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'トータル',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: isTimeUp
-                        ? Colors.red
-                        : (isDark
-                              ? Colors.teal.shade200
-                              : Colors.teal.shade800),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isRunning ? Icons.pause_circle : Icons.play_circle,
+                color: isTimeUp
+                    ? Colors.red
+                    : (isRunning
+                          ? (isDark
+                                ? Colors.teal.shade400
+                                : Colors.teal.shade600)
+                          : Colors.grey),
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'トータル',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: isTimeUp
+                          ? Colors.red
+                          : (isDark
+                                ? Colors.teal.shade200
+                                : Colors.teal.shade800),
+                    ),
                   ),
-                ),
-                Text(
-                  _formatTime(masterTime),
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w900,
-                    height: 1.1,
-                    color: isTimeUp ? Colors.red : timerTextColor,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                  Text(
+                    _formatTime(masterTime),
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
+                      color: isTimeUp ? Colors.red : timerTextColor,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
