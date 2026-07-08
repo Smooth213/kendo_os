@@ -589,8 +589,9 @@ enum SyncStatus { synced, syncing, pending }
 
 final syncStatusProvider = Provider<SyncStatus>((ref) {
   final isSyncing = ref.watch(isSyncingStateProvider);
-  // ★ 修正: エラーが出た syncState の pending ではなく、元々正しく動いていた isDirty を監視
-  final hasDirty = ref.watch(matchListProvider).any((m) => m.isDirty);
+  final hasDirty = ref.watch(
+    matchListProvider.select((list) => list.any((m) => m.isDirty)),
+  );
 
   if (isSyncing) return SyncStatus.syncing;
   if (hasDirty) return SyncStatus.pending;

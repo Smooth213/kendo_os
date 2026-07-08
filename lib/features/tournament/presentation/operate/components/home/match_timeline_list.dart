@@ -4939,10 +4939,11 @@ class MatchListTileCard extends ConsumerWidget {
     // 🛡️ 自身の内部でグローバルな変化を強固に常時 watch 監視。
     // これにより、画面裏で Undo 操作（消去）が行われた瞬間、アコーディオンのキャッシュをぶち破って0ミリ秒で即座にタイルがリビルドされます。
     // ★ 修正: ネイティブ環境では最速の即時反映(matchListProvider)を使用し、Web環境でのみフォールバックさせます。
-    final matches = ref.watch(matchListProvider);
-    MatchModel? maybeMatch = matches
-        .where((m) => m.id == initialMatch.id)
-        .firstOrNull;
+    MatchModel? maybeMatch = ref.watch(
+      matchListProvider.select(
+        (list) => list.where((m) => m.id == initialMatch.id).firstOrNull,
+      ),
+    );
 
     // Web では matchListProvider が初回に空を返すことがあるため、
     // 大会単位プロバイダをフォールバックとして参照して対象試合を探す
@@ -4950,12 +4951,11 @@ class MatchListTileCard extends ConsumerWidget {
         kIsWeb &&
         (initialMatch.tournamentId != null &&
             initialMatch.tournamentId!.isNotEmpty)) {
-      final webMatches =
-          ref
-              .watch(matchListByTournamentProvider(initialMatch.tournamentId!))
-              .value ??
-          [];
-      maybeMatch = webMatches.where((m) => m.id == initialMatch.id).firstOrNull;
+      maybeMatch = ref.watch(
+        matchListByTournamentProvider(initialMatch.tournamentId!).select(
+          (res) => res.value?.where((m) => m.id == initialMatch.id).firstOrNull,
+        ),
+      );
     }
 
     final match = maybeMatch ?? initialMatch;

@@ -123,6 +123,8 @@ flutter:
     # ★ Phase 4: 音源フォルダの読み込み設定をここに追加
     - assets/sounds/
     - assets/manual_embeddings/ # ★ Phase 6: AI検索用インデックスデータの同梱
+    - assets/fonts/NotoSansJP-Regular.ttf
+    - assets/fonts/NotoSansJP-Bold.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -134,14 +136,6 @@ flutter:
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
-
-  # ★ PDF出力用の日本語フォント設定
-  fonts:
-    - family: NotoSansJP
-      fonts:
-        - asset: assets/fonts/NotoSansJP-Regular.ttf
-        - asset: assets/fonts/NotoSansJP-Bold.ttf
-          weight: 700
 
 # ★ Phase 9: SyncfusionとFlutter SDKの intl バージョン競合を強制解決
 dependency_overrides:

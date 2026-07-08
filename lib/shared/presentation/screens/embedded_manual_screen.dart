@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown/flutter_markdown.dart' deferred as md;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:documentation_runtime/manual_routes.dart';
 
@@ -14,7 +14,7 @@ import 'package:documentation_runtime/manual_routes.dart';
 // ★ Step 6-1: 新しい全文検索インデックス (manual_search_index.json) を読み込む
 final manualIndexProvider = FutureProvider<List<dynamic>>((ref) async {
   final jsonString = await rootBundle.loadString(
-    'docs/manuals/manual_search_index.json',
+    'packages/documentation_runtime/manuals/manual_search_index.json',
   );
   final decoded = jsonDecode(jsonString);
 
@@ -54,20 +54,32 @@ class EmbeddedManualScreen extends ConsumerStatefulWidget {
 }
 
 class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
-  String _currentFilePath = 'docs/manuals/quickstart/index.md';
+  String _currentFilePath =
+      'packages/documentation_runtime/manuals/quickstart/index.md';
   String _markdownContent = '';
   String _searchQuery = '';
   bool _isLoading = true;
+  bool _isLibraryLoaded = false;
   // ★ 修正1: 検索ボックスの文字をプログラムから操作(クリア)するためのコントローラーを追加
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _loadLibrary();
     if (widget.initialFilePath != null) {
       _currentFilePath = widget.initialFilePath!;
     }
     _loadMarkdown(_currentFilePath);
+  }
+
+  Future<void> _loadLibrary() async {
+    await md.loadLibrary();
+    if (mounted) {
+      setState(() {
+        _isLibraryLoaded = true;
+      });
+    }
   }
 
   // ★ 修正2: メモリリークを防ぐための破棄処理
@@ -80,10 +92,18 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
   Future<void> _loadMarkdown(String path) async {
     setState(() => _isLoading = true);
 
-    // ★ 修正1: リンクや古いインデックスからの不正なパスを強制的に正しいfaqディレクトリへ補正
-    if (path.endsWith('viewer_faq.md')) path = 'docs/manuals/faq/viewer_faq.md';
+    // ★ パスマップの補正 (docs/manuals/ を packages/documentation_runtime/manuals/ に置換)
+    if (path.startsWith('docs/manuals/')) {
+      path = path.replaceFirst(
+        'docs/manuals/',
+        'packages/documentation_runtime/manuals/',
+      );
+    }
+    if (path.endsWith('viewer_faq.md')) {
+      path = 'packages/documentation_runtime/manuals/faq/viewer_faq.md';
+    }
     if (path.endsWith('operator_faq.md')) {
-      path = 'docs/manuals/faq/operator_faq.md';
+      path = 'packages/documentation_runtime/manuals/faq/operator_faq.md';
     }
 
     try {
@@ -262,9 +282,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
     }
 
     final markdownPane = Expanded(
-      child: _isLoading
+      child: (!_isLibraryLoaded || _isLoading)
           ? const Center(child: CircularProgressIndicator())
-          : Markdown(
+          : md.Markdown(
               data: _markdownContent,
               // ★ 修正1: テキスト選択機能を切り、タップ判定をリンク機能に全集中させる
               selectable: false,
@@ -306,7 +326,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
                 final targetPath = dirSegments.join('/');
                 _loadMarkdown(targetPath);
               },
-              styleSheet: MarkdownStyleSheet(
+              styleSheet: md.MarkdownStyleSheet(
                 h1: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -345,7 +365,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
-            onPressed: () => _loadMarkdown('docs/manuals/manual_index.md'),
+            onPressed: () => _loadMarkdown(
+              'packages/documentation_runtime/manuals/manual_index.md',
+            ),
             tooltip: '総合ホームへ戻る',
           ),
           Padding(

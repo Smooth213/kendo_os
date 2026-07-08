@@ -10,7 +10,7 @@ import 'dart:io';
 void main() {
   print('🔍 [Indexer] Building End-User Search Index...');
 
-  final docsDir = Directory('docs/manuals');
+  final docsDir = Directory('packages/documentation_runtime/manuals');
   final validDirs = ['viewer', 'operator', 'quickstart', 'faq', 'recovery'];
   final excludeFiles = [
     'personas.md',
@@ -110,12 +110,15 @@ void main() {
     });
   }
 
-  final faqFile = File('docs/manuals/faq/faq_index.json');
+  final faqFile = File(
+    'packages/documentation_runtime/manuals/faq/faq_index.json',
+  );
   if (faqFile.existsSync()) {
     final List<dynamic> faqs = jsonDecode(faqFile.readAsStringSync());
     for (final faq in faqs) {
       index.add({
-        'path': 'docs/manuals/faq/${faq['category']}_faq.md',
+        'path':
+            'packages/documentation_runtime/manuals/faq/${faq['category']}_faq.md',
         'title': '❓ Q. ${faq['question']}',
         'headings': ['FAQ'],
         'sort_order': 60,
@@ -137,7 +140,9 @@ void main() {
   });
 
   final outJson = jsonEncode(index);
-  final outFile = File('docs/manuals/manual_search_index.json');
+  final outFile = File(
+    'packages/documentation_runtime/manuals/manual_search_index.json',
+  );
   outFile.writeAsStringSync(outJson);
   print('✅ [PASS] Cleaned Search Index generated.');
 }

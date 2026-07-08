@@ -81,6 +81,12 @@
       });
     }
   </script>
+  <script>
+    // 🛡️ Web レンダラーの自動切り替え設定を明示的に強制 (モバイル: HTML, PC: CanvasKit)
+    window.flutterConfiguration = {
+      renderer: "auto"
+    };
+  </script>
   <!-- ★ 修正: 絶対パスに変更し、深いURLからでも確実にロードできるようにする（ホワイトアウト対策4） -->
   <script src="/flutter_bootstrap.js" async></script>
 </body>

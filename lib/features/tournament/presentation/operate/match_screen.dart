@@ -422,9 +422,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final isInputLocked =
         isViewOnly || match.status == 'finished' || match.status == 'approved';
 
-    final vs = ref.watch(matchViewStateProvider(widget.matchId));
-    final isAllDone = vs.isAllDone;
-    final isTie = vs.isTie;
+    final isAllDone = ref.watch(
+      matchViewStateProvider(widget.matchId).select((vs) => vs.isAllDone),
+    );
+    final isTie = ref.watch(
+      matchViewStateProvider(widget.matchId).select((vs) => vs.isTie),
+    );
     final isApproved = match.status == 'approved';
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1146,8 +1149,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     16,
                                     0,
                                   ), // ★ 最下部の余白もゼロに
-                                  child: Builder(
-                                    builder: (context) {
+                                  child: Consumer(
+                                    builder: (context, ref, child) {
                                       final settings = ref.watch(
                                         settingsProvider,
                                       );
@@ -1175,7 +1178,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                           match.status == 'finished') {
                                         return _buildRenseikaiNextButton(
                                           context,
-                                          ref,
                                           match,
                                           isViewOnly,
                                         );
@@ -2583,101 +2585,105 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   Widget _buildRenseikaiNextButton(
     BuildContext context,
-    WidgetRef ref,
     MatchModel match,
     bool isViewOnly,
   ) {
-    final masterTime = ref.watch(
-      renseikaiMasterTimerProvider(match.groupName ?? ''),
-    );
-    final isTimeUp = masterTime == 0;
-    final isInputLocked = match.scorerId != null && match.scorerId != _myUserId;
-    final settings = ref.watch(settingsProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Consumer(
+      builder: (context, ref, child) {
+        final masterTime = ref.watch(
+          renseikaiMasterTimerProvider(match.groupName ?? ''),
+        );
+        final isTimeUp = masterTime == 0;
+        final isInputLocked =
+            match.scorerId != null && match.scorerId != _myUserId;
+        final settings = ref.watch(settingsProvider);
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final confirmAction = isViewOnly
-        ? null
-        : () async {
-            if (settings.haptic) {
-              HapticFeedback.heavyImpact();
-            }
+        final confirmAction = isViewOnly
+            ? null
+            : () async {
+                if (settings.haptic) {
+                  HapticFeedback.heavyImpact();
+                }
 
-            if (settings.showConfirmDialog) {
-              final confirmed = await _showConfirmDialog(
-                '記録の確定',
-                'この試合の記録を確定して終了しますか？\n確定後は点数の修正ができなくなります。',
-              );
-              if (!confirmed) return;
-            }
+                if (settings.showConfirmDialog) {
+                  final confirmed = await _showConfirmDialog(
+                    '記録の確定',
+                    'この試合の記録を確定して終了しますか？\n確定後は点数の修正ができなくなります。',
+                  );
+                  if (!confirmed) return;
+                }
 
-            await ref
-                .read(matchApplicationServiceProvider)
-                .approveMatch(match.id);
+                await ref
+                    .read(matchApplicationServiceProvider)
+                    .approveMatch(match.id);
 
-            if (!context.mounted) return;
-            _showMatchFinishedDialog(context, match, null);
-          };
+                if (!context.mounted) return;
+                _showMatchFinishedDialog(context, match, null);
+              };
 
-    return Row(
-      children: [
-        Expanded(
-          child: GlassButton(
-            onPressed: (isInputLocked || isTimeUp)
-                ? null
-                : () => _showNextMatchDialog(context, ref, match),
-            color: Colors.teal,
-            icon: Icons.autorenew,
-            label: '追加して継続',
-            expandContent: false,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: GestureDetector(
-            onDoubleTap: settings.confirmBehavior == 'double'
-                ? confirmAction
-                : null,
-            child: ElevatedButton.icon(
-              onPressed: settings.confirmBehavior == 'single'
-                  ? confirmAction
-                  : (isViewOnly
-                        ? null
-                        : () => ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                settings.confirmBehavior == 'double'
-                                    ? 'ダブルタップで確定してください'
-                                    : '長押しで確定してください',
-                              ),
-                              duration: const Duration(milliseconds: 1500),
-                            ),
-                          )),
-              onLongPress: settings.confirmBehavior == 'long'
-                  ? confirmAction
-                  : null,
-              icon: const Icon(Icons.verified, size: 24),
-              label: const Text(
-                '確定して終了',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? Colors.indigo.shade700
-                    : Colors.indigo,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
+        return Row(
+          children: [
+            Expanded(
+              child: GlassButton(
+                onPressed: (isInputLocked || isTimeUp)
+                    ? null
+                    : () => _showNextMatchDialog(context, ref, match),
+                color: Colors.teal,
+                icon: Icons.autorenew,
+                label: '追加して継続',
+                expandContent: false,
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
-          ),
-        ),
-      ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onDoubleTap: settings.confirmBehavior == 'double'
+                    ? confirmAction
+                    : null,
+                child: ElevatedButton.icon(
+                  onPressed: settings.confirmBehavior == 'single'
+                      ? confirmAction
+                      : (isViewOnly
+                            ? null
+                            : () => ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    settings.confirmBehavior == 'double'
+                                        ? 'ダブルタップで確定してください'
+                                        : '長押しで確定してください',
+                                  ),
+                                  duration: const Duration(milliseconds: 1500),
+                                ),
+                              )),
+                  onLongPress: settings.confirmBehavior == 'long'
+                      ? confirmAction
+                      : null,
+                  icon: const Icon(Icons.verified, size: 24),
+                  label: const Text(
+                    '確定して終了',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark
+                        ? Colors.indigo.shade700
+                        : Colors.indigo,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

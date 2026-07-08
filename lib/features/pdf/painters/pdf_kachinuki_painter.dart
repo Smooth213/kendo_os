@@ -255,7 +255,7 @@ class PdfKachinukiPainter {
       double left = startX + (span.startIndex * dx);
       double w = ((span.endIndex - span.startIndex) + 1) * dx;
       textWidgets.add(
-        vertText(span.name, left, y0, w, y1 - y0, ttf, color: PdfColors.red700),
+        vertText(span.name, left, y0, w, y1 - y0, ttf, color: PdfColors.black),
       );
     }
     for (var span in whiteSpans) {

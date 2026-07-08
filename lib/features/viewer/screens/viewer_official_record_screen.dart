@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import '../providers/viewer_view_state_provider.dart';
-import 'package:kendo_os/features/pdf/pdf_service.dart';
+import 'package:kendo_os/features/pdf/pdf_service.dart' deferred as pdf_service;
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
@@ -236,7 +236,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     final now = ref
                                         .read(timeSourceProvider)
                                         .now();
-                                    await PdfService.printOfficialRecord(
+                                    await pdf_service.loadLibrary();
+                                    await pdf_service
+                                        .PdfService.printOfficialRecord(
                                       cat,
                                       groupDataList,
                                       tournamentName: tName,
@@ -320,7 +322,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     final now = ref
                                         .read(timeSourceProvider)
                                         .now();
-                                    await PdfService.shareOfficialRecordAsImage(
+                                    await pdf_service.loadLibrary();
+                                    await pdf_service
+                                        .PdfService.shareOfficialRecordAsImage(
                                       cat,
                                       groupDataList,
                                       tournamentName: tName,

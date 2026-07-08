@@ -48,10 +48,11 @@ class ViewerMatchScreen extends ConsumerWidget {
 
     final localMatch = kIsWeb
         ? null
-        : ref
-              .watch(matchListProvider)
-              .where((m) => m.id == matchId)
-              .firstOrNull;
+        : ref.watch(
+            matchListProvider.select(
+              (list) => list.where((m) => m.id == matchId).firstOrNull,
+            ),
+          );
 
     final MatchModel? activeMatch = kIsWeb ? webMatch : localMatch;
 

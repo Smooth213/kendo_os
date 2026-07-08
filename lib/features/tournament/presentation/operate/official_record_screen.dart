@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/features/pdf/pdf_service.dart';
+import 'package:kendo_os/features/pdf/pdf_service.dart' deferred as pdf_service;
 // ★ 追加：先ほど作成した勝ち抜き戦の最強描画エンジンを呼び出す
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
@@ -701,7 +701,8 @@ class OfficialRecordScreen extends ConsumerWidget {
     try {
       final now = ref.read(timeSourceProvider).now();
       if (type == 'pdf') {
-        await PdfService.printOfficialRecord(
+        await pdf_service.loadLibrary();
+        await pdf_service.PdfService.printOfficialRecord(
           cat,
           groupDataList,
           tournamentName: tName,
@@ -711,7 +712,8 @@ class OfficialRecordScreen extends ConsumerWidget {
         );
       }
       if (type == 'image') {
-        await PdfService.shareOfficialRecordAsImage(
+        await pdf_service.loadLibrary();
+        await pdf_service.PdfService.shareOfficialRecordAsImage(
           cat,
           groupDataList,
           tournamentName: tName,

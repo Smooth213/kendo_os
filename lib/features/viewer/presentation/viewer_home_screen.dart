@@ -150,7 +150,9 @@ class ViewerHomeScreen extends ConsumerWidget {
       }
     });
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final Color textColor = isDark ? Colors.white : Colors.black;
 
@@ -2570,10 +2572,11 @@ class ViewerMatchListTileCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 🛡️ 観客席スマホのElementキャッシュをぶち破り、本部が Undo 実行した瞬間に0ミリ秒即時リビルドを緊縛
-    final matches = ref.watch(matchListProvider);
-    MatchModel? maybeMatch = matches
-        .where((m) => m.id == initialMatch.id)
-        .firstOrNull;
+    MatchModel? maybeMatch = ref.watch(
+      matchListProvider.select(
+        (list) => list.where((m) => m.id == initialMatch.id).firstOrNull,
+      ),
+    );
 
     // Web では matchListProvider が初回に空を返すことがあるため、
     // 大会単位プロバイダをフォールバックとして参照して対象試合を探す
@@ -2581,12 +2584,11 @@ class ViewerMatchListTileCard extends ConsumerWidget {
         kIsWeb &&
         (initialMatch.tournamentId != null &&
             initialMatch.tournamentId!.isNotEmpty)) {
-      final webMatches =
-          ref
-              .watch(matchListByTournamentProvider(initialMatch.tournamentId!))
-              .value ??
-          [];
-      maybeMatch = webMatches.where((m) => m.id == initialMatch.id).firstOrNull;
+      maybeMatch = ref.watch(
+        matchListByTournamentProvider(initialMatch.tournamentId!).select(
+          (res) => res.value?.where((m) => m.id == initialMatch.id).firstOrNull,
+        ),
+      );
     }
 
     final MatchModel match = maybeMatch ?? initialMatch;

@@ -24,7 +24,9 @@ class TournamentListScreen extends ConsumerWidget {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final permissions = ref.watch(permissionProvider);
     final isReadOnly = permissions.isReadOnly;
 

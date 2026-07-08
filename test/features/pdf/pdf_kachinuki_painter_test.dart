@@ -7,7 +7,7 @@ import 'package:kendo_os/features/pdf/painters/pdf_kachinuki_painter.dart';
 void main() {
   group('🛡️ PDF Kachinuki Painter Color Verification Tests', () {
     test(
-      '1. Verify Red side uses PdfColors.red700 and White side uses PdfColors.black',
+      '1. Verify Red team uses PdfColors.red700 and Red player name uses PdfColors.black',
       () {
         final ttf = pw.Font.helvetica();
         final ttfBold = pw.Font.helveticaBold();
@@ -85,7 +85,7 @@ void main() {
                     }
                     if (textContent == '赤') {
                       // Part of '赤代表'
-                      expect(textStyle?.color, equals(PdfColors.red700));
+                      expect(textStyle?.color, equals(PdfColors.black));
                       foundRedPlayer = true;
                     }
                     if (textContent == '白') {
@@ -113,7 +113,7 @@ void main() {
         expect(
           foundRedPlayer,
           isTrue,
-          reason: 'Red player name (赤代表) should be rendered in red',
+          reason: 'Red player name (赤代表) should be rendered in black',
         );
         expect(
           foundWhitePlayer,

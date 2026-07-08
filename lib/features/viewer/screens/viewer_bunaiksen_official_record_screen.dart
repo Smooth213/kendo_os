@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/pdf/pdf_service.dart';
+import 'package:kendo_os/features/pdf/pdf_service.dart' deferred as pdf_service;
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
@@ -1718,7 +1718,8 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     try {
       final now = ref.read(timeSourceProvider).now();
       if (isPdf) {
-        await PdfService.printOfficialRecord(
+        await pdf_service.loadLibrary();
+        await pdf_service.PdfService.printOfficialRecord(
           cat,
           groupDataList,
           tournamentName: tName,
@@ -1726,7 +1727,8 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
           outputTime: now,
         );
       } else {
-        await PdfService.shareOfficialRecordAsImage(
+        await pdf_service.loadLibrary();
+        await pdf_service.PdfService.shareOfficialRecordAsImage(
           cat,
           groupDataList,
           tournamentName: tName,

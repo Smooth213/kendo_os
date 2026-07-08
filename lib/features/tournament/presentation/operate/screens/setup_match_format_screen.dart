@@ -1967,7 +1967,9 @@ class _SetupMatchFormatScreenState
 
   Widget _buildStickyBottomAction() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final isLastPage = _currentPage == 2;
 
     // iOS Native: ボトムバーの色と区切り線

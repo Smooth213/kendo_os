@@ -101,7 +101,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
     teamMatches.sort((a, b) => a.order.compareTo(b.order));
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerColor = isDark ? Colors.white : Colors.indigo.shade900;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
