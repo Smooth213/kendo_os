@@ -11,6 +11,8 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:kendo_os/shared/domain/entities/user_session.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 
 class SyncEngine {
   final Ref _ref;
@@ -50,6 +52,13 @@ class SyncEngine {
       webCurrentTournamentIdProvider,
       (prev, next) => _bindListeners(),
     );
+    // 🔑 認証セッション状態が変化した（ログイン成功など）際にも再バインドして再接続する
+    _ref.listen<UserSession?>(authSessionProvider, (prev, next) {
+      debugPrint(
+        '🔑 [Sync Engine] 認証セッション状態の変更を検知しました: ${prev?.role} -> ${next?.role}',
+      );
+      _bindListeners();
+    });
 
     // 初回バインド
     _bindListeners();
@@ -81,7 +90,8 @@ class SyncEngine {
     );
 
     // 1. 通常のトーナメント戦の試合データ監視
-    final matchesCollection = FirebaseFirestore.instance
+    final matchesCollection = _ref
+        .read(firestoreProvider)
         .collection('organizations')
         .doc(dojoId)
         .collection('tournaments')
@@ -100,7 +110,8 @@ class SyncEngine {
     // 2. 特設コレクション (bunaiksen) の包括サブリスナー（ドキュメント監視）
     if (activeTournamentId.startsWith('bunaiksen_') ||
         activeTournamentId == 'bunaiksen') {
-      final bunaiksenDoc = FirebaseFirestore.instance
+      final bunaiksenDoc = _ref
+          .read(firestoreProvider)
           .collection('organizations')
           .doc(dojoId)
           .collection('tournaments')

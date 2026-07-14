@@ -8,6 +8,7 @@ import 'package:kendo_os/features/match/application/mappers/match_projection_map
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/application/projections/projection_store.dart';
 import 'current_sync_context_provider.dart';
+import 'auth_session_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -47,6 +48,9 @@ Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
 
 final dojoRoomSyncProvider = Provider<void>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
+  // 🔑 認証セッション状態をwatchし、ログイン成功時に自動的にこのプロバイダーを再起動する
+  ref.watch(authSessionProvider);
+
   // ★ 修正: watchだと集計データが更新されるたびに通信リスナーが再起動（無限ループ）してしまうため、readに変更
   final store = ref.read(projectionStoreProvider);
 
@@ -123,7 +127,8 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
 
     try {
       // 🌟 パージ完了後に初めてストリームを開通する（競合ゼロ）
-      subscription = FirebaseFirestore.instance
+      subscription = ref
+          .read(firestoreProvider)
           .collection('organizations')
           .doc(dojoId)
           .collection('matches')

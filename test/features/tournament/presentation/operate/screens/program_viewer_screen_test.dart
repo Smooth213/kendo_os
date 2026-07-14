@@ -347,26 +347,41 @@ void main() {
       verify(() => mockStrokeRepo.undoLastStroke('p1')).called(1);
     });
 
-    test(
-      '✅ 6. 蛍光ペンの描画判定 (opacity/a の値が半透明の時は BlendMode.multiply が適用されること)',
-      () {
-        final painter = StrokePainter(
-          sharedStrokes: [],
-          privateStrokes: [],
-          currentPoints: null,
-          currentLineColor: Colors.pink,
-          activePenWidth: 10.0,
-        );
+    test('✅ 6. 蛍光ペンの描画判定 (opacity/a の値が半透明の時は BlendMode.multiply が適用されること)', () {
+      final painter = StrokePainter(
+        sharedStrokes: [],
+        privateStrokes: [],
+        currentPoints: null,
+        currentLineColor: Colors.pink,
+        activePenWidth: 10.0,
+      );
 
-        // 通常の不透明色 (アルファ=255)
-        final normalPaint = painter.getPaint(Colors.pink, 10.0);
-        expect(normalPaint.blendMode, equals(BlendMode.srcOver));
+      // 通常の不透明色 (アルファ=255)
+      final normalPaint = painter.getPaint(Colors.pink, 10.0);
+      expect(normalPaint.blendMode, equals(BlendMode.srcOver));
 
-        // 半透明の蛍光マーカー色 (不透明度 0.35, アルファ=90)
-        final markerPaint = painter.getPaint(Colors.pink.withAlpha(90), 30.0);
-        expect(markerPaint.blendMode, equals(BlendMode.multiply));
-      },
-    );
+      // 半透明の蛍光マーカー色 (不透明度 0.35, アルファ=90)
+      final markerPaint = painter.getPaint(Colors.pink.withAlpha(90), 30.0);
+      expect(markerPaint.blendMode, equals(BlendMode.multiply));
+
+      // 🛡️ 視認性向上の救済パッチ検証: 過去のColors.yellow (0xFFFFEB3B) が渡された場合、自動で高視認性の黄色 (0xFFCA8A04) に変換されること
+      final yellowPaint = painter.getPaint(Colors.yellow, 10.0);
+      expect(
+        yellowPaint.color.toARGB32(),
+        equals(const Color(0xFFCA8A04).toARGB32()),
+      );
+
+      // 半透明の過去のColors.yellowに対しても、透明度を維持したまま変換されること
+      final yellowMarkerPaint = painter.getPaint(
+        Colors.yellow.withAlpha(90),
+        30.0,
+      );
+      expect(
+        yellowMarkerPaint.color.toARGB32(),
+        equals(const Color(0xFFCA8A04).withAlpha(90).toARGB32()),
+      );
+      expect(yellowMarkerPaint.blendMode, equals(BlendMode.multiply));
+    });
 
     testWidgets('✅ 7. 消しゴムツールでの近接線の検知と個別削除がトリガーされること', (tester) async {
       final program = ProgramModel(
@@ -623,5 +638,58 @@ void main() {
         HttpOverrides.global = null;
       },
     );
+
+    testWidgets('✅ 12. ツールバーのグループ分離レイアウト（描画と消去コンテナの分離・配色）の検証', (tester) async {
+      final program = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'テストツールバー',
+        fileUrl: 'https://example.com/dummy.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime.now(),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+
+      await tester.pumpWidget(createViewerWidget([program]));
+      await tester.pumpAndSettle();
+
+      // 1. 書き込みモードをONにしてツールバーを表示する
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.pumpAndSettle();
+
+      // 2. 描画グループのContainerを見つける（ライトモード背景色: Colors.grey.shade100）
+      final drawGroupFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.decoration is BoxDecoration) {
+          final deco = widget.decoration as BoxDecoration;
+          return deco.color == Colors.grey.shade100;
+        }
+        return false;
+      });
+      expect(drawGroupFinder, findsOneWidget);
+
+      // 3. 消去・履歴グループのContainerを見つける（ライトモード背景色: Colors.blueGrey.shade50.withAlpha(220)）
+      final eraseGroupFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.decoration is BoxDecoration) {
+          final deco = widget.decoration as BoxDecoration;
+          return deco.color == Colors.blueGrey.shade50.withAlpha(220) &&
+              deco.border?.top.color == Colors.blueGrey.shade100;
+        }
+        return false;
+      });
+      expect(eraseGroupFinder, findsOneWidget);
+
+      // 4. 描画グループ内にペン、蛍光マーカーボタンが存在すること
+      expect(find.byTooltip('ペン'), findsOneWidget);
+      expect(find.byTooltip('蛍光マーカー'), findsOneWidget);
+
+      // 5. 消去・履歴グループ内に消しゴム、1つ戻す、すべて消すボタンが存在すること
+      expect(find.byTooltip('消しゴム'), findsOneWidget);
+      expect(find.byTooltip('1つ戻す'), findsOneWidget);
+      expect(find.byTooltip('すべて消す'), findsOneWidget);
+    });
   });
 }

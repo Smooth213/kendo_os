@@ -8,6 +8,7 @@ import 'package:kendo_os/shared/infrastructure/repository/program_repository.dar
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import '../providers/permission_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/utils/image_compressor.dart';
 
 // =========================================================================
 // 🛡️ Phase 0 - STEP 0-1 要件：UIからFirestoreを完全隔離する抽象化プロバイダー
@@ -111,7 +112,8 @@ class _ProgramManagementScreenState
         dialogResult['files']; // 並び替え済みのファイルリスト
     final int fileCount = orderedFiles.length;
 
-    _showLoadingDialog(fileCount);
+    final messageNotifier = ValueNotifier<String>('準備中...');
+    _showLoadingDialog(messageNotifier);
 
     try {
       // ★ ユーザーが並び替えた orderedFiles を使ってループ
@@ -124,20 +126,68 @@ class _ProgramManagementScreenState
             ? '$title (${i + 1}/${orderedFiles.length})'
             : title;
 
-        // ★ 修正: ファイルアップロード時に null ではなく、正しくデータを渡すように修正。
-        // Web環境(kIsWeb)では bytes を、ネイティブ環境では File(path) を確実に引き渡します。
-        await ref
-            .read(programRepositoryProvider)
-            .uploadProgram(
-              tournamentId: widget.tournamentId,
-              title: displayTitle,
-              file: kIsWeb || platformFile.path == null
-                  ? null
-                  : File(platformFile.path!),
-              bytes: platformFile.bytes,
-              fileType: fileType,
-              pageCount: 1,
-            );
+        if (fileType == 'image') {
+          messageNotifier.value = "画像を圧縮中... (${i + 1}/${orderedFiles.length})";
+
+          // 原寸バイトデータの取得（メモリ効率を考慮しループ内で随時ロード）
+          Uint8List? originalBytes;
+          if (kIsWeb) {
+            originalBytes = platformFile.bytes;
+          } else if (platformFile.path != null) {
+            originalBytes = await File(platformFile.path!).readAsBytes();
+          }
+
+          if (originalBytes == null || originalBytes.isEmpty) {
+            throw Exception('ファイルデータの読み込みに失敗しました。');
+          }
+
+          // 🛡️ メモリ爆発ガード（OOM防止）：20MBを超える画像はエラーとする
+          if (originalBytes.length > 20 * 1024 * 1024) {
+            throw Exception('画像ファイルが大きすぎます（最大20MB）。事前にリサイズしてアップロードしてください。');
+          }
+
+          // 画像の自動圧縮実行（別スレッド compute にて実行）
+          final compressedBytes = await ImageCompressor.compress(
+            bytes: originalBytes,
+            maxWidth: 2000,
+            maxHeight: 2000,
+            quality: 80,
+          );
+
+          // 圧縮が成功した場合はそれを使用、デコード不能（HEIC等）ならオリジナルをそのまま流すフォールバック
+          final uploadBytes = compressedBytes ?? originalBytes;
+
+          messageNotifier.value =
+              "アップロード中... (${i + 1}/${orderedFiles.length})";
+
+          await ref
+              .read(programRepositoryProvider)
+              .uploadProgram(
+                tournamentId: widget.tournamentId,
+                title: displayTitle,
+                file: null, // bytes経由でのアップロードに統一
+                bytes: uploadBytes,
+                fileType: fileType,
+                pageCount: 1,
+              );
+        } else {
+          // PDF等の場合はそのままアップロード
+          messageNotifier.value =
+              "アップロード中... (${i + 1}/${orderedFiles.length})";
+
+          await ref
+              .read(programRepositoryProvider)
+              .uploadProgram(
+                tournamentId: widget.tournamentId,
+                title: displayTitle,
+                file: kIsWeb || platformFile.path == null
+                    ? null
+                    : File(platformFile.path!),
+                bytes: platformFile.bytes,
+                fileType: fileType,
+                pageCount: 1,
+              );
+        }
       }
 
       if (mounted) {
@@ -168,6 +218,7 @@ class _ProgramManagementScreenState
     List<PlatformFile> orderedFiles = List.from(files);
     int selectedIndex = 0; // ★ 同期のための単一の状態
     final PageController previewController = PageController();
+    final formKey = GlobalKey<FormState>();
 
     return showDialog<Map<String, dynamic>>(
       context: context,
@@ -184,244 +235,274 @@ class _ProgramManagementScreenState
               '順番とタイトルの確認',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            content: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.9,
-              height: MediaQuery.of(context).size.height * 0.8,
-              child: Column(
-                children: [
-                  // --- 上半分：大型プレビューエリア (40%) ---
-                  Expanded(
-                    flex: 4,
-                    child: Container(
-                      color: Colors.black,
-                      child: Stack(
-                        children: [
-                          PageView.builder(
-                            controller: previewController,
-                            itemCount: orderedFiles.length,
-                            onPageChanged: (index) =>
-                                setState(() => selectedIndex = index),
-                            itemBuilder: (context, index) {
-                              final file = orderedFiles[index];
-                              final isPdf =
-                                  file.extension?.toLowerCase() == 'pdf';
-                              return InteractiveViewer(
-                                minScale: 1.0,
-                                maxScale: 4.0,
-                                child: Center(
-                                  child: isPdf
-                                      ? const Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.picture_as_pdf,
-                                              color: Colors.white,
-                                              size: 64,
-                                            ),
-                                            SizedBox(height: 8),
-                                            Text(
-                                              'PDFプレビュー非対応\n(アップロード後に確認可能)',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 12,
+            content: Form(
+              key: formKey,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: Column(
+                  children: [
+                    // --- 上半分：大型プレビューエリア (40%) ---
+                    Expanded(
+                      flex: 4,
+                      child: Container(
+                        color: Colors.black,
+                        child: Stack(
+                          children: [
+                            PageView.builder(
+                              controller: previewController,
+                              itemCount: orderedFiles.length,
+                              onPageChanged: (index) =>
+                                  setState(() => selectedIndex = index),
+                              itemBuilder: (context, index) {
+                                final file = orderedFiles[index];
+                                final isPdf =
+                                    file.extension?.toLowerCase() == 'pdf';
+                                return InteractiveViewer(
+                                  minScale: 1.0,
+                                  maxScale: 4.0,
+                                  child: Center(
+                                    child: isPdf
+                                        ? const Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.picture_as_pdf,
+                                                color: Colors.white,
+                                                size: 64,
                                               ),
-                                            ),
-                                          ],
-                                        )
-                                      : kIsWeb
-                                      ? (file.bytes != null
-                                            ? Image.memory(
-                                                file.bytes!,
-                                                fit: BoxFit.contain,
-                                              )
-                                            : const Icon(
-                                                Icons.broken_image,
-                                                color: Colors.white,
-                                                size: 64,
-                                              ))
-                                      : (file.path != null
-                                            ? Image.file(
-                                                File(file.path!),
-                                                fit: BoxFit.contain,
-                                              )
-                                            : const Icon(
-                                                Icons.broken_image,
-                                                color: Colors.white,
-                                                size: 64,
-                                              )),
+                                              SizedBox(height: 8),
+                                              Text(
+                                                'PDFプレビュー非対応\n(アップロード後に確認可能)',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : kIsWeb
+                                        ? (file.bytes != null
+                                              ? Image.memory(
+                                                  file.bytes!,
+                                                  fit: BoxFit.contain,
+                                                )
+                                              : const Icon(
+                                                  Icons.broken_image,
+                                                  color: Colors.white,
+                                                  size: 64,
+                                                ))
+                                        : (file.path != null
+                                              ? Image.file(
+                                                  File(file.path!),
+                                                  fit: BoxFit.contain,
+                                                )
+                                              : const Icon(
+                                                  Icons.broken_image,
+                                                  color: Colors.white,
+                                                  size: 64,
+                                                )),
+                                  ),
+                                );
+                              },
+                            ),
+                            // 左右のナビゲーション補助
+                            if (orderedFiles.length > 1) ...[
+                              Positioned(
+                                left: 8,
+                                top: 0,
+                                bottom: 0,
+                                child: Icon(
+                                  Icons.chevron_left,
+                                  color: Colors.white.withAlpha(128),
+                                  size: 32,
                                 ),
-                              );
-                            },
+                              ),
+                              Positioned(
+                                right: 8,
+                                top: 0,
+                                bottom: 0,
+                                child: Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white.withAlpha(128),
+                                  size: 32,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // --- 中間：タイトル入力＆説明エリア ---
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      color: Colors.indigo.shade50, // ★ 背景色をつけて視覚的に目立たせる
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '📝 プログラム名（ベースタイトル）',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.indigo,
+                              fontSize: 13,
+                            ),
                           ),
-                          // 左右のナビゲーション補助
-                          if (orderedFiles.length > 1) ...[
-                            Positioned(
-                              left: 8,
-                              top: 0,
-                              bottom: 0,
-                              child: Icon(
-                                Icons.chevron_left,
-                                color: Colors.white.withAlpha(128),
-                                size: 32,
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            initialValue: title,
+                            // ★ 修正2: オートフォーカスを解除し、キーボードの自動立ち上げを防ぐ
+                            autofocus: false,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            decoration: InputDecoration(
+                              // ★ 初期値が空になるため、このヒントテキストが薄いグレーで表示されます
+                              hintText: '例：1日目 進行表',
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                              ), // ★ 追加：文字色を薄いグレーにする
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.indigo.shade200,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.indigo.shade200,
+                                ),
+                              ),
+                              errorStyle: const TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Positioned(
-                              right: 8,
-                              top: 0,
-                              bottom: 0,
-                              child: Icon(
-                                Icons.chevron_right,
-                                color: Colors.white.withAlpha(128),
-                                size: 32,
+                            onChanged: (value) => title = value,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'プログラムのタイトルを入力してください';
+                              }
+                              return null;
+                            },
+                          ),
+                          // ★ 複数ファイル選択時のインフォメーションカードをリデザイン
+                          if (orderedFiles.length > 1) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.shade50.withAlpha(200),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.indigo.shade100,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: 18,
+                                    color: Colors.indigo.shade700,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '複数アップロードのガイド：\n'
+                                      '• 下のリストをドラッグして並び順を変更できます。\n'
+                                      '• 保存時、自動的に「[入力タイトル] (1/${orderedFiles.length})」のように連番が付与されて保存されます。',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.indigo.shade900,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ],
                       ),
                     ),
-                  ),
 
-                  // --- 中間：タイトル入力＆説明エリア ---
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    color: Colors.indigo.shade50, // ★ 背景色をつけて視覚的に目立たせる
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '📝 プログラム名（ベースタイトル）',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.indigo,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          initialValue: title,
-                          // ★ 修正2: オートフォーカスを解除し、キーボードの自動立ち上げを防ぐ
-                          autofocus: false,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          decoration: InputDecoration(
-                            // ★ 初期値が空になるため、このヒントテキストが薄いグレーで表示されます
-                            hintText: '例：1日目 進行表',
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade400,
-                            ), // ★ 追加：文字色を薄いグレーにする
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
+                    // --- 下半分：並び替えリストエリア (60%) ---
+                    Expanded(
+                      flex: 6,
+                      child: ReorderableListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        itemCount: orderedFiles.length,
+                        onReorderItem: (oldIndex, newIndex) {
+                          setState(() {
+                            final item = orderedFiles.removeAt(oldIndex);
+                            orderedFiles.insert(newIndex, item);
+                            // 順番が変わっても、今見ていた画像が迷子にならないようにインデックスを調整
+                            selectedIndex = orderedFiles.indexOf(item);
+                            previewController.jumpToPage(selectedIndex);
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final file = orderedFiles[index];
+                          final isSelected = selectedIndex == index;
+                          return ListTile(
+                            // Web環境で path にアクセスすると例外が飛ぶため、安全な fallback に変更
+                            key: ValueKey(
+                              kIsWeb ? file.name : (file.path ?? file.name),
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.indigo.shade200,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.indigo.shade200,
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) => title = value,
-                        ),
-                        // ★ 失われていた親切なガイド文を復活！
-                        if (orderedFiles.length > 1) ...[
-                          const SizedBox(height: 10),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                size: 16,
-                                color: Colors.indigo.shade700,
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  '下のリストをドラッグして順番を入れ替えられます。\n保存時、「タイトル (1/${orderedFiles.length})」のように自動で連番が付きます。',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.indigo.shade900,
-                                    height: 1.3,
-                                  ),
+                            selected: isSelected,
+                            selectedTileColor: Colors.indigo.shade50,
+                            leading: CircleAvatar(
+                              radius: 12,
+                              backgroundColor: isSelected
+                                  ? Colors.indigo
+                                  : Colors.grey,
+                              child: Text(
+                                '${index + 1}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-
-                  // --- 下半分：並び替えリストエリア (60%) ---
-                  Expanded(
-                    flex: 6,
-                    child: ReorderableListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      itemCount: orderedFiles.length,
-                      onReorderItem: (oldIndex, newIndex) {
-                        setState(() {
-                          final item = orderedFiles.removeAt(oldIndex);
-                          orderedFiles.insert(newIndex, item);
-                          // 順番が変わっても、今見ていた画像が迷子にならないようにインデックスを調整
-                          selectedIndex = orderedFiles.indexOf(item);
-                          previewController.jumpToPage(selectedIndex);
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        final file = orderedFiles[index];
-                        final isSelected = selectedIndex == index;
-                        return ListTile(
-                          // Web環境で path にアクセスすると例外が飛ぶため、安全な fallback に変更
-                          key: ValueKey(
-                            kIsWeb ? file.name : (file.path ?? file.name),
-                          ),
-                          selected: isSelected,
-                          selectedTileColor: Colors.indigo.shade50,
-                          leading: CircleAvatar(
-                            radius: 12,
-                            backgroundColor: isSelected
-                                ? Colors.indigo
-                                : Colors.grey,
-                            child: Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
+                            ),
+                            title: Text(
+                              file.name,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                             ),
-                          ),
-                          title: Text(
-                            file.name,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                          trailing: const Icon(Icons.drag_handle, size: 20),
-                          onTap: () {
-                            setState(() => selectedIndex = index);
-                            previewController.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                        );
-                      },
+                            trailing: const Icon(Icons.drag_handle, size: 20),
+                            onTap: () {
+                              setState(() => selectedIndex = index);
+                              previewController.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             actions: [
@@ -430,10 +511,14 @@ class _ProgramManagementScreenState
                 child: const Text('キャンセル'),
               ),
               ElevatedButton(
-                onPressed: () => Navigator.pop(context, {
-                  'title': title,
-                  'files': orderedFiles,
-                }),
+                onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                    Navigator.pop(context, {
+                      'title': title.trim(),
+                      'files': orderedFiles,
+                    });
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                   foregroundColor: Colors.white,
@@ -447,7 +532,7 @@ class _ProgramManagementScreenState
     );
   }
 
-  void _showLoadingDialog(int fileCount) {
+  void _showLoadingDialog(ValueNotifier<String> messageNotifier) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -455,15 +540,22 @@ class _ProgramManagementScreenState
         return PopScope(
           canPop: false,
           child: AlertDialog(
-            content: Row(
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(width: 20),
-                Text(
-                  "$fileCount件をアップロード中...\n少々お待ちください",
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
+            content: ValueListenableBuilder<String>(
+              valueListenable: messageNotifier,
+              builder: (context, message, child) {
+                return Row(
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Text(
+                        message,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         );
@@ -501,7 +593,14 @@ class _ProgramManagementScreenState
 
     final isViewerMode =
         permissions.isReadOnly ||
-        (GoRouterState.of(context).uri.queryParameters['role'] == 'viewer');
+        (() {
+          try {
+            return GoRouterState.of(context).uri.queryParameters['role'] ==
+                'viewer';
+          } catch (_) {
+            return false;
+          }
+        }());
 
     return LiquidBackground(
       child: Scaffold(

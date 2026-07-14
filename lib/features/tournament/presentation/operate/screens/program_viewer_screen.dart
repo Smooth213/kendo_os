@@ -37,6 +37,9 @@ class ProgramViewerScreen extends ConsumerStatefulWidget {
 }
 
 class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
+  // ★ 追加: 白背景における黄色ペンの視認性を向上させたダークイエローゴールド
+  static const Color _yellowPenColor = Color(0xFFCA8A04);
+
   late PageController _pageController;
   late int _currentIndex;
   final Map<String, int> _pdfPageCounts = {};
@@ -66,7 +69,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   bool _isDrawingMode = false;
   Color _selectedPenColor = Colors.pink; // ★ 4色を管理（デフォルトはピンク）
   bool get _isSharedPen =>
-      _selectedPenColor == Colors.pink || _selectedPenColor == Colors.yellow;
+      _selectedPenColor == Colors.pink || _selectedPenColor == _yellowPenColor;
   List<Offset> _currentPoints = [];
 
   // ★ 画像サイズ取得用キャッシュ（描画ごとのチラつき・無限クルクルを防止）
@@ -299,7 +302,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         ? Colors.blue
         : _selectedPenColor;
     final activeIsShared =
-        activePenColor == Colors.pink || activePenColor == Colors.yellow;
+        activePenColor == Colors.pink || activePenColor == _yellowPenColor;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -543,87 +546,115 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 ),
                 child: Row(
                   children: [
-                    // 1. 現在のペンを表示し、タップで選択シートを開くボタン
+                    // 🎨 1. 【描画グループ】(ペン選択 + ペン + マーカー)
                     Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          if (_selectedTool == 'eraser') {
-                            setState(() => _selectedTool = 'pen');
-                          }
-                          _showPenPicker(context, ref, canUseSharedPen);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                (_selectedTool == 'eraser'
-                                        ? Colors.orange
-                                        : activePenColor)
-                                    .withAlpha(26),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color:
-                                  (_selectedTool == 'eraser'
-                                          ? Colors.orange
-                                          : activePenColor)
-                                      .withAlpha(128),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                _selectedTool == 'eraser'
-                                    ? Icons.cleaning_services
-                                    : _selectedTool == 'marker'
-                                    ? Icons.border_color
-                                    : Icons.edit,
-                                size: 18,
-                                color: _selectedTool == 'eraser'
-                                    ? Colors.orange.shade700
-                                    : activePenColor,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _selectedTool == 'eraser'
-                                      ? '消しゴム'
-                                      : _selectedTool == 'marker'
-                                      ? '${_getPenName(activePenColor)} (マーカー)'
-                                      : activeIsShared
-                                      ? '${_getPenName(activePenColor)} (共有)'
-                                      : '${_getPenName(activePenColor)} (個人)',
-                                  style: TextStyle(
-                                    color: _selectedTool == 'eraser'
-                                        ? Colors.orange.shade700
-                                        : activePenColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF2C2C2E)
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
+                        ),
+                        child: Row(
+                          children: [
+                            // ペン選択ボタン
+                            Expanded(
+                              child: InkWell(
+                                onTap: () {
+                                  if (_selectedTool == 'eraser') {
+                                    setState(() => _selectedTool = 'pen');
+                                  }
+                                  _showPenPicker(context, ref, canUseSharedPen);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 12,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
+                                  decoration: BoxDecoration(
+                                    color: activePenColor.withAlpha(26),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: activePenColor.withAlpha(128),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        _selectedTool == 'marker'
+                                            ? Icons.border_color
+                                            : Icons.edit,
+                                        size: 18,
+                                        color: activePenColor,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _selectedTool == 'marker'
+                                              ? '${_getPenName(activePenColor)} (マーカー)'
+                                              : activeIsShared
+                                              ? '${_getPenName(activePenColor)} (共有)'
+                                              : '${_getPenName(activePenColor)} (個人)',
+                                          style: TextStyle(
+                                            color: activePenColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_drop_down,
+                                        color: activePenColor,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              if (_selectedTool != 'eraser')
-                                Icon(
-                                  Icons.arrow_drop_down,
-                                  color: activePenColor,
-                                ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 4),
+                            // ペンツール
+                            _buildToolButton(
+                              tool: 'pen',
+                              icon: Icons.edit,
+                              tooltip: 'ペン',
+                              isDark: isDark,
+                              activeColor: activePenColor,
+                            ),
+                            // 蛍光マーカー
+                            _buildToolButton(
+                              tool: 'marker',
+                              icon: Icons.border_color,
+                              tooltip: '蛍光マーカー',
+                              isDark: isDark,
+                              activeColor: activePenColor,
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // ★ ツール切り替え（ペン / マーカー / 消しゴム）
+
+                    // 2つのグループの間の区切り
+                    const SizedBox(width: 12),
+
+                    // 🧹 2. 【消去・履歴グループ】(消しゴム + 1つ戻る + 全消し)
                     Container(
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.grey.shade900
-                            : Colors.grey.shade100,
+                            ? const Color(0xFF3A3A3C)
+                            : Colors.blueGrey.shade50.withAlpha(220),
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.transparent
+                              : Colors.blueGrey.shade100,
+                          width: 1,
+                        ),
                       ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
@@ -632,113 +663,141 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _buildToolButton(
-                            tool: 'pen',
-                            icon: Icons.edit,
-                            tooltip: 'ペン',
-                            isDark: isDark,
-                            activeColor: activePenColor,
-                          ),
-                          _buildToolButton(
-                            tool: 'marker',
-                            icon: Icons.border_color,
-                            tooltip: '蛍光マーカー',
-                            isDark: isDark,
-                            activeColor: activePenColor,
-                          ),
+                          // 消しゴムツール
                           _buildToolButton(
                             tool: 'eraser',
                             icon: Icons.cleaning_services,
                             tooltip: '消しゴム',
                             isDark: isDark,
-                            activeColor: Colors.orange.shade700,
+                            activeColor: Colors.blueGrey.shade600,
+                          ),
+
+                          // 小さな縦仕切り線
+                          Container(
+                            height: 20,
+                            width: 1,
+                            color: isDark
+                                ? Colors.grey.shade700
+                                : Colors.blueGrey.shade200,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                          ),
+
+                          // 1つ戻る (Undo)
+                          IconButton(
+                            constraints: const BoxConstraints(
+                              minWidth: 36,
+                              minHeight: 36,
+                            ),
+                            padding: const EdgeInsets.all(6),
+                            iconSize: 20,
+                            icon: Icon(
+                              Icons.undo,
+                              color: isDark
+                                  ? Colors.white70
+                                  : Colors.blueGrey.shade600,
+                            ),
+                            tooltip: '1つ戻す',
+                            onPressed: () {
+                              if (activeIsShared) {
+                                _getActiveRepository(
+                                  ref,
+                                ).undoLastStroke(programId);
+                              } else {
+                                ref
+                                    .read(localStrokeRepositoryProvider)
+                                    .undoLastStroke(programId);
+                              }
+                            },
+                          ),
+
+                          // 全消去 (Delete Sweep)
+                          IconButton(
+                            constraints: const BoxConstraints(
+                              minWidth: 36,
+                              minHeight: 36,
+                            ),
+                            padding: const EdgeInsets.all(6),
+                            iconSize: 20,
+                            icon: Icon(
+                              Icons.delete_sweep,
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.blueGrey.shade700,
+                            ),
+                            tooltip: 'すべて消す',
+                            onPressed: () async {
+                              // ★ いきなり消さず、まずダイアログを表示して「はい/いいえ」を聞く
+                              final shouldDelete = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text(
+                                    '全消去の確認',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  content: Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: activeIsShared
+                                              ? 'このプログラムに引かれた【共有ペン】をすべて消去しますか？\n'
+                                              : 'このプログラムに引かれた【個人ペン】をすべて消去しますか？\n',
+                                        ),
+                                        if (activeIsShared)
+                                          const TextSpan(
+                                            text:
+                                                '※他の人の画面からも消えてしまいます。間違いないですか？\n',
+                                            style: TextStyle(
+                                              color: Colors.redAccent,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        const TextSpan(
+                                          text: '※一度削除したデータは元に戻すことができません。',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(
+                                        context,
+                                        false,
+                                      ), // キャンセル
+                                      child: const Text(
+                                        'キャンセル',
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true), // 実行
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.redAccent,
+                                      ),
+                                      child: const Text('すべて消去する'),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              // ★ ダイアログで「消去する(true)」が選ばれた時だけ、本当に削除する
+                              if (shouldDelete == true) {
+                                if (activeIsShared) {
+                                  _getActiveRepository(
+                                    ref,
+                                  ).clearStrokes(programId);
+                                } else {
+                                  ref
+                                      .read(localStrokeRepositoryProvider)
+                                      .clearStrokes(programId);
+                                }
+                              }
+                            },
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    // 2. 取り消しボタン
-                    IconButton(
-                      icon: const Icon(Icons.undo),
-                      tooltip: '1つ戻す',
-                      onPressed: () {
-                        if (activeIsShared) {
-                          _getActiveRepository(ref).undoLastStroke(programId);
-                        } else {
-                          ref
-                              .read(localStrokeRepositoryProvider)
-                              .undoLastStroke(programId);
-                        }
-                      },
-                    ),
-                    // 3. 全消去ボタン
-                    // 3. 全消去ボタン（確認ダイアログ付き）
-                    IconButton(
-                      icon: const Icon(Icons.delete_sweep, color: Colors.grey),
-                      tooltip: 'すべて消す',
-                      onPressed: () async {
-                        // ★ いきなり消さず、まずダイアログを表示して「はい/いいえ」を聞く
-                        final shouldDelete = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text(
-                              '全消去の確認',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            content: Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: activeIsShared
-                                        ? 'このプログラムに引かれた【共有ペン】をすべて消去しますか？\n'
-                                        : 'このプログラムに引かれた【個人ペン】をすべて消去しますか？\n',
-                                  ),
-                                  if (activeIsShared)
-                                    const TextSpan(
-                                      text: '※他の人の画面からも消えてしまいます。間違いないですか？\n',
-                                      style: TextStyle(
-                                        color: Colors.redAccent,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  const TextSpan(
-                                    text: '※一度削除したデータは元に戻すことができません。',
-                                  ),
-                                ],
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, false), // キャンセル
-                                child: const Text(
-                                  'キャンセル',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, true), // 実行
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.redAccent,
-                                ),
-                                child: const Text('すべて消去する'),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        // ★ ダイアログで「消去する(true)」が選ばれた時だけ、本当に削除する
-                        if (shouldDelete == true) {
-                          if (activeIsShared) {
-                            _getActiveRepository(ref).clearStrokes(programId);
-                          } else {
-                            ref
-                                .read(localStrokeRepositoryProvider)
-                                .clearStrokes(programId);
-                          }
-                        }
-                      },
                     ),
                   ],
                 ),
@@ -1241,7 +1300,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   // ペンの名前を返す補助関数
   String _getPenName(Color color) {
     if (color == Colors.pink) return 'ピンク';
-    if (color == Colors.yellow) return 'イエロー';
+    if (color == _yellowPenColor || color == Colors.yellow) return 'イエロー';
     if (color == Colors.blue) return 'ブルー';
     if (color == Colors.black87) return 'ブラック';
     return 'ペン';
@@ -1295,7 +1354,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         const SizedBox(width: 10),
                         _buildLargePenOption(
                           context,
-                          Colors.yellow,
+                          _yellowPenColor,
                           'イエロー (共有)',
                         ),
                       ],
@@ -1430,15 +1489,26 @@ class StrokePainter extends CustomPainter {
   }
 
   Paint getPaint(Color color, double width) {
+    // 🛡️ 救済パッチ：過去にColors.yellow(0xFFFFEB3B)で書かれたアノテーションデータを読み込んだ場合、
+    // 自動的に視認性の高いゴールドイエロー(0xFFCA8A04)に色補正してレンダリングする
+    Color finalColor = color;
+    if (color.r == Colors.yellow.r &&
+        color.g == Colors.yellow.g &&
+        color.b == Colors.yellow.b) {
+      finalColor = const Color(
+        0xFFCA8A04,
+      ).withAlpha((color.a * 255.0).round().clamp(0, 255));
+    }
+
     final paint = Paint()
-      ..color = color
+      ..color = finalColor
       ..strokeWidth = width
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     // 不透明度が0.8未満（半透明）の場合はラインマーカーと見なし、乗算（blendMode）を適用する
-    if (color.a < 0.8) {
+    if (finalColor.a < 0.8) {
       paint.blendMode = BlendMode.multiply;
     }
     return paint;

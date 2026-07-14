@@ -70,6 +70,7 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^28.1.38 # ★ Phase 9: 最強のPDFレンダリング＆検索エンジン
   flutter_image_compress: ^2.3.0 # ★ Phase 9: 画像の自動圧縮（容量節約）
   path: ^1.9.0
+  image: ^4.2.0 # 🎨 Web/Native両対応の画像圧縮ライブラリ
   audioplayers: ^6.0.0
   flutter_tts: ^4.1.1
   flutter_markdown: ^0.7.3  # ★ Phase 5: アプリ内ドキュメント表示用
