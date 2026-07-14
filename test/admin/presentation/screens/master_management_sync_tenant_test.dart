@@ -177,6 +177,7 @@ void main() {
 
       // 「保存して登録」ボタンをタップ
       final saveBtn = find.widgetWithText(ElevatedButton, '保存して登録');
+      await tester.ensureVisible(saveBtn);
       await tester.tap(saveBtn);
       await tester.pumpAndSettle();
 

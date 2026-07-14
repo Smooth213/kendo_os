@@ -12,6 +12,8 @@ import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 
+final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
+
 class ViewerOfficialRecordScreen extends ConsumerWidget {
   final String tournamentId;
   const ViewerOfficialRecordScreen({super.key, required this.tournamentId});
@@ -19,6 +21,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isExporting = ref.watch(isExportingProvider);
 
     const String screenTitle = '大会 公式記録';
 
@@ -204,70 +207,93 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               child: ElevatedButton.icon(
                                 // ★ STEP 2：テストコード側から、ボタン内のテキストや配置に依存せず一撃で Finder 捕捉可能にする不変 Key
                                 key: const Key('viewer_export_pdf_button'),
-                                onPressed: () async {
-                                  final groupDataList = sortedGroupKeys
-                                      .map(
-                                        (key) => {
-                                          'groupName': key,
-                                          'matches':
-                                              List<MatchListProjection>.from(
-                                                proj.teamMatches[key]!.matches,
-                                              )..sort(
-                                                (a, b) =>
-                                                    a.order.compareTo(b.order),
+                                onPressed: isExporting
+                                    ? null
+                                    : () async {
+                                        if (ref.read(isExportingProvider))
+                                          return;
+                                        ref
+                                                .read(
+                                                  isExportingProvider.notifier,
+                                                )
+                                                .state =
+                                            true;
+                                        final groupDataList = sortedGroupKeys
+                                            .map(
+                                              (key) => {
+                                                'groupName': key,
+                                                'matches':
+                                                    List<
+                                                        MatchListProjection
+                                                      >.from(
+                                                        proj
+                                                            .teamMatches[key]!
+                                                            .matches,
+                                                      )
+                                                      ..sort(
+                                                        (a, b) => a.order
+                                                            .compareTo(b.order),
+                                                      ),
+                                              },
+                                            )
+                                            .toList();
+
+                                        BuildContext? dialogContext;
+                                        showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (ctx) {
+                                            dialogContext = ctx;
+                                            return const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
+                                          },
+                                        );
+
+                                        try {
+                                          final now = ref
+                                              .read(timeSourceProvider)
+                                              .now();
+                                          await pdf_service.loadLibrary();
+                                          await pdf_service
+                                              .PdfService.printOfficialRecord(
+                                            cat,
+                                            groupDataList,
+                                            tournamentName: tName,
+                                            tournamentDate: tDate,
+                                            tournamentVenue: tVenue,
+                                            outputTime: now,
+                                          );
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text('出力に失敗しました: $e'),
                                               ),
-                                        },
-                                      )
-                                      .toList();
-
-                                  BuildContext? dialogContext;
-                                  showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (ctx) {
-                                      dialogContext = ctx;
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    },
-                                  );
-
-                                  try {
-                                    final now = ref
-                                        .read(timeSourceProvider)
-                                        .now();
-                                    await pdf_service.loadLibrary();
-                                    await pdf_service
-                                        .PdfService.printOfficialRecord(
-                                      cat,
-                                      groupDataList,
-                                      tournamentName: tName,
-                                      tournamentDate: tDate,
-                                      tournamentVenue: tVenue,
-                                      outputTime: now,
-                                    );
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text('出力に失敗しました: $e'),
-                                        ),
-                                      );
-                                    }
-                                  } finally {
-                                    if (dialogContext != null &&
-                                        dialogContext!.mounted) {
-                                      Navigator.pop(dialogContext!);
-                                    } else if (context.mounted) {
-                                      Navigator.of(
-                                        context,
-                                        rootNavigator: true,
-                                      ).pop();
-                                    }
-                                  }
-                                },
+                                            );
+                                          }
+                                        } finally {
+                                          ref
+                                                  .read(
+                                                    isExportingProvider
+                                                        .notifier,
+                                                  )
+                                                  .state =
+                                              false;
+                                          if (dialogContext != null &&
+                                              dialogContext!.mounted) {
+                                            Navigator.pop(dialogContext!);
+                                          } else if (context.mounted) {
+                                            Navigator.of(
+                                              context,
+                                              rootNavigator: true,
+                                            ).pop();
+                                          }
+                                        }
+                                      },
                                 icon: const Icon(Icons.print),
                                 label: const Text(
                                   'PDF印刷',

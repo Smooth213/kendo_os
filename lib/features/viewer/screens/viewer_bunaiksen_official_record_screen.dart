@@ -20,6 +20,8 @@ class OfficialPointDisplay {
   OfficialPointDisplay(this.mark, this.isFirstMatchPoint);
 }
 
+final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
+
 class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
   final String tournamentId;
 
@@ -31,6 +33,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isExporting = ref.watch(isExportingProvider);
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
 
     // tournamentId から日付をパース (例: bunaiksen_20241010)
@@ -191,16 +194,18 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                               Icons.print,
                               'PDF印刷',
                               Colors.grey.shade800,
-                              () => _handleExport(
-                                context,
-                                ref,
-                                cat,
-                                mergedGroups,
-                                sortedGroupKeys,
-                                isPdf: true,
-                                tName: '部内戦',
-                                tDate: tDate,
-                              ),
+                              isExporting
+                                  ? null
+                                  : () => _handleExport(
+                                      context,
+                                      ref,
+                                      cat,
+                                      mergedGroups,
+                                      sortedGroupKeys,
+                                      isPdf: true,
+                                      tName: '部内戦',
+                                      tDate: tDate,
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -210,16 +215,18 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                               Icons.share,
                               '画像シェア',
                               Colors.teal.shade600,
-                              () => _handleExport(
-                                context,
-                                ref,
-                                cat,
-                                mergedGroups,
-                                sortedGroupKeys,
-                                isPdf: false,
-                                tName: '部内戦',
-                                tDate: tDate,
-                              ),
+                              isExporting
+                                  ? null
+                                  : () => _handleExport(
+                                      context,
+                                      ref,
+                                      cat,
+                                      mergedGroups,
+                                      sortedGroupKeys,
+                                      isPdf: false,
+                                      tName: '部内戦',
+                                      tDate: tDate,
+                                    ),
                             ),
                           ),
                         ],
@@ -297,7 +304,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     IconData icon,
     String label,
     Color color,
-    VoidCallback onTap,
+    VoidCallback? onTap,
   ) {
     return ElevatedButton.icon(
       onPressed: onTap,
@@ -1695,6 +1702,8 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     String? tName,
     String? tDate,
   }) async {
+    if (ref.read(isExportingProvider)) return;
+    ref.read(isExportingProvider.notifier).state = true;
     final groupDataList = sortedGroupKeys
         .map(
           (key) => {
@@ -1737,6 +1746,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         );
       }
     } finally {
+      ref.read(isExportingProvider.notifier).state = false;
       if (dialogContext != null && dialogContext!.mounted) {
         Navigator.pop(dialogContext!);
       } else if (context.mounted) {

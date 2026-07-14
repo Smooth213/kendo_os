@@ -6,6 +6,9 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:kendo_os/shared/utils/file_download_helper.dart'
+    if (dart.library.html) 'package:kendo_os/shared/utils/file_download_helper_web.dart'
+    as download_helper;
 
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/pdf/painters/pdf_kachinuki_painter.dart';
@@ -452,23 +455,13 @@ class PdfService {
       outputTime: outputTime,
     );
 
-    if (kIsWeb) {
-      // Web/PWAの場合はポップアップブロックを回避し、共有ダイアログ経由でPDFを渡す（メニューから「プリント」も可能）
-      final pdfFile = XFile.fromData(
-        pdfBytes,
-        mimeType: 'application/pdf',
-        name: '公式記録_$categoryName.pdf',
-      );
-      await SharePlus.instance.share(
-        ShareParams(files: [pdfFile], text: '【$categoryName】の公式記録(PDF)です。'),
-      );
-    } else {
-      // ネイティブアプリ（iOS/Android実機）の場合は直接印刷プレビューを開く
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdfBytes,
-        name: '公式記録_$categoryName.pdf',
-      );
-    }
+    // Web・ネイティブ問わず、直接印刷プレビュー（またはブラウザ標準の印刷ダイアログ）を起動します。
+    // これにより、Web版でのShareXFiles（SharePlus）フォールバック起因による二重処理・重複出力を完全に回避します。
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) => pdfBytes,
+      name: '公式記録_$categoryName.pdf',
+      usePrinterSettings: true,
+    );
   }
 
   static Future<void> shareOfficialRecordAsImage(
@@ -506,8 +499,39 @@ class PdfService {
       );
       pageNum++;
     }
-    await SharePlus.instance.share(
-      ShareParams(files: outputFiles, text: '【$categoryName】の公式記録です。'),
-    );
+    if (kIsWeb) {
+      // Web環境の場合は、まずブラウザ組み込みの navigator.share (画像共有) の直接起動を試みます。
+      // これにより、iPhoneのSafari(Webアプリ)等でOS標準の複数枚画像共有シートを重複なく起動させます。
+      final List<Uint8List> filesBytes = [];
+      final List<String> filenames = [];
+      for (final file in outputFiles) {
+        filesBytes.add(await file.readAsBytes());
+        filenames.add(file.name);
+      }
+
+      final String text = '【$categoryName】の公式記録です。';
+      final shared = await download_helper.shareFilesWeb(
+        filesBytes,
+        filenames,
+        'image/png',
+        text,
+      );
+
+      // デスクトップChromeなど、navigator.share が非対応の環境では、
+      // フォールバックとして独自のWebダウンロード処理（重複なく1枚ずつ確実に保存）を実行します。
+      if (!shared) {
+        for (int i = 0; i < filesBytes.length; i++) {
+          download_helper.downloadFileWeb(
+            filesBytes[i],
+            filenames[i],
+            'image/png',
+          );
+        }
+      }
+    } else {
+      await SharePlus.instance.share(
+        ShareParams(files: outputFiles, text: '【$categoryName】の公式記録です。'),
+      );
+    }
   }
 }

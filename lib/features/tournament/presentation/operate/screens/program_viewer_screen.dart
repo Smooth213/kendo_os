@@ -39,6 +39,20 @@ class ProgramViewerScreen extends ConsumerStatefulWidget {
 class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   late PageController _pageController;
   late int _currentIndex;
+  final Map<String, int> _pdfPageCounts = {};
+
+  @visibleForTesting
+  Map<String, int> get pdfPageCountsForTesting => _pdfPageCounts;
+
+  // ★ 追加: ピンチズーム（拡大）時のジェスチャ競合防止用コントローラー
+  final TransformationController _transformationController =
+      TransformationController();
+  bool _isZoomed = false;
+
+  // ★ 追加: ペンツールと消しゴム機能の状態管理
+  String _selectedTool = 'pen'; // 'pen', 'marker', 'eraser'
+  List<StrokeModel> _cachedSharedStrokes = [];
+  List<LocalStrokeModel> _cachedPrivateStrokes = [];
 
   // ★ PDF検索用のコントローラーと状態管理
   final PdfViewerController _pdfViewerController = PdfViewerController();
@@ -50,10 +64,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   String _currentSearchText = "";
 
   bool _isDrawingMode = false;
-  Color _selectedPenColor = Colors.redAccent; // ★ 4色を管理
+  Color _selectedPenColor = Colors.pink; // ★ 4色を管理（デフォルトはピンク）
   bool get _isSharedPen =>
-      _selectedPenColor == Colors.redAccent ||
-      _selectedPenColor == Colors.amber;
+      _selectedPenColor == Colors.pink || _selectedPenColor == Colors.yellow;
   List<Offset> _currentPoints = [];
 
   // ★ 画像サイズ取得用キャッシュ（描画ごとのチラつき・無限クルクルを防止）
@@ -69,10 +82,14 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     return '$url${separator}_cb=$_sessionBuster';
   }
 
-  // ★ 物理調停パッチ: インフラのCORS制限や403権限エラーを100%完全回避する無敵のSDKバイナリフェッチャー
   final Map<String, Future<Uint8List>> _sdkPdfBytesCache = {};
 
-  Future<Uint8List> _getCachedPdfBytesViaSdk(String url) {
+  @visibleForTesting
+  Map<String, Future<Uint8List>> get sdkPdfBytesCacheForTesting =>
+      _sdkPdfBytesCache;
+
+  @visibleForTesting
+  Future<Uint8List> getCachedPdfBytesViaSdk(String url) {
     if (!_sdkPdfBytesCache.containsKey(url)) {
       // 匿名認証済みのセッションを用いて最大32MB（大会パンフレットを完全網羅）のバイナリを一発で安全に落とし込みます
       _sdkPdfBytesCache[url] = FirebaseStorage.instance
@@ -126,12 +143,92 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+
+    // ★ ズーム状態の変更検知リスナーを登録
+    _transformationController.addListener(_handleTransformationChanged);
   }
 
   @override
   void dispose() {
+    _transformationController.removeListener(_handleTransformationChanged);
+    _transformationController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _handleTransformationChanged() {
+    final double scale = _transformationController.value.getMaxScaleOnAxis();
+    // わずかな計算上の誤差を考慮し、1.01 を超えた場合にズームと見なします
+    final bool zoomed = scale > 1.01;
+    if (zoomed != _isZoomed) {
+      setState(() {
+        _isZoomed = zoomed;
+      });
+    }
+  }
+
+  /// 消しゴム機能：指定されたタッチ位置から近接する手書き線を検出し、Firestore / Isar から個別に削除します
+  Future<void> _eraseStrokeAt(Offset touchPoint) async {
+    const double threshold = 25.0; // 消しゴムの反応半径
+
+    // 1. 共有ペンの消去判定
+    final currentRole = ref.read(activeRoleProvider);
+    final canUseSharedPen =
+        currentRole == Role.admin ||
+        currentRole == Role.scorer ||
+        currentRole == Role.editor;
+
+    if (canUseSharedPen) {
+      for (final stroke in _cachedSharedStrokes) {
+        if (_isNearStroke(touchPoint, stroke.points, threshold)) {
+          await _getActiveRepository(ref).deleteStroke(stroke.id);
+          return;
+        }
+      }
+    }
+
+    // 2. 個人ペンの消去判定
+    for (final stroke in _cachedPrivateStrokes) {
+      if (_isNearLocalStroke(
+        touchPoint,
+        stroke.pointsX,
+        stroke.pointsY,
+        threshold,
+      )) {
+        await ref
+            .read(localStrokeRepositoryProvider)
+            .deleteStroke(stroke.id, firestoreId: stroke.firestoreId);
+        return;
+      }
+    }
+  }
+
+  bool _isNearStroke(
+    Offset touchPoint,
+    List<Offset> strokePoints,
+    double threshold,
+  ) {
+    for (final pt in strokePoints) {
+      if ((touchPoint - pt).distance <= threshold) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _isNearLocalStroke(
+    Offset touchPoint,
+    List<double> xs,
+    List<double> ys,
+    double threshold,
+  ) {
+    final len = xs.length;
+    for (int i = 0; i < len; i++) {
+      if ((touchPoint - Offset(xs[i], ys[i])).distance <= threshold) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<Size> _fetchImageSize(String url) async {
@@ -199,10 +296,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
     // 権限がないのに共有ペンが選ばれている場合のフォールバック（強制的に青にする）
     final activePenColor = (!canUseSharedPen && _isSharedPen)
-        ? Colors.blueAccent
+        ? Colors.blue
         : _selectedPenColor;
     final activeIsShared =
-        activePenColor == Colors.redAccent || activePenColor == Colors.amber;
+        activePenColor == Colors.pink || activePenColor == Colors.yellow;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -449,48 +546,117 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     // 1. 現在のペンを表示し、タップで選択シートを開くボタン
                     Expanded(
                       child: InkWell(
-                        onTap: () =>
-                            _showPenPicker(context, ref, canUseSharedPen),
+                        onTap: () {
+                          if (_selectedTool == 'eraser') {
+                            setState(() => _selectedTool = 'pen');
+                          }
+                          _showPenPicker(context, ref, canUseSharedPen);
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             vertical: 8,
                             horizontal: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: activePenColor.withAlpha(26),
+                            color:
+                                (_selectedTool == 'eraser'
+                                        ? Colors.orange
+                                        : activePenColor)
+                                    .withAlpha(26),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: activePenColor.withAlpha(128),
+                              color:
+                                  (_selectedTool == 'eraser'
+                                          ? Colors.orange
+                                          : activePenColor)
+                                      .withAlpha(128),
                             ),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.edit, size: 18, color: activePenColor),
+                              Icon(
+                                _selectedTool == 'eraser'
+                                    ? Icons.cleaning_services
+                                    : _selectedTool == 'marker'
+                                    ? Icons.border_color
+                                    : Icons.edit,
+                                size: 18,
+                                color: _selectedTool == 'eraser'
+                                    ? Colors.orange.shade700
+                                    : activePenColor,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  activeIsShared
+                                  _selectedTool == 'eraser'
+                                      ? '消しゴム'
+                                      : _selectedTool == 'marker'
+                                      ? '${_getPenName(activePenColor)} (マーカー)'
+                                      : activeIsShared
                                       ? '${_getPenName(activePenColor)} (共有)'
                                       : '${_getPenName(activePenColor)} (個人)',
                                   style: TextStyle(
-                                    color: activePenColor,
+                                    color: _selectedTool == 'eraser'
+                                        ? Colors.orange.shade700
+                                        : activePenColor,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              Icon(
-                                Icons.arrow_drop_down,
-                                color: activePenColor,
-                              ),
+                              if (_selectedTool != 'eraser')
+                                Icon(
+                                  Icons.arrow_drop_down,
+                                  color: activePenColor,
+                                ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
+                    // ★ ツール切り替え（ペン / マーカー / 消しゴム）
+                    Container(
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.grey.shade900
+                            : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildToolButton(
+                            tool: 'pen',
+                            icon: Icons.edit,
+                            tooltip: 'ペン',
+                            isDark: isDark,
+                            activeColor: activePenColor,
+                          ),
+                          _buildToolButton(
+                            tool: 'marker',
+                            icon: Icons.border_color,
+                            tooltip: '蛍光マーカー',
+                            isDark: isDark,
+                            activeColor: activePenColor,
+                          ),
+                          _buildToolButton(
+                            tool: 'eraser',
+                            icon: Icons.cleaning_services,
+                            tooltip: '消しゴム',
+                            isDark: isDark,
+                            activeColor: Colors.orange.shade700,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     // 2. 取り消しボタン
                     IconButton(
                       icon: const Icon(Icons.undo),
@@ -582,7 +748,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                physics: _isDrawingMode
+                physics: _isDrawingMode || _isZoomed
                     ? const NeverScrollableScrollPhysics()
                     : const ClampingScrollPhysics(),
                 itemCount: displayPrograms.length,
@@ -667,6 +833,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                 .watchStrokes(programId),
                             builder: (context, sharedSnapshot) {
                               final sharedStrokes = sharedSnapshot.data ?? [];
+                              _cachedSharedStrokes =
+                                  sharedStrokes; // ★ 消しゴム用にキャッシュ
                               return StreamBuilder<List<LocalStrokeModel>>(
                                 stream: ref
                                     .watch(localStrokeRepositoryProvider)
@@ -674,14 +842,24 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                 builder: (context, privateSnapshot) {
                                   final privateStrokes =
                                       privateSnapshot.data ?? [];
+                                  _cachedPrivateStrokes =
+                                      privateStrokes; // ★ 消しゴム用にキャッシュ
+
+                                  final isMarker = _selectedTool == 'marker';
+                                  final paintColor = isMarker
+                                      ? activePenColor.withAlpha(90)
+                                      : activePenColor;
+                                  final paintWidth = isMarker
+                                      ? penWidth * 3.0
+                                      : penWidth;
+
                                   return CustomPaint(
                                     painter: StrokePainter(
                                       sharedStrokes: sharedStrokes,
                                       privateStrokes: privateStrokes,
                                       currentPoints: _currentPoints,
-                                      currentLineColor: activePenColor,
-                                      activePenWidth:
-                                          penWidth, // ★ 渡された太さをペインターに送る
+                                      currentLineColor: paintColor,
+                                      activePenWidth: paintWidth,
                                     ),
                                   );
                                 },
@@ -696,18 +874,43 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             child: Listener(
                               // ★ GestureDetectorからListenerに変更し、判定の「遊び（遅延）」をゼロに！
                               behavior: HitTestBehavior.opaque,
-                              onPointerDown: (event) => setState(
-                                () => _currentPoints = [event.localPosition],
-                              ),
-                              onPointerMove: (event) => setState(
-                                () => _currentPoints.add(event.localPosition),
-                              ),
+                              onPointerDown: (event) {
+                                if (_selectedTool == 'eraser') {
+                                  _eraseStrokeAt(event.localPosition);
+                                } else {
+                                  setState(
+                                    () =>
+                                        _currentPoints = [event.localPosition],
+                                  );
+                                }
+                              },
+                              onPointerMove: (event) {
+                                if (_selectedTool == 'eraser') {
+                                  _eraseStrokeAt(event.localPosition);
+                                } else {
+                                  setState(
+                                    () =>
+                                        _currentPoints.add(event.localPosition),
+                                  );
+                                }
+                              },
                               onPointerUp: (event) async {
+                                if (_selectedTool == 'eraser') {
+                                  return;
+                                }
                                 if (_currentPoints.isNotEmpty) {
                                   final pointsToSave = List<Offset>.from(
                                     _currentPoints,
                                   );
                                   setState(() => _currentPoints.clear());
+
+                                  final isMarker = _selectedTool == 'marker';
+                                  final savedColor = isMarker
+                                      ? activePenColor.withAlpha(90)
+                                      : activePenColor;
+                                  final savedWidth = isMarker
+                                      ? penWidth * 3.0
+                                      : penWidth;
 
                                   if (activeIsShared && canUseSharedPen) {
                                     final newStroke = StrokeModel(
@@ -715,8 +918,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                           .toString(),
                                       programId: programId,
                                       points: pointsToSave,
-                                      color: activePenColor,
-                                      strokeWidth: penWidth,
+                                      color: savedColor,
+                                      strokeWidth: savedWidth,
                                       isShared: activeIsShared,
                                       pageIndex: _currentIndex,
                                     );
@@ -732,8 +935,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                       ..pointsY = pointsToSave
                                           .map((p) => p.dy)
                                           .toList()
-                                      ..colorValue = activePenColor.toARGB32()
-                                      ..strokeWidth = penWidth
+                                      ..colorValue = savedColor.toARGB32()
+                                      ..strokeWidth = savedWidth
                                       ..createdAt = DateTime.now();
                                     await ref
                                         .read(localStrokeRepositoryProvider)
@@ -749,6 +952,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   }
 
                   return InteractiveViewer(
+                    transformationController: _transformationController,
                     panEnabled: !_isDrawingMode,
                     scaleEnabled: !_isDrawingMode,
                     minScale: 1.0,
@@ -759,20 +963,22 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               // ★ PDFも画像と同じく「FittedBox」で包み、仮想サイズ(1000x1415)で固定します
                               fit: BoxFit.contain,
                               child: SizedBox(
-                                // ★ 物理調停パッチ: 高さを「1415」へ微修正することで、
-                                // プラグイン内部のレンダラーが要求する1画素未満の端数（1414.3px）を完全に包み込み、
-                                // はみ出し警告（RenderFlex overflowed）を水際で100%完全消滅させます。
+                                // ★ 物理調停パッチ: 高さを 1415 * ページ数 に拡張することで、
+                                // 複数ページPDFをスクロール可能（縦並びの1つのキャンバス）として綺麗にレンダリングします。
                                 width: 1000,
-                                height: 1415,
+                                height:
+                                    1415 *
+                                    (_pdfPageCounts[program.fileUrl] ?? 1)
+                                        .toDouble(),
                                 child: Stack(
                                   children: [
                                     // --- 下層：PDF本体 ---
                                     Positioned.fill(
-                                      // ★ 物理調停パッチ: Web環境下（kIsWeb）では、認証済みSDK経由のFutureBuilderを用いて一括フェッチし、
+                                      // ★ 物理調停パッチ: Web環境下（kIsWeb）では、認証済みSDK経由 of FutureBuilderを用いて一括フェッチし、
                                       // SfPdfViewer.memoryに安全に流し込むことで、ブラウザ特有のあらゆるCORS/403壁を完全突破します。
                                       child: kIsWeb
                                           ? FutureBuilder<Uint8List>(
-                                              future: _getCachedPdfBytesViaSdk(
+                                              future: getCachedPdfBytesViaSdk(
                                                 program.fileUrl,
                                               ),
                                               builder: (context, bytesSnapshot) {
@@ -804,6 +1010,30 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                                   canShowScrollHead: false,
                                                   enableDoubleTapZooming: false,
                                                   enableTextSelection: false,
+                                                  onDocumentLoaded: (details) {
+                                                    final String pdfUrl =
+                                                        program.fileUrl;
+                                                    final int loadedPageCount =
+                                                        details
+                                                            .document
+                                                            .pages
+                                                            .count;
+                                                    if (mounted &&
+                                                        _pdfPageCounts[pdfUrl] !=
+                                                            loadedPageCount) {
+                                                      WidgetsBinding.instance
+                                                          .addPostFrameCallback((
+                                                            _,
+                                                          ) {
+                                                            if (mounted) {
+                                                              setState(() {
+                                                                _pdfPageCounts[pdfUrl] =
+                                                                    loadedPageCount;
+                                                              });
+                                                            }
+                                                          });
+                                                    }
+                                                  },
                                                   onDocumentLoadFailed: (details) {
                                                     debugPrint(
                                                       '🚨 PDF Load Failed (Memory): ${details.error} - ${details.description}',
@@ -819,6 +1049,30 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                               canShowScrollHead: false,
                                               enableDoubleTapZooming: false,
                                               enableTextSelection: false,
+                                              onDocumentLoaded: (details) {
+                                                final String pdfUrl =
+                                                    program.fileUrl;
+                                                final int loadedPageCount =
+                                                    details
+                                                        .document
+                                                        .pages
+                                                        .count;
+                                                if (mounted &&
+                                                    _pdfPageCounts[pdfUrl] !=
+                                                        loadedPageCount) {
+                                                  WidgetsBinding.instance
+                                                      .addPostFrameCallback((
+                                                        _,
+                                                      ) {
+                                                        if (mounted) {
+                                                          setState(() {
+                                                            _pdfPageCounts[pdfUrl] =
+                                                                loadedPageCount;
+                                                          });
+                                                        }
+                                                      });
+                                                }
+                                              },
                                               onDocumentLoadFailed: (details) {
                                                 debugPrint(
                                                   '🚨 PDF Load Failed: ${details.error} - ${details.description}',
@@ -942,12 +1196,54 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     );
   }
 
+  Widget _buildToolButton({
+    required String tool,
+    required IconData icon,
+    required String tooltip,
+    required bool isDark,
+    required Color activeColor,
+  }) {
+    final isSelected = _selectedTool == tool;
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: () => setState(() => _selectedTool = tool),
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark ? Colors.grey.shade800 : Colors.white)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(20),
+                      blurRadius: 2,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: isSelected
+                ? activeColor
+                : (isDark ? Colors.white38 : Colors.black38),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ペンの名前を返す補助関数
   String _getPenName(Color color) {
-    if (color == Colors.redAccent) return '赤ペン';
-    if (color == Colors.amber) return '黄ペン';
-    if (color == Colors.blueAccent) return '青ペン';
-    if (color == Colors.black87) return '黒ペン';
+    if (color == Colors.pink) return 'ピンク';
+    if (color == Colors.yellow) return 'イエロー';
+    if (color == Colors.blue) return 'ブルー';
+    if (color == Colors.black87) return 'ブラック';
     return 'ペン';
   }
 
@@ -995,13 +1291,13 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
+                        _buildLargePenOption(context, Colors.pink, 'ピンク (共有)'),
+                        const SizedBox(width: 10),
                         _buildLargePenOption(
                           context,
-                          Colors.redAccent,
-                          '赤ペン (共有)',
+                          Colors.yellow,
+                          'イエロー (共有)',
                         ),
-                        const SizedBox(width: 10),
-                        _buildLargePenOption(context, Colors.amber, '黄ペン (共有)'),
                       ],
                     ),
                     const SizedBox(height: 25),
@@ -1017,13 +1313,13 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
+                      _buildLargePenOption(context, Colors.blue, 'ブルー (個人)'),
+                      const SizedBox(width: 10),
                       _buildLargePenOption(
                         context,
-                        Colors.blueAccent,
-                        '青ペン (個人)',
+                        Colors.black87,
+                        'ブラック (個人)',
                       ),
-                      const SizedBox(width: 10),
-                      _buildLargePenOption(context, Colors.black87, '黒ペン (個人)'),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -1105,7 +1401,7 @@ class StrokePainter extends CustomPainter {
       final width = stroke.strokeWidth < 6.0
           ? activePenWidth
           : stroke.strokeWidth;
-      final paint = _getPaint(stroke.color, width);
+      final paint = getPaint(stroke.color, width);
       _drawPoints(canvas, stroke.points, paint);
     }
 
@@ -1114,7 +1410,7 @@ class StrokePainter extends CustomPainter {
       final width = stroke.strokeWidth < 6.0
           ? activePenWidth
           : stroke.strokeWidth;
-      final paint = _getPaint(Color(stroke.colorValue), width);
+      final paint = getPaint(Color(stroke.colorValue), width);
       if (stroke.pointsX.length < 2) continue;
 
       final path = Path();
@@ -1128,18 +1424,24 @@ class StrokePainter extends CustomPainter {
     // 3. 今まさに引いている線を描画
     final current = currentPoints;
     if (current != null && current.isNotEmpty) {
-      final paint = _getPaint(currentLineColor, activePenWidth); // ★ 新しい太さを使用
+      final paint = getPaint(currentLineColor, activePenWidth); // ★ 新しい太さを使用
       _drawPoints(canvas, current, paint);
     }
   }
 
-  Paint _getPaint(Color color, double width) {
-    return Paint()
+  Paint getPaint(Color color, double width) {
+    final paint = Paint()
       ..color = color
       ..strokeWidth = width
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
+
+    // 不透明度が0.8未満（半透明）の場合はラインマーカーと見なし、乗算（blendMode）を適用する
+    if (color.a < 0.8) {
+      paint.blendMode = BlendMode.multiply;
+    }
+    return paint;
   }
 
   void _drawPoints(Canvas canvas, List<Offset> points, Paint paint) {

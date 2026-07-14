@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
@@ -692,6 +693,10 @@ class _MasterManagementScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      enableDrag: false,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final primaryColor = isDark
@@ -705,317 +710,361 @@ class _MasterManagementScreenState
 
         return StatefulBuilder(
           builder: (context, setState) {
+            final keyboardHeight = kIsWeb
+                ? 0.0
+                : MediaQuery.of(context).viewInsets.bottom;
+            final isKeyboardVisible = keyboardHeight > 0;
+            final screenHeight = MediaQuery.of(context).size.height;
+            final maxSheetHeight = screenHeight * 0.9; // 画面最大90%
+
+            // キーボード表示時は余白を大幅に削減して画面内への完全収容を図る
+            final gapLarge = isKeyboardVisible ? 12.0 : 24.0;
+            final gapMedium = isKeyboardVisible ? 8.0 : 16.0;
+            final gapSmall = isKeyboardVisible ? 6.0 : 12.0;
+
+            final innerForm = Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!kIsWeb)
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                SizedBox(height: gapLarge),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isEdit ? '選手情報を編集' : '新しい選手を登録',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
+                        fontSize: 20,
+                      ),
+                    ),
+                    // ★ 修正：初心者トグルスイッチ
+                    Row(
+                      children: [
+                        Text(
+                          '🔰 初心者',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isBeginner ? Colors.green : Colors.grey,
+                          ),
+                        ),
+                        Switch(
+                          value: isBeginner,
+                          activeThumbColor: Colors.green,
+                          onChanged: (val) => setState(() => isBeginner = val),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: gapMedium),
+
+                // ★ 修正：よみがな入力欄（名字・名前）
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: lastNameKanaController,
+                        style: TextStyle(color: textColor, fontSize: 12),
+                        decoration: InputDecoration(
+                          labelText: 'よみがな (せい)',
+                          labelStyle: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
+                          isDense: true,
+                          contentPadding: isKeyboardVisible
+                              ? const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                )
+                              : const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                          filled: true,
+                          fillColor: inputBgColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        controller: firstNameKanaController,
+                        style: TextStyle(color: textColor, fontSize: 12),
+                        decoration: InputDecoration(
+                          labelText: 'よみがな (めい)',
+                          labelStyle: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
+                          isDense: true,
+                          contentPadding: isKeyboardVisible
+                              ? const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                )
+                              : const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                          filled: true,
+                          fillColor: inputBgColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: gapSmall),
+
+                // 漢字入力欄（名字・名前）
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: lastNameController,
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: '名字',
+                          hintText: '例: 道上',
+                          prefixIcon: isKeyboardVisible
+                              ? null
+                              : Icon(
+                                  Icons.person,
+                                  color: isDark
+                                      ? Colors.grey.shade400
+                                      : Colors.grey,
+                                ),
+                          isDense: isKeyboardVisible,
+                          contentPadding: isKeyboardVisible
+                              ? const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                )
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: inputBgColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        controller: firstNameController,
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: '名前',
+                          hintText: '例: 太郎',
+                          isDense: isKeyboardVisible,
+                          contentPadding: isKeyboardVisible
+                              ? const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                )
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: inputBgColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: gapLarge),
+
+                Text(
+                  '性別',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey,
+                  ),
+                ),
+                SizedBox(height: gapSmall),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildGenderBtn(
+                        context,
+                        setState,
+                        '男子',
+                        Icons.man,
+                        Colors.blue,
+                        selectedGender == '男子',
+                        isDark,
+                        () => setState(() => selectedGender = '男子'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildGenderBtn(
+                        context,
+                        setState,
+                        '女子',
+                        Icons.woman,
+                        Colors.pink,
+                        selectedGender == '女子',
+                        isDark,
+                        () => setState(() => selectedGender = '女子'),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: gapLarge),
+
+                DropdownButtonFormField<int>(
+                  decoration: InputDecoration(
+                    labelText: '学年・カテゴリ',
+                    prefixIcon: Icon(
+                      Icons.school,
+                      color: isDark ? Colors.grey.shade400 : Colors.grey,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: inputBgColor,
+                  ),
+                  dropdownColor: dialogBgColor,
+                  style: TextStyle(color: textColor, fontSize: 16),
+                  initialValue: selectedGrade,
+                  items: gradeOptions.entries
+                      .map(
+                        (e) => DropdownMenuItem(
+                          value: e.key,
+                          child: Text(e.value),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => selectedGrade = val);
+                  },
+                ),
+                SizedBox(height: isKeyboardVisible ? 16.0 : 32.0),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'キャンセル',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey.shade400 : Colors.grey,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        if (lastNameController.text.trim().isEmpty) return;
+                        final dojoId = ref.read(currentDojoIdProvider);
+                        final safeDojoId = dojoId.isNotEmpty
+                            ? dojoId
+                            : 'test201';
+                        final firestore = ref.read(firestoreProvider);
+
+                        final pData = {
+                          'lastName': lastNameController.text.trim(),
+                          'firstName': firstNameController.text.trim(),
+                          'lastNameKana': lastNameKanaController.text.trim(),
+                          'firstNameKana': firstNameKanaController.text.trim(),
+                          'grade': selectedGrade,
+                          'gender': selectedGender,
+                          'isBeginner': isBeginner,
+                          'organization': cloudDojoName.isNotEmpty
+                              ? cloudDojoName
+                              : 'テスト道場',
+                        };
+
+                        if (isEdit) {
+                          await firestore
+                              .collection('organizations')
+                              .doc(safeDojoId)
+                              .collection('players')
+                              .doc(player.id)
+                              .set(pData, SetOptions(merge: true));
+                        } else {
+                          await firestore
+                              .collection('organizations')
+                              .doc(safeDojoId)
+                              .collection('players')
+                              .add(pData);
+                        }
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                      ),
+                      icon: const Icon(Icons.save, color: Colors.white),
+                      label: const Text(
+                        '保存して登録',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (!kIsWeb && isKeyboardVisible)
+                  SizedBox(height: keyboardHeight),
+              ],
+            );
+
             return Container(
+              constraints: BoxConstraints(maxHeight: maxSheetHeight),
               decoration: BoxDecoration(
                 color: dialogBgColor,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(24),
                 ),
               ),
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 top: 16,
                 left: 24,
                 right: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                bottom: 24,
               ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 48,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.grey.shade700
-                              : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          isEdit ? '選手情報を編集' : '新しい選手を登録',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                            fontSize: 20,
-                          ),
-                        ),
-                        // ★ 修正：初心者トグルスイッチ
-                        Row(
-                          children: [
-                            Text(
-                              '🔰 初心者',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: isBeginner ? Colors.green : Colors.grey,
-                              ),
-                            ),
-                            Switch(
-                              value: isBeginner,
-                              activeThumbColor: Colors.green,
-                              onChanged: (val) =>
-                                  setState(() => isBeginner = val),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // ★ 修正：よみがな入力欄（名字・名前）
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: lastNameKanaController,
-                            style: TextStyle(color: textColor, fontSize: 12),
-                            decoration: InputDecoration(
-                              labelText: 'よみがな (せい)',
-                              labelStyle: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey,
-                              ),
-                              isDense: true,
-                              filled: true,
-                              fillColor: inputBgColor,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextField(
-                            controller: firstNameKanaController,
-                            style: TextStyle(color: textColor, fontSize: 12),
-                            decoration: InputDecoration(
-                              labelText: 'よみがな (めい)',
-                              labelStyle: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey,
-                              ),
-                              isDense: true,
-                              filled: true,
-                              fillColor: inputBgColor,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // 漢字入力欄（名字・名前）
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: lastNameController,
-                            autofocus: !isEdit,
-                            style: TextStyle(
-                              color: textColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: '名字',
-                              hintText: '例: 道上',
-                              prefixIcon: Icon(
-                                Icons.person,
-                                color: isDark
-                                    ? Colors.grey.shade400
-                                    : Colors.grey,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              filled: true,
-                              fillColor: inputBgColor,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextField(
-                            controller: firstNameController,
-                            style: TextStyle(
-                              color: textColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: '名前',
-                              hintText: '例: 太郎',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              filled: true,
-                              fillColor: inputBgColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    Text(
-                      '性別',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.grey.shade400 : Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildGenderBtn(
-                            context,
-                            setState,
-                            '男子',
-                            Icons.man,
-                            Colors.blue,
-                            selectedGender == '男子',
-                            isDark,
-                            () => setState(() => selectedGender = '男子'),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildGenderBtn(
-                            context,
-                            setState,
-                            '女子',
-                            Icons.woman,
-                            Colors.pink,
-                            selectedGender == '女子',
-                            isDark,
-                            () => setState(() => selectedGender = '女子'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    DropdownButtonFormField<int>(
-                      decoration: InputDecoration(
-                        labelText: '学年・カテゴリ',
-                        prefixIcon: Icon(
-                          Icons.school,
-                          color: isDark ? Colors.grey.shade400 : Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: inputBgColor,
-                      ),
-                      dropdownColor: dialogBgColor,
-                      style: TextStyle(color: textColor, fontSize: 16),
-                      initialValue: selectedGrade,
-                      items: gradeOptions.entries
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e.key,
-                              child: Text(e.value),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => selectedGrade = val);
-                      },
-                    ),
-                    const SizedBox(height: 32),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            'キャンセル',
-                            style: TextStyle(
-                              color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton.icon(
-                          onPressed: () async {
-                            if (lastNameController.text.trim().isEmpty) return;
-                            final dojoId = ref.read(currentDojoIdProvider);
-                            final safeDojoId = dojoId.isNotEmpty
-                                ? dojoId
-                                : 'test201';
-                            final firestore = ref.read(firestoreProvider);
-
-                            final pData = {
-                              'lastName': lastNameController.text.trim(),
-                              'firstName': firstNameController.text.trim(),
-                              'lastNameKana': lastNameKanaController.text
-                                  .trim(),
-                              'firstNameKana': firstNameKanaController.text
-                                  .trim(),
-                              'grade': selectedGrade,
-                              'gender': selectedGender,
-                              'isBeginner': isBeginner,
-                              'organization': cloudDojoName.isNotEmpty
-                                  ? cloudDojoName
-                                  : 'テスト道場',
-                            };
-
-                            if (isEdit) {
-                              await firestore
-                                  .collection('organizations')
-                                  .doc(safeDojoId)
-                                  .collection('players')
-                                  .doc(player.id)
-                                  .set(pData, SetOptions(merge: true));
-                            } else {
-                              await firestore
-                                  .collection('organizations')
-                                  .doc(safeDojoId)
-                                  .collection('players')
-                                  .add(pData);
-                            }
-                            if (context.mounted) Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 16,
-                            ),
-                          ),
-                          icon: const Icon(Icons.save, color: Colors.white),
-                          label: const Text(
-                            '保存して登録',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              child: SingleChildScrollView(child: innerForm),
             );
           },
         );

@@ -21,12 +21,15 @@ class OfficialPointDisplay {
   OfficialPointDisplay(this.mark, this.isFirstMatchPoint);
 }
 
+final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
+
 class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   const BunaiksenOfficialRecordScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isExporting = ref.watch(isExportingProvider);
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final viewDate = ref.watch(bunaiksenViewDateProvider);
     final tournamentId = 'bunaiksen_${DateFormat('yyyyMMdd').format(viewDate)}';
@@ -155,16 +158,18 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                             Icons.print,
                             'PDF印刷',
                             Colors.grey.shade800,
-                            () => _handleExport(
-                              context,
-                              ref,
-                              cat,
-                              mergedGroups,
-                              sortedGroupKeys,
-                              isPdf: true,
-                              tName: tName,
-                              tDate: tDate,
-                            ),
+                            isExporting
+                                ? null
+                                : () => _handleExport(
+                                    context,
+                                    ref,
+                                    cat,
+                                    mergedGroups,
+                                    sortedGroupKeys,
+                                    isPdf: true,
+                                    tName: tName,
+                                    tDate: tDate,
+                                  ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -174,16 +179,18 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                             Icons.share,
                             '画像シェア',
                             Colors.teal.shade600,
-                            () => _handleExport(
-                              context,
-                              ref,
-                              cat,
-                              mergedGroups,
-                              sortedGroupKeys,
-                              isPdf: false,
-                              tName: tName,
-                              tDate: tDate,
-                            ),
+                            isExporting
+                                ? null
+                                : () => _handleExport(
+                                    context,
+                                    ref,
+                                    cat,
+                                    mergedGroups,
+                                    sortedGroupKeys,
+                                    isPdf: false,
+                                    tName: tName,
+                                    tDate: tDate,
+                                  ),
                           ),
                         ),
                       ],
@@ -263,7 +270,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     IconData icon,
     String label,
     Color color,
-    VoidCallback onTap,
+    VoidCallback? onTap,
   ) {
     return ElevatedButton.icon(
       onPressed: onTap,
@@ -1695,6 +1702,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     String? tName,
     String? tDate,
   }) async {
+    if (ref.read(isExportingProvider)) return;
+    ref.read(isExportingProvider.notifier).state = true;
     final groupDataList = sortedGroupKeys
         .map(
           (key) => {
@@ -1737,6 +1746,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         );
       }
     } finally {
+      ref.read(isExportingProvider.notifier).state = false;
       if (dialogContext != null && dialogContext!.mounted) {
         Navigator.pop(dialogContext!);
       } else if (context.mounted) {

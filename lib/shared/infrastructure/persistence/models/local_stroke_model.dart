@@ -8,6 +8,9 @@ part 'local_stroke_model.g.dart';
 class LocalStrokeModel {
   Id id = Isar.autoIncrement;
 
+  @ignore
+  String? firestoreId; // ★ Web版でのFirestore削除用一時ID（Isarには保存されません）
+
   @Index(type: IndexType.hash)
   late String programId; // どのプログラム（画像/PDF）に引かれた線か
 

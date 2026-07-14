@@ -111,7 +111,7 @@ class MatchRepository {
 
   // 3. 試合を保存・更新
   // ★ Phase 0-3: トランザクション等の詳細ロジックをリポジトリ内に隠蔽する
-  Future<void> saveMatch(MatchModel match) async {
+  Future<int> saveMatch(MatchModel match) async {
     // ★ モデルに organizationId が設定されている場合はそちらを優先する（安全策）
     final targetOrgId =
         (match.organizationId.isNotEmpty &&
@@ -132,6 +132,8 @@ class MatchRepository {
         .collection('matches')
         .doc(match.id);
 
+    int nextVersion = match.version;
+
     try {
       await _firestore.runTransaction((transaction) async {
         final snapshot = await transaction.get(docRef);
@@ -145,16 +147,19 @@ class MatchRepository {
           }
         }
 
+        nextVersion = remoteVersion + 1;
+
         // 保存時にバージョンをインクリメントし、isDirty フラグを管理する
         final updatedData = match
             .copyWith(
-              version: remoteVersion + 1,
+              version: nextVersion,
               // ※ ここではまだオンライン前提だが、PHASE 1以降でここを「Local保存のみ」に切り替える
             )
             .toJson();
 
         transaction.set(docRef, updatedData);
       });
+      return nextVersion;
     } catch (e) {
       debugPrint('Repository保存エラー: $e');
       rethrow;

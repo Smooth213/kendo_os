@@ -130,7 +130,7 @@ void main() {
     when(
       () => mockLocalRepo.getPendingCommands(),
     ).thenAnswer((_) async => <MatchCommandModel>[]);
-    when(() => mockRepository.saveMatch(any())).thenAnswer((_) async {});
+    when(() => mockRepository.saveMatch(any())).thenAnswer((_) async => 1);
     // ★ 修正: 同期エンジンが呼ばれたら何もしない（テストをパスさせる）
     when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
     when(() => mockNewSyncEngine.processQueue()).thenAnswer((_) async {});

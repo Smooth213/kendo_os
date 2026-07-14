@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,7 +9,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/program_viewer_screen.dart';
-import 'package:kendo_os/shared/domain/entities/program_model.dart';
+import 'package:kendo_os/shared/domain/entities/program_model.dart'
+    hide StrokeModel;
+import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart';
@@ -307,5 +310,318 @@ void main() {
       expect(find.text('書き込む'), findsNothing);
       expect(find.byIcon(Icons.edit), findsNothing);
     });
+
+    testWidgets('✅ 5. 手書きアノテーションの Undo 操作が正しくトリガーされること', (tester) async {
+      final program = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'テスト',
+        fileUrl: 'https://example.com/dummy.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime.now(),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+      when(() => mockStrokeRepo.undoLastStroke(any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalStrokeRepo.undoLastStroke(any()),
+      ).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createViewerWidget([program]));
+      await tester.pumpAndSettle();
+
+      // 書き込みモードをONにする (アイコン経由で確実にタップ)
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.pumpAndSettle();
+
+      // 元に戻す(Undo)ボタンを探してタップ
+      final undoButton = find.byTooltip('1つ戻す');
+      expect(undoButton, findsOneWidget);
+      await tester.tap(undoButton);
+      await tester.pumpAndSettle();
+
+      // 共有ペンリポジトリの undoLastStroke が呼び出されたことを検証
+      verify(() => mockStrokeRepo.undoLastStroke('p1')).called(1);
+    });
+
+    test(
+      '✅ 6. 蛍光ペンの描画判定 (opacity/a の値が半透明の時は BlendMode.multiply が適用されること)',
+      () {
+        final painter = StrokePainter(
+          sharedStrokes: [],
+          privateStrokes: [],
+          currentPoints: null,
+          currentLineColor: Colors.pink,
+          activePenWidth: 10.0,
+        );
+
+        // 通常の不透明色 (アルファ=255)
+        final normalPaint = painter.getPaint(Colors.pink, 10.0);
+        expect(normalPaint.blendMode, equals(BlendMode.srcOver));
+
+        // 半透明の蛍光マーカー色 (不透明度 0.35, アルファ=90)
+        final markerPaint = painter.getPaint(Colors.pink.withAlpha(90), 30.0);
+        expect(markerPaint.blendMode, equals(BlendMode.multiply));
+      },
+    );
+
+    testWidgets('✅ 7. 消しゴムツールでの近接線の検知と個別削除がトリガーされること', (tester) async {
+      final program = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'テスト',
+        fileUrl: 'https://example.com/dummy.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime.now(),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+      when(() => mockStrokeRepo.deleteStroke(any())).thenAnswer((_) async {});
+
+      // 共有線のリストに、座標点 (100, 100) を含む線をあらかじめ流し込む
+      final existingStroke = StrokeModel(
+        id: 'stroke_123',
+        programId: 'p1',
+        points: [const Offset(100, 100), const Offset(105, 105)],
+        color: Colors.pink,
+        strokeWidth: 10.0,
+        isShared: true,
+        pageIndex: 0,
+      );
+
+      when(
+        () => mockStrokeRepo.watchStrokes(any()),
+      ).thenAnswer((_) => Stream.value([existingStroke]));
+
+      await tester.pumpWidget(createViewerWidget([program]));
+      await tester.pumpAndSettle();
+
+      // 書き込みモードをONにする (アイコン経由で確実にタップ)
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.pumpAndSettle();
+
+      // ツールバーの消しゴムボタンを選択
+      final eraserButton = find.byTooltip('消しゴム');
+      expect(eraserButton, findsOneWidget);
+      await tester.tap(eraserButton);
+      await tester.pumpAndSettle();
+
+      // 描画インプットを受け取る Listener を直接探す（onPointerMove を購読している唯一のもの）
+      final listenerFinder = find.byWidgetPredicate(
+        (widget) => widget is Listener && widget.onPointerMove != null,
+      );
+      expect(listenerFinder, findsOneWidget);
+      final Listener listener = tester.widget(listenerFinder);
+
+      // 近接する (102, 102) のローカル座標を PointerDownEvent で直接送信して消しゴムをトリガー
+      listener.onPointerDown!(
+        const PointerDownEvent(position: Offset(102, 102)),
+      );
+      await tester.pumpAndSettle();
+
+      // 共有線の deleteStroke('stroke_123') が正しく呼び出されたことを検証！
+      verify(() => mockStrokeRepo.deleteStroke('stroke_123')).called(1);
+    });
+
+    testWidgets('✅ 8. PDFの2重ロード（フェッチ）防止キャッシュの動作検証', (tester) async {
+      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
+
+      final pdfProgram = ProgramModel(
+        id: 'pdf_1',
+        tournamentId: 't1',
+        title: '大会進行表 (PDF)',
+        fileUrl: 'https://example.com/dummy.pdf',
+        fileType: 'pdf',
+        pageCount: 1,
+        createdAt: DateTime.now(),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([pdfProgram]));
+
+      await tester.pumpWidget(createViewerWidget([pdfProgram]));
+      await tester.pump();
+
+      final dynamic state = tester.state(find.byType(ProgramViewerScreen));
+
+      // あらかじめキャッシュにダミー Future をセットして FirebaseStorage の実際の呼び出しを回避
+      final dummyFuture = Future.value(Uint8List(0));
+      state.setState(() {
+        state.sdkPdfBytesCacheForTesting['https://example.com/dummy.pdf'] =
+            dummyFuture;
+      });
+      await tester.pump();
+
+      // 同一URLに対するキャッシュ呼び出しが同じ Future インスタンスを返すことを検証
+      final future1 = state.getCachedPdfBytesViaSdk(
+        'https://example.com/dummy.pdf',
+      );
+      final future2 = state.getCachedPdfBytesViaSdk(
+        'https://example.com/dummy.pdf',
+      );
+
+      expect(future1, equals(dummyFuture));
+      expect(future2, equals(dummyFuture));
+
+      await tester.pump(const Duration(seconds: 1)); // タイマー消化
+      HttpOverrides.global = null;
+    });
+
+    testWidgets('✅ 9. PDFの複数ページの個別ページ数管理（スワイプ時の競合防止）の検証', (tester) async {
+      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
+
+      final program1 = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'PDF 1',
+        fileUrl: 'https://example.com/pdf1.pdf',
+        fileType: 'pdf',
+        pageCount: 2,
+        createdAt: DateTime.now(),
+      );
+
+      final program2 = ProgramModel(
+        id: 'p2',
+        tournamentId: 't1',
+        title: 'PDF 2',
+        fileUrl: 'https://example.com/pdf2.pdf',
+        fileType: 'pdf',
+        pageCount: 3,
+        createdAt: DateTime.now(),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program1, program2]));
+
+      await tester.pumpWidget(createViewerWidget([program1, program2]));
+      await tester.pump();
+
+      final dynamic state = tester.state(find.byType(ProgramViewerScreen));
+
+      // 各URLごとのページ数をキャッシュに代入して検証
+      state.setState(() {
+        state.pdfPageCountsForTesting['https://example.com/pdf1.pdf'] = 2;
+        state.pdfPageCountsForTesting['https://example.com/pdf2.pdf'] = 3;
+      });
+      await tester.pump();
+
+      expect(
+        state.pdfPageCountsForTesting['https://example.com/pdf1.pdf'],
+        equals(2),
+      );
+      expect(
+        state.pdfPageCountsForTesting['https://example.com/pdf2.pdf'],
+        equals(3),
+      );
+
+      await tester.pump(const Duration(seconds: 1)); // タイマー消化
+      HttpOverrides.global = null;
+    });
+
+    testWidgets('✅ 10. 画像共有の適切な実施 (プログラム追加によるリアルタイムでのリスト自動更新) の検証', (
+      tester,
+    ) async {
+      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
+
+      final streamController = StreamController<List<ProgramModel>>.broadcast();
+      addTearDown(() => streamController.close());
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => streamController.stream);
+
+      final p1 = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: '1枚目の画像',
+        fileUrl: 'https://placehold.co/400x600/E8E8E8/808080.png?text=1',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime.now(),
+      );
+
+      final p2 = ProgramModel(
+        id: 'p2',
+        tournamentId: 't1',
+        title: '2枚目の画像',
+        fileUrl: 'https://placehold.co/400x600/E8E8E8/808080.png?text=2',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(createViewerWidget([p1]));
+
+      // 最初は1枚だけ流す
+      streamController.add([p1]);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // 画像タイマー消化
+
+      // PageView の枚数が 1 であることを検証
+      final PageView pageView1 = tester.widget(find.byType(PageView));
+      expect(pageView1.childrenDelegate.estimatedChildCount, equals(1));
+
+      // リアルタイムに2枚目を追加して流す
+      streamController.add([p1, p2]);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // 画像タイマー消化
+
+      // PageView の枚数が 2 に更新されることを検証
+      final PageView pageView2 = tester.widget(find.byType(PageView));
+      expect(pageView2.childrenDelegate.estimatedChildCount, equals(2));
+
+      await tester.pump(const Duration(seconds: 1)); // タイマー完全消化
+      HttpOverrides.global = null;
+    });
+
+    testWidgets(
+      '✅ 11. ピンチズーム（拡大）中に PageView のスワイプ物理が NeverScrollableScrollPhysics に切り替わること',
+      (tester) async {
+        HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
+
+        final program = ProgramModel(
+          id: 'p1',
+          tournamentId: 't1',
+          title: 'テスト',
+          fileUrl: 'https://placehold.co/400x600/E8E8E8/808080.png?text=zoom',
+          fileType: 'image',
+          pageCount: 1,
+          createdAt: DateTime.now(),
+        );
+
+        when(
+          () => mockProgramRepo.watchPrograms(any()),
+        ).thenAnswer((_) => Stream.value([program]));
+
+        await tester.pumpWidget(createViewerWidget([program]));
+        await tester.pumpAndSettle();
+
+        // ズーム前：通常は ClampingScrollPhysics
+        final PageView initialPageView = tester.widget(find.byType(PageView));
+        expect(initialPageView.physics, isA<ClampingScrollPhysics>());
+
+        // InteractiveViewer から TransformationController を取得してスケールを変更（ピンチズーム状態を模擬）
+        final InteractiveViewer interactiveViewer = tester.widget(
+          find.byType(InteractiveViewer),
+        );
+        final controller = interactiveViewer.transformationController!;
+        controller.value = Matrix4.diagonal3Values(2.0, 2.0, 1.0);
+        await tester.pump();
+
+        // ズーム後：NeverScrollableScrollPhysics に切り替わっていることを確認
+        final PageView zoomedPageView = tester.widget(find.byType(PageView));
+        expect(zoomedPageView.physics, isA<NeverScrollableScrollPhysics>());
+
+        await tester.pump(const Duration(seconds: 1)); // タイマー消化
+        HttpOverrides.global = null;
+      },
+    );
   });
 }

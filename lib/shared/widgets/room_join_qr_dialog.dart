@@ -151,7 +151,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Text(
                       'ルームID [ $code ] はすでに存在しています。\n\n'
                       '他の道場が使用中か、過去に作成された部屋です。このまま接続して共有しますか？\n'
@@ -252,209 +252,213 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
             decoration: BoxDecoration(
               color: cardBgColor,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: borderColor, width: 1.5),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '道場ルームへの参加',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '道場ルームへの参加',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  width: 130,
-                  height: 130,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 130,
+                    height: 130,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.qr_code_2,
+                      size: 110,
+                      color: Color(0xFF161B26),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.qr_code_2,
-                    size: 110,
-                    color: Color(0xFF161B26),
+                  const SizedBox(height: 8),
+                  Text(
+                    '会場のQRコードをスキャンするか\n「道場ルームコード」を入力してください',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: subTextColor),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '会場のQRコードをスキャンするか\n「道場ルームコード」を入力してください',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: subTextColor),
-                ),
-                const SizedBox(height: 20),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return RawAutocomplete<String>(
-                      textEditingController: _codeController,
-                      focusNode: _focusNode,
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        final text = textEditingValue.text.toLowerCase();
-                        final history = ref.read(dojoRoomHistoryProvider);
-                        if (text.isEmpty) return history;
-                        return history.where(
-                          (option) => option.toLowerCase().contains(text),
-                        );
-                      },
-                      fieldViewBuilder:
-                          (
-                            context,
-                            fieldController,
-                            focusNode,
-                            onFieldSubmitted,
-                          ) {
-                            return TextField(
-                              controller: fieldController,
-                              focusNode: focusNode,
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: '例: tokyo_dojo_2026',
-                                hintStyle: TextStyle(color: subTextColor),
-                                filled: true,
-                                fillColor: inputBgColor,
-                                errorText: _errorMessage,
-                                errorStyle: const TextStyle(
-                                  color: Colors.orangeAccent,
+                  const SizedBox(height: 14),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return RawAutocomplete<String>(
+                        textEditingController: _codeController,
+                        focusNode: _focusNode,
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          final text = textEditingValue.text.toLowerCase();
+                          final history = ref.read(dojoRoomHistoryProvider);
+                          if (text.isEmpty) return history;
+                          return history.where(
+                            (option) => option.toLowerCase().contains(text),
+                          );
+                        },
+                        fieldViewBuilder:
+                            (
+                              context,
+                              fieldController,
+                              focusNode,
+                              onFieldSubmitted,
+                            ) {
+                              return TextField(
+                                controller: fieldController,
+                                focusNode: focusNode,
+                                style: TextStyle(
+                                  color: textColor,
                                   fontWeight: FontWeight.bold,
                                 ),
-                                prefixIcon: Icon(
-                                  Icons.meeting_room,
-                                  color: subTextColor,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: borderColor),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Colors.teal,
+                                decoration: InputDecoration(
+                                  hintText: '例: tokyo_dojo_2026',
+                                  hintStyle: TextStyle(color: subTextColor),
+                                  filled: true,
+                                  fillColor: inputBgColor,
+                                  errorText: _errorMessage,
+                                  errorStyle: const TextStyle(
+                                    color: Colors.orangeAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.meeting_room,
+                                    color: subTextColor,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: borderColor),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                      color: Colors.teal,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              onSubmitted: _handleJoin,
-                            );
-                          },
-                      optionsViewBuilder: (context, onSelected, options) {
-                        return Align(
-                          alignment: Alignment.topLeft,
-                          child: Material(
-                            elevation: 8.0,
-                            borderRadius: BorderRadius.circular(12),
-                            color: isDark
-                                ? const Color(0xFF2C2C2E)
-                                : Colors.white,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxHeight: 200,
-                                maxWidth: constraints.maxWidth,
-                              ),
-                              child: ListView.builder(
-                                padding: EdgeInsets.zero,
-                                shrinkWrap: true,
-                                itemCount: options.length,
-                                itemBuilder: (context, index) {
-                                  final option = options.elementAt(index);
-                                  return ListTile(
-                                    leading: Icon(
-                                      Icons.history,
-                                      color: subTextColor,
-                                      size: 20,
-                                    ),
-                                    title: Text(
-                                      option,
-                                      style: TextStyle(
-                                        color: textColor,
-                                        fontWeight: FontWeight.bold,
+                                onSubmitted: _handleJoin,
+                              );
+                            },
+                        optionsViewBuilder: (context, onSelected, options) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 8.0,
+                              borderRadius: BorderRadius.circular(12),
+                              color: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : Colors.white,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: 200,
+                                  maxWidth: constraints.maxWidth,
+                                ),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  itemBuilder: (context, index) {
+                                    final option = options.elementAt(index);
+                                    return ListTile(
+                                      leading: Icon(
+                                        Icons.history,
+                                        color: subTextColor,
+                                        size: 20,
                                       ),
-                                    ),
-                                    trailing: IconButton(
-                                      icon: const Icon(
-                                        Icons.close,
-                                        color: Colors.grey,
-                                        size: 18,
+                                      title: Text(
+                                        option,
+                                        style: TextStyle(
+                                          color: textColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      onPressed: () {
-                                        ref
-                                            .read(
-                                              dojoRoomHistoryProvider.notifier,
-                                            )
-                                            .removeHistory(option);
-                                        // リストを再描画するためテキストを同値で再セットするハック
-                                        final selection =
-                                            _codeController.selection;
-                                        _codeController.text =
-                                            _codeController.text;
-                                        _codeController.selection = selection;
+                                      trailing: IconButton(
+                                        icon: const Icon(
+                                          Icons.close,
+                                          color: Colors.grey,
+                                          size: 18,
+                                        ),
+                                        onPressed: () {
+                                          ref
+                                              .read(
+                                                dojoRoomHistoryProvider
+                                                    .notifier,
+                                              )
+                                              .removeHistory(option);
+                                          // リストを再描画するためテキストを同値で再セットするハック
+                                          final selection =
+                                              _codeController.selection;
+                                          _codeController.text =
+                                              _codeController.text;
+                                          _codeController.selection = selection;
+                                        },
+                                      ),
+                                      onTap: () {
+                                        onSelected(option);
+                                        FocusScope.of(context).unfocus();
                                       },
-                                    ),
-                                    onTap: () {
-                                      onSelected(option);
-                                      FocusScope.of(context).unfocus();
-                                    },
-                                  );
-                                },
+                                    );
+                                  },
+                                ),
                               ),
                             ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '※ 使用可能な文字: 半角英数字、ハイフン(-)、アンダーバー(_)',
+                    style: TextStyle(fontSize: 11, color: subTextColor),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      TextButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        child: Text(
+                          'キャンセル',
+                          style: TextStyle(
+                            color: subTextColor,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '※ 使用可能な文字: 半角英数字、ハイフン(-)、アンダーバー(_)',
-                  style: TextStyle(fontSize: 11, color: subTextColor),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: [
-                    TextButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => Navigator.of(context).pop(),
-                      child: Text(
-                        'キャンセル',
-                        style: TextStyle(
-                          color: subTextColor,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    _isLoading
-                        ? const CircularProgressIndicator(color: Colors.teal)
-                        : ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                      _isLoading
+                          ? const CircularProgressIndicator(color: Colors.teal)
+                          : ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: () =>
+                                  _handleJoin(_codeController.text),
+                              child: const Text(
+                                '接続開始',
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
-                            onPressed: () => _handleJoin(_codeController.text),
-                            child: const Text(
-                              '接続開始',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

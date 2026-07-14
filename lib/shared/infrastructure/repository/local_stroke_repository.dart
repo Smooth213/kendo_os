@@ -90,6 +90,8 @@ class LocalStrokeRepository {
                     .map((p) => (p['dy'] as num).toDouble())
                     .toList();
                 final localStroke = LocalStrokeModel()
+                  ..firestoreId = doc
+                      .id // ★ 追加: Webでの個別削除用ID
                   ..programId = data['programId'] ?? ''
                   ..pointsX = pointsX
                   ..pointsY = pointsY
@@ -184,5 +186,29 @@ class LocalStrokeRepository {
           .programIdEqualTo(programId)
           .deleteAll();
     });
+  }
+
+  /// 特定の個人線をID指定で削除する（Isarのint-idまたはFirestoreのString-idに対応）
+  Future<void> deleteStroke(dynamic id, {String? firestoreId}) async {
+    if (kIsWeb || _isar == null) {
+      final deleteId = firestoreId ?? id?.toString();
+      if (deleteId != null) {
+        await _firestore
+            .collection('organizations')
+            .doc(dojoId)
+            .collection('strokes')
+            .doc(deleteId)
+            .delete();
+        debugPrint('✅ 個人線を削除しました(Web): ID=$deleteId');
+      }
+      return;
+    }
+
+    if (id is int) {
+      await _isar.writeTxn(() async {
+        await _isar.localStrokeModels.delete(id);
+      });
+      debugPrint('✅ 個人線を削除しました(Native): ID=$id');
+    }
   }
 }

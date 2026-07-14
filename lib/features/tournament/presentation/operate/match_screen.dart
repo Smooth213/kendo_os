@@ -468,733 +468,798 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final showSyncBar = activeRole != Role.viewer;
 
     final layoutWidget = LiquidBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          centerTitle: true,
-          // ★ 変更: 背景色を下部の「終了ボタン」と全く同じインディゴに設定
-          backgroundColor: Colors.indigo.shade600,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                (match.category != null && match.category!.isNotEmpty)
-                    ? '${match.category} - ${match.matchType}'
-                    : match.matchType,
-                // ★ 変更: タイトルを白抜き
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      child: MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(padding: MediaQuery.of(context).padding.copyWith(top: 0)),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            primary: true,
+            centerTitle: true,
+            // ★ 変更: 背景色を下部の「終了ボタン」と全く同じインディゴに設定
+            backgroundColor: Colors.indigo.shade600,
+            iconTheme: const IconThemeData(color: Colors.white),
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  (match.category != null && match.category!.isNotEmpty)
+                      ? '${match.category} - ${match.matchType}'
+                      : match.matchType,
+                  // ★ 変更: タイトルを白抜き
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
+                Text(
+                  '${match.redName} vs ${match.whiteName}',
+                  // ★ 変更: サブタイトルは少し透過した白
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            actions: [
+              // ★ 記録係が最も必要とする「1枚操作ガイド」へ直行させます
+              const ManualHelpButton(
+                manualPath: 'docs/manuals/quickstart/operator_1pager.md',
+                color: Colors.white,
               ),
-              Text(
-                '${match.redName} vs ${match.whiteName}',
-                // ★ 変更: サブタイトルは少し透過した白
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis,
+              // ★ 追加: 大会ホーム（試合一覧）に一気に戻るボタン
+              IconButton(
+                icon: const Icon(Icons.view_list_rounded, color: Colors.white),
+                tooltip: '大会ホーム（試合一覧）へ戻る',
+                onPressed: () {
+                  if (match.tournamentId != null &&
+                      match.tournamentId!.startsWith('bunaiksen_')) {
+                    context.go('/bunaiksen-home');
+                  } else {
+                    context.go('/home/${match.tournamentId}');
+                  }
+                },
+              ),
+              // ★ Phase 6-4: 開発検証用の目のアイコン（一時的なViewer確認ボタン）を安全にパージ
+              IconButton(
+                // ★ 変更: 歯車アイコンも白
+                icon: const Icon(Icons.settings_outlined, color: Colors.white),
+                onPressed: () => context.push('/settings'),
               ),
             ],
           ),
-          actions: [
-            // ★ 記録係が最も必要とする「1枚操作ガイド」へ直行させます
-            const ManualHelpButton(
-              manualPath: 'docs/manuals/quickstart/operator_1pager.md',
-              color: Colors.white,
-            ),
-            // ★ 追加: 大会ホーム（試合一覧）に一気に戻るボタン
-            IconButton(
-              icon: const Icon(Icons.view_list_rounded, color: Colors.white),
-              tooltip: '大会ホーム（試合一覧）へ戻る',
-              onPressed: () {
-                if (match.tournamentId != null &&
-                    match.tournamentId!.startsWith('bunaiksen_')) {
-                  context.go('/bunaiksen-home');
-                } else {
-                  context.go('/home/${match.tournamentId}');
-                }
-              },
-            ),
-            // ★ Phase 6-4: 開発検証用の目のアイコン（一時的なViewer確認ボタン）を安全にパージ
-            IconButton(
-              // ★ 変更: 歯車アイコンも白
-              icon: const Icon(Icons.settings_outlined, color: Colors.white),
-              onPressed: () => context.push('/settings'),
-            ),
-          ],
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final double maxWidth = constraints.maxWidth;
-            final double maxHeight = constraints.maxHeight;
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final double maxWidth = constraints.maxWidth;
+              final double maxHeight = constraints.maxHeight;
 
-            // ★ 誤作動を起こす比率計算を完全排除し、コンテンツの最小必須高さを絶対基準化
-            const double absoluteMinContentHeight = 665.0;
-            final bool needsScroll = maxHeight < absoluteMinContentHeight;
+              // ★ 誤作動を起こす比率計算を完全排除し、コンテンツの最小必須高さを絶対基準化
+              const double absoluteMinContentHeight = 665.0;
+              final bool needsScroll = maxHeight < absoluteMinContentHeight;
 
-            Widget buildMatchLayout(double currentHeight) {
-              return SizedBox(
-                width: maxWidth,
-                height: currentHeight,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Column(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            behavior:
-                                HitTestBehavior.translucent, // ボタン以外のタップも透過して検知
-                            onHorizontalDragEnd: (details) {
-                              if (details.primaryVelocity != null &&
-                                  details.primaryVelocity!.abs() > 500) {
-                                // ★ 修正: キャンセル済みのイベントを除外して判定
-                                if (match.events.any(
-                                  (e) =>
-                                      !e.isCanceled && e.type != PointType.undo,
-                                )) {
-                                  HapticFeedback.mediumImpact();
-                                  ref
-                                      .read(matchCommandProvider)
-                                      .undoLastEvent(match.id);
+              Widget buildMatchLayout(double currentHeight) {
+                return SizedBox(
+                  width: maxWidth,
+                  height: currentHeight,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Column(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              behavior: HitTestBehavior
+                                  .translucent, // ボタン以外のタップも透過して検知
+                              onHorizontalDragEnd: (details) {
+                                if (details.primaryVelocity != null &&
+                                    details.primaryVelocity!.abs() > 500) {
+                                  // ★ 修正: キャンセル済みのイベントを除外して判定
+                                  if (match.events.any(
+                                    (e) =>
+                                        !e.isCanceled &&
+                                        e.type != PointType.undo,
+                                  )) {
+                                    HapticFeedback.mediumImpact();
+                                    ref
+                                        .read(matchCommandProvider)
+                                        .undoLastEvent(match.id);
+                                  }
                                 }
-                              }
-                            },
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                final isLandscape =
-                                    MediaQuery.of(context).orientation ==
-                                    Orientation.landscape;
-                                final isTabletLandscape =
-                                    isLandscape && constraints.maxWidth > 600;
+                              },
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final isLandscape =
+                                      MediaQuery.of(context).orientation ==
+                                      Orientation.landscape;
+                                  final isTabletLandscape =
+                                      isLandscape && constraints.maxWidth > 600;
 
-                                final isCorrupted =
-                                    match.status == 'corrupted' ||
-                                    MatchLifecycleStateLegacyExt.fromLegacyString(
-                                          match.status,
-                                        ) ==
-                                        MatchLifecycleState.corrupted;
-                                final corruptedBanner = isCorrupted
-                                    ? CorruptedMatchBanner(matchId: match.id)
-                                    : const SizedBox.shrink();
+                                  final isCorrupted =
+                                      match.status == 'corrupted' ||
+                                      MatchLifecycleStateLegacyExt.fromLegacyString(
+                                            match.status,
+                                          ) ==
+                                          MatchLifecycleState.corrupted;
+                                  final corruptedBanner = isCorrupted
+                                      ? CorruptedMatchBanner(matchId: match.id)
+                                      : const SizedBox.shrink();
 
-                                final viewOnlyBanner =
-                                    (isSomeoneElseOperating &&
-                                        !isApproved &&
-                                        !permissions.isReadOnly)
-                                    ? Container(
-                                        width: double.infinity,
-                                        color: Colors.red.shade900.withValues(
-                                          alpha: 0.9,
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 8,
-                                          horizontal: 16,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.warning_amber_rounded,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            const Expanded(
-                                              child: Text(
-                                                '他の記録員が入力中です',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ),
-                                            TextButton(
-                                              onPressed: () async {
-                                                final confirmed =
-                                                    await _showConfirmDialog(
-                                                      '入力権限の奪取',
-                                                      '他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？',
-                                                    );
-                                                if (confirmed) {
-                                                  await ref
-                                                      .read(
-                                                        matchCommandProvider,
-                                                      )
-                                                      .forceClaimScorer(
-                                                        match.id,
-                                                        _myUserId!,
-                                                      );
-                                                }
-                                              },
-                                              style: TextButton.styleFrom(
-                                                backgroundColor: Colors.white
-                                                    .withValues(alpha: 0.2),
-                                                foregroundColor: Colors.white,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 0,
-                                                    ),
-                                                minimumSize: const Size(0, 30),
-                                              ),
-                                              child: const Text(
-                                                '自分に切り替える',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    : const SizedBox.shrink();
-
-                                // ★ 修正: KendoRuleEngineを使って正確に有効なイベントのみを抽出する
-                                final engine = KendoRuleEngine();
-                                final validEvents = engine.filterActiveEvents(
-                                  match.events,
-                                );
-                                final canUndoReal = validEvents.isNotEmpty;
-
-                                // ★ Phase 6-4: 操作履歴の透明化（ミニログ ＋ Undoボタン）
-                                final undoArea = Column(
-                                  children: [
-                                    // 1. 直近3件のミニログ表示エリア（★高さを完全に固定し、ボタンの圧迫を防ぐ）
-                                    Container(
-                                      height: 62,
-                                      margin: const EdgeInsets.symmetric(
-                                        // ★ 左右の余白を完全に0にパージし、画面の横幅いっぱいにフィット
-                                        horizontal: 0,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 2,
-                                        horizontal: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: isDark
-                                            ? Colors.white10
-                                            : Colors.grey.shade100,
-                                        borderRadius:
-                                            const BorderRadius.vertical(
-                                              top: Radius.circular(8),
-                                            ),
-                                      ),
-                                      alignment: Alignment
-                                          .bottomCenter, // 下から積み上がるように配置
-                                      child: validEvents.isNotEmpty
-                                          ? Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: validEvents.reversed
-                                                  .take(3)
-                                                  .toList()
-                                                  .asMap()
-                                                  .entries
-                                                  .map((entry) {
-                                                    final e = entry.value;
-                                                    final isLast =
-                                                        entry.key == 0;
-                                                    final sideColor =
-                                                        e.side == Side.red
-                                                        ? Colors.red.shade600
-                                                        : (e.side == Side.white
-                                                              ? (isDark
-                                                                    ? Colors
-                                                                          .white
-                                                                    : Colors
-                                                                          .black87)
-                                                              : Colors.grey);
-                                                    return Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            vertical: 1,
-                                                          ),
-                                                      child: Row(
-                                                        children: [
-                                                          Text(
-                                                            '${validEvents.indexOf(e) + 1}.',
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: Colors
-                                                                      .grey,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          Icon(
-                                                            Icons.circle,
-                                                            size: 8,
-                                                            color: sideColor,
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 8,
-                                                          ),
-                                                          Text(
-                                                            e.type ==
-                                                                    PointType
-                                                                        .men
-                                                                ? 'メン'
-                                                                : e.type ==
-                                                                      PointType
-                                                                          .kote
-                                                                ? 'コテ'
-                                                                : e.type ==
-                                                                      PointType
-                                                                          .doIdo
-                                                                ? 'ドウ'
-                                                                : e.type ==
-                                                                      PointType
-                                                                          .tsuki
-                                                                ? 'ツキ'
-                                                                : e.type ==
-                                                                      PointType
-                                                                          .hansoku
-                                                                ? '反則'
-                                                                : '判定',
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight: isLast
-                                                                  ? FontWeight
-                                                                        .w900
-                                                                  : FontWeight
-                                                                        .normal,
-                                                              color: isLast
-                                                                  ? sideColor
-                                                                  : sideColor
-                                                                        .withValues(
-                                                                          alpha:
-                                                                              0.7,
-                                                                        ),
-                                                            ),
-                                                          ),
-                                                          const Spacer(),
-                                                          Text(
-                                                            DateFormat(
-                                                              'HH:mm:ss',
-                                                            ).format(
-                                                              e.timestamp,
-                                                            ),
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: Colors
-                                                                      .grey,
-                                                                ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    );
-                                                  })
-                                                  .toList(),
-                                            )
-                                          : const Center(
-                                              child: Text(
-                                                '操作履歴',
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                  letterSpacing: 2,
-                                                ),
-                                              ),
-                                            ),
-                                    ),
-                                    // 2. Undoボタン（ログの直下に配置して一体化）
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        // ★ 左右の余白を完全に0にパージし、画面の両端まで美しくフィット
-                                        horizontal: 0,
-                                        vertical: 0,
-                                      ),
-                                      child: InkWell(
-                                        onTap: canUndoReal
-                                            ? () {
-                                                HapticFeedback.mediumImpact();
-                                                ref
-                                                    .read(matchCommandProvider)
-                                                    .undoLastEvent(match.id);
-                                              }
-                                            : null,
-                                        borderRadius:
-                                            const BorderRadius.vertical(
-                                              bottom: Radius.circular(8),
-                                            ),
-                                        child: Container(
-                                          height: 36, // ★ さらに縮小
-                                          decoration: BoxDecoration(
-                                            color: isDark
-                                                ? Colors.white.withValues(
-                                                    alpha: 0.15,
-                                                  )
-                                                : Colors.grey.shade200,
-                                            borderRadius: validEvents.isNotEmpty
-                                                ? const BorderRadius.vertical(
-                                                    bottom: Radius.circular(8),
-                                                  )
-                                                : BorderRadius.circular(8),
-                                            border: Border.all(
-                                              color: isDark
-                                                  ? Colors.white24
-                                                  : Colors.black12,
-                                            ),
+                                  final viewOnlyBanner =
+                                      (isSomeoneElseOperating &&
+                                          !isApproved &&
+                                          !permissions.isReadOnly)
+                                      ? Container(
+                                          width: double.infinity,
+                                          color: Colors.red.shade900.withValues(
+                                            alpha: 0.9,
                                           ),
-                                          alignment: Alignment.center,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                            horizontal: 16,
+                                          ),
                                           child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
                                             children: [
-                                              Icon(
-                                                Icons.undo,
-                                                color: canUndoReal
-                                                    ? (isDark
-                                                          ? Colors
-                                                                .amber
-                                                                .shade300
-                                                          : Colors
-                                                                .indigo
-                                                                .shade700)
-                                                    : Colors.grey,
-                                                size: 24,
+                                              const Icon(
+                                                Icons.warning_amber_rounded,
+                                                color: Colors.white,
+                                                size: 18,
                                               ),
                                               const SizedBox(width: 12),
-                                              Text(
-                                                canUndoReal
-                                                    ? '１つ前の操作を取り消す'
-                                                    : '操作履歴なし',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: canUndoReal
-                                                      ? (isDark
-                                                            ? Colors.white
-                                                            : Colors.black87)
-                                                      : Colors.grey,
+                                              const Expanded(
+                                                child: Text(
+                                                  '他の記録員が入力中です',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ),
+                                              TextButton(
+                                                onPressed: () async {
+                                                  final confirmed =
+                                                      await _showConfirmDialog(
+                                                        '入力権限の奪取',
+                                                        '他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？',
+                                                      );
+                                                  if (confirmed) {
+                                                    await ref
+                                                        .read(
+                                                          matchCommandProvider,
+                                                        )
+                                                        .forceClaimScorer(
+                                                          match.id,
+                                                          _myUserId!,
+                                                        );
+                                                  }
+                                                },
+                                                style: TextButton.styleFrom(
+                                                  backgroundColor: Colors.white
+                                                      .withValues(alpha: 0.2),
+                                                  foregroundColor: Colors.white,
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 0,
+                                                      ),
+                                                  minimumSize: const Size(
+                                                    0,
+                                                    30,
+                                                  ),
+                                                ),
+                                                child: const Text(
+                                                  '自分に切り替える',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ),
                                             ],
                                           ),
+                                        )
+                                      : const SizedBox.shrink();
+
+                                  // ★ 修正: KendoRuleEngineを使って正確に有効なイベントのみを抽出する
+                                  final engine = KendoRuleEngine();
+                                  final validEvents = engine.filterActiveEvents(
+                                    match.events,
+                                  );
+                                  final canUndoReal = validEvents.isNotEmpty;
+
+                                  // ★ Phase 6-4: 操作履歴の透明化（ミニログ ＋ Undoボタン）
+                                  final undoArea = Column(
+                                    children: [
+                                      // 1. 直近3件のミニログ表示エリア（★高さを完全に固定し、ボタンの圧迫を防ぐ）
+                                      Container(
+                                        height: 62,
+                                        margin: const EdgeInsets.symmetric(
+                                          // ★ 左右の余白を完全に0にパージし、画面の横幅いっぱいにフィット
+                                          horizontal: 0,
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 0,
-                                    ), // ★ 操作履歴の下にある余白を限界まで削除
-                                  ],
-                                );
-
-                                final isRenseikaiTimeBased =
-                                    rule.isRenseikai &&
-                                    rule.renseikaiType == '時間制';
-
-                                final timerPart = isRenseikaiTimeBased
-                                    ? Padding(
                                         padding: const EdgeInsets.symmetric(
                                           vertical: 2,
-                                          horizontal: 16,
+                                          horizontal: 8,
                                         ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? Colors.white10
+                                              : Colors.grey.shade100,
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                top: Radius.circular(8),
+                                              ),
+                                        ),
+                                        alignment: Alignment
+                                            .bottomCenter, // 下から積み上がるように配置
+                                        child: validEvents.isNotEmpty
+                                            ? Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: validEvents.reversed.take(3).toList().asMap().entries.map((
+                                                  entry,
+                                                ) {
+                                                  final e = entry.value;
+                                                  final isLast = entry.key == 0;
+                                                  final sideColor =
+                                                      e.side == Side.red
+                                                      ? Colors.red.shade600
+                                                      : (e.side == Side.white
+                                                            ? (isDark
+                                                                  ? Colors.white
+                                                                  : Colors
+                                                                        .black87)
+                                                            : Colors.grey);
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 1,
+                                                        ),
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          '${validEvents.indexOf(e) + 1}.',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 10,
+                                                                color:
+                                                                    Colors.grey,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        Icon(
+                                                          Icons.circle,
+                                                          size: 8,
+                                                          color: sideColor,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        Text(
+                                                          e.type ==
+                                                                  PointType.men
+                                                              ? 'メン'
+                                                              : e.type ==
+                                                                    PointType
+                                                                        .kote
+                                                              ? 'コテ'
+                                                              : e.type ==
+                                                                    PointType
+                                                                        .doIdo
+                                                              ? 'ドウ'
+                                                              : e.type ==
+                                                                    PointType
+                                                                        .tsuki
+                                                              ? 'ツキ'
+                                                              : e.type ==
+                                                                    PointType
+                                                                        .hansoku
+                                                              ? '反則'
+                                                              : '判定',
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight: isLast
+                                                                ? FontWeight
+                                                                      .w900
+                                                                : FontWeight
+                                                                      .normal,
+                                                            color: isLast
+                                                                ? sideColor
+                                                                : sideColor
+                                                                      .withValues(
+                                                                        alpha:
+                                                                            0.7,
+                                                                      ),
+                                                          ),
+                                                        ),
+                                                        const Spacer(),
+                                                        Text(
+                                                          DateFormat(
+                                                            'HH:mm:ss',
+                                                          ).format(e.timestamp),
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 10,
+                                                                color:
+                                                                    Colors.grey,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              )
+                                            : const Center(
+                                                child: Text(
+                                                  '操作履歴',
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 2,
+                                                  ),
+                                                ),
+                                              ),
+                                      ),
+                                      // 2. Undoボタン（ログの直下に配置して一体化）
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          // ★ 左右の余白を完全に0にパージし、画面の両端まで美しくフィット
+                                          horizontal: 0,
+                                          vertical: 0,
+                                        ),
+                                        child: InkWell(
+                                          onTap: canUndoReal
+                                              ? () {
+                                                  HapticFeedback.mediumImpact();
+                                                  ref
+                                                      .read(
+                                                        matchCommandProvider,
+                                                      )
+                                                      .undoLastEvent(match.id);
+                                                }
+                                              : null,
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                bottom: Radius.circular(8),
+                                              ),
+                                          child: Container(
+                                            height: 36, // ★ さらに縮小
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? Colors.white.withValues(
+                                                      alpha: 0.15,
+                                                    )
+                                                  : Colors.grey.shade200,
+                                              borderRadius:
+                                                  validEvents.isNotEmpty
+                                                  ? const BorderRadius.vertical(
+                                                      bottom: Radius.circular(
+                                                        8,
+                                                      ),
+                                                    )
+                                                  : BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: isDark
+                                                    ? Colors.white24
+                                                    : Colors.black12,
+                                              ),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.undo,
+                                                  color: canUndoReal
+                                                      ? (isDark
+                                                            ? Colors
+                                                                  .amber
+                                                                  .shade300
+                                                            : Colors
+                                                                  .indigo
+                                                                  .shade700)
+                                                      : Colors.grey,
+                                                  size: 24,
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Text(
+                                                  canUndoReal
+                                                      ? '１つ前の操作を取り消す'
+                                                      : '操作履歴なし',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: canUndoReal
+                                                        ? (isDark
+                                                              ? Colors.white
+                                                              : Colors.black87)
+                                                        : Colors.grey,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 0,
+                                      ), // ★ 操作履歴の下にある余白を限界まで削除
+                                    ],
+                                  );
+
+                                  final isRenseikaiTimeBased =
+                                      rule.isRenseikai &&
+                                      rule.renseikaiType == '時間制';
+
+                                  final timerPart = isRenseikaiTimeBased
+                                      ? Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 2,
+                                            horizontal: 16,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Flexible(
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  child: TimerWidget(
+                                                    matchId: match.id,
+                                                    isInputLocked:
+                                                        isInputLocked,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Flexible(
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  child:
+                                                      _RenseikaiMasterTimerWidget(
+                                                        groupName:
+                                                            match.groupName ??
+                                                            '',
+                                                        isInputLocked:
+                                                            isInputLocked,
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : TimerWidget(
+                                          matchId: match.id,
+                                          isInputLocked: isInputLocked,
+                                        );
+
+                                  // ★ 修正: ボタンの並び順を「URL共有・復元 / スコア・ルール」に変更
+                                  final groupButtonPart = Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 0,
+                                      left: 8,
+                                      right: 8,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        // 1段目: 観戦URLを共有 | 履歴から復元
+                                        Row(
                                           children: [
-                                            Flexible(
-                                              child: FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                child: TimerWidget(
-                                                  matchId: match.id,
-                                                  isInputLocked: isInputLocked,
+                                            Expanded(
+                                              child: OutlinedButton.icon(
+                                                onPressed: () => ref
+                                                    .read(shareProvider)
+                                                    .shareMatch(match),
+                                                icon: const Icon(
+                                                  Icons.ios_share,
+                                                  size: 16,
+                                                ),
+                                                label: const Text(
+                                                  '観戦URLを共有',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  minimumSize: const Size(
+                                                    0,
+                                                    30,
+                                                  ),
+                                                  padding: EdgeInsets.zero,
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(width: 16),
-                                            Flexible(
-                                              child: FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                child:
-                                                    _RenseikaiMasterTimerWidget(
-                                                      groupName:
-                                                          match.groupName ?? '',
-                                                      isInputLocked:
-                                                          isInputLocked,
-                                                    ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: OutlinedButton.icon(
+                                                // ★ 修正: 試合確定済み（approved）でも復元できるようにロックを解除
+                                                onPressed: isViewOnly
+                                                    ? null
+                                                    : () => _showSnapshotDialog(
+                                                        context,
+                                                        ref,
+                                                        match,
+                                                      ),
+                                                icon: const Icon(
+                                                  Icons.history,
+                                                  size: 16,
+                                                ),
+                                                label: const Text(
+                                                  '履歴から復元',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  minimumSize: const Size(
+                                                    0,
+                                                    30,
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
-                                      )
-                                    : TimerWidget(
-                                        matchId: match.id,
-                                        isInputLocked: isInputLocked,
-                                      );
-
-                                // ★ 修正: ボタンの並び順を「URL共有・復元 / スコア・ルール」に変更
-                                final groupButtonPart = Padding(
-                                  padding: const EdgeInsets.only(
-                                    bottom: 0,
-                                    left: 8,
-                                    right: 8,
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      // 1段目: 観戦URLを共有 | 履歴から復元
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: OutlinedButton.icon(
-                                              onPressed: () => ref
-                                                  .read(shareProvider)
-                                                  .shareMatch(match),
-                                              icon: const Icon(
-                                                Icons.ios_share,
-                                                size: 16,
-                                              ),
-                                              label: const Text(
-                                                '観戦URLを共有',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
+                                        // 2段目: スコアを確認 | ルールを確認
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: OutlinedButton.icon(
+                                                onPressed: () =>
+                                                    match.isKachinuki
+                                                    ? context.push(
+                                                        '/kachinuki-scoreboard/${match.groupName}',
+                                                      )
+                                                    : context.push(
+                                                        '/team-scoreboard/${match.groupName}',
+                                                      ),
+                                                icon: Icon(
+                                                  match.isKachinuki
+                                                      ? Icons.timeline
+                                                      : Icons
+                                                            .table_chart_outlined,
+                                                  size: 16,
+                                                ),
+                                                label: const Text(
+                                                  'スコアを確認',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  minimumSize: const Size(
+                                                    0,
+                                                    30,
+                                                  ),
+                                                  padding: EdgeInsets.zero,
                                                 ),
                                               ),
-                                              style: OutlinedButton.styleFrom(
-                                                minimumSize: const Size(0, 30),
-                                                padding: EdgeInsets.zero,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: OutlinedButton.icon(
+                                                onPressed: () =>
+                                                    _showRuleInfoSheet(
+                                                      context,
+                                                      match,
+                                                    ),
+                                                icon: const Icon(
+                                                  Icons.info_outline,
+                                                  size: 16,
+                                                ),
+                                                label: const Text(
+                                                  'ルールを確認',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  minimumSize: const Size(
+                                                    0,
+                                                    30,
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: OutlinedButton.icon(
-                                              // ★ 修正: 試合確定済み（approved）でも復元できるようにロックを解除
-                                              onPressed: isViewOnly
-                                                  ? null
-                                                  : () => _showSnapshotDialog(
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  final scoreboardPart = ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxHeight:
+                                          constraints.maxHeight *
+                                          0.28, // ★ 19.5:9でオーバーフローしないよう 0.32 から 0.28 に調整
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit
+                                          .scaleDown, // ★ 枠に収まるように全体を少し縮小（スケールダウン）
+                                      child: SizedBox(
+                                        width: constraints.maxWidth,
+                                        // ★ 修正: ProviderScope を介して動的引数を注入し、MatchScoreboard を完全に const 化
+                                        child: ProviderScope(
+                                          overrides: [
+                                            scoreboardMatchIdProvider
+                                                .overrideWithValue(match.id),
+                                            scoreboardMatchProvider // ★ 追加: 最新のMatchModelを注入
+                                                .overrideWithValue(match),
+                                            scoreboardNameTapProvider
+                                                .overrideWithValue(
+                                                  (side) =>
+                                                      _showNameEditBottomSheet(
+                                                        match,
+                                                        side,
+                                                      ),
+                                                ),
+                                          ],
+                                          child: const MatchScoreboard(),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+
+                                  final actionPanelPart = Container(
+                                    color: isDark
+                                        ? const Color(0xFF1C1C1E)
+                                        : Colors.grey.shade100,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 0,
+                                    ),
+                                    child: Consumer(
+                                      builder: (context, ref, child) {
+                                        final settings = ref.watch(
+                                          settingsProvider,
+                                        );
+                                        final redPanel = ScoreActionPanel(
+                                          matchId: match.id,
+                                          side: Side.red,
+                                          color: Colors.red.shade600,
+                                          isLocked: isInputLocked,
+                                        );
+                                        final whitePanel = ScoreActionPanel(
+                                          matchId: match.id,
+                                          side: Side.white,
+                                          color: isDark
+                                              ? const Color(0xFF1C1C1E)
+                                              : Colors.grey.shade100,
+                                          textColor: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
+                                          isLocked: isInputLocked,
+                                        );
+                                        return Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: settings.leftHanded
+                                              ? [whitePanel, redPanel]
+                                              : [redPanel, whitePanel],
+                                        );
+                                      },
+                                    ),
+                                  );
+
+                                  final bottomButtonPart = Container(
+                                    color: isDark
+                                        ? const Color(0xFF1C1C1E)
+                                        : Colors.grey.shade100,
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      0,
+                                    ), // ★ 最下部の余白もゼロに
+                                    child: Consumer(
+                                      builder: (context, ref, child) {
+                                        final settings = ref.watch(
+                                          settingsProvider,
+                                        );
+
+                                        if (isApproved) {
+                                          return const SizedBox(
+                                            height: 40,
+                                            child: Center(
+                                              child: Text(
+                                                '公式記録確定済み',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        if (rule.isRenseikai &&
+                                            rule.renseikaiType == '時間制' &&
+                                            (match.matchType ==
+                                                    rule.positions.last ||
+                                                match.matchType == '錬成会') &&
+                                            match.status == 'finished') {
+                                          return _buildRenseikaiNextButton(
+                                            context,
+                                            match,
+                                            isViewOnly,
+                                          );
+                                        }
+
+                                        if (match.status == 'finished') {
+                                          final confirmAction = isViewOnly
+                                              ? null
+                                              : () async {
+                                                  if (settings.haptic) {
+                                                    HapticFeedback.heavyImpact();
+                                                  }
+
+                                                  // ★ 修正: 無限勝ち抜きモードの場合は、確定ボタンでも専用の終了・次試合生成処理へ誘導する！
+                                                  if (match.isKachinuki &&
+                                                      match.matchType ==
+                                                          '無限勝ち抜き') {
+                                                    if (settings
+                                                        .showConfirmDialog) {
+                                                      final confirmed =
+                                                          await _showConfirmDialog(
+                                                            '記録の確定',
+                                                            'この試合の記録を確定して次に進みますか？\n確定後は点数の修正ができなくなります。',
+                                                          );
+                                                      if (!confirmed) return;
+                                                    }
+                                                    String winnerColor = 'draw';
+                                                    if ((match.redScore as num)
+                                                            .toInt() >
+                                                        (match.whiteScore
+                                                                as num)
+                                                            .toInt()) {
+                                                      winnerColor = 'red';
+                                                    } else if ((match.whiteScore
+                                                                as num)
+                                                            .toInt() >
+                                                        (match.redScore as num)
+                                                            .toInt()) {
+                                                      winnerColor = 'white';
+                                                    }
+
+                                                    if (!mounted ||
+                                                        !context.mounted) {
+                                                      return;
+                                                    }
+                                                    showDialog(
+                                                      context: context,
+                                                      barrierDismissible: false,
+                                                      builder: (_) => const Center(
+                                                        child:
+                                                            CircularProgressIndicator(),
+                                                      ),
+                                                    );
+                                                    await _handleMatchFinish(
                                                       context,
                                                       ref,
                                                       match,
-                                                    ),
-                                              icon: const Icon(
-                                                Icons.history,
-                                                size: 16,
-                                              ),
-                                              label: const Text(
-                                                '履歴から復元',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              style: OutlinedButton.styleFrom(
-                                                minimumSize: const Size(0, 30),
-                                                padding: EdgeInsets.zero,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      // 2段目: スコアを確認 | ルールを確認
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: OutlinedButton.icon(
-                                              onPressed: () => match.isKachinuki
-                                                  ? context.push(
-                                                      '/kachinuki-scoreboard/${match.groupName}',
-                                                    )
-                                                  : context.push(
-                                                      '/team-scoreboard/${match.groupName}',
-                                                    ),
-                                              icon: Icon(
-                                                match.isKachinuki
-                                                    ? Icons.timeline
-                                                    : Icons
-                                                          .table_chart_outlined,
-                                                size: 16,
-                                              ),
-                                              label: const Text(
-                                                'スコアを確認',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              style: OutlinedButton.styleFrom(
-                                                minimumSize: const Size(0, 30),
-                                                padding: EdgeInsets.zero,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: OutlinedButton.icon(
-                                              onPressed: () =>
-                                                  _showRuleInfoSheet(
-                                                    context,
-                                                    match,
-                                                  ),
-                                              icon: const Icon(
-                                                Icons.info_outline,
-                                                size: 16,
-                                              ),
-                                              label: const Text(
-                                                'ルールを確認',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              style: OutlinedButton.styleFrom(
-                                                minimumSize: const Size(0, 30),
-                                                padding: EdgeInsets.zero,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                );
+                                                      winnerColor,
+                                                    );
+                                                    return;
+                                                  }
 
-                                final scoreboardPart = ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    maxHeight:
-                                        constraints.maxHeight *
-                                        0.28, // ★ 19.5:9でオーバーフローしないよう 0.32 から 0.28 に調整
-                                  ),
-                                  child: FittedBox(
-                                    fit: BoxFit
-                                        .scaleDown, // ★ 枠に収まるように全体を少し縮小（スケールダウン）
-                                    child: SizedBox(
-                                      width: constraints.maxWidth,
-                                      // ★ 修正: ProviderScope を介して動的引数を注入し、MatchScoreboard を完全に const 化
-                                      child: ProviderScope(
-                                        overrides: [
-                                          scoreboardMatchIdProvider
-                                              .overrideWithValue(match.id),
-                                          scoreboardMatchProvider // ★ 追加: 最新のMatchModelを注入
-                                              .overrideWithValue(match),
-                                          scoreboardNameTapProvider
-                                              .overrideWithValue(
-                                                (side) =>
-                                                    _showNameEditBottomSheet(
-                                                      match,
-                                                      side,
-                                                    ),
-                                              ),
-                                        ],
-                                        child: const MatchScoreboard(),
-                                      ),
-                                    ),
-                                  ),
-                                );
-
-                                final actionPanelPart = Container(
-                                  color: isDark
-                                      ? const Color(0xFF1C1C1E)
-                                      : Colors.grey.shade100,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 0,
-                                  ),
-                                  child: Consumer(
-                                    builder: (context, ref, child) {
-                                      final settings = ref.watch(
-                                        settingsProvider,
-                                      );
-                                      final redPanel = ScoreActionPanel(
-                                        matchId: match.id,
-                                        side: Side.red,
-                                        color: Colors.red.shade600,
-                                        isLocked: isInputLocked,
-                                      );
-                                      final whitePanel = ScoreActionPanel(
-                                        matchId: match.id,
-                                        side: Side.white,
-                                        color: isDark
-                                            ? const Color(0xFF1C1C1E)
-                                            : Colors.grey.shade100,
-                                        textColor: isDark
-                                            ? Colors.white
-                                            : Colors.black87,
-                                        isLocked: isInputLocked,
-                                      );
-                                      return Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: settings.leftHanded
-                                            ? [whitePanel, redPanel]
-                                            : [redPanel, whitePanel],
-                                      );
-                                    },
-                                  ),
-                                );
-
-                                final bottomButtonPart = Container(
-                                  color: isDark
-                                      ? const Color(0xFF1C1C1E)
-                                      : Colors.grey.shade100,
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    0,
-                                  ), // ★ 最下部の余白もゼロに
-                                  child: Consumer(
-                                    builder: (context, ref, child) {
-                                      final settings = ref.watch(
-                                        settingsProvider,
-                                      );
-
-                                      if (isApproved) {
-                                        return const SizedBox(
-                                          height: 40,
-                                          child: Center(
-                                            child: Text(
-                                              '公式記録確定済み',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }
-
-                                      if (rule.isRenseikai &&
-                                          rule.renseikaiType == '時間制' &&
-                                          (match.matchType ==
-                                                  rule.positions.last ||
-                                              match.matchType == '錬成会') &&
-                                          match.status == 'finished') {
-                                        return _buildRenseikaiNextButton(
-                                          context,
-                                          match,
-                                          isViewOnly,
-                                        );
-                                      }
-
-                                      if (match.status == 'finished') {
-                                        final confirmAction = isViewOnly
-                                            ? null
-                                            : () async {
-                                                if (settings.haptic) {
-                                                  HapticFeedback.heavyImpact();
-                                                }
-
-                                                // ★ 修正: 無限勝ち抜きモードの場合は、確定ボタンでも専用の終了・次試合生成処理へ誘導する！
-                                                if (match.isKachinuki &&
-                                                    match.matchType ==
-                                                        '無限勝ち抜き') {
                                                   if (settings
                                                       .showConfirmDialog) {
                                                     final confirmed =
@@ -1204,278 +1269,421 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                         );
                                                     if (!confirmed) return;
                                                   }
-                                                  String winnerColor = 'draw';
-                                                  if ((match.redScore as num)
-                                                          .toInt() >
-                                                      (match.whiteScore as num)
-                                                          .toInt()) {
-                                                    winnerColor = 'red';
-                                                  } else if ((match.whiteScore
-                                                              as num)
-                                                          .toInt() >
-                                                      (match.redScore as num)
-                                                          .toInt()) {
-                                                    winnerColor = 'white';
-                                                  }
 
-                                                  if (!mounted ||
-                                                      !context.mounted) {
-                                                    return;
-                                                  }
-                                                  showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (_) => const Center(
-                                                      child:
-                                                          CircularProgressIndicator(),
+                                                  // ★ Phase 7: UIからは「確定してね」と頼むだけ。
+                                                  // 勝ち抜き戦の次試合生成などは、すべて裏側で自動的に行われます。
+                                                  await ref
+                                                      .read(
+                                                        matchApplicationServiceProvider,
+                                                      )
+                                                      .approveMatch(match.id);
+
+                                                  if (!context.mounted) return;
+
+                                                  // 画面遷移ロジック（UIの管轄なので残します）
+                                                  final matches = ref.read(
+                                                    matchListProvider,
+                                                  );
+                                                  final groupNextMatches = matches
+                                                      .where(
+                                                        (m) =>
+                                                            m.groupName ==
+                                                                match
+                                                                    .groupName &&
+                                                            m.order >
+                                                                match.order &&
+                                                            m.status !=
+                                                                'approved' &&
+                                                            m.status !=
+                                                                'finished',
+                                                      )
+                                                      .toList();
+                                                  groupNextMatches.sort(
+                                                    (a, b) => a.order.compareTo(
+                                                      b.order,
                                                     ),
                                                   );
-                                                  await _handleMatchFinish(
-                                                    context,
-                                                    ref,
-                                                    match,
-                                                    winnerColor,
-                                                  );
-                                                  return;
-                                                }
 
-                                                if (settings
-                                                    .showConfirmDialog) {
-                                                  final confirmed =
-                                                      await _showConfirmDialog(
-                                                        '記録の確定',
-                                                        'この試合の記録を確定して次に進みますか？\n確定後は点数の修正ができなくなります。',
+                                                  if (groupNextMatches
+                                                      .isNotEmpty) {
+                                                    // 同じカードの続き（大将の次など）か、別カードへの移行かを判定
+                                                    final nextM =
+                                                        groupNextMatches.first;
+                                                    final currentRedTeam =
+                                                        match.redName.contains(
+                                                          ':',
+                                                        )
+                                                        ? match.redName
+                                                              .split(':')
+                                                              .first
+                                                              .trim()
+                                                        : match.redName;
+                                                    final currentWhiteTeam =
+                                                        match.whiteName
+                                                            .contains(':')
+                                                        ? match.whiteName
+                                                              .split(':')
+                                                              .first
+                                                              .trim()
+                                                        : match.whiteName;
+                                                    final nextRedTeam =
+                                                        nextM.redName.contains(
+                                                          ':',
+                                                        )
+                                                        ? nextM.redName
+                                                              .split(':')
+                                                              .first
+                                                              .trim()
+                                                        : nextM.redName;
+                                                    final nextWhiteTeam =
+                                                        nextM.whiteName
+                                                            .contains(':')
+                                                        ? nextM.whiteName
+                                                              .split(':')
+                                                              .first
+                                                              .trim()
+                                                        : nextM.whiteName;
+
+                                                    bool isCardEndingPosition =
+                                                        match.matchType ==
+                                                            '大将' ||
+                                                        match.matchType ==
+                                                            '代表戦' ||
+                                                        match.matchType ==
+                                                            '個人戦' ||
+                                                        match.matchType == '選手';
+
+                                                    if (currentRedTeam ==
+                                                            nextRedTeam &&
+                                                        currentWhiteTeam ==
+                                                            nextWhiteTeam &&
+                                                        !isCardEndingPosition &&
+                                                        !match.isKachinuki) {
+                                                      context.push(
+                                                        '/match/${nextM.id}',
+                                                      ); // ★ go() から push() に変更して履歴を残す
+                                                    } else {
+                                                      _showMatchFinishedDialog(
+                                                        context,
+                                                        match,
+                                                        nextM,
                                                       );
-                                                  if (!confirmed) return;
-                                                }
-
-                                                // ★ Phase 7: UIからは「確定してね」と頼むだけ。
-                                                // 勝ち抜き戦の次試合生成などは、すべて裏側で自動的に行われます。
-                                                await ref
-                                                    .read(
-                                                      matchApplicationServiceProvider,
-                                                    )
-                                                    .approveMatch(match.id);
-
-                                                if (!context.mounted) return;
-
-                                                // 画面遷移ロジック（UIの管轄なので残します）
-                                                final matches = ref.read(
-                                                  matchListProvider,
-                                                );
-                                                final groupNextMatches = matches
-                                                    .where(
-                                                      (m) =>
-                                                          m.groupName ==
-                                                              match.groupName &&
-                                                          m.order >
-                                                              match.order &&
-                                                          m.status !=
-                                                              'approved' &&
-                                                          m.status !=
-                                                              'finished',
-                                                    )
-                                                    .toList();
-                                                groupNextMatches.sort(
-                                                  (a, b) => a.order.compareTo(
-                                                    b.order,
-                                                  ),
-                                                );
-
-                                                if (groupNextMatches
-                                                    .isNotEmpty) {
-                                                  // 同じカードの続き（大将の次など）か、別カードへの移行かを判定
-                                                  final nextM =
-                                                      groupNextMatches.first;
-                                                  final currentRedTeam =
-                                                      match.redName.contains(
-                                                        ':',
-                                                      )
-                                                      ? match.redName
-                                                            .split(':')
-                                                            .first
-                                                            .trim()
-                                                      : match.redName;
-                                                  final currentWhiteTeam =
-                                                      match.whiteName.contains(
-                                                        ':',
-                                                      )
-                                                      ? match.whiteName
-                                                            .split(':')
-                                                            .first
-                                                            .trim()
-                                                      : match.whiteName;
-                                                  final nextRedTeam =
-                                                      nextM.redName.contains(
-                                                        ':',
-                                                      )
-                                                      ? nextM.redName
-                                                            .split(':')
-                                                            .first
-                                                            .trim()
-                                                      : nextM.redName;
-                                                  final nextWhiteTeam =
-                                                      nextM.whiteName.contains(
-                                                        ':',
-                                                      )
-                                                      ? nextM.whiteName
-                                                            .split(':')
-                                                            .first
-                                                            .trim()
-                                                      : nextM.whiteName;
-
-                                                  bool isCardEndingPosition =
-                                                      match.matchType == '大将' ||
-                                                      match.matchType ==
-                                                          '代表戦' ||
-                                                      match.matchType ==
-                                                          '個人戦' ||
-                                                      match.matchType == '選手';
-
-                                                  if (currentRedTeam ==
-                                                          nextRedTeam &&
-                                                      currentWhiteTeam ==
-                                                          nextWhiteTeam &&
-                                                      !isCardEndingPosition &&
-                                                      !match.isKachinuki) {
-                                                    context.push(
-                                                      '/match/${nextM.id}',
-                                                    ); // ★ go() から push() に変更して履歴を残す
+                                                    }
                                                   } else {
-                                                    _showMatchFinishedDialog(
-                                                      context,
-                                                      match,
-                                                      nextM,
-                                                    );
+                                                    bool hasDaihyo =
+                                                        rule.isLeague
+                                                        ? rule.hasLeagueDaihyo
+                                                        : rule.hasRepresentativeMatch;
+                                                    if (isTie &&
+                                                        match.groupName !=
+                                                            null &&
+                                                        match.matchType !=
+                                                            '代表戦' &&
+                                                        hasDaihyo) {
+                                                      context.push(
+                                                        '/team-scoreboard/${match.groupName}',
+                                                      );
+                                                    } else {
+                                                      _showMatchFinishedDialog(
+                                                        context,
+                                                        match,
+                                                        null,
+                                                      );
+                                                    }
                                                   }
-                                                } else {
-                                                  bool hasDaihyo = rule.isLeague
-                                                      ? rule.hasLeagueDaihyo
-                                                      : rule.hasRepresentativeMatch;
-                                                  if (isTie &&
-                                                      match.groupName != null &&
-                                                      match.matchType !=
-                                                          '代表戦' &&
-                                                      hasDaihyo) {
-                                                    context.push(
-                                                      '/team-scoreboard/${match.groupName}',
-                                                    );
-                                                  } else {
-                                                    _showMatchFinishedDialog(
-                                                      context,
-                                                      match,
-                                                      null,
-                                                    );
-                                                  }
-                                                }
-                                              };
+                                                };
 
-                                        final bool isTrulyTeamMatch =
-                                            match.groupName != null &&
-                                            teamMatches.length > 1;
+                                          final bool isTrulyTeamMatch =
+                                              match.groupName != null &&
+                                              teamMatches.length > 1;
 
-                                        return GestureDetector(
-                                          onDoubleTap:
-                                              settings.confirmBehavior ==
-                                                  'double'
-                                              ? confirmAction
-                                              : null,
-                                          child: ElevatedButton.icon(
-                                            onPressed:
+                                          return GestureDetector(
+                                            onDoubleTap:
                                                 settings.confirmBehavior ==
-                                                    'single'
-                                                ? confirmAction
-                                                : (isViewOnly
-                                                      ? null
-                                                      : () =>
-                                                            ScaffoldMessenger.of(
-                                                              context,
-                                                            ).showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  settings.confirmBehavior ==
-                                                                          'double'
-                                                                      ? 'ダブルタップで確定してください'
-                                                                      : '長押しで確定してください',
-                                                                ),
-                                                                duration:
-                                                                    const Duration(
-                                                                      milliseconds:
-                                                                          1500,
-                                                                    ),
-                                                              ),
-                                                            )),
-                                            onLongPress:
-                                                settings.confirmBehavior ==
-                                                    'long'
+                                                    'double'
                                                 ? confirmAction
                                                 : null,
-                                            icon: Icon(
-                                              (isTie && isTrulyTeamMatch)
-                                                  ? Icons.balance
-                                                  : (isAllDone
-                                                        ? Icons.emoji_events
-                                                        : Icons.verified),
-                                              size: 24,
-                                            ),
-                                            label: Text(
-                                              (isTie && isTrulyTeamMatch)
-                                                  ? '記録確定・星取表へ'
-                                                  : (isAllDone
-                                                        ? ((match.tournamentId !=
-                                                                      null &&
-                                                                  match
-                                                                      .tournamentId!
-                                                                      .startsWith(
-                                                                        'bunaiksen_',
-                                                                      ))
-                                                              ? '確定・部内戦ホームへ'
-                                                              : '確定・大会ホームへ')
-                                                        : '確定・次へ'),
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
+                                            child: ElevatedButton.icon(
+                                              onPressed:
+                                                  settings.confirmBehavior ==
+                                                      'single'
+                                                  ? confirmAction
+                                                  : (isViewOnly
+                                                        ? null
+                                                        : () => ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                settings.confirmBehavior ==
+                                                                        'double'
+                                                                    ? 'ダブルタップで確定してください'
+                                                                    : '長押しで確定してください',
+                                                              ),
+                                                              duration:
+                                                                  const Duration(
+                                                                    milliseconds:
+                                                                        1500,
+                                                                  ),
+                                                            ),
+                                                          )),
+                                              onLongPress:
+                                                  settings.confirmBehavior ==
+                                                      'long'
+                                                  ? confirmAction
+                                                  : null,
+                                              icon: Icon(
+                                                (isTie && isTrulyTeamMatch)
+                                                    ? Icons.balance
+                                                    : (isAllDone
+                                                          ? Icons.emoji_events
+                                                          : Icons.verified),
+                                                size: 24,
+                                              ),
+                                              label: Text(
+                                                (isTie && isTrulyTeamMatch)
+                                                    ? '記録確定・星取表へ'
+                                                    : (isAllDone
+                                                          ? ((match.tournamentId !=
+                                                                        null &&
+                                                                    match
+                                                                        .tournamentId!
+                                                                        .startsWith(
+                                                                          'bunaiksen_',
+                                                                        ))
+                                                                ? '確定・部内戦ホームへ'
+                                                                : '確定・大会ホームへ')
+                                                          : '確定・次へ'),
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: isTie
+                                                    ? Colors.red.shade700
+                                                    : (isAllDone
+                                                          ? Colors
+                                                                .indigo
+                                                                .shade700
+                                                          : Colors
+                                                                .teal
+                                                                .shade600),
+                                                foregroundColor: Colors.white,
+                                                minimumSize: const Size(
+                                                  double.infinity,
+                                                  36, // ★ さらに縮小して余裕を持たせる
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                                elevation: 4,
                                               ),
                                             ),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: isTie
-                                                  ? Colors.red.shade700
-                                                  : (isAllDone
-                                                        ? Colors.indigo.shade700
-                                                        : Colors.teal.shade600),
-                                              foregroundColor: Colors.white,
-                                              minimumSize: const Size(
-                                                double.infinity,
-                                                36, // ★ さらに縮小して余裕を持たせる
-                                              ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              elevation: 4,
-                                            ),
-                                          ),
-                                        );
-                                      } else {
-                                        final finishAction = isViewOnly
-                                            ? null
-                                            : () async {
-                                                if (settings.haptic) {
-                                                  HapticFeedback.heavyImpact();
-                                                }
-                                                final strategy =
-                                                    MatchStrategyFactory.getStrategy(
-                                                      match,
-                                                      teamMatches.length,
-                                                    );
-                                                final lastSettings = ref.read(
-                                                  lastUsedSettingsProvider,
-                                                );
+                                          );
+                                        } else {
+                                          final finishAction = isViewOnly
+                                              ? null
+                                              : () async {
+                                                  if (settings.haptic) {
+                                                    HapticFeedback.heavyImpact();
+                                                  }
+                                                  final strategy =
+                                                      MatchStrategyFactory.getStrategy(
+                                                        match,
+                                                        teamMatches.length,
+                                                      );
+                                                  final lastSettings = ref.read(
+                                                    lastUsedSettingsProvider,
+                                                  );
 
-                                                // ★ 追加: 無限勝ち抜きモードの場合は通常の延長・判定をスキップして専用エンジンへ
-                                                if (match.isKachinuki &&
-                                                    match.matchType ==
-                                                        '無限勝ち抜き') {
+                                                  // ★ 追加: 無限勝ち抜きモードの場合は通常の延長・判定をスキップして専用エンジンへ
+                                                  if (match.isKachinuki &&
+                                                      match.matchType ==
+                                                          '無限勝ち抜き') {
+                                                    if (settings
+                                                        .showConfirmDialog) {
+                                                      final confirmed =
+                                                          await _showConfirmDialog(
+                                                            '試合終了',
+                                                            'この試合を終了しますか？',
+                                                          );
+                                                      if (!confirmed) return;
+                                                    }
+                                                    String winnerColor = 'draw';
+                                                    if ((match.redScore as num)
+                                                            .toInt() >
+                                                        (match.whiteScore
+                                                                as num)
+                                                            .toInt()) {
+                                                      winnerColor = 'red';
+                                                    } else if ((match.whiteScore
+                                                                as num)
+                                                            .toInt() >
+                                                        (match.redScore as num)
+                                                            .toInt()) {
+                                                      winnerColor = 'white';
+                                                    }
+
+                                                    if (!mounted ||
+                                                        !context.mounted) {
+                                                      return;
+                                                    }
+                                                    showDialog(
+                                                      context: context,
+                                                      barrierDismissible: false,
+                                                      builder: (_) => const Center(
+                                                        child:
+                                                            CircularProgressIndicator(),
+                                                      ),
+                                                    );
+                                                    await _handleMatchFinish(
+                                                      context,
+                                                      ref,
+                                                      match,
+                                                      winnerColor,
+                                                    );
+                                                    return;
+                                                  }
+
+                                                  if (match.redScore ==
+                                                      match.whiteScore) {
+                                                    final nextAction = strategy
+                                                        .getNextActionOnTie(
+                                                          match: match,
+                                                          lastSettings:
+                                                              lastSettings,
+                                                        );
+
+                                                    if (nextAction ==
+                                                        NextMatchAction
+                                                            .startExtension) {
+                                                      final confirmed =
+                                                          await _showConfirmDialog(
+                                                            '延長戦',
+                                                            '延長戦に入りますか？',
+                                                          );
+                                                      if (!confirmed) return;
+
+                                                      final dynamic rawTime =
+                                                          lastSettings['extensionTimeMinutes'];
+                                                      final double extMins =
+                                                          (rawTime is num)
+                                                          ? rawTime.toDouble()
+                                                          : 3.0;
+                                                      final int
+                                                      currentExtCount = '延長'
+                                                          .allMatches(
+                                                            match.note,
+                                                          )
+                                                          .length;
+                                                      final extStr =
+                                                          '延長${currentExtCount + 1}回目';
+
+                                                      final currentTime = ref
+                                                          .read(
+                                                            timeSourceProvider,
+                                                          )
+                                                          .now();
+                                                      await ref
+                                                          .read(
+                                                            matchApplicationServiceProvider,
+                                                          )
+                                                          .saveMatch(
+                                                            match
+                                                                .updateRemainingSeconds(
+                                                                  (extMins * 60)
+                                                                      .toInt(),
+                                                                  currentTime,
+                                                                )
+                                                                .copyWith(
+                                                                  // ★ 修正
+                                                                  timerStartedAt:
+                                                                      null,
+                                                                  note:
+                                                                      match
+                                                                          .note
+                                                                          .isEmpty
+                                                                      ? extStr
+                                                                      : '${match.note} ($extStr)',
+                                                                  extensionTimeMinutes:
+                                                                      extMins,
+                                                                ),
+                                                          );
+
+                                                      if (!context.mounted) {
+                                                        return;
+                                                      }
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      ).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                            '$extStr（$extMins分）を開始します',
+                                                          ),
+                                                        ),
+                                                      );
+                                                      return;
+                                                    }
+
+                                                    if (nextAction ==
+                                                        NextMatchAction
+                                                            .showHantei) {
+                                                      final hanteiResult =
+                                                          await _showHanteiDialog(
+                                                            match,
+                                                          );
+                                                      if (hanteiResult ==
+                                                          null) {
+                                                        return;
+                                                      }
+                                                      try {
+                                                        if (hanteiResult ==
+                                                                'red' ||
+                                                            hanteiResult ==
+                                                                'white') {
+                                                          final side =
+                                                              hanteiResult ==
+                                                                  'red'
+                                                              ? Side.red
+                                                              : Side.white;
+                                                          // ★ 修正: 競合を防ぐため1トランザクションで終了する
+                                                          await ref
+                                                              .read(
+                                                                matchApplicationServiceProvider,
+                                                              )
+                                                              .finishMatchManually(
+                                                                match.id,
+                                                                hanteiWinner:
+                                                                    side,
+                                                              );
+                                                        } else if (hanteiResult ==
+                                                            'draw') {
+                                                          // ★ 修正: 引き分けの場合も1トランザクションで終了マーカーを残す
+                                                          await ref
+                                                              .read(
+                                                                matchApplicationServiceProvider,
+                                                              )
+                                                              .finishMatchManually(
+                                                                match.id,
+                                                              );
+                                                        }
+                                                      } catch (e) {
+                                                        if (context.mounted) {
+                                                          ScaffoldMessenger.of(
+                                                            context,
+                                                          ).showSnackBar(
+                                                            SnackBar(
+                                                              content: Text(
+                                                                '判定の保存に失敗しました: $e',
+                                                              ),
+                                                            ),
+                                                          );
+                                                        }
+                                                      }
+                                                      return;
+                                                    }
+                                                  }
+
                                                   if (settings
                                                       .showConfirmDialog) {
                                                     final confirmed =
@@ -1485,456 +1693,279 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                         );
                                                     if (!confirmed) return;
                                                   }
-                                                  String winnerColor = 'draw';
-                                                  if ((match.redScore as num)
-                                                          .toInt() >
-                                                      (match.whiteScore as num)
-                                                          .toInt()) {
-                                                    winnerColor = 'red';
-                                                  } else if ((match.whiteScore
-                                                              as num)
-                                                          .toInt() >
-                                                      (match.redScore as num)
-                                                          .toInt()) {
-                                                    winnerColor = 'white';
-                                                  }
 
-                                                  if (!mounted ||
-                                                      !context.mounted) {
-                                                    return;
-                                                  }
-                                                  showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (_) => const Center(
-                                                      child:
-                                                          CircularProgressIndicator(),
-                                                    ),
-                                                  );
-                                                  await _handleMatchFinish(
-                                                    context,
-                                                    ref,
-                                                    match,
-                                                    winnerColor,
-                                                  );
-                                                  return;
-                                                }
-
-                                                if (match.redScore ==
-                                                    match.whiteScore) {
-                                                  final nextAction = strategy
-                                                      .getNextActionOnTie(
-                                                        match: match,
-                                                        lastSettings:
-                                                            lastSettings,
+                                                  // ★ 修正: 手動終了の場合も1トランザクションで終了マーカーを残して終了する
+                                                  await ref
+                                                      .read(
+                                                        matchApplicationServiceProvider,
+                                                      )
+                                                      .finishMatchManually(
+                                                        match.id,
                                                       );
+                                                };
 
-                                                  if (nextAction ==
-                                                      NextMatchAction
-                                                          .startExtension) {
-                                                    final confirmed =
-                                                        await _showConfirmDialog(
-                                                          '延長戦',
-                                                          '延長戦に入りますか？',
-                                                        );
-                                                    if (!confirmed) return;
+                                          return Consumer(
+                                            builder: (context, ref, child) {
+                                              final isProcessing = ref.watch(
+                                                isMatchCommandProcessingProvider,
+                                              );
+                                              final effectiveFinishAction =
+                                                  isProcessing
+                                                  ? null
+                                                  : finishAction;
 
-                                                    final dynamic rawTime =
-                                                        lastSettings['extensionTimeMinutes'];
-                                                    final double extMins =
-                                                        (rawTime is num)
-                                                        ? rawTime.toDouble()
-                                                        : 3.0;
-                                                    final int currentExtCount =
-                                                        '延長'
-                                                            .allMatches(
-                                                              match.note,
-                                                            )
-                                                            .length;
-                                                    final extStr =
-                                                        '延長${currentExtCount + 1}回目';
-
-                                                    final currentTime = ref
-                                                        .read(
-                                                          timeSourceProvider,
-                                                        )
-                                                        .now();
-                                                    await ref
-                                                        .read(
-                                                          matchApplicationServiceProvider,
-                                                        )
-                                                        .saveMatch(
-                                                          match
-                                                              .updateRemainingSeconds(
-                                                                (extMins * 60)
-                                                                    .toInt(),
-                                                                currentTime,
-                                                              )
-                                                              .copyWith(
-                                                                // ★ 修正
-                                                                timerStartedAt:
-                                                                    null,
-                                                                note:
-                                                                    match
-                                                                        .note
-                                                                        .isEmpty
-                                                                    ? extStr
-                                                                    : '${match.note} ($extStr)',
-                                                                extensionTimeMinutes:
-                                                                    extMins,
-                                                              ),
-                                                        );
-
-                                                    if (!context.mounted) {
-                                                      return;
-                                                    }
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          '$extStr（$extMins分）を開始します',
-                                                        ),
-                                                      ),
-                                                    );
-                                                    return;
-                                                  }
-
-                                                  if (nextAction ==
-                                                      NextMatchAction
-                                                          .showHantei) {
-                                                    final hanteiResult =
-                                                        await _showHanteiDialog(
-                                                          match,
-                                                        );
-                                                    if (hanteiResult == null) {
-                                                      return;
-                                                    }
-                                                    try {
-                                                      if (hanteiResult ==
-                                                              'red' ||
-                                                          hanteiResult ==
-                                                              'white') {
-                                                        final side =
-                                                            hanteiResult ==
-                                                                'red'
-                                                            ? Side.red
-                                                            : Side.white;
-                                                        // ★ 修正: 競合を防ぐため1トランザクションで終了する
-                                                        await ref
-                                                            .read(
-                                                              matchApplicationServiceProvider,
-                                                            )
-                                                            .finishMatchManually(
-                                                              match.id,
-                                                              hanteiWinner:
-                                                                  side,
-                                                            );
-                                                      } else if (hanteiResult ==
-                                                          'draw') {
-                                                        // ★ 修正: 引き分けの場合も1トランザクションで終了マーカーを残す
-                                                        await ref
-                                                            .read(
-                                                              matchApplicationServiceProvider,
-                                                            )
-                                                            .finishMatchManually(
-                                                              match.id,
-                                                            );
-                                                      }
-                                                    } catch (e) {
-                                                      if (context.mounted) {
-                                                        ScaffoldMessenger.of(
-                                                          context,
-                                                        ).showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                              '判定の保存に失敗しました: $e',
-                                                            ),
-                                                          ),
-                                                        );
-                                                      }
-                                                    }
-                                                    return;
-                                                  }
-                                                }
-
-                                                if (settings
-                                                    .showConfirmDialog) {
-                                                  final confirmed =
-                                                      await _showConfirmDialog(
-                                                        '試合終了',
-                                                        'この試合を終了しますか？',
-                                                      );
-                                                  if (!confirmed) return;
-                                                }
-
-                                                // ★ 修正: 手動終了の場合も1トランザクションで終了マーカーを残して終了する
-                                                await ref
-                                                    .read(
-                                                      matchApplicationServiceProvider,
-                                                    )
-                                                    .finishMatchManually(
-                                                      match.id,
-                                                    );
-                                              };
-
-                                        return Consumer(
-                                          builder: (context, ref, child) {
-                                            final isProcessing = ref.watch(
-                                              isMatchCommandProcessingProvider,
-                                            );
-                                            final effectiveFinishAction =
-                                                isProcessing
-                                                ? null
-                                                : finishAction;
-
-                                            return GestureDetector(
-                                              onDoubleTap:
-                                                  settings.confirmBehavior ==
-                                                      'double'
-                                                  ? effectiveFinishAction
-                                                  : null,
-                                              child: ElevatedButton(
-                                                onPressed:
+                                              return GestureDetector(
+                                                onDoubleTap:
                                                     settings.confirmBehavior ==
-                                                        'single'
-                                                    ? effectiveFinishAction
-                                                    : (isViewOnly
-                                                          ? null
-                                                          : () => ScaffoldMessenger.of(context).showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  settings.confirmBehavior ==
-                                                                          'double'
-                                                                      ? 'ダブルタップで終了してください'
-                                                                      : '長押しで終了してください',
-                                                                ),
-                                                                duration:
-                                                                    const Duration(
-                                                                      milliseconds:
-                                                                          1500,
-                                                                    ),
-                                                              ),
-                                                            )),
-                                                onLongPress:
-                                                    settings.confirmBehavior ==
-                                                        'long'
+                                                        'double'
                                                     ? effectiveFinishAction
                                                     : null,
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.indigo.shade600,
-                                                  foregroundColor: Colors.white,
-                                                  minimumSize: const Size(
-                                                    double.infinity,
-                                                    36, // ★ さらに縮小して余裕を持たせる
+                                                child: ElevatedButton(
+                                                  onPressed:
+                                                      settings.confirmBehavior ==
+                                                          'single'
+                                                      ? effectiveFinishAction
+                                                      : (isViewOnly
+                                                            ? null
+                                                            : () => ScaffoldMessenger.of(context).showSnackBar(
+                                                                SnackBar(
+                                                                  content: Text(
+                                                                    settings.confirmBehavior ==
+                                                                            'double'
+                                                                        ? 'ダブルタップで終了してください'
+                                                                        : '長押しで終了してください',
+                                                                  ),
+                                                                  duration:
+                                                                      const Duration(
+                                                                        milliseconds:
+                                                                            1500,
+                                                                      ),
+                                                                ),
+                                                              )),
+                                                  onLongPress:
+                                                      settings.confirmBehavior ==
+                                                          'long'
+                                                      ? effectiveFinishAction
+                                                      : null,
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.indigo.shade600,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    minimumSize: const Size(
+                                                      double.infinity,
+                                                      36, // ★ さらに縮小して余裕を持たせる
+                                                    ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            16,
+                                                          ),
+                                                    ),
+                                                    elevation: 0,
                                                   ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          16,
+                                                  child: isProcessing
+                                                      ? const SizedBox(
+                                                          height: 20,
+                                                          width: 20,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                                color: Colors
+                                                                    .white,
+                                                                strokeWidth: 2,
+                                                              ),
+                                                        )
+                                                      : const Text(
+                                                          'この試合を終了する',
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            letterSpacing: 1.1,
+                                                          ),
                                                         ),
-                                                  ),
-                                                  elevation: 0,
                                                 ),
-                                                child: isProcessing
-                                                    ? const SizedBox(
-                                                        height: 20,
-                                                        width: 20,
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                              color:
-                                                                  Colors.white,
-                                                              strokeWidth: 2,
-                                                            ),
-                                                      )
-                                                    : const Text(
-                                                        'この試合を終了する',
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          letterSpacing: 1.1,
-                                                        ),
-                                                      ),
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      }
-                                    },
-                                  ),
-                                );
-
-                                if (isTabletLandscape) {
-                                  return Column(
-                                    children: [
-                                      corruptedBanner,
-                                      viewOnlyBanner,
-                                      Expanded(
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: [
-                                            Expanded(
-                                              flex: 5,
-                                              child: Column(
-                                                children: [
-                                                  timerPart,
-                                                  groupButtonPart,
-                                                  Expanded(
-                                                    child: scoreboardPart,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            VerticalDivider(
-                                              width: 1,
-                                              thickness: 1,
-                                              color: isDark
-                                                  ? Colors.white10
-                                                  : Colors.black12,
-                                            ),
-                                            Expanded(
-                                              flex: 6,
-                                              child: Column(
-                                                children: [
-                                                  Expanded(
-                                                    child: actionPanelPart,
-                                                  ),
-                                                  undoArea,
-                                                  bottomButtonPart,
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                } else {
-                                  final double currentContentHeight =
-                                      constraints.maxHeight;
-
-                                  final bool needsScroll =
-                                      currentContentHeight < 610.0;
-                                  final double effectiveHeight = needsScroll
-                                      ? 610.0
-                                      : currentContentHeight;
-
-                                  final mainContent = Column(
-                                    children: [
-                                      corruptedBanner,
-                                      viewOnlyBanner,
-                                      timerPart,
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 0,
-                                        ),
-                                        child: groupButtonPart,
-                                      ),
-                                      // 選手名・スコアボード領域
-                                      Flexible(flex: 2, child: scoreboardPart),
-                                      // 部位ボタン（ActionPanel）領域
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 175,
-                                        child: actionPanelPart,
-                                      ),
-                                      // 履歴とUndoボタン
-                                      undoArea,
-                                      // 最下部確定ボタン
-                                      SafeArea(
-                                        top: false,
-                                        bottom: false,
-                                        child: Padding(
-                                          padding: EdgeInsets.zero,
-                                          child: bottomButtonPart,
-                                        ),
-                                      ),
-                                    ],
+                                              );
+                                            },
+                                          );
+                                        }
+                                      },
+                                    ),
                                   );
 
-                                  return needsScroll
-                                      ? SingleChildScrollView(
-                                          physics:
-                                              const BouncingScrollPhysics(),
-                                          child: SizedBox(
-                                            height: effectiveHeight,
-                                            child: mainContent,
+                                  if (isTabletLandscape) {
+                                    return Column(
+                                      children: [
+                                        corruptedBanner,
+                                        viewOnlyBanner,
+                                        Expanded(
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              Expanded(
+                                                flex: 5,
+                                                child: Column(
+                                                  children: [
+                                                    timerPart,
+                                                    groupButtonPart,
+                                                    Expanded(
+                                                      child: scoreboardPart,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              VerticalDivider(
+                                                width: 1,
+                                                thickness: 1,
+                                                color: isDark
+                                                    ? Colors.white10
+                                                    : Colors.black12,
+                                              ),
+                                              Expanded(
+                                                flex: 6,
+                                                child: Column(
+                                                  children: [
+                                                    Expanded(
+                                                      child: actionPanelPart,
+                                                    ),
+                                                    undoArea,
+                                                    bottomButtonPart,
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        )
-                                      : mainContent; // iPhone 17 Pro などの縦長画面では、スクロールを完全排除して底辺へ100%固定フィット
-                                }
-                              },
+                                        ),
+                                      ],
+                                    );
+                                  } else {
+                                    final double currentContentHeight =
+                                        constraints.maxHeight;
+
+                                    final bool needsScroll =
+                                        currentContentHeight < 610.0;
+                                    final double effectiveHeight = needsScroll
+                                        ? 610.0
+                                        : currentContentHeight;
+
+                                    final mainContent = Column(
+                                      children: [
+                                        corruptedBanner,
+                                        viewOnlyBanner,
+                                        timerPart,
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 0,
+                                          ),
+                                          child: groupButtonPart,
+                                        ),
+                                        // 選手名・スコアボード領域
+                                        Flexible(
+                                          flex: 2,
+                                          child: scoreboardPart,
+                                        ),
+                                        // 部位ボタン（ActionPanel）領域
+                                        SizedBox(
+                                          width: double.infinity,
+                                          height: 175,
+                                          child: actionPanelPart,
+                                        ),
+                                        // 履歴とUndoボタン
+                                        undoArea,
+                                        // 最下部確定ボタン
+                                        SafeArea(
+                                          top: false,
+                                          bottom: false,
+                                          child: Padding(
+                                            padding: EdgeInsets.zero,
+                                            child: bottomButtonPart,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+
+                                    return needsScroll
+                                        ? SingleChildScrollView(
+                                            physics:
+                                                const BouncingScrollPhysics(),
+                                            child: SizedBox(
+                                              height: effectiveHeight,
+                                              child: mainContent,
+                                            ),
+                                          )
+                                        : mainContent; // iPhone 17 Pro などの縦長画面では、スクロールを完全排除して底辺へ100%固定フィット
+                                  }
+                                },
+                              ),
+                            ),
+                          ), // Expanded
+                        ], // Column children
+                      ),
+                      if (match.matchType == '代表戦' &&
+                          (match.redName.contains('未定') ||
+                              match.whiteName.contains('未定') ||
+                              match.redName.contains('代表選手') ||
+                              match.whiteName.contains('代表選手')))
+                        Container(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.person_add,
+                                  color: Colors.white,
+                                  size: 80,
+                                ),
+                                const SizedBox(height: 24),
+                                const Text(
+                                  '代表戦の選手が未設定です',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                                SizedBox(
+                                  width: 250,
+                                  child: GlassButton(
+                                    onPressed: () =>
+                                        _showDaihyoSelectDialog(match),
+                                    color: Colors.indigo,
+                                    label: '代表者を選択する',
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ), // Expanded
-                      ], // Column children
-                    ),
-                    if (match.matchType == '代表戦' &&
-                        (match.redName.contains('未定') ||
-                            match.whiteName.contains('未定') ||
-                            match.redName.contains('代表選手') ||
-                            match.whiteName.contains('代表選手')))
-                      Container(
-                        color: Colors.black.withValues(alpha: 0.8),
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.person_add,
-                                color: Colors.white,
-                                size: 80,
-                              ),
-                              const SizedBox(height: 24),
-                              const Text(
-                                '代表戦の選手が未設定です',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 32),
-                              SizedBox(
-                                width: 250,
-                                child: GlassButton(
-                                  onPressed: () =>
-                                      _showDaihyoSelectDialog(match),
-                                  color: Colors.indigo,
-                                  label: '代表者を選択する',
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 20,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
-                      ),
-                  ], // Stack children
-                ), // Stack
-              );
-            }
+                    ], // Stack children
+                  ), // Stack
+                );
+              }
 
-            if (needsScroll) {
-              // ① 縦が短い環境（古い端末、キーボード出現時等）のみ安全弁としてスクロールを許可
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: buildMatchLayout(absoluteMinContentHeight),
-              );
-            } else {
-              // ② iPhone 17 Pro などの十分な高さがある環境では、スクロールを完全に消失させ100%ジャストフィット
-              return buildMatchLayout(maxHeight);
-            }
-          },
-        ), // LayoutBuilder
-      ), // Scaffold
+              if (needsScroll) {
+                // ① 縦が短い環境（古い端末、キーボード出現時等）のみ安全弁としてスクロールを許可
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: buildMatchLayout(absoluteMinContentHeight),
+                );
+              } else {
+                // ② iPhone 17 Pro などの十分な高さがある環境では、スクロールを完全に消失させ100%ジャストフィット
+                return buildMatchLayout(maxHeight);
+              }
+            },
+          ), // LayoutBuilder
+        ), // Scaffold
+      ), // MediaQuery
     ); // LiquidBackground
 
     if (showSyncBar) {

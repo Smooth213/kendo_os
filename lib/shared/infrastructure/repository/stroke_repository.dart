@@ -78,22 +78,37 @@ class StrokeRepository {
     try {
       debugPrint('🔙 Undo命令を送信: ProgramID=$programId');
 
+      // ★ 物理調停：descending: true の複合インデックス未定義による無言のエラーを完全に回避するため、
+      // 既存のwatchStrokesと同じ昇順（descending: false）クエリで全件取得し、インメモリで最後の共有ペンを削除します。
       final querySnapshot = await _strokesCollection
           .where('programId', isEqualTo: programId)
-          .orderBy('createdAt', descending: true)
-          .limit(1)
-          .get(
-            const GetOptions(source: Source.serverAndCache),
-          ); // ★ サーバーとキャッシュ両方を強制チェック
+          .orderBy('createdAt', descending: false)
+          .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        await querySnapshot.docs.first.reference.delete();
+      // インメモリで「isShared: true」の最新の線を特定
+      final sharedStrokes = querySnapshot.docs.where((doc) {
+        final data = doc.data();
+        return data['isShared'] as bool? ?? true;
+      }).toList();
+
+      if (sharedStrokes.isNotEmpty) {
+        await sharedStrokes.last.reference.delete();
         debugPrint('✅ 削除完了');
       } else {
         debugPrint('⚠️ 削除対象が見つかりません');
       }
     } catch (e) {
       debugPrint('❌ Undoエラー: $e');
+    }
+  }
+
+  /// 特定の線をID指定で削除する
+  Future<void> deleteStroke(String id) async {
+    try {
+      await _strokesCollection.doc(id).delete();
+      debugPrint('✅ 線を削除しました: ID=$id');
+    } catch (e) {
+      debugPrint('❌ 削除エラー: $e');
     }
   }
 }

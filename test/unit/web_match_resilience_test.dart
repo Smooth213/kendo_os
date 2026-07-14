@@ -19,7 +19,7 @@ class MockFailingMatchRepository extends MatchRepository {
   }) : super(firestore, '', '');
 
   @override
-  Future<void> saveMatch(MatchModel match) async {
+  Future<int> saveMatch(MatchModel match) async {
     attempts++;
     if (attempts <= failUntilAttempt) {
       throw FirebaseException(
@@ -28,7 +28,7 @@ class MockFailingMatchRepository extends MatchRepository {
         message: 'ERR_CONNECTION_CLOSED / QUIC_TOO_MANY_RTOS simulated',
       );
     }
-    await delegate.saveMatch(match);
+    return await delegate.saveMatch(match);
   }
 }
 

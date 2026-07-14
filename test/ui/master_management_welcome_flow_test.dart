@@ -116,6 +116,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final savePlayerBtn = find.widgetWithText(ElevatedButton, '保存して登録');
+        await tester.ensureVisible(savePlayerBtn);
         await tester.tap(savePlayerBtn);
         await tester.pumpAndSettle();
 

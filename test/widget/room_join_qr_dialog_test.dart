@@ -130,5 +130,35 @@ void main() {
 
       container.dispose();
     });
+
+    testWidgets(
+      '【はみ出し防止ケース】超小型画面サイズ（高さ380px）でも RenderFlex のはみ出しエラー（Overflow）が発生しないこと',
+      (WidgetTester tester) async {
+        // 画面のテスト表面サイズを、はみ出しバグが起きた超小型サイズ (幅320, 高さ380) に強制設定
+        await tester.binding.setSurfaceSize(const Size(320, 380));
+        addTearDown(
+          () => tester.binding.setSurfaceSize(null),
+        ); // 元のサイズに戻すための後処理
+
+        final container = ProviderContainer(
+          overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
+        );
+
+        await tester.pumpWidget(createTestTarget(container));
+
+        // ダイアログを開く
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+
+        // はみ出しエラー（RenderFlex overflowed）などのレイアウト例外が一切スローされていないことをアサート
+        expect(tester.takeException(), isNull);
+
+        // ダイアログ内の重要要素が問題なく描画されていること
+        expect(find.byType(RoomJoinQrDialog), findsOneWidget);
+        expect(find.text('道場ルームへの参加'), findsOneWidget);
+
+        container.dispose();
+      },
+    );
   });
 }

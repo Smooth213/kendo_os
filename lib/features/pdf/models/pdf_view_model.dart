@@ -1,5 +1,6 @@
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'pdf_point_data.dart';
 
 class PdfViewModel {
@@ -26,43 +27,14 @@ class PdfViewModel {
     List<PdfPointData> redPts = [], whitePts = [];
 
     if (match is MatchModel) {
-      int rH = 0, wH = 0;
-      bool isFirst = true;
-      for (var e in match.events) {
-        if (e.type == PointType.undo) continue;
-        if (e.isCanceled) continue;
+      final engine = KendoRuleEngine();
+      final analysis = engine.analyzeHistory(match.events, match, match.rule);
 
-        String mark = '';
-        Side side = e.side;
-        if (e.type == PointType.hansoku) {
-          if (e.side == Side.red) {
-            rH++;
-            if (rH == 2 || rH == 4) {
-              mark = '反';
-              side = Side.white;
-            } else {
-              continue;
-            }
-          } else if (e.side == Side.white) {
-            wH++;
-            if (wH == 2 || wH == 4) {
-              mark = '反';
-              side = Side.red;
-            } else {
-              continue;
-            }
-          }
-        } else {
-          mark = toMark(e.type);
-        }
-
-        if (side == Side.red) {
-          redPts.add(PdfPointData(mark, isFirst));
-          isFirst = false;
-        } else if (side == Side.white) {
-          whitePts.add(PdfPointData(mark, isFirst));
-          isFirst = false;
-        }
+      for (var d in analysis.displays[Side.red] ?? []) {
+        redPts.add(PdfPointData(d.mark, d.isFirstMatchPoint));
+      }
+      for (var d in analysis.displays[Side.white] ?? []) {
+        whitePts.add(PdfPointData(d.mark, d.isFirstMatchPoint));
       }
     } else {
       try {
@@ -88,8 +60,8 @@ class PdfViewModel {
   ) {
     List<String> res = [];
     int hCount = 0;
-    for (var e in events) {
-      if (e.type == PointType.undo || e.isCanceled) continue;
+    final activeEvents = KendoRuleEngine().filterActiveEvents(events);
+    for (var e in activeEvents) {
       if (e.type == PointType.hansoku) {
         hCount++;
         if (hCount % 2 == 0) {

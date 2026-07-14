@@ -24,6 +24,8 @@ import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 
+final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
+
 class OfficialRecordScreen extends ConsumerWidget {
   final String tournamentId;
   const OfficialRecordScreen({super.key, required this.tournamentId});
@@ -31,6 +33,7 @@ class OfficialRecordScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isExporting = ref.watch(isExportingProvider);
 
     // ★ Phase 7: 権限プロバイダから取得
     final permissions = ref.watch(permissionProvider);
@@ -248,17 +251,19 @@ class OfficialRecordScreen extends ConsumerWidget {
                           icon: Icons.print,
                           label: 'PDF',
                           color: Colors.grey.shade800,
-                          onPressed: () => _handleExport(
-                            context,
-                            ref,
-                            sortedGroupKeys,
-                            mergedGroups,
-                            cat,
-                            'pdf',
-                            tName: tName,
-                            tDate: tDate,
-                            tVenue: tVenue,
-                          ),
+                          onPressed: isExporting
+                              ? null
+                              : () => _handleExport(
+                                  context,
+                                  ref,
+                                  sortedGroupKeys,
+                                  mergedGroups,
+                                  cat,
+                                  'pdf',
+                                  tName: tName,
+                                  tDate: tDate,
+                                  tVenue: tVenue,
+                                ),
                         ),
                         const SizedBox(width: 8),
                         // 2. 画像出力
@@ -266,17 +271,19 @@ class OfficialRecordScreen extends ConsumerWidget {
                           icon: Icons.share,
                           label: '画像',
                           color: Colors.teal.shade600,
-                          onPressed: () => _handleExport(
-                            context,
-                            ref,
-                            sortedGroupKeys,
-                            mergedGroups,
-                            cat,
-                            'image',
-                            tName: tName,
-                            tDate: tDate,
-                            tVenue: tVenue,
-                          ),
+                          onPressed: isExporting
+                              ? null
+                              : () => _handleExport(
+                                  context,
+                                  ref,
+                                  sortedGroupKeys,
+                                  mergedGroups,
+                                  cat,
+                                  'image',
+                                  tName: tName,
+                                  tDate: tDate,
+                                  tVenue: tVenue,
+                                ),
                         ),
                         const SizedBox(width: 8),
                         // 3. ★新規: CSV出力
@@ -284,17 +291,19 @@ class OfficialRecordScreen extends ConsumerWidget {
                           icon: Icons.table_chart,
                           label: 'CSV',
                           color: Colors.indigo.shade600,
-                          onPressed: () => _handleExport(
-                            context,
-                            ref,
-                            sortedGroupKeys,
-                            mergedGroups,
-                            cat,
-                            'csv',
-                            tName: tName,
-                            tDate: tDate,
-                            tVenue: tVenue,
-                          ),
+                          onPressed: isExporting
+                              ? null
+                              : () => _handleExport(
+                                  context,
+                                  ref,
+                                  sortedGroupKeys,
+                                  mergedGroups,
+                                  cat,
+                                  'csv',
+                                  tName: tName,
+                                  tDate: tDate,
+                                  tVenue: tVenue,
+                                ),
                         ),
                       ],
                     ),
@@ -645,7 +654,7 @@ class OfficialRecordScreen extends ConsumerWidget {
     required IconData icon,
     required String label,
     required Color color,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
   }) {
     return Expanded(
       child: ElevatedButton.icon(
@@ -678,6 +687,8 @@ class OfficialRecordScreen extends ConsumerWidget {
     String? tDate,
     String? tVenue,
   }) async {
+    if (ref.read(isExportingProvider)) return;
+    ref.read(isExportingProvider.notifier).state = true;
     final groupDataList = sortedGroupKeys
         .map(
           (key) => {
@@ -733,6 +744,7 @@ class OfficialRecordScreen extends ConsumerWidget {
         ).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
       }
     } finally {
+      ref.read(isExportingProvider.notifier).state = false;
       if (dialogContext != null && dialogContext!.mounted) {
         Navigator.pop(dialogContext!);
       } else if (context.mounted) {

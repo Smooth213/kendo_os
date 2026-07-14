@@ -196,14 +196,16 @@ class MatchApplicationService {
   // =========================================================================
   // 🛡️ Webアプリ・保存リトライ防波堤 (1秒制限・一瞬の通信断の克服)
   // =========================================================================
-  Future<void> _saveToFirestoreWithRetry(
+  Future<int> _saveToFirestoreWithRetry(
     MatchModel match, {
     int maxAttempts = 3,
   }) async {
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        await _ref.read(matchRepositoryProvider).saveMatch(match);
-        return; // 成功したら抜ける
+        final newVersion = await _ref
+            .read(matchRepositoryProvider)
+            .saveMatch(match);
+        return newVersion; // 成功したら新バージョンを返す
       } catch (e) {
         if (attempt == maxAttempts) {
           rethrow; // 最終的にダメなら上位に投げて UI エラーとする
@@ -216,6 +218,7 @@ class MatchApplicationService {
         await Future.delayed(Duration(milliseconds: delayMs));
       }
     }
+    throw Exception('Firestore保存エラー: リトライ上限に達しました');
   }
 
   // --------------------------------------------------
@@ -652,8 +655,20 @@ class MatchApplicationService {
         }
 
         // ★ 修正: 通信を待たずにUIが更新された後、防波堤を通してFirestoreへ保存する
-        await _saveToFirestoreWithRetry(webSafeMatch);
-        debugPrint('🌐 [MatchApplicationService] Webモード: Firestore直接保存完了');
+        final newVersion = await _saveToFirestoreWithRetry(webSafeMatch);
+        debugPrint(
+          '🌐 [MatchApplicationService] Webモード: Firestore直接保存完了 (newVersion: $newVersion)',
+        );
+
+        // 成功した後の新バージョンでメモリキャッシュを上書きする
+        final finalMatches = _ref.read(webCurrentTournamentMatchesProvider);
+        final fIndex = finalMatches.indexWhere((m) => m.id == webSafeMatch.id);
+        if (fIndex != -1) {
+          final newMatches = List<MatchModel>.from(finalMatches);
+          newMatches[fIndex] = webSafeMatch.copyWith(version: newVersion);
+          _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+              newMatches;
+        }
       } else {
         // Mobile版: Isar に保存して同期エンジンに委譲
         final localRepo = _ref.read(localMatchRepositoryProvider);
