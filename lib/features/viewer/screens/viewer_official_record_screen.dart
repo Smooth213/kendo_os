@@ -210,8 +210,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                 onPressed: isExporting
                                     ? null
                                     : () async {
-                                        if (ref.read(isExportingProvider))
+                                        if (ref.read(isExportingProvider)) {
                                           return;
+                                        }
                                         ref
                                                 .read(
                                                   isExportingProvider.notifier,
