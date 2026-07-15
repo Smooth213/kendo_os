@@ -28,6 +28,7 @@ import 'package:kendo_os/features/match/presentation/components/announce_popup_m
 
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'tournament_header_card.dart';
 
 // ★ 画面間で共有する状態をここに集約
@@ -37,6 +38,10 @@ final isSearchVisibleProvider = StateProvider.autoDispose<bool>((ref) => false);
 final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
   return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
 });
+final timelinePlayerListProvider =
+    StreamProvider.autoDispose<List<PlayerModel>>((ref) {
+      return ref.watch(playerRepositoryProvider).getPlayers();
+    });
 
 // =========================================================================
 // 🛡️ Webアプリ・リスト消失バグ完全修正パッチ
@@ -1443,6 +1448,45 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         ),
                                                                       ),
                                                                     ),
+                                                                  // 🛠️オーダー編集ボタン（団体戦・勝ち抜き戦・リーグ団体戦すべて共通）
+                                                                  if (!isReadOnlyUI &&
+                                                                      !allFinished &&
+                                                                      firstMatch
+                                                                              .groupName !=
+                                                                          null &&
+                                                                      firstMatch
+                                                                          .groupName!
+                                                                          .isNotEmpty) ...[
+                                                                    SizedBox(
+                                                                      height:
+                                                                          26,
+                                                                      width: 26,
+                                                                      child: IconButton(
+                                                                        padding:
+                                                                            EdgeInsets.zero,
+                                                                        icon: Icon(
+                                                                          Icons
+                                                                              .swap_vert,
+                                                                          size:
+                                                                              18,
+                                                                          color:
+                                                                              isDark
+                                                                              ? Colors.blue.shade300
+                                                                              : Colors.blue.shade700,
+                                                                        ),
+                                                                        onPressed: () => _showOrderReorderSheet(
+                                                                          context,
+                                                                          ref,
+                                                                          groupList,
+                                                                        ),
+                                                                        tooltip:
+                                                                            'オーダー編集',
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 6,
+                                                                    ),
+                                                                  ],
                                                                   // 📊スコアボタン
                                                                   if (!label
                                                                       .contains(
@@ -5597,6 +5641,436 @@ class MatchListTileCard extends ConsumerWidget {
         ],
       ),
       child: tile,
+    );
+  }
+
+  // 🛠️ 団体戦オーダー直前変更＆補欠交代用のボトムシート表示メソッド
+}
+
+void _showOrderReorderSheet(
+  BuildContext context,
+  WidgetRef ref,
+  List<MatchModel> groupList,
+) {
+  final sortedMatches = List<MatchModel>.from(groupList)
+    ..sort((a, b) => a.order.compareTo(b.order));
+
+  if (sortedMatches.isEmpty) return;
+  // firstMatch unused variable removed
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return _OrderReorderBottomSheet(sortedMatches: sortedMatches);
+    },
+  );
+}
+
+// 🛠️ オーダー並び替え＆補欠交代用 StatefulWidget
+class _OrderReorderBottomSheet extends ConsumerStatefulWidget {
+  final List<MatchModel> sortedMatches;
+
+  const _OrderReorderBottomSheet({required this.sortedMatches});
+
+  @override
+  ConsumerState<_OrderReorderBottomSheet> createState() =>
+      _OrderReorderBottomSheetState();
+}
+
+class _OrderReorderBottomSheetState
+    extends ConsumerState<_OrderReorderBottomSheet> {
+  late List<String> _positions;
+  late List<String> _currentPlayers;
+  List<String> _reservePlayers = [];
+  List<Map<String, String>> _unifiedList = [];
+
+  String _ownTeamName = '';
+  bool _isOwnTeamRed = true;
+  bool _isSaving = false;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSyncData();
+  }
+
+  void _initializeSyncData() {
+    final firstMatch = widget.sortedMatches.first;
+    final ownTeams = ref.read(customTeamNamesProvider).value ?? [];
+    final ruleTeamName = firstMatch.rule?.teamName;
+
+    final rTeam = firstMatch.redName.contains(':')
+        ? firstMatch.redName.split(':').first.trim()
+        : firstMatch.redName;
+    final wTeam = firstMatch.whiteName.contains(':')
+        ? firstMatch.whiteName.split(':').first.trim()
+        : firstMatch.whiteName;
+
+    final isRedOwn =
+        ownTeams.contains(rTeam) ||
+        (ruleTeamName?.isNotEmpty == true && rTeam == ruleTeamName);
+    final isWhiteOwn =
+        ownTeams.contains(wTeam) ||
+        (ruleTeamName?.isNotEmpty == true && wTeam == ruleTeamName);
+
+    if (isRedOwn) {
+      _ownTeamName = rTeam;
+      _isOwnTeamRed = true;
+    } else if (isWhiteOwn) {
+      _ownTeamName = wTeam;
+      _isOwnTeamRed = false;
+    } else {
+      _ownTeamName = rTeam;
+      _isOwnTeamRed = true;
+    }
+
+    _positions = [];
+    _currentPlayers = [];
+    for (var m in widget.sortedMatches) {
+      final pos = m.matchType;
+      final rawName = _isOwnTeamRed ? m.redName : m.whiteName;
+      final name = rawName.contains(':')
+          ? rawName.split(':').last.trim()
+          : rawName;
+
+      _positions.add(pos);
+      _currentPlayers.add(name);
+    }
+  }
+
+  void _buildUnifiedList() {
+    _unifiedList = [];
+    for (int i = 0; i < _positions.length; i++) {
+      _unifiedList.add({
+        'type': 'position',
+        'label': _positions[i],
+        'name': _currentPlayers[i],
+      });
+    }
+    for (var rp in _reservePlayers) {
+      _unifiedList.add({'type': 'reserve', 'label': '控え', 'name': rp});
+    }
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    setState(() {
+      final item = _unifiedList.removeAt(oldIndex);
+      _unifiedList.insert(newIndex, item);
+
+      final posCount = _positions.length;
+      _currentPlayers = [];
+      _reservePlayers = [];
+
+      for (int i = 0; i < _unifiedList.length; i++) {
+        final name = _unifiedList[i]['name']!;
+        if (i < posCount) {
+          _currentPlayers.add(name);
+          _unifiedList[i]['type'] = 'position';
+          _unifiedList[i]['label'] = _positions[i];
+        } else {
+          _reservePlayers.add(name);
+          _unifiedList[i]['type'] = 'reserve';
+          _unifiedList[i]['label'] = '控え';
+        }
+      }
+    });
+  }
+
+  Future<void> _addNewPlayerToReserve() async {
+    final allPlayers = await ref
+        .read(playerRepositoryProvider)
+        .getPlayers()
+        .first;
+    final teamPlayers = allPlayers
+        .where((p) => p.organization == _ownTeamName)
+        .map((p) => p.name)
+        .toList();
+
+    final existingNames = _unifiedList.map((item) => item['name']!).toSet();
+    final availablePlayers = teamPlayers
+        .where((name) => !existingNames.contains(name))
+        .toList();
+
+    if (availablePlayers.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('これ以上追加できる所属選手がいません。名簿管理で登録してください。')),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    final String? selectedName = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('控え選手の追加'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: availablePlayers.length,
+              itemBuilder: (context, index) {
+                final name = availablePlayers[index];
+                return ListTile(
+                  title: Text(name),
+                  onTap: () => Navigator.pop(context, name),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('キャンセル'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (selectedName != null) {
+      setState(() {
+        _reservePlayers.add(selectedName);
+        _buildUnifiedList();
+      });
+    }
+  }
+
+  Future<void> _saveOrder() async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    final List<MatchModel> updatedMatches = [];
+    for (int i = 0; i < widget.sortedMatches.length; i++) {
+      final originalMatch = widget.sortedMatches[i];
+      final newPlayerName = _currentPlayers[i];
+
+      final String updatedRedName;
+      final String updatedWhiteName;
+
+      if (_isOwnTeamRed) {
+        updatedRedName = '$_ownTeamName : $newPlayerName';
+        updatedWhiteName = originalMatch.whiteName;
+      } else {
+        updatedRedName = originalMatch.redName;
+        updatedWhiteName = '$_ownTeamName : $newPlayerName';
+      }
+
+      final updatedMatch = originalMatch.copyWith(
+        redName: updatedRedName,
+        whiteName: updatedWhiteName,
+      );
+      updatedMatches.add(updatedMatch);
+    }
+
+    try {
+      await ref
+          .read(matchApplicationServiceProvider)
+          .saveMatchesBulk(updatedMatches);
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('オーダーを更新しました。')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('オーダーの更新に失敗しました: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    if (_isSaving) {
+      return Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final playersAsync = ref.watch(timelinePlayerListProvider);
+
+    return playersAsync.when(
+      loading: () => Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, stack) => Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Center(child: Text('選手リストの読み込みに失敗しました: $err')),
+      ),
+      data: (allPlayers) {
+        if (!_isInitialized) {
+          final teamPlayers = allPlayers
+              .where((p) => p.organization == _ownTeamName)
+              .map((p) => p.name)
+              .toList();
+
+          _reservePlayers = teamPlayers
+              .where((name) => !_currentPlayers.contains(name))
+              .toList();
+
+          _buildUnifiedList();
+          _isInitialized = true;
+        }
+
+        return Container(
+          margin: EdgeInsets.only(bottom: keyboardHeight),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'オーダー編集 : $_ownTeamName',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      '右側の三本線を長押し・ドラッグして並び替えます。上の5枠が出場選手になります。',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.5,
+                    ),
+                    child: ReorderableListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _unifiedList.length,
+                      itemBuilder: (context, index) {
+                        final item = _unifiedList[index];
+                        final name = item['name']!;
+                        final label = item['label']!;
+                        final isPosition = item['type'] == 'position';
+
+                        return Card(
+                          key: ValueKey('unified_item_$name'),
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          color: isPosition
+                              ? (isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : Colors.blue.shade50)
+                              : (isDark
+                                    ? const Color(0xFF1C1C1E)
+                                    : Colors.grey.shade100),
+                          child: ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isPosition
+                                    ? Colors.blue.shade600
+                                    : Colors.grey.shade600,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                label,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              name,
+                              style: TextStyle(
+                                fontWeight: isPosition
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            trailing: const Icon(Icons.drag_handle),
+                          ),
+                        );
+                      },
+                      onReorderItem: _onReorder,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: _addNewPlayerToReserve,
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text(
+                          '控えを追加',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      const Spacer(),
+                      ElevatedButton(
+                        onPressed: _saveOrder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade700,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('オーダーを確定'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

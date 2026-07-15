@@ -11,6 +11,21 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
     show tournamentProvider;
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+
+class FakePlayerRepository implements PlayerRepository {
+  final List<PlayerModel> players;
+  FakePlayerRepository(this.players);
+
+  @override
+  Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) {
+    return Stream.value(players);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 class FakeMatchApplicationService implements MatchApplicationService {
   List<MatchModel>? savedMatches;
@@ -63,6 +78,7 @@ void main() {
   Widget buildTestableWidget(
     List<MatchModel> matches, {
     List<String> customTeamNames = const [],
+    List<PlayerModel> players = const [],
   }) {
     return ProviderScope(
       overrides: [
@@ -72,6 +88,9 @@ void main() {
           (ref, id) => Stream.value(matches),
         ),
         matchApplicationServiceProvider.overrideWithValue(fakeMatchAppService),
+        playerRepositoryProvider.overrideWithValue(
+          FakePlayerRepository(players),
+        ),
         permissionProvider.overrideWith(
           (ref) => const AppPermissions(
             canCreateMatch: true,
@@ -574,6 +593,145 @@ void main() {
 
       // ダイアログが消えたことを確認
       expect(find.text('決定戦の形式を選択'), findsNothing);
+    });
+
+    testWidgets('3. 団体戦のオーダー直前変更（ドラッグ＆ドロップ・控え選手交代）', (
+      WidgetTester tester,
+    ) async {
+      // 団体戦の試合データを作成
+      final matches = [
+        createMockMatch(
+          id: 'm1_1',
+          category: '団体戦A',
+          groupName: 'group1',
+          matchType: '先鋒',
+          order: 1.0,
+          redName: '白虎剣友会 : 山田 太郎',
+          whiteName: '青龍道場 : 鈴木 一郎',
+        ),
+        createMockMatch(
+          id: 'm1_2',
+          category: '団体戦A',
+          groupName: 'group1',
+          matchType: '次鋒',
+          order: 2.0,
+          redName: '白虎剣友会 : 佐藤 次郎',
+          whiteName: '青龍道場 : 田中 二郎',
+        ),
+      ];
+
+      // 白虎剣友会 の所属選手名簿
+      final players = <PlayerModel>[
+        PlayerModel(
+          id: 'p1',
+          lastName: '山田',
+          firstName: '太郎',
+          lastNameKana: 'やまだ',
+          firstNameKana: 'たろう',
+          grade: 1,
+          organization: '白虎剣友会',
+        ),
+        PlayerModel(
+          id: 'p2',
+          lastName: '佐藤',
+          firstName: '次郎',
+          lastNameKana: 'さとう',
+          firstNameKana: 'じろう',
+          grade: 1,
+          organization: '白虎剣友会',
+        ),
+        PlayerModel(
+          id: 'p3',
+          lastName: '中村',
+          firstName: '三郎',
+          lastNameKana: 'なかむら',
+          firstNameKana: 'さぶろう',
+          grade: 1,
+          organization: '白虎剣友会',
+        ),
+      ];
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          matches,
+          customTeamNames: ['白虎剣友会'],
+          players: players,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // ExpansionTileを展開するためにタップする
+      expect(find.byType(ExpansionTile), findsOneWidget);
+      await tester.tap(find.byType(ExpansionTile));
+      await tester.pumpAndSettle();
+
+      // オーダー編集ボタン（IconButton）が表示されていることを確認
+      final editButtonFinder = find.byTooltip('オーダー編集');
+      expect(editButtonFinder, findsOneWidget);
+
+      // オーダー編集ボタンをタップしてボトムシートを起動
+      await tester.tap(editButtonFinder);
+      await tester.pumpAndSettle();
+
+      // ボトムシートが展開され、タイトルが表示されていることを確認
+      expect(find.text('オーダー編集 : 白虎剣友会'), findsOneWidget);
+
+      // ポジション（先鋒、次鋒）と控え選手が表示されていることを確認
+      final listFinder = find.byType(ReorderableListView).last;
+      expect(
+        find.descendant(of: listFinder, matching: find.text('先鋒')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: listFinder, matching: find.text('次鋒')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: listFinder, matching: find.text('控え')),
+        findsAtLeastNWidgets(1),
+      );
+      expect(
+        find.descendant(of: listFinder, matching: find.text('山田 太郎')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: listFinder, matching: find.text('佐藤 次郎')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: listFinder, matching: find.text('中村 三郎')),
+        findsOneWidget,
+      );
+
+      // ReorderableListView の onReorderItem を直接呼び出して並べ替える
+      final reorderListWidget = tester.widget<ReorderableListView>(
+        find.byType(ReorderableListView).last,
+      );
+      // 中村 三郎(控え、index: 2) を 山田 太郎(先鋒、index: 0) と交代させるため、index 2 を index 0 へ移動
+      reorderListWidget.onReorderItem?.call(2, 0);
+      await tester.pumpAndSettle();
+
+      // 「オーダーを確定」ボタンをタップして保存
+      final confirmButtonFinder = find.text('オーダーを確定');
+      expect(confirmButtonFinder, findsOneWidget);
+      await tester.tap(confirmButtonFinder);
+      await tester.pumpAndSettle();
+
+      // 保存結果をアサーション確認
+      expect(fakeMatchAppService.savedMatches, isNotNull);
+      expect(fakeMatchAppService.savedMatches!.length, 2);
+
+      // 先鋒(id: m1_1) の赤側が 中村 三郎 に更新されていること
+      final updatedFirstMatch = fakeMatchAppService.savedMatches!.firstWhere(
+        (m) => m.id == 'm1_1',
+      );
+      expect(updatedFirstMatch.redName, '白虎剣友会 : 中村 三郎');
+
+      // 次鋒(id: m1_2) の赤側は 山田 太郎
+      final updatedSecondMatch = fakeMatchAppService.savedMatches!.firstWhere(
+        (m) => m.id == 'm1_2',
+      );
+      expect(updatedSecondMatch.redName, '白虎剣友会 : 山田 太郎');
     });
   });
 }
