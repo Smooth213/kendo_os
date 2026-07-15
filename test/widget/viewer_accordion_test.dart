@@ -477,5 +477,68 @@ void main() {
         expect(player2Finder, findsWidgets);
       },
     );
+
+    testWidgets(
+      'Verify own team is prioritized with styling without swapping left/right in ViewerHomeScreen',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        // customTeamNamesProviderを'白虎剣友会'のみに設定
+        await tester.pumpWidget(
+          createTestableWidget(
+            const ViewerHomeScreen(tournamentId: 'test_tournament_1'),
+            overrides: [
+              customTeamNamesProvider.overrideWith(
+                (ref) => Stream.value(<String>['白虎剣友会']),
+              ),
+            ],
+          ),
+        );
+
+        await tester.pump();
+        await tester.pumpAndSettle();
+
+        // 団体戦のヘッダーで、赤側の「青龍道場」と白側の「白虎剣友会」が元の順序（左右反転なし）で表示されていることを確認
+        final groupKey = const PageStorageKey<String>('group_団体戦A');
+        final leftTeamFinder = find.descendant(
+          of: find.byKey(groupKey),
+          matching: find.text('青龍道場'),
+        );
+        final rightTeamFinder = find.descendant(
+          of: find.byKey(groupKey),
+          matching: find.text('白虎剣友会'),
+        );
+        expect(leftTeamFinder, findsOneWidget);
+        expect(rightTeamFinder, findsOneWidget);
+
+        // x座標をチェックし、赤（青龍道場）が左側、白（白虎剣友会）が右側にある（スワップされていない）ことを保証
+        final leftOffset = tester.getCenter(leftTeamFinder);
+        final rightOffset = tester.getCenter(rightTeamFinder);
+        expect(leftOffset.dx < rightOffset.dx, isTrue);
+
+        // 自チーム（白虎剣友会）のみがイエローゴールド（Colors.amber.shade600）で強調され、青龍道場はそうではないことを確認
+        final leftText = tester.widget<Text>(leftTeamFinder);
+        final rightText = tester.widget<Text>(rightTeamFinder);
+        expect(leftText.style?.color, isNot(Colors.amber.shade600));
+        expect(rightText.style?.color, Colors.amber.shade600);
+
+        // 個人戦で自チーム（白虎剣友会）の「鈴木」がアコーディオンヘッダー（playerName）として優先され、
+        // かつ自チームではない「山田」はヘッダー名にならない（1つのアコーディオンキー「鈴木」のみが作成される）ことを検証
+        final playerHeaderFinder = find.text('鈴木');
+        expect(playerHeaderFinder, findsWidgets);
+
+        // アコーディオンを展開
+        await tester.tap(playerHeaderFinder.first);
+        await tester.pumpAndSettle();
+
+        // 展開後に、対戦相手の「山田」が表示されることを検証
+        expect(find.text('山田'), findsWidgets);
+      },
+    );
   });
 }

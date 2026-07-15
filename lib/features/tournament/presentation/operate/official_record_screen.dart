@@ -1146,8 +1146,15 @@ class OfficialRecordScreen extends ConsumerWidget {
         final wTeam = m.whiteName.contains(':')
             ? m.whiteName.split(':').first.trim()
             : '';
-        bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
-        bool wOwn = ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
+        final ruleTeamName = m.rule?.teamName;
+        bool rOwn =
+            ownTeams.contains(rTeam) ||
+            m.redName.contains('自チーム') ||
+            (ruleTeamName?.isNotEmpty == true && rTeam == ruleTeamName);
+        bool wOwn =
+            ownTeams.contains(wTeam) ||
+            m.whiteName.contains('自チーム') ||
+            (ruleTeamName?.isNotEmpty == true && wTeam == ruleTeamName);
         if (rOwn && wOwn) return 1; // 同門
         if (rOwn || wOwn) return 2; // 自チーム vs 他チーム
         return 3; // 他チーム同士
@@ -1166,9 +1173,16 @@ class OfficialRecordScreen extends ConsumerWidget {
         final wName = m.whiteName.contains(':')
             ? m.whiteName.split(':').last.trim()
             : m.whiteName;
+        final ruleTeamName = m.rule?.teamName;
 
-        bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
-        bool wOwn = ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
+        bool rOwn =
+            ownTeams.contains(rTeam) ||
+            m.redName.contains('自チーム') ||
+            (ruleTeamName?.isNotEmpty == true && rTeam == ruleTeamName);
+        bool wOwn =
+            ownTeams.contains(wTeam) ||
+            m.whiteName.contains('自チーム') ||
+            (ruleTeamName?.isNotEmpty == true && wTeam == ruleTeamName);
 
         if (rOwn && wOwn) return rName; // 同門は赤優先
         if (rOwn) return rName;
@@ -1232,9 +1246,15 @@ class OfficialRecordScreen extends ConsumerWidget {
 
       final ptsMap = MatchCalculatorHelper.extractPointsFromModel(m);
 
-      final bool rOwn = ownTeams.contains(rTeam) || m.redName.contains('自チーム');
+      final ruleTeamName = m.rule?.teamName;
+      final bool rOwn =
+          ownTeams.contains(rTeam) ||
+          m.redName.contains('自チーム') ||
+          (ruleTeamName?.isNotEmpty == true && rTeam == ruleTeamName);
       final bool wOwn =
-          ownTeams.contains(wTeam) || m.whiteName.contains('自チーム');
+          ownTeams.contains(wTeam) ||
+          m.whiteName.contains('自チーム') ||
+          (ruleTeamName?.isNotEmpty == true && wTeam == ruleTeamName);
       final bool hasOwnTeam = rOwn || wOwn;
 
       return IndividualMatchItem(

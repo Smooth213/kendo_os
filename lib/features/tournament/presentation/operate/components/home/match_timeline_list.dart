@@ -413,12 +413,20 @@ class MatchTimelineList extends ConsumerWidget {
                 String wTeam = m.whiteName.contains(':')
                     ? m.whiteName.split(':').first.trim()
                     : m.whiteName;
-                if (ownTeams.contains(rTeam)) {
+                final isRedOwnForM =
+                    ownTeams.contains(rTeam) ||
+                    (m.rule?.teamName.isNotEmpty == true &&
+                        rTeam == m.rule!.teamName);
+                final isWhiteOwnForM =
+                    ownTeams.contains(wTeam) ||
+                    (m.rule?.teamName.isNotEmpty == true &&
+                        wTeam == m.rule!.teamName);
+                if (isRedOwnForM) {
                   groupToOwnTeams
                       .putIfAbsent(m.groupName!, () => {})
                       .add(rTeam);
                 }
-                if (ownTeams.contains(wTeam)) {
+                if (isWhiteOwnForM) {
                   groupToOwnTeams
                       .putIfAbsent(m.groupName!, () => {})
                       .add(wTeam);
@@ -444,8 +452,14 @@ class MatchTimelineList extends ConsumerWidget {
                   ? m.whiteName.split(':').first.trim()
                   : m.whiteName;
 
-              bool isRedOwn = ownTeams.contains(rTeam);
-              bool isWhiteOwn = ownTeams.contains(wTeam);
+              bool isRedOwn =
+                  ownTeams.contains(rTeam) ||
+                  (m.rule?.teamName.isNotEmpty == true &&
+                      rTeam == m.rule!.teamName);
+              bool isWhiteOwn =
+                  ownTeams.contains(wTeam) ||
+                  (m.rule?.teamName.isNotEmpty == true &&
+                      wTeam == m.rule!.teamName);
 
               if (m.groupName != null && m.groupName!.isNotEmpty) {
                 if (groupToOwnTeams.containsKey(m.groupName!)) {
@@ -583,14 +597,24 @@ class MatchTimelineList extends ConsumerWidget {
                             : wPlayer;
                       }
                     } else {
-                      if (m.redName.contains(teamName)) {
+                      if (m.redName.contains(teamName) ||
+                          ownTeams.any((ot) => m.redName.contains(ot)) ||
+                          (m.rule?.teamName.isNotEmpty == true &&
+                              m.redName.contains(m.rule!.teamName))) {
                         playerName = m.redName.contains(':')
                             ? m.redName.split(':').last.trim()
                             : m.redName;
-                      } else if (m.whiteName.contains(teamName)) {
+                      } else if (m.whiteName.contains(teamName) ||
+                          ownTeams.any((ot) => m.whiteName.contains(ot)) ||
+                          (m.rule?.teamName.isNotEmpty == true &&
+                              m.whiteName.contains(m.rule!.teamName))) {
                         playerName = m.whiteName.contains(':')
                             ? m.whiteName.split(':').last.trim()
                             : m.whiteName;
+                      } else {
+                        playerName = m.redName.contains(':')
+                            ? m.redName.split(':').last.trim()
+                            : m.redName;
                       }
                     }
                     matchesByPlayer.putIfAbsent(playerName, () => []).add(m);
@@ -1580,16 +1604,29 @@ class MatchTimelineList extends ConsumerWidget {
                                                                     }
                                                                   }
 
+                                                                  final ruleTeamName =
+                                                                      groupList
+                                                                          .firstOrNull
+                                                                          ?.rule
+                                                                          ?.teamName;
                                                                   final isRedOwn =
                                                                       ownTeams
                                                                           .contains(
                                                                             rTeam,
-                                                                          );
+                                                                          ) ||
+                                                                      (ruleTeamName?.isNotEmpty ==
+                                                                              true &&
+                                                                          rTeam ==
+                                                                              ruleTeamName);
                                                                   final isWhiteOwn =
                                                                       ownTeams
                                                                           .contains(
                                                                             wTeam,
-                                                                          );
+                                                                          ) ||
+                                                                      (ruleTeamName?.isNotEmpty ==
+                                                                              true &&
+                                                                          wTeam ==
+                                                                              ruleTeamName);
 
                                                                   // ★ 修正: リーグ戦と通常の団体戦のRow構造を完全分離し、はみ出しを100%防止
                                                                   if (label
@@ -1620,21 +1657,38 @@ class MatchTimelineList extends ConsumerWidget {
                                                                       ],
                                                                     );
                                                                   } else {
+                                                                    final showLeftTeam =
+                                                                        rTeam;
+                                                                    final showRightTeam =
+                                                                        wTeam;
+                                                                    final showLeftWins =
+                                                                        redWins;
+                                                                    final showLeftPts =
+                                                                        redPts;
+                                                                    final showRightWins =
+                                                                        whiteWins;
+                                                                    final showRightPts =
+                                                                        whitePts;
+                                                                    final showLeftOwn =
+                                                                        isRedOwn;
+                                                                    final showRightOwn =
+                                                                        isWhiteOwn;
+
                                                                     return Row(
                                                                       mainAxisAlignment:
                                                                           MainAxisAlignment
                                                                               .center,
                                                                       children: [
-                                                                        // 赤チーム名
+                                                                        // 左チーム名
                                                                         Expanded(
                                                                           child: Text(
-                                                                            rTeam,
+                                                                            showLeftTeam,
                                                                             style: TextStyle(
                                                                               fontSize: 15,
-                                                                              fontWeight: isRedOwn
+                                                                              fontWeight: showLeftOwn
                                                                                   ? FontWeight.w900
                                                                                   : FontWeight.bold,
-                                                                              color: isRedOwn
+                                                                              color: showLeftOwn
                                                                                   ? Colors.amber.shade600
                                                                                   : titleColor,
                                                                             ),
@@ -1655,7 +1709,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 MainAxisSize.min,
                                                                             children: [
                                                                               Text(
-                                                                                '$redWins',
+                                                                                '$showLeftWins',
                                                                                 style: TextStyle(
                                                                                   fontSize: 16,
                                                                                   fontWeight: FontWeight.bold,
@@ -1665,7 +1719,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 ),
                                                                               ),
                                                                               Text(
-                                                                                '($redPts)',
+                                                                                '($showLeftPts)',
                                                                                 style: TextStyle(
                                                                                   fontSize: 11,
                                                                                   color: isDark
@@ -1687,7 +1741,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 ),
                                                                               ),
                                                                               Text(
-                                                                                '$whiteWins',
+                                                                                '$showRightWins',
                                                                                 style: TextStyle(
                                                                                   fontSize: 16,
                                                                                   fontWeight: FontWeight.bold,
@@ -1697,7 +1751,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 ),
                                                                               ),
                                                                               Text(
-                                                                                '($whitePts)',
+                                                                                '($showRightPts)',
                                                                                 style: TextStyle(
                                                                                   fontSize: 11,
                                                                                   color: isDark
@@ -1708,16 +1762,16 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             ],
                                                                           ),
                                                                         ),
-                                                                        // 白チーム名
+                                                                        // 右チーム名
                                                                         Expanded(
                                                                           child: Text(
-                                                                            wTeam,
+                                                                            showRightTeam,
                                                                             style: TextStyle(
                                                                               fontSize: 15,
-                                                                              fontWeight: isWhiteOwn
+                                                                              fontWeight: showRightOwn
                                                                                   ? FontWeight.w900
                                                                                   : FontWeight.bold,
-                                                                              color: isWhiteOwn
+                                                                              color: showRightOwn
                                                                                   ? Colors.amber.shade600
                                                                                   : titleColor,
                                                                             ),
@@ -2452,25 +2506,45 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                               }
                                                                                             }
                                                                                           }
-                                                                                          final isRedOwn = ownTeams.contains(
-                                                                                            t1,
-                                                                                          );
-                                                                                          final isWhiteOwn = ownTeams.contains(
-                                                                                            t2,
-                                                                                          );
+                                                                                          final ruleTeamName = bouts.firstOrNull?.rule?.teamName;
+                                                                                          final isRedOwn =
+                                                                                              ownTeams.contains(
+                                                                                                t1,
+                                                                                              ) ||
+                                                                                              (ruleTeamName?.isNotEmpty ==
+                                                                                                      true &&
+                                                                                                  t1 ==
+                                                                                                      ruleTeamName);
+                                                                                          final isWhiteOwn =
+                                                                                              ownTeams.contains(
+                                                                                                t2,
+                                                                                              ) ||
+                                                                                              (ruleTeamName?.isNotEmpty ==
+                                                                                                      true &&
+                                                                                                  t2 ==
+                                                                                                      ruleTeamName);
+
+                                                                                          final showLeftTeam = t1;
+                                                                                          final showRightTeam = t2;
+                                                                                          final showLeftWins = redWins;
+                                                                                          final showLeftPts = redPts;
+                                                                                          final showRightWins = whiteWins;
+                                                                                          final showRightPts = whitePts;
+                                                                                          final showLeftOwn = isRedOwn;
+                                                                                          final showRightOwn = isWhiteOwn;
 
                                                                                           return Row(
                                                                                             mainAxisAlignment: MainAxisAlignment.center,
                                                                                             children: [
                                                                                               Expanded(
                                                                                                 child: Text(
-                                                                                                  t1,
+                                                                                                  showLeftTeam,
                                                                                                   style: TextStyle(
                                                                                                     fontSize: 14,
-                                                                                                    fontWeight: isRedOwn
+                                                                                                    fontWeight: showLeftOwn
                                                                                                         ? FontWeight.w900
                                                                                                         : FontWeight.bold,
-                                                                                                    color: isRedOwn
+                                                                                                    color: showLeftOwn
                                                                                                         ? Colors.amber.shade600
                                                                                                         : mTitleColor,
                                                                                                   ),
@@ -2486,7 +2560,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                   mainAxisSize: MainAxisSize.min,
                                                                                                   children: [
                                                                                                     Text(
-                                                                                                      '$redWins',
+                                                                                                      '$showLeftWins',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: 15,
                                                                                                         fontWeight: FontWeight.bold,
@@ -2496,7 +2570,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       ),
                                                                                                     ),
                                                                                                     Text(
-                                                                                                      '($redPts)',
+                                                                                                      '($showLeftPts)',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: 10,
                                                                                                         color: Colors.grey.shade500,
@@ -2516,7 +2590,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       ),
                                                                                                     ),
                                                                                                     Text(
-                                                                                                      '$whiteWins',
+                                                                                                      '$showRightWins',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: 15,
                                                                                                         fontWeight: FontWeight.bold,
@@ -2526,7 +2600,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       ),
                                                                                                     ),
                                                                                                     Text(
-                                                                                                      '($whitePts)',
+                                                                                                      '($showRightPts)',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: 10,
                                                                                                         color: Colors.grey.shade500,
@@ -2537,13 +2611,13 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                               ),
                                                                                               Expanded(
                                                                                                 child: Text(
-                                                                                                  t2,
+                                                                                                  showRightTeam,
                                                                                                   style: TextStyle(
                                                                                                     fontSize: 14,
-                                                                                                    fontWeight: isWhiteOwn
+                                                                                                    fontWeight: showRightOwn
                                                                                                         ? FontWeight.w900
                                                                                                         : FontWeight.bold,
-                                                                                                    color: isWhiteOwn
+                                                                                                    color: showRightOwn
                                                                                                         ? Colors.amber.shade600
                                                                                                         : mTitleColor,
                                                                                                   ),

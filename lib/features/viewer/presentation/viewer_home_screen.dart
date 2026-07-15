@@ -760,12 +760,20 @@ class ViewerHomeScreen extends ConsumerWidget {
                                 String wTeam = m.whiteName.contains(':')
                                     ? m.whiteName.split(':').first.trim()
                                     : m.whiteName;
-                                if (ownTeams.contains(rTeam)) {
+                                final isRedOwnForM =
+                                    ownTeams.contains(rTeam) ||
+                                    (m.rule?.teamName.isNotEmpty == true &&
+                                        rTeam == m.rule!.teamName);
+                                final isWhiteOwnForM =
+                                    ownTeams.contains(wTeam) ||
+                                    (m.rule?.teamName.isNotEmpty == true &&
+                                        wTeam == m.rule!.teamName);
+                                if (isRedOwnForM) {
                                   groupToOwnTeams
                                       .putIfAbsent(m.groupName!, () => {})
                                       .add(rTeam);
                                 }
-                                if (ownTeams.contains(wTeam)) {
+                                if (isWhiteOwnForM) {
                                   groupToOwnTeams
                                       .putIfAbsent(m.groupName!, () => {})
                                       .add(wTeam);
@@ -794,8 +802,14 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   ? m.whiteName.split(':').first.trim()
                                   : m.whiteName;
 
-                              bool isRedOwn = ownTeams.contains(rTeam);
-                              bool isWhiteOwn = ownTeams.contains(wTeam);
+                              bool isRedOwn =
+                                  ownTeams.contains(rTeam) ||
+                                  (m.rule?.teamName.isNotEmpty == true &&
+                                      rTeam == m.rule!.teamName);
+                              bool isWhiteOwn =
+                                  ownTeams.contains(wTeam) ||
+                                  (m.rule?.teamName.isNotEmpty == true &&
+                                      wTeam == m.rule!.teamName);
 
                               if (m.groupName != null &&
                                   m.groupName!.isNotEmpty) {
@@ -973,22 +987,92 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       } else if (wHit) {
                                         playerName = wPlayer;
                                       } else {
-                                        playerName =
-                                            m.redName.contains(teamName)
-                                            ? rPlayer
-                                            : wPlayer;
+                                        final rTeam = m.redName.contains(':')
+                                            ? m.redName.split(':').first.trim()
+                                            : m.redName;
+                                        final wTeam = m.whiteName.contains(':')
+                                            ? m.whiteName
+                                                  .split(':')
+                                                  .first
+                                                  .trim()
+                                            : m.whiteName;
+                                        final isRedOwn =
+                                            ownTeams.contains(rTeam) ||
+                                            (m.rule?.teamName.isNotEmpty ==
+                                                    true &&
+                                                rTeam == m.rule!.teamName);
+                                        final isWhiteOwn =
+                                            ownTeams.contains(wTeam) ||
+                                            (m.rule?.teamName.isNotEmpty ==
+                                                    true &&
+                                                wTeam == m.rule!.teamName);
+                                        if (isWhiteOwn && !isRedOwn) {
+                                          playerName = wPlayer;
+                                        } else if (isRedOwn && !isWhiteOwn) {
+                                          playerName = rPlayer;
+                                        } else {
+                                          playerName =
+                                              m.redName.contains(teamName)
+                                              ? rPlayer
+                                              : wPlayer;
+                                        }
                                       }
                                     } else {
-                                      if (m.redName.contains(teamName)) {
-                                        playerName = m.redName.contains(':')
-                                            ? m.redName.split(':').last.trim()
-                                            : m.redName;
-                                      } else if (m.whiteName.contains(
-                                        teamName,
-                                      )) {
+                                      final rTeam = m.redName.contains(':')
+                                          ? m.redName.split(':').first.trim()
+                                          : m.redName;
+                                      final wTeam = m.whiteName.contains(':')
+                                          ? m.whiteName.split(':').first.trim()
+                                          : m.whiteName;
+                                      final isRedOwn =
+                                          ownTeams.contains(rTeam) ||
+                                          (m.rule?.teamName.isNotEmpty ==
+                                                  true &&
+                                              rTeam == m.rule!.teamName);
+                                      final isWhiteOwn =
+                                          ownTeams.contains(wTeam) ||
+                                          (m.rule?.teamName.isNotEmpty ==
+                                                  true &&
+                                              wTeam == m.rule!.teamName);
+
+                                      if (isWhiteOwn && !isRedOwn) {
                                         playerName = m.whiteName.contains(':')
                                             ? m.whiteName.split(':').last.trim()
                                             : m.whiteName;
+                                      } else if (isRedOwn && !isWhiteOwn) {
+                                        playerName = m.redName.contains(':')
+                                            ? m.redName.split(':').last.trim()
+                                            : m.redName;
+                                      } else {
+                                        if (m.redName.contains(teamName)) {
+                                          playerName = m.redName.contains(':')
+                                              ? m.redName.split(':').last.trim()
+                                              : m.redName;
+                                        } else if (m.whiteName.contains(
+                                          teamName,
+                                        )) {
+                                          playerName = m.whiteName.contains(':')
+                                              ? m.whiteName
+                                                    .split(':')
+                                                    .last
+                                                    .trim()
+                                              : m.whiteName;
+                                        } else {
+                                          playerName =
+                                              m.redName.contains(teamName)
+                                              ? (m.redName.contains(':')
+                                                    ? m.redName
+                                                          .split(':')
+                                                          .last
+                                                          .trim()
+                                                    : m.redName)
+                                              : (m.whiteName.contains(':')
+                                                    ? m.whiteName
+                                                          .split(':')
+                                                          .last
+                                                          .trim()
+                                                    : m.whiteName);
+                                        }
                                       }
                                     }
                                     matchesByPlayer
@@ -1502,16 +1586,46 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     }
                                                                   }
                                                                 }
+                                                                final ruleTeamName =
+                                                                    groupList
+                                                                        .firstOrNull
+                                                                        ?.rule
+                                                                        ?.teamName;
                                                                 final isRedOwn =
                                                                     ownTeams
                                                                         .contains(
                                                                           rTeam,
-                                                                        );
+                                                                        ) ||
+                                                                    (ruleTeamName?.isNotEmpty ==
+                                                                            true &&
+                                                                        rTeam ==
+                                                                            ruleTeamName);
                                                                 final isWhiteOwn =
                                                                     ownTeams
                                                                         .contains(
                                                                           wTeam,
-                                                                        );
+                                                                        ) ||
+                                                                    (ruleTeamName?.isNotEmpty ==
+                                                                            true &&
+                                                                        wTeam ==
+                                                                            ruleTeamName);
+
+                                                                final showLeftTeam =
+                                                                    rTeam;
+                                                                final showRightTeam =
+                                                                    wTeam;
+                                                                final showLeftWins =
+                                                                    redWins;
+                                                                final showLeftPts =
+                                                                    redPts;
+                                                                final showRightWins =
+                                                                    whiteWins;
+                                                                final showRightPts =
+                                                                    whitePts;
+                                                                final showLeftOwn =
+                                                                    isRedOwn;
+                                                                final showRightOwn =
+                                                                    isWhiteOwn;
 
                                                                 return Row(
                                                                   mainAxisAlignment:
@@ -1520,16 +1634,16 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                   children: [
                                                                     Expanded(
                                                                       child: Text(
-                                                                        rTeam,
+                                                                        showLeftTeam,
                                                                         style: TextStyle(
                                                                           fontSize:
                                                                               15,
                                                                           fontWeight:
-                                                                              isRedOwn
+                                                                              showLeftOwn
                                                                               ? FontWeight.w900
                                                                               : FontWeight.bold,
                                                                           color:
-                                                                              isRedOwn
+                                                                              showLeftOwn
                                                                               ? Colors.amber.shade600
                                                                               : titleColor,
                                                                         ),
@@ -1549,7 +1663,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             MainAxisSize.min,
                                                                         children: [
                                                                           Text(
-                                                                            '$redWins',
+                                                                            '$showLeftWins',
                                                                             style: TextStyle(
                                                                               fontSize: 16,
                                                                               fontWeight: FontWeight.bold,
@@ -1559,7 +1673,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             ),
                                                                           ),
                                                                           Text(
-                                                                            '($redPts)',
+                                                                            '($showLeftPts)',
                                                                             style: TextStyle(
                                                                               fontSize: 11,
                                                                               color: isDark
@@ -1581,7 +1695,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             ),
                                                                           ),
                                                                           Text(
-                                                                            '$whiteWins',
+                                                                            '$showRightWins',
                                                                             style: TextStyle(
                                                                               fontSize: 16,
                                                                               fontWeight: FontWeight.bold,
@@ -1591,7 +1705,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             ),
                                                                           ),
                                                                           Text(
-                                                                            '($whitePts)',
+                                                                            '($showRightPts)',
                                                                             style: TextStyle(
                                                                               fontSize: 11,
                                                                               color: isDark
@@ -1604,16 +1718,16 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     ),
                                                                     Expanded(
                                                                       child: Text(
-                                                                        wTeam,
+                                                                        showRightTeam,
                                                                         style: TextStyle(
                                                                           fontSize:
                                                                               15,
                                                                           fontWeight:
-                                                                              isWhiteOwn
+                                                                              showRightOwn
                                                                               ? FontWeight.w900
                                                                               : FontWeight.bold,
                                                                           color:
-                                                                              isWhiteOwn
+                                                                              showRightOwn
                                                                               ? Colors.amber.shade600
                                                                               : titleColor,
                                                                         ),
@@ -1979,25 +2093,45 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                           }
                                                                                         }
                                                                                       }
-                                                                                      final isRedOwn = ownTeams.contains(
-                                                                                        t1,
-                                                                                      );
-                                                                                      final isWhiteOwn = ownTeams.contains(
-                                                                                        t2,
-                                                                                      );
+                                                                                      final ruleTeamName = bouts.firstOrNull?.rule?.teamName;
+                                                                                      final isRedOwn =
+                                                                                          ownTeams.contains(
+                                                                                            t1,
+                                                                                          ) ||
+                                                                                          (ruleTeamName?.isNotEmpty ==
+                                                                                                  true &&
+                                                                                              t1 ==
+                                                                                                  ruleTeamName);
+                                                                                      final isWhiteOwn =
+                                                                                          ownTeams.contains(
+                                                                                            t2,
+                                                                                          ) ||
+                                                                                          (ruleTeamName?.isNotEmpty ==
+                                                                                                  true &&
+                                                                                              t2 ==
+                                                                                                  ruleTeamName);
+
+                                                                                      final showLeftTeam = t1;
+                                                                                      final showRightTeam = t2;
+                                                                                      final showLeftWins = redWins;
+                                                                                      final showLeftPts = redPts;
+                                                                                      final showRightWins = whiteWins;
+                                                                                      final showRightPts = whitePts;
+                                                                                      final showLeftOwn = isRedOwn;
+                                                                                      final showRightOwn = isWhiteOwn;
 
                                                                                       return Row(
                                                                                         mainAxisAlignment: MainAxisAlignment.center,
                                                                                         children: [
                                                                                           Expanded(
                                                                                             child: Text(
-                                                                                              t1,
+                                                                                              showLeftTeam,
                                                                                               style: TextStyle(
                                                                                                 fontSize: 14,
-                                                                                                fontWeight: isRedOwn
+                                                                                                fontWeight: showLeftOwn
                                                                                                     ? FontWeight.w900
                                                                                                     : FontWeight.bold,
-                                                                                                color: isRedOwn
+                                                                                                color: showLeftOwn
                                                                                                     ? Colors.amber.shade600
                                                                                                     : mTitleColor,
                                                                                               ),
@@ -2013,7 +2147,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                               mainAxisSize: MainAxisSize.min,
                                                                                               children: [
                                                                                                 Text(
-                                                                                                  '$redWins',
+                                                                                                  '$showLeftWins',
                                                                                                   style: TextStyle(
                                                                                                     fontSize: 15,
                                                                                                     fontWeight: FontWeight.bold,
@@ -2023,7 +2157,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                   ),
                                                                                                 ),
                                                                                                 Text(
-                                                                                                  '($redPts)',
+                                                                                                  '($showLeftPts)',
                                                                                                   style: TextStyle(
                                                                                                     fontSize: 10,
                                                                                                     color: isDark
@@ -2045,7 +2179,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                   ),
                                                                                                 ),
                                                                                                 Text(
-                                                                                                  '$whiteWins',
+                                                                                                  '$showRightWins',
                                                                                                   style: TextStyle(
                                                                                                     fontSize: 15,
                                                                                                     fontWeight: FontWeight.bold,
@@ -2055,7 +2189,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                   ),
                                                                                                 ),
                                                                                                 Text(
-                                                                                                  '($whitePts)',
+                                                                                                  '($showRightPts)',
                                                                                                   style: TextStyle(
                                                                                                     fontSize: 10,
                                                                                                     color: isDark
@@ -2068,13 +2202,13 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                           ),
                                                                                           Expanded(
                                                                                             child: Text(
-                                                                                              t2,
+                                                                                              showRightTeam,
                                                                                               style: TextStyle(
                                                                                                 fontSize: 14,
-                                                                                                fontWeight: isWhiteOwn
+                                                                                                fontWeight: showRightOwn
                                                                                                     ? FontWeight.w900
                                                                                                     : FontWeight.bold,
-                                                                                                color: isWhiteOwn
+                                                                                                color: showRightOwn
                                                                                                     ? Colors.amber.shade600
                                                                                                     : mTitleColor,
                                                                                               ),
@@ -3140,6 +3274,10 @@ String _generateDescriptiveLeagueTitle(
   }
   final int n = participantsSet.length;
   final int mCount = n * (n - 1) ~/ 2;
+
+  final ruleTeamName = matches.firstOrNull?.rule?.teamName;
+  final hasRuleTeam = ruleTeamName?.isNotEmpty == true;
+
   final bool isIndiv = matches.any(
     (m) =>
         m.matchType == 'individual' ||
@@ -3150,12 +3288,18 @@ String _generateDescriptiveLeagueTitle(
   String selfInfo = "";
   if (isIndiv) {
     final myMatch = matches.firstWhere(
-      (m) => ownTeams.any(
-        (ot) => m.redName.contains(ot) || m.whiteName.contains(ot),
-      ),
+      (m) =>
+          ownTeams.any(
+            (ot) => m.redName.contains(ot) || m.whiteName.contains(ot),
+          ) ||
+          (hasRuleTeam &&
+              (m.redName.contains(ruleTeamName!) ||
+                  m.whiteName.contains(ruleTeamName))),
       orElse: () => matches.first,
     );
-    final isRedOwn = ownTeams.any((ot) => myMatch.redName.contains(ot));
+    final isRedOwn =
+        ownTeams.any((ot) => myMatch.redName.contains(ot)) ||
+        (hasRuleTeam && myMatch.redName.contains(ruleTeamName!));
     final rawName = isRedOwn ? myMatch.redName : myMatch.whiteName;
     final team = rawName.split(':').first.trim();
     final name = rawName.contains(':')
@@ -3164,7 +3308,7 @@ String _generateDescriptiveLeagueTitle(
     selfInfo = "$name（$team）";
   } else {
     selfInfo = participantsSet.firstWhere(
-      (p) => ownTeams.contains(p),
+      (p) => ownTeams.contains(p) || (hasRuleTeam && p == ruleTeamName),
       orElse: () => participantsSet.first,
     );
   }
