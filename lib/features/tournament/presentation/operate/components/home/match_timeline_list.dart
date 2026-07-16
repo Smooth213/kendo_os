@@ -29,6 +29,8 @@ import 'package:kendo_os/features/match/presentation/components/announce_popup_m
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/domain/entities/team_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'tournament_header_card.dart';
 
 // ★ 画面間で共有する状態をここに集約
@@ -5745,13 +5747,20 @@ class _OrderReorderBottomSheetState
     _unifiedList = [];
     for (int i = 0; i < _positions.length; i++) {
       _unifiedList.add({
+        'id': 'pos_$i',
         'type': 'position',
         'label': _positions[i],
         'name': _currentPlayers[i],
       });
     }
-    for (var rp in _reservePlayers) {
-      _unifiedList.add({'type': 'reserve', 'label': '控え', 'name': rp});
+    for (int i = 0; i < _reservePlayers.length; i++) {
+      final rp = _reservePlayers[i];
+      _unifiedList.add({
+        'id': 'reserve_${rp}_$i',
+        'type': 'reserve',
+        'label': '控え',
+        'name': rp,
+      });
     }
   }
 
@@ -5779,59 +5788,62 @@ class _OrderReorderBottomSheetState
     });
   }
 
-  Future<void> _addNewPlayerToReserve() async {
-    final allPlayers = await ref
-        .read(playerRepositoryProvider)
-        .getPlayers()
-        .first;
+  Future<void> _addNewPlayerToReserve(
+    List<PlayerModel> allPlayers,
+    List<TeamModel> allTeams,
+  ) async {
+    // 曖昧マッチで組織名が _ownTeamName にマッチする選手を抽出
     final teamPlayers = allPlayers
-        .where((p) => p.organization == _ownTeamName)
+        .where((p) {
+          final org = p.organization.trim();
+          if (org.isEmpty) return false;
+          return _ownTeamName.contains(org) || org.contains(_ownTeamName);
+        })
         .map((p) => p.name)
         .toList();
 
-    final existingNames = _unifiedList.map((item) => item['name']!).toSet();
-    final availablePlayers = teamPlayers
-        .where((name) => !existingNames.contains(name))
+    // 加えて、登録されたチーム（TeamModel）の選手も含める
+    final matchedTeam = allTeams.firstWhere(
+      (t) => t.teamName == _ownTeamName || _ownTeamName == t.teamName,
+      orElse: () {
+        return allTeams.firstWhere(
+          (t) =>
+              _ownTeamName.contains(t.teamName) ||
+              t.teamName.contains(_ownTeamName),
+          orElse: () => TeamModel(
+            id: '',
+            tournamentId: '',
+            category: '',
+            teamName: '',
+            matchType: '',
+            playerNames: [],
+          ),
+        );
+      },
+    );
+    final teamRegisteredPlayerNames = matchedTeam.playerNames
+        .where((name) => name.isNotEmpty)
         .toList();
 
-    if (availablePlayers.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('これ以上追加できる所属選手がいません。名簿管理で登録してください。')),
-        );
-      }
-      return;
-    }
+    final Set<String> candidates = {
+      ...teamRegisteredPlayerNames,
+      ...teamPlayers,
+    };
+
+    final existingNames = _unifiedList.map((item) => item['name']!).toSet();
+    final availablePlayers = candidates
+        .where(
+          (name) =>
+              !existingNames.contains(name) && name != '未定' && name != '欠員',
+        )
+        .toList();
 
     if (!mounted) return;
 
     final String? selectedName = await showDialog<String>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('控え選手の追加'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: availablePlayers.length,
-              itemBuilder: (context, index) {
-                final name = availablePlayers[index];
-                return ListTile(
-                  title: Text(name),
-                  onTap: () => Navigator.pop(context, name),
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('キャンセル'),
-            ),
-          ],
-        );
-      },
+      builder: (context) =>
+          _AddReservePlayerDialog(availablePlayers: availablePlayers),
     );
 
     if (selectedName != null) {
@@ -5906,20 +5918,22 @@ class _OrderReorderBottomSheetState
         height: 300,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final playersAsync = ref.watch(timelinePlayerListProvider);
+    final tournamentId = widget.sortedMatches.first.tournamentId ?? '';
+    final teamsAsync = ref.watch(registeredTeamsProvider(tournamentId));
 
     return playersAsync.when(
       loading: () => Container(
         height: 300,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: const Center(child: CircularProgressIndicator()),
       ),
@@ -5927,150 +5941,344 @@ class _OrderReorderBottomSheetState
         height: 300,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Center(child: Text('選手リストの読み込みに失敗しました: $err')),
       ),
       data: (allPlayers) {
-        if (!_isInitialized) {
-          final teamPlayers = allPlayers
-              .where((p) => p.organization == _ownTeamName)
-              .map((p) => p.name)
-              .toList();
-
-          _reservePlayers = teamPlayers
-              .where((name) => !_currentPlayers.contains(name))
-              .toList();
-
-          _buildUnifiedList();
-          _isInitialized = true;
-        }
-
-        return Container(
-          margin: EdgeInsets.only(bottom: keyboardHeight),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'オーダー編集 : $_ownTeamName',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const Divider(),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      '右側の三本線を長押し・ドラッグして並び替えます。上の5枠が出場選手になります。',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.5,
-                    ),
-                    child: ReorderableListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _unifiedList.length,
-                      itemBuilder: (context, index) {
-                        final item = _unifiedList[index];
-                        final name = item['name']!;
-                        final label = item['label']!;
-                        final isPosition = item['type'] == 'position';
-
-                        return Card(
-                          key: ValueKey('unified_item_$name'),
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          color: isPosition
-                              ? (isDark
-                                    ? const Color(0xFF2C2C2E)
-                                    : Colors.blue.shade50)
-                              : (isDark
-                                    ? const Color(0xFF1C1C1E)
-                                    : Colors.grey.shade100),
-                          child: ListTile(
-                            leading: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isPosition
-                                    ? Colors.blue.shade600
-                                    : Colors.grey.shade600,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                label,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              name,
-                              style: TextStyle(
-                                fontWeight: isPosition
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                            trailing: const Icon(Icons.drag_handle),
-                          ),
-                        );
-                      },
-                      onReorderItem: _onReorder,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: _addNewPlayerToReserve,
-                        icon: const Icon(Icons.add, size: 16),
-                        label: const Text(
-                          '控えを追加',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      const Spacer(),
-                      ElevatedButton(
-                        onPressed: _saveOrder,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade700,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('オーダーを確定'),
-                      ),
-                    ],
-                  ),
-                ],
+        return teamsAsync.when(
+          loading: () => Container(
+            height: 300,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
             ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
+          error: (err, stack) => Container(
+            height: 300,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Center(child: Text('チームリストの読み込みに失敗しました: $err')),
+          ),
+          data: (allTeams) {
+            if (!_isInitialized) {
+              // 1. チーム名が一致する TeamModel を探す
+              final matchedTeam = allTeams.firstWhere(
+                (t) => t.teamName == _ownTeamName || _ownTeamName == t.teamName,
+                orElse: () {
+                  // 部分一致で曖昧検索
+                  return allTeams.firstWhere(
+                    (t) =>
+                        _ownTeamName.contains(t.teamName) ||
+                        t.teamName.contains(_ownTeamName),
+                    orElse: () => TeamModel(
+                      id: '',
+                      tournamentId: '',
+                      category: '',
+                      teamName: '',
+                      matchType: '',
+                      playerNames: [],
+                    ),
+                  );
+                },
+              );
+
+              // 2. チーム登録データから選手名（補欠を含む）を収集
+              final List<String> teamRegisteredPlayerNames = matchedTeam
+                  .playerNames
+                  .where((name) => name.isNotEmpty)
+                  .toList();
+
+              // 4. チーム登録された選手（補欠）を控え候補とする
+              // ★ 改修: 初期控えには名簿全体（teamPlayers）を含めず、チーム登録された選手のみを対象とする
+              final Set<String> candidates = {...teamRegisteredPlayerNames};
+
+              // 5. 現在出場していない選手のみを控え選手プールとする
+              _reservePlayers = candidates
+                  .where(
+                    (name) =>
+                        !_currentPlayers.contains(name) &&
+                        name != '未定' &&
+                        name != '欠員',
+                  )
+                  .toList();
+
+              _buildUnifiedList();
+              _isInitialized = true;
+            }
+
+            return Container(
+              margin: EdgeInsets.only(bottom: keyboardHeight),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 16,
+                    left: 24,
+                    right: 24,
+                    bottom: 24,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 48,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.grey.shade700
+                                : Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'オーダー編集 : $_ownTeamName',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const Divider(),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          '右側の三本線を長押し・ドラッグして並び替えます。上の5枠が出場選手になります。',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.5,
+                        ),
+                        child: ReorderableListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _unifiedList.length,
+                          itemBuilder: (context, index) {
+                            final item = _unifiedList[index];
+                            final id = item['id']!;
+                            final name = item['name']!;
+                            final label = item['label']!;
+                            final isPosition = item['type'] == 'position';
+
+                            return Card(
+                              key: ValueKey('unified_item_$id'),
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              color: isPosition
+                                  ? (isDark
+                                        ? const Color(0xFF2C2C2E)
+                                        : Colors.blue.shade50)
+                                  : (isDark
+                                        ? const Color(0xFF1C1C1E)
+                                        : Colors.grey.shade100),
+                              child: ListTile(
+                                leading: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isPosition
+                                        ? Colors.blue.shade600
+                                        : Colors.grey.shade600,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    label,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                title: Text(
+                                  name,
+                                  style: TextStyle(
+                                    fontWeight: isPosition
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                                trailing: const Icon(Icons.drag_handle),
+                              ),
+                            );
+                          },
+                          onReorderItem: _onReorder,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () =>
+                                _addNewPlayerToReserve(allPlayers, allTeams),
+                            icon: const Icon(Icons.add, size: 16),
+                            label: const Text(
+                              '控えを追加',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          const Spacer(),
+                          ElevatedButton(
+                            onPressed: _saveOrder,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue.shade700,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('オーダーを確定'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
+    );
+  }
+}
+
+class _AddReservePlayerDialog extends StatefulWidget {
+  final List<String> availablePlayers;
+  const _AddReservePlayerDialog({required this.availablePlayers});
+
+  @override
+  State<_AddReservePlayerDialog> createState() =>
+      _AddReservePlayerDialogState();
+}
+
+class _AddReservePlayerDialogState extends State<_AddReservePlayerDialog> {
+  late final TextEditingController _textController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('控え選手の追加'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _textController,
+                    decoration: const InputDecoration(
+                      hintText: '助っ人（マスタ外）の名前を入力',
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                    ),
+                    onSubmitted: (val) {
+                      final name = val.trim();
+                      if (name.isNotEmpty) {
+                        Navigator.pop(context, name);
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    final name = _textController.text.trim();
+                    if (name.isNotEmpty) {
+                      Navigator.pop(context, name);
+                    }
+                  },
+                  child: const Text('追加'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            const Text(
+              '所属名簿から選択：',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (widget.availablePlayers.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  '未出場の所属選手はいません。',
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.availablePlayers.length,
+                  itemBuilder: (context, index) {
+                    final name = widget.availablePlayers[index];
+                    return ListTile(
+                      title: Text(name),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      onTap: () => Navigator.pop(context, name),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('キャンセル'),
+        ),
+      ],
     );
   }
 }

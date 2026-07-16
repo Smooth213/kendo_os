@@ -13,6 +13,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/shared/domain/entities/team_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
 class FakePlayerRepository implements PlayerRepository {
   final List<PlayerModel> players;
@@ -79,6 +81,7 @@ void main() {
     List<MatchModel> matches, {
     List<String> customTeamNames = const [],
     List<PlayerModel> players = const [],
+    Map<String, List<String>> teamPlayers = const {},
   }) {
     return ProviderScope(
       overrides: [
@@ -106,6 +109,21 @@ void main() {
         customTeamNamesProvider.overrideWith(
           (ref) => Stream.value(customTeamNames),
         ),
+        registeredTeamsProvider.overrideWith((ref, id) {
+          final teams = customTeamNames
+              .map(
+                (name) => TeamModel(
+                  id: 't_$name',
+                  tournamentId: id,
+                  category: '一般',
+                  teamName: name,
+                  matchType: '団体戦（5人制）',
+                  playerNames: teamPlayers[name] ?? const [],
+                ),
+              )
+              .toList();
+          return Stream.value(teams);
+        }),
         searchQueryProvider.overrideWith((ref) => ''),
         isSearchVisibleProvider.overrideWith((ref) => false),
       ],
@@ -654,8 +672,11 @@ void main() {
       await tester.pumpWidget(
         buildTestableWidget(
           matches,
-          customTeamNames: ['白虎剣友会'],
+          customTeamNames: const ['白虎剣友会'],
           players: players,
+          teamPlayers: const {
+            '白虎剣友会': ['山田 太郎', '佐藤 次郎', '中村 三郎'],
+          },
         ),
       );
       await tester.pumpAndSettle();
@@ -732,6 +753,218 @@ void main() {
         (m) => m.id == 'm1_2',
       );
       expect(updatedSecondMatch.redName, '白虎剣友会 : 山田 太郎');
+    });
+
+    testWidgets('4. 団体戦のオーダー直前変更（マスタ外・助っ人手動追加）', (WidgetTester tester) async {
+      // 団体戦の試合データを作成
+      final matches = [
+        createMockMatch(
+          id: 'm1_1',
+          category: '団体戦A',
+          groupName: 'group1',
+          matchType: '先鋒',
+          order: 1.0,
+          redName: '白虎剣友会 : 未定',
+          whiteName: '青龍道場 : 鈴木 一郎',
+        ),
+        createMockMatch(
+          id: 'm1_2',
+          category: '団体戦A',
+          groupName: 'group1',
+          matchType: '次鋒',
+          order: 2.0,
+          redName: '白虎剣友会 : 未定',
+          whiteName: '青龍道場 : 田中 二郎',
+        ),
+      ];
+
+      // 所属選手名簿は空（マスタ外追加を検証するため）
+      final players = <PlayerModel>[];
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          matches,
+          customTeamNames: ['白虎剣友会'],
+          players: players,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // ExpansionTileを展開するためにタップする
+      expect(find.byType(ExpansionTile), findsOneWidget);
+      await tester.tap(find.byType(ExpansionTile));
+      await tester.pumpAndSettle();
+
+      // オーダー編集ボタン（IconButton）が表示されていることを確認
+      final editButtonFinder = find.byTooltip('オーダー編集');
+      expect(editButtonFinder, findsOneWidget);
+
+      // オーダー編集ボタンをタップしてボトムシートを起動
+      await tester.tap(editButtonFinder);
+      await tester.pumpAndSettle();
+
+      // ボトムシートが展開され、タイトルが表示されていることを確認
+      expect(find.text('オーダー編集 : 白虎剣友会'), findsOneWidget);
+
+      // 控えを追加ボタンをタップ
+      final addReserveButtonFinder = find.text('控えを追加');
+      expect(addReserveButtonFinder, findsOneWidget);
+      await tester.tap(addReserveButtonFinder);
+      await tester.pumpAndSettle();
+
+      // ダイアログが表示されていることを確認
+      expect(find.text('控え選手の追加'), findsOneWidget);
+      expect(find.text('未出場の所属選手はいません。'), findsOneWidget);
+
+      // TextFieldを見つけて助っ人の名前を入力
+      final textFieldFinder = find.byType(TextField);
+      expect(textFieldFinder, findsOneWidget);
+      await tester.enterText(textFieldFinder, '助っ人 太郎');
+      await tester.pumpAndSettle();
+
+      // 「追加」ボタンをタップ
+      final addButtonFinder = find.text('追加');
+      expect(addButtonFinder, findsOneWidget);
+      await tester.tap(addButtonFinder);
+      await tester.pumpAndSettle();
+
+      // ダイアログが閉じ、ボトムシートに「助っ人 太郎」が控え選手として表示されていることを確認
+      expect(find.text('控え選手の追加'), findsNothing);
+
+      final listFinder = find.byType(ReorderableListView);
+      expect(
+        find.descendant(of: listFinder, matching: find.text('助っ人 太郎')),
+        findsOneWidget,
+      );
+
+      // ReorderableListView の onReorderItem を直接呼び出して並べ替える
+      final reorderListWidget = tester.widget<ReorderableListView>(
+        find.byType(ReorderableListView).last,
+      );
+      // 助っ人 太郎(控え、index: 2) を 未定(先鋒、index: 0) と交代させるため、index 2 を index 0 へ移動
+      reorderListWidget.onReorderItem?.call(2, 0);
+      await tester.pumpAndSettle();
+
+      // 「オーダーを確定」ボタンをタップして保存
+      final confirmButtonFinder = find.text('オーダーを確定');
+      expect(confirmButtonFinder, findsOneWidget);
+      await tester.tap(confirmButtonFinder);
+      await tester.pumpAndSettle();
+
+      // 保存結果をアサーション確認
+      expect(fakeMatchAppService.savedMatches, isNotNull);
+      expect(fakeMatchAppService.savedMatches!.length, 2);
+
+      // 先鋒(id: m1_1) の赤側が 助っ人 太郎 に更新されていること
+      final updatedFirstMatch = fakeMatchAppService.savedMatches!.firstWhere(
+        (m) => m.id == 'm1_1',
+      );
+      expect(updatedFirstMatch.redName, '白虎剣友会 : 助っ人 太郎');
+    });
+
+    testWidgets('5. 団体戦のオーダー直前変更ボトムシートのデザイン整合性検証', (WidgetTester tester) async {
+      // 団体戦の試合データを作成
+      final matches = [
+        createMockMatch(
+          id: 'm1_1',
+          category: '団体戦A',
+          groupName: 'group1',
+          matchType: '先鋒',
+          order: 1.0,
+          redName: '白虎剣友会 : 山田 太郎',
+          whiteName: '青龍道場 : 鈴木 一郎',
+        ),
+        createMockMatch(
+          id: 'm1_2',
+          category: '団体戦A',
+          groupName: 'group1',
+          matchType: '次鋒',
+          order: 2.0,
+          redName: '白虎剣友会 : 佐藤 次郎',
+          whiteName: '青龍道場 : 田中 二郎',
+        ),
+      ];
+
+      final players = <PlayerModel>[
+        PlayerModel(
+          id: 'p1',
+          lastName: '山田',
+          firstName: '太郎',
+          lastNameKana: 'やまだ',
+          firstNameKana: 'たろう',
+          grade: 1,
+          organization: '白虎剣友会',
+        ),
+      ];
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          matches,
+          customTeamNames: ['白虎剣友会'],
+          players: players,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // ExpansionTileを展開
+      await tester.tap(find.byType(ExpansionTile));
+      await tester.pumpAndSettle();
+
+      // オーダー編集ボタンをタップしてボトムシートを起動
+      await tester.tap(find.byTooltip('オーダー編集'));
+      await tester.pumpAndSettle();
+
+      // 1. ボトムシート全体の Container を検証 (角丸半径24dp)
+      final bottomSheetContainerFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.decoration is BoxDecoration) {
+          final deco = widget.decoration as BoxDecoration;
+          if (deco.borderRadius != null) {
+            final expectedRadius = const BorderRadius.vertical(
+              top: Radius.circular(24),
+            );
+            return deco.borderRadius == expectedRadius;
+          }
+        }
+        return false;
+      });
+      expect(bottomSheetContainerFinder, findsAtLeastNWidgets(1));
+
+      // 2. ドラッグ用つまみ (幅48, 高さ5, 角丸10dp) の検証
+      final handleFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.constraints != null) {
+          final constraints = widget.constraints!;
+          if (constraints.minWidth == 48 && constraints.minHeight == 5) {
+            if (widget.decoration is BoxDecoration) {
+              final deco = widget.decoration as BoxDecoration;
+              return deco.borderRadius == BorderRadius.circular(10);
+            }
+          }
+        }
+        return false;
+      });
+      expect(handleFinder, findsOneWidget);
+
+      // 3. パディングの検証 (左右24, 上部16, 下部24)
+      final paddingFinder = find.byWidgetPredicate((widget) {
+        if (widget is Padding) {
+          final p = widget.padding;
+          if (p is EdgeInsets) {
+            return p.left == 24 &&
+                p.right == 24 &&
+                p.top == 16 &&
+                p.bottom == 24;
+          }
+        }
+        return false;
+      });
+      expect(paddingFinder, findsOneWidget);
+
+      // 4. タイトルの検証 (フォントサイズ18, 太字)
+      final titleTextFinder = find.text('オーダー編集 : 白虎剣友会');
+      expect(titleTextFinder, findsOneWidget);
+      final textWidget = tester.widget<Text>(titleTextFinder);
+      expect(textWidget.style?.fontSize, 18);
+      expect(textWidget.style?.fontWeight, FontWeight.bold);
     });
   });
 }

@@ -20,6 +20,7 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 class MockMatchRuleNotifier extends MatchRuleNotifier {
   final MatchRule initialRule;
@@ -162,7 +163,54 @@ void main() {
               ),
             ),
             isarProvider.overrideWithValue(null),
+            playerListProvider.overrideWith(
+              (ref) => Stream.value([
+                PlayerModel(
+                  id: 'p1',
+                  lastName: '武田',
+                  firstName: '修二',
+                  lastNameKana: 'たけだ',
+                  firstNameKana: 'しゅうじ',
+                  grade: 1,
+                  organization: '自チーム',
+                ),
+                PlayerModel(
+                  id: 'p2',
+                  lastName: '佐藤',
+                  firstName: '健',
+                  lastNameKana: 'さとう',
+                  firstNameKana: 'たける',
+                  grade: 1,
+                  organization: '自チーム',
+                ),
+                PlayerModel(
+                  id: 'p3',
+                  lastName: '補欠',
+                  firstName: '次郎',
+                  lastNameKana: 'ほけつ',
+                  firstNameKana: 'じろう',
+                  grade: 1,
+                  organization: '自チーム',
+                ),
+                PlayerModel(
+                  id: 'p4',
+                  lastName: '他チーム',
+                  firstName: '太郎',
+                  lastNameKana: 'たちーむ',
+                  firstNameKana: 'たろう',
+                  grade: 1,
+                  organization: '他チーム',
+                ),
+              ]),
+            ),
           ],
+        );
+
+        // playerListProvider の Stream が流れて値が AsyncValue.data に入るのを強制する
+        container.listen<AsyncValue<List<PlayerModel>>>(
+          playerListProvider,
+          (previous, next) {},
+          fireImmediately: true,
         );
 
         await tester.pumpWidget(
@@ -174,6 +222,8 @@ void main() {
             ),
           ),
         );
+
+        await tester.pump(Duration.zero);
 
         await tester.pumpAndSettle();
 
@@ -188,11 +238,17 @@ void main() {
         // Verify the dialog is displayed
         expect(find.text('次の試合を追加 (錬成会)'), findsOneWidget);
 
-        // Verify that Red team players (武田 修二, 佐藤 健) are presented as ChoiceChips
+        // Verify that Red team players (武田 修二, 佐藤 健, 補欠 次郎) are presented as ChoiceChips
         final chipTakedafinder = find.widgetWithText(ChoiceChip, '武田 修二');
         final chipSatofinder = find.widgetWithText(ChoiceChip, '佐藤 健');
+        final chipHoketsufinder = find.widgetWithText(ChoiceChip, '補欠 次郎');
         expect(chipTakedafinder, findsOneWidget);
         expect(chipSatofinder, findsOneWidget);
+        expect(chipHoketsufinder, findsOneWidget);
+
+        // Verify that players from other teams (e.g. 他チーム 太郎) are NOT presented as ChoiceChips
+        final chipOtherFinder = find.widgetWithText(ChoiceChip, '他チーム 太郎');
+        expect(chipOtherFinder, findsNothing);
 
         // Verify that White team players (選手A, 選手B) are presented as ChoiceChips
         final chipAFinder = find.widgetWithText(ChoiceChip, '選手A');
