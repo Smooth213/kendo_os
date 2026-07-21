@@ -640,5 +640,148 @@ void main() {
         expect(find.text('メ'), findsNothing);
       },
     );
+
+    testWidgets(
+      '10. 【3段レイアウト崩れ防止】 MatchListTileCard のメモが1行目と独立した2行目に描画されていること',
+      (WidgetTester tester) async {
+        final mockMatch = makeMockMatch(
+          id: 'match_010',
+          redName: '亀山クラブ : 道上',
+          whiteName: '広島道場 : 皿田',
+          note: '特記メモテスト',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              matchListProvider.overrideWith((ref) => [mockMatch]),
+              matchListByTournamentProvider.overrideWith(
+                (ref, id) => Stream.value([mockMatch]),
+              ),
+              isarProvider.overrideWithValue(null),
+              customTeamNamesProvider.overrideWith(
+                (ref) => Stream.value(const <String>[]),
+              ),
+              permissionProvider.overrideWith(
+                (ref) => const AppPermissions(
+                  isReadOnly: false,
+                  canManageTournament: true,
+                  canCreateMatch: true,
+                  canChangeSettings: true,
+                  canDeleteData: true,
+                ),
+              ),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: MatchListTileCard(
+                    initialMatch: mockMatch,
+                    isDeletable: false,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. メモテキストが画面上に存在することを確認
+        expect(find.textContaining('特記メモテスト'), findsOneWidget);
+
+        // 2. 1行目のRow (コントロール群) を検索し、メモがその中に含まれていないことを検証する
+        final rowFinder = find.descendant(
+          of: find.byType(MatchListTileCard),
+          matching: find.byType(Row),
+        );
+        expect(rowFinder, findsWidgets);
+
+        // Rowのいずれの子孫にも「特記メモテスト」が含まれない（＝1行目に内包されていない）ことを確認
+        for (final rowElement in tester.elementList(rowFinder)) {
+          final noteInRowFinder = find.descendant(
+            of: find.byWidget(rowElement.widget),
+            matching: find.textContaining('特記メモテスト'),
+          );
+          expect(
+            noteInRowFinder.evaluate().isEmpty,
+            isTrue,
+            reason: 'メモは1段目のRowコントロール内部に配置されてはいけない',
+          );
+        }
+      },
+    );
+
+    testWidgets(
+      '11. 【3段レイアウト崩れ防止】 ViewerMatchListTileCard のメモが1行目と独立した2行目に描画されていること',
+      (WidgetTester tester) async {
+        final mockMatch = makeMockMatch(
+          id: 'match_011',
+          redName: '亀山クラブ : 道上',
+          whiteName: '広島道場 : 皿田',
+          note: '観客用メモテスト',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              matchListProvider.overrideWith((ref) => [mockMatch]),
+              matchListByTournamentProvider.overrideWith(
+                (ref, id) => Stream.value([mockMatch]),
+              ),
+              isarProvider.overrideWithValue(null),
+              customTeamNamesProvider.overrideWith(
+                (ref) => Stream.value(const <String>[]),
+              ),
+              viewer.customTeamNamesProvider.overrideWith(
+                (ref) => Stream.value(const <String>[]),
+              ),
+              permissionProvider.overrideWith(
+                (ref) => const AppPermissions(
+                  isReadOnly: true,
+                  canManageTournament: false,
+                  canCreateMatch: false,
+                  canChangeSettings: false,
+                  canDeleteData: false,
+                ),
+              ),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: viewer.ViewerMatchListTileCard(
+                    initialMatch: mockMatch,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. メモテキストが画面上に存在することを確認
+        expect(find.textContaining('観客用メモテスト'), findsOneWidget);
+
+        // 2. 1行目のRow (コントロール・スコア・バナー群) の中にメモが含まれていないことを検証
+        final rowFinder = find.descendant(
+          of: find.byType(viewer.ViewerMatchListTileCard),
+          matching: find.byType(Row),
+        );
+        expect(rowFinder, findsWidgets);
+
+        for (final rowElement in tester.elementList(rowFinder)) {
+          final noteInRowFinder = find.descendant(
+            of: find.byWidget(rowElement.widget),
+            matching: find.textContaining('観客用メモテスト'),
+          );
+          expect(
+            noteInRowFinder.evaluate().isEmpty,
+            isTrue,
+            reason: 'メモは1段目のRowコントロール内部に配置されてはいけない',
+          );
+        }
+      },
+    );
   });
 }

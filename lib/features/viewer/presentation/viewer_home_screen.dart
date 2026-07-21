@@ -1372,37 +1372,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                               CrossAxisAlignment
                                                                   .start,
                                                           children: [
-                                                            // 🔼 【1行目】: 運営系ボタン・メモ一元化ライン
+                                                            // 🔼 【1行目】: コントロール・ステータスライン（コントロール右寄せ）
                                                             Row(
                                                               children: [
-                                                                if (firstMatch
-                                                                    .note
-                                                                    .isNotEmpty)
-                                                                  Flexible(
-                                                                    child: Padding(
-                                                                      padding:
-                                                                          const EdgeInsets.only(
-                                                                            right:
-                                                                                6,
-                                                                          ),
-                                                                      child: Text(
-                                                                        firstMatch
-                                                                            .note,
-                                                                        style: TextStyle(
-                                                                          fontSize:
-                                                                              11,
-                                                                          color:
-                                                                              subTitleColor,
-                                                                          fontWeight:
-                                                                              FontWeight.bold,
-                                                                        ),
-                                                                        overflow:
-                                                                            TextOverflow.ellipsis,
-                                                                        maxLines:
-                                                                            1,
-                                                                      ),
-                                                                    ),
-                                                                  ),
                                                                 const Spacer(),
                                                                 // 📊スコアボタン（観客閲覧専用リンクにアタッチ）
                                                                 if (!label
@@ -1520,10 +1492,37 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                 ),
                                                               ],
                                                             ),
+                                                            if (firstMatch
+                                                                .note
+                                                                .isNotEmpty) ...[
+                                                              const SizedBox(
+                                                                height: 6,
+                                                              ),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          2,
+                                                                    ),
+                                                                child: Text(
+                                                                  firstMatch
+                                                                      .note,
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        11,
+                                                                    color:
+                                                                        subTitleColor,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
                                                             const SizedBox(
                                                               height: 10,
                                                             ),
-                                                            // 🔽 【2行目】: チーム合計スコア勝数(本数)ライン / またはリーグ戦タイトル（全自動加算による完全一瞥化）
+                                                            // 🔽 【3行目】: チーム合計スコア勝数(本数)ライン / またはリーグ戦タイトル（全自動加算による完全一瞥化）
                                                             Builder(
                                                               builder: (context) {
                                                                 if (label
@@ -2843,34 +2842,9 @@ class ViewerMatchListTileCard extends ConsumerWidget {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔼 【1行目】: 運営ステータス＆観客専用「スコア」ボタン集約ライン
+              // 🔼 【1行目】: コントロール・ステータスライン（コントロール右寄せ）
               Row(
                 children: [
-                  if (displayNote.isNotEmpty || match.matchType.isNotEmpty)
-                    Flexible(
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            if (displayNote.isNotEmpty)
-                              TextSpan(text: displayNote),
-                            if (displayNote.isNotEmpty &&
-                                (match.matchType.isNotEmpty &&
-                                    match.matchType != '選手'))
-                              const TextSpan(text: ' '),
-                            if (match.matchType.isNotEmpty &&
-                                match.matchType != '選手')
-                              TextSpan(text: '【${match.matchType}】'),
-                          ],
-                        ),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: noteC,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
                   const Spacer(),
                   // 観客専用スコア詳細ボタン（権限先祖返りの完全防壁）
                   if ((isIndividual ||
@@ -2946,6 +2920,31 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                   ),
                 ],
               ),
+              if (displayNote.isNotEmpty || match.matchType.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        if (displayNote.isNotEmpty) TextSpan(text: displayNote),
+                        if (displayNote.isNotEmpty &&
+                            (match.matchType.isNotEmpty &&
+                                match.matchType != '選手'))
+                          const TextSpan(text: ' '),
+                        if (match.matchType.isNotEmpty &&
+                            match.matchType != '選手')
+                          TextSpan(text: '【${match.matchType}】'),
+                      ],
+                    ),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: noteC,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 10),
               // 🔽 【2行目〜3行目】: 掲示板式リアルタイムスコア＆対戦ライン
               Builder(

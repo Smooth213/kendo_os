@@ -1294,38 +1294,10 @@ class MatchTimelineList extends ConsumerWidget {
                                                                 CrossAxisAlignment
                                                                     .start,
                                                             children: [
-                                                              // 🔼 【1行目】: 運営系ボタン・メモ一元化ライン
+                                                              // 🔼 【1行目】: 運営系ボタン・ステータスライン（コントロール右寄せ）
                                                               Row(
                                                                 children: [
-                                                                  if (firstMatch
-                                                                      .note
-                                                                      .isNotEmpty)
-                                                                    Expanded(
-                                                                      child: Padding(
-                                                                        padding: const EdgeInsets.only(
-                                                                          right:
-                                                                              6,
-                                                                        ),
-                                                                        child: Text(
-                                                                          firstMatch
-                                                                              .note,
-                                                                          style: TextStyle(
-                                                                            fontSize:
-                                                                                11,
-                                                                            color:
-                                                                                subTitleColor,
-                                                                            fontWeight:
-                                                                                FontWeight.bold,
-                                                                          ),
-                                                                          overflow:
-                                                                              TextOverflow.ellipsis,
-                                                                          maxLines:
-                                                                              2,
-                                                                        ),
-                                                                      ),
-                                                                    )
-                                                                  else
-                                                                    const Spacer(),
+                                                                  const Spacer(),
                                                                   // 簡易入力ボタン
                                                                   if (!isReadOnlyUI &&
                                                                       !allFinished &&
@@ -1602,10 +1574,37 @@ class MatchTimelineList extends ConsumerWidget {
                                                                   ),
                                                                 ],
                                                               ),
+                                                              if (firstMatch
+                                                                  .note
+                                                                  .isNotEmpty) ...[
+                                                                const SizedBox(
+                                                                  height: 6,
+                                                                ),
+                                                                Padding(
+                                                                  padding:
+                                                                      const EdgeInsets.symmetric(
+                                                                        horizontal:
+                                                                            2,
+                                                                      ),
+                                                                  child: Text(
+                                                                    firstMatch
+                                                                        .note,
+                                                                    style: TextStyle(
+                                                                      fontSize:
+                                                                          11,
+                                                                      color:
+                                                                          subTitleColor,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
                                                               const SizedBox(
                                                                 height: 10,
                                                               ),
-                                                              // 🔽 【2行目】: チーム合計スコア勝数(本数)ライン
+                                                              // 🔽 【3行目】: チーム合計スコア勝数(本数)ライン
                                                               Builder(
                                                                 builder: (context) {
                                                                   // 団体戦グループ内の全ポジションから勝数・本数をリアルタイムに合算算出
@@ -5143,39 +5142,10 @@ class MatchListTileCard extends ConsumerWidget {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔼 【1行目】: 運営ステータス＆ボタン一元集約
+              // 🔼 【1行目】: 運営ステータス＆ボタン一元集約（コントロール右寄せ）
               Row(
                 children: [
-                  if (displayNote.isNotEmpty || match.matchType.isNotEmpty)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Text.rich(
-                          TextSpan(
-                            children: [
-                              if (displayNote.isNotEmpty)
-                                TextSpan(text: displayNote),
-                              if (displayNote.isNotEmpty &&
-                                  (match.matchType.isNotEmpty &&
-                                      match.matchType != '選手'))
-                                const TextSpan(text: ' '),
-                              if (match.matchType.isNotEmpty &&
-                                  match.matchType != '選手')
-                                TextSpan(text: '【${match.matchType}】'),
-                            ],
-                          ),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: noteC,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                        ),
-                      ),
-                    )
-                  else
-                    const Spacer(),
+                  const Spacer(),
                   // 簡易入力ボタン
                   Builder(
                     builder: (context) {
@@ -5329,6 +5299,31 @@ class MatchListTileCard extends ConsumerWidget {
                   ),
                 ],
               ),
+              if (displayNote.isNotEmpty || match.matchType.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        if (displayNote.isNotEmpty) TextSpan(text: displayNote),
+                        if (displayNote.isNotEmpty &&
+                            (match.matchType.isNotEmpty &&
+                                match.matchType != '選手'))
+                          const TextSpan(text: ' '),
+                        if (match.matchType.isNotEmpty &&
+                            match.matchType != '選手')
+                          TextSpan(text: '【${match.matchType}】'),
+                      ],
+                    ),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: noteC,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 10),
               // 🔽 【要塞型・全3行レイアウト大刷新】: チーム名を選手名の上に配置し、スコア圧迫による文字切れを100%防止
               Builder(
