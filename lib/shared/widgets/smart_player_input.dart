@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 // 部内戦機能で利用する選手マスタを取得する専用Provider
 final bunaiksenPlayerMasterProvider =
@@ -28,6 +29,14 @@ class SmartPlayerInput extends ConsumerStatefulWidget {
 }
 
 class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
+  Color get _accentColor {
+    final themeColors = Theme.of(context).extension<AppThemeColors>();
+    if (widget.accentColor == const Color(0xFF8B0000) && themeColors != null) {
+      return themeColors.primaryAccent;
+    }
+    return widget.accentColor;
+  }
+
   // ボトムシートを開いて選手を選択・追加するメソッド
   Future<void> _showPlayerSelectSheet() async {
     final masterPlayers = ref.read(bunaiksenPlayerMasterProvider).value ?? [];
@@ -73,7 +82,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: widget.accentColor,
+                      color: _accentColor,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -118,17 +127,17 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                         if (isNewName)
                           ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: widget.accentColor.withAlpha(26),
+                              backgroundColor: _accentColor.withAlpha(26),
                               child: Icon(
                                 Icons.person_add,
-                                color: widget.accentColor,
+                                color: _accentColor,
                                 size: 20,
                               ),
                             ),
                             title: Text(
                               '"${searchText.trim()}" をゲストとして追加',
                               style: TextStyle(
-                                color: widget.accentColor,
+                                color: _accentColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -169,10 +178,10 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                         ...filteredMaster.map(
                           (p) => ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: widget.accentColor.withAlpha(26),
+                              backgroundColor: _accentColor.withAlpha(26),
                               child: Icon(
                                 Icons.person,
-                                color: widget.accentColor,
+                                color: _accentColor,
                                 size: 20,
                               ),
                             ),
@@ -214,7 +223,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
         labelText: widget.label,
         filled: true,
         fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
-        floatingLabelStyle: TextStyle(color: widget.accentColor),
+        floatingLabelStyle: TextStyle(color: _accentColor),
         suffixIcon: const Icon(Icons.arrow_drop_down), // ボトムシートが開くことを示唆するアイコン
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -230,7 +239,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: widget.accentColor, width: 2),
+          borderSide: BorderSide(color: _accentColor, width: 2),
         ),
       ),
     );

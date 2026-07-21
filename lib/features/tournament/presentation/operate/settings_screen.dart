@@ -10,6 +10,7 @@ import 'package:kendo_os/shared/presentation/providers/current_user_role_provide
 import 'package:kendo_os/security/feature_gate.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
 import 'package:kendo_os/shared/infrastructure/services/web_notification_helper.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -19,6 +20,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  late AppThemeColors _themeColors;
   String _testMessage = '下のボタンをタップしてテスト';
   // ★ Phase 6-2修正: 未使用となった _tapCount フィールドを完全にパージ（クリーンアップ）
 
@@ -34,40 +36,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     // iOS Native: True Black & Elevation
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    _themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
     // iOS Native カラーパレット
     final Color dynamicTextColor = isDark ? Colors.white : Colors.black;
-    final Color dynamicCardColor = isDark
-        ? const Color(0xFF1C1C1E)
-        : Colors.white;
-
-    // AppBarの文字色（ライト時はインディゴではなく黒に合わせるのがiOS風）
-    final Color headerTextColor = isDark ? Colors.white : Colors.black;
 
     return LiquidBackground(
       // ★ 全体をLiquidBackgroundでラップ
       child: Scaffold(
         backgroundColor: Colors.transparent, // ★ 背景を透明にして下の光のオーブを透かす
         appBar: AppBar(
-          title: GestureDetector(
-            // ★ Phase 6-2: 内部ガバナンスモードへの裏ルート・タップ連打ギミックを完全に物理消滅化
-            onTap: null,
-            child: Text(
-              'システム設定',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-                color: headerTextColor,
-              ),
+          title: Text(
+            'システム設定',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+              color: _themeColors.textColor,
             ),
           ),
           backgroundColor: enableLiquidGlass
               ? Colors.transparent
-              : dynamicCardColor,
-          foregroundColor: headerTextColor,
+              : _themeColors.cardBackground,
+          foregroundColor: _themeColors.textColor,
           elevation: 0,
           centerTitle: true,
-          iconTheme: IconThemeData(color: headerTextColor),
+          iconTheme: IconThemeData(color: _themeColors.textColor),
           actions: const [
             // ★ パスコード復旧手順などが載っている「設定マニュアル」へ直行
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
@@ -349,17 +344,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ? const EdgeInsets.fromLTRB(16, 0, 16, 16)
                     : EdgeInsets.zero,
                 decoration: BoxDecoration(
-                  color: enableLiquidGlass
-                      ? dynamicCardColor.withValues(alpha: isDark ? 0.3 : 0.6)
-                      : dynamicCardColor,
+                  color: _themeColors.cardBackground,
                   borderRadius: enableLiquidGlass
                       ? BorderRadius.circular(24)
                       : BorderRadius.zero,
                   border: enableLiquidGlass
                       ? Border.all(
-                          color: isDark
-                              ? Colors.white30
-                              : Colors.white.withValues(alpha: 0.6),
+                          color: _themeColors.separatorColor,
                           width: 1.5,
                         )
                       : null,
@@ -578,10 +569,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildSettingsBlock(BuildContext context, List<Widget> children) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color dynamicCardColor = isDark
-        ? const Color(0xFF1C1C1E)
-        : Colors.white;
+    final settings = ref.watch(settingsProvider);
+    final enableLiquidGlass = settings.enableLiquidGlass;
 
     final List<Widget> spacedChildren = [];
     for (int i = 0; i < children.length; i++) {
@@ -591,17 +580,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     }
 
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: dynamicCardColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: Column(children: spacedChildren),
-      ),
+    Widget blockContent = Material(
+      color: Colors.transparent,
+      child: Column(children: spacedChildren),
     );
+
+    if (enableLiquidGlass) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            decoration: BoxDecoration(
+              color: _themeColors.cardBackground,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _themeColors.separatorColor),
+            ),
+            child: blockContent,
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: _themeColors.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _themeColors.separatorColor),
+        ),
+        child: blockContent,
+      );
+    }
   }
 
   Widget _buildSectionFooter(BuildContext context, String text) {

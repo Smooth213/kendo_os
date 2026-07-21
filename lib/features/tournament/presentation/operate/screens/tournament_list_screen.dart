@@ -9,6 +9,8 @@ import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイ�
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'dart:ui';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -30,26 +32,15 @@ class TournamentListScreen extends ConsumerWidget {
     final permissions = ref.watch(permissionProvider);
     final isReadOnly = permissions.isReadOnly;
 
-    // iOS Native: イメージカラー「今日の大会(ブルー)」「過去の大会(グレー)」を完全復元
-    final Color accentColor = isArchive
-        ? (isDark ? Colors.blueGrey.shade400 : Colors.blueGrey.shade600)
-        : (isDark ? Colors.blue.shade400 : Colors.blue.shade600);
-
-    final Color softAccentColor = isArchive
-        ? (isDark
-              ? Colors.blueGrey.withValues(alpha: 0.2)
-              : Colors.blueGrey.shade50)
-        : (isDark ? Colors.blue.withValues(alpha: 0.2) : Colors.blue.shade50);
-
-    // iOS Native カラーパレット
-    final Color cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark
-        ? const Color(0xFF8E8E93)
-        : const Color(0xFF636366);
-    final Color separatorColor = isDark
-        ? const Color(0xFF38383A)
-        : const Color(0xFFC6C6C8);
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final Color accentColor = themeColors.primaryAccent;
+    final Color softAccentColor = themeColors.softAccent;
+    final Color cardColor = themeColors.cardBackground;
+    final Color textColor = themeColors.textColor;
+    final Color subTextColor = themeColors.subTextColor;
+    final Color separatorColor = themeColors.separatorColor;
 
     return LiquidBackground(
       child: Scaffold(
@@ -157,19 +148,36 @@ class TournamentListScreen extends ConsumerWidget {
                   final showHeader = currentMonth != previousMonth;
 
                   Widget buildUnifiedCard() {
+                    final isDark =
+                        Theme.of(context).brightness == Brightness.dark;
+                    final Color effectiveCardColor = enableLiquidGlass
+                        ? cardColor.withValues(alpha: isDark ? 0.35 : 0.65)
+                        : cardColor;
+
+                    final ShapeBorder cardShape = RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: enableLiquidGlass
+                          ? BorderSide(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.15)
+                                  : Colors.black.withValues(alpha: 0.08),
+                              width: 0.5,
+                            )
+                          : (isDark
+                                ? BorderSide.none
+                                : BorderSide(
+                                    color: separatorColor.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    width: 0.5,
+                                  )),
+                    );
+
                     final cardChild = Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       elevation: 0,
-                      color: cardColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: isDark
-                            ? BorderSide.none
-                            : BorderSide(
-                                color: separatorColor.withValues(alpha: 0.5),
-                                width: 0.5,
-                              ),
-                      ),
+                      color: effectiveCardColor,
+                      shape: cardShape,
                       child: InkWell(
                         onTap: () {
                           if (isReadOnly) {
@@ -178,7 +186,7 @@ class TournamentListScreen extends ConsumerWidget {
                             context.push('/home/$id');
                           }
                         },
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Row(
@@ -204,11 +212,13 @@ class TournamentListScreen extends ConsumerWidget {
                                   children: [
                                     Text(
                                       tournament.name,
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.w600,
-                                        color: textColor,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: textColor,
+                                          ),
                                     ),
                                     const SizedBox(height: 4),
                                     Row(
@@ -217,10 +227,10 @@ class TournamentListScreen extends ConsumerWidget {
                                           DateFormat(
                                             'yyyy年MM月dd日',
                                           ).format(tournament.date),
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: subTextColor,
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(color: subTextColor),
                                         ),
                                       ],
                                     ),
@@ -238,7 +248,15 @@ class TournamentListScreen extends ConsumerWidget {
                       ),
                     );
 
-                    // ★ 修正：危険な裏スワイプ（Dismissible）を完全に撤去し、純粋なカードだけを返す（要塞化）
+                    if (enableLiquidGlass) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                          child: cardChild,
+                        ),
+                      );
+                    }
                     return cardChild;
                   }
 

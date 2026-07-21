@@ -66,6 +66,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/errors/global_error_handler.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 enum KendoOsEnv { dev, beta, prod }
 
@@ -484,13 +485,19 @@ final _router = GoRouter(
       path: '/tournament-list',
       builder: (context, state) {
         final isArchive = state.extra as bool? ?? false;
-        return TournamentListScreen(isArchive: isArchive);
+        final screen = TournamentListScreen(isArchive: isArchive);
+        if (isArchive) {
+          return AppThemeModeWrapper(mode: 'normal_viewer', child: screen);
+        }
+        return screen;
       },
     ),
     GoRoute(
       path: '/viewer/:id',
-      builder: (context, state) =>
-          ViewerMatchScreen(matchId: state.pathParameters['id']!),
+      builder: (context, state) => AppThemeModeWrapper(
+        mode: 'normal_viewer',
+        child: ViewerMatchScreen(matchId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/home/:tournamentId',
@@ -542,8 +549,11 @@ final _router = GoRouter(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.pathParameters['tournamentId']!,
-        child: ViewerHomeScreen(
-          tournamentId: state.pathParameters['tournamentId']!,
+        child: AppThemeModeWrapper(
+          mode: 'normal_viewer',
+          child: ViewerHomeScreen(
+            tournamentId: state.pathParameters['tournamentId']!,
+          ),
         ),
       ),
     ),
@@ -553,8 +563,11 @@ final _router = GoRouter(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.pathParameters['tournamentId']!,
-        child: ViewerOfficialRecordScreen(
-          tournamentId: state.pathParameters['tournamentId']!,
+        child: AppThemeModeWrapper(
+          mode: 'normal_viewer',
+          child: ViewerOfficialRecordScreen(
+            tournamentId: state.pathParameters['tournamentId']!,
+          ),
         ),
       ),
     ),
@@ -564,8 +577,11 @@ final _router = GoRouter(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.uri.queryParameters['tournamentId'],
-        child: ViewerTeamScoreboardScreen(
-          groupName: state.pathParameters['groupName']!,
+        child: AppThemeModeWrapper(
+          mode: 'normal_viewer',
+          child: ViewerTeamScoreboardScreen(
+            groupName: state.pathParameters['groupName']!,
+          ),
         ),
       ),
     ),
@@ -575,8 +591,11 @@ final _router = GoRouter(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.uri.queryParameters['tournamentId'],
-        child: ViewerKachinukiScoreboardScreen(
-          groupName: state.pathParameters['groupName']!,
+        child: AppThemeModeWrapper(
+          mode: 'normal_viewer',
+          child: ViewerKachinukiScoreboardScreen(
+            groupName: state.pathParameters['groupName']!,
+          ),
         ),
       ),
     ),
@@ -622,15 +641,24 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/bunaiksen-home',
-      builder: (context, state) => const BunaiksenHomeScreen(),
+      builder: (context, state) => const AppThemeModeWrapper(
+        mode: 'bunaiksen',
+        child: BunaiksenHomeScreen(),
+      ),
     ),
     GoRoute(
       path: '/bunaiksen-setup',
-      builder: (context, state) => const BunaiksenSetupScreen(),
+      builder: (context, state) => const AppThemeModeWrapper(
+        mode: 'bunaiksen',
+        child: BunaiksenSetupScreen(),
+      ),
     ),
     GoRoute(
       path: '/bunaiksen-record',
-      builder: (context, state) => const BunaiksenOfficialRecordScreen(),
+      builder: (context, state) => const AppThemeModeWrapper(
+        mode: 'bunaiksen',
+        child: BunaiksenOfficialRecordScreen(),
+      ),
     ),
     GoRoute(
       path: '/bunaiksen-viewer-home/:tournamentId',
@@ -638,8 +666,11 @@ final _router = GoRouter(
         roleStr: 'viewer',
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.pathParameters['tournamentId']!,
-        child: ViewerBunaiksenHomeScreen(
-          tournamentId: state.pathParameters['tournamentId']!,
+        child: AppThemeModeWrapper(
+          mode: 'bunaiksen_viewer',
+          child: ViewerBunaiksenHomeScreen(
+            tournamentId: state.pathParameters['tournamentId']!,
+          ),
         ),
       ),
     ),
@@ -648,8 +679,11 @@ final _router = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: 'viewer',
         dojoId: state.uri.queryParameters['dojoId'],
-        child: ViewerBunaiksenOfficialRecordScreen(
-          tournamentId: state.pathParameters['tournamentId']!,
+        child: AppThemeModeWrapper(
+          mode: 'bunaiksen_viewer',
+          child: ViewerBunaiksenOfficialRecordScreen(
+            tournamentId: state.pathParameters['tournamentId']!,
+          ),
         ),
       ),
     ),
@@ -729,6 +763,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
       scaffoldBackgroundColor: Colors.black,
       canvasColor: Colors.black,
       textTheme: GoogleFonts.notoSansJpTextTheme(ThemeData.dark().textTheme),
+      extensions: [AppThemeColors.ofMode(isDark: true, mode: 'normal')],
     );
 
     final lightThemeBase = ThemeData(
@@ -736,6 +771,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
       useMaterial3: true,
       scaffoldBackgroundColor: const Color(0xFFF2F2F7),
       textTheme: GoogleFonts.notoSansJpTextTheme(ThemeData.light().textTheme),
+      extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
     );
 
     return MaterialApp.router(

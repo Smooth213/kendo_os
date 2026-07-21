@@ -14,7 +14,8 @@ import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-
+import 'dart:ui';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../components/home/match_timeline_list.dart';
 import '../components/home/operator_action_buttons.dart';
@@ -67,7 +68,10 @@ class HomeScreen extends ConsumerWidget {
     );
     final permissions = ref.watch(permissionProvider);
     final bool isReadOnly = permissions.isReadOnly;
-    final Color textColor = isDark ? Colors.white : Colors.black;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final Color textColor = themeColors.textColor;
 
     final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
 
@@ -179,15 +183,14 @@ class HomeScreen extends ConsumerWidget {
                   automaticallyImplyLeading: !isReadOnly,
                   title: Text(
                     '大会ホーム',
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
                       color: textColor,
                     ),
                   ),
                   backgroundColor: enableLiquidGlass
                       ? Colors.transparent
-                      : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+                      : themeColors.cardBackground,
                   elevation: 0,
                   iconTheme: IconThemeData(color: textColor),
                   actions: [
@@ -207,26 +210,27 @@ class HomeScreen extends ConsumerWidget {
                             Icons.home,
                             color: isDark
                                 ? Colors.white
-                                : Colors.indigo.shade700,
+                                : themeColors.primaryAccent,
                             size: 18,
                           ),
                           label: Text(
                             'トップへ',
-                            style: TextStyle(
-                              color: isDark
-                                  ? Colors.white
-                                  : Colors.indigo.shade700,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: isDark
+                                      ? Colors.white
+                                      : themeColors.primaryAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDark
                                 ? Colors.white.withValues(alpha: 0.1)
-                                : Colors.indigo.shade50,
+                                : themeColors.softAccent,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
@@ -234,7 +238,9 @@ class HomeScreen extends ConsumerWidget {
                     IconButton(
                       icon: Icon(
                         Icons.qr_code_2,
-                        color: isDark ? Colors.white : Colors.indigo.shade900,
+                        color: isDark
+                            ? Colors.white
+                            : themeColors.primaryAccent,
                       ),
                       tooltip: '大会を共有する',
                       onPressed: () =>
@@ -246,59 +252,107 @@ class HomeScreen extends ConsumerWidget {
                 body: Column(
                   children: [
                     if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.indigo.shade800,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.indigo.withValues(alpha: 0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (uniqueInProgress.isNotEmpty)
-                              _buildCallRow(
-                                '進行中',
-                                uniqueInProgress.first,
-                                Colors.orangeAccent,
-                              ),
-                            if (uniqueInProgress.isNotEmpty &&
-                                uniqueWaiting.isNotEmpty)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: Divider(
-                                  color: Colors.white24,
-                                  height: 1,
+                      Builder(
+                        builder: (context) {
+                          final bannerColor = enableLiquidGlass
+                              ? themeColors.primaryAccent.withValues(
+                                  alpha: isDark ? 0.35 : 0.65,
+                                )
+                              : themeColors.primaryAccent;
+
+                          final bannerDecoration = BoxDecoration(
+                            color: bannerColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: enableLiquidGlass
+                                ? Border.all(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.15)
+                                        : Colors.black.withValues(alpha: 0.08),
+                                    width: 0.5,
+                                  )
+                                : null,
+                            boxShadow: [
+                              BoxShadow(
+                                color: themeColors.primaryAccent.withValues(
+                                  alpha: 0.3,
                                 ),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                            if (uniqueWaiting.isNotEmpty)
-                              _buildCallRow(
-                                '次試合',
-                                uniqueWaiting.first,
-                                Colors.white,
-                              ),
-                            if (uniqueWaiting.length > 1)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  '次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
+                            ],
+                          );
+
+                          final bannerContent = Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (uniqueInProgress.isNotEmpty)
+                                _buildCallRow(
+                                  context,
+                                  '進行中',
+                                  uniqueInProgress.first,
+                                  Colors.orangeAccent,
+                                ),
+                              if (uniqueInProgress.isNotEmpty &&
+                                  uniqueWaiting.isNotEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Divider(
+                                    color: Colors.white24,
+                                    height: 1,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              if (uniqueWaiting.isNotEmpty)
+                                _buildCallRow(
+                                  context,
+                                  '次試合',
+                                  uniqueWaiting.first,
+                                  Colors.white,
+                                ),
+                              if (uniqueWaiting.length > 1)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    '次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
+                          );
+
+                          if (enableLiquidGlass) {
+                            return Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 12.0,
+                                    sigmaY: 12.0,
+                                  ),
+                                  child: Container(
+                                    width: double.infinity,
+                                    margin: EdgeInsets.zero,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: bannerDecoration,
+                                    child: bannerContent,
+                                  ),
                                 ),
                               ),
-                          ],
-                        ),
+                            );
+                          }
+
+                          return Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: bannerDecoration,
+                            child: bannerContent,
+                          );
+                        },
                       ),
                     if (!isReadOnly)
                       Padding(
@@ -391,16 +445,20 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCallRow(String label, dynamic match, Color textColor) {
+  Widget _buildCallRow(
+    BuildContext context,
+    String label,
+    dynamic match,
+    Color textColor,
+  ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (match.note.isNotEmpty)
           Text(
             match.note,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: textColor.withValues(alpha: 0.7),
-              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -409,15 +467,17 @@ class HomeScreen extends ConsumerWidget {
           children: [
             Text(
               label,
-              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(width: 12),
             Flexible(
               child: Text(
                 _getMatchTitle(match),
-                style: TextStyle(
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: textColor,
-                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
                 overflow: TextOverflow.ellipsis,

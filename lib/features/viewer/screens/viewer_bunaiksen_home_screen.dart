@@ -15,6 +15,7 @@ import 'package:kendo_os/features/match/presentation/components/announce_popup_m
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   final String tournamentId;
@@ -112,6 +113,9 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen_viewer');
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     // 🛡️ QRアクセス防衛判定：外部のQRコード（直リンク）からスタックなしで直接ブラウザで開かれた場合のみ true と判定
     final isQrAccess = !GoRouter.of(context).canPop();
@@ -157,16 +161,22 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
             backgroundColor: isDark
                 ? (enableLiquidGlass
                       ? Colors.transparent
-                      : const Color(0xFF1C1C1E))
+                      : themeColors.cardBackground)
                 : (enableLiquidGlass
                       ? Colors.transparent
-                      : Colors.teal.shade700),
+                      : themeColors.primaryAccent),
             foregroundColor: isDark
-                ? Colors.teal.shade300
-                : (enableLiquidGlass ? Colors.teal.shade700 : Colors.white),
+                ? themeColors.primaryAccent
+                : (enableLiquidGlass
+                      ? themeColors.primaryAccent
+                      : Colors.white),
             title: Text(
               '$dateDisplay の記録 (観戦)',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: themeColors.textColor,
+              ),
             ),
             elevation: 0,
             centerTitle: true,
@@ -216,21 +226,19 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                           data: Theme.of(context).copyWith(
                             colorScheme: isDark
                                 ? ColorScheme.dark(
-                                    primary: Colors.teal.shade300,
+                                    primary: themeColors.primaryAccent,
                                     onPrimary: Colors.white,
-                                    surface: const Color(0xFF1C1C1E),
+                                    surface: themeColors.cardBackground,
                                     onSurface: Colors.white,
                                   )
                                 : ColorScheme.light(
-                                    primary: Colors.teal.shade700,
+                                    primary: themeColors.primaryAccent,
                                     onPrimary: Colors.white,
-                                    surface: Colors.white,
+                                    surface: themeColors.cardBackground,
                                     onSurface: Colors.black87,
                                   ),
                             dialogTheme: DialogThemeData(
-                              backgroundColor: isDark
-                                  ? const Color(0xFF1C1C1E)
-                                  : Colors.white,
+                              backgroundColor: themeColors.cardBackground,
                             ),
                           ),
                           child: child!,
@@ -346,15 +354,13 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                             horizontal: 16.0,
                             vertical: 8.0,
                           ),
-                          color: const Color(
-                            0xFF8B0000,
-                          ).withValues(alpha: isDark ? 0.05 : 0.08),
+                          color: themeColors.softAccent,
                           width: double.infinity,
                           child: Text(
                             '本日の試合一覧',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade600,
+                              color: themeColors.primaryAccent,
                             ),
                           ),
                         ),

@@ -25,6 +25,7 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 // ★ 適合補正: 前回の位置リプレイスの際に一時的に消失していた、画面専用プロバイダ空間4点を完全復元
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
@@ -150,11 +151,14 @@ class ViewerHomeScreen extends ConsumerWidget {
       }
     });
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal_viewer');
     final enableLiquidGlass = ref.watch(
       settingsProvider.select((s) => s.enableLiquidGlass),
     );
-    final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
-    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color bgColor = themeColors.scaffoldBackground;
+    final Color textColor = themeColors.textColor;
 
     try {
       // ★ 修正: activeMatchesProvider だとリーグ戦や勝ち抜き戦で最初の試合が終了すると
@@ -245,16 +249,16 @@ class ViewerHomeScreen extends ConsumerWidget {
                 NotificationBellButton(
                   tournamentId: tournamentId,
                   isStaffRoom: false,
-                  color: isDark ? Colors.white : Colors.indigo.shade900,
+                  color: isDark ? Colors.white : themeColors.primaryAccent,
                 ),
                 ManualHelpButton(
                   manualPath: 'docs/manuals/faq/viewer_faq.md',
-                  color: isDark ? Colors.white : Colors.indigo.shade900,
+                  color: isDark ? Colors.white : themeColors.primaryAccent,
                 ),
                 IconButton(
                   icon: Icon(
                     Icons.settings,
-                    color: isDark ? Colors.white : Colors.indigo.shade900,
+                    color: isDark ? Colors.white : themeColors.primaryAccent,
                   ),
                   tooltip: '表示設定',
                   onPressed: () {
@@ -269,7 +273,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                 IconButton(
                   icon: Icon(
                     Icons.qr_code_2,
-                    color: isDark ? Colors.white : Colors.indigo.shade900,
+                    color: isDark ? Colors.white : themeColors.primaryAccent,
                   ),
                   tooltip: '大会を共有する',
                   onPressed: () => _showShareDialog(context, ref, tournamentId),

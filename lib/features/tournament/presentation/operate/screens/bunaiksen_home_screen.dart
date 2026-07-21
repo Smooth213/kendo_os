@@ -18,6 +18,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -118,6 +119,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
 
     // ★ 修正：今日ではなく「選択された日付」を基準にする
@@ -152,12 +156,16 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         appBar: AppBar(
           backgroundColor: enableLiquidGlass
               ? Colors.transparent
-              : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-          foregroundColor: isDark ? Colors.white : const Color(0xFF8B0000),
+              : themeColors.cardBackground,
+          foregroundColor: isDark ? Colors.white : themeColors.primaryAccent,
           // ★ 修正：タイトルはシンプルにテキストのみ表示
           title: Text(
             isToday ? '今日の部内戦' : '$dateDisplay の記録',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: themeColors.textColor,
+            ),
           ),
           elevation: 0,
           centerTitle: true,
@@ -195,22 +203,20 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                     return Theme(
                       data: Theme.of(context).copyWith(
                         colorScheme: isDark
-                            ? const ColorScheme.dark(
-                                primary: Color(0xFF8B0000),
+                            ? ColorScheme.dark(
+                                primary: themeColors.primaryAccent,
                                 onPrimary: Colors.white,
-                                surface: Color(0xFF1C1C1E),
+                                surface: themeColors.cardBackground,
                                 onSurface: Colors.white,
                               )
-                            : const ColorScheme.light(
-                                primary: Color(0xFF8B0000),
+                            : ColorScheme.light(
+                                primary: themeColors.primaryAccent,
                                 onPrimary: Colors.white,
-                                surface: Colors.white,
+                                surface: themeColors.cardBackground,
                                 onSurface: Colors.black87,
                               ),
                         dialogTheme: DialogThemeData(
-                          backgroundColor: isDark
-                              ? const Color(0xFF1C1C1E)
-                              : Colors.white,
+                          backgroundColor: themeColors.cardBackground,
                         ),
                       ),
                       child: child!,
@@ -319,15 +325,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           horizontal: 16.0,
                           vertical: 8.0,
                         ),
-                        color: const Color(
-                          0xFF8B0000,
-                        ).withValues(alpha: isDark ? 0.05 : 0.08), // ★ 修正
+                        color: themeColors.softAccent, // ★ 修正
                         width: double.infinity,
                         child: Text(
                           '本日の試合一覧',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.grey.shade600,
+                            color: themeColors.primaryAccent,
                           ),
                         ),
                       ),
@@ -564,7 +568,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               ),
         floatingActionButton: isToday
             ? FloatingActionButton.extended(
-                backgroundColor: const Color(0xFF8B0000), // ★ 修正
+                backgroundColor: themeColors.primaryAccent, // ★ 修正
                 foregroundColor: Colors.white,
                 icon: const Icon(Icons.add),
                 label: const Text(
@@ -615,22 +619,25 @@ class BunaiksenHomeScreen extends ConsumerWidget {
   ) {
     final controller = TextEditingController(text: match.note);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        backgroundColor: themeColors.cardBackground,
         title: Text(
           '試合詳細（コメント）の編集',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : Colors.black87,
+            color: themeColors.textColor,
           ),
         ),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          style: TextStyle(color: themeColors.textColor),
           decoration: InputDecoration(
             hintText: '試合に関するメモや詳細を入力',
             hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
@@ -650,7 +657,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFF8B0000)),
+              borderSide: BorderSide(color: themeColors.primaryAccent),
             ),
           ),
           maxLines: 2,
@@ -672,7 +679,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               if (ctx.mounted) Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8B0000),
+              backgroundColor: themeColors.primaryAccent,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(

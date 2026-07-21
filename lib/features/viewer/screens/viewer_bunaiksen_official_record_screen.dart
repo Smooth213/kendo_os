@@ -13,6 +13,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -49,10 +50,11 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
       }
     }
 
-    // デザイン定義
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final bordeaux = const Color(0xFF8B0000);
-    final headerTextColor = isDark ? Colors.white : bordeaux;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen_viewer');
+    final cardColor = themeColors.cardBackground;
+    final headerTextColor = isDark ? Colors.white : themeColors.primaryAccent;
 
     final categoryGroups = ref.watch(
       bunaiksenRecordCategoryGroupsProvider(tournamentId),
@@ -123,7 +125,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                 isScrollable: true,
                 labelColor: headerTextColor,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: bordeaux,
+                indicatorColor: themeColors.primaryAccent,
                 tabs: categories.map((cat) => Tab(text: cat)).toList(),
               ),
             ),
@@ -214,7 +216,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                               context,
                               Icons.share,
                               '画像シェア',
-                              Colors.teal.shade600,
+                              themeColors.primaryAccent,
                               isExporting
                                   ? null
                                   : () => _handleExport(
@@ -329,6 +331,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     List<MatchModel> matches,
     bool isDark,
   ) {
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen_viewer');
     final first = matches.first;
     final rTeam = first.redName.split(':').first.trim();
     final wTeam = first.whiteName.split(':').first.trim();
@@ -352,15 +357,13 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            color: isDark
-                ? Colors.indigo.shade900.withValues(alpha: 0.4)
-                : Colors.indigo.shade50,
+            color: themeColors.softAccent,
             width: double.infinity,
             child: Text(
               '勝ち抜き戦：$rTeam vs $wTeam',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.indigo.shade100 : Colors.indigo.shade900,
+                color: themeColors.primaryAccent,
               ),
             ),
           ),

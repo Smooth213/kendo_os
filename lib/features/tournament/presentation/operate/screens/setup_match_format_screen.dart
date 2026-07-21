@@ -13,6 +13,7 @@ import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイ�
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
   return ['1回戦', '2回戦', '準決勝', '決勝', '第1試合', '第2コート'];
@@ -34,6 +35,7 @@ class SetupMatchFormatScreen extends ConsumerStatefulWidget {
 
 class _SetupMatchFormatScreenState
     extends ConsumerState<SetupMatchFormatScreen> {
+  late AppThemeColors _themeColors;
   late String _matchType;
   late bool _hasExtension;
   late bool _hasHantei;
@@ -637,21 +639,9 @@ class _SetupMatchFormatScreenState
           keyboardType: TextInputType.number,
           inputFormatters: [_NumericInputFormatter()], // ★ 追加
           style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-          decoration: InputDecoration(
+          decoration: _buildTextFieldDecoration(
             labelText: '最大延長回数を入力',
-            labelStyle: TextStyle(
-              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-            ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade400,
-              ),
-            ),
             suffixText: '回',
-            filled: true,
-            fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           ),
         ),
       ],
@@ -728,21 +718,9 @@ class _SetupMatchFormatScreenState
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [_NumericInputFormatter()], // ★ 追加
           style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-          decoration: InputDecoration(
+          decoration: _buildTextFieldDecoration(
             labelText: '延長時間（分）を入力',
-            labelStyle: TextStyle(
-              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-            ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade400,
-              ),
-            ),
             suffixText: '分',
-            filled: true,
-            fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           ),
         ),
       ],
@@ -820,12 +798,10 @@ class _SetupMatchFormatScreenState
       label: Text(label),
       selected: isSelected,
       backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-      selectedColor: isDark
-          ? Colors.teal.shade800.withValues(alpha: 0.5)
-          : accentColor.withValues(alpha: 0.2),
+      selectedColor: _themeColors.softAccent,
       labelStyle: TextStyle(
         color: isSelected
-            ? (isDark ? Colors.teal.shade100 : Colors.teal.shade900)
+            ? _themeColors.primaryAccent
             : (isDark ? Colors.white : Colors.black87),
         fontWeight: FontWeight.bold,
       ),
@@ -835,6 +811,34 @@ class _SetupMatchFormatScreenState
             : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
       ),
       onSelected: (s) => s ? onSelected() : null,
+    );
+  }
+
+  InputDecoration _buildTextFieldDecoration({
+    required String labelText,
+    String? hintText,
+    Widget? prefixIcon,
+    String? suffixText,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      labelStyle: TextStyle(color: _themeColors.subTextColor),
+      hintText: hintText,
+      hintStyle: TextStyle(color: _themeColors.hintColor),
+      suffixText: suffixText,
+      suffixStyle: TextStyle(color: _themeColors.subTextColor),
+      prefixIcon: prefixIcon,
+      filled: true,
+      fillColor: _themeColors.inputBackground,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: _themeColors.separatorColor, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: _themeColors.primaryAccent, width: 2),
+      ),
     );
   }
 
@@ -911,6 +915,10 @@ class _SetupMatchFormatScreenState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    _themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     // ★ Phase 8-3: キーボードが開いているかを検知
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
@@ -918,10 +926,18 @@ class _SetupMatchFormatScreenState
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             '対戦フォーマット設定',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: _themeColors.textColor,
+            ),
           ),
+          backgroundColor:
+              ref.watch(settingsProvider.select((s) => s.enableLiquidGlass))
+              ? Colors.transparent
+              : _themeColors.cardBackground,
+          iconTheme: IconThemeData(color: _themeColors.textColor),
           actions: const [
             // 大会設定のマニュアルへ
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
@@ -969,9 +985,7 @@ class _SetupMatchFormatScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final selectedChipColor = isDark
-        ? Colors.teal.shade900.withValues(alpha: 0.5)
-        : Colors.teal.shade100;
+    final selectedChipColor = _themeColors.softAccent;
 
     return ListView(
       // ★ Phase 8-2: 余白のないページ（2ページ目以降）に合わせるため、パディングを調整
@@ -1002,6 +1016,9 @@ class _SetupMatchFormatScreenState
                       fontWeight: _selectedMajorCategory == cat
                           ? FontWeight.bold
                           : FontWeight.normal,
+                      color: _selectedMajorCategory == cat
+                          ? _themeColors.primaryAccent
+                          : (isDark ? Colors.white : Colors.black87),
                     ),
                   ),
                   selected: _selectedMajorCategory == cat,
@@ -1037,6 +1054,9 @@ class _SetupMatchFormatScreenState
                   fontWeight: _selectedMinorCategory == cat
                       ? FontWeight.bold
                       : FontWeight.normal,
+                  color: _selectedMinorCategory == cat
+                      ? _themeColors.primaryAccent
+                      : (isDark ? Colors.white : Colors.black87),
                 ),
               ),
               selected: _selectedMinorCategory == cat,
@@ -1056,20 +1076,15 @@ class _SetupMatchFormatScreenState
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.teal.shade900.withValues(alpha: 0.2)
-                : Colors.teal.shade50,
+            color: _themeColors.softAccent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? Colors.teal.shade800 : Colors.teal.shade200,
+              color: _themeColors.primaryAccent.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.check_circle,
-                color: isDark ? Colors.teal.shade400 : Colors.teal.shade600,
-              ),
+              Icon(Icons.check_circle, color: _themeColors.primaryAccent),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -1079,9 +1094,7 @@ class _SetupMatchFormatScreenState
                       '設定されるカテゴリ名',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark
-                            ? Colors.teal.shade200
-                            : Colors.teal.shade800,
+                        color: _themeColors.primaryAccent,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -1118,9 +1131,7 @@ class _SetupMatchFormatScreenState
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 style: TextButton.styleFrom(
-                  foregroundColor: isDark
-                      ? Colors.teal.shade300
-                      : Colors.teal.shade700,
+                  foregroundColor: _themeColors.primaryAccent,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
               ),
@@ -1189,15 +1200,13 @@ class _SetupMatchFormatScreenState
                       margin: const EdgeInsets.only(bottom: 12),
                       elevation: isSelected ? (isDark ? 0 : 2) : 0,
                       color: isSelected
-                          ? (isDark
-                                ? Colors.teal.shade900.withValues(alpha: 0.3)
-                                : Colors.teal.shade50.withValues(alpha: 0.5))
+                          ? _themeColors.softAccent
                           : inputBgColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                         side: BorderSide(
                           color: isSelected
-                              ? Colors.teal.shade400
+                              ? _themeColors.primaryAccent
                               : (isDark
                                     ? const Color(0xFF38383A)
                                     : Colors.grey.shade200),
@@ -1220,18 +1229,14 @@ class _SetupMatchFormatScreenState
                             leading: CircleAvatar(
                               radius: 24,
                               backgroundColor: isSelected
-                                  ? (isDark
-                                        ? Colors.teal.shade800
-                                        : Colors.teal.shade100)
+                                  ? _themeColors.softAccent
                                   : (isDark
                                         ? const Color(0xFF2C2C2E)
                                         : Colors.grey.shade100),
                               child: Icon(
                                 Icons.shield,
                                 color: isSelected
-                                    ? (isDark
-                                          ? Colors.teal.shade200
-                                          : Colors.teal.shade700)
+                                    ? _themeColors.primaryAccent
                                     : (isDark
                                           ? Colors.grey.shade600
                                           : Colors.grey.shade400),
@@ -1244,9 +1249,7 @@ class _SetupMatchFormatScreenState
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                                 color: isSelected
-                                    ? (isDark
-                                          ? Colors.teal.shade100
-                                          : Colors.teal.shade900)
+                                    ? _themeColors.primaryAccent
                                     : textColor,
                               ),
                             ),
@@ -1257,9 +1260,9 @@ class _SetupMatchFormatScreenState
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isSelected
-                                      ? (isDark
-                                            ? Colors.teal.shade300
-                                            : Colors.teal.shade700)
+                                      ? _themeColors.primaryAccent.withValues(
+                                          alpha: 0.8,
+                                        )
                                       : (isDark
                                             ? Colors.grey.shade500
                                             : Colors.grey.shade600),
@@ -1397,7 +1400,7 @@ class _SetupMatchFormatScreenState
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.teal.shade100 : Colors.teal.shade900,
+                    color: _themeColors.primaryAccent,
                   ),
                 ),
               ),
@@ -1412,29 +1415,10 @@ class _SetupMatchFormatScreenState
             keyboardType: TextInputType.number,
             inputFormatters: [_NumericInputFormatter()], // ★ 追加：全角を自動で半角に変換
             style: TextStyle(color: textColor),
-            decoration: InputDecoration(
+            decoration: _buildTextFieldDecoration(
               labelText: 'チームの人数を入力（例：11）',
-              labelStyle: TextStyle(
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: isDark
-                      ? const Color(0xFF38383A)
-                      : Colors.grey.shade400,
-                ),
-              ),
               suffixText: '人制',
-              prefixIcon: Icon(
-                Icons.groups,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-              ),
-              filled: true,
-              fillColor: inputBgColor,
+              prefixIcon: Icon(Icons.groups, color: _themeColors.subTextColor),
             ),
           ),
         ],
@@ -1501,25 +1485,9 @@ class _SetupMatchFormatScreenState
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [_NumericInputFormatter()], // ★ 追加
             style: TextStyle(color: textColor),
-            decoration: InputDecoration(
+            decoration: _buildTextFieldDecoration(
               labelText: '試合時間（分）を入力',
-              labelStyle: TextStyle(
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: isDark
-                      ? const Color(0xFF38383A)
-                      : Colors.grey.shade400,
-                ),
-              ),
               suffixText: '分',
-              filled: true,
-              fillColor: inputBgColor,
             ),
           ),
         ],
@@ -1562,7 +1530,6 @@ class _SetupMatchFormatScreenState
   Widget _buildPage3Details() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -1615,7 +1582,7 @@ class _SetupMatchFormatScreenState
                             title: const Text('時間制'),
                             subtitle: const Text('時間が来るまで、次の対戦者を次々と追加して戦う'),
                             value: '時間制',
-                            activeColor: Colors.teal.shade600,
+                            activeColor: _themeColors.primaryAccent,
                           ),
                           if (_renseikaiType == '時間制')
                             Padding(
@@ -1630,24 +1597,10 @@ class _SetupMatchFormatScreenState
                                   _NumericInputFormatter(),
                                 ], // ★ 追加
                                 style: TextStyle(color: textColor),
-                                decoration: InputDecoration(
+                                decoration: _buildTextFieldDecoration(
                                   labelText: '錬成会全体の制限時間',
-                                  labelStyle: TextStyle(
-                                    color: isDark
-                                        ? Colors.grey.shade400
-                                        : Colors.grey.shade600,
-                                  ),
                                   suffixText: '分間',
-                                  border: const OutlineInputBorder(),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: isDark
-                                          ? const Color(0xFF38383A)
-                                          : Colors.grey,
-                                    ),
-                                  ),
-                                  isDense: true,
-                                ),
+                                ).copyWith(isDense: true),
                               ),
                             ),
                         ],
@@ -1660,9 +1613,9 @@ class _SetupMatchFormatScreenState
                         'ランニング計測',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      subtitle: const Text('審判の「止め」でも時間は進み続けます'),
+                      subtitle: const Text('審判 of 「止め」でも時間は進み続けます'),
                       value: _isRunningTime,
-                      activeThumbColor: Colors.teal.shade600,
+                      activeThumbColor: _themeColors.primaryAccent,
                       onChanged: (val) => setState(() => _isRunningTime = val),
                     ),
                   ],
@@ -1890,24 +1843,13 @@ class _SetupMatchFormatScreenState
         TextField(
           controller: _noteController,
           style: TextStyle(color: textColor),
-          decoration: InputDecoration(
+          decoration: _buildTextFieldDecoration(
+            labelText: '試合詳細（任意）',
             hintText: '例：1回戦 第3試合、準決勝 など',
-            hintStyle: TextStyle(
-              color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
-            ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade400,
-              ),
-            ),
             prefixIcon: Icon(
               Icons.edit_note,
-              color: isDark ? Colors.teal.shade400 : Colors.teal.shade600,
+              color: _themeColors.primaryAccent,
             ),
-            filled: true,
-            fillColor: inputBgColor,
           ),
         ),
         const SizedBox(height: 12),
@@ -1924,26 +1866,24 @@ class _SetupMatchFormatScreenState
                         note,
                         style: TextStyle(
                           color: isDark
-                              ? Colors.teal.shade100
-                              : Colors.teal.shade800,
+                              ? _themeColors.textColor
+                              : _themeColors.primaryAccent,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       backgroundColor: isDark
                           ? const Color(0xFF2C2C2E)
-                          : Colors.teal.shade50,
+                          : _themeColors.softAccent,
                       side: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
-                            : Colors.teal.shade100,
+                            : _themeColors.primaryAccent.withValues(alpha: 0.2),
                       ),
                       avatar: Icon(
                         Icons.add,
                         size: 16,
-                        color: isDark
-                            ? Colors.teal.shade300
-                            : Colors.teal.shade500,
+                        color: _themeColors.primaryAccent,
                       ),
                       onPressed: () {
                         final currentText = _noteController.text;
@@ -2177,7 +2117,6 @@ class _SetupMatchFormatScreenState
   }
 
   Widget _buildSectionTitle(String title) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
@@ -2185,7 +2124,7 @@ class _SetupMatchFormatScreenState
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: isDark ? Colors.teal.shade300 : Colors.teal.shade800,
+          color: _themeColors.primaryAccent,
         ),
       ),
     );
@@ -2216,19 +2155,17 @@ class _SetupMatchFormatScreenState
         ),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: _themeColors.separatorColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: color),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: color, width: 2),
         ),
         filled: true,
-        fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        fillColor: _themeColors.inputBackground,
       ),
     );
   }

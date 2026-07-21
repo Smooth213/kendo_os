@@ -11,6 +11,7 @@ import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 // ★ 安定したProvider定義
 final registeredTeamsProvider = StreamProvider.family
@@ -40,6 +41,7 @@ class TeamRegistrationScreen extends ConsumerStatefulWidget {
 
 class _TeamRegistrationScreenState
     extends ConsumerState<TeamRegistrationScreen> {
+  late AppThemeColors _themeColors;
   // ★ 修正：2段階選択用の状態（初期値を「小学生」に）
   String _selectedMajorCategory = '小学生';
   String _selectedMinorCategory = '低学年';
@@ -185,8 +187,8 @@ class _TeamRegistrationScreenState
       builder: (context, constraints) {
         final t = (_currentPage / 2).clamp(0.0, 1.0);
         final gradientColor = Color.lerp(
-          Colors.teal.shade400,
-          Colors.teal.shade700,
+          _themeColors.primaryAccent,
+          _themeColors.primaryAccent.withValues(alpha: 0.8),
           t,
         )!;
 
@@ -195,7 +197,7 @@ class _TeamRegistrationScreenState
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradientColor, Colors.teal.shade300],
+              colors: [gradientColor, _themeColors.softAccent],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -249,7 +251,6 @@ class _TeamRegistrationScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sheetBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final inputBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
 
     // 手入力選手の抽出
@@ -372,8 +373,8 @@ class _TeamRegistrationScreenState
                           ),
                         ),
                         style: TextButton.styleFrom(
-                          foregroundColor: Colors.teal.shade700,
-                          backgroundColor: Colors.teal.withValues(alpha: 0.05),
+                          foregroundColor: _themeColors.primaryAccent,
+                          backgroundColor: _themeColors.softAccent,
                         ),
                       ),
                     ],
@@ -384,38 +385,35 @@ class _TeamRegistrationScreenState
                   TextField(
                     controller: customNameController,
                     style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      labelText: '助っ人の名前を直接入力',
-                      prefixIcon: Icon(
-                        Icons.person_add_alt_1,
-                        color: Colors.teal.shade700,
-                      ),
-                      suffixIcon: Padding(
-                        padding: const EdgeInsets.only(
-                          right: 8,
-                          top: 4,
-                          bottom: 4,
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () =>
-                              Navigator.pop(ctx, customNameController.text),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal.shade600,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 0,
+                    decoration:
+                        _buildTextFieldDecoration(
+                          labelText: '助っ人の名前を直接入力',
+                          prefixIcon: Icon(
+                            Icons.person_add_alt_1,
+                            color: _themeColors.primaryAccent,
                           ),
-                          child: const Text('確定'),
+                        ).copyWith(
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.only(
+                              right: 8,
+                              top: 4,
+                              bottom: 4,
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  Navigator.pop(ctx, customNameController.text),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _themeColors.primaryAccent,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: const Text('確定'),
+                            ),
+                          ),
                         ),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: inputBgColor,
-                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -458,7 +456,7 @@ class _TeamRegistrationScreenState
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: Colors.teal.shade800,
+                              color: _themeColors.primaryAccent,
                             ),
                           ),
                         ),
@@ -591,12 +589,12 @@ class _TeamRegistrationScreenState
           : Colors.orange.shade700;
       subtitleColor = Colors.orange;
     } else {
-      cardColor = isDark
-          ? Colors.teal.shade900.withAlpha(77)
-          : Colors.teal.shade50.withAlpha(128);
-      borderColor = isDark ? Colors.transparent : Colors.teal.shade100;
-      leadingTextColor = isDark ? Colors.teal.shade400 : Colors.teal.shade700;
-      subtitleColor = Colors.teal.shade600;
+      cardColor = _themeColors.softAccent;
+      borderColor = isDark
+          ? Colors.transparent
+          : _themeColors.primaryAccent.withValues(alpha: 0.2);
+      leadingTextColor = _themeColors.primaryAccent;
+      subtitleColor = _themeColors.primaryAccent.withValues(alpha: 0.8);
     }
 
     return Card(
@@ -648,13 +646,48 @@ class _TeamRegistrationScreenState
                   ),
                 ),
               )
-            : Icon(Icons.check_circle_outline, color: Colors.teal.shade600),
+            : Icon(
+                Icons.check_circle_outline,
+                color: _themeColors.primaryAccent,
+              ),
+      ),
+    );
+  }
+
+  InputDecoration _buildTextFieldDecoration({
+    required String labelText,
+    String? hintText,
+    Widget? prefixIcon,
+    String? suffixText,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      labelStyle: TextStyle(color: _themeColors.subTextColor),
+      hintText: hintText,
+      hintStyle: TextStyle(color: _themeColors.hintColor),
+      suffixText: suffixText,
+      suffixStyle: TextStyle(color: _themeColors.subTextColor),
+      prefixIcon: prefixIcon,
+      filled: true,
+      fillColor: _themeColors.inputBackground,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: _themeColors.separatorColor, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: _themeColors.primaryAccent, width: 2),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    _themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final playerListAsync = ref.watch(playerListProvider);
     final registeredTeamsAsync = ref.watch(
       registeredTeamsProvider(widget.tournamentId),
@@ -746,9 +779,7 @@ class _TeamRegistrationScreenState
   Widget _buildPage1CategoryFormat() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final selectedChipColor = isDark
-        ? Colors.teal.shade900.withValues(alpha: 0.5)
-        : Colors.teal.shade100;
+    final selectedChipColor = _themeColors.softAccent;
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -778,6 +809,9 @@ class _TeamRegistrationScreenState
                     fontWeight: _selectedMajorCategory == cat
                         ? FontWeight.bold
                         : FontWeight.normal,
+                    color: _selectedMajorCategory == cat
+                        ? _themeColors.primaryAccent
+                        : (isDark ? Colors.white : Colors.black87),
                   ),
                 ),
                 selected: _selectedMajorCategory == cat,
@@ -799,6 +833,9 @@ class _TeamRegistrationScreenState
                       fontWeight: _selectedMajorCategory == cat
                           ? FontWeight.bold
                           : FontWeight.normal,
+                      color: _selectedMajorCategory == cat
+                          ? _themeColors.primaryAccent
+                          : (isDark ? Colors.white : Colors.black87),
                     ),
                   ),
                   selected: _selectedMajorCategory == cat,
@@ -853,6 +890,9 @@ class _TeamRegistrationScreenState
                   fontWeight: _selectedMinorCategory == cat
                       ? FontWeight.bold
                       : FontWeight.normal,
+                  color: _selectedMinorCategory == cat
+                      ? _themeColors.primaryAccent
+                      : (isDark ? Colors.white : Colors.black87),
                 ),
               ),
               selected: _selectedMinorCategory == cat,
@@ -868,20 +908,15 @@ class _TeamRegistrationScreenState
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.teal.shade900.withValues(alpha: 0.2)
-                : Colors.teal.shade50,
+            color: _themeColors.softAccent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? Colors.teal.shade800 : Colors.teal.shade200,
+              color: _themeColors.primaryAccent.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.check_circle,
-                color: isDark ? Colors.teal.shade400 : Colors.teal.shade600,
-              ),
+              Icon(Icons.check_circle, color: _themeColors.primaryAccent),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -891,9 +926,7 @@ class _TeamRegistrationScreenState
                       '生成されるカテゴリ名',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark
-                            ? Colors.teal.shade200
-                            : Colors.teal.shade800,
+                        color: _themeColors.primaryAccent,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -998,7 +1031,7 @@ class _TeamRegistrationScreenState
           fillColor: inputBgColor,
           borderColor: borderColor,
           textColor: textColor,
-          subTextColor: Colors.teal.shade700,
+          subTextColor: _themeColors.primaryAccent,
           isDark: isDark,
         ),
         const SizedBox(height: 32),
@@ -1051,9 +1084,7 @@ class _TeamRegistrationScreenState
                                       alpha: 0.3,
                                     )
                                   : Colors.orange.shade50)
-                            : (isDark
-                                  ? Colors.teal.shade900.withValues(alpha: 0.3)
-                                  : Colors.teal.shade50),
+                            : _themeColors.softAccent,
                         child: Text(
                           isSubstitute ? '補' : posNames[index].substring(0, 1),
                           style: TextStyle(
@@ -1061,9 +1092,7 @@ class _TeamRegistrationScreenState
                                 ? (isDark
                                       ? Colors.orange.shade400
                                       : Colors.orange.shade700)
-                                : (isDark
-                                      ? Colors.teal.shade400
-                                      : Colors.teal.shade700),
+                                : _themeColors.primaryAccent,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -1086,7 +1115,7 @@ class _TeamRegistrationScreenState
                         style: TextStyle(
                           color: isSubstitute
                               ? Colors.orange.shade600
-                              : Colors.teal.shade600,
+                              : _themeColors.primaryAccent,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1153,14 +1182,14 @@ class _TeamRegistrationScreenState
               onPressed: () => setState(() => _substituteCount++),
               icon: Icon(
                 Icons.person_add_alt_1,
-                color: Colors.teal.shade600,
+                color: _themeColors.primaryAccent,
                 size: 18,
               ),
               // ★ ラベルも 4 に変更
               label: Text(
                 '補欠を追加 ($_substituteCount/4)',
                 style: TextStyle(
-                  color: Colors.teal.shade700,
+                  color: _themeColors.primaryAccent,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1168,12 +1197,12 @@ class _TeamRegistrationScreenState
                 side: BorderSide(
                   color: isDark
                       ? const Color(0xFF38383A)
-                      : Colors.teal.shade300,
+                      : _themeColors.primaryAccent.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
                 backgroundColor: isDark
                     ? const Color(0xFF1C1C1E)
-                    : Colors.teal.shade50,
+                    : _themeColors.softAccent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -1217,7 +1246,7 @@ class _TeamRegistrationScreenState
           color: inputBgColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.teal.shade400, width: 2),
+            side: BorderSide(color: _themeColors.primaryAccent, width: 2),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
@@ -1284,7 +1313,7 @@ class _TeamRegistrationScreenState
                             IconButton(
                               icon: Icon(
                                 Icons.edit,
-                                color: Colors.teal.shade600,
+                                color: _themeColors.primaryAccent,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -1386,7 +1415,7 @@ class _TeamRegistrationScreenState
                     child: Icon(
                       Icons.arrow_back_ios_new,
                       size: 20,
-                      color: Colors.teal.shade700,
+                      color: _themeColors.primaryAccent,
                     ),
                   ),
                 ),
@@ -1447,7 +1476,7 @@ class _TeamRegistrationScreenState
                       );
                     }
                   },
-                  color: Colors.teal,
+                  color: _themeColors.primaryAccent,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   label: _currentPage == 2
                       ? (_editingTeamId != null ? '変更を保存' : '登録して続けて追加')
@@ -1499,7 +1528,7 @@ class _TeamRegistrationScreenState
                   if (!mounted) return;
                   context.go('/home/${widget.tournamentId}');
                 },
-                color: Colors.teal,
+                color: _themeColors.primaryAccent,
                 icon: Icons.check_circle,
                 label: 'すべての登録を完了して大会画面へ',
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1513,9 +1542,6 @@ class _TeamRegistrationScreenState
   }
 
   Widget _buildSectionTitle(String title) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    // iOS Native: ダークモード時は文字色をパステル調にして視認性を確保
-    final color = isDark ? Colors.teal.shade400 : Colors.teal.shade700;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
@@ -1523,7 +1549,7 @@ class _TeamRegistrationScreenState
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: color,
+          color: _themeColors.primaryAccent,
         ),
       ),
     );
@@ -1577,9 +1603,9 @@ class _TeamRegistrationScreenState
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.teal.shade500),
+                  borderSide: BorderSide(color: subTextColor, width: 2),
                 ),
-                prefixIcon: Icon(Icons.shield, color: Colors.teal.shade600),
+                prefixIcon: Icon(Icons.shield, color: subTextColor),
                 suffixIcon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.grey,
@@ -1619,9 +1645,9 @@ class _TeamRegistrationScreenState
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    trailing: const Icon(
+                    trailing: Icon(
                       Icons.add_circle_outline,
-                      color: Colors.teal,
+                      color: subTextColor,
                       size: 18,
                     ),
                     onTap: () {

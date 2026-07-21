@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'smart_player_input.dart'; // マスタ取得用のプロバイダを参照するため
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class MultiPlayerSelectInput extends ConsumerStatefulWidget {
   final List<String> initialSelected;
@@ -24,6 +25,14 @@ class MultiPlayerSelectInput extends ConsumerStatefulWidget {
 
 class _MultiPlayerSelectInputState
     extends ConsumerState<MultiPlayerSelectInput> {
+  Color get _accentColor {
+    final themeColors = Theme.of(context).extension<AppThemeColors>();
+    if (widget.accentColor == const Color(0xFF8B0000) && themeColors != null) {
+      return themeColors.primaryAccent;
+    }
+    return widget.accentColor;
+  }
+
   Future<void> _showMultiSelectSheet() async {
     final masterPlayers = ref.read(bunaiksenPlayerMasterProvider).value ?? [];
     final guestPlayers = ref.watch(bunaiksenGuestProvider);
@@ -84,7 +93,7 @@ class _MultiPlayerSelectInputState
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: widget.accentColor,
+                            color: _accentColor,
                           ),
                         ),
                         TextButton(
@@ -98,7 +107,7 @@ class _MultiPlayerSelectInputState
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: widget.accentColor,
+                              color: _accentColor,
                             ),
                           ),
                         ),
@@ -147,17 +156,17 @@ class _MultiPlayerSelectInputState
                         if (isNewName)
                           ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: widget.accentColor.withAlpha(26),
+                              backgroundColor: _accentColor.withAlpha(26),
                               child: Icon(
                                 Icons.person_add,
-                                color: widget.accentColor,
+                                color: _accentColor,
                                 size: 20,
                               ),
                             ),
                             title: Text(
                               '"${searchText.trim()}" をゲスト追加して選択',
                               style: TextStyle(
-                                color: widget.accentColor,
+                                color: _accentColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -176,7 +185,7 @@ class _MultiPlayerSelectInputState
                         ...filteredGuest.map((name) {
                           final isSelected = tempSelected.contains(name);
                           return CheckboxListTile(
-                            activeColor: widget.accentColor,
+                            activeColor: _accentColor,
                             value: isSelected,
                             title: Text(name),
                             subtitle: const Text(
@@ -208,7 +217,7 @@ class _MultiPlayerSelectInputState
                         ...filteredMaster.map((p) {
                           final isSelected = tempSelected.contains(p.name);
                           return CheckboxListTile(
-                            activeColor: widget.accentColor,
+                            activeColor: _accentColor,
                             value: isSelected,
                             title: Text(p.name),
                             subtitle: Text(
@@ -219,10 +228,10 @@ class _MultiPlayerSelectInputState
                               ),
                             ),
                             secondary: CircleAvatar(
-                              backgroundColor: widget.accentColor.withAlpha(26),
+                              backgroundColor: _accentColor.withAlpha(26),
                               child: Icon(
                                 Icons.person,
-                                color: widget.accentColor,
+                                color: _accentColor,
                                 size: 20,
                               ),
                             ),
@@ -267,8 +276,8 @@ class _MultiPlayerSelectInputState
         hintText: 'タップしてメンバーを選択...',
         filled: true,
         fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
-        floatingLabelStyle: TextStyle(color: widget.accentColor),
-        prefixIcon: Icon(Icons.group_add, color: widget.accentColor),
+        floatingLabelStyle: TextStyle(color: _accentColor),
+        prefixIcon: Icon(Icons.group_add, color: _accentColor),
         suffixIcon: const Icon(Icons.touch_app),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -284,7 +293,7 @@ class _MultiPlayerSelectInputState
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: widget.accentColor, width: 2),
+          borderSide: BorderSide(color: _accentColor, width: 2),
         ),
       ),
     );

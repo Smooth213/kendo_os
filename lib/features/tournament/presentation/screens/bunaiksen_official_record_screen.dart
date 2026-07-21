@@ -14,6 +14,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -36,10 +37,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     final tName = '部内戦';
     final tDate = DateFormat('yyyy年MM月dd日').format(viewDate);
 
-    // デザイン定義
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final bordeaux = const Color(0xFF8B0000);
-    final headerTextColor = isDark ? Colors.white : bordeaux;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
+    final cardColor = themeColors.cardBackground;
+    final headerTextColor = isDark ? Colors.white : themeColors.primaryAccent;
 
     final categoryGroups = ref.watch(
       bunaiksenRecordCategoryGroupsProvider(tournamentId),
@@ -89,7 +91,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               isScrollable: true,
               labelColor: headerTextColor,
               unselectedLabelColor: Colors.grey,
-              indicatorColor: bordeaux,
+              indicatorColor: themeColors.primaryAccent,
               tabs: categories.map((cat) => Tab(text: cat)).toList(),
             ),
           ),

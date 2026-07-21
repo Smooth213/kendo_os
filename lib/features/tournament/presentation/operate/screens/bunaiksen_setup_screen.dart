@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
   const BunaiksenSetupScreen({super.key});
@@ -26,6 +27,7 @@ class BunaiksenSetupScreen extends ConsumerStatefulWidget {
 
 class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
     with SingleTickerProviderStateMixin {
+  late AppThemeColors _themeColors;
   late TabController _tabController;
   final _redPlayerController = TextEditingController();
   final _whitePlayerController = TextEditingController();
@@ -99,10 +101,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               child: TextField(
                 controller: minController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '分',
-                  border: OutlineInputBorder(),
-                ),
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: _buildTextFieldDecoration(labelText: '分'),
               ),
             ),
             const Padding(
@@ -116,10 +116,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               child: TextField(
                 controller: secController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '秒',
-                  border: OutlineInputBorder(),
-                ),
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: _buildTextFieldDecoration(labelText: '秒'),
               ),
             ),
           ],
@@ -131,7 +129,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8B0000),
+              backgroundColor: _themeColors.primaryAccent,
               foregroundColor: Colors.white,
             ),
             onPressed: () {
@@ -204,10 +202,41 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
     });
   }
 
+  InputDecoration _buildTextFieldDecoration({
+    required String labelText,
+    String? hintText,
+    Widget? prefixIcon,
+    String? suffixText,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      labelStyle: TextStyle(color: _themeColors.subTextColor),
+      hintText: hintText,
+      hintStyle: TextStyle(color: _themeColors.hintColor),
+      suffixText: suffixText,
+      suffixStyle: TextStyle(color: _themeColors.subTextColor),
+      prefixIcon: prefixIcon,
+      filled: true,
+      fillColor: _themeColors.inputBackground,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: _themeColors.separatorColor, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: _themeColors.primaryAccent, width: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final rule = ref.watch(bunaiksenRuleProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    _themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
+    final rule = ref.watch(bunaiksenRuleProvider);
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final masterPlayers = ref.watch(bunaiksenPlayerMasterProvider).value ?? [];
 
@@ -217,13 +246,14 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
         appBar: AppBar(
           backgroundColor: enableLiquidGlass
               ? Colors.transparent
-              : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-          foregroundColor: isDark
-              ? Colors.white
-              : const Color(0xFF8B0000), // ★ 修正：ボルドー文字
-          title: const Text(
+              : _themeColors.cardBackground,
+          foregroundColor: _themeColors.textColor,
+          title: Text(
             '試合セットアップ',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: _themeColors.textColor,
+            ),
           ),
           elevation: 0,
           centerTitle: true,
@@ -233,9 +263,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
           ),
           bottom: TabBar(
             controller: _tabController,
-            labelColor: const Color(0xFF8B0000), // ★ 修正
+            labelColor: _themeColors.primaryAccent,
             unselectedLabelColor: isDark ? Colors.grey : Colors.grey.shade600,
-            indicatorColor: const Color(0xFF8B0000), // ★ 修正
+            indicatorColor: _themeColors.primaryAccent,
             indicatorWeight: 3,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold),
             tabs: const [
@@ -456,10 +486,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                           ),
                           Switch(
                             value: rule.hasHantei,
-                            activeTrackColor: const Color(
-                              0xFF8B0000,
-                            ).withValues(alpha: 0.5),
-                            activeThumbColor: const Color(0xFF8B0000),
+                            activeTrackColor: _themeColors.primaryAccent
+                                .withValues(alpha: 0.5),
+                            activeThumbColor: _themeColors.primaryAccent,
                             onChanged: (v) => ref
                                 .read(bunaiksenRuleProvider.notifier)
                                 .update(
@@ -505,7 +534,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 child: SmartPlayerInput(
                   controller: _redPlayerController,
                   label: '赤の選手',
-                  accentColor: const Color(0xFF8B0000), // ★ 修正：洗練されたボルドー（深紅）に変更
+                  accentColor: _themeColors.primaryAccent,
                 ),
               ),
               Padding(
@@ -536,7 +565,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             child: GlassButton(
               icon: Icons.flash_on,
               label: '試合開始',
-              color: const Color(0xFF8B0000),
+              color: _themeColors.primaryAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
               expandContent: false,
               onPressed: () async {
@@ -634,14 +663,14 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
         ],
       ),
       backgroundColor: isFeedback
-          ? const Color(0xFF8B0000).withValues(alpha: 0.2)
+          ? _themeColors.primaryAccent.withValues(alpha: 0.2)
           : (isAssigned
                 ? (isDark ? Colors.grey.shade800 : Colors.grey.shade200)
                 : (isDark ? Colors.grey.shade700 : Colors.white)),
       side: BorderSide(
         color: isAssigned
             ? Colors.transparent
-            : const Color(0xFF8B0000).withValues(alpha: 0.5),
+            : _themeColors.primaryAccent.withValues(alpha: 0.5),
       ),
     );
   }
@@ -922,7 +951,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             child: GlassButton(
               icon: Icons.check_circle,
               label: '確定して対戦表を作成',
-              color: const Color(0xFF8B0000),
+              color: _themeColors.primaryAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
               expandContent: false,
               onPressed: () async {
@@ -1021,13 +1050,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                           return ListTile(
                             key: ValueKey(p),
                             leading: CircleAvatar(
-                              backgroundColor: const Color(
-                                0xFF8B0000,
-                              ).withValues(alpha: 0.2),
+                              backgroundColor: _themeColors.primaryAccent
+                                  .withValues(alpha: 0.2),
                               child: Text(
                                 '${index + 1}',
-                                style: const TextStyle(
-                                  color: Color(0xFF8B0000),
+                                style: TextStyle(
+                                  color: _themeColors.primaryAccent,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -1051,7 +1079,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             child: GlassButton(
               icon: Icons.grid_on,
               label: '総当たり対戦表を作成（${_leagueParticipants.length}人）',
-              color: const Color(0xFF8B0000),
+              color: _themeColors.primaryAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
               expandContent: false,
               onPressed: _leagueParticipants.length < 2
@@ -1238,7 +1266,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             child: GlassButton(
               icon: Icons.local_fire_department,
               label: '無限稽古スタート',
-              color: const Color(0xFF8B0000),
+              color: _themeColors.primaryAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
               expandContent: false,
               onPressed: queue.length < 2

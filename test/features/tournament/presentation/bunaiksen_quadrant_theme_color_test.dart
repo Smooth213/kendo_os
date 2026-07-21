@@ -377,7 +377,7 @@ void main() {
 
         final AppBar appBar = tester.widget<AppBar>(appBarFinder);
         expect(appBar.backgroundColor, Colors.white);
-        expect(appBar.foregroundColor, const Color(0xFF8B0000));
+        expect(appBar.foregroundColor, Colors.deepPurple.shade700);
       },
     );
 
@@ -410,7 +410,7 @@ void main() {
         expect(appBarFinder, findsOneWidget);
 
         final AppBar appBar = tester.widget<AppBar>(appBarFinder);
-        expect(appBar.backgroundColor, Colors.teal.shade700);
+        expect(appBar.backgroundColor, Colors.purple.shade700);
         expect(appBar.foregroundColor, Colors.white);
       },
     );
@@ -445,7 +445,7 @@ void main() {
 
         final AppBar appBar = tester.widget<AppBar>(appBarFinder);
         expect(appBar.backgroundColor, Colors.transparent);
-        expect(appBar.foregroundColor, Colors.teal.shade700);
+        expect(appBar.foregroundColor, Colors.purple.shade700);
       },
     );
 
@@ -477,7 +477,7 @@ void main() {
         expect(appBarFinder, findsOneWidget);
 
         final AppBar appBar = tester.widget<AppBar>(appBarFinder);
-        expect(appBar.foregroundColor, Colors.teal.shade300);
+        expect(appBar.foregroundColor, Colors.purple.shade300);
       },
     );
 
@@ -522,7 +522,7 @@ void main() {
             .first;
 
         final Theme themeWidget = tester.widget<Theme>(themeFinder);
-        expect(themeWidget.data.colorScheme.primary, Colors.teal.shade700);
+        expect(themeWidget.data.colorScheme.primary, Colors.purple.shade700);
 
         // Close dialog locale-agnostically
         Navigator.of(tester.element(find.byType(Dialog))).pop();
@@ -559,7 +559,10 @@ void main() {
             .first;
 
         final Theme themeWidgetDark = tester.widget<Theme>(themeFinderDark);
-        expect(themeWidgetDark.data.colorScheme.primary, Colors.teal.shade300);
+        expect(
+          themeWidgetDark.data.colorScheme.primary,
+          Colors.purple.shade300,
+        );
       },
     );
   });
