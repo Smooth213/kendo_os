@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:clock/clock.dart';
 
 // ★ 新セキュリティ一元管理システムを導入
 import 'package:kendo_os/security/feature_gate.dart';
@@ -651,17 +652,86 @@ class _MasterManagementScreenState
     String selectedGender = player?.gender ?? '男子';
     bool isBeginner = player?.isBeginner ?? false; // ★ 追加
 
-    // ★ 入力補助：漢字を入力中に、ひらがなを自動コピーする魔法のロジック
+    // ★ 入力補助：漢字を入力中に、ひらがなを自動コピーする魔法のロジック（Web/ライブ変換対応）
     void setupAutoKana(
       TextEditingController nameCtrl,
       TextEditingController kanaCtrl,
     ) {
+      String lastText = nameCtrl.text;
+      String lastValidKana = '';
+      DateTime lastClearedTime = DateTime.fromMillisecondsSinceEpoch(0);
+
+      String keepKanaOnly(String s) {
+        return s.replaceAll(RegExp(r'[^ぁ-んァ-ヶー]'), '');
+      }
+
+      String keepKanjiOnly(String s) {
+        return s.replaceAll(RegExp(r'[^一-龠々]'), '');
+      }
+
+      void processChange(String fromText, String toText) {
+        if (toText.isEmpty) {
+          if (kanaCtrl.text.isNotEmpty) {
+            lastValidKana = kanaCtrl.text;
+            lastClearedTime = clock.now();
+          }
+          kanaCtrl.text = '';
+          return;
+        }
+
+        final lastKana = keepKanaOnly(fromText);
+        final currentKana = keepKanaOnly(toText);
+
+        final lastKanjiCount = keepKanjiOnly(fromText).length;
+        final currentKanjiCount = keepKanjiOnly(toText).length;
+
+        // 1. かな文字が増加した場合（前回の状態から追記されている）
+        if (currentKana.startsWith(lastKana) &&
+            currentKana.length > lastKana.length) {
+          final added = currentKana.substring(lastKana.length);
+          kanaCtrl.text = kanaCtrl.text + added;
+          lastValidKana = kanaCtrl.text;
+        }
+        // 2. 文字が純粋に削除された場合（変換による文字数減少は除外）
+        else if (toText.length < fromText.length &&
+            currentKanjiCount <= lastKanjiCount) {
+          final diffLen = fromText.length - toText.length;
+          if (kanaCtrl.text.length >= diffLen) {
+            kanaCtrl.text = kanaCtrl.text.substring(
+              0,
+              kanaCtrl.text.length - diffLen,
+            );
+          } else {
+            kanaCtrl.text = '';
+          }
+          lastValidKana = kanaCtrl.text;
+        }
+        // 3. 全クリアやひらがなのみのコピペ時のフォールバック
+        else if (RegExp(r'^[ぁ-んァ-ヶーa-zA-Z0-9]*$').hasMatch(toText)) {
+          kanaCtrl.text = toText;
+          lastValidKana = kanaCtrl.text;
+        }
+        // 4. Web等でIME確定時に一時的な空文字化を経由して漢字が挿入された場合の復元（自己修復）
+        else if (kanaCtrl.text.isEmpty &&
+            lastValidKana.isNotEmpty &&
+            currentKanjiCount > 0 &&
+            clock.now().difference(lastClearedTime).inMilliseconds < 150) {
+          kanaCtrl.text = lastValidKana;
+        }
+      }
+
       nameCtrl.addListener(() {
         final text = nameCtrl.text;
-        // ひらがな・カタカナ・英数字のみの場合に、よみがな欄に自動コピー
-        if (RegExp(r'^[ぁ-んァ-ヶーa-zA-Z0-9]*$').hasMatch(text)) {
-          kanaCtrl.text = text;
-        }
+        if (text == lastText) return;
+
+        // マイクロタスクで遅延実行し、IMEの仮確定・クリアの中間状態（""など）をスキップする
+        Future.microtask(() {
+          final finalText = nameCtrl.text;
+          if (finalText == lastText) return;
+
+          processChange(lastText, finalText);
+          lastText = finalText;
+        });
       });
     }
 
@@ -1087,117 +1157,143 @@ class _MasterManagementScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: dialogBgColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.only(
-          top: 16,
-          left: 24,
-          right: 24,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 48,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+      enableDrag: false,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          final keyboardHeight = kIsWeb
+              ? 0.0
+              : MediaQuery.of(context).viewInsets.bottom;
+          final isKeyboardVisible = keyboardHeight > 0;
+          final screenHeight = MediaQuery.of(context).size.height;
+          final maxSheetHeight = screenHeight * 0.9;
+
+          return Container(
+            constraints: BoxConstraints(maxHeight: maxSheetHeight),
+            decoration: BoxDecoration(
+              color: dialogBgColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
-              const SizedBox(height: 24),
-              Text(
-                '道場名・学校名の登録',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.purpleAccent : Colors.purple.shade800,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                '選手を追加する前に、道場名または学校名を入力してください。',
-                style: TextStyle(fontSize: 13, color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                style: TextStyle(color: textColor),
-                decoration: InputDecoration(
-                  labelText: '道場名・学校名',
-                  prefixIcon: Icon(
-                    Icons.account_balance,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: inputBgColor,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+            ),
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 24,
+              right: 24,
+              bottom: 24,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: Text(
-                      'キャンセル',
-                      style: TextStyle(
-                        color: isDark ? Colors.grey.shade400 : Colors.grey,
-                        fontWeight: FontWeight.bold,
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 24),
+                  Text(
+                    '道場名・学校名の登録',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? Colors.purpleAccent
+                          : Colors.purple.shade800,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '選手を追加する前に、道場名または学校名を入力してください。',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: controller,
+                    autofocus: false,
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
+                      labelText: '道場名・学校名',
+                      prefixIcon: Icon(
+                        Icons.account_balance,
+                        color: isDark ? Colors.grey.shade400 : Colors.grey,
+                      ),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
+                      filled: true,
+                      fillColor: inputBgColor,
                     ),
-                    icon: const Icon(Icons.check),
-                    label: const Text('登録'),
-                    onPressed: () async {
-                      final newName = TextSanitizer.clean(controller.text);
-                      if (newName.isEmpty) return;
-
-                      final dojoId = ref.read(currentDojoIdProvider);
-                      final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
-                      final firestore = ref.read(firestoreProvider);
-
-                      await firestore
-                          .collection('organizations')
-                          .doc(safeDojoId)
-                          .set({'name': newName}, SetOptions(merge: true));
-
-                      if (ctx.mounted) {
-                        Navigator.pop(ctx);
-                      }
-                    },
                   ),
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'キャンセル',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey.shade400 : Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                        ),
+                        icon: const Icon(Icons.check),
+                        label: const Text('登録'),
+                        onPressed: () async {
+                          final newName = TextSanitizer.clean(controller.text);
+                          if (newName.isEmpty) return;
+
+                          final dojoId = ref.read(currentDojoIdProvider);
+                          final safeDojoId = dojoId.isNotEmpty
+                              ? dojoId
+                              : 'test201';
+                          final firestore = ref.read(firestoreProvider);
+
+                          await firestore
+                              .collection('organizations')
+                              .doc(safeDojoId)
+                              .set({'name': newName}, SetOptions(merge: true));
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  if (!kIsWeb && isKeyboardVisible)
+                    SizedBox(height: keyboardHeight),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1574,161 +1670,186 @@ class _MasterManagementScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.only(
-          top: 16,
-          left: 24,
-          right: 24,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // つまみバー
-              Center(
-                child: Container(
-                  width: 48,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+      enableDrag: false,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          final keyboardHeight = kIsWeb
+              ? 0.0
+              : MediaQuery.of(context).viewInsets.bottom;
+          final isKeyboardVisible = keyboardHeight > 0;
+          final screenHeight = MediaQuery.of(context).size.height;
+          final maxSheetHeight = screenHeight * 0.9;
 
-              Text(
-                '所属名の変更',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.purple.shade800,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                '登録されている全選手の所属名を一括で書き換えます。',
-                style: TextStyle(fontSize: 13, color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: '新しい道場名・学校名',
-                  prefixIcon: const Icon(
-                    Icons.account_balance,
-                    color: Colors.grey,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+          return Container(
+            constraints: BoxConstraints(maxHeight: maxSheetHeight),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 24,
+              right: 24,
+              bottom: 24,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text(
-                      'キャンセル',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.bold,
+                  // つまみバー
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 24),
+
+                  Text(
+                    '所属名の変更',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade800,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '登録されている全選手の所属名を一括で書き換えます。',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: controller,
+                    autofocus: false,
+                    decoration: InputDecoration(
+                      labelText: '新しい道場名・学校名',
+                      prefixIcon: const Icon(
+                        Icons.account_balance,
+                        color: Colors.grey,
+                      ),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                    ),
-                    icon: const Icon(Icons.check),
-                    onPressed: () async {
-                      // ★ 修正：一括修正する道場名もお掃除フィルターに通す！
-                      final newName = TextSanitizer.clean(controller.text);
-                      if (newName.isEmpty) return;
-
-                      Navigator.pop(ctx);
-                      // ぐるぐるを表示
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (_) =>
-                            const Center(child: CircularProgressIndicator()),
-                      );
-
-                      try {
-                        final dojoId = ref.read(currentDojoIdProvider);
-                        final safeDojoId = dojoId.isNotEmpty
-                            ? dojoId
-                            : 'test201';
-                        final firestore = ref.read(firestoreProvider);
-
-                        // まずは organization 自体の名前を更新
-                        await firestore
-                            .collection('organizations')
-                            .doc(safeDojoId)
-                            .set({'name': newName}, SetOptions(merge: true));
-
-                        // そして全選手の所属名を一括更新
-                        final batch = firestore.batch();
-                        for (var p in players) {
-                          final docRef = firestore
-                              .collection('organizations')
-                              .doc(safeDojoId)
-                              .collection('players')
-                              .doc(p.id);
-                          batch.set(docRef, {
-                            'organization': newName,
-                          }, SetOptions(merge: true));
-                        }
-                        await batch.commit();
-
-                        if (context.mounted) Navigator.pop(context); // ぐるぐるを閉じる
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('所属名を一括更新しました！')),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) Navigator.pop(context);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('エラーが発生しました: $e')),
-                          );
-                        }
-                      }
-                    },
-                    label: const Text(
-                      '一括更新',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
                     ),
                   ),
+                  const SizedBox(height: 32),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'キャンセル',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                        ),
+                        icon: const Icon(Icons.check),
+                        onPressed: () async {
+                          // ★ 修正：一括修正する道場名もお掃除フィルターに通す！
+                          final newName = TextSanitizer.clean(controller.text);
+                          if (newName.isEmpty) return;
+
+                          Navigator.pop(context);
+                          // ぐるぐるを表示
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (_) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+
+                          try {
+                            final dojoId = ref.read(currentDojoIdProvider);
+                            final safeDojoId = dojoId.isNotEmpty
+                                ? dojoId
+                                : 'test201';
+                            final firestore = ref.read(firestoreProvider);
+
+                            // まずは organization 自体の名前を更新
+                            await firestore
+                                .collection('organizations')
+                                .doc(safeDojoId)
+                                .set({
+                                  'name': newName,
+                                }, SetOptions(merge: true));
+
+                            // そして全選手の所属名を一括更新
+                            final batch = firestore.batch();
+                            for (var p in players) {
+                              final docRef = firestore
+                                  .collection('organizations')
+                                  .doc(safeDojoId)
+                                  .collection('players')
+                                  .doc(p.id);
+                              batch.set(docRef, {
+                                'organization': newName,
+                              }, SetOptions(merge: true));
+                            }
+                            await batch.commit();
+
+                            if (context.mounted) {
+                              Navigator.pop(context); // ぐるぐるを閉じる
+                            }
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('所属名を一括更新しました！')),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('エラーが発生しました: $e')),
+                              );
+                            }
+                          }
+                        },
+                        label: const Text(
+                          '一括更新',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (!kIsWeb && isKeyboardVisible)
+                    SizedBox(height: keyboardHeight),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -2009,147 +2130,170 @@ class _MasterManagementScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        height: MediaQuery.of(ctx).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.only(
-          top: 16,
-          left: 24,
-          right: 24,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'チーム名の管理',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
-                fontSize: 20,
-              ),
-            ),
-            const Text(
-              '試合作成時にボタンで選べる「自チーム名」を登録します。',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
+      enableDrag: false,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          final keyboardHeight = kIsWeb
+              ? 0.0
+              : MediaQuery.of(context).viewInsets.bottom;
+          final isKeyboardVisible = keyboardHeight > 0;
 
-            // 入力エリア
-            Row(
+          return Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 24,
+              right: 24,
+              bottom: 24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: nameController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: '例：道上剣友会A',
-                      filled: true,
-                      fillColor: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
+                Center(
+                  child: Container(
+                    width: 48,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: () async {
-                    final name = TextSanitizer.clean(nameController.text);
-                    if (name.isNotEmpty) {
-                      // ⭕️ UIはプロバイダに「追加して」と伝えるだけ
-                      await ref
-                          .read(teamNameHistoryProvider.notifier)
-                          .addName(name, orgName);
-                      nameController.clear();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                const SizedBox(height: 24),
+                Text(
+                  'チーム名の管理',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                    fontSize: 20,
                   ),
-                  child: const Text('追加'),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                const Text(
+                  '試合作成時にボタンで選べる「自チーム名」を登録します。',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
 
-            // リスト表示
-            Expanded(
-              // ⭕️ UIはプロバイダから提供されるList<String>をそのまま監視するだけ
-              child: Consumer(
-                builder: (context, ref, child) {
-                  final names = ref.watch(teamNameHistoryProvider);
-
-                  if (names.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        '登録されたチーム名はありません',
-                        style: TextStyle(color: Colors.grey, fontSize: 13),
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    itemCount: names.length,
-                    itemBuilder: (context, index) => Card(
-                      elevation: 0,
-                      color: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : Colors.grey.shade50,
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text(
-                          names[index],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                // 入力エリア
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: nameController,
+                        autofocus: false,
+                        decoration: InputDecoration(
+                          hintText: '例：道上剣友会A',
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xFF2C2C2E)
+                              : Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
                         ),
-                        trailing:
-                            FeatureGate.canManageMaster(
-                              ref.watch(currentUserRoleProvider),
-                              ref.watch(securityLevelProvider),
-                            )
-                            ? IconButton(
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  color: Colors.redAccent,
-                                  size: 20,
-                                ),
-                                onPressed: () => ref
-                                    .read(teamNameHistoryProvider.notifier)
-                                    .deleteName(names[index], orgName),
-                              )
-                            : null,
                       ),
                     ),
-                  );
-                },
-              ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final name = TextSanitizer.clean(nameController.text);
+                        if (name.isNotEmpty) {
+                          // ⭕️ UIはプロバイダに「追加して」と伝えるだけ
+                          await ref
+                              .read(teamNameHistoryProvider.notifier)
+                              .addName(name, orgName);
+                          nameController.clear();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('追加'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // リスト表示
+                Flexible(
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final names = ref.watch(teamNameHistoryProvider);
+
+                      if (names.isEmpty) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24),
+                            child: Text(
+                              '登録されたチーム名はありません',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: names.length,
+                        itemBuilder: (context, index) => Card(
+                          elevation: 0,
+                          color: isDark
+                              ? const Color(0xFF2C2C2E)
+                              : Colors.grey.shade50,
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            title: Text(
+                              names[index],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            trailing:
+                                FeatureGate.canManageMaster(
+                                  ref.watch(currentUserRoleProvider),
+                                  ref.watch(securityLevelProvider),
+                                )
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.redAccent,
+                                      size: 20,
+                                    ),
+                                    onPressed: () => ref
+                                        .read(teamNameHistoryProvider.notifier)
+                                        .deleteName(names[index], orgName),
+                                  )
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                if (!kIsWeb && isKeyboardVisible)
+                  SizedBox(height: keyboardHeight),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
