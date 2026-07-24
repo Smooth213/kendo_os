@@ -17,6 +17,11 @@ class OperatorActionButtons extends ConsumerWidget {
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
+    final MaterialColor viewerThemeColor = isBunaiksen
+        ? Colors.purple
+        : Colors.blueGrey;
+
     return Column(
       children: [
         if (!isReadOnly) ...[
@@ -36,7 +41,7 @@ class OperatorActionButtons extends ConsumerWidget {
           enableLiquidGlass,
           Icons.cast_connected,
           '観客・保護者側の画面を確認 (Viewer)',
-          Colors.teal,
+          viewerThemeColor,
           () {
             final dojoId = ref.read(currentDojoIdProvider);
             context.push(

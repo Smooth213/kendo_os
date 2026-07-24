@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -57,6 +58,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   final FocusNode _opponentTeamFocusNode = FocusNode(); // ★ 追加：フォーカス状態を永続化
   final Map<int, String> _opponentPlayers = {};
   bool _isOwnTeamRed = true;
+  late AppThemeColors _themeColors;
 
   // ★ リーグ戦拡張：参加者リストと追加用コントローラー
   final List<String> _leagueParticipants = [];
@@ -128,7 +130,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, manualName),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal.shade600,
+              backgroundColor: _themeColors.primaryAccent,
               foregroundColor: Colors.white,
             ),
             child: const Text('決定'),
@@ -178,7 +180,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.teal.shade300 : Colors.teal.shade900,
+                color: _themeColors.primaryAccent,
               ),
             ),
             const SizedBox(height: 24),
@@ -237,8 +239,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.teal.shade700,
-                side: BorderSide(color: Colors.teal.shade200),
+                foregroundColor: _themeColors.primaryAccent,
+                side: BorderSide(color: _themeColors.softAccent),
                 minimumSize: const Size(double.infinity, 48),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -256,7 +258,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.teal.shade800,
+                        color: _themeColors.primaryAccent,
                       ),
                     ),
                   ),
@@ -264,15 +266,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     (p) => Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       elevation: 0,
-                      color: isDark
-                          ? Colors.teal.shade900.withValues(alpha: 0.3)
-                          : Colors.teal.shade50.withValues(alpha: 0.5),
+                      color: _themeColors.softAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: BorderSide(
                           color: isDark
                               ? Colors.transparent
-                              : Colors.teal.shade100,
+                              : _themeColors.softAccent,
                         ),
                       ),
                       child: ListTile(
@@ -283,9 +283,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           child: Text(
                             p.name.substring(0, 1),
                             style: TextStyle(
-                              color: isDark
-                                  ? Colors.teal.shade400
-                                  : Colors.teal.shade700,
+                              color: _themeColors.primaryAccent,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -300,13 +298,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                         subtitle: Text(
                           p.gradeName,
                           style: TextStyle(
-                            color: Colors.teal.shade600,
+                            color: _themeColors.primaryAccent,
                             fontSize: 12,
                           ),
                         ),
                         trailing: Icon(
                           Icons.check_circle_outline,
-                          color: Colors.teal.shade600,
+                          color: _themeColors.primaryAccent,
                         ),
                         onTap: () => Navigator.pop(context, p.name),
                       ),
@@ -376,7 +374,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
-                color: isDark ? Colors.teal.shade300 : Colors.teal.shade800,
+                color: _themeColors.primaryAccent,
               ),
             ),
             const SizedBox(height: 16),
@@ -418,7 +416,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   controllers.map((c) => TextSanitizer.clean(c.text)).toList(),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal.shade600,
+                  backgroundColor: _themeColors.primaryAccent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -472,7 +470,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
-                color: isDark ? Colors.teal.shade300 : Colors.teal.shade800,
+                color: _themeColors.primaryAccent,
               ),
             ),
             const SizedBox(height: 16),
@@ -500,7 +498,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   TextSanitizer.clean(nameController.text),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal.shade600,
+                  backgroundColor: _themeColors.primaryAccent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -526,11 +524,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
       return const SizedBox.shrink();
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // iOS Native: ダークモード時は彩度を抑えた深みのあるTealへ
-    final color1 = isDark ? Colors.teal.shade800 : Colors.teal.shade400;
-    final endColor = isDark ? Colors.teal.shade800 : Colors.teal.shade300;
+    final color1 = _themeColors.primaryAccent;
+    final endColor = _themeColors.softAccent;
 
     return Container(
       width: double.infinity,
@@ -586,6 +581,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
         ref.watch(lastUsedSettingsProvider)['matchType'] as String? ?? '';
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    _themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final textColor = isDark ? Colors.white : Colors.black87;
     final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
@@ -631,25 +629,19 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     _buildStaticHeader(),
                     Container(
                       padding: const EdgeInsets.all(16),
-                      color: isDark
-                          ? Colors.teal.shade900.withValues(alpha: 0.2)
-                          : Colors.teal.shade50,
+                      color: _themeColors.softAccent,
                       child: Row(
                         children: [
                           Icon(
                             Icons.info_outline,
-                            color: isDark
-                                ? Colors.teal.shade400
-                                : Colors.teal.shade700,
+                            color: _themeColors.primaryAccent,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               '自チームの選手を選択し、必要に応じて相手のチーム・選手名を入力してください。',
                               style: TextStyle(
-                                color: isDark
-                                    ? Colors.teal.shade100
-                                    : Colors.black87,
+                                color: isDark ? Colors.white70 : Colors.black87,
                               ),
                             ),
                           ),
@@ -666,7 +658,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               '1. リーグ参加者リストの作成',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.teal.shade800,
+                                color: _themeColors.primaryAccent,
                                 fontSize: 16,
                               ),
                             ),
@@ -772,7 +764,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal.shade600,
+                                  backgroundColor: _themeColors.primaryAccent,
                                   foregroundColor: Colors.white,
                                 ),
                               ),
@@ -814,12 +806,12 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                         backgroundColor:
                                             name.contains('自チーム') ||
                                                 name == rule.teamName
-                                            ? Colors.teal.shade100
+                                            ? _themeColors.softAccent
                                             : Colors.grey.shade200,
                                         child: Text(
                                           '${index + 1}',
                                           style: TextStyle(
-                                            color: Colors.teal.shade900,
+                                            color: _themeColors.primaryAccent,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -844,7 +836,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                               '（自チーム）',
                                               style: TextStyle(
                                                 fontSize: 10,
-                                                color: Colors.teal.shade700,
+                                                color:
+                                                    _themeColors.primaryAccent,
                                               ),
                                             )
                                           : null,
@@ -868,7 +861,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               '2. 自チームのオーダーを確認',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.teal.shade800,
+                                color: _themeColors.primaryAccent,
                                 fontSize: 16,
                               ),
                             ),
@@ -885,7 +878,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               '自チームの紅白（タスキ）',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.teal.shade800,
+                                color: _themeColors.primaryAccent,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -1129,8 +1122,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 style: TextStyle(fontSize: 12),
                               ),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.teal.shade700,
-                                side: BorderSide(color: Colors.teal.shade300),
+                                foregroundColor: _themeColors.primaryAccent,
+                                side: BorderSide(
+                                  color: _themeColors.softAccent,
+                                ),
                               ),
                             ),
                           ),
@@ -1169,8 +1164,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 style: TextStyle(fontSize: 12),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal.shade50,
-                                foregroundColor: Colors.teal.shade800,
+                                backgroundColor: _themeColors.softAccent,
+                                foregroundColor: _themeColors.primaryAccent,
                                 elevation: 0,
                               ),
                             ),
@@ -1196,7 +1191,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               color: isSelected
-                                  ? Colors.teal.shade300
+                                  ? _themeColors.primaryAccent
                                   : borderColor,
                               width: isSelected ? 2 : 1,
                             ),
@@ -1221,10 +1216,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     children: [
                                       CircleAvatar(
                                         backgroundColor: isSelected
-                                            ? (isDark
-                                                  ? Colors.teal.shade900
-                                                        .withValues(alpha: 0.3)
-                                                  : Colors.teal.shade100)
+                                            ? _themeColors.softAccent
                                             : (isDark
                                                   ? const Color(0xFF2C2C2E)
                                                   : Colors.grey.shade200),
@@ -1232,7 +1224,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                           posName.substring(0, 1),
                                           style: TextStyle(
                                             color: isSelected
-                                                ? Colors.teal.shade400
+                                                ? _themeColors.primaryAccent
                                                 : subTextColor,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -1250,7 +1242,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                   : posName,
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.teal.shade600,
+                                                color:
+                                                    _themeColors.primaryAccent,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
@@ -1274,12 +1267,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: isSelected
-                                              ? (isDark
-                                                    ? Colors.teal.shade900
-                                                          .withValues(
-                                                            alpha: 0.3,
-                                                          )
-                                                    : Colors.teal.shade50)
+                                              ? _themeColors.softAccent
                                               : (isDark
                                                     ? const Color(0xFF2C2C2E)
                                                     : Colors.grey.shade100),
@@ -1291,7 +1279,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                           isSelected ? '変更' : '選択',
                                           style: TextStyle(
                                             color: isSelected
-                                                ? Colors.teal.shade500
+                                                ? _themeColors.primaryAccent
                                                 : subTextColor,
                                             fontSize: 13,
                                             fontWeight: FontWeight.bold,
@@ -1359,7 +1347,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
                                         borderSide: BorderSide(
-                                          color: Colors.teal.shade300,
+                                          color: _themeColors.primaryAccent,
                                         ),
                                       ),
                                       fillColor: isDark
@@ -1452,14 +1440,12 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             onPressed: _addExtraPosition,
                             icon: Icon(
                               Icons.add_circle_outline,
-                              color: Colors.teal.shade600,
+                              color: _themeColors.primaryAccent,
                             ),
                             label: Text(
                               'イレギュラー枠を追加する（錬成会用）',
                               style: TextStyle(
-                                color: isDark
-                                    ? Colors.teal.shade400
-                                    : Colors.teal.shade700,
+                                color: _themeColors.primaryAccent,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1495,7 +1481,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                         onPressed: () =>
                                             Navigator.pop(context, true),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.teal.shade600,
+                                          backgroundColor:
+                                              _themeColors.primaryAccent,
                                           foregroundColor: Colors.white,
                                           elevation: 0,
                                         ),
@@ -1864,7 +1851,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   );
                                 }
                               },
-                              color: Colors.teal,
+                              color: _themeColors.primaryAccent,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               icon: Icons.check_circle,
                               label: 'このオーダーで確定して進む',
@@ -1938,7 +1925,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.teal.shade500),
+                  borderSide: BorderSide(color: _themeColors.primaryAccent),
                 ),
                 prefixIcon: Icon(
                   Icons.shield_outlined,
@@ -1984,9 +1971,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    trailing: const Icon(
+                    trailing: Icon(
                       Icons.add_circle_outline,
-                      color: Colors.teal,
+                      color: _themeColors.primaryAccent,
                       size: 18,
                     ),
                     onTap: () {

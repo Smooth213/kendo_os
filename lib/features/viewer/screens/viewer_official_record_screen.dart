@@ -387,7 +387,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal.shade600,
+                                  backgroundColor: const Color(0xFF06C755),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,

@@ -15,6 +15,12 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+
+class FakeSyncEngine implements SyncEngine {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => Future<void>.value();
+}
 
 class FakePlayerRepository implements PlayerRepository {
   final List<PlayerModel> players;
@@ -94,6 +100,7 @@ void main() {
         playerRepositoryProvider.overrideWithValue(
           FakePlayerRepository(players),
         ),
+        syncEngineProvider.overrideWith((ref) => FakeSyncEngine()),
         permissionProvider.overrideWith(
           (ref) => const AppPermissions(
             canCreateMatch: true,
@@ -965,6 +972,45 @@ void main() {
       final textWidget = tester.widget<Text>(titleTextFinder);
       expect(textWidget.style?.fontSize, 18);
       expect(textWidget.style?.fontWeight, FontWeight.bold);
+    });
+
+    testWidgets('5. ルール一括変更ボタンタップ時の動作検証', (WidgetTester tester) async {
+      final matches = [
+        createMockMatch(
+          id: 'm1',
+          category: '一般',
+          groupName: 'チームA vs チームB',
+          matchType: '先鋒',
+          order: 10.0,
+          redName: 'チームA:選手1',
+          whiteName: 'チームB:選手2',
+        ),
+      ];
+
+      await tester.pumpWidget(buildTestableWidget(matches));
+      await tester.pumpAndSettle();
+
+      // Find the 'ルール一括変更' button and tap it
+      final bulkEditBtn = find.text('ルール一括変更');
+      expect(bulkEditBtn, findsOneWidget);
+      await tester.tap(bulkEditBtn);
+      await tester.pumpAndSettle();
+
+      // Verify the sheet is displayed (contains header text)
+      expect(find.text('⚙️ 試合ルールの一括変更'), findsOneWidget);
+
+      // Verify that the team match is grouped and displayed correctly as 'チームA vs チームB'
+      expect(find.text('[一般] チームA vs チームB'), findsOneWidget);
+
+      // Tap apply button to verify it saves/calls the backend
+      final applyBtn = find.text('選択した 1 件にルールを適用する');
+      expect(applyBtn, findsOneWidget);
+      await tester.tap(applyBtn);
+      await tester.pumpAndSettle();
+
+      // Verify SnackBar shown and sheet dismissed
+      expect(find.text('1件の対戦ルールを一括変更しました。'), findsOneWidget);
+      expect(find.text('⚙️ 試合ルールの一括変更'), findsNothing);
     });
   });
 }

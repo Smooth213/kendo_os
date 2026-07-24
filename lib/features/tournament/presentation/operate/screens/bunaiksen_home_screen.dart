@@ -19,6 +19,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import '../components/bulk_rule_edit_sheet.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -323,16 +324,59 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
-                          vertical: 8.0,
+                          vertical: 6.0,
                         ),
                         color: themeColors.softAccent, // ★ 修正
                         width: double.infinity,
-                        child: Text(
-                          '本日の試合一覧',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: themeColors.primaryAccent,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '本日の試合一覧',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: themeColors.primaryAccent,
+                              ),
+                            ),
+                            if (matches.isNotEmpty)
+                              OutlinedButton.icon(
+                                onPressed: () => showBulkRuleEditSheet(
+                                  context,
+                                  dateId,
+                                  matches,
+                                  isBunaiksen: true,
+                                ),
+                                icon: Icon(
+                                  Icons.gavel,
+                                  size: 14,
+                                  color: themeColors.primaryAccent,
+                                ),
+                                label: Text(
+                                  'ルール一括変更',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                    color: themeColors.primaryAccent,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: themeColors.primaryAccent,
+                                  side: BorderSide(
+                                    color: themeColors.primaryAccent.withAlpha(
+                                      128,
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 0,
+                                  ),
+                                  minimumSize: const Size(0, 28),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),

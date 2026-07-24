@@ -6,6 +6,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'match_list_provider.dart';
 // ★ kendo_rule_engine.dart のインポートを削除 (未使用のため)
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart'; // ★ Firestore版からIsar版に差し替え
 import 'sync_provider.dart'; // ★ 追加: クラウド同期ワーカー
 import 'package:kendo_os/features/match/domain/match_aggregate.dart'; // ★ 追加
@@ -243,6 +244,48 @@ class MatchCommandService {
   // 7. 新規試合の追加
   Future<void> addMatch(MatchModel newMatch) async {
     await ref.read(matchApplicationServiceProvider).saveMatch(newMatch); // ★ 修正
+  }
+
+  // 7-2. 既存試合のルール一括変更（フィルター連動選択式）
+  Future<void> bulkUpdateMatchRules({
+    required List<String> targetMatchIds,
+    required MatchRule newRule,
+  }) async {
+    if (targetMatchIds.isEmpty) return;
+
+    ref.read(isMatchCommandProcessingProvider.notifier).state = true;
+    ref.read(matchCommandErrorProvider.notifier).state = null;
+
+    try {
+      final appService = ref.read(matchApplicationServiceProvider);
+
+      final List<MatchModel> updatedMatches = [];
+      for (final matchId in targetMatchIds) {
+        final match = _getMatch(matchId);
+        if (match != null) {
+          final updatedMatch = match.copyWith(
+            matchTimeMinutes: newRule.matchTimeMinutes,
+            hasExtension:
+                newRule.enchoTimeMinutes > 0 || newRule.isEnchoUnlimited,
+            extensionTimeMinutes: newRule.enchoTimeMinutes,
+            rule: newRule,
+          );
+          updatedMatches.add(updatedMatch);
+        }
+      }
+
+      if (updatedMatches.isNotEmpty) {
+        await appService.saveMatchesBulk(updatedMatches);
+        ref.read(syncEngineProvider).syncNow();
+      }
+    } catch (e) {
+      debugPrint('🔥 [Command Error] bulkUpdateMatchRules: $e');
+      ref.read(matchCommandErrorProvider.notifier).state =
+          'ルールの表示・一括更新に失敗しました: $e';
+      rethrow;
+    } finally {
+      ref.read(isMatchCommandProcessingProvider.notifier).state = false;
+    }
   }
 
   // 8. ★ Step 4-4: 歴史(Events)からSnapshotを再構築（データ修復）

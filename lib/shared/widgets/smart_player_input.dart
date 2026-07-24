@@ -44,6 +44,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     String searchText = '';
+    String selectedFilter = 'すべて';
 
     await showModalBottomSheet(
       context: context,
@@ -55,19 +56,65 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
       builder: (BuildContext sheetContext) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
-            // 検索文字で絞り込み
-            final filteredMaster = masterPlayers
+            // 1. 検索ワードによる絞り込み ＋ カテゴリ別フィルタ
+            List<PlayerModel> filteredMaster = masterPlayers
                 .where((p) => p.name.contains(searchText))
                 .toList();
-            final filteredGuest = guestPlayers
-                .where((name) => name.contains(searchText))
-                .toList();
 
-            // 入力文字が完全に新しい場合のみ「追加」ボタンを表示
+            if (selectedFilter != 'すべて') {
+              if (selectedFilter == 'ゲスト') {
+                filteredMaster = [];
+              } else if (selectedFilter == '初心者') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '幼年') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade == 0 && !p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '低学年') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade >= 1 && p.grade <= 4 && !p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '高学年') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade >= 5 && p.grade <= 6 && !p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '中学生') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade >= 7 && p.grade <= 9 && !p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '高校生') {
+                filteredMaster = filteredMaster
+                    .where(
+                      (p) => p.grade >= 10 && p.grade <= 12 && !p.isBeginner,
+                    )
+                    .toList();
+              } else if (selectedFilter == '一般') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade >= 13 && !p.isBeginner)
+                    .toList();
+              } else {
+                filteredMaster = [];
+              }
+            }
+
+            // よみがな順でソート（常に美しく並ぶ）
+            filteredMaster.sort((a, b) => a.nameKana.compareTo(b.nameKana));
+
+            // ゲストは「すべて」または「ゲスト」フィルターの時のみ表示
+            final filteredGuest =
+                (selectedFilter == 'すべて' || selectedFilter == 'ゲスト')
+                ? guestPlayers
+                      .where((name) => name.contains(searchText))
+                      .toList()
+                : <String>[];
+
+            // 入力文字が完全に新しい（名簿・ゲストともに重複しない）場合のみ「追加」ボタンを表示
             final isNewName =
                 searchText.trim().isNotEmpty &&
-                !filteredMaster.any((p) => p.name == searchText.trim()) &&
-                !filteredGuest.any((name) => name == searchText.trim());
+                !masterPlayers.any((p) => p.name == searchText.trim()) &&
+                !guestPlayers.any((name) => name == searchText.trim());
 
             return Padding(
               padding: EdgeInsets.only(
@@ -117,6 +164,69 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                           Navigator.pop(context);
                         }
                       },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // ★ カテゴリフィルターチップ（横スクロール）
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children:
+                          [
+                            'すべて',
+                            '初心者',
+                            '幼年',
+                            '低学年',
+                            '高学年',
+                            '中学生',
+                            '高校生',
+                            '一般',
+                            'ゲスト',
+                          ].map((filterName) {
+                            final isSelected = selectedFilter == filterName;
+                            final activeColor = _accentColor;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                showCheckmark: false, // チェックマークは非表示にしてスッキリ
+                                label: Text(filterName),
+                                labelStyle: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : (isDark
+                                            ? Colors.grey.shade300
+                                            : Colors.grey.shade700),
+                                ),
+                                selected: isSelected,
+                                selectedColor: activeColor,
+                                backgroundColor: isDark
+                                    ? Colors.grey.shade900
+                                    : Colors.grey.shade100,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(
+                                    color: isSelected
+                                        ? Colors.transparent
+                                        : (isDark
+                                              ? const Color(0xFF2C2C2E)
+                                              : Colors.grey.shade300),
+                                  ),
+                                ),
+                                onSelected: (bool selected) {
+                                  if (selected) {
+                                    setStateSheet(() {
+                                      selectedFilter = filterName;
+                                    });
+                                  }
+                                },
+                              ),
+                            );
+                          }).toList(),
                     ),
                   ),
                   const SizedBox(height: 8),

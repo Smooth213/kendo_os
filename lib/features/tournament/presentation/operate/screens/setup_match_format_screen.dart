@@ -224,7 +224,10 @@ class _SetupMatchFormatScreenState
                     ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.teal.shade700, Colors.teal.shade500],
+                        colors: [
+                          _themeColors.primaryAccent,
+                          _themeColors.primaryAccent.withValues(alpha: 0.8),
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -312,13 +315,13 @@ class _SetupMatchFormatScreenState
                             radius: 18,
                             backgroundColor: isSub
                                 ? Colors.orange.shade50
-                                : Colors.teal.shade50,
+                                : _themeColors.softAccent,
                             child: Text(
                               isSub ? '補' : posName.substring(0, 1),
                               style: TextStyle(
                                 color: isSub
                                     ? Colors.orange.shade700
-                                    : Colors.teal.shade700,
+                                    : _themeColors.primaryAccent,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -338,7 +341,7 @@ class _SetupMatchFormatScreenState
                             style: TextStyle(
                               color: isSub
                                   ? Colors.orange.shade600
-                                  : Colors.teal.shade600,
+                                  : _themeColors.primaryAccent,
                               fontSize: 11,
                             ),
                           ),
@@ -355,11 +358,11 @@ class _SetupMatchFormatScreenState
                     padding: const EdgeInsets.only(bottom: 16),
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
+                      child: Text(
                         '完了',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.teal,
+                          color: _themeColors.primaryAccent,
                         ),
                       ),
                     ),
@@ -466,13 +469,13 @@ class _SetupMatchFormatScreenState
                           ),
                         ),
                       ],
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
                           '登録名簿から選ぶ',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.teal,
+                            color: _themeColors.primaryAccent,
                           ),
                         ),
                       ),
@@ -854,13 +857,11 @@ class _SetupMatchFormatScreenState
           return const SizedBox.shrink();
         }
 
-        final isDark = Theme.of(context).brightness == Brightness.dark;
         final t = (_currentPage / 2).clamp(0.0, 1.0);
 
-        // iOS Native: ダークモード時は彩度を抑えた深みのあるTealへ
-        final color1 = isDark ? Colors.teal.shade800 : Colors.teal.shade400;
-        final color2 = isDark ? Colors.teal.shade900 : Colors.teal.shade700;
-        final endColor = isDark ? Colors.teal.shade800 : Colors.teal.shade300;
+        final color1 = _themeColors.primaryAccent;
+        final color2 = _themeColors.primaryAccent.withValues(alpha: 0.8);
+        final endColor = _themeColors.softAccent;
 
         final gradientColor = Color.lerp(color1, color2, t)!;
 
@@ -1276,7 +1277,7 @@ class _SetupMatchFormatScreenState
                                   ? Icons.check_circle
                                   : Icons.circle_outlined,
                               color: isSelected
-                                  ? Colors.teal.shade500
+                                  ? _themeColors.primaryAccent
                                   : (isDark
                                         ? Colors.grey.shade600
                                         : Colors.grey.shade300),
@@ -1300,17 +1301,13 @@ class _SetupMatchFormatScreenState
                                         _showTeamDetailDialog(context, team),
                                     icon: Icon(
                                       Icons.swap_horizontal_circle,
-                                      color: isDark
-                                          ? Colors.teal.shade300
-                                          : Colors.teal.shade700,
+                                      color: _themeColors.primaryAccent,
                                       size: 20,
                                     ),
                                     label: Text(
                                       'オーダーを調整',
                                       style: TextStyle(
-                                        color: isDark
-                                            ? Colors.teal.shade300
-                                            : Colors.teal.shade700,
+                                        color: _themeColors.primaryAccent,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -1319,9 +1316,7 @@ class _SetupMatchFormatScreenState
                                           ? const Color(0xFF1C1C1E)
                                           : Colors.white,
                                       side: BorderSide(
-                                        color: isDark
-                                            ? Colors.teal.shade500
-                                            : Colors.teal.shade400,
+                                        color: _themeColors.primaryAccent,
                                         width: 1.5,
                                       ),
                                       shape: RoundedRectangleBorder(
@@ -1370,29 +1365,40 @@ class _SetupMatchFormatScreenState
             color: textColor,
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              size: 16,
+              color: _themeColors.primaryAccent,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '💡 設定したルールは、試合を追加したあとでも「一括ルール変更」からいつでも変更できます。',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
 
         _buildSectionTitle('試合形式（チーム設定より自動適用）'),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.teal.shade900.withValues(alpha: 0.3)
-                : Colors.teal.shade50.withValues(alpha: 0.5),
+            color: _themeColors.softAccent,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? Colors.teal.shade700 : Colors.teal.shade200,
-              width: 2,
-            ),
+            border: Border.all(color: _themeColors.primaryAccent, width: 2),
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.verified,
-                color: isDark ? Colors.teal.shade400 : Colors.teal.shade600,
-                size: 28,
-              ),
+              Icon(Icons.verified, color: _themeColors.primaryAccent, size: 28),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
@@ -1435,7 +1441,7 @@ class _SetupMatchFormatScreenState
                 '${t == 1.5 || t == 2.5 ? t : t.toInt()}分',
                 _matchTime == t,
                 () => setState(() => _matchTime = t),
-                Colors.teal.shade600,
+                _themeColors.primaryAccent,
               ),
             ),
             if (_showExtraMatchTime) ...[
@@ -1444,14 +1450,14 @@ class _SetupMatchFormatScreenState
                   '${t == 1.5 || t == 2.5 ? t : t.toInt()}分',
                   _matchTime == t,
                   () => setState(() => _matchTime = t),
-                  Colors.teal.shade600,
+                  _themeColors.primaryAccent,
                 ),
               ),
               _buildStyledChoiceChip(
                 '任意',
                 _matchTime == -1.0,
                 () => setState(() => _matchTime = -1.0),
-                Colors.teal.shade600,
+                _themeColors.primaryAccent,
               ),
             ],
             ActionChip(
@@ -1516,9 +1522,7 @@ class _SetupMatchFormatScreenState
                 ),
               ),
               value: _isRenseikai,
-              activeThumbColor: isDark
-                  ? Colors.teal.shade400
-                  : Colors.teal.shade600,
+              activeThumbColor: _themeColors.primaryAccent,
               onChanged: (v) => setState(() => _isRenseikai = v),
             ),
           ),
@@ -1555,7 +1559,7 @@ class _SetupMatchFormatScreenState
               return _buildDynamicSectionBox(
                 title: '錬成会 専用設定',
                 icon: Icons.autorenew,
-                color: Colors.teal.shade700,
+                color: _themeColors.primaryAccent,
                 child: Column(
                   children: [
                     const Align(
@@ -1576,7 +1580,7 @@ class _SetupMatchFormatScreenState
                             title: const Text('一試合制'),
                             subtitle: const Text('通常の試合のように、決着がついたら終了'),
                             value: '一試合制',
-                            activeColor: Colors.teal.shade600,
+                            activeColor: _themeColors.primaryAccent,
                           ),
                           RadioListTile<String>(
                             title: const Text('時間制'),
@@ -1625,7 +1629,7 @@ class _SetupMatchFormatScreenState
               return _buildDynamicSectionBox(
                 title: '代表戦の取り扱い（通常団体戦）',
                 icon: Icons.shield,
-                color: Colors.teal.shade700,
+                color: _themeColors.primaryAccent,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1651,7 +1655,7 @@ class _SetupMatchFormatScreenState
                                 style: TextStyle(fontSize: 14),
                               ),
                               value: true,
-                              activeColor: Colors.teal.shade600,
+                              activeColor: _themeColors.primaryAccent,
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
@@ -1662,7 +1666,7 @@ class _SetupMatchFormatScreenState
                                 style: TextStyle(fontSize: 14),
                               ),
                               value: false,
-                              activeColor: Colors.teal.shade600,
+                              activeColor: _themeColors.primaryAccent,
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
@@ -1673,16 +1677,16 @@ class _SetupMatchFormatScreenState
                     SwitchListTile(
                       title: const Text('延長戦を行う'),
                       value: _hasExtension,
-                      activeThumbColor: Colors.teal.shade600,
+                      activeThumbColor: _themeColors.primaryAccent,
                       onChanged: (v) => setState(() => _hasExtension = v),
                       contentPadding: EdgeInsets.zero,
                     ),
                     if (_hasExtension)
-                      ..._buildExtensionSettings(Colors.teal.shade600),
+                      ..._buildExtensionSettings(_themeColors.primaryAccent),
                     SwitchListTile(
                       title: const Text('延長戦で決着がつかない場合に「判定」を行う'),
                       value: _hasHantei,
-                      activeThumbColor: Colors.teal.shade600,
+                      activeThumbColor: _themeColors.primaryAccent,
                       onChanged: (v) => setState(() => _hasHantei = v),
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -1693,22 +1697,22 @@ class _SetupMatchFormatScreenState
               return _buildDynamicSectionBox(
                 title: '延長戦と判定（個人戦）',
                 icon: Icons.person,
-                color: Colors.teal.shade700,
+                color: _themeColors.primaryAccent,
                 child: Column(
                   children: [
                     SwitchListTile(
                       title: const Text('延長戦を行う'),
                       value: _hasExtension,
-                      activeThumbColor: Colors.teal.shade600,
+                      activeThumbColor: _themeColors.primaryAccent,
                       onChanged: (v) => setState(() => _hasExtension = v),
                       contentPadding: EdgeInsets.zero,
                     ),
                     if (_hasExtension)
-                      ..._buildExtensionSettings(Colors.teal.shade600),
+                      ..._buildExtensionSettings(_themeColors.primaryAccent),
                     SwitchListTile(
                       title: const Text('決着がつかない場合に「判定」を行う'),
                       value: _hasHantei,
-                      activeThumbColor: Colors.teal.shade600,
+                      activeThumbColor: _themeColors.primaryAccent,
                       onChanged: (v) => setState(() => _hasHantei = v),
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -1719,7 +1723,7 @@ class _SetupMatchFormatScreenState
               return _buildDynamicSectionBox(
                 title: '無制限ルール（勝ち抜き戦）',
                 icon: Icons.sports_martial_arts,
-                color: Colors.teal.shade700,
+                color: _themeColors.primaryAccent,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1735,19 +1739,19 @@ class _SetupMatchFormatScreenState
                           RadioListTile<String>(
                             title: const Text('大将対大将のときに無制限'),
                             value: '大将対大将',
-                            activeColor: Colors.teal.shade600,
+                            activeColor: _themeColors.primaryAccent,
                             contentPadding: EdgeInsets.zero,
                           ),
                           RadioListTile<String>(
                             title: const Text('どちらかの大将が出たら無制限'),
                             value: 'どちらかの大将',
-                            activeColor: Colors.teal.shade600,
+                            activeColor: _themeColors.primaryAccent,
                             contentPadding: EdgeInsets.zero,
                           ),
                           RadioListTile<String>(
                             title: const Text('大将対大将が引き分けのとき、１本勝負の延長戦'),
                             value: '大将引き分け延長',
-                            activeColor: Colors.teal.shade600,
+                            activeColor: _themeColors.primaryAccent,
                             contentPadding: EdgeInsets.zero,
                           ),
                         ],
@@ -1755,17 +1759,17 @@ class _SetupMatchFormatScreenState
                     ),
                     if (_kachinukiUnlimitedType == '大将引き分け延長') ...[
                       const Divider(),
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8, bottom: 8),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8, bottom: 8),
                         child: Text(
                           '延長戦の設定',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.teal,
+                            color: _themeColors.primaryAccent,
                           ),
                         ),
                       ),
-                      ..._buildExtensionSettings(Colors.teal.shade600),
+                      ..._buildExtensionSettings(_themeColors.primaryAccent),
                     ],
                   ],
                 ),
@@ -1774,7 +1778,7 @@ class _SetupMatchFormatScreenState
               return _buildDynamicSectionBox(
                 title: 'リーグ戦 特別ルール',
                 icon: Icons.table_view,
-                color: Colors.teal.shade700,
+                color: _themeColors.primaryAccent,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1782,13 +1786,13 @@ class _SetupMatchFormatScreenState
                       title: const Text('代表戦あり'),
                       subtitle: const Text('リーグ戦において同点の場合に代表戦を行うか'),
                       value: _hasLeagueDaihyo,
-                      activeThumbColor: Colors.teal.shade600,
+                      activeThumbColor: _themeColors.primaryAccent,
                       onChanged: (v) => setState(() => _hasLeagueDaihyo = v),
                       contentPadding: EdgeInsets.zero,
                     ),
                     if (_hasLeagueDaihyo) ...[
                       const Divider(),
-                      ..._buildDaihyoRuleSettings(Colors.teal.shade600),
+                      ..._buildDaihyoRuleSettings(_themeColors.primaryAccent),
                     ],
                     const Divider(),
                     const Padding(
@@ -1949,8 +1953,8 @@ class _SetupMatchFormatScreenState
                 child: Icon(
                   Icons.arrow_back_ios_new,
                   size: 20,
-                  color: Colors.teal.shade500,
-                ), // ダークでも見やすいTeal
+                  color: _themeColors.primaryAccent,
+                ), // ダークでも見やすいThemeColor
               ),
             ),
           Expanded(
@@ -2104,7 +2108,7 @@ class _SetupMatchFormatScreenState
                   context.push('/order-setup/${widget.tournamentId}');
                 }
               },
-              color: Colors.teal.shade600,
+              color: _themeColors.primaryAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
               icon: isLastPage ? Icons.check_circle : Icons.navigate_next,
               label: isLastPage ? 'このルールで枠を作成' : '次へ進む',

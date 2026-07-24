@@ -301,6 +301,26 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   child: Column(
                     children: [
                       Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: _themeColors.primaryAccent,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '💡 設定したルールは、試合を追加したあとでも「一括ルール変更」からいつでも変更できます。',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark ? Colors.white60 : Colors.black54,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(

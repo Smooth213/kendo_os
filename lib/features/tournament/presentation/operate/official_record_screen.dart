@@ -270,7 +270,7 @@ class OfficialRecordScreen extends ConsumerWidget {
                         _buildHeaderActionButton(
                           icon: Icons.share,
                           label: '画像',
-                          color: Colors.teal.shade600,
+                          color: const Color(0xFF06C755),
                           onPressed: isExporting
                               ? null
                               : () => _handleExport(

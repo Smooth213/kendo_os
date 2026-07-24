@@ -180,7 +180,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                             context,
                             Icons.share,
                             '画像シェア',
-                            Colors.teal.shade600,
+                            const Color(0xFF06C755),
                             isExporting
                                 ? null
                                 : () => _handleExport(

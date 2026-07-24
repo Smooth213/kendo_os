@@ -25,6 +25,7 @@ import 'package:kendo_os/features/match/presentation/providers/match_rule_provid
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart'; // ★ 追加
+import '../bulk_rule_edit_sheet.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
@@ -32,6 +33,7 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'tournament_header_card.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 // ★ 画面間で共有する状態をここに集約
 final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
@@ -175,6 +177,7 @@ class MatchTimelineList extends ConsumerWidget {
     final timelineResult = ref.watch(safeTimelineProvider(tournamentId));
     final matchedGroupNames = timelineResult.matchedGroupNames;
     final matchedMatchIds = timelineResult.matchedMatchIds;
+    final allMatches = timelineResult.entries.expand((e) => e.value).toList();
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 80),
@@ -278,61 +281,116 @@ class MatchTimelineList extends ConsumerWidget {
                   ),
                 ),
 
-              if (!ref.watch(isSearchVisibleProvider)) const Spacer(),
-
               if (!ref.watch(isSearchVisibleProvider))
-                IconButton(
-                  icon: Icon(
-                    Icons.search,
-                    color: isDark
-                        ? Colors.indigo.shade300
-                        : Colors.indigo.shade700,
-                    size: 22,
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.search,
+                            color: isDark
+                                ? Colors.indigo.shade300
+                                : Colors.indigo.shade700,
+                            size: 22,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () =>
+                              ref.read(isSearchVisibleProvider.notifier).state =
+                                  true,
+                        ),
+                        const SizedBox(width: 12),
+                        if (!isReadOnlyUI && allMatches.isNotEmpty) ...[
+                          OutlinedButton.icon(
+                            onPressed: () => showBulkRuleEditSheet(
+                              context,
+                              tournamentId,
+                              allMatches,
+                              isBunaiksen: false,
+                            ),
+                            icon: Icon(
+                              Icons.gavel,
+                              size: 16,
+                              color: isDark
+                                  ? Colors.indigo.shade300
+                                  : Colors.indigo.shade700,
+                            ),
+                            label: Text(
+                              'ルール一括変更',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: isDark
+                                    ? Colors.indigo.shade300
+                                    : Colors.indigo.shade700,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: isDark
+                                  ? Colors.indigo.shade300
+                                  : Colors.indigo.shade700,
+                              side: BorderSide(
+                                color: isDark
+                                    ? const Color(0xFF38383A)
+                                    : Colors.indigo.shade200,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 0,
+                              ),
+                              minimumSize: const Size(0, 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              ref.read(categorySortProvider.notifier).state =
+                                  !ref.read(categorySortProvider),
+                          icon: Icon(
+                            ref.watch(categorySortProvider)
+                                ? Icons.arrow_downward
+                                : Icons.arrow_upward,
+                            size: 16,
+                          ),
+                          label: Text(
+                            ref.watch(categorySortProvider)
+                                ? 'カテゴリ昇順'
+                                : 'カテゴリ降順',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: isDark
+                                ? Colors.indigo.shade300
+                                : Colors.indigo.shade700,
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF38383A)
+                                  : Colors.indigo.shade200,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 0,
+                            ),
+                            minimumSize: const Size(0, 32),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: () =>
-                      ref.read(isSearchVisibleProvider.notifier).state = true,
                 ),
-
-              if (!ref.watch(isSearchVisibleProvider))
-                const SizedBox(width: 12),
-
-              OutlinedButton.icon(
-                onPressed: () => ref.read(categorySortProvider.notifier).state =
-                    !ref.read(categorySortProvider),
-                icon: Icon(
-                  ref.watch(categorySortProvider)
-                      ? Icons.arrow_downward
-                      : Icons.arrow_upward,
-                  size: 16,
-                ),
-                label: Text(
-                  ref.watch(categorySortProvider) ? 'カテゴリ昇順' : 'カテゴリ降順',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: isDark
-                      ? Colors.indigo.shade300
-                      : Colors.indigo.shade700,
-                  side: BorderSide(
-                    color: isDark
-                        ? const Color(0xFF38383A)
-                        : Colors.indigo.shade200,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 0,
-                  ),
-                  minimumSize: const Size(0, 32),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -3417,6 +3475,12 @@ String _generateDescriptiveLeagueTitle(
 void _showRuleInfoSheet(BuildContext context, MatchModel match) {
   HapticFeedback.mediumImpact();
   final isDark = Theme.of(context).brightness == Brightness.dark;
+  final bool isBunaiksen =
+      match.tournamentId?.startsWith('bunaiksen_') ?? false;
+  final themeColors = AppThemeColors.ofMode(
+    isDark: isDark,
+    mode: isBunaiksen ? 'bunaiksen' : 'normal',
+  );
   final rule = match.rule;
 
   final bool isLegacyLeague = match.note.contains('[リーグ戦]');
@@ -3502,7 +3566,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
             children: [
               Icon(
                 Icons.gavel_rounded,
-                color: isDark ? Colors.teal.shade300 : Colors.teal.shade700,
+                color: themeColors.primaryAccent,
                 size: 22,
               ),
               const SizedBox(width: 8),
@@ -3550,14 +3614,14 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
           _buildRuleRow('試合形式', formatText, isDark),
           _buildRuleRow('試合時間', timeDesc, isDark),
           if (rule?.isRenseikai ?? false) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 '錬成会設定',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.teal,
+                  color: themeColors.primaryAccent,
                 ),
               ),
             ),
@@ -3569,14 +3633,14 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
             _buildRuleRow('判定', hanteiEnabled ? 'あり' : 'なし', isDark),
           ],
           if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 '勝ち抜き戦設定',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.teal,
+                  color: themeColors.primaryAccent,
                 ),
               ),
             ),
@@ -3593,14 +3657,14 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
               !match.isKachinuki &&
               !(rule?.isKachinuki ?? false) &&
               !isLeague) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 '団体戦・チーム設定',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.teal,
+                  color: themeColors.primaryAccent,
                 ),
               ),
             ),
@@ -3612,14 +3676,14 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
               (rule?.isRenseikai ?? false) &&
               rule != null &&
               rule.positions.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 'ポジション設定',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.teal,
+                  color: themeColors.primaryAccent,
                 ),
               ),
             ),
@@ -3934,6 +3998,13 @@ Future<void> _createTieBreakMatch(
   required bool isAll,
   String mode = 'daihyo',
 }) async {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final bool isBunaiksen =
+      firstMatch.tournamentId?.startsWith('bunaiksen_') ?? false;
+  final themeColors = AppThemeColors.ofMode(
+    isDark: isDark,
+    mode: isBunaiksen ? 'bunaiksen' : 'normal',
+  );
   try {
     final List<Map<String, String>> matchups = [];
     if (isAll) {
@@ -3985,7 +4056,7 @@ Future<void> _createTieBreakMatch(
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: Colors.teal,
+          backgroundColor: themeColors.primaryAccent,
           duration: const Duration(seconds: 4),
           content: Text(isAll ? '三つ巴の決定戦を一括作成しました' : '決定戦を作成しました'),
           action: firstMatchId != null
@@ -4462,6 +4533,12 @@ void showUnifiedAnnounceDialog(
   double order, {
   String? matchGroupId,
 }) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
+  final themeColors = AppThemeColors.ofMode(
+    isDark: isDark,
+    mode: isBunaiksen ? 'bunaiksen' : 'normal',
+  );
   final titleController = TextEditingController();
   final bodyController = TextEditingController();
   String selectedTarget = 'all'; // デフォルトは全員向け
@@ -4603,7 +4680,7 @@ void showUnifiedAnnounceDialog(
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00796B), // 安全のTealグリーン
+                  backgroundColor: themeColors.primaryAccent,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

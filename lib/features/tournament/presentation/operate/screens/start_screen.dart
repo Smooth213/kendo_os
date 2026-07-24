@@ -258,7 +258,7 @@ class StartScreen extends ConsumerWidget {
                                     icon: Icons.add_circle,
                                     title: '新しい大会\nを作る',
                                     subtitle: '大会・錬成会',
-                                    color: Colors.teal.shade600,
+                                    color: Colors.indigo.shade600,
                                     onTap: () =>
                                         context.push('/create-tournament'),
                                   ),
@@ -271,7 +271,7 @@ class StartScreen extends ConsumerWidget {
                                   icon: Icons.list_alt,
                                   title: '今日の試合\nを作る・見る',
                                   subtitle: '試合進行・記録',
-                                  color: Colors.indigo.shade600,
+                                  color: Colors.indigo.shade800,
                                   onTap: () => context.push(
                                     '/tournament-list',
                                     extra: false,

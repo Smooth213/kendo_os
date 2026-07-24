@@ -106,9 +106,11 @@ class _CreateTournamentScreenState
         final t = (_currentProgress / 1).clamp(0.0, 1.0);
 
         // iOS Native: ダークモード時は彩度を抑えた深みのあるTealへ
-        final color1 = isDark ? Colors.teal.shade800 : Colors.teal.shade400;
-        final color2 = isDark ? Colors.teal.shade900 : Colors.teal.shade700;
-        final endColor = isDark ? Colors.teal.shade800 : Colors.teal.shade300;
+        final color1 = isDark ? Colors.indigo.shade800 : Colors.indigo.shade400;
+        final color2 = isDark ? Colors.indigo.shade900 : Colors.indigo.shade700;
+        final endColor = isDark
+            ? Colors.indigo.shade800
+            : Colors.indigo.shade300;
         final gradientColor = Color.lerp(color1, color2, t)!;
 
         return Container(
@@ -259,7 +261,7 @@ class _CreateTournamentScreenState
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.teal.shade500, width: 2.0),
+              borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
             ),
             filled: true,
             fillColor: inputBgColor,
@@ -283,7 +285,7 @@ class _CreateTournamentScreenState
               ),
             ),
           ),
-          trailing: const Icon(Icons.calendar_today, color: Colors.teal),
+          trailing: const Icon(Icons.calendar_today, color: Colors.indigo),
           shape: RoundedRectangleBorder(
             side: BorderSide(
               color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
@@ -346,7 +348,7 @@ class _CreateTournamentScreenState
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.teal.shade500, width: 2.0),
+              borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
             ),
             filled: true,
             fillColor: inputBgColor,
@@ -373,7 +375,7 @@ class _CreateTournamentScreenState
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.teal.shade500, width: 2.0),
+              borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
             ),
             filled: true,
             fillColor: inputBgColor,
@@ -424,8 +426,8 @@ class _CreateTournamentScreenState
                 child: Icon(
                   Icons.arrow_back_ios_new,
                   size: 20,
-                  color: Colors.teal.shade500,
-                ), // ダークでも見やすいTeal
+                  color: Colors.indigo.shade500,
+                ), // ダークでも見やすいIndigo
               ),
             ),
           Expanded(
@@ -485,7 +487,7 @@ class _CreateTournamentScreenState
                   }
                 }
               },
-              color: Colors.teal,
+              color: Colors.indigo,
               padding: const EdgeInsets.symmetric(vertical: 16),
               icon: isLastPage ? Icons.check_circle : Icons.navigate_next,
               label: isLastPage ? '保存してチーム登録へ' : '次へ進む',
