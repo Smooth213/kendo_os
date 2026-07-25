@@ -1,13 +1,21 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart' deferred as md;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:documentation_runtime/manual_routes.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:printing/printing.dart';
+import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:kendo_os/shared/infrastructure/services/manual_download_service.dart';
 
 // ============================================================================
-// Phase 5 & 6: Embedded Documentation Viewer
-// アプリ内に同梱されたMarkdownマニュアルをオフラインで閲覧・検索する画面
+// Phase 5 & 6: Embedded Documentation Viewer (Upgraded for Smart Print & Help Hub)
+// アプリ内に同梱されたMarkdownマニュアルおよび高精細PDFマニュアルの閲覧・検索・印刷画面
 // AIメタデータの除外処理およびレスポンシブ対応（スマホ/iPad）を含む
 // ============================================================================
 
@@ -42,10 +50,13 @@ final manualIndexProvider = FutureProvider<List<dynamic>>((ref) async {
 class EmbeddedManualScreen extends ConsumerStatefulWidget {
   final String? initialFilePath;
   final String? initialSearchQuery;
+  final int? initialTab; // ★ 0: 通常クイック, 1: 部内戦クイック, 2: 総合マニュアル
+
   const EmbeddedManualScreen({
     super.key,
     this.initialFilePath,
     this.initialSearchQuery,
+    this.initialTab,
   });
 
   @override
@@ -53,24 +64,81 @@ class EmbeddedManualScreen extends ConsumerStatefulWidget {
       _EmbeddedManualScreenState();
 }
 
-class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
+class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
+    with SingleTickerProviderStateMixin {
   String _currentFilePath =
       'packages/documentation_runtime/manuals/quickstart/index.md';
   String _markdownContent = '';
   String _searchQuery = '';
   bool _isLoading = true;
   bool _isLibraryLoaded = false;
+
   // ★ 修正1: 検索ボックスの文字をプログラムから操作(クリア)するためのコントローラーを追加
   final TextEditingController _searchController = TextEditingController();
+
+  // ★ PDF関連のプロパティ
+  late TabController _tabController;
+  int _selectedTabIndex = 0;
+  PdfViewerController? _pdfViewerController;
+  PdfTextSearchResult? _searchResult;
+  String _pdfSearchQuery = '';
+  bool _isSearchingPdf = false;
+
+  // ★ ダウンロード＆キャッシュ関連のプロパティ
+  final ManualDownloadService _downloadService = ManualDownloadService();
+  final String _fullManualUrl =
+      'https://github.com/Smooth213/kendo_os/releases/download/manuals/Kendo_Sync.pdf';
+  final String _fullManualFileName = 'Kendo_Sync.pdf';
+  bool _isPdfDownloaded = false;
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
+  File? _localPdfFile;
+  bool _forceMarkdownFallback = false; // ダウンロード前でもMarkdownテキスト版を強制表示させるフラグ
 
   @override
   void initState() {
     super.initState();
     _loadLibrary();
+    _pdfViewerController = PdfViewerController();
+
+    // 初期遷移タブの判定
+    if (widget.initialTab != null) {
+      _selectedTabIndex = widget.initialTab!;
+    } else if (widget.initialFilePath != null) {
+      if (widget.initialFilePath!.contains('bunaiksen')) {
+        _selectedTabIndex = 1;
+      } else if (widget.initialFilePath!.contains('quickstart')) {
+        _selectedTabIndex = 0;
+      } else {
+        _selectedTabIndex = 2;
+      }
+    } else {
+      _selectedTabIndex = 2; // デフォルトは総合マニュアル
+    }
+
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: _selectedTabIndex,
+    );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          _selectedTabIndex = _tabController.index;
+          // タブ切り替え時に検索状態をリセット
+          _isSearchingPdf = false;
+          _pdfSearchQuery = '';
+          _searchResult?.clear();
+          _searchController.clear();
+        });
+      }
+    });
+
     if (widget.initialFilePath != null) {
       _currentFilePath = widget.initialFilePath!;
     }
     _loadMarkdown(_currentFilePath);
+    _checkDownloadStatus();
   }
 
   Future<void> _loadLibrary() async {
@@ -82,10 +150,65 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
     }
   }
 
-  // ★ 修正2: メモリリークを防ぐための破棄処理
+  // PDFのダウンロードキャッシュ状態を確認
+  Future<void> _checkDownloadStatus() async {
+    final downloaded = await _downloadService.isFileDownloaded(
+      _fullManualFileName,
+    );
+    File? file;
+    if (downloaded) {
+      file = await _downloadService.getLocalFile(_fullManualFileName);
+    }
+    if (mounted) {
+      setState(() {
+        _isPdfDownloaded = downloaded;
+        _localPdfFile = file;
+      });
+    }
+  }
+
+  // PDFのダウンロードを開始する
+  Future<void> _startDownload() async {
+    setState(() {
+      _isDownloading = true;
+      _downloadProgress = 0.0;
+    });
+    try {
+      final file = await _downloadService.downloadManual(
+        _fullManualFileName,
+        _fullManualUrl,
+        (progress) {
+          if (mounted) {
+            setState(() {
+              _downloadProgress = progress;
+            });
+          }
+        },
+      );
+      if (mounted) {
+        setState(() {
+          _isPdfDownloaded = true;
+          _localPdfFile = file;
+          _isDownloading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('ダウンロードに失敗しました: $e')));
+      }
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
+    _tabController.dispose();
+    _pdfViewerController?.dispose();
     super.dispose();
   }
 
@@ -139,140 +262,358 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
       });
     } catch (e) {
       setState(() {
-        // ★ 修正2: pubspec.yaml への追加忘れをフォローする親切なエラー画面
         _markdownContent =
             '# 📄 読み込みエラー\n\nファイルが見つかりません: `$path`\n\n'
-            '**【開発者の方へ：pubspec.yamlの確認】**\n'
-            'このファイルが新しく追加されたフォルダ（例: `faq/`）にある場合、'
-            'アプリの `pubspec.yaml` の `assets:` セクションにそのフォルダパスが登録されていない可能性があります。\n\n'
-            '```yaml\n'
-            'flutter:\n'
-            '  assets:\n'
-            '    - docs/manuals/faq/  <-- これを追加してください\n'
-            '```\n\n'
             '詳細なエラー:\n$e';
         _isLoading = false;
       });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  // A4印刷・共有用コントロールバーの構築
+  Widget _buildFloatingActionBar({
+    required bool isAsset,
+    String? assetPath,
+    File? file,
+    required String fileName,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final indexAsync = ref.watch(manualIndexProvider);
-    // ★ 修正点2: 画面幅を判定し、スマホ(600px未満)とiPadでレイアウトを切り替える
-    final isWideScreen = MediaQuery.of(context).size.width > 600;
-
-    Widget buildIndexPane() {
-      return SafeArea(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          width: isWideScreen ? 320 : null,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-            border: Border(
-              right: BorderSide(
-                color: isDark ? Colors.white12 : Colors.black12,
-              ),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.1),
             ),
           ),
-          child: Column(
+          child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: TextField(
-                  // ★ 修正3: コントローラーを紐付け
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'タイトル、見出し、キーワード検索...',
-                    prefixIcon: const Icon(Icons.search, size: 20),
-                    // ★ 修正4: 文字が入力されている時だけ右端に「✕」ボタンを表示
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, size: 20),
-                            tooltip: '検索をクリアして一覧に戻る',
-                            onPressed: () {
-                              _searchController.clear(); // 検索枠の文字を消去
-                              setState(
-                                () => _searchQuery = '',
-                              ); // 検索状態をリセットして一覧を再描画
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: isDark
-                        ? Colors.white10
-                        : Colors.black.withValues(alpha: 0.05),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade800,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 8,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  onChanged: (val) =>
-                      setState(() => _searchQuery = val.toLowerCase()),
+                  icon: const Icon(Icons.print, size: 18),
+                  label: const Text(
+                    'A4印刷',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: () async {
+                    try {
+                      if (isAsset) {
+                        final data = await rootBundle.load(assetPath!);
+                        await Printing.layoutPdf(
+                          onLayout: (_) => data.buffer.asUint8List(),
+                          name: fileName,
+                        );
+                      } else {
+                        final bytes = await file!.readAsBytes();
+                        await Printing.layoutPdf(
+                          onLayout: (_) => bytes,
+                          name: fileName,
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('印刷の起動に失敗しました: $e')),
+                        );
+                      }
+                    }
+                  },
                 ),
               ),
+              const SizedBox(width: 8),
               Expanded(
-                child: indexAsync.when(
-                  data: (indexList) {
-                    final results = indexList.where((item) {
-                      if (_searchQuery.isEmpty) return true;
-                      final title = item['title'].toString().toLowerCase();
-                      final headings = (item['headings'] as List)
-                          .join(' ')
-                          .toLowerCase();
-                      final tags = (item['tags'] as List)
-                          .join(' ')
-                          .toLowerCase();
-                      return title.contains(_searchQuery) ||
-                          headings.contains(_searchQuery) ||
-                          tags.contains(_searchQuery);
-                    }).toList();
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF06C755),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.share, size: 18),
+                  label: const Text(
+                    '共有/保存',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: () async {
+                    try {
+                      Uint8List bytes;
+                      if (isAsset) {
+                        final data = await rootBundle.load(assetPath!);
+                        bytes = data.buffer.asUint8List();
+                      } else {
+                        bytes = await file!.readAsBytes();
+                      }
 
-                    return ListView.separated(
-                      itemCount: results.length,
-                      separatorBuilder: (_, _) => Divider(
-                        height: 1,
-                        color: isDark ? Colors.white10 : Colors.black12,
-                      ),
-                      itemBuilder: (ctx, i) {
-                        final path = results[i]['path'];
-                        final title = results[i]['title'];
-                        final isSelected = path == _currentFilePath;
-                        return ListTile(
-                          dense: true,
-                          title: Text(
-                            title,
-                            style: TextStyle(
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isSelected ? Colors.blueAccent : null,
+                      await SharePlus.instance.share(
+                        ShareParams(
+                          files: [
+                            XFile.fromData(
+                              bytes,
+                              mimeType: 'application/pdf',
+                              name: fileName,
                             ),
-                          ),
-                          subtitle: _searchQuery.isNotEmpty
-                              ? Text(
-                                  (results[i]['headings'] as List)
-                                      .take(2)
-                                      .join(' / '),
-                                  style: const TextStyle(fontSize: 10),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                )
-                              : null,
-                          onTap: () {
-                            _loadMarkdown(path);
-                            // スマホ画面ならタップ後にドロワーを閉じる
-                            if (!isWideScreen) Navigator.pop(context);
-                          },
+                          ],
+                          text: '$fileName を共有します。',
+                        ),
+                      );
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('共有に失敗しました: $e')),
                         );
-                      },
+                      }
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Web用の共有・ブラウザ起動コントロールバー
+  Widget _buildFloatingActionBarForWeb() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.1),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade800,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.open_in_new, size: 18),
+                  label: const Text(
+                    'PDF版をブラウザで開く',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: () async {
+                    // Google Docs PDF Viewerを中継して開くことで、モバイルSafariでのダウンロードフリーズを防ぎインライン表示させる
+                    final encodedUrl = Uri.encodeComponent(_fullManualUrl);
+                    final viewerUrl =
+                        'https://docs.google.com/viewer?url=$encodedUrl';
+                    final uri = Uri.parse(viewerUrl);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF06C755),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.share, size: 18),
+                  label: const Text(
+                    '共有する',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: () async {
+                    await SharePlus.instance.share(
+                      ShareParams(
+                        text: 'Kendo Sync 総合取扱説明書はこちら: $_fullManualUrl',
+                      ),
                     );
                   },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) =>
-                      Center(child: Text('Index Error: $err')),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // クイックガイドタブのレイアウト
+  Widget _buildQuickGuideTab(String assetPath, String fileName) {
+    return Stack(
+      children: [
+        SfPdfViewer.asset(
+          assetPath,
+          onDocumentLoadFailed: (details) {
+            debugPrint('Asset load failed: ${details.description}');
+          },
+        ),
+        Positioned(
+          bottom: 24,
+          left: 24,
+          right: 24,
+          child: _buildFloatingActionBar(
+            isAsset: true,
+            assetPath: assetPath,
+            fileName: fileName,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 総合マニュアルタブのレイアウト
+  Widget _buildFullManualTab(Widget buildIndexPane, Widget markdownPane) {
+    if (kIsWeb) {
+      // Webの場合：ダウンロード案内画面はスキップし、インラインでMarkdown版をデフォルト表示
+      // 下部に「PDF版をブラウザで開く」ボタンを設置
+      return Stack(
+        children: [
+          Row(
+            children: [
+              if (MediaQuery.of(context).size.width > 600) buildIndexPane,
+              markdownPane,
+            ],
+          ),
+          Positioned(
+            bottom: 24,
+            left: 24,
+            right: 24,
+            child: _buildFloatingActionBarForWeb(),
+          ),
+        ],
+      );
+    }
+
+    if (_forceMarkdownFallback) {
+      // テキスト簡易版（Markdown）を表示
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            color: Colors.teal.withValues(alpha: 0.1),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '📖 テキスト簡易版（オフライン対応）',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextButton.icon(
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('PDF版に戻る'),
+                  onPressed: () {
+                    setState(() {
+                      _forceMarkdownFallback = false;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Row(
+              children: [
+                if (MediaQuery.of(context).size.width > 600) buildIndexPane,
+                markdownPane,
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (_isDownloading) {
+      // ダウンロード中
+      return Center(
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          width: 300,
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 24),
+              const Text(
+                'マニュアルをロード中...',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              LinearProgressIndicator(value: _downloadProgress),
+              const SizedBox(height: 8),
+              Text(
+                '${(_downloadProgress * 100).toStringAsFixed(0)}%',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
               ),
             ],
@@ -281,20 +622,391 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
       );
     }
 
+    if (!_isPdfDownloaded) {
+      // 未ダウンロード状態：案内UIを表示
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            padding: const EdgeInsets.all(32),
+            constraints: const BoxConstraints(maxWidth: 450),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.picture_as_pdf,
+                  size: 80,
+                  color: Colors.redAccent.withValues(alpha: 0.8),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Kendo Sync 総合取扱説明書',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  '印刷や文字検索、高倍率ズームが可能な公式PDF版マニュアルをダウンロードできます。一度保存すると、オフラインでも閲覧可能です。',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'ファイルサイズ: 約 2.6 MB',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    icon: const Icon(Icons.download),
+                    label: const Text(
+                      'PDF版をダウンロード (無料)',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onPressed: _startDownload,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton.icon(
+                  icon: const Icon(Icons.chrome_reader_mode_outlined),
+                  label: const Text('テキスト簡易版（オフライン対応）を読む'),
+                  onPressed: () {
+                    setState(() {
+                      _forceMarkdownFallback = true;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ダウンロード済み：PDFViewerを表示
+    return Stack(
+      children: [
+        SfPdfViewer.file(_localPdfFile!, controller: _pdfViewerController),
+        Positioned(
+          bottom: 24,
+          left: 24,
+          right: 24,
+          child: _buildFloatingActionBar(
+            isAsset: false,
+            file: _localPdfFile,
+            fileName: _fullManualFileName,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // AppBar用のタイトル（検索モード時は入力フォームを表示）
+  Widget _buildAppBarTitle() {
+    final showSearch =
+        _selectedTabIndex == 2 &&
+        (kIsWeb || (_isPdfDownloaded && !_forceMarkdownFallback));
+
+    if (showSearch && _isSearchingPdf) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final borderColor = isDark ? Colors.tealAccent : Colors.indigo.shade600;
+      final searchIconColor = isDark
+          ? Colors.tealAccent
+          : Colors.indigo.shade700;
+
+      return Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.black26 : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: borderColor, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: (isDark ? Colors.black : Colors.grey.shade300).withValues(
+                alpha: 0.15,
+              ),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.search, color: searchIconColor, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'マニュアル内を検索...',
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.white60 : Colors.black45,
+                  ),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onChanged: (text) {
+                  if (kIsWeb || _forceMarkdownFallback) {
+                    setState(() {
+                      _searchQuery = text;
+                    });
+                    _loadMarkdown(_currentFilePath);
+                  } else {
+                    setState(() {
+                      _pdfSearchQuery = text;
+                    });
+                    if (text.isEmpty) {
+                      _searchResult?.clear();
+                    } else {
+                      _searchResult = _pdfViewerController?.searchText(text);
+                    }
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return const Text('ヘルプ・マニュアル', style: TextStyle(fontSize: 16));
+  }
+
+  // 検索用 AppBar アクションボタン
+  List<Widget> _buildAppBarActions() {
+    final List<Widget> actions = [];
+    final showSearch =
+        _selectedTabIndex == 2 &&
+        (kIsWeb || (_isPdfDownloaded && !_forceMarkdownFallback));
+
+    if (showSearch) {
+      if (_isSearchingPdf) {
+        final isPdfMode = !(kIsWeb || _forceMarkdownFallback);
+        if (isPdfMode && _pdfSearchQuery.isNotEmpty) {
+          actions.add(
+            IconButton(
+              icon: const Icon(Icons.navigate_before),
+              tooltip: '前へ',
+              onPressed: () {
+                _searchResult?.previousInstance();
+              },
+            ),
+          );
+          actions.add(
+            IconButton(
+              icon: const Icon(Icons.navigate_next),
+              tooltip: '次へ',
+              onPressed: () {
+                _searchResult?.nextInstance();
+              },
+            ),
+          );
+        }
+
+        final hasQuery = isPdfMode
+            ? _pdfSearchQuery.isNotEmpty
+            : _searchQuery.isNotEmpty;
+        if (hasQuery) {
+          actions.add(
+            IconButton(
+              icon: const Icon(Icons.close),
+              tooltip: 'テキストをクリア',
+              onPressed: () {
+                setState(() {
+                  _searchController.clear();
+                  if (isPdfMode) {
+                    _pdfSearchQuery = '';
+                    _searchResult?.clear();
+                  } else {
+                    _searchQuery = '';
+                    _loadMarkdown(_currentFilePath);
+                  }
+                });
+              },
+            ),
+          );
+        }
+      } else {
+        // 非検索時は検索アイコンを表示
+        actions.add(
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'マニュアル内を検索',
+            onPressed: () {
+              setState(() {
+                _isSearchingPdf = true;
+              });
+            },
+          ),
+        );
+      }
+    }
+    return actions;
+  }
+
+  Widget buildIndexPane() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final indexAsync = ref.watch(manualIndexProvider);
+
+    return SafeArea(
+      child: Container(
+        width: MediaQuery.of(context).size.width > 600 ? 320 : null,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+          border: Border(
+            right: BorderSide(color: isDark ? Colors.white12 : Colors.black12),
+          ),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'タイトル、見出し、キーワード検索...',
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 20),
+                          tooltip: '検索をクリアして一覧に戻る',
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: isDark
+                      ? Colors.white10
+                      : Colors.black.withValues(alpha: 0.05),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                ),
+                onChanged: (val) =>
+                    setState(() => _searchQuery = val.toLowerCase()),
+              ),
+            ),
+            Expanded(
+              child: indexAsync.when(
+                data: (indexList) {
+                  final results = indexList.where((item) {
+                    if (_searchQuery.isEmpty) return true;
+                    final title = item['title'].toString().toLowerCase();
+                    final headings = (item['headings'] as List)
+                        .join(' ')
+                        .toLowerCase();
+                    final tags = (item['tags'] as List).join(' ').toLowerCase();
+                    return title.contains(_searchQuery) ||
+                        headings.contains(_searchQuery) ||
+                        tags.contains(_searchQuery);
+                  }).toList();
+
+                  return ListView.separated(
+                    itemCount: results.length,
+                    separatorBuilder: (_, _) => Divider(
+                      height: 1,
+                      color: isDark ? Colors.white10 : Colors.black12,
+                    ),
+                    itemBuilder: (ctx, i) {
+                      final path = results[i]['path'];
+                      final title = results[i]['title'];
+                      final isSelected = path == _currentFilePath;
+                      return ListTile(
+                        dense: true,
+                        title: Text(
+                          title,
+                          style: TextStyle(
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isSelected ? Colors.blueAccent : null,
+                          ),
+                        ),
+                        subtitle: _searchQuery.isNotEmpty
+                            ? Text(
+                                (results[i]['headings'] as List)
+                                    .take(2)
+                                    .join(' / '),
+                                style: const TextStyle(fontSize: 10),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            : null,
+                        onTap: () {
+                          _loadMarkdown(path);
+                          if (MediaQuery.of(context).size.width <= 600) {
+                            Navigator.pop(context);
+                          }
+                        },
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Center(child: Text('Index Error: $err')),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isWideScreen = MediaQuery.of(context).size.width > 600;
+
     final markdownPane = Expanded(
       child: (!_isLibraryLoaded || _isLoading)
           ? const Center(child: CircularProgressIndicator())
           : md.Markdown(
               data: _markdownContent,
-              // ★ 修正1: テキスト選択機能を切り、タップ判定をリンク機能に全集中させる
               selectable: false,
               onTapLink: (text, href, title) {
                 if (href == null || href.startsWith('http')) return;
-
-                // ★ 修正1: ページ内リンク（#単体）がタップされても、エラー画面に行かないよう完全に無視する
                 if (href.startsWith('#')) return;
 
-                // 内部リンク処理 (manual:// 形式の解決)
                 if (href.startsWith('manual://')) {
                   final id = href.replaceFirst('manual://', '');
                   final route = ManualRoute.fromId(id);
@@ -304,18 +1016,15 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
                   }
                 }
 
-                // 現在のファイルのディレクトリを取得
                 final dirSegments = _currentFilePath.split('/');
                 dirSegments.removeLast();
 
-                // 相対パスを絶対パスに変換
                 final hrefSegments = href.split('/');
                 for (final segment in hrefSegments) {
                   if (segment == '.') continue;
                   if (segment == '..') {
                     if (dirSegments.isNotEmpty) dirSegments.removeLast();
                   } else {
-                    // ★ 修正2: リンク先にアンカー(#)が含まれる場合、ファイル名だけを抽出してエラーを回避する
                     final fileOnly = segment.split('#').first;
                     if (fileOnly.isNotEmpty) {
                       dirSegments.add(fileOnly);
@@ -342,7 +1051,6 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
                 code: TextStyle(
                   backgroundColor: isDark ? Colors.white10 : Colors.black12,
                 ),
-                // ★ 修正4: リンクの色と下線を「明示的」に指定し、確実に水色にする
                 a: const TextStyle(
                   color: Colors.blueAccent,
                   decoration: TextDecoration.underline,
@@ -357,51 +1065,61 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen> {
             ),
     );
 
-    // ★ 修正5: 以前のAppBar（✕ボタン、🏠ボタン、≡メニューの共存）を再適用
     return Scaffold(
-      drawer: isWideScreen ? null : Drawer(child: buildIndexPane()),
+      drawer:
+          (_selectedTabIndex == 2 && _forceMarkdownFallback && !isWideScreen)
+          ? Drawer(child: buildIndexPane())
+          : null,
       appBar: AppBar(
-        title: const Text('ヘルプ・マニュアル', style: TextStyle(fontSize: 16)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () => _loadMarkdown(
-              'packages/documentation_runtime/manuals/manual_index.md',
-            ),
-            tooltip: '総合ホームへ戻る',
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              icon: const Icon(Icons.close, size: 28),
-              onPressed: () => Navigator.of(context).pop(),
-              tooltip: 'マニュアルを閉じる',
-            ),
-          ),
-        ],
+        leading:
+            (_selectedTabIndex == 2 &&
+                (kIsWeb || (_isPdfDownloaded && !_forceMarkdownFallback)) &&
+                _isSearchingPdf)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    _isSearchingPdf = false;
+                    _searchController.clear();
+                    if (kIsWeb || _forceMarkdownFallback) {
+                      _searchQuery = '';
+                      _loadMarkdown(_currentFilePath);
+                    } else {
+                      _pdfSearchQuery = '';
+                      _searchResult?.clear();
+                    }
+                  });
+                },
+                tooltip: '検索を終了',
+              )
+            : null,
+        title: _buildAppBarTitle(),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: '通常クイック'),
+            Tab(text: '部内戦クイック'),
+            Tab(text: '総合マニュアル'),
+          ],
+        ),
+        actions: _buildAppBarActions(),
       ),
-      body: Builder(
-        builder: (context) {
-          return Stack(
-            children: [
-              isWideScreen
-                  ? Row(children: [buildIndexPane(), markdownPane])
-                  : Column(children: [markdownPane]),
-              if (!isWideScreen)
-                Positioned(
-                  right: 16,
-                  bottom: 16,
-                  child: FloatingActionButton(
-                    mini: true,
-                    backgroundColor: Theme.of(context).primaryColor,
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                    tooltip: 'メニューを開く',
-                    child: const Icon(Icons.search, color: Colors.white),
-                  ),
-                ),
-            ],
-          );
-        },
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Tab 0: 通常クイックガイド
+          _buildQuickGuideTab(
+            'assets/manuals/kendo_sync_quickguide.pdf',
+            'kendo_sync_quickguide.pdf',
+          ),
+          // Tab 1: 部内戦クイックガイド
+          _buildQuickGuideTab(
+            'assets/manuals/kendo_sync_bunaiksen_quickguide.pdf',
+            'kendo_sync_bunaiksen_quickguide.pdf',
+          ),
+          // Tab 2: 総合取扱説明書
+          _buildFullManualTab(buildIndexPane(), markdownPane),
+        ],
       ),
     );
   }

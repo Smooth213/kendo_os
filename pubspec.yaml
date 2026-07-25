@@ -125,6 +125,7 @@ flutter:
     # ★ Phase 4: 音源フォルダの読み込み設定をここに追加
     - assets/sounds/
     - assets/manual_embeddings/ # ★ Phase 6: AI検索用インデックスデータの同梱
+    - assets/manuals/ # ★ PDFマニュアル/クイックガイドの同梱フォルダ
     - assets/fonts/NotoSansJP-Regular.ttf
     - assets/fonts/NotoSansJP-Bold.ttf
 
