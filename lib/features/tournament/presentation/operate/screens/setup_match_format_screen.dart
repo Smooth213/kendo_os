@@ -1475,8 +1475,9 @@ class _SetupMatchFormatScreenState
               data: (tournament) {
                 if (tournament == null) return const SizedBox.shrink();
                 final ruleSet = tournament.categoryRules[categoryName];
-                if (ruleSet == null || !ruleSet.useAdvancedRule)
+                if (ruleSet == null || !ruleSet.useAdvancedRule) {
                   return const SizedBox.shrink();
+                }
 
                 final isAdvanced = _isCurrentMatchAdvanced;
                 final isDark = Theme.of(context).brightness == Brightness.dark;

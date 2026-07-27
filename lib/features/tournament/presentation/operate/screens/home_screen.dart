@@ -257,8 +257,9 @@ class HomeScreen extends ConsumerWidget {
                     if (!isReadOnly && allMatchesList.isEmpty)
                       asyncTournament.maybeWhen(
                         data: (tournament) {
-                          if (tournament == null)
+                          if (tournament == null) {
                             return const SizedBox.shrink();
+                          }
                           return asyncTeams.maybeWhen(
                             data: (teams) => _buildSetupChecklist(
                               context,

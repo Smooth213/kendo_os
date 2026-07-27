@@ -24,7 +24,7 @@ void main() {
 
   group('🛡️ OrderSetupScreen Keyboard Avoidance Layout Tests', () {
     testWidgets(
-      '1. Bottom button area should be hidden when text input is focused to prevent keyboard crowding',
+      '1. Bottom button area should remain visible when text input is focused to allow confirmation',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -63,15 +63,15 @@ void main() {
         await tester
             .pump(); // Renders the rebuild frame with updated isKeyboardOpen state
 
-        // Verify that the bottom confirm button is now hidden to save space
-        expect(find.byType(GlassButton), findsNothing);
-        expect(find.text('このオーダーで確定して進む'), findsNothing);
+        // Verify that the bottom confirm button remains visible (retaining fix for disappearing button bug)
+        expect(find.byType(GlassButton), findsOneWidget);
+        expect(find.text('このオーダーで確定して進む'), findsOneWidget);
 
         // Unfocus (simulates keyboard dismissing)
         FocusManager.instance.primaryFocus?.unfocus();
         await tester.pumpAndSettle();
 
-        // Verify that the bottom confirm button becomes visible again
+        // Verify that the bottom confirm button is still visible
         expect(find.byType(GlassButton), findsOneWidget);
         expect(find.text('このオーダーで確定して進む'), findsOneWidget);
       },
