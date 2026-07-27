@@ -20,6 +20,13 @@ _MatchRule _$MatchRuleFromJson(Map<String, dynamic> json) => _MatchRule(
   kachinukiUnlimitedType: json['kachinukiUnlimitedType'] as String? ?? '大将対大将',
   hasRepresentativeMatch: json['hasRepresentativeMatch'] as bool? ?? true,
   isDaihyoIpponShobu: json['isDaihyoIpponShobu'] as bool? ?? true,
+  daihyoMatchTimeMinutes:
+      (json['daihyoMatchTimeMinutes'] as num?)?.toDouble() ?? 0.0,
+  daihyoHasExtension: json['daihyoHasExtension'] as bool? ?? true,
+  daihyoEnchoTimeMinutes:
+      (json['daihyoEnchoTimeMinutes'] as num?)?.toDouble() ?? 3.0,
+  daihyoEnchoCount: (json['daihyoEnchoCount'] as num?)?.toInt() ?? -2,
+  daihyoHasHantei: json['daihyoHasHantei'] as bool? ?? false,
   positions:
       (json['positions'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const ['選手'],
@@ -59,6 +66,11 @@ Map<String, dynamic> _$MatchRuleToJson(_MatchRule instance) =>
       'kachinukiUnlimitedType': instance.kachinukiUnlimitedType,
       'hasRepresentativeMatch': instance.hasRepresentativeMatch,
       'isDaihyoIpponShobu': instance.isDaihyoIpponShobu,
+      'daihyoMatchTimeMinutes': instance.daihyoMatchTimeMinutes,
+      'daihyoHasExtension': instance.daihyoHasExtension,
+      'daihyoEnchoTimeMinutes': instance.daihyoEnchoTimeMinutes,
+      'daihyoEnchoCount': instance.daihyoEnchoCount,
+      'daihyoHasHantei': instance.daihyoHasHantei,
       'positions': instance.positions,
       'baseOrder': instance.baseOrder,
       'teamName': instance.teamName,

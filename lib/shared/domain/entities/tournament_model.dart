@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/converters/json_converters.dart'; // ★ コンバーターを読み込む
+import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 
 part 'tournament_model.freezed.dart';
 part 'tournament_model.g.dart';
@@ -19,6 +20,7 @@ abstract class TournamentModel with _$TournamentModel {
     @Default('') String notes,
     // ★ Phase 8: バックエンド防弾化用のセキュリティレベル（初期値2: 標準）
     @Default(2) int securityLevel,
+    @Default({}) Map<String, CategoryRuleSet> categoryRules,
   }) = _TournamentModel;
 
   factory TournamentModel.fromJson(Map<String, dynamic> json) =>

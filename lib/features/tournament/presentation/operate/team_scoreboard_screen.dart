@@ -361,12 +361,23 @@ class TeamScoreboardScreen extends ConsumerWidget {
                             'match_${now.millisecondsSinceEpoch}';
                         final rule = first.rule;
                         final isDaihyoIppon = rule?.isDaihyoIpponShobu ?? true;
-                        final hasExt = rule != null
-                            ? (rule.isEnchoUnlimited || rule.enchoCount > 0)
+                        final double daihyoTime = rule != null
+                            ? rule.daihyoMatchTimeMinutes
+                            : (isDaihyoIppon
+                                  ? 0.0
+                                  : first.matchTimeMinutes.toDouble());
+                        final bool hasExt = rule != null
+                            ? rule.daihyoHasExtension
                             : true;
-                        final double daihyoTime = isDaihyoIppon
-                            ? 0.0
-                            : first.matchTimeMinutes.toDouble();
+                        final double extTime = rule != null
+                            ? rule.daihyoEnchoTimeMinutes
+                            : 3.0;
+                        final int extCount = rule != null
+                            ? rule.daihyoEnchoCount
+                            : -2;
+                        final bool hasHantei = rule != null
+                            ? rule.daihyoHasHantei
+                            : false;
 
                         final newMatch = first.copyWith(
                           id: nextMatchId,
@@ -380,6 +391,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
                           events: [],
                           matchTimeMinutes: daihyoTime,
                           hasExtension: hasExt,
+                          extensionTimeMinutes: extTime,
+                          extensionCount: extCount,
+                          hasHantei: hasHantei,
                         );
                         await ref.read(matchCommandProvider).addMatch(newMatch);
 

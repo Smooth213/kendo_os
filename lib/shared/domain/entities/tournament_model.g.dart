@@ -21,6 +21,14 @@ _TournamentModel _$TournamentModelFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String? ?? 'active',
       notes: json['notes'] as String? ?? '',
       securityLevel: (json['securityLevel'] as num?)?.toInt() ?? 2,
+      categoryRules:
+          (json['categoryRules'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(
+              k,
+              CategoryRuleSet.fromJson(e as Map<String, dynamic>),
+            ),
+          ) ??
+          const {},
     );
 
 Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
@@ -34,4 +42,7 @@ Map<String, dynamic> _$TournamentModelToJson(_TournamentModel instance) =>
       'status': instance.status,
       'notes': instance.notes,
       'securityLevel': instance.securityLevel,
+      'categoryRules': instance.categoryRules.map(
+        (k, e) => MapEntry(k, e.toJson()),
+      ),
     };

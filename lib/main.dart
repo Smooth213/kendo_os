@@ -31,6 +31,7 @@ import 'package:kendo_os/admin/presentation/screens/master_management_screen.dar
 import 'package:kendo_os/features/tournament/presentation/operate/screens/create_tournament_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/setup_match_format_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/order_setup_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/category_rules_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/team_scoreboard_screen.dart'; // 🌟 タイポを完全に排除しました
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
@@ -638,6 +639,16 @@ final _router = GoRouter(
       path: '/official-record/:id',
       builder: (context, state) =>
           OfficialRecordScreen(tournamentId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/tournament/:id/category-rules',
+      builder: (context, state) {
+        final isFromSetup = state.uri.queryParameters['isFromSetup'] == 'true';
+        return CategoryRulesScreen(
+          tournamentId: state.pathParameters['id']!,
+          isFromSetup: isFromSetup,
+        );
+      },
     ),
     GoRoute(
       path: '/bunaiksen-home',

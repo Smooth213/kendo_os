@@ -34,6 +34,15 @@ class OperatorActionButtons extends ConsumerWidget {
             () => context.push('/setup-match/$tournamentId'),
           ),
           const SizedBox(height: 8),
+          _buildHugeMenuButton(
+            context,
+            enableLiquidGlass,
+            Icons.gavel,
+            '部門別ルール設定',
+            Colors.teal,
+            () => context.push('/tournament/$tournamentId/category-rules'),
+          ),
+          const SizedBox(height: 8),
         ],
         // ★ 修正: 本部操作員が「保護者や観客のスマートフォンにどう見えているか」を手元でシミュレート確認するための完璧な表現へ進化
         _buildHugeMenuButton(

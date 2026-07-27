@@ -33,6 +33,11 @@ abstract class MatchRule with _$MatchRule {
     @Default('大将対大将') String kachinukiUnlimitedType,
     @Default(true) bool hasRepresentativeMatch,
     @Default(true) bool isDaihyoIpponShobu,
+    @Default(0.0) double daihyoMatchTimeMinutes,
+    @Default(true) bool daihyoHasExtension,
+    @Default(3.0) double daihyoEnchoTimeMinutes,
+    @Default(-2) int daihyoEnchoCount,
+    @Default(false) bool daihyoHasHantei,
 
     // ==========================================
     // ⚠️ Metadata / UI Settings (ルールではないもの)

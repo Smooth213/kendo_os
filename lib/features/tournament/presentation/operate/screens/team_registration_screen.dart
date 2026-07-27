@@ -1526,11 +1526,13 @@ class _TeamRegistrationScreenState
                   }
 
                   if (!mounted) return;
-                  context.go('/home/${widget.tournamentId}');
+                  context.go(
+                    '/tournament/${widget.tournamentId}/category-rules?isFromSetup=true',
+                  );
                 },
                 color: _themeColors.primaryAccent,
-                icon: Icons.check_circle,
-                label: 'すべての登録を完了して大会画面へ',
+                icon: Icons.navigate_next,
+                label: '登録を完了してルール設定へ',
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 expandContent: false,
               ),

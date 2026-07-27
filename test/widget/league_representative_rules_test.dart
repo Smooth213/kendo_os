@@ -124,34 +124,18 @@ void main() {
         await tester.tap(find.text('千代田チーム'));
         await tester.pumpAndSettle();
 
-        // Tap '次へ進む' to go to Page 1
+        // Tap '次へ進む' to go to Page 2 (Summary & Details Page)
         expect(find.text('次へ進む'), findsOneWidget);
         await tester.tap(find.text('次へ進む'));
         await tester.pumpAndSettle();
 
-        // Page 1 should display match formats (confirming "リーグ団体戦" is selected/applied)
-        expect(find.text('リーグ団体戦'), findsOneWidget);
+        // Page 2 should display match formats (confirming "リーグ団体戦" is selected/applied)
+        expect(find.text('試合方式'), findsOneWidget);
+        expect(find.text('リーグ団体戦'), findsAtLeast(1));
 
-        // Tap '次へ進む' to go to Page 2 (rules configuration page)
-        await tester.tap(find.text('次へ進む'));
-        await tester.pumpAndSettle();
-
-        // We should be on Page 2 rules page, which should display '代表戦あり' switch
-        final switchFinder = find.widgetWithText(SwitchListTile, '代表戦あり');
-        expect(switchFinder, findsOneWidget);
-
-        // Initially, detailed representative settings should NOT be visible
-        expect(find.text('代表戦の勝敗数'), findsNothing);
-
-        // Toggle '代表戦あり' to true
-        await tester.tap(switchFinder);
-        await tester.pumpAndSettle();
-
-        // Detailed settings should now appear in the UI
-        expect(find.text('代表戦の勝敗数'), findsOneWidget);
-        expect(find.text('1本'), findsOneWidget);
-        expect(find.text('3本'), findsOneWidget);
-        expect(find.text('延長戦を行う'), findsOneWidget);
+        // We should see representative match rule and league points summary
+        expect(find.text('代表戦'), findsOneWidget);
+        expect(find.text('リーグ勝ち点'), findsOneWidget);
       },
     );
   });

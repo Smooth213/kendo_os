@@ -1,0 +1,2532 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
+import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
+import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+
+class CategoryRulesScreen extends ConsumerStatefulWidget {
+  final String tournamentId;
+  final bool isFromSetup;
+  const CategoryRulesScreen({
+    super.key,
+    required this.tournamentId,
+    this.isFromSetup = false,
+  });
+
+  @override
+  ConsumerState<CategoryRulesScreen> createState() =>
+      _CategoryRulesScreenState();
+}
+
+class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
+  String? _editingCategory;
+
+  // 編集中のルールセット状態保持用
+  bool _useAdvancedRule = false;
+  List<String> _editingAdvancedKeywords = const [
+    '準決勝',
+    '準決',
+    '決勝',
+    'final',
+    '3位決定',
+    '3決',
+    'ベスト4',
+  ];
+  String _editingMatchType = '個人戦';
+  bool _editingIsRenseikai = false;
+
+  // 通常戦の設定
+  double _normalTime = 3.0;
+  bool _normalIsRunningTime = false;
+  bool _normalIsIpponShobu = false;
+  int _normalIpponLimit = 2;
+  int _normalHansokuLimit = 2;
+  bool _normalHasHantei = false;
+  bool _normalHasExtension = false;
+  bool _normalIsEnchoUnlimited = false;
+  double _normalEnchoTime = 2.0;
+  int _normalEnchoCount = 1;
+  String _normalKachinukiUnlimitedType = '大将対大将';
+  bool _normalHasLeagueDaihyo = false;
+  bool _normalIsDaihyoIpponShobu = true;
+  double _normalWinPoint = 0.0;
+  double _normalLossPoint = 0.0;
+  double _normalDrawPoint = 0.0;
+  String _normalRenseikaiType = '一試合制';
+  int _normalOverallTime = 30;
+
+  // 上位戦の設定
+  double _advancedTime = 3.0;
+  bool _advancedIsRunningTime = false;
+  bool _advancedIsIpponShobu = false;
+  int _advancedIpponLimit = 2;
+  int _advancedHansokuLimit = 2;
+  bool _advancedHasHantei = false;
+  bool _advancedHasExtension = true;
+  bool _advancedIsEnchoUnlimited = true;
+  double _advancedEnchoTime = 3.0;
+  int _advancedEnchoCount = 0;
+  String _advancedKachinukiUnlimitedType = '大将対大将';
+  bool _advancedHasLeagueDaihyo = false;
+  bool _advancedIsDaihyoIpponShobu = true;
+  double _advancedWinPoint = 0.0;
+  double _advancedLossPoint = 0.0;
+  double _advancedDrawPoint = 0.0;
+  String _advancedRenseikaiType = '一試合制';
+  int _advancedOverallTime = 30;
+
+  bool _isNormalCustomTime = false;
+  bool _isAdvancedCustomTime = false;
+
+  // 代表戦の詳細設定 (通常戦用)
+  double _normalDaihyoMatchTime = 0.0; // 0.0: 無制限
+  bool _normalDaihyoHasExtension = true;
+  double _normalDaihyoEnchoTime = 3.0;
+  int _normalDaihyoEnchoCount = -2; // -2: 無制限
+  bool _normalDaihyoHasHantei = false;
+
+  // 代表戦の詳細設定 (上位戦用)
+  double _advancedDaihyoMatchTime = 0.0; // 0.0: 無制限
+  bool _advancedDaihyoHasExtension = true;
+  double _advancedDaihyoEnchoTime = 3.0;
+  int _advancedDaihyoEnchoCount = -2; // -2: 無制限
+  bool _advancedDaihyoHasHantei = false;
+
+  final _newCategoryController = TextEditingController();
+  final _keywordsController = TextEditingController();
+
+  final List<String> _presetCategories = [
+    '小学生の部',
+    '小学生低学年の部',
+    '小学生高学年の部',
+    '中学生の部',
+    '中学生男子の部',
+    '中学生女子の部',
+    '高校生男子の部',
+    '高校生女子の部',
+    '一般男子の部',
+    '一般女子の部',
+  ];
+
+  String _formatMinutes(double minutes) {
+    if (minutes == minutes.toInt()) {
+      return '${minutes.toInt()}分';
+    }
+    return '$minutes分';
+  }
+
+  @override
+  void dispose() {
+    _newCategoryController.dispose();
+    _keywordsController.dispose();
+    super.dispose();
+  }
+
+  void _startEditing(String category, CategoryRuleSet rules) {
+    setState(() {
+      _editingCategory = category;
+      _useAdvancedRule = rules.useAdvancedRule;
+
+      // 通常戦設定
+      _normalTime = rules.normalRule.matchTimeMinutes;
+      _normalIsRunningTime = rules.normalRule.isRunningTime;
+      _normalIsIpponShobu = rules.normalRule.isIpponShobu;
+      _normalIpponLimit = rules.normalRule.ipponLimit;
+      _normalHansokuLimit = rules.normalRule.hansokuLimit;
+      _normalHasHantei = rules.normalRule.hasHantei;
+      _normalHasExtension =
+          rules.normalRule.enchoCount > 0 || rules.normalRule.isEnchoUnlimited;
+      _normalIsEnchoUnlimited = rules.normalRule.isEnchoUnlimited;
+      _normalEnchoTime = rules.normalRule.enchoTimeMinutes;
+      _normalEnchoCount = rules.normalRule.enchoCount;
+      _normalKachinukiUnlimitedType = rules.normalRule.kachinukiUnlimitedType;
+      _normalHasLeagueDaihyo = rules.normalRule.hasLeagueDaihyo;
+      _normalIsDaihyoIpponShobu = rules.normalRule.isDaihyoIpponShobu;
+      _normalWinPoint = rules.normalRule.winPoint;
+      _normalLossPoint = rules.normalRule.lossPoint;
+      _normalDrawPoint = rules.normalRule.drawPoint;
+      _normalRenseikaiType = rules.normalRule.renseikaiType;
+      _normalOverallTime = rules.normalRule.overallTimeMinutes;
+
+      // 上位戦設定
+      _advancedTime = rules.advancedRule.matchTimeMinutes;
+      _advancedIsRunningTime = rules.advancedRule.isRunningTime;
+      _advancedIsIpponShobu = rules.advancedRule.isIpponShobu;
+      _advancedIpponLimit = rules.advancedRule.ipponLimit;
+      _advancedHansokuLimit = rules.advancedRule.hansokuLimit;
+      _advancedHasHantei = rules.advancedRule.hasHantei;
+      _advancedHasExtension =
+          rules.advancedRule.enchoCount > 0 ||
+          rules.advancedRule.isEnchoUnlimited;
+      _advancedIsEnchoUnlimited = rules.advancedRule.isEnchoUnlimited;
+      _advancedEnchoTime = rules.advancedRule.enchoTimeMinutes;
+      _advancedEnchoCount = rules.advancedRule.enchoCount;
+      _advancedKachinukiUnlimitedType =
+          rules.advancedRule.kachinukiUnlimitedType;
+      _advancedHasLeagueDaihyo = rules.advancedRule.hasLeagueDaihyo;
+      _advancedIsDaihyoIpponShobu = rules.advancedRule.isDaihyoIpponShobu;
+      _advancedWinPoint = rules.advancedRule.winPoint;
+      _advancedLossPoint = rules.advancedRule.lossPoint;
+      _advancedDrawPoint = rules.advancedRule.drawPoint;
+      _advancedRenseikaiType = rules.advancedRule.renseikaiType;
+      _advancedOverallTime = rules.advancedRule.overallTimeMinutes;
+      _editingAdvancedKeywords = List.from(rules.advancedKeywords);
+      _keywordsController.text = _editingAdvancedKeywords.join(', ');
+
+      _isNormalCustomTime = !const [
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        4.0,
+        5.0,
+      ].contains(rules.normalRule.matchTimeMinutes);
+      _isAdvancedCustomTime = !const [
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        4.0,
+        5.0,
+      ].contains(rules.advancedRule.matchTimeMinutes);
+
+      _normalDaihyoMatchTime = rules.normalRule.daihyoMatchTimeMinutes;
+      _normalDaihyoHasExtension = rules.normalRule.daihyoHasExtension;
+      _normalDaihyoEnchoTime = rules.normalRule.daihyoEnchoTimeMinutes;
+      _normalDaihyoEnchoCount = rules.normalRule.daihyoEnchoCount;
+      _normalDaihyoHasHantei = rules.normalRule.daihyoHasHantei;
+
+      _advancedDaihyoMatchTime = rules.advancedRule.daihyoMatchTimeMinutes;
+      _advancedDaihyoHasExtension = rules.advancedRule.daihyoHasExtension;
+      _advancedDaihyoEnchoTime = rules.advancedRule.daihyoEnchoTimeMinutes;
+      _advancedDaihyoEnchoCount = rules.advancedRule.daihyoEnchoCount;
+      _advancedDaihyoHasHantei = rules.advancedRule.daihyoHasHantei;
+
+      _editingIsRenseikai = rules.normalRule.isRenseikai;
+      if (rules.matchType.isEmpty) {
+        if (rules.normalRule.isKachinuki) {
+          _editingMatchType = '勝ち抜き戦';
+        } else if (rules.normalRule.isLeague) {
+          _editingMatchType = rules.normalRule.hasLeagueDaihyo
+              ? 'リーグ団体戦'
+              : 'リーグ個人戦';
+        } else if (rules.normalRule.hasLeagueDaihyo) {
+          _editingMatchType = '団体戦';
+        } else {
+          _editingMatchType = category.contains('団体') ? '団体戦' : '個人戦';
+        }
+      } else {
+        _editingMatchType = rules.matchType;
+      }
+    });
+  }
+
+  MatchRule _buildNormalMatchRule(String category) {
+    final isLeague =
+        _editingMatchType == 'リーグ団体戦' || _editingMatchType == 'リーグ個人戦';
+    final isKachinuki = _editingMatchType == '勝ち抜き戦';
+    final hasLeagueDaihyo =
+        _editingMatchType == '団体戦' || _editingMatchType == 'リーグ団体戦';
+
+    return MatchRule(
+      category: category,
+      matchTimeMinutes: _normalTime,
+      isRunningTime: _normalIsRunningTime,
+      isIpponShobu: _normalIsIpponShobu,
+      ipponLimit: _normalIsIpponShobu ? 1 : _normalIpponLimit,
+      hansokuLimit: _normalHansokuLimit,
+      hasHantei: _normalHasHantei,
+      isEnchoUnlimited: _normalHasExtension && _normalIsEnchoUnlimited,
+      enchoTimeMinutes: _normalEnchoTime,
+      enchoCount: _normalHasExtension
+          ? (_normalIsEnchoUnlimited ? 0 : _normalEnchoCount)
+          : 0,
+      isKachinuki: isKachinuki,
+      kachinukiUnlimitedType: _normalKachinukiUnlimitedType,
+      hasLeagueDaihyo: hasLeagueDaihyo,
+      isDaihyoIpponShobu: _normalIsDaihyoIpponShobu,
+      winPoint: _normalWinPoint,
+      lossPoint: _normalLossPoint,
+      drawPoint: _normalDrawPoint,
+      isRenseikai: _editingIsRenseikai,
+      renseikaiType: _normalRenseikaiType,
+      overallTimeMinutes: _normalOverallTime,
+      isLeague: isLeague,
+      daihyoMatchTimeMinutes: _normalDaihyoMatchTime,
+      daihyoHasExtension: _normalDaihyoHasExtension,
+      daihyoEnchoTimeMinutes: _normalDaihyoEnchoTime,
+      daihyoEnchoCount: _normalDaihyoEnchoCount,
+      daihyoHasHantei: _normalDaihyoHasHantei,
+    );
+  }
+
+  MatchRule _buildAdvancedMatchRule(String category) {
+    final isLeague =
+        _editingMatchType == 'リーグ団体戦' || _editingMatchType == 'リーグ個人戦';
+    final isKachinuki = _editingMatchType == '勝ち抜き戦';
+    final hasLeagueDaihyo =
+        _editingMatchType == '団体戦' || _editingMatchType == 'リーグ団体戦';
+
+    return MatchRule(
+      category: category,
+      matchTimeMinutes: _advancedTime,
+      isRunningTime: _advancedIsRunningTime,
+      isIpponShobu: _advancedIsIpponShobu,
+      ipponLimit: _advancedIsIpponShobu ? 1 : _advancedIpponLimit,
+      hansokuLimit: _advancedHansokuLimit,
+      hasHantei: _advancedHasHantei,
+      isEnchoUnlimited: _advancedHasExtension && _advancedIsEnchoUnlimited,
+      enchoTimeMinutes: _advancedEnchoTime,
+      enchoCount: _advancedHasExtension
+          ? (_advancedIsEnchoUnlimited ? 0 : _advancedEnchoCount)
+          : 0,
+      isKachinuki: isKachinuki,
+      kachinukiUnlimitedType: _advancedKachinukiUnlimitedType,
+      hasLeagueDaihyo: hasLeagueDaihyo,
+      isDaihyoIpponShobu: _advancedIsDaihyoIpponShobu,
+      winPoint: _advancedWinPoint,
+      lossPoint: _advancedLossPoint,
+      drawPoint: _advancedDrawPoint,
+      isRenseikai: _editingIsRenseikai,
+      renseikaiType: _advancedRenseikaiType,
+      overallTimeMinutes: _advancedOverallTime,
+      isLeague: isLeague,
+      daihyoMatchTimeMinutes: _advancedDaihyoMatchTime,
+      daihyoHasExtension: _advancedDaihyoHasExtension,
+      daihyoEnchoTimeMinutes: _advancedDaihyoEnchoTime,
+      daihyoEnchoCount: _advancedDaihyoEnchoCount,
+      daihyoHasHantei: _advancedDaihyoHasHantei,
+    );
+  }
+
+  // 上位戦かどうかの判定用ヘルパー
+  bool _isAdvancedMatchName(String note, {List<String>? customKeywords}) {
+    final cleanNote = note.toLowerCase().trim();
+    final List<String> keywords;
+    if (customKeywords != null && customKeywords.isNotEmpty) {
+      keywords = customKeywords.map((kw) => kw.toLowerCase().trim()).toList();
+    } else {
+      keywords = [
+        '準決勝',
+        '準決',
+        'じゅんけつ',
+        'ベスト4',
+        'b4',
+        'sf',
+        'semifinal',
+        '准決',
+        '順決',
+        '決勝',
+        'けっしょう',
+        'ファイナル',
+        'final',
+        '結勝',
+        '決勝戦',
+        '3位決定',
+        '3決',
+        '三決',
+      ];
+    }
+
+    String testNote = cleanNote;
+    final hasSemisKeyword = keywords.any(
+      (kw) =>
+          kw.contains('準決') ||
+          kw.contains('準決勝') ||
+          kw.contains('ベスト4') ||
+          kw.contains('sf'),
+    );
+    if (!hasSemisKeyword) {
+      testNote = testNote
+          .replaceAll('準決勝', '')
+          .replaceAll('準決', '')
+          .replaceAll('准決', '')
+          .replaceAll('順決', '')
+          .replaceAll('じゅんけつ', '')
+          .replaceAll('semifinal', '')
+          .replaceAll('sf', '')
+          .replaceAll('3位決定', '')
+          .replaceAll('3決', '')
+          .replaceAll('三決', '');
+    }
+
+    return keywords.any((kw) => kw.isNotEmpty && testNote.contains(kw));
+  }
+
+  Future<void> _saveCategoryRules(TournamentModel tournament) async {
+    if (_editingCategory == null) return;
+
+    final category = _editingCategory!;
+    final normalRule = _buildNormalMatchRule(category);
+    final advancedRule = _buildAdvancedMatchRule(category);
+
+    final newRuleSet = CategoryRuleSet(
+      normalRule: normalRule,
+      advancedRule: advancedRule,
+      useAdvancedRule: _useAdvancedRule,
+      advancedKeywords: _editingAdvancedKeywords,
+    );
+
+    final updatedCategoryRules = Map<String, CategoryRuleSet>.from(
+      tournament.categoryRules,
+    );
+    updatedCategoryRules[category] = newRuleSet;
+
+    // 大会モデルのリスト更新
+    List<String> updatedCategories = List.from(tournament.categories);
+    if (!updatedCategories.contains(category)) {
+      updatedCategories.add(category);
+    }
+
+    final updatedTournament = tournament.copyWith(
+      categories: updatedCategories,
+      categoryRules: updatedCategoryRules,
+    );
+
+    // 既存の試合を探して一括適用の判定
+    final allMatches =
+        ref.read(matchListByTournamentProvider(widget.tournamentId)).value ??
+        [];
+    final targetMatches = allMatches
+        .where(
+          (m) =>
+              m.category == category &&
+              m.status != 'finished' &&
+              m.status != 'approved',
+        )
+        .toList();
+
+    if (targetMatches.isNotEmpty) {
+      // 確認ダイアログを表示
+      final result = await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('作成済みの試合に一括適用しますか？'),
+          content: Text(
+            '「$category」の未開始・進行前の試合が ${targetMatches.length} 件見つかりました。\n'
+            '設定したルールをこれらの既存の試合にも今すぐ適用しますか？\n'
+            '（※すでに終了した試合のデータは保護されます）',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'cancel'),
+              child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'no'),
+              child: const Text('適用しない（新規試合のみ）'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, 'yes'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+              child: const Text(
+                '一括適用する',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (result == 'cancel') return;
+
+      if (result == 'yes') {
+        // 既存の試合に適用する
+        List<MatchModel> matchesToSave = [];
+        for (var match in targetMatches) {
+          final isAdvanced =
+              _useAdvancedRule &&
+              _isAdvancedMatchName(
+                match.note,
+                customKeywords: _editingAdvancedKeywords,
+              );
+          final activeRule = isAdvanced ? advancedRule : normalRule;
+
+          final updatedMatch = match.copyWith(
+            matchTimeMinutes: activeRule.matchTimeMinutes,
+            isRunningTime: activeRule.isRunningTime,
+            hasExtension:
+                activeRule.enchoCount > 0 || activeRule.isEnchoUnlimited,
+            extensionTimeMinutes: activeRule.enchoTimeMinutes,
+            extensionCount: activeRule.enchoCount,
+            hasHantei: activeRule.hasHantei,
+            isKachinuki: activeRule.isKachinuki,
+            rule: activeRule,
+          );
+          matchesToSave.add(updatedMatch);
+        }
+
+        await ref
+            .read(matchApplicationServiceProvider)
+            .saveMatchesBulk(matchesToSave);
+      }
+    }
+
+    // 大会データの保存
+    await ref
+        .read(tournamentRepositoryProvider)
+        .updateTournament(updatedTournament);
+
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('「$category」のルール設定を保存しました')));
+      setState(() {
+        _editingCategory = null;
+      });
+    }
+  }
+
+  Future<void> _deleteCategory(
+    TournamentModel tournament,
+    String category,
+  ) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('部門を削除しますか？'),
+        content: Text('「$category」の部門および設定されているデフォルトルールをリストから削除します。よろしいですか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text(
+              '削除',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      final updatedCategoryRules = Map<String, CategoryRuleSet>.from(
+        tournament.categoryRules,
+      );
+      updatedCategoryRules.remove(category);
+
+      List<String> updatedCategories = List.from(tournament.categories);
+      updatedCategories.remove(category);
+
+      final updatedTournament = tournament.copyWith(
+        categories: updatedCategories,
+        categoryRules: updatedCategoryRules,
+      );
+
+      await ref
+          .read(tournamentRepositoryProvider)
+          .updateTournament(updatedTournament);
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('「$category」を削除しました')));
+      }
+    }
+  }
+
+  void _addNewCategory(TournamentModel tournament, String name) async {
+    final cleanName = name.trim();
+    if (cleanName.isEmpty) return;
+
+    if (tournament.categoryRules.containsKey(cleanName)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('すでに同じ名前の部門が存在します')));
+      return;
+    }
+
+    // デフォルトルールで登録
+    final newRuleSet = CategoryRuleSet(
+      normalRule: const MatchRule(matchTimeMinutes: 3.0),
+      advancedRule: const MatchRule(matchTimeMinutes: 3.0),
+      useAdvancedRule: false,
+    );
+
+    final updatedCategoryRules = Map<String, CategoryRuleSet>.from(
+      tournament.categoryRules,
+    );
+    updatedCategoryRules[cleanName] = newRuleSet;
+
+    List<String> updatedCategories = List.from(tournament.categories);
+    if (!updatedCategories.contains(cleanName)) {
+      updatedCategories.add(cleanName);
+    }
+
+    final updatedTournament = tournament.copyWith(
+      categories: updatedCategories,
+      categoryRules: updatedCategoryRules,
+    );
+
+    await ref
+        .read(tournamentRepositoryProvider)
+        .updateTournament(updatedTournament);
+    _newCategoryController.clear();
+
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('「$cleanName」を追加しました')));
+      _startEditing(cleanName, newRuleSet);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
+    final asyncTournament = ref.watch(tournamentProvider(widget.tournamentId));
+
+    return LiquidBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            _editingCategory == null ? '部門別ルール設定' : 'ルールの編集',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (_editingCategory != null) {
+                setState(() {
+                  _editingCategory = null;
+                });
+              } else {
+                context.pop();
+              }
+            },
+          ),
+          actions: [
+            if (widget.isFromSetup && _editingCategory == null)
+              TextButton(
+                onPressed: () => context.go('/home/${widget.tournamentId}'),
+                child: Text(
+                  'スキップ',
+                  style: TextStyle(
+                    color: themeColors.primaryAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        body: asyncTournament.when(
+          data: (tournament) {
+            if (tournament == null) {
+              return const Center(child: Text('大会データが見つかりません'));
+            }
+            if (_editingCategory != null) {
+              return _buildRuleEditor(
+                tournament,
+                _editingCategory!,
+                themeColors,
+              );
+            }
+            return _buildCategoryList(tournament, themeColors);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, s) => Center(child: Text('エラーが発生しました: $e')),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryList(
+    TournamentModel tournament,
+    AppThemeColors themeColors,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final list = tournament.categoryRules.keys.toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _newCategoryController,
+                  decoration: InputDecoration(
+                    hintText: '部門名を入力（例：小学生低学年の部）',
+                    hintStyle: TextStyle(
+                      color: isDark ? Colors.grey : Colors.grey.shade400,
+                      fontSize: 13,
+                    ),
+                    filled: true,
+                    fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF38383A)
+                            : Colors.grey.shade300,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF38383A)
+                            : Colors.grey.shade200,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.indigo.shade500,
+                        width: 2.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filled(
+                icon: const Icon(Icons.add),
+                style: IconButton.styleFrom(backgroundColor: Colors.indigo),
+                onPressed: () =>
+                    _addNewCategory(tournament, _newCategoryController.text),
+              ),
+            ],
+          ),
+        ),
+
+        // プリセット追加のショートカット
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '💡 定番の部門をワンタップで追加',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _presetCategories
+                        .map(
+                          (name) => Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: ActionChip(
+                              label: Text(name),
+                              onPressed: () =>
+                                  _addNewCategory(tournament, name),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+        const Divider(height: 1),
+        Expanded(
+          child: list.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.gavel, size: 48, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      Text(
+                        '部門別ルールが未登録です。\n上の入力欄から部門を追加してください。',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: list.length,
+                  padding: const EdgeInsets.all(16),
+                  itemBuilder: (context, index) {
+                    final cat = list[index];
+                    final ruleSet = tournament.categoryRules[cat]!;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Slidable(
+                        key: ValueKey('slidable_rule_$cat'),
+                        endActionPane: ActionPane(
+                          motion: const ScrollMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (context) =>
+                                  _startEditing(cat, ruleSet),
+                              backgroundColor: Colors.blueAccent,
+                              foregroundColor: Colors.white,
+                              icon: Icons.edit,
+                              label: '編集',
+                            ),
+                            SlidableAction(
+                              onPressed: (context) =>
+                                  _deleteCategory(tournament, cat),
+                              backgroundColor: Colors.redAccent,
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete,
+                              label: '削除',
+                              borderRadius: const BorderRadius.horizontal(
+                                right: Radius.circular(16),
+                              ),
+                            ),
+                          ],
+                        ),
+                        child: Card(
+                          elevation: 0,
+                          margin: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF38383A)
+                                  : Colors.grey.shade200,
+                            ),
+                          ),
+                          color: isDark
+                              ? const Color(0xFF1C1C1E)
+                              : Colors.white,
+                          child: ListTile(
+                            onTap: () => _showRuleDetailBottomSheet(
+                              context,
+                              cat,
+                              ruleSet,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            title: Text(
+                              cat,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '通常戦: ${_formatMinutes(ruleSet.normalRule.matchTimeMinutes)}'
+                                    ' / ${ruleSet.normalRule.enchoCount > 0 ? "延長${ruleSet.normalRule.enchoCount}回" : (ruleSet.normalRule.isEnchoUnlimited ? "延長無制限" : "延長なし")}'
+                                    ' / ${ruleSet.normalRule.hasHantei ? "判定あり" : "判定なし"}',
+                                  ),
+                                  if (ruleSet.useAdvancedRule)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Text(
+                                        '上位戦: ${_formatMinutes(ruleSet.advancedRule.matchTimeMinutes)}'
+                                        ' / ${ruleSet.advancedRule.enchoCount > 0 ? "延長${ruleSet.advancedRule.enchoCount}回" : (ruleSet.advancedRule.isEnchoUnlimited ? "延長無制限" : "延長なし")}'
+                                        ' / ${ruleSet.advancedRule.hasHantei ? "判定あり" : "判定なし"}',
+                                        style: TextStyle(
+                                          color: Colors.indigo.shade500,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+        if (widget.isFromSetup && list.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: GlassButton(
+                onPressed: () => context.go('/home/${widget.tournamentId}'),
+                color: Colors.indigo,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                icon: Icons.check_circle,
+                label: '設定を完了して大会ホームへ進む',
+                expandContent: false,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRuleEditor(
+    TournamentModel tournament,
+    String category,
+    AppThemeColors themeColors,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = themeColors.textColor;
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.indigo.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.indigo.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Colors.indigo),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '対象部門',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.indigo,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            category,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              const Text(
+                '試合方式',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.indigo,
+                ),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: _editingMatchType,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                  filled: true,
+                ),
+                items: const [
+                  DropdownMenuItem(value: '個人戦', child: Text('個人戦')),
+                  DropdownMenuItem(value: '団体戦', child: Text('団体戦 (トーナメント)')),
+                  DropdownMenuItem(value: 'リーグ個人戦', child: Text('リーグ個人戦')),
+                  DropdownMenuItem(value: 'リーグ団体戦', child: Text('リーグ団体戦')),
+                  DropdownMenuItem(value: '勝ち抜き戦', child: Text('勝ち抜き戦 (団体戦)')),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _editingMatchType = val;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  '錬成会（練習試合）モード',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                subtitle: const Text('ONにすると、全体の制限時間内での総当たり形式になります。'),
+                value: _editingIsRenseikai,
+                activeThumbColor: Colors.indigo,
+                onChanged: (val) {
+                  setState(() {
+                    _editingIsRenseikai = val;
+                  });
+                },
+              ),
+
+              const Divider(height: 16),
+
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  '準決勝・決勝は別ルールにする',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                subtitle: const Text('ONにすると、上位戦用の特別ルールを別途定義できます。'),
+                value: _useAdvancedRule,
+                activeThumbColor: Colors.indigo,
+                onChanged: (val) {
+                  setState(() {
+                    _useAdvancedRule = val;
+                  });
+                },
+              ),
+
+              const Divider(height: 32),
+
+              if (!_useAdvancedRule) ...[
+                _buildRuleFormSection('通常ルール設定', true, themeColors),
+              ] else ...[
+                DefaultTabController(
+                  length: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TabBar(
+                        labelColor: Colors.indigo,
+                        unselectedLabelColor: Colors.grey,
+                        indicatorColor: Colors.indigo,
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        tabs: const [
+                          Tab(text: '通常戦のルール'),
+                          Tab(text: '上位戦（準決勝・決勝）'),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        height: 800, // フォームを包み込む高さ
+                        child: TabBarView(
+                          physics:
+                              const NeverScrollableScrollPhysics(), // スクロールでの誤動作防止
+                          children: [
+                            ListView(
+                              children: [
+                                _buildRuleFormSection(
+                                  '通常戦ルール',
+                                  true,
+                                  themeColors,
+                                ),
+                              ],
+                            ),
+                            ListView(
+                              children: [
+                                _buildRuleFormSection(
+                                  '上位戦ルール',
+                                  false,
+                                  themeColors,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        // 下部アクションボタン
+        Container(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 16,
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+          ),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            border: Border(
+              top: BorderSide(
+                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _editingCategory = null;
+                    });
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'キャンセル',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GlassButton(
+                  onPressed: () => _saveCategoryRules(tournament),
+                  color: Colors.indigo,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  label: '設定を保存',
+                  icon: Icons.save,
+                  expandContent: false,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRuleFormSection(
+    String title,
+    bool isNormal,
+    AppThemeColors themeColors,
+  ) {
+    final textColor = themeColors.textColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // isNormal に応じて状態変数への参照を分ける
+    double matchTime = isNormal ? _normalTime : _advancedTime;
+    bool isRunningTime = isNormal
+        ? _normalIsRunningTime
+        : _advancedIsRunningTime;
+    int ipponLimit = isNormal ? _normalIpponLimit : _advancedIpponLimit;
+    bool hasHantei = isNormal ? _normalHasHantei : _advancedHasHantei;
+    bool hasExtension = isNormal ? _normalHasExtension : _advancedHasExtension;
+    bool isEnchoUnlimited = isNormal
+        ? _normalIsEnchoUnlimited
+        : _advancedIsEnchoUnlimited;
+    double enchoTime = isNormal ? _normalEnchoTime : _advancedEnchoTime;
+    int enchoCount = isNormal ? _normalEnchoCount : _advancedEnchoCount;
+    int hansokuLimit = isNormal ? _normalHansokuLimit : _advancedHansokuLimit;
+    String kachinukiUnlimitedType = isNormal
+        ? _normalKachinukiUnlimitedType
+        : _advancedKachinukiUnlimitedType;
+    bool hasLeagueDaihyo = isNormal
+        ? _normalHasLeagueDaihyo
+        : _advancedHasLeagueDaihyo;
+    bool isDaihyoIpponShobu = isNormal
+        ? _normalIsDaihyoIpponShobu
+        : _advancedIsDaihyoIpponShobu;
+    double winPoint = isNormal ? _normalWinPoint : _advancedWinPoint;
+    double lossPoint = isNormal ? _normalLossPoint : _advancedLossPoint;
+    double drawPoint = isNormal ? _normalDrawPoint : _advancedDrawPoint;
+    String renseikaiType = isNormal
+        ? _normalRenseikaiType
+        : _advancedRenseikaiType;
+    int overallTime = isNormal ? _normalOverallTime : _advancedOverallTime;
+
+    // 追加分のマッピング
+    bool isCustomTime = isNormal ? _isNormalCustomTime : _isAdvancedCustomTime;
+    double daihyoMatchTime = isNormal
+        ? _normalDaihyoMatchTime
+        : _advancedDaihyoMatchTime;
+    bool daihyoHasExtension = isNormal
+        ? _normalDaihyoHasExtension
+        : _advancedDaihyoHasExtension;
+    double daihyoEnchoTime = isNormal
+        ? _normalDaihyoEnchoTime
+        : _advancedDaihyoEnchoTime;
+    int daihyoEnchoCount = isNormal
+        ? _normalDaihyoEnchoCount
+        : _advancedDaihyoEnchoCount;
+    bool daihyoHasHantei = isNormal
+        ? _normalDaihyoHasHantei
+        : _advancedDaihyoHasHantei;
+
+    final timePresets = [1.5, 2.0, 2.5, 3.0, 4.0, 5.0];
+    final bool showCustomTimeField = isCustomTime;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(title),
+        const SizedBox(height: 16),
+
+        // 1. 共通: 試合時間設定
+        const Text(
+          '試合時間',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ...timePresets.map((t) {
+              final isSelected = !isCustomTime && matchTime == t;
+              return ChoiceChip(
+                label: Text(_formatMinutes(t)),
+                selected: isSelected,
+                selectedColor: themeColors.softAccent,
+                labelStyle: TextStyle(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? themeColors.primaryAccent : textColor,
+                ),
+                onSelected: (s) {
+                  if (s) {
+                    setState(() {
+                      if (isNormal) {
+                        _isNormalCustomTime = false;
+                        _normalTime = t;
+                      } else {
+                        _isAdvancedCustomTime = false;
+                        _advancedTime = t;
+                      }
+                    });
+                  }
+                },
+              );
+            }),
+            ChoiceChip(
+              label: const Text('任意'),
+              selected: isCustomTime,
+              selectedColor: themeColors.softAccent,
+              labelStyle: TextStyle(
+                fontWeight: isCustomTime ? FontWeight.bold : FontWeight.normal,
+                color: isCustomTime ? themeColors.primaryAccent : textColor,
+              ),
+              onSelected: (s) {
+                if (s) {
+                  setState(() {
+                    if (isNormal) {
+                      _isNormalCustomTime = true;
+                      if (timePresets.contains(_normalTime)) {
+                        _normalTime = 3.0;
+                      }
+                    } else {
+                      _isAdvancedCustomTime = true;
+                      if (timePresets.contains(_advancedTime)) {
+                        _advancedTime = 3.0;
+                      }
+                    }
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+        if (showCustomTimeField) ...[
+          const SizedBox(height: 12),
+          TextFormField(
+            key: ValueKey('custom_match_time_${isNormal}_$_editingCategory'),
+            initialValue: matchTime.toString(),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: '任意の試合時間（分）',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.all(12),
+            ),
+            onChanged: (val) {
+              final parsed = double.tryParse(val) ?? 3.0;
+              setState(() {
+                if (isNormal) {
+                  _normalTime = parsed;
+                } else {
+                  _advancedTime = parsed;
+                }
+              });
+            },
+          ),
+        ],
+        const SizedBox(height: 16),
+
+        // === 形式別表示 ===
+        if (_editingIsRenseikai) ...[
+          // ----------------------------------------------------
+          // 錬成会モード (Renseikai Mode)
+          // ----------------------------------------------------
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('ランニングタイム計測'),
+            subtitle: const Text('ON: 試合中断時も時計を止めない / OFF: 都度停止'),
+            value: isRunningTime,
+            activeThumbColor: Colors.indigo,
+            onChanged: (val) {
+              setState(() {
+                if (isNormal) {
+                  _normalIsRunningTime = val;
+                } else {
+                  _advancedIsRunningTime = val;
+                }
+              });
+            },
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            '進行形式',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: ['一試合制', '時間制'].map((type) {
+              final isSelected = renseikaiType == type;
+              return ChoiceChip(
+                label: Text(type),
+                selected: isSelected,
+                selectedColor: themeColors.softAccent,
+                labelStyle: TextStyle(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? themeColors.primaryAccent : textColor,
+                ),
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() {
+                      if (isNormal) {
+                        _normalRenseikaiType = type;
+                      } else {
+                        _advancedRenseikaiType = type;
+                      }
+                    });
+                  }
+                },
+              );
+            }).toList(),
+          ),
+          if (renseikaiType == '時間制') ...[
+            const SizedBox(height: 12),
+            TextFormField(
+              key: ValueKey('renseikai_time_${isNormal}_$_editingCategory'),
+              initialValue: overallTime.toString(),
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: '全体の制限時間（分）',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.all(12),
+              ),
+              onChanged: (val) {
+                final i = int.tryParse(val) ?? 30;
+                if (isNormal) {
+                  _normalOverallTime = i;
+                } else {
+                  _advancedOverallTime = i;
+                }
+              },
+            ),
+          ],
+          const Divider(height: 32),
+        ] else if (_editingMatchType == '勝ち抜き戦') ...[
+          // ----------------------------------------------------
+          // 勝ち抜き戦 (Kachinuki Mode)
+          // ----------------------------------------------------
+          const SizedBox(height: 12),
+          const Text(
+            '大将 VS 大将 のときの挙動',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ChoiceChip(
+                label: const Text('延長戦を行う (デフォルト)'),
+                selected:
+                    kachinukiUnlimitedType == '大将対大将' ||
+                    kachinukiUnlimitedType == '無制限' ||
+                    kachinukiUnlimitedType == '大将のみ',
+                selectedColor: themeColors.softAccent,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() {
+                      if (isNormal) {
+                        _normalKachinukiUnlimitedType = '大将対大将';
+                      } else {
+                        _advancedKachinukiUnlimitedType = '大将対大将';
+                      }
+                    });
+                  }
+                },
+              ),
+              ChoiceChip(
+                label: const Text('引き分けとする'),
+                selected:
+                    kachinukiUnlimitedType == 'なし' ||
+                    kachinukiUnlimitedType.isEmpty,
+                selectedColor: themeColors.softAccent,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() {
+                      if (isNormal) {
+                        _normalKachinukiUnlimitedType = 'なし';
+                      } else {
+                        _advancedKachinukiUnlimitedType = 'なし';
+                      }
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '大将対他のポジション（大将以外）の挙動',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ChoiceChip(
+                label: const Text('引き分けとする (デフォルト)'),
+                selected:
+                    kachinukiUnlimitedType == '大将対大将' ||
+                    kachinukiUnlimitedType == 'なし' ||
+                    kachinukiUnlimitedType.isEmpty ||
+                    kachinukiUnlimitedType == '大将のみ',
+                selectedColor: themeColors.softAccent,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() {
+                      if (isNormal) {
+                        if (kachinukiUnlimitedType == 'なし' ||
+                            kachinukiUnlimitedType.isEmpty) {
+                          _normalKachinukiUnlimitedType = 'なし';
+                        } else {
+                          _normalKachinukiUnlimitedType = '大将対大将';
+                        }
+                      } else {
+                        if (kachinukiUnlimitedType == 'なし' ||
+                            kachinukiUnlimitedType.isEmpty) {
+                          _advancedKachinukiUnlimitedType = 'なし';
+                        } else {
+                          _advancedKachinukiUnlimitedType = '大将対大将';
+                        }
+                      }
+                    });
+                  }
+                },
+              ),
+              ChoiceChip(
+                label: const Text('延長戦を行う'),
+                selected: kachinukiUnlimitedType == '無制限',
+                selectedColor: themeColors.softAccent,
+                onSelected: (selected) {
+                  if (selected) {
+                    setState(() {
+                      if (isNormal) {
+                        _normalKachinukiUnlimitedType = '無制限';
+                      } else {
+                        _advancedKachinukiUnlimitedType = '無制限';
+                      }
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+          const Divider(height: 32),
+        ] else if (_editingMatchType == '個人戦' ||
+            _editingMatchType == 'リーグ個人戦') ...[
+          // ----------------------------------------------------
+          // 個人戦 / リーグ個人戦 (Individual Mode)
+          // ----------------------------------------------------
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('延長戦を有効にする'),
+            value: hasExtension,
+            activeThumbColor: Colors.indigo,
+            onChanged: (val) {
+              setState(() {
+                if (isNormal) {
+                  _normalHasExtension = val;
+                } else {
+                  _advancedHasExtension = val;
+                }
+              });
+            },
+          ),
+          if (hasExtension) ...[
+            SwitchListTile(
+              contentPadding: const EdgeInsets.only(left: 16),
+              title: const Text('時間・回数無制限'),
+              value: isEnchoUnlimited,
+              activeThumbColor: Colors.indigo,
+              onChanged: (val) {
+                setState(() {
+                  if (isNormal) {
+                    _normalIsEnchoUnlimited = val;
+                  } else {
+                    _advancedIsEnchoUnlimited = val;
+                  }
+                });
+              },
+            ),
+            if (!isEnchoUnlimited) ...[
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 8.0,
+                  top: 8.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('最大延長回数'),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: enchoCount > 1
+                              ? () => setState(() {
+                                  if (isNormal) {
+                                    _normalEnchoCount--;
+                                  } else {
+                                    _advancedEnchoCount--;
+                                  }
+                                })
+                              : null,
+                        ),
+                        Text(
+                          '$enchoCount回',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline),
+                          onPressed: enchoCount < 10
+                              ? () => setState(() {
+                                  if (isNormal) {
+                                    _normalEnchoCount++;
+                                  } else {
+                                    _advancedEnchoCount++;
+                                  }
+                                })
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('延長戦の時間（分）'),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: enchoTime > 1.0
+                            ? () => setState(() {
+                                if (isNormal) {
+                                  _normalEnchoTime -= 1.0;
+                                } else {
+                                  _advancedEnchoTime -= 1.0;
+                                }
+                              })
+                            : null,
+                      ),
+                      Text(
+                        _formatMinutes(enchoTime),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline),
+                        onPressed: enchoTime < 10.0
+                            ? () => setState(() {
+                                if (isNormal) {
+                                  _normalEnchoTime += 1.0;
+                                } else {
+                                  _advancedEnchoTime += 1.0;
+                                }
+                              })
+                            : null,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (!hasExtension || !isEnchoUnlimited) ...[
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('引き分け時の判定を有効にする'),
+              value: hasHantei,
+              activeThumbColor: Colors.indigo,
+              onChanged: (val) {
+                setState(() {
+                  if (isNormal) {
+                    _normalHasHantei = val;
+                  } else {
+                    _advancedHasHantei = val;
+                  }
+                });
+              },
+            ),
+          ],
+          if (_editingMatchType == 'リーグ個人戦') ...[
+            const Divider(height: 32),
+            _buildLeaguePointsSection(isNormal, winPoint, lossPoint, drawPoint),
+          ],
+          const Divider(height: 32),
+        ] else if (_editingMatchType == '団体戦' ||
+            _editingMatchType == 'リーグ団体戦') ...[
+          // ----------------------------------------------------
+          // 団体戦 / リーグ団体戦 (Team Mode)
+          // ----------------------------------------------------
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('代表戦あり（団体戦用）'),
+            subtitle: const Text('チーム合計が引き分けの時、代表者同士で決定戦を行います。'),
+            value: hasLeagueDaihyo,
+            activeThumbColor: Colors.indigo,
+            onChanged: (val) {
+              setState(() {
+                if (isNormal) {
+                  _normalHasLeagueDaihyo = val;
+                } else {
+                  _advancedHasLeagueDaihyo = val;
+                }
+              });
+            },
+          ),
+          if (hasLeagueDaihyo) ...[
+            const SizedBox(height: 12),
+            const Text(
+              '代表戦の本数',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ChoiceChip(
+                  label: const Text('１本勝負 (デフォルト)'),
+                  selected: isDaihyoIpponShobu,
+                  selectedColor: themeColors.softAccent,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        if (isNormal) {
+                          _normalIsDaihyoIpponShobu = true;
+                        } else {
+                          _advancedIsDaihyoIpponShobu = true;
+                        }
+                      });
+                    }
+                  },
+                ),
+                ChoiceChip(
+                  label: const Text('３本勝負'),
+                  selected: !isDaihyoIpponShobu,
+                  selectedColor: themeColors.softAccent,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        if (isNormal) {
+                          _normalIsDaihyoIpponShobu = false;
+                        } else {
+                          _advancedIsDaihyoIpponShobu = false;
+                        }
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '代表戦の試合時間',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ChoiceChip(
+                  label: const Text('時間制限なし (デフォルト)'),
+                  selected: daihyoMatchTime == 0.0,
+                  selectedColor: themeColors.softAccent,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        if (isNormal) {
+                          _normalDaihyoMatchTime = 0.0;
+                        } else {
+                          _advancedDaihyoMatchTime = 0.0;
+                        }
+                      });
+                    }
+                  },
+                ),
+                ...[1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
+                  final isSelected = daihyoMatchTime == t;
+                  return ChoiceChip(
+                    label: Text(_formatMinutes(t)),
+                    selected: isSelected,
+                    selectedColor: themeColors.softAccent,
+                    onSelected: (s) {
+                      if (s) {
+                        setState(() {
+                          if (isNormal) {
+                            _normalDaihyoMatchTime = t;
+                          } else {
+                            _advancedDaihyoMatchTime = t;
+                          }
+                        });
+                      }
+                    },
+                  );
+                }),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('代表戦の延長を有効にする'),
+              value: daihyoHasExtension,
+              activeThumbColor: Colors.indigo,
+              onChanged: (val) {
+                setState(() {
+                  if (isNormal) {
+                    _normalDaihyoHasExtension = val;
+                  } else {
+                    _advancedDaihyoHasExtension = val;
+                  }
+                });
+              },
+            ),
+            if (daihyoHasExtension) ...[
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 8.0,
+                  top: 8.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('代表戦延長の時間（分）'),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: daihyoEnchoTime > 1.0
+                              ? () => setState(() {
+                                  if (isNormal) {
+                                    _normalDaihyoEnchoTime -= 1.0;
+                                  } else {
+                                    _advancedDaihyoEnchoTime -= 1.0;
+                                  }
+                                })
+                              : null,
+                        ),
+                        Text(
+                          _formatMinutes(daihyoEnchoTime),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline),
+                          onPressed: daihyoEnchoTime < 10.0
+                              ? () => setState(() {
+                                  if (isNormal) {
+                                    _normalDaihyoEnchoTime += 1.0;
+                                  } else {
+                                    _advancedDaihyoEnchoTime += 1.0;
+                                  }
+                                })
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.only(left: 16.0),
+                child: Text(
+                  '代表戦延長の回数',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ChoiceChip(
+                      label: const Text('無制限 (デフォルト)'),
+                      selected: daihyoEnchoCount == -2,
+                      selectedColor: themeColors.softAccent,
+                      onSelected: (selected) {
+                        if (selected) {
+                          setState(() {
+                            if (isNormal) {
+                              _normalDaihyoEnchoCount = -2;
+                            } else {
+                              _advancedDaihyoEnchoCount = -2;
+                            }
+                          });
+                        }
+                      },
+                    ),
+                    ...[1, 2, 3, 5].map((c) {
+                      final isSelected = daihyoEnchoCount == c;
+                      return ChoiceChip(
+                        label: Text('$c回'),
+                        selected: isSelected,
+                        selectedColor: themeColors.softAccent,
+                        onSelected: (s) {
+                          if (s) {
+                            setState(() {
+                              if (isNormal) {
+                                _normalDaihyoEnchoCount = c;
+                              } else {
+                                _advancedDaihyoEnchoCount = c;
+                              }
+                            });
+                          }
+                        },
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('代表戦の判定を有効にする'),
+              subtitle: const Text('時間切れで決着がつかない場合に判定を行います。'),
+              value: daihyoHasHantei,
+              activeThumbColor: Colors.indigo,
+              onChanged: (val) {
+                setState(() {
+                  if (isNormal) {
+                    _normalDaihyoHasHantei = val;
+                  } else {
+                    _advancedDaihyoHasHantei = val;
+                  }
+                });
+              },
+            ),
+          ],
+          if (_editingMatchType == 'リーグ団体戦') ...[
+            const Divider(height: 32),
+            _buildLeaguePointsSection(isNormal, winPoint, lossPoint, drawPoint),
+          ],
+          const Divider(height: 32),
+        ],
+
+        // ----------------------------------------------------
+        // 2. 詳細設定（得点制限、反則数など）- ExpansionTileで隠す
+        // ----------------------------------------------------
+        Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            title: const Row(
+              children: [
+                Icon(Icons.settings_outlined, color: Colors.grey, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  '詳細設定（得点制限・反則ルール）',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            childrenPadding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 8,
+            ),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF38383A)
+                        : Colors.grey.shade200,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 勝敗本数制限
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '勝敗本数制限（得点制限）',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                '勝敗に必要な本数（通常は三本勝負＝2本先取）',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                size: 20,
+                              ),
+                              onPressed: ipponLimit > 1
+                                  ? () => setState(() {
+                                      if (isNormal) {
+                                        _normalIpponLimit--;
+                                      } else {
+                                        _advancedIpponLimit--;
+                                      }
+                                    })
+                                  : null,
+                            ),
+                            Text(
+                              '$ipponLimit本',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.add_circle_outline,
+                                size: 20,
+                              ),
+                              onPressed: ipponLimit < 5
+                                  ? () => setState(() {
+                                      if (isNormal) {
+                                        _normalIpponLimit++;
+                                      } else {
+                                        _advancedIpponLimit++;
+                                      }
+                                    })
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 24),
+                    // 反則制限
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '反則制限本数（ペナルティ）',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                '相手に一本を与える反則の数（公式は反則2回）',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                size: 20,
+                              ),
+                              onPressed: hansokuLimit > 1
+                                  ? () => setState(() {
+                                      if (isNormal) {
+                                        _normalHansokuLimit--;
+                                      } else {
+                                        _advancedHansokuLimit--;
+                                      }
+                                    })
+                                  : null,
+                            ),
+                            Text(
+                              '$hansokuLimit回',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.add_circle_outline,
+                                size: 20,
+                              ),
+                              onPressed: hansokuLimit < 5
+                                  ? () => setState(() {
+                                      if (isNormal) {
+                                        _normalHansokuLimit++;
+                                      } else {
+                                        _advancedHansokuLimit++;
+                                      }
+                                    })
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        if (!isNormal) ...[
+          const Divider(height: 32),
+          const Text(
+            '自動判別用キーワード設定',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.indigo,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '試合詳細メモに入力された文字と部分一致した場合に、この上位戦ルールを自動適用します。',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            key: ValueKey('advanced_keywords_field_$_editingCategory'),
+            controller: _keywordsController,
+            decoration: const InputDecoration(
+              labelText: '自動判定キーワード（カンマ「,」区切り）',
+              hintText: '例: 準決勝, 決勝, 3位決定',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.all(12),
+            ),
+            onChanged: (val) {
+              _editingAdvancedKeywords = val
+                  .split(',')
+                  .map((kw) => kw.trim())
+                  .where((kw) => kw.isNotEmpty)
+                  .toList();
+            },
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ActionChip(
+                label: const Text('準決勝以上', style: TextStyle(fontSize: 11)),
+                onPressed: () {
+                  setState(() {
+                    _editingAdvancedKeywords = [
+                      '準決勝',
+                      '準決',
+                      'ベスト4',
+                      '決勝',
+                      'final',
+                      '3位決定',
+                      '3決',
+                    ];
+                    _keywordsController.text = _editingAdvancedKeywords.join(
+                      ', ',
+                    );
+                  });
+                },
+              ),
+              ActionChip(
+                label: const Text('決勝のみ', style: TextStyle(fontSize: 11)),
+                onPressed: () {
+                  setState(() {
+                    _editingAdvancedKeywords = ['決勝', 'final'];
+                    _keywordsController.text = _editingAdvancedKeywords.join(
+                      ', ',
+                    );
+                  });
+                },
+              ),
+              ActionChip(
+                label: const Text('3回戦以上', style: TextStyle(fontSize: 11)),
+                onPressed: () {
+                  setState(() {
+                    _editingAdvancedKeywords = [
+                      '3回戦',
+                      '３回戦',
+                      '三回戦',
+                      '4回戦',
+                      '４回戦',
+                      '四回戦',
+                      '準決勝',
+                      '準決',
+                      '決勝',
+                      'final',
+                    ];
+                    _keywordsController.text = _editingAdvancedKeywords.join(
+                      ', ',
+                    );
+                  });
+                },
+              ),
+              ActionChip(
+                label: const Text('クリア', style: TextStyle(fontSize: 11)),
+                onPressed: () {
+                  setState(() {
+                    _editingAdvancedKeywords = [];
+                    _keywordsController.text = '';
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+
+        const Divider(height: 32),
+      ],
+    );
+  }
+
+  Widget _buildLeaguePointsSection(
+    bool isNormal,
+    double winPoint,
+    double lossPoint,
+    double drawPoint,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '勝ち点（リーグ戦の順位決定用）',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: Colors.indigo,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                key: ValueKey('win_pt_${isNormal}_$_editingCategory'),
+                initialValue: winPoint.toString(),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: '勝ち（点）',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(12),
+                ),
+                onChanged: (val) {
+                  final d = double.tryParse(val) ?? 0.0;
+                  setState(() {
+                    if (isNormal) {
+                      _normalWinPoint = d;
+                    } else {
+                      _advancedWinPoint = d;
+                    }
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextFormField(
+                key: ValueKey('loss_pt_${isNormal}_$_editingCategory'),
+                initialValue: lossPoint.toString(),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: '負け（点）',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(12),
+                ),
+                onChanged: (val) {
+                  final d = double.tryParse(val) ?? 0.0;
+                  setState(() {
+                    if (isNormal) {
+                      _normalLossPoint = d;
+                    } else {
+                      _advancedLossPoint = d;
+                    }
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextFormField(
+                key: ValueKey('draw_pt_${isNormal}_$_editingCategory'),
+                initialValue: drawPoint.toString(),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: '引き分け（点）',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(12),
+                ),
+                onChanged: (val) {
+                  final d = double.tryParse(val) ?? 0.0;
+                  setState(() {
+                    if (isNormal) {
+                      _normalDrawPoint = d;
+                    } else {
+                      _advancedDrawPoint = d;
+                    }
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      decoration: const BoxDecoration(
+        border: Border(left: BorderSide(color: Colors.indigo, width: 4)),
+      ),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 15,
+          color: Colors.indigo,
+        ),
+      ),
+    );
+  }
+
+  void _showRuleDetailBottomSheet(
+    BuildContext context,
+    String categoryName,
+    CategoryRuleSet ruleSet,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
+    String getMatchTimeStr(MatchRule rule) {
+      if (rule.isRenseikai && rule.renseikaiType == '時間制') {
+        return '全体で ${rule.overallTimeMinutes}分 (ランニング)';
+      }
+      return '${_formatMinutes(rule.matchTimeMinutes)} (${rule.isRunningTime ? "ランニング計測" : "通常計測"})';
+    }
+
+    String getExtensionStr(MatchRule rule) {
+      if (rule.enchoTimeMinutes == 0 &&
+          rule.enchoCount == 0 &&
+          !rule.isEnchoUnlimited) {
+        return 'なし';
+      }
+      final extTimeStr = rule.isEnchoUnlimited || rule.enchoTimeMinutes == -2.0
+          ? '時間無制限'
+          : _formatMinutes(rule.enchoTimeMinutes);
+      final extCountStr = rule.isEnchoUnlimited || rule.enchoCount == -2
+          ? '回数無制限'
+          : '最大${rule.enchoCount}回';
+      return 'あり ($extTimeStr / $extCountStr)';
+    }
+
+    String getMatchTypeStr(MatchRule rule) {
+      if (rule.isRenseikai) {
+        return '錬成会 (${rule.positions.length}人制)';
+      }
+      if (rule.isLeague) {
+        return 'リーグ団体戦 (${rule.positions.length}人制)';
+      }
+      if (rule.isKachinuki) {
+        return '勝ち抜き戦 (${rule.positions.length}人制)';
+      }
+      if (rule.positions.isNotEmpty && rule.positions.length > 1) {
+        return '団体戦 (${rule.positions.length}人制)';
+      }
+      return '個人戦';
+    }
+
+    Widget buildRuleSection(String title, MatchRule rule, Color accentColor) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _buildDetailRow('試合方式', getMatchTypeStr(rule), isDark),
+          _buildDetailRow('試合時間', getMatchTimeStr(rule), isDark),
+          _buildDetailRow('延長戦', getExtensionStr(rule), isDark),
+          _buildDetailRow('判定', rule.hasHantei ? 'あり' : 'なし', isDark),
+          if (rule.positions.isNotEmpty && rule.positions.length > 1) ...[
+            _buildDetailRow(
+              '代表戦',
+              rule.hasRepresentativeMatch
+                  ? 'あり (${rule.isDaihyoIpponShobu ? "一本勝負" : "通常勝負"})'
+                  : 'なし',
+              isDark,
+            ),
+            _buildDetailRow('ポジション', rule.positions.join('、'), isDark),
+          ],
+          if (rule.isKachinuki) ...[
+            _buildDetailRow('勝ち抜き形式', rule.kachinukiUnlimitedType, isDark),
+          ],
+          if (rule.isLeague) ...[
+            _buildDetailRow(
+              '勝ち点設定',
+              '勝: ${rule.winPoint} / 分: ${rule.drawPoint} / 負: ${rule.lossPoint}',
+              isDark,
+            ),
+          ],
+          if (rule.isRenseikai) ...[
+            _buildDetailRow('錬成会進行', rule.renseikaiType, isDark),
+          ],
+        ],
+      );
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade400,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.gavel_rounded,
+                        color: themeColors.primaryAccent,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '$categoryName のルール設定',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 32),
+
+                  buildRuleSection(
+                    '通常戦ルール',
+                    ruleSet.normalRule,
+                    themeColors.primaryAccent,
+                  ),
+
+                  if (ruleSet.useAdvancedRule) ...[
+                    const SizedBox(height: 16),
+                    buildRuleSection(
+                      '上位戦（準決勝・決勝等）ルール',
+                      ruleSet.advancedRule,
+                      Colors.teal,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDetailRow(
+                      '適用判定ワード',
+                      ruleSet.advancedKeywords.join('、'),
+                      isDark,
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade200,
+                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        '閉じる',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? Colors.white70 : Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

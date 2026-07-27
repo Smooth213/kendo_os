@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // ★ 追加：全角半角の自動変換に必要
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import '../providers/last_used_settings_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart'; // ★ MatchRuleモデルを読み込む
@@ -162,28 +162,32 @@ class _SetupMatchFormatScreenState
     _winPointController.text = (lastSettings['winPoint'] ?? 0).toString();
     _lossPointController.text = (lastSettings['lossPoint'] ?? 0).toString();
     _drawPointController.text = (lastSettings['drawPoint'] ?? 0).toString();
+
+    // Note変更監視
+    _noteController.addListener(_onNoteChanged);
+
+    // 初期のカテゴリールール読み込み
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCategoryRules();
+    });
   }
 
-  final _customTeamSizeController = TextEditingController(text: '9');
   final _noteController = TextEditingController();
-  final _customMatchTimeController = TextEditingController();
 
   int _extCount = -2;
-  final _customExtCountController = TextEditingController();
   double _extTime = -2.0;
-  final _customExtTimeController = TextEditingController();
 
-  final List<double> _mainTimeOptions = [1.5, 2.0, 2.5, 3.0];
-  final List<double> _extraTimeOptions = [4.0, 5.0];
-  bool _showExtraMatchTime = false;
-  bool _showExtraExtTime = false;
+  String _formatMinutesText(double time) {
+    if (time == time.toInt()) {
+      return '${time.toInt()}分';
+    }
+    return '$time分';
+  }
 
   @override
   void dispose() {
-    _customTeamSizeController.dispose();
-    _customMatchTimeController.dispose();
-    _customExtCountController.dispose();
-    _customExtTimeController.dispose();
+    _noteController.removeListener(_onNoteChanged);
+    _noteController.dispose();
     _overallTimeController.dispose();
     _winPointController.dispose();
     _lossPointController.dispose();
@@ -593,230 +597,6 @@ class _SetupMatchFormatScreenState
     );
   }
 
-  List<Widget> _buildExtensionSettings(Color accentColor) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return [
-      const Padding(
-        padding: EdgeInsets.only(top: 8),
-        child: Text(
-          '延長回数',
-          style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-        ),
-      ),
-      const SizedBox(height: 8),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          _buildStyledChoiceChip(
-            '無制限',
-            _extCount == -2,
-            () => setState(() => _extCount = -2),
-            accentColor,
-          ),
-          _buildStyledChoiceChip(
-            '1回',
-            _extCount == 1,
-            () => setState(() => _extCount = 1),
-            accentColor,
-          ),
-          _buildStyledChoiceChip(
-            '2回',
-            _extCount == 2,
-            () => setState(() => _extCount = 2),
-            accentColor,
-          ),
-          _buildStyledChoiceChip(
-            '任意',
-            _extCount == -1,
-            () => setState(() => _extCount = -1),
-            accentColor,
-          ),
-        ],
-      ),
-      if (_extCount == -1) ...[
-        const SizedBox(height: 12),
-        // ★ 修正：inputFormatters を追加
-        TextField(
-          controller: _customExtCountController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [_NumericInputFormatter()], // ★ 追加
-          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-          decoration: _buildTextFieldDecoration(
-            labelText: '最大延長回数を入力',
-            suffixText: '回',
-          ),
-        ),
-      ],
-      const SizedBox(height: 24),
-
-      const Text(
-        '延長時間',
-        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-      ),
-      const SizedBox(height: 8),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          _buildStyledChoiceChip(
-            '無制限',
-            _extTime == -2.0,
-            () => setState(() => _extTime = -2.0),
-            accentColor,
-          ),
-          ..._mainTimeOptions.map(
-            (t) => _buildStyledChoiceChip(
-              '${t == 1.5 || t == 2.5 ? t : t.toInt()}分',
-              _extTime == t,
-              () => setState(() => _extTime = t),
-              accentColor,
-            ),
-          ),
-          if (_showExtraExtTime) ...[
-            ..._extraTimeOptions.map(
-              (t) => _buildStyledChoiceChip(
-                '${t == 1.5 || t == 2.5 ? t : t.toInt()}分',
-                _extTime == t,
-                () => setState(() => _extTime = t),
-                accentColor,
-              ),
-            ),
-            _buildStyledChoiceChip(
-              '任意',
-              _extTime == -1.0,
-              () => setState(() => _extTime = -1.0),
-              accentColor,
-            ),
-          ],
-          ActionChip(
-            avatar: Icon(
-              _showExtraExtTime ? Icons.expand_less : Icons.expand_more,
-              size: 18,
-              color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-            ),
-            label: Text(
-              _showExtraExtTime ? '閉じる' : 'もっと見る',
-              style: TextStyle(
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            onPressed: () =>
-                setState(() => _showExtraExtTime = !_showExtraExtTime),
-            backgroundColor: isDark
-                ? const Color(0xFF2C2C2E)
-                : Colors.grey.shade200,
-            side: BorderSide(
-              color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-            ),
-          ),
-        ],
-      ),
-      if (_extTime == -1.0) ...[
-        const SizedBox(height: 12),
-        // ★ 修正：inputFormatters を追加
-        TextField(
-          controller: _customExtTimeController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [_NumericInputFormatter()], // ★ 追加
-          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-          decoration: _buildTextFieldDecoration(
-            labelText: '延長時間（分）を入力',
-            suffixText: '分',
-          ),
-        ),
-      ],
-      const SizedBox(height: 16),
-    ];
-  }
-
-  List<Widget> _buildDaihyoRuleSettings(Color accentColor) {
-    return [
-      const Padding(
-        padding: EdgeInsets.only(top: 8, bottom: 4),
-        child: Text(
-          '代表戦の勝敗数',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: Colors.grey,
-          ),
-        ),
-      ),
-      RadioGroup<bool>(
-        groupValue: _isDaihyoIpponShobu,
-        onChanged: (v) {
-          if (v != null) setState(() => _isDaihyoIpponShobu = v);
-        },
-        child: Row(
-          children: [
-            Expanded(
-              child: RadioListTile<bool>(
-                title: const Text('1本', style: TextStyle(fontSize: 14)),
-                value: true,
-                activeColor: accentColor,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            Expanded(
-              child: RadioListTile<bool>(
-                title: const Text('3本', style: TextStyle(fontSize: 14)),
-                value: false,
-                activeColor: accentColor,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
-        ),
-      ),
-      const Divider(),
-      SwitchListTile(
-        title: const Text('延長戦を行う'),
-        value: _hasExtension,
-        activeThumbColor: accentColor,
-        onChanged: (v) => setState(() => _hasExtension = v),
-        contentPadding: EdgeInsets.zero,
-      ),
-      if (_hasExtension) ..._buildExtensionSettings(accentColor),
-      SwitchListTile(
-        title: const Text('延長戦で決着がつかない場合に「判定」を行う'),
-        value: _hasHantei,
-        activeThumbColor: accentColor,
-        onChanged: (v) => setState(() => _hasHantei = v),
-        contentPadding: EdgeInsets.zero,
-      ),
-    ];
-  }
-
-  // ★ 共通の美しいChip構築メソッド（_buildTimeChipをアップグレードして汎用化）
-  Widget _buildStyledChoiceChip(
-    String label,
-    bool isSelected,
-    VoidCallback onSelected,
-    Color accentColor,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-      selectedColor: _themeColors.softAccent,
-      labelStyle: TextStyle(
-        color: isSelected
-            ? _themeColors.primaryAccent
-            : (isDark ? Colors.white : Colors.black87),
-        fontWeight: FontWeight.bold,
-      ),
-      side: BorderSide(
-        color: isSelected
-            ? Colors.transparent
-            : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
-      ),
-      onSelected: (s) => s ? onSelected() : null,
-    );
-  }
-
   InputDecoration _buildTextFieldDecoration({
     required String labelText,
     String? hintText,
@@ -857,7 +637,7 @@ class _SetupMatchFormatScreenState
           return const SizedBox.shrink();
         }
 
-        final t = (_currentPage / 2).clamp(0.0, 1.0);
+        final t = (_currentPage / 1).clamp(0.0, 1.0);
 
         final color1 = _themeColors.primaryAccent;
         final color2 = _themeColors.primaryAccent.withValues(alpha: 0.8);
@@ -892,7 +672,7 @@ class _SetupMatchFormatScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                '魔法のウィザードに従って、\n3つのステップで条件を設定しましょう',
+                '魔法のウィザードに従って、\n2つのステップで条件を設定しましょう',
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.white.withValues(alpha: 0.9),
@@ -901,7 +681,7 @@ class _SetupMatchFormatScreenState
               ),
               const SizedBox(height: 20),
               LinearProgressIndicator(
-                value: (_currentPage + 1) / 3,
+                value: (_currentPage + 1) / 2,
                 backgroundColor: Colors.white.withValues(alpha: 0.3),
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 minHeight: 6,
@@ -912,6 +692,233 @@ class _SetupMatchFormatScreenState
         );
       },
     );
+  }
+
+  Widget _buildSectionHeader(String title, Color accentColor) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 14, bottom: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 13,
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: accentColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyRuleRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // ★ 部門別ルールの自動読み込み & 連動ロジック
+  // ==========================================
+  String? _manualRoundTypeOverride;
+  String _lastCheckedNote = '';
+
+  bool get _isCurrentMatchAdvanced {
+    if (_manualRoundTypeOverride != null) {
+      return _manualRoundTypeOverride == 'advanced';
+    }
+    return _isAdvancedMatchName(_noteController.text);
+  }
+
+  bool _isAdvancedMatchName(String note) {
+    final cleanNote = note.toLowerCase().trim();
+    List<String> keywords = [
+      '準決勝',
+      '準決',
+      'じゅんけつ',
+      'ベスト4',
+      'b4',
+      'sf',
+      'semifinal',
+      '准決',
+      '順決',
+      '決勝',
+      'けっしょう',
+      'ファイナル',
+      'final',
+      '結勝',
+      '決勝戦',
+      '3位決定',
+      '3決',
+      '三決',
+    ];
+
+    final categoryName = _category;
+    final asyncTourney = ref.read(tournamentProvider(widget.tournamentId));
+    asyncTourney.whenData((tournament) {
+      if (tournament != null) {
+        final ruleSet = tournament.categoryRules[categoryName];
+        if (ruleSet != null && ruleSet.advancedKeywords.isNotEmpty) {
+          keywords = ruleSet.advancedKeywords
+              .map((kw) => kw.toLowerCase().trim())
+              .toList();
+        }
+      }
+    });
+
+    String testNote = cleanNote;
+    final hasSemisKeyword = keywords.any(
+      (kw) =>
+          kw.contains('準決') ||
+          kw.contains('準決勝') ||
+          kw.contains('ベスト4') ||
+          kw.contains('sf'),
+    );
+    if (!hasSemisKeyword) {
+      testNote = testNote
+          .replaceAll('準決勝', '')
+          .replaceAll('準決', '')
+          .replaceAll('准決', '')
+          .replaceAll('順決', '')
+          .replaceAll('じゅんけつ', '')
+          .replaceAll('semifinal', '')
+          .replaceAll('sf', '')
+          .replaceAll('3位決定', '')
+          .replaceAll('3決', '')
+          .replaceAll('三決', '');
+    }
+
+    return keywords.any((kw) => kw.isNotEmpty && testNote.contains(kw));
+  }
+
+  void _onNoteChanged() {
+    final currentNote = _noteController.text;
+    if (currentNote == _lastCheckedNote) return;
+    _lastCheckedNote = currentNote;
+
+    if (_manualRoundTypeOverride != null) return;
+
+    final categoryName = _category;
+    final asyncTourney = ref.read(tournamentProvider(widget.tournamentId));
+    asyncTourney.whenData((tournament) {
+      if (tournament != null) {
+        final categoryRules = tournament.categoryRules;
+        if (categoryRules.containsKey(categoryName)) {
+          final ruleSet = categoryRules[categoryName]!;
+          if (ruleSet.useAdvancedRule) {
+            final isAdvanced = _isAdvancedMatchName(currentNote);
+            final targetRule = isAdvanced
+                ? ruleSet.advancedRule
+                : ruleSet.normalRule;
+            _applyMatchRuleToState(targetRule);
+          }
+        }
+      }
+    });
+  }
+
+  void _loadCategoryRules() {
+    final categoryName = _category;
+    final asyncTourney = ref.read(tournamentProvider(widget.tournamentId));
+    asyncTourney.whenData((tournament) {
+      if (tournament != null) {
+        final categoryRules = tournament.categoryRules;
+        if (categoryRules.containsKey(categoryName)) {
+          final ruleSet = categoryRules[categoryName]!;
+          final isAdvanced = _isCurrentMatchAdvanced && ruleSet.useAdvancedRule;
+          final targetRule = isAdvanced
+              ? ruleSet.advancedRule
+              : ruleSet.normalRule;
+          _applyMatchRuleToState(targetRule);
+        }
+      }
+    });
+  }
+
+  void _applyMatchRuleToState(MatchRule rule) {
+    setState(() {
+      _matchTime = rule.matchTimeMinutes;
+      _isRunningTime = rule.isRunningTime;
+
+      // 延長
+      _hasExtension = rule.enchoCount > 0 || rule.isEnchoUnlimited;
+      if (rule.isEnchoUnlimited) {
+        _extCount = -2;
+      } else {
+        _extCount = rule.enchoCount;
+      }
+
+      // 延長時間
+      _extTime = rule.enchoTimeMinutes;
+
+      _hasHantei = rule.hasHantei;
+      _isRenseikai = rule.isRenseikai;
+      _renseikaiType = rule.renseikaiType;
+      _overallTimeController.text = rule.overallTimeMinutes.toString();
+
+      // 勝ち点
+      _winPointController.text = rule.winPoint.toString();
+      _lossPointController.text = rule.lossPoint.toString();
+      _drawPointController.text = rule.drawPoint.toString();
+
+      // 追加されたフィールドの読み込み
+      _kachinukiUnlimitedType = rule.kachinukiUnlimitedType;
+      _hasLeagueDaihyo = rule.hasLeagueDaihyo;
+      _isDaihyoIpponShobu = rule.isDaihyoIpponShobu;
+    });
+  }
+
+  void _setManualRoundType(String type) {
+    setState(() {
+      _manualRoundTypeOverride = type;
+      final categoryName = _category;
+      final asyncTourney = ref.read(tournamentProvider(widget.tournamentId));
+      asyncTourney.whenData((tournament) {
+        if (tournament != null) {
+          final categoryRules = tournament.categoryRules;
+          if (categoryRules.containsKey(categoryName)) {
+            final ruleSet = categoryRules[categoryName]!;
+            final isAdvanced = type == 'advanced';
+            final targetRule = isAdvanced
+                ? ruleSet.advancedRule
+                : ruleSet.normalRule;
+            _applyMatchRuleToState(targetRule);
+          }
+        }
+      });
+    });
   }
 
   @override
@@ -963,8 +970,7 @@ class _SetupMatchFormatScreenState
                 onPageChanged: (index) => setState(() => _currentPage = index),
                 children: [
                   _buildPage1Category(),
-                  _buildPage2Format(),
-                  _buildPage3Details(),
+                  _buildPage2RuleSummaryAndDetails(),
                 ],
               ),
             ),
@@ -1029,6 +1035,8 @@ class _SetupMatchFormatScreenState
                           _selectedMajorCategory = cat;
                           _selectedMinorCategory = '全体';
                           _selectedTeamId = null;
+                          _manualRoundTypeOverride = null; // リセット
+                          _loadCategoryRules();
                         })
                       : null,
                 ),
@@ -1066,6 +1074,8 @@ class _SetupMatchFormatScreenState
                   ? setState(() {
                       _selectedMinorCategory = cat;
                       _selectedTeamId = null;
+                      _manualRoundTypeOverride = null; // リセット
+                      _loadCategoryRules();
                     })
                   : null,
             );
@@ -1284,7 +1294,6 @@ class _SetupMatchFormatScreenState
                               size: 28,
                             ),
                           ),
-
                           if (isSelected)
                             Padding(
                               padding: const EdgeInsets.only(
@@ -1348,16 +1357,39 @@ class _SetupMatchFormatScreenState
     );
   }
 
-  Widget _buildPage2Format() {
+  Widget _buildPage2RuleSummaryAndDetails() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+
+    // 現在適用中のルールセットを取得
+    final isAdvanced = _isCurrentMatchAdvanced;
+    final ruleName = isAdvanced ? '上位戦（準決勝・決勝）ルール' : '通常戦ルール';
+
+    // 延長表示用のテキストを生成するヘルパー
+    String getExtensionText() {
+      if (!_hasExtension) return 'なし';
+      final extTimeStr = _extTime == -2.0
+          ? '時間無制限'
+          : _formatMinutesText(_extTime);
+      final extCountStr = _extCount == -2 ? '回数無制限' : '最大$_extCount回';
+      return 'あり ($extTimeStr / $extCountStr)';
+    }
+
+    String getKachinukiText() {
+      if (_kachinukiUnlimitedType == '大将対大将') return '大将対大将 (大将戦以降無制限)';
+      if (_kachinukiUnlimitedType == '無制限') return '全員無制限 (全ポジション時間無制限)';
+      if (_kachinukiUnlimitedType == '大将のみ') return '大将のみ無制限';
+      if (_kachinukiUnlimitedType == '大将引き分け延長') return '大将対大将が引き分けのとき一本勝負の延長戦';
+      return _kachinukiUnlimitedType;
+    }
+
+    final headerColor = isAdvanced ? Colors.teal : _themeColors.primaryAccent;
 
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          '試合形式の確認と\n時間を設定してください',
+          '適用ルールの確認と\n詳細情報の入力',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -1365,485 +1397,176 @@ class _SetupMatchFormatScreenState
             color: textColor,
           ),
         ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(
-              Icons.info_outline,
-              size: 16,
-              color: _themeColors.primaryAccent,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '💡 設定したルールは、試合を追加したあとでも「一括ルール変更」からいつでも変更できます。',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isDark ? Colors.white60 : Colors.black54,
-                ),
+        const SizedBox(height: 16),
+
+        // 適用中のルールサマリーカード
+        _buildDynamicSectionBox(
+          title: '現在適用中のルール: $ruleName',
+          icon: isAdvanced ? Icons.stars : Icons.gavel,
+          color: isAdvanced ? Colors.teal : _themeColors.primaryAccent,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader('個別の試合内容', headerColor),
+              _buildReadOnlyRuleRow('試合方式', _matchType),
+              _buildReadOnlyRuleRow(
+                '試合時間',
+                _isRenseikai && _renseikaiType == '時間制'
+                    ? '全体で ${int.tryParse(_overallTimeController.text) ?? 30}分 (ランニング)'
+                    : '${_formatMinutesText(_matchTime)} (${_isRunningTime ? "ランニング計測" : "通常計測"})',
               ),
-            ),
-          ],
+              _buildReadOnlyRuleRow('延長戦', getExtensionText()),
+              _buildReadOnlyRuleRow('判定', _hasHantei ? '引き分け時に判定あり' : 'なし'),
+
+              if (_isRenseikai) ...[
+                _buildSectionHeader('錬成会の試合内容', headerColor),
+                _buildReadOnlyRuleRow('進行方式', _renseikaiType),
+                if (_renseikaiType == '時間制')
+                  _buildReadOnlyRuleRow(
+                    '全体制限時間',
+                    '${int.tryParse(_overallTimeController.text) ?? 30}分',
+                  ),
+              ],
+
+              if (_matchType.contains('団体戦') &&
+                  !_matchType.contains('リーグ')) ...[
+                _buildSectionHeader('代表戦', headerColor),
+                _buildReadOnlyRuleRow('代表戦', _hasLeagueDaihyo ? 'あり' : 'なし'),
+                if (_hasLeagueDaihyo)
+                  _buildReadOnlyRuleRow(
+                    '代表戦ルール',
+                    _isDaihyoIpponShobu ? '一本勝負' : '通常勝負',
+                  ),
+              ],
+
+              if (_matchType == '勝ち抜き戦') ...[
+                _buildSectionHeader('決定戦の内容（勝ち抜き）', headerColor),
+                _buildReadOnlyRuleRow('勝ち抜き形式', getKachinukiText()),
+              ],
+
+              if (_matchType.contains('リーグ')) ...[
+                _buildSectionHeader('決定戦の内容（リーグ）', headerColor),
+                _buildReadOnlyRuleRow('代表戦', _hasLeagueDaihyo ? 'あり' : 'なし'),
+                if (_hasLeagueDaihyo)
+                  _buildReadOnlyRuleRow(
+                    '代表戦ルール',
+                    _isDaihyoIpponShobu ? '一本勝負' : '通常勝負',
+                  ),
+                _buildReadOnlyRuleRow(
+                  'リーグ勝ち点',
+                  '勝: ${double.tryParse(_winPointController.text) ?? 0}点 / '
+                      '負: ${double.tryParse(_lossPointController.text) ?? 0}点 / '
+                      '分: ${double.tryParse(_drawPointController.text) ?? 0}点',
+                ),
+              ],
+            ],
+          ),
         ),
         const SizedBox(height: 24),
 
-        _buildSectionTitle('試合形式（チーム設定より自動適用）'),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: BoxDecoration(
-            color: _themeColors.softAccent,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _themeColors.primaryAccent, width: 2),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.verified, color: _themeColors.primaryAccent, size: 28),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  _matchType,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: _themeColors.primaryAccent,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        if (_matchType == '団体戦（それ以上）') ...[
-          const SizedBox(height: 16),
-          TextField(
-            controller: _customTeamSizeController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [_NumericInputFormatter()], // ★ 追加：全角を自動で半角に変換
-            style: TextStyle(color: textColor),
-            decoration: _buildTextFieldDecoration(
-              labelText: 'チームの人数を入力（例：11）',
-              suffixText: '人制',
-              prefixIcon: Icon(Icons.groups, color: _themeColors.subTextColor),
-            ),
-          ),
-        ],
-        const SizedBox(height: 32),
-
-        _buildSectionTitle('試合時間'),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            // ★ 新設した共通メソッド（_buildStyledChoiceChip）にすべて置き換え！
-            ..._mainTimeOptions.map(
-              (t) => _buildStyledChoiceChip(
-                '${t == 1.5 || t == 2.5 ? t : t.toInt()}分',
-                _matchTime == t,
-                () => setState(() => _matchTime = t),
-                _themeColors.primaryAccent,
-              ),
-            ),
-            if (_showExtraMatchTime) ...[
-              ..._extraTimeOptions.map(
-                (t) => _buildStyledChoiceChip(
-                  '${t == 1.5 || t == 2.5 ? t : t.toInt()}分',
-                  _matchTime == t,
-                  () => setState(() => _matchTime = t),
-                  _themeColors.primaryAccent,
-                ),
-              ),
-              _buildStyledChoiceChip(
-                '任意',
-                _matchTime == -1.0,
-                () => setState(() => _matchTime = -1.0),
-                _themeColors.primaryAccent,
-              ),
-            ],
-            ActionChip(
-              avatar: Icon(
-                _showExtraMatchTime ? Icons.expand_less : Icons.expand_more,
-                size: 18,
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-              ),
-              label: Text(
-                _showExtraMatchTime ? '閉じる' : 'もっと見る',
-                style: TextStyle(
-                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              onPressed: () =>
-                  setState(() => _showExtraMatchTime = !_showExtraMatchTime),
-              backgroundColor: isDark
-                  ? const Color(0xFF2C2C2E)
-                  : Colors.grey.shade200,
-              side: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-              ),
-            ),
-          ],
-        ),
-        if (_matchTime == -1.0) ...[
-          const SizedBox(height: 12),
-          TextField(
-            controller: _customMatchTimeController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [_NumericInputFormatter()], // ★ 追加
-            style: TextStyle(color: textColor),
-            decoration: _buildTextFieldDecoration(
-              labelText: '試合時間（分）を入力',
-              suffixText: '分',
-            ),
-          ),
-        ],
-        const SizedBox(height: 32),
-
-        Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: inputBgColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-            ),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: SwitchListTile(
-              title: Text(
-                '錬成会モードにする',
-                style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-              ),
-              subtitle: Text(
-                'チェックを入れると専用のルール設定が表示されます。',
-                style: TextStyle(
-                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                ),
-              ),
-              value: _isRenseikai,
-              activeThumbColor: _themeColors.primaryAccent,
-              onChanged: (v) => setState(() => _isRenseikai = v),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPage3Details() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
-
-    return ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        Text(
-          '特別ルールと\n試合のメモを入力します',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            height: 1.4,
-            color: textColor,
-          ),
-        ),
-
+        // 適用ルールの手動切替トグル (useAdvancedRule が有効な場合のみ)
         Builder(
           builder: (context) {
-            bool isLeague = _matchType.contains('リーグ');
-            bool isKachinuki = _matchType == '勝ち抜き戦';
-            bool isIndividual = _matchType.contains('個人戦');
-            bool isTeamMatch = _matchType.contains('団体戦') && !isLeague;
+            final categoryName = _category;
+            final asyncTourney = ref.watch(
+              tournamentProvider(widget.tournamentId),
+            );
+            return asyncTourney.maybeWhen(
+              data: (tournament) {
+                if (tournament == null) return const SizedBox.shrink();
+                final ruleSet = tournament.categoryRules[categoryName];
+                if (ruleSet == null || !ruleSet.useAdvancedRule)
+                  return const SizedBox.shrink();
 
-            if (_isRenseikai) {
-              return _buildDynamicSectionBox(
-                title: '錬成会 専用設定',
-                icon: Icons.autorenew,
-                color: _themeColors.primaryAccent,
-                child: Column(
-                  children: [
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '試合の進行方式',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    RadioGroup<String>(
-                      groupValue: _renseikaiType,
-                      onChanged: (val) {
-                        if (val != null) setState(() => _renseikaiType = val);
-                      },
-                      child: Column(
-                        children: [
-                          RadioListTile<String>(
-                            title: const Text('一試合制'),
-                            subtitle: const Text('通常の試合のように、決着がついたら終了'),
-                            value: '一試合制',
-                            activeColor: _themeColors.primaryAccent,
-                          ),
-                          RadioListTile<String>(
-                            title: const Text('時間制'),
-                            subtitle: const Text('時間が来るまで、次の対戦者を次々と追加して戦う'),
-                            value: '時間制',
-                            activeColor: _themeColors.primaryAccent,
-                          ),
-                          if (_renseikaiType == '時間制')
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              child: TextField(
-                                controller: _overallTimeController,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  _NumericInputFormatter(),
-                                ], // ★ 追加
-                                style: TextStyle(color: textColor),
-                                decoration: _buildTextFieldDecoration(
-                                  labelText: '錬成会全体の制限時間',
-                                  suffixText: '分間',
-                                ).copyWith(isDense: true),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const Divider(),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        'ランニング計測',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: const Text('審判 of 「止め」でも時間は進み続けます'),
-                      value: _isRunningTime,
-                      activeThumbColor: _themeColors.primaryAccent,
-                      onChanged: (val) => setState(() => _isRunningTime = val),
-                    ),
-                  ],
-                ),
-              );
-            } else if (isTeamMatch) {
-              return _buildDynamicSectionBox(
-                title: '代表戦の取り扱い（通常団体戦）',
-                icon: Icons.shield,
-                color: _themeColors.primaryAccent,
-                child: Column(
+                final isAdvanced = _isCurrentMatchAdvanced;
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8, bottom: 4, left: 16),
-                      child: Text(
-                        '代表戦の勝敗数',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                    const Text(
+                      '適用ルール（自動判別・手動切替）',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: Colors.grey,
                       ),
                     ),
-                    RadioGroup<bool>(
-                      groupValue: _isDaihyoIpponShobu,
-                      onChanged: (v) {
-                        if (v != null) setState(() => _isDaihyoIpponShobu = v);
-                      },
-                      child: Row(
-                        children: [
-                          // ★ Phase 8-1: パディングを無くして文字サイズを調整（1.4pxのオーバーフロー対策）
-                          Expanded(
-                            child: RadioListTile<bool>(
-                              title: const Text(
-                                '1本',
-                                style: TextStyle(fontSize: 14),
-                              ),
-                              value: true,
-                              activeColor: _themeColors.primaryAccent,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
-                          Expanded(
-                            child: RadioListTile<bool>(
-                              title: const Text(
-                                '3本',
-                                style: TextStyle(fontSize: 14),
-                              ),
-                              value: false,
-                              activeColor: _themeColors.primaryAccent,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(),
-                    SwitchListTile(
-                      title: const Text('延長戦を行う'),
-                      value: _hasExtension,
-                      activeThumbColor: _themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _hasExtension = v),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    if (_hasExtension)
-                      ..._buildExtensionSettings(_themeColors.primaryAccent),
-                    SwitchListTile(
-                      title: const Text('延長戦で決着がつかない場合に「判定」を行う'),
-                      value: _hasHantei,
-                      activeThumbColor: _themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _hasHantei = v),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ],
-                ),
-              );
-            } else if (isIndividual) {
-              return _buildDynamicSectionBox(
-                title: '延長戦と判定（個人戦）',
-                icon: Icons.person,
-                color: _themeColors.primaryAccent,
-                child: Column(
-                  children: [
-                    SwitchListTile(
-                      title: const Text('延長戦を行う'),
-                      value: _hasExtension,
-                      activeThumbColor: _themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _hasExtension = v),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    if (_hasExtension)
-                      ..._buildExtensionSettings(_themeColors.primaryAccent),
-                    SwitchListTile(
-                      title: const Text('決着がつかない場合に「判定」を行う'),
-                      value: _hasHantei,
-                      activeThumbColor: _themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _hasHantei = v),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ],
-                ),
-              );
-            } else if (isKachinuki) {
-              return _buildDynamicSectionBox(
-                title: '無制限ルール（勝ち抜き戦）',
-                icon: Icons.sports_martial_arts,
-                color: _themeColors.primaryAccent,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RadioGroup<String>(
-                      groupValue: _kachinukiUnlimitedType,
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() => _kachinukiUnlimitedType = val);
-                        }
-                      },
-                      child: Column(
-                        children: [
-                          RadioListTile<String>(
-                            title: const Text('大将対大将のときに無制限'),
-                            value: '大将対大将',
-                            activeColor: _themeColors.primaryAccent,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          RadioListTile<String>(
-                            title: const Text('どちらかの大将が出たら無制限'),
-                            value: 'どちらかの大将',
-                            activeColor: _themeColors.primaryAccent,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          RadioListTile<String>(
-                            title: const Text('大将対大将が引き分けのとき、１本勝負の延長戦'),
-                            value: '大将引き分け延長',
-                            activeColor: _themeColors.primaryAccent,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (_kachinukiUnlimitedType == '大将引き分け延長') ...[
-                      const Divider(),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8, bottom: 8),
-                        child: Text(
-                          '延長戦の設定',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _themeColors.primaryAccent,
-                          ),
-                        ),
-                      ),
-                      ..._buildExtensionSettings(_themeColors.primaryAccent),
-                    ],
-                  ],
-                ),
-              );
-            } else if (isLeague) {
-              return _buildDynamicSectionBox(
-                title: 'リーグ戦 特別ルール',
-                icon: Icons.table_view,
-                color: _themeColors.primaryAccent,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SwitchListTile(
-                      title: const Text('代表戦あり'),
-                      subtitle: const Text('リーグ戦において同点の場合に代表戦を行うか'),
-                      value: _hasLeagueDaihyo,
-                      activeThumbColor: _themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _hasLeagueDaihyo = v),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    if (_hasLeagueDaihyo) ...[
-                      const Divider(),
-                      ..._buildDaihyoRuleSettings(_themeColors.primaryAccent),
-                    ],
-                    const Divider(),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        '勝ち点の設定（0の場合は全剣連基準で判定）',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Expanded(
-                          child: _buildPointField(
-                            _winPointController,
-                            '勝ち',
-                            Colors.red.shade600,
+                          child: ElevatedButton(
+                            onPressed: () => _setManualRoundType('normal'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: !isAdvanced
+                                  ? _themeColors.primaryAccent
+                                  : (isDark
+                                        ? const Color(0xFF2C2C2E)
+                                        : Colors.grey.shade100),
+                              foregroundColor: !isAdvanced
+                                  ? Colors.white
+                                  : (isDark ? Colors.white60 : Colors.black87),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                  color: !isAdvanced
+                                      ? Colors.transparent
+                                      : (isDark
+                                            ? const Color(0xFF38383A)
+                                            : Colors.grey.shade300),
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              '通常戦のルール',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: _buildPointField(
-                            _lossPointController,
-                            '負け',
-                            Colors.blueGrey,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildPointField(
-                            _drawPointController,
-                            '引分',
-                            Colors.orange.shade700,
+                          child: ElevatedButton(
+                            onPressed: () => _setManualRoundType('advanced'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isAdvanced
+                                  ? Colors.teal
+                                  : (isDark
+                                        ? const Color(0xFF2C2C2E)
+                                        : Colors.grey.shade100),
+                              foregroundColor: isAdvanced
+                                  ? Colors.white
+                                  : (isDark ? Colors.white60 : Colors.black87),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                  color: isAdvanced
+                                      ? Colors.transparent
+                                      : (isDark
+                                            ? const Color(0xFF38383A)
+                                            : Colors.grey.shade300),
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              '上位戦のルール',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 24),
                   ],
-                ),
-              );
-            }
-            return const SizedBox.shrink();
+                );
+              },
+              orElse: () => const SizedBox.shrink(),
+            );
           },
         ),
-        const SizedBox(height: 32),
-
-        _buildSectionTitle('試合詳細（任意）'),
+        _buildSectionTitle('試合詳細の入力（任意）'),
         TextField(
           controller: _noteController,
           style: TextStyle(color: textColor),
@@ -1914,7 +1637,7 @@ class _SetupMatchFormatScreenState
     final enableLiquidGlass = ref.watch(
       settingsProvider.select((s) => s.enableLiquidGlass),
     );
-    final isLastPage = _currentPage == 2;
+    final isLastPage = _currentPage == 1;
 
     // iOS Native: ボトムバーの色と区切り線
     final bottomColor = enableLiquidGlass
@@ -1984,43 +1707,38 @@ class _SetupMatchFormatScreenState
                         updatedHistory;
                   }
 
+                  List<String> selectedBaseOrder = [];
+                  String teamNamePrefix = '';
+                  if (_selectedTeamId != null) {
+                    final teams =
+                        ref
+                            .read(registeredTeamsProvider(widget.tournamentId))
+                            .value ??
+                        [];
+                    for (var t in teams) {
+                      if (t.id == _selectedTeamId) {
+                        selectedBaseOrder = t.playerNames;
+                        teamNamePrefix = t.teamName;
+                        break;
+                      }
+                    }
+                  }
+
                   int teamSize = 5;
                   bool isLeague = _matchType.contains('リーグ');
                   bool isKachinuki = _matchType == '勝ち抜き戦';
 
-                  if (_matchType == '団体戦（3人制）') {
-                    teamSize = 3;
-                  } else if (_matchType == '個人戦' || _matchType == 'リーグ個人戦') {
+                  if (_matchType == '個人戦' || _matchType == 'リーグ個人戦') {
                     teamSize = 1;
-                  } else if (_matchType == '団体戦（7人制）') {
-                    teamSize = 7;
-                  } else if (_matchType == '団体戦（それ以上）') {
-                    teamSize =
-                        int.tryParse(_customTeamSizeController.text) ?? 9;
+                  } else if (selectedBaseOrder.isNotEmpty) {
+                    teamSize = selectedBaseOrder.length;
                   }
 
                   final generatedPositions = _generatePositions(teamSize);
 
-                  // ★ 修正：確実に .toDouble() にして抽出
-                  final double finalTime =
-                      (_matchTime == -1.0
-                              ? (double.tryParse(
-                                      _customMatchTimeController.text,
-                                    ) ??
-                                    3.0)
-                              : _matchTime)
-                          .toDouble();
-                  final double finalExtTime =
-                      (_extTime == -1.0
-                              ? (double.tryParse(
-                                      _customExtTimeController.text,
-                                    ) ??
-                                    3.0)
-                              : _extTime)
-                          .toDouble();
-                  final int finalExtCount = _extCount == -1
-                      ? (int.tryParse(_customExtCountController.text) ?? 1)
-                      : _extCount;
+                  final double finalTime = _matchTime;
+                  final double finalExtTime = _extTime;
+                  final int finalExtCount = _extCount;
 
                   bool finalIsRunningTime = _isRenseikai
                       ? _isRunningTime
@@ -2051,23 +1769,6 @@ class _SetupMatchFormatScreenState
                     'lossPoint': lossPt,
                     'drawPoint': drawPt,
                   };
-
-                  List<String> selectedBaseOrder = [];
-                  String teamNamePrefix = '';
-                  if (_selectedTeamId != null) {
-                    final teams =
-                        ref
-                            .read(registeredTeamsProvider(widget.tournamentId))
-                            .value ??
-                        [];
-                    for (var t in teams) {
-                      if (t.id == _selectedTeamId) {
-                        selectedBaseOrder = t.playerNames;
-                        teamNamePrefix = t.teamName;
-                        break;
-                      }
-                    }
-                  }
 
                   ref
                       .read(matchRuleProvider.notifier)
@@ -2131,83 +1832,6 @@ class _SetupMatchFormatScreenState
           color: _themeColors.primaryAccent,
         ),
       ),
-    );
-  }
-
-  // ★ 勝ち点入力用のスリムなTextField
-  Widget _buildPointField(
-    TextEditingController controller,
-    String label,
-    Color color,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return TextField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [_NumericInputFormatter()],
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: isDark ? Colors.white : Colors.black87,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: _themeColors.separatorColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: color, width: 2),
-        ),
-        filled: true,
-        fillColor: _themeColors.inputBackground,
-      ),
-    );
-  }
-}
-
-// ★ 追加：全角数字を半角に、句読点をドットに瞬時に変換する魔法のフォーマッター
-class _NumericInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    String text = newValue.text;
-
-    // 全角数字と全角ドット・句読点を半角に変換
-    const fullToHalf = {
-      '０': '0',
-      '１': '1',
-      '２': '2',
-      '３': '3',
-      '４': '4',
-      '５': '5',
-      '６': '6',
-      '７': '7',
-      '８': '8',
-      '９': '9',
-      '．': '.',
-      '。': '.',
-      '、': '.',
-    };
-    fullToHalf.forEach((k, v) => text = text.replaceAll(k, v));
-
-    // 半角数字とドット以外をすべて削除（安全対策）
-    text = text.replaceAll(RegExp(r'[^0-9.]'), '');
-
-    return TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }

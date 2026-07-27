@@ -10,6 +10,7 @@ import 'package:kendo_os/features/match/presentation/components/announce_history
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
@@ -74,6 +75,8 @@ class HomeScreen extends ConsumerWidget {
     final Color textColor = themeColors.textColor;
 
     final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
+    final asyncTournament = ref.watch(tournamentProvider(tournamentId));
+    final asyncTeams = ref.watch(registeredTeamsProvider(tournamentId));
 
     // =========================================================================
     // 🔍 【原因特定用】デバッグログ強制出力セクション
@@ -251,6 +254,26 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 body: Column(
                   children: [
+                    if (!isReadOnly && allMatchesList.isEmpty)
+                      asyncTournament.maybeWhen(
+                        data: (tournament) {
+                          if (tournament == null)
+                            return const SizedBox.shrink();
+                          return asyncTeams.maybeWhen(
+                            data: (teams) => _buildSetupChecklist(
+                              context,
+                              tournament,
+                              teams,
+                              themeColors,
+                              isDark,
+                              enableLiquidGlass,
+                              tournamentId,
+                            ),
+                            orElse: () => const SizedBox.shrink(),
+                          );
+                        },
+                        orElse: () => const SizedBox.shrink(),
+                      ),
                     if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
                       Builder(
                         builder: (context) {
@@ -499,5 +522,199 @@ class HomeScreen extends ConsumerWidget {
       return '${match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName} vs ${match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName}';
     }
     return '${match.redName} vs ${match.whiteName.contains(':') ? '${match.whiteName.split(':')[1].trim()} : ${match.whiteName.split(':')[0].trim()}' : match.whiteName}';
+  }
+
+  Widget _buildSetupChecklist(
+    BuildContext context,
+    TournamentModel tournament,
+    List<dynamic> teams,
+    AppThemeColors themeColors,
+    bool isDark,
+    bool enableLiquidGlass,
+    String tournamentId,
+  ) {
+    final hasTeams = teams.isNotEmpty;
+    final hasRules = tournament.categoryRules.isNotEmpty;
+
+    int completedSteps = 1; // 大会作成は常に完了
+    if (hasTeams) completedSteps++;
+    if (hasRules) completedSteps++;
+
+    final progress = completedSteps / 4.0;
+
+    final cardBgColor = enableLiquidGlass
+        ? themeColors.primaryAccent.withValues(alpha: isDark ? 0.15 : 0.08)
+        : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+
+    final cardBorder = enableLiquidGlass
+        ? Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.05),
+            width: 0.5,
+          )
+        : Border.all(
+            color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
+          );
+
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.assignment_turned_in,
+              color: themeColors.primaryAccent,
+              size: 22,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '大会準備ステップ',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: themeColors.textColor,
+                ),
+              ),
+            ),
+            Text(
+              '${(progress * 100).toInt()}% 完了',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: themeColors.primaryAccent,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        LinearProgressIndicator(
+          value: progress,
+          backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+          valueColor: AlwaysStoppedAnimation<Color>(themeColors.primaryAccent),
+          minHeight: 6,
+          borderRadius: BorderRadius.circular(3),
+        ),
+        const SizedBox(height: 16),
+        _buildChecklistItem(
+          title: '大会基本情報の登録',
+          isCompleted: true,
+          themeColors: themeColors,
+          isDark: isDark,
+        ),
+        _buildChecklistItem(
+          title: '出場チーム・選手の登録',
+          isCompleted: hasTeams,
+          themeColors: themeColors,
+          isDark: isDark,
+          onTap: () => context.push('/team-registration/$tournamentId'),
+        ),
+        _buildChecklistItem(
+          title: '部門別ルールの設定',
+          isCompleted: hasRules,
+          themeColors: themeColors,
+          isDark: isDark,
+          onTap: () => context.push('/tournament/$tournamentId/category-rules'),
+        ),
+        _buildChecklistItem(
+          title: '最初の試合枠の作成',
+          isCompleted: false,
+          themeColors: themeColors,
+          isDark: isDark,
+          onTap: () => context.push('/setup-match/$tournamentId'),
+        ),
+      ],
+    );
+
+    if (enableLiquidGlass) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardBgColor,
+                borderRadius: BorderRadius.circular(16),
+                border: cardBorder,
+              ),
+              child: content,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBgColor,
+        borderRadius: BorderRadius.circular(16),
+        border: cardBorder,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: content,
+    );
+  }
+
+  Widget _buildChecklistItem({
+    required String title,
+    required bool isCompleted,
+    required AppThemeColors themeColors,
+    required bool isDark,
+    VoidCallback? onTap,
+  }) {
+    final activeTextColor = isDark ? Colors.white : Colors.black87;
+    final inactiveTextColor = isDark ? Colors.white54 : Colors.black54;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          child: Row(
+            children: [
+              Icon(
+                isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                color: isCompleted ? Colors.green.shade600 : Colors.grey,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: isCompleted ? FontWeight.w500 : FontWeight.bold,
+                    color: isCompleted ? inactiveTextColor : activeTextColor,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ),
+              if (!isCompleted && onTap != null)
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: themeColors.primaryAccent,
+                  size: 14,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

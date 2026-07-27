@@ -591,16 +591,6 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade600;
 
-    // ★ Phase 8-3: キーボードが開いているかを検知（全体のフォーカス状態を考慮）
-    final primaryFocus = FocusManager.instance.primaryFocus;
-    final hasFocus =
-        primaryFocus != null &&
-        primaryFocus.hasFocus &&
-        primaryFocus.parent != null &&
-        primaryFocus is! FocusScopeNode;
-    final isKeyboardOpen =
-        MediaQuery.of(context).viewInsets.bottom > 0 || hasFocus;
-
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -1407,460 +1397,403 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                 error: (err, stack) => Center(child: Text('エラー: $err')),
               ),
             ),
-            // ★ キーボードが開いた時は下のボタンエリアも隠す
-            AnimatedSize(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
-              child: isKeyboardOpen
-                  ? const SizedBox.shrink()
-                  : Container(
-                      padding: EdgeInsets.only(
-                        left: 24,
-                        right: 24,
-                        top: 24,
-                        bottom: MediaQuery.of(context).padding.bottom + 24,
-                      ),
-                      decoration: BoxDecoration(
-                        color: enableLiquidGlass
-                            ? Colors.transparent
-                            : inputBgColor,
-                        border: Border(
-                          top: BorderSide(
-                            color: enableLiquidGlass
-                                ? Colors.transparent
-                                : borderColor,
-                            width: 0.5,
-                          ),
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextButton.icon(
-                            onPressed: _addExtraPosition,
-                            icon: Icon(
-                              Icons.add_circle_outline,
-                              color: _themeColors.primaryAccent,
-                            ),
-                            label: Text(
-                              'イレギュラー枠を追加する（錬成会用）',
-                              style: TextStyle(
-                                color: _themeColors.primaryAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: GlassButton(
-                              onPressed: () async {
-                                // ★ 修正：ここではチェックせず、後の pairings 生成直前のバリデーションに集約します
-                                final bool? isStartNow = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text(
-                                      '試合の登録',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    content: const Text(
-                                      'このオーダーで試合を登録します。今すぐ試合画面に進みますか？',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, false),
-                                        child: const Text(
-                                          '後で（リストに保存）',
-                                          style: TextStyle(color: Colors.grey),
-                                        ),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, true),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              _themeColors.primaryAccent,
-                                          foregroundColor: Colors.white,
-                                          elevation: 0,
-                                        ),
-                                        child: const Text(
-                                          '今すぐ試合開始',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-
-                                if (isStartNow == null) {
-                                  return;
-                                }
-
-                                if (!context.mounted) {
-                                  return;
-                                }
-                                // ★ Phase 8-1: ダイアログの「戻る」が画面を消さないように、rootNavigatorを使う
-                                showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (context) => const Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-
-                                try {
-                                  // ★ 修正：不要になった古い変数を綺麗にお掃除
-                                  String senpoMatchId = '';
-                                  double baseOrder = ref
-                                      .read(timeSourceProvider)
-                                      .now()
-                                      .millisecondsSinceEpoch
-                                      .toDouble();
-                                  List<MatchModel> matchesToSave = [];
-
-                                  // ★ 追加：リーグ戦であることを明示するタグを生成し、後で全試合のnoteに付与する
-                                  final String saveNote = rule.isLeague
-                                      ? '[リーグ戦] ${rule.note}'.trim()
-                                      : rule.note;
-                                  // ★ 追加：リーグ全体を1つのアコーディオンにまとめるための共通ID
-                                  final String leagueGroupId = rule.isLeague
-                                      ? const Uuid().v4()
-                                      : '';
-
-                                  List<List<String>> pairings = [];
-                                  // ★ 修正：入力された相手チーム名をお掃除フィルターに通す！
-                                  String myTeamName = rule.teamName.isNotEmpty
-                                      ? rule.teamName
-                                      : '自チーム';
-                                  String opTeamName = TextSanitizer.clean(
-                                    _opponentTeamController.text,
-                                  );
-                                  if (opTeamName.isEmpty) opTeamName = '対戦相手';
-
-                                  if (rule.isLeague) {
-                                    if (_leagueParticipants.length < 2) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'リーグ戦には少なくとも2つのチーム・選手が必要です',
-                                          ),
-                                        ),
-                                      );
-                                      Navigator.of(
-                                        context,
-                                        rootNavigator: true,
-                                      ).pop();
-                                      return;
-                                    }
-
-                                    // ★ 修正：並び替えた順序をルールに記憶させる
-                                    ref
-                                        .read(matchRuleProvider.notifier)
-                                        .updateRule(
-                                          rule.copyWith(
-                                            leagueOrder: _leagueParticipants,
-                                          ),
-                                        );
-
-                                    // ★ 修正：並び替えたリストに基づいて総当たりのペアを生成
-                                    for (
-                                      int i = 0;
-                                      i < _leagueParticipants.length;
-                                      i++
-                                    ) {
-                                      for (
-                                        int j = i + 1;
-                                        j < _leagueParticipants.length;
-                                        j++
-                                      ) {
-                                        pairings.add([
-                                          _leagueParticipants[i],
-                                          _leagueParticipants[j],
-                                        ]);
-                                      }
-                                    }
-                                  } else {
-                                    if (_isOwnTeamRed) {
-                                      pairings.add([myTeamName, opTeamName]);
-                                    } else {
-                                      pairings.add([opTeamName, myTeamName]);
-                                    }
-                                  }
-
-                                  await Future.microtask(() {
-                                    for (
-                                      int pIndex = 0;
-                                      pIndex < pairings.length;
-                                      pIndex++
-                                    ) {
-                                      final pair = pairings[pIndex];
-                                      // ★ 修正：リーグ戦なら共通IDを使い、通常なら個別のIDを発行
-                                      final String teamGroupId = rule.isLeague
-                                          ? leagueGroupId
-                                          : const Uuid().v4();
-
-                                      if (rule.isKachinuki) {
-                                        List<String> redFull = [];
-                                        List<String> whiteFull = [];
-
-                                        for (
-                                          int i = 0;
-                                          i < _positions.length;
-                                          i++
-                                        ) {
-                                          String myP =
-                                              _selectedPlayers[i] ?? '未定';
-                                          if (myP.isEmpty) myP = '未定';
-                                          String opP =
-                                              _opponentPlayers[i]?.trim() ?? '';
-                                          if (opP.isEmpty) opP = '選手';
-                                          String myFull = '$myTeamName : $myP';
-                                          String opFull = '$opTeamName : $opP';
-                                          String rN, wN;
-                                          if (rule.isLeague) {
-                                            // ★ 修正：入力されたオーダーを呼び出して完璧にセットする！
-                                            String rTeam = pair[0];
-                                            String wTeam = pair[1];
-                                            String rPlayer = (rTeam == '自チーム')
-                                                ? myP
-                                                : (_leagueTeamOrders[rTeam]?[i] ??
-                                                      '選手');
-                                            if (rPlayer.isEmpty) rPlayer = '選手';
-                                            String wPlayer = (wTeam == '自チーム')
-                                                ? myP
-                                                : (_leagueTeamOrders[wTeam]?[i] ??
-                                                      '選手');
-                                            if (wPlayer.isEmpty) wPlayer = '選手';
-
-                                            rN = (rTeam == '自チーム')
-                                                ? myFull
-                                                : '$rTeam : $rPlayer';
-                                            wN = (wTeam == '自チーム')
-                                                ? myFull
-                                                : '$wTeam : $wPlayer';
-                                          } else {
-                                            rN = _isOwnTeamRed
-                                                ? myFull
-                                                : opFull;
-                                            wN = _isOwnTeamRed
-                                                ? opFull
-                                                : myFull;
-                                          }
-                                          redFull.add(rN);
-                                          whiteFull.add(wN);
-                                        }
-
-                                        final matchId = const Uuid().v4();
-                                        if (senpoMatchId.isEmpty) {
-                                          senpoMatchId = matchId;
-                                        }
-
-                                        final newMatch = MatchModel(
-                                          id: matchId,
-                                          tournamentId: widget.tournamentId,
-                                          category: rule.category.isNotEmpty
-                                              ? rule.category
-                                              : null,
-                                          groupName: teamGroupId,
-                                          matchType: _positions[0],
-                                          whiteName: whiteFull[0],
-                                          redName: redFull[0],
-                                          status: (isStartNow && pIndex == 0)
-                                              ? 'in_progress'
-                                              : 'waiting',
-                                          refereeNames: [],
-
-                                          // ★ 全て rule からもらう
-                                          matchTimeMinutes:
-                                              rule.matchTimeMinutes,
-                                          isRunningTime: rule.isRunningTime,
-                                          hasExtension:
-                                              rule.enchoTimeMinutes > 0 ||
-                                              rule.isEnchoUnlimited,
-                                          extensionTimeMinutes:
-                                              rule.enchoTimeMinutes,
-                                          extensionCount: rule.enchoCount,
-                                          hasHantei: rule.hasHantei,
-
-                                          order: baseOrder + (pIndex * 10),
-                                          note: saveNote,
-                                          isKachinuki: true,
-                                          rule: rule,
-                                          redRemaining: redFull.length > 1
-                                              ? redFull.sublist(1)
-                                              : [],
-                                          whiteRemaining: whiteFull.length > 1
-                                              ? whiteFull.sublist(1)
-                                              : [],
-                                        );
-                                        matchesToSave.add(newMatch);
-                                      } else {
-                                        for (
-                                          int i = 0;
-                                          i < _positions.length;
-                                          i++
-                                        ) {
-                                          final String matchId = const Uuid()
-                                              .v4();
-                                          if (senpoMatchId.isEmpty) {
-                                            senpoMatchId = matchId;
-                                          }
-                                          final posName = _positions[i];
-                                          String myP =
-                                              _selectedPlayers[i] ?? '未定';
-                                          if (myP.isEmpty) myP = '未定';
-                                          String opP =
-                                              _opponentPlayers[i]?.trim() ?? '';
-                                          if (opP.isEmpty) opP = '選手';
-                                          String myFull = '$myTeamName : $myP';
-                                          String opFull = '$opTeamName : $opP';
-                                          String rName, wName;
-                                          if (rule.isLeague) {
-                                            // ★ 修正：入力されたオーダーと「個人戦/団体戦」の違いを反映！
-                                            String rTeam = pair[0];
-                                            String wTeam = pair[1];
-                                            String rPlayer = (rTeam == '自チーム')
-                                                ? myP
-                                                : (_leagueTeamOrders[rTeam]?[i] ??
-                                                      '選手');
-                                            if (rPlayer.isEmpty) rPlayer = '選手';
-                                            String wPlayer = (wTeam == '自チーム')
-                                                ? myP
-                                                : (_leagueTeamOrders[wTeam]?[i] ??
-                                                      '選手');
-                                            if (wPlayer.isEmpty) wPlayer = '選手';
-
-                                            // ★ 修正：画面上部で既に取得している matchType をそのまま利用する
-                                            if (matchType.contains('個人戦')) {
-                                              // ★ 修正：ダイアログの時点で既に「所属 : 名前」になっているので、そのまま使う！
-                                              rName = (rTeam == '自チーム')
-                                                  ? myFull
-                                                  : rTeam;
-                                              wName = (wTeam == '自チーム')
-                                                  ? myFull
-                                                  : wTeam;
-                                            } else {
-                                              rName = (rTeam == '自チーム')
-                                                  ? myFull
-                                                  : '$rTeam : $rPlayer';
-                                              wName = (wTeam == '自チーム')
-                                                  ? myFull
-                                                  : '$wTeam : $wPlayer';
-                                            }
-                                          } else {
-                                            rName = _isOwnTeamRed
-                                                ? myFull
-                                                : opFull;
-                                            wName = _isOwnTeamRed
-                                                ? opFull
-                                                : myFull;
-                                          }
-                                          bool isFirstMatchOfAll =
-                                              (pIndex == 0 && i == 0);
-                                          final newMatch = MatchModel(
-                                            id: matchId,
-                                            tournamentId: widget.tournamentId,
-                                            category: rule.category.isNotEmpty
-                                                ? rule.category
-                                                : null,
-                                            groupName: teamGroupId,
-                                            matchType: posName,
-                                            redName: rName,
-                                            whiteName: wName,
-                                            status:
-                                                (isStartNow &&
-                                                    isFirstMatchOfAll)
-                                                ? 'in_progress'
-                                                : 'waiting',
-                                            refereeNames: [],
-
-                                            // ★ 修正：すべて完璧な状態の「rule」から直接もらう！
-                                            matchTimeMinutes:
-                                                rule.matchTimeMinutes,
-                                            isRunningTime: rule.isRunningTime,
-                                            hasExtension:
-                                                rule.enchoTimeMinutes > 0 ||
-                                                rule.isEnchoUnlimited ||
-                                                posName.contains('代表'),
-                                            extensionTimeMinutes:
-                                                rule.enchoTimeMinutes,
-                                            extensionCount: rule.enchoCount,
-                                            hasHantei: rule.hasHantei,
-
-                                            order:
-                                                baseOrder + (pIndex * 10) + i,
-                                            note: saveNote,
-                                            rule: rule, // ★ これだけで全てが封印されます
-                                          );
-                                          debugPrint(
-                                            '📦 [1. 生成センサー] MatchId: $matchId, Ruleがnullか?: ${newMatch.rule == null}',
-                                          ); // ★ デバッグ用センサー
-                                          matchesToSave.add(newMatch);
-                                        }
-                                      }
-                                    }
-                                  });
-
-                                  if (matchesToSave.isNotEmpty) {
-                                    await ref
-                                        .read(matchApplicationServiceProvider)
-                                        .saveMatchesBulk(matchesToSave); // ★ 修正
-                                  }
-
-                                  if (!context.mounted) {
-                                    return;
-                                  }
-                                  Navigator.of(
-                                    context,
-                                    rootNavigator: true,
-                                  ).pop(); // ★ Phase 8-1: ローディングダイアログだけを確実に閉じる！
-
-                                  if (isStartNow) {
-                                    if (senpoMatchId.isNotEmpty) {
-                                      context.push('/match/$senpoMatchId');
-                                    } else {
-                                      context.go(
-                                        '/home/${widget.tournamentId}',
-                                      );
-                                    }
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('試合をプールしました（待機リストに追加）'),
-                                      ),
-                                    );
-                                    context.go('/home/${widget.tournamentId}');
-                                  }
-                                } catch (e) {
-                                  if (!context.mounted) {
-                                    return;
-                                  }
-                                  Navigator.of(
-                                    context,
-                                    rootNavigator: true,
-                                  ).pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('保存に失敗しました: $e')),
-                                  );
-                                }
-                              },
-                              color: _themeColors.primaryAccent,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              icon: Icons.check_circle,
-                              label: 'このオーダーで確定して進む',
-                              expandContent: false,
-                            ),
-                          ),
-                        ],
+            Container(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(context).padding.bottom + 24,
+              ),
+              decoration: BoxDecoration(
+                color: enableLiquidGlass ? Colors.transparent : inputBgColor,
+                border: Border(
+                  top: BorderSide(
+                    color: enableLiquidGlass ? Colors.transparent : borderColor,
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton.icon(
+                    onPressed: _addExtraPosition,
+                    icon: Icon(
+                      Icons.add_circle_outline,
+                      color: _themeColors.primaryAccent,
+                    ),
+                    label: Text(
+                      'イレギュラー枠を追加する（錬成会用）',
+                      style: TextStyle(
+                        color: _themeColors.primaryAccent,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: GlassButton(
+                      onPressed: () async {
+                        // ★ 修正：ここではチェックせず、後の pairings 生成直前のバリデーションに集約します
+                        final bool? isStartNow = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text(
+                              '試合の登録',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            content: const Text(
+                              'このオーダーで試合を登録します。今すぐ試合画面に進みますか？',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text(
+                                  '後で（リストに保存）',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _themeColors.primaryAccent,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                ),
+                                child: const Text(
+                                  '今すぐ試合開始',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (isStartNow == null) {
+                          return;
+                        }
+
+                        if (!context.mounted) {
+                          return;
+                        }
+                        // ★ Phase 8-1: ダイアログの「戻る」が画面を消さないように、rootNavigatorを使う
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) =>
+                              const Center(child: CircularProgressIndicator()),
+                        );
+
+                        try {
+                          // ★ 修正：不要になった古い変数を綺麗にお掃除
+                          String senpoMatchId = '';
+                          double baseOrder = ref
+                              .read(timeSourceProvider)
+                              .now()
+                              .millisecondsSinceEpoch
+                              .toDouble();
+                          List<MatchModel> matchesToSave = [];
+
+                          // ★ 追加：リーグ戦であることを明示するタグを生成し、後で全試合のnoteに付与する
+                          final String saveNote = rule.isLeague
+                              ? '[リーグ戦] ${rule.note}'.trim()
+                              : rule.note;
+                          // ★ 追加：リーグ全体を1つのアコーディオンにまとめるための共通ID
+                          final String leagueGroupId = rule.isLeague
+                              ? const Uuid().v4()
+                              : '';
+
+                          List<List<String>> pairings = [];
+                          // ★ 修正：入力された相手チーム名をお掃除フィルターに通す！
+                          String myTeamName = rule.teamName.isNotEmpty
+                              ? rule.teamName
+                              : '自チーム';
+                          String opTeamName = TextSanitizer.clean(
+                            _opponentTeamController.text,
+                          );
+                          if (opTeamName.isEmpty) opTeamName = '対戦相手';
+
+                          if (rule.isLeague) {
+                            if (_leagueParticipants.length < 2) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('リーグ戦には少なくとも2つのチーム・選手が必要です'),
+                                ),
+                              );
+                              Navigator.of(context, rootNavigator: true).pop();
+                              return;
+                            }
+
+                            // ★ 修正：並び替えた順序をルールに記憶させる
+                            ref
+                                .read(matchRuleProvider.notifier)
+                                .updateRule(
+                                  rule.copyWith(
+                                    leagueOrder: _leagueParticipants,
+                                  ),
+                                );
+
+                            // ★ 修正：並び替えたリストに基づいて総当たりのペアを生成
+                            for (
+                              int i = 0;
+                              i < _leagueParticipants.length;
+                              i++
+                            ) {
+                              for (
+                                int j = i + 1;
+                                j < _leagueParticipants.length;
+                                j++
+                              ) {
+                                pairings.add([
+                                  _leagueParticipants[i],
+                                  _leagueParticipants[j],
+                                ]);
+                              }
+                            }
+                          } else {
+                            if (_isOwnTeamRed) {
+                              pairings.add([myTeamName, opTeamName]);
+                            } else {
+                              pairings.add([opTeamName, myTeamName]);
+                            }
+                          }
+
+                          await Future.microtask(() {
+                            for (
+                              int pIndex = 0;
+                              pIndex < pairings.length;
+                              pIndex++
+                            ) {
+                              final pair = pairings[pIndex];
+                              // ★ 修正：リーグ戦なら共通IDを使い、通常なら個別のIDを発行
+                              final String teamGroupId = rule.isLeague
+                                  ? leagueGroupId
+                                  : const Uuid().v4();
+
+                              if (rule.isKachinuki) {
+                                List<String> redFull = [];
+                                List<String> whiteFull = [];
+
+                                for (int i = 0; i < _positions.length; i++) {
+                                  String myP = _selectedPlayers[i] ?? '未定';
+                                  if (myP.isEmpty) myP = '未定';
+                                  String opP =
+                                      _opponentPlayers[i]?.trim() ?? '';
+                                  if (opP.isEmpty) opP = '選手';
+                                  String myFull = '$myTeamName : $myP';
+                                  String opFull = '$opTeamName : $opP';
+                                  String rN, wN;
+                                  if (rule.isLeague) {
+                                    // ★ 修正：入力されたオーダーを呼び出して完璧にセットする！
+                                    String rTeam = pair[0];
+                                    String wTeam = pair[1];
+                                    String rPlayer = (rTeam == '自チーム')
+                                        ? myP
+                                        : (_leagueTeamOrders[rTeam]?[i] ??
+                                              '選手');
+                                    if (rPlayer.isEmpty) rPlayer = '選手';
+                                    String wPlayer = (wTeam == '自チーム')
+                                        ? myP
+                                        : (_leagueTeamOrders[wTeam]?[i] ??
+                                              '選手');
+                                    if (wPlayer.isEmpty) wPlayer = '選手';
+
+                                    rN = (rTeam == '自チーム')
+                                        ? myFull
+                                        : '$rTeam : $rPlayer';
+                                    wN = (wTeam == '自チーム')
+                                        ? myFull
+                                        : '$wTeam : $wPlayer';
+                                  } else {
+                                    rN = _isOwnTeamRed ? myFull : opFull;
+                                    wN = _isOwnTeamRed ? opFull : myFull;
+                                  }
+                                  redFull.add(rN);
+                                  whiteFull.add(wN);
+                                }
+
+                                final matchId = const Uuid().v4();
+                                if (senpoMatchId.isEmpty) {
+                                  senpoMatchId = matchId;
+                                }
+
+                                final newMatch = MatchModel(
+                                  id: matchId,
+                                  tournamentId: widget.tournamentId,
+                                  category: rule.category.isNotEmpty
+                                      ? rule.category
+                                      : null,
+                                  groupName: teamGroupId,
+                                  matchType: _positions[0],
+                                  whiteName: whiteFull[0],
+                                  redName: redFull[0],
+                                  status: (isStartNow && pIndex == 0)
+                                      ? 'in_progress'
+                                      : 'waiting',
+                                  refereeNames: [],
+
+                                  // ★ 全て rule からもらう
+                                  matchTimeMinutes: rule.matchTimeMinutes,
+                                  isRunningTime: rule.isRunningTime,
+                                  hasExtension:
+                                      rule.enchoTimeMinutes > 0 ||
+                                      rule.isEnchoUnlimited,
+                                  extensionTimeMinutes: rule.enchoTimeMinutes,
+                                  extensionCount: rule.enchoCount,
+                                  hasHantei: rule.hasHantei,
+
+                                  order: baseOrder + (pIndex * 10),
+                                  note: saveNote,
+                                  isKachinuki: true,
+                                  rule: rule,
+                                  redRemaining: redFull.length > 1
+                                      ? redFull.sublist(1)
+                                      : [],
+                                  whiteRemaining: whiteFull.length > 1
+                                      ? whiteFull.sublist(1)
+                                      : [],
+                                );
+                                matchesToSave.add(newMatch);
+                              } else {
+                                for (int i = 0; i < _positions.length; i++) {
+                                  final String matchId = const Uuid().v4();
+                                  if (senpoMatchId.isEmpty) {
+                                    senpoMatchId = matchId;
+                                  }
+                                  final posName = _positions[i];
+                                  String myP = _selectedPlayers[i] ?? '未定';
+                                  if (myP.isEmpty) myP = '未定';
+                                  String opP =
+                                      _opponentPlayers[i]?.trim() ?? '';
+                                  if (opP.isEmpty) opP = '選手';
+                                  String myFull = '$myTeamName : $myP';
+                                  String opFull = '$opTeamName : $opP';
+                                  String rName, wName;
+                                  if (rule.isLeague) {
+                                    // ★ 修正：入力されたオーダーと「個人戦/団体戦」の違いを反映！
+                                    String rTeam = pair[0];
+                                    String wTeam = pair[1];
+                                    String rPlayer = (rTeam == '自チーム')
+                                        ? myP
+                                        : (_leagueTeamOrders[rTeam]?[i] ??
+                                              '選手');
+                                    if (rPlayer.isEmpty) rPlayer = '選手';
+                                    String wPlayer = (wTeam == '自チーム')
+                                        ? myP
+                                        : (_leagueTeamOrders[wTeam]?[i] ??
+                                              '選手');
+                                    if (wPlayer.isEmpty) wPlayer = '選手';
+
+                                    // ★ 修正：画面上部で既に取得している matchType をそのまま利用する
+                                    if (matchType.contains('個人戦')) {
+                                      // ★ 修正：ダイアログの時点で既に「所属 : 名前」になっているので、そのまま使う！
+                                      rName = (rTeam == '自チーム')
+                                          ? myFull
+                                          : rTeam;
+                                      wName = (wTeam == '自チーム')
+                                          ? myFull
+                                          : wTeam;
+                                    } else {
+                                      rName = (rTeam == '自チーム')
+                                          ? myFull
+                                          : '$rTeam : $rPlayer';
+                                      wName = (wTeam == '自チーム')
+                                          ? myFull
+                                          : '$wTeam : $wPlayer';
+                                    }
+                                  } else {
+                                    rName = _isOwnTeamRed ? myFull : opFull;
+                                    wName = _isOwnTeamRed ? opFull : myFull;
+                                  }
+                                  bool isFirstMatchOfAll =
+                                      (pIndex == 0 && i == 0);
+                                  final newMatch = MatchModel(
+                                    id: matchId,
+                                    tournamentId: widget.tournamentId,
+                                    category: rule.category.isNotEmpty
+                                        ? rule.category
+                                        : null,
+                                    groupName: teamGroupId,
+                                    matchType: posName,
+                                    redName: rName,
+                                    whiteName: wName,
+                                    status: (isStartNow && isFirstMatchOfAll)
+                                        ? 'in_progress'
+                                        : 'waiting',
+                                    refereeNames: [],
+
+                                    // ★ 修正：すべて完璧な状態の「rule」から直接もらう！
+                                    matchTimeMinutes: rule.matchTimeMinutes,
+                                    isRunningTime: rule.isRunningTime,
+                                    hasExtension:
+                                        rule.enchoTimeMinutes > 0 ||
+                                        rule.isEnchoUnlimited ||
+                                        posName.contains('代表'),
+                                    extensionTimeMinutes: rule.enchoTimeMinutes,
+                                    extensionCount: rule.enchoCount,
+                                    hasHantei: rule.hasHantei,
+
+                                    order: baseOrder + (pIndex * 10) + i,
+                                    note: saveNote,
+                                    rule: rule, // ★ これだけで全てが封印されます
+                                  );
+                                  debugPrint(
+                                    '📦 [1. 生成センサー] MatchId: $matchId, Ruleがnullか?: ${newMatch.rule == null}',
+                                  ); // ★ デバッグ用センサー
+                                  matchesToSave.add(newMatch);
+                                }
+                              }
+                            }
+                          });
+
+                          if (matchesToSave.isNotEmpty) {
+                            await ref
+                                .read(matchApplicationServiceProvider)
+                                .saveMatchesBulk(matchesToSave); // ★ 修正
+                          }
+
+                          if (!context.mounted) {
+                            return;
+                          }
+                          Navigator.of(
+                            context,
+                            rootNavigator: true,
+                          ).pop(); // ★ Phase 8-1: ローディングダイアログだけを確実に閉じる！
+
+                          if (isStartNow) {
+                            if (senpoMatchId.isNotEmpty) {
+                              context.push('/match/$senpoMatchId');
+                            } else {
+                              context.go('/home/${widget.tournamentId}');
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('試合をプールしました（待機リストに追加）'),
+                              ),
+                            );
+                            context.go('/home/${widget.tournamentId}');
+                          }
+                        } catch (e) {
+                          if (!context.mounted) {
+                            return;
+                          }
+                          Navigator.of(context, rootNavigator: true).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('保存に失敗しました: $e')),
+                          );
+                        }
+                      },
+                      color: _themeColors.primaryAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      icon: Icons.check_circle,
+                      label: 'このオーダーで確定して進む',
+                      expandContent: false,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
