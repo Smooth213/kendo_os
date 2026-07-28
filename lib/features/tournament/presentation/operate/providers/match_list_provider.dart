@@ -198,6 +198,9 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
                       matches;
                   ref.read(webCurrentTournamentIdProvider.notifier).state =
                       safeTournamentId;
+                  ref.read(currentTournamentIdProvider.notifier).state =
+                      safeTournamentId;
+                  ref.read(currentDojoIdProvider.notifier).state = safeDojoId;
                 } catch (_) {}
               });
             },

@@ -134,8 +134,9 @@ void main() {
         expect(find.text('リーグ団体戦'), findsAtLeast(1));
 
         // We should see representative match rule and league points summary
-        expect(find.text('代表戦'), findsOneWidget);
-        expect(find.text('リーグ勝ち点'), findsOneWidget);
+        // Note: '代表戦' is now shown as '同点代表戦' and 'リーグ勝ち点' → '勝ち点'
+        expect(find.text('同点代表戦'), findsOneWidget);
+        expect(find.text('勝ち点'), findsOneWidget);
       },
     );
   });

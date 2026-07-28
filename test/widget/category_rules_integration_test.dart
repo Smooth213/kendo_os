@@ -282,7 +282,7 @@ void main() {
       expect(find.text('小学生の部 のルール設定'), findsOneWidget);
       expect(find.text('通常戦ルール'), findsOneWidget);
       expect(find.text('上位戦（準決勝・決勝等）ルール'), findsOneWidget);
-      expect(find.text('適用判定ワード'), findsOneWidget);
+      expect(find.text('上位戦 適用ワード'), findsOneWidget);
 
       // We should see a close button
       expect(find.text('閉じる'), findsOneWidget);

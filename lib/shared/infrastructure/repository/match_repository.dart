@@ -165,4 +165,14 @@ class MatchRepository {
       rethrow;
     }
   }
+
+  // 4. 試合を削除
+  Future<void> deleteMatch(String matchId) async {
+    try {
+      await _collectionRef.doc(matchId).delete();
+    } catch (e) {
+      debugPrint('Repository削除エラー: $e');
+      rethrow;
+    }
+  }
 }

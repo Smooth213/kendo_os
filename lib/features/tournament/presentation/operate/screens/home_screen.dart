@@ -61,6 +61,7 @@ class HomeScreen extends ConsumerWidget {
           tournamentId,
           isStaffRoom: true,
         );
+        ref.read(currentTournamentIdProvider.notifier).state = tournamentId;
       }
     });
     final isDark = Theme.of(context).brightness == Brightness.dark;

@@ -50,6 +50,18 @@ class _SetupMatchFormatScreenState
   final _overallTimeController = TextEditingController(text: '30');
   late bool _isDaihyoIpponShobu;
 
+  // 代表戦詳細
+  late double _daihyoMatchTime;
+  late bool _daihyoHasExtension;
+  late double _daihyoEnchoTime;
+  late int _daihyoEnchoCount;
+  late bool _daihyoHasHantei;
+
+  // 勝負方式・反則
+  late bool _isIpponShobu;
+  late int _ipponLimit;
+  late int _hansokuLimit;
+
   // ★ リーグ戦拡張：勝ち点入力用のコントローラー
   final _winPointController = TextEditingController(text: '0');
   final _lossPointController = TextEditingController(text: '0');
@@ -157,6 +169,20 @@ class _SetupMatchFormatScreenState
     _hasLeagueDaihyo = lastSettings['hasLeagueDaihyo'] ?? false;
     _renseikaiType = lastSettings['renseikaiType'] ?? '一試合制';
     _isDaihyoIpponShobu = lastSettings['isDaihyoIpponShobu'] ?? true;
+
+    // 代表戦詳細
+    _daihyoMatchTime =
+        (lastSettings['daihyoMatchTime'] as num?)?.toDouble() ?? 0.0;
+    _daihyoHasExtension = lastSettings['daihyoHasExtension'] ?? true;
+    _daihyoEnchoTime =
+        (lastSettings['daihyoEnchoTime'] as num?)?.toDouble() ?? 3.0;
+    _daihyoEnchoCount = lastSettings['daihyoEnchoCount'] ?? -2;
+    _daihyoHasHantei = lastSettings['daihyoHasHantei'] ?? false;
+
+    // 勝負方式・反則
+    _isIpponShobu = lastSettings['isIpponShobu'] ?? false;
+    _ipponLimit = lastSettings['ipponLimit'] ?? 2;
+    _hansokuLimit = lastSettings['hansokuLimit'] ?? 2;
 
     // ★ 勝ち点の初期値を復元
     _winPointController.text = (lastSettings['winPoint'] ?? 0).toString();
@@ -897,6 +923,18 @@ class _SetupMatchFormatScreenState
       _kachinukiUnlimitedType = rule.kachinukiUnlimitedType;
       _hasLeagueDaihyo = rule.hasLeagueDaihyo;
       _isDaihyoIpponShobu = rule.isDaihyoIpponShobu;
+
+      // 代表戦詳細
+      _daihyoMatchTime = rule.daihyoMatchTimeMinutes;
+      _daihyoHasExtension = rule.daihyoHasExtension;
+      _daihyoEnchoTime = rule.daihyoEnchoTimeMinutes;
+      _daihyoEnchoCount = rule.daihyoEnchoCount;
+      _daihyoHasHantei = rule.daihyoHasHantei;
+
+      // 勝負方式・反則
+      _isIpponShobu = rule.isIpponShobu;
+      _ipponLimit = rule.ipponLimit;
+      _hansokuLimit = rule.hansokuLimit;
     });
   }
 
@@ -1375,14 +1413,6 @@ class _SetupMatchFormatScreenState
       return 'あり ($extTimeStr / $extCountStr)';
     }
 
-    String getKachinukiText() {
-      if (_kachinukiUnlimitedType == '大将対大将') return '大将対大将 (大将戦以降無制限)';
-      if (_kachinukiUnlimitedType == '無制限') return '全員無制限 (全ポジション時間無制限)';
-      if (_kachinukiUnlimitedType == '大将のみ') return '大将のみ無制限';
-      if (_kachinukiUnlimitedType == '大将引き分け延長') return '大将対大将が引き分けのとき一本勝負の延長戦';
-      return _kachinukiUnlimitedType;
-    }
-
     final headerColor = isAdvanced ? Colors.teal : _themeColors.primaryAccent;
 
     return ListView(
@@ -1399,7 +1429,6 @@ class _SetupMatchFormatScreenState
         ),
         const SizedBox(height: 16),
 
-        // 適用中のルールサマリーカード
         _buildDynamicSectionBox(
           title: '現在適用中のルール: $ruleName',
           icon: isAdvanced ? Icons.stars : Icons.gavel,
@@ -1407,57 +1436,117 @@ class _SetupMatchFormatScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader('個別の試合内容', headerColor),
-              _buildReadOnlyRuleRow('試合方式', _matchType),
-              _buildReadOnlyRuleRow(
-                '試合時間',
-                _isRenseikai && _renseikaiType == '時間制'
-                    ? '全体で ${int.tryParse(_overallTimeController.text) ?? 30}分 (ランニング)'
-                    : '${_formatMinutesText(_matchTime)} (${_isRunningTime ? "ランニング計測" : "通常計測"})',
-              ),
-              _buildReadOnlyRuleRow('延長戦', getExtensionText()),
-              _buildReadOnlyRuleRow('判定', _hasHantei ? '引き分け時に判定あり' : 'なし'),
-
+              // ─── 錢成会設定 ───
               if (_isRenseikai) ...[
-                _buildSectionHeader('錬成会の試合内容', headerColor),
+                _buildSectionHeader('錬成会設定', headerColor),
                 _buildReadOnlyRuleRow('進行方式', _renseikaiType),
+                _buildReadOnlyRuleRow('1対戦の時間', _formatMinutesText(_matchTime)),
                 if (_renseikaiType == '時間制')
                   _buildReadOnlyRuleRow(
-                    '全体制限時間',
+                    '全体の制限時間',
                     '${int.tryParse(_overallTimeController.text) ?? 30}分',
                   ),
               ],
 
-              if (_matchType.contains('団体戦') &&
-                  !_matchType.contains('リーグ')) ...[
-                _buildSectionHeader('代表戦', headerColor),
-                _buildReadOnlyRuleRow('代表戦', _hasLeagueDaihyo ? 'あり' : 'なし'),
-                if (_hasLeagueDaihyo)
-                  _buildReadOnlyRuleRow(
-                    '代表戦ルール',
-                    _isDaihyoIpponShobu ? '一本勝負' : '通常勝負',
-                  ),
-              ],
-
-              if (_matchType == '勝ち抜き戦') ...[
-                _buildSectionHeader('決定戦の内容（勝ち抜き）', headerColor),
-                _buildReadOnlyRuleRow('勝ち抜き形式', getKachinukiText()),
-              ],
-
-              if (_matchType.contains('リーグ')) ...[
-                _buildSectionHeader('決定戦の内容（リーグ）', headerColor),
-                _buildReadOnlyRuleRow('代表戦', _hasLeagueDaihyo ? 'あり' : 'なし'),
-                if (_hasLeagueDaihyo)
-                  _buildReadOnlyRuleRow(
-                    '代表戦ルール',
-                    _isDaihyoIpponShobu ? '一本勝負' : '通常勝負',
-                  ),
+              // ─── 試合ルール（錬成会以外） ───
+              if (!_isRenseikai) ...[
+                _buildSectionHeader('試合ルール', headerColor),
+                _buildReadOnlyRuleRow('試合方式', _matchType),
                 _buildReadOnlyRuleRow(
-                  'リーグ勝ち点',
+                  '試合時間',
+                  '${_formatMinutesText(_matchTime)} (${_isRunningTime ? "ランニング計測" : "通常計測"})',
+                ),
+                _buildReadOnlyRuleRow(
+                  '勝負方式',
+                  _isIpponShobu ? '一本勝負' : '三本勝負 ($_ipponLimit本先取)',
+                ),
+                _buildReadOnlyRuleRow('反則', '$_hansokuLimit反則で負け'),
+                _buildReadOnlyRuleRow('延長戦', getExtensionText()),
+                _buildReadOnlyRuleRow('判定', _hasHantei ? '引き分け時に判定あり' : 'なし'),
+              ],
+
+              // ─── 勝ち抜き戦設定 ───
+              if (_matchType == '勝ち抜き戦') ...[
+                _buildSectionHeader('勝ち抜き戦設定', headerColor),
+                _buildReadOnlyRuleRow(
+                  '大将VS大将',
+                  (_kachinukiUnlimitedType == 'なし' ||
+                          _kachinukiUnlimitedType.isEmpty)
+                      ? '引き分け'
+                      : '延長戦を行う',
+                ),
+                _buildReadOnlyRuleRow(
+                  '大将VS他ポジション',
+                  _kachinukiUnlimitedType == '無制限' ? '延長戦を行う' : '引き分け',
+                ),
+              ],
+
+              // ─── 団体戦・チーム設定（通常団体戦のみ） ───
+              if (_matchType == '団体戦') ...[
+                _buildSectionHeader('団体戦・チーム設定', headerColor),
+                _buildReadOnlyRuleRow(
+                  '代表戦',
+                  _hasLeagueDaihyo
+                      ? 'あり (${_isDaihyoIpponShobu ? "一本勝負" : "三本勝負"})'
+                      : 'なし',
+                ),
+              ],
+
+              // ─── 代表戦設定（通常団体戦の代表戦ありのみ） ───
+              if (_matchType == '団体戦' && _hasLeagueDaihyo) ...[
+                _buildSectionHeader('代表戦設定', headerColor),
+                _buildReadOnlyRuleRow(
+                  '代表戦 時間',
+                  _daihyoMatchTime <= 0
+                      ? '無制限'
+                      : _formatMinutesText(_daihyoMatchTime),
+                ),
+                _buildReadOnlyRuleRow(
+                  '代表戦 延長戦',
+                  !_daihyoHasExtension
+                      ? 'なし'
+                      : (_daihyoEnchoCount == -2
+                            ? 'あり (無制限)'
+                            : 'あり (${_formatMinutesText(_daihyoEnchoTime)}・$_daihyoEnchoCount回)'),
+                ),
+                _buildReadOnlyRuleRow('代表戦 判定', _daihyoHasHantei ? 'あり' : 'なし'),
+              ],
+
+              // ─── リーグ戦設定 ───
+              if (_matchType.contains('リーグ')) ...[
+                _buildSectionHeader('リーグ戦設定', Colors.orange),
+                _buildReadOnlyRuleRow(
+                  '勝ち点',
                   '勝: ${double.tryParse(_winPointController.text) ?? 0}点 / '
                       '負: ${double.tryParse(_lossPointController.text) ?? 0}点 / '
                       '分: ${double.tryParse(_drawPointController.text) ?? 0}点',
                 ),
+                if (_matchType == 'リーグ団体戦') ...[
+                  _buildReadOnlyRuleRow(
+                    '同点代表戦',
+                    _hasLeagueDaihyo ? 'あり' : 'なし',
+                  ),
+                  if (_hasLeagueDaihyo) ...[
+                    _buildReadOnlyRuleRow(
+                      '代表戦 時間',
+                      _daihyoMatchTime <= 0
+                          ? '無制限'
+                          : _formatMinutesText(_daihyoMatchTime),
+                    ),
+                    _buildReadOnlyRuleRow(
+                      '代表戦 延長戦',
+                      !_daihyoHasExtension
+                          ? 'なし'
+                          : (_daihyoEnchoCount == -2
+                                ? 'あり (無制限)'
+                                : 'あり (${_formatMinutesText(_daihyoEnchoTime)}・$_daihyoEnchoCount回)'),
+                    ),
+                    _buildReadOnlyRuleRow(
+                      '代表戦 判定',
+                      _daihyoHasHantei ? 'あり' : 'なし',
+                    ),
+                  ],
+                ],
               ],
             ],
           ),

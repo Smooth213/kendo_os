@@ -8,6 +8,8 @@ import 'match_list_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart'; // ★ Firestore版からIsar版に差し替え
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'sync_provider.dart'; // ★ 追加: クラウド同期ワーカー
 import 'package:kendo_os/features/match/domain/match_aggregate.dart'; // ★ 追加
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
@@ -106,7 +108,44 @@ class MatchCommandService {
 
   // 5. 試合削除
   Future<void> deleteMatch(String matchId) async {
-    await ref.read(localMatchRepositoryProvider).deleteMatch(matchId);
+    // ignore: invalid_use_of_visible_for_testing_member
+    if (kIsWeb || debugIsWebOverride) {
+      // Web版: Firestore から直接削除し、オプティミスティックに状態を更新する
+      final currentMatches = ref.read(webCurrentTournamentMatchesProvider);
+
+      final matchToDelete = currentMatches.firstWhere(
+        (m) => m.id == matchId,
+        orElse: () => const MatchModel(
+          id: '',
+          status: '',
+          matchType: '',
+          redName: '',
+          whiteName: '',
+        ),
+      );
+      if (matchToDelete.id.isNotEmpty) {
+        if (matchToDelete.tournamentId != null &&
+            matchToDelete.tournamentId!.isNotEmpty) {
+          ref.read(currentTournamentIdProvider.notifier).state =
+              matchToDelete.tournamentId!;
+        }
+        if (matchToDelete.organizationId.isNotEmpty) {
+          ref.read(currentDojoIdProvider.notifier).state =
+              matchToDelete.organizationId;
+        }
+      }
+
+      final updatedMatches = currentMatches
+          .where((m) => m.id != matchId)
+          .toList();
+      ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+          updatedMatches;
+
+      await ref.read(matchRepositoryProvider).deleteMatch(matchId);
+    } else {
+      // Mobile版: Isar から削除
+      await ref.read(localMatchRepositoryProvider).deleteMatch(matchId);
+    }
   }
 
   // --- ★ フェーズ4：チーム名の一括置換（合流）ロジック ---

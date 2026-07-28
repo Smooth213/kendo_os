@@ -16,6 +16,7 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
@@ -340,6 +341,158 @@ void main() {
         // Verify that bulk_match_2 is NOT updated
         final match2 = savedMatches.where((m) => m.id == 'bulk_match_2');
         expect(match2, isEmpty);
+      },
+    );
+
+    test(
+      '3. deleteMatch on Web deletes directly from Firestore and updates optimistic UI state',
+      () async {
+        // Simulate Web environment
+        debugIsWebOverride = true;
+        addTearDown(() {
+          debugIsWebOverride = false;
+        });
+
+        final matchToDelete = const MatchModel(
+          id: 'web_delete_match',
+          tournamentId: 'test_tournament_rules',
+          category: '小学生の部',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          status: 'waiting',
+          organizationId: 'test_dojo_id',
+        );
+
+        // Write match to Fake Firestore
+        await fakeFirestore
+            .collection('organizations')
+            .doc('test_dojo_id')
+            .collection('tournaments')
+            .doc('test_tournament_rules')
+            .collection('matches')
+            .doc(matchToDelete.id)
+            .set(matchToDelete.toJson());
+
+        final container = ProviderContainer(
+          overrides: [
+            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+            currentTournamentIdProvider.overrideWith(
+              (ref) => 'test_tournament_rules',
+            ),
+            firestoreProvider.overrideWithValue(fakeFirestore),
+            matchRepositoryProvider.overrideWith((ref) {
+              return MatchRepository(
+                fakeFirestore,
+                'test_dojo_id',
+                'test_tournament_rules',
+              );
+            }),
+          ],
+        );
+
+        // Initialize the web matches list state with our match
+        container.read(webCurrentTournamentMatchesProvider.notifier).state = [
+          matchToDelete,
+        ];
+
+        // Execute deleteMatch
+        await container
+            .read(matchCommandProvider)
+            .deleteMatch('web_delete_match');
+
+        // Verify optimistic UI state update: match is removed from webCurrentTournamentMatchesProvider
+        final currentWebMatches = container.read(
+          webCurrentTournamentMatchesProvider,
+        );
+        expect(currentWebMatches, isEmpty);
+
+        // Verify Firestore deletion: match document is deleted
+        final snap = await fakeFirestore
+            .collection('organizations')
+            .doc('test_dojo_id')
+            .collection('tournaments')
+            .doc('test_tournament_rules')
+            .collection('matches')
+            .doc(matchToDelete.id)
+            .get();
+        expect(snap.exists, isFalse);
+      },
+    );
+
+    test(
+      '4. deleteMatch on Web dynamically updates currentTournamentIdProvider and currentDojoIdProvider from MatchModel when they are empty/incorrect',
+      () async {
+        // Simulate Web environment
+        debugIsWebOverride = true;
+        addTearDown(() {
+          debugIsWebOverride = false;
+        });
+
+        final matchToDelete = const MatchModel(
+          id: 'web_dynamic_delete_match',
+          tournamentId: 'correct_tournament_id',
+          category: '小学生の部',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          status: 'waiting',
+          organizationId: 'correct_dojo_id',
+        );
+
+        // Write match to Fake Firestore at the CORRECT path
+        await fakeFirestore
+            .collection('organizations')
+            .doc('correct_dojo_id')
+            .collection('tournaments')
+            .doc('correct_tournament_id')
+            .collection('matches')
+            .doc(matchToDelete.id)
+            .set(matchToDelete.toJson());
+
+        // Create container with initially EMPTY / WRONG paths
+        final container = ProviderContainer(
+          overrides: [
+            currentDojoIdProvider.overrideWith((ref) => 'initial_wrong_dojo'),
+            currentTournamentIdProvider.overrideWith(
+              (ref) => 'initial_wrong_tournament',
+            ),
+            firestoreProvider.overrideWithValue(fakeFirestore),
+            matchRepositoryProvider.overrideWith((ref) {
+              final dojoId = ref.watch(currentDojoIdProvider);
+              final tournamentId = ref.watch(currentTournamentIdProvider);
+              return MatchRepository(fakeFirestore, dojoId, tournamentId);
+            }),
+          ],
+        );
+
+        // Initialize the web matches list state with our match
+        container.read(webCurrentTournamentMatchesProvider.notifier).state = [
+          matchToDelete,
+        ];
+
+        // Execute deleteMatch - this should dynamically repair the providers
+        await container
+            .read(matchCommandProvider)
+            .deleteMatch('web_dynamic_delete_match');
+
+        // Verify that providers were dynamically updated to correct values
+        expect(container.read(currentDojoIdProvider), 'correct_dojo_id');
+        expect(
+          container.read(currentTournamentIdProvider),
+          'correct_tournament_id',
+        );
+
+        // Verify Firestore deletion: match document is deleted from the correct path
+        final snap = await fakeFirestore
+            .collection('organizations')
+            .doc('correct_dojo_id')
+            .collection('tournaments')
+            .doc('correct_tournament_id')
+            .collection('matches')
+            .doc(matchToDelete.id)
+            .get();
+        expect(snap.exists, isFalse);
       },
     );
   });
