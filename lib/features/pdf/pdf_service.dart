@@ -455,13 +455,23 @@ class PdfService {
       outputTime: outputTime,
     );
 
-    // Web・ネイティブ問わず、直接印刷プレビュー（またはブラウザ標準の印刷ダイアログ）を起動します。
-    // これにより、Web版でのShareXFiles（SharePlus）フォールバック起因による二重処理・重複出力を完全に回避します。
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) => pdfBytes,
-      name: '公式記録_$categoryName.pdf',
-      usePrinterSettings: true,
-    );
+    if (kIsWeb) {
+      // Webブラウザではポップアップブロックにより Printing.layoutPdf が
+      // 動作しないため、PDFを直接ダウンロードとして提供します。
+      // ブラウザは PDF をダウンロード後に標準の印刷機能で印刷できます。
+      download_helper.downloadFileWeb(
+        pdfBytes,
+        '公式記録_$categoryName.pdf',
+        'application/pdf',
+      );
+    } else {
+      // ネイティブ（iOS/Android/macOS）では従来通り印刷プレビューを表示します。
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) => pdfBytes,
+        name: '公式記録_$categoryName.pdf',
+        usePrinterSettings: true,
+      );
+    }
   }
 
   static Future<void> shareOfficialRecordAsImage(
