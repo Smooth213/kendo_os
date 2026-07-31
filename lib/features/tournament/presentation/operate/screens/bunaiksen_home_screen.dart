@@ -1154,8 +1154,11 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: [2.0, 3.0, 4.0, 5.0].map((t) {
+                            children: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
                               final isSel = selectedMatchTime == t;
+                              final timeLabel = t % 1 == 0
+                                  ? '${t.toInt()}分'
+                                  : '$t分';
                               return Padding(
                                 padding: const EdgeInsets.only(left: 4),
                                 child: InkWell(
@@ -1182,7 +1185,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       ),
                                     ),
                                     child: Text(
-                                      '${t.toInt()}分',
+                                      timeLabel,
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: isSel
