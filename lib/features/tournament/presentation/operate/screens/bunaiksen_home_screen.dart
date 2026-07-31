@@ -875,7 +875,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     String redPlayer = '選手A';
     String whitePlayer = '選手B';
     final initialRule = ref.read(bunaiksenRuleProvider);
-    double selectedMatchTime = initialRule.matchTimeMinutes;
+    double selectedMatchTime = 2.0; // ★ デフォルトを2分に変更
     bool selectedIsIpponShobu = initialRule.isIpponShobu;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1126,85 +1126,79 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 試合時間
+                    // 試合時間ラベル
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.timer_outlined,
-                              size: 16,
-                              color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade700,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '試合時間',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: themeColors.textColor,
-                              ),
-                            ),
-                          ],
+                        Icon(
+                          Icons.timer_outlined,
+                          size: 16,
+                          color: isDark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade700,
                         ),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
-                              final isSel = selectedMatchTime == t;
-                              final timeLabel = t % 1 == 0
-                                  ? '${t.toInt()}分'
-                                  : '$t分';
-                              return Padding(
-                                padding: const EdgeInsets.only(left: 4),
-                                child: InkWell(
-                                  onTap: () => setStateSheet(
-                                    () => selectedMatchTime = t,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isSel
-                                          ? themeColors.primaryAccent
-                                          : (isDark
-                                                ? const Color(0xFF3A3A3C)
-                                                : Colors.white),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: isSel
-                                            ? themeColors.primaryAccent
-                                            : Colors.grey.shade300,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      timeLabel,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: isSel
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        color: isSel
-                                            ? Colors.white
-                                            : themeColors.textColor,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                        const SizedBox(width: 6),
+                        Text(
+                          '試合時間',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: themeColors.textColor,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
+                    // 試合時間チップ (Expandedで画面幅に完全フィット)
+                    Row(
+                      children: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
+                        final isSel = selectedMatchTime == t;
+                        final timeLabel = t % 1 == 0 ? '${t.toInt()}分' : '$t分';
+                        return Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                            child: InkWell(
+                              onTap: () =>
+                                  setStateSheet(() => selectedMatchTime = t),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSel
+                                      ? themeColors.primaryAccent
+                                      : (isDark
+                                            ? const Color(0xFF3A3A3C)
+                                            : Colors.white),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isSel
+                                        ? themeColors.primaryAccent
+                                        : Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Text(
+                                  timeLabel,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: isSel
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isSel
+                                        ? Colors.white
+                                        : themeColors.textColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 14),
                     // 勝負形式 (3本勝負 / 1本勝負)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1239,7 +1233,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: 14,
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
@@ -1269,7 +1263,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             // 1本勝負
                             InkWell(
                               onTap: () => setStateSheet(
