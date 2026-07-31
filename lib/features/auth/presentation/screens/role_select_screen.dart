@@ -110,128 +110,114 @@ class RoleSelectScreen extends ConsumerWidget {
 
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
+                                  vertical: 10,
                                 ),
                                 child: InkWell(
                                   onTap: () => RoomJoinQrDialog.show(context),
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(20),
                                   child: Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 14,
+                                      horizontal: 16,
+                                      vertical: 12,
                                     ),
                                     decoration: BoxDecoration(
                                       color: isDark
-                                          ? const Color(0xFF2C2C2E)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
+                                          ? Colors.white.withValues(alpha: 0.08)
+                                          : const Color(0xFFF2F3F7),
+                                      borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                         color: isDark
-                                            ? Colors.indigo.shade400.withValues(
-                                                alpha: 0.5,
+                                            ? Colors.white.withValues(
+                                                alpha: 0.15,
                                               )
-                                            : Colors.indigo.shade200,
-                                        width: 1.5,
+                                            : Colors.black.withValues(
+                                                alpha: 0.08,
+                                              ),
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.indigo.withValues(
-                                            alpha: isDark ? 0.25 : 0.08,
-                                          ),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
                                     ),
                                     child: Row(
                                       children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.indigo.withValues(
-                                              alpha: isDark ? 0.25 : 0.1,
-                                            ),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.shield_outlined,
-                                            color: isDark
-                                                ? Colors.indigo.shade200
-                                                : Colors.indigo.shade700,
-                                            size: 22,
-                                          ),
+                                        Icon(
+                                          Icons.hub_outlined,
+                                          color: isDark
+                                              ? Colors.tealAccent
+                                              : Colors.indigo.shade600,
+                                          size: 20,
                                         ),
-                                        const SizedBox(width: 14),
+                                        const SizedBox(width: 10),
                                         Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                          child: Row(
                                             children: [
                                               Text(
-                                                '接続中の道場ID (ルーム)',
+                                                '接続中の道場ルーム: ',
                                                 style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
                                                   color: isDark
                                                       ? Colors.grey.shade400
                                                       : Colors.grey.shade600,
-                                                  letterSpacing: 0.5,
                                                 ),
                                               ),
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                displayDojoId,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: isDark
-                                                      ? Colors.white
-                                                      : Colors.indigo.shade900,
-                                                  letterSpacing: 1.0,
+                                              Flexible(
+                                                child: Text(
+                                                  displayDojoId,
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: isDark
+                                                        ? Colors.white
+                                                        : Colors.black87,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
-                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ],
                                           ),
                                         ),
+                                        const SizedBox(width: 8),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 10,
-                                            vertical: 6,
+                                            vertical: 5,
                                           ),
                                           decoration: BoxDecoration(
                                             color: isDark
-                                                ? Colors.grey.shade800
-                                                : Colors.grey.shade100,
+                                                ? Colors.white.withValues(
+                                                    alpha: 0.1,
+                                                  )
+                                                : Colors.white,
                                             borderRadius: BorderRadius.circular(
-                                              10,
+                                              12,
                                             ),
                                             border: Border.all(
                                               color: isDark
-                                                  ? Colors.grey.shade700
+                                                  ? Colors.transparent
                                                   : Colors.grey.shade300,
                                             ),
                                           ),
                                           child: Row(
+                                            mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Icon(
-                                                Icons.edit,
-                                                size: 14,
-                                                color: isDark
-                                                    ? Colors.indigo.shade200
-                                                    : Colors.indigo.shade700,
-                                              ),
-                                              const SizedBox(width: 4),
                                               Text(
                                                 '変更',
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.bold,
                                                   color: isDark
-                                                      ? Colors.indigo.shade200
+                                                      ? Colors.tealAccent
                                                       : Colors.indigo.shade700,
                                                 ),
+                                              ),
+                                              const SizedBox(width: 2),
+                                              Icon(
+                                                Icons.edit,
+                                                size: 13,
+                                                color: isDark
+                                                    ? Colors.tealAccent
+                                                    : Colors.indigo.shade700,
                                               ),
                                             ],
                                           ),
