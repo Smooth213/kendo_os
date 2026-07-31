@@ -821,8 +821,12 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
             final isOffline =
                 ref.watch(globalConnectivityProvider).value ?? false;
 
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+
             return Scaffold(
-              backgroundColor: Colors.black, // 隙間風（背景のチラつき）を完全防衛するベースカラー
+              backgroundColor: isDark
+                  ? Colors.black
+                  : const Color(0xFFF2F2F7), // テーマ対応ベースカラー
               body: Column(
                 children: [
                   // 🔒 オフライン時のみ最上部にニュッと出現し、下の画面を安全に押し下げるインジケータ
