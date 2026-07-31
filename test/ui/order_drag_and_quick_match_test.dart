@@ -79,8 +79,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
 
-        // 「⚡ 1秒クイック対戦を始める」ボタンが存在すること
-        final quickButton = find.text('⚡ 1秒クイック対戦を始める');
+        // 「クイック対戦を始める」ボタンが存在すること
+        final quickButton = find.text('クイック対戦を始める');
         expect(quickButton, findsOneWidget);
       },
     );

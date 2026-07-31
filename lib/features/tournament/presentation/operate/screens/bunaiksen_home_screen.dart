@@ -278,26 +278,25 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                     ),
                     if (isToday) ...[
                       const SizedBox(height: 20),
-                      ElevatedButton.icon(
+                      ElevatedButton(
                         onPressed: () =>
                             _showQuickMatchSheet(context, ref, dateId),
-                        icon: const Icon(Icons.flash_on, size: 18),
-                        label: const Text(
-                          '⚡ 1秒クイック対戦を始める',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: themeColors.primaryAccent,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
+                            horizontal: 24,
                             vertical: 12,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'クイック対戦を始める',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -370,27 +369,26 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           ),
                           Row(
                             children: [
-                              ElevatedButton.icon(
+                              ElevatedButton(
                                 onPressed: () =>
                                     _showQuickMatchSheet(context, ref, dateId),
-                                icon: const Icon(Icons.flash_on, size: 14),
-                                label: const Text(
-                                  '1秒対戦',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 11,
-                                  ),
-                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: themeColors.primaryAccent,
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
+                                    horizontal: 12,
                                     vertical: 6,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'クイック対戦',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
                                   ),
                                 ),
                               ),
@@ -908,20 +906,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.flash_on, color: Colors.amber, size: 22),
-                  const SizedBox(width: 6),
-                  Text(
-                    '⚡ クイック対戦（1秒スタート）',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: themeColors.textColor,
-                    ),
-                  ),
-                ],
+              Text(
+                'クイック対戦',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: themeColors.textColor,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
@@ -1144,7 +1135,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       status: 'in_progress',
                       order: DateTime.now().millisecondsSinceEpoch.toDouble(),
                       rule: rule,
-                      note: '⚡ クイック対戦',
+                      note: 'クイック対戦',
                     );
 
                     await ref
@@ -1159,7 +1150,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   },
                   icon: const Icon(Icons.play_arrow, size: 20),
                   label: const Text(
-                    '🚀 試合スタート',
+                    '試合スタート',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
