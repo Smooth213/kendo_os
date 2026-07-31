@@ -951,24 +951,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       ),
                       child: Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.looks_one,
-                                size: 16,
-                                color: Colors.red.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '赤 (左)',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red.shade600,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            '赤',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red.shade600,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           InkWell(
@@ -1056,28 +1045,15 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       ),
                       child: Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.looks_two,
-                                size: 16,
-                                color: isDark
-                                    ? Colors.white70
-                                    : Colors.blueGrey.shade700,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '白 (右)',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark
-                                      ? Colors.white70
-                                      : Colors.blueGrey.shade700,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            '白',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.white70
+                                  : Colors.blueGrey.shade700,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           InkWell(
@@ -1094,25 +1070,47 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 setStateSheet(() => whitePlayer = picked);
                               }
                             },
+                            borderRadius: BorderRadius.circular(8),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
-                                vertical: 8,
+                                vertical: 10,
                               ),
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF2C2C2E)
                                     : Colors.white,
                                 borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                whitePlayer,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: themeColors.textColor,
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.blueGrey.shade600
+                                      : Colors.blueGrey.shade300.withValues(
+                                          alpha: 0.5,
+                                        ),
                                 ),
-                                overflow: TextOverflow.ellipsis,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      whitePlayer,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: themeColors.textColor,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_drop_down,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.blueGrey.shade700,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
