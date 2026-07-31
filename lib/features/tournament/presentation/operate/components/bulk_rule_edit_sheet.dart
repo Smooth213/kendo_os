@@ -25,7 +25,7 @@ void showBulkRuleEditSheet(
     isScrollControlled: true,
     backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (context) {
       return BulkRuleEditSheet(

@@ -325,7 +325,7 @@ class _TeamRegistrationScreenState
               decoration: BoxDecoration(
                 color: sheetBgColor,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+                  top: Radius.circular(20),
                 ),
               ),
               padding: const EdgeInsets.only(top: 16, left: 24, right: 24),

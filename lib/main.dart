@@ -768,11 +768,23 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
       currentThemeMode = ThemeMode.dark;
     }
 
+    final commonDialogTheme = DialogThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    );
+
+    final commonBottomSheetTheme = const BottomSheetThemeData(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+    );
+
     final darkThemeBase = ThemeData(
       brightness: Brightness.dark,
       useMaterial3: true,
       scaffoldBackgroundColor: Colors.black,
       canvasColor: Colors.black,
+      dialogTheme: commonDialogTheme,
+      bottomSheetTheme: commonBottomSheetTheme,
       textTheme: GoogleFonts.notoSansJpTextTheme(ThemeData.dark().textTheme),
       extensions: [AppThemeColors.ofMode(isDark: true, mode: 'normal')],
     );
@@ -781,6 +793,8 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
       brightness: Brightness.light,
       useMaterial3: true,
       scaffoldBackgroundColor: const Color(0xFFF2F2F7),
+      dialogTheme: commonDialogTheme,
+      bottomSheetTheme: commonBottomSheetTheme,
       textTheme: GoogleFonts.notoSansJpTextTheme(ThemeData.light().textTheme),
       extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
     );
