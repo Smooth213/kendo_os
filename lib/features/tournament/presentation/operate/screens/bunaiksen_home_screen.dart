@@ -21,6 +21,9 @@ import 'package:kendo_os/features/match/presentation/components/announce_popup_m
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import '../components/bulk_rule_edit_sheet.dart';
 
+import 'package:uuid/uuid.dart';
+import 'package:kendo_os/shared/widgets/multi_player_select_input.dart';
+
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
 
@@ -273,6 +276,32 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       isToday ? '今日の試合はまだありません' : 'この日の記録はありません',
                       style: const TextStyle(color: Colors.grey),
                     ),
+                    if (isToday) ...[
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: () =>
+                            _showQuickMatchSheet(context, ref, dateId),
+                        icon: const Icon(Icons.flash_on, size: 18),
+                        label: const Text(
+                          '⚡ 1秒クイック対戦を始める',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: themeColors.primaryAccent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               )
@@ -320,67 +349,95 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    SliverToBoxAdapter(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 6.0,
-                        ),
-                        color: themeColors.softAccent, // ★ 修正
-                        width: double.infinity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '本日の試合一覧',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: themeColors.primaryAccent,
-                              ),
+                  ],
+                  SliverToBoxAdapter(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 6.0,
+                      ),
+                      color: themeColors.softAccent, // ★ 修正
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '本日の試合一覧',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: themeColors.primaryAccent,
                             ),
-                            if (matches.isNotEmpty)
-                              OutlinedButton.icon(
-                                onPressed: () => showBulkRuleEditSheet(
-                                  context,
-                                  dateId,
-                                  matches,
-                                  isBunaiksen: true,
-                                ),
-                                icon: Icon(
-                                  Icons.gavel,
-                                  size: 14,
-                                  color: themeColors.primaryAccent,
-                                ),
-                                label: Text(
-                                  'ルール一括変更',
+                          ),
+                          Row(
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: () =>
+                                    _showQuickMatchSheet(context, ref, dateId),
+                                icon: const Icon(Icons.flash_on, size: 14),
+                                label: const Text(
+                                  '1秒対戦',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 11,
-                                    color: themeColors.primaryAccent,
                                   ),
                                 ),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: themeColors.primaryAccent,
-                                  side: BorderSide(
-                                    color: themeColors.primaryAccent.withAlpha(
-                                      128,
-                                    ),
-                                  ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: themeColors.primaryAccent,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 0,
+                                    horizontal: 10,
+                                    vertical: 6,
                                   ),
-                                  minimumSize: const Size(0, 28),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
+                              if (matches.isNotEmpty) ...[
+                                const SizedBox(width: 6),
+                                OutlinedButton.icon(
+                                  onPressed: () => showBulkRuleEditSheet(
+                                    context,
+                                    dateId,
+                                    matches,
+                                    isBunaiksen: true,
+                                  ),
+                                  icon: Icon(
+                                    Icons.gavel,
+                                    size: 14,
+                                    color: themeColors.primaryAccent,
+                                  ),
+                                  label: Text(
+                                    'ルール一括変更',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                      color: themeColors.primaryAccent,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: themeColors.primaryAccent,
+                                    side: BorderSide(
+                                      color: themeColors.primaryAccent
+                                          .withValues(alpha: 0.5),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 6,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                   SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final match = matches[index];
@@ -808,6 +865,310 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showQuickMatchSheet(
+    BuildContext context,
+    WidgetRef ref,
+    String dateId,
+  ) {
+    String redPlayer = '選手A';
+    String whitePlayer = '選手B';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: themeColors.cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (sheetContext, setStateSheet) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+            top: 16,
+            left: 20,
+            right: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.flash_on, color: Colors.amber, size: 22),
+                  const SizedBox(width: 6),
+                  Text(
+                    '⚡ クイック対戦（1秒スタート）',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: themeColors.textColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '赤・白の選手を選択して「試合スタート」を押すとすぐに計測が始まります',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  // 赤選手
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(
+                          alpha: isDark ? 0.15 : 0.08,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.red.shade400.withValues(alpha: 0.5),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.looks_one,
+                                size: 16,
+                                color: Colors.red.shade600,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '赤 (左)',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: () {
+                              showModalBottomSheet<void>(
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (subCtx) => MultiPlayerSelectInput(
+                                  initialSelected: const [],
+                                  onConfirm: (selectedList) {
+                                    if (selectedList.isNotEmpty) {
+                                      setStateSheet(
+                                        () => redPlayer = selectedList.first,
+                                      );
+                                    }
+                                    Navigator.pop(subCtx);
+                                  },
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                redPlayer,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: themeColors.textColor,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      'VS',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  // 白選手
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.withValues(
+                          alpha: isDark ? 0.15 : 0.08,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.blueGrey.shade400
+                              : Colors.blueGrey.shade300,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.looks_two,
+                                size: 16,
+                                color: isDark
+                                    ? Colors.white70
+                                    : Colors.blueGrey.shade700,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '白 (右)',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.blueGrey.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: () {
+                              showModalBottomSheet<void>(
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (subCtx) => MultiPlayerSelectInput(
+                                  initialSelected: const [],
+                                  onConfirm: (selectedList) {
+                                    if (selectedList.isNotEmpty) {
+                                      setStateSheet(
+                                        () => whitePlayer = selectedList.first,
+                                      );
+                                    }
+                                    Navigator.pop(subCtx);
+                                  },
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                whitePlayer,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: themeColors.textColor,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    Navigator.pop(sheetContext);
+                    final dojoId = ref.read(currentDojoIdProvider);
+                    final rule = ref.read(bunaiksenRuleProvider);
+                    final matchId = const Uuid().v4();
+
+                    final newMatch = MatchModel(
+                      id: matchId,
+                      tournamentId: dateId,
+                      groupName: const Uuid().v4(),
+                      matchType: '個人戦',
+                      redName: redPlayer,
+                      whiteName: whitePlayer,
+                      matchTimeMinutes: rule.matchTimeMinutes,
+                      hasExtension:
+                          rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited,
+                      extensionTimeMinutes: rule.enchoTimeMinutes,
+                      status: 'in_progress',
+                      order: DateTime.now().millisecondsSinceEpoch.toDouble(),
+                      rule: rule,
+                      note: '⚡ クイック対戦',
+                    );
+
+                    await ref
+                        .read(matchApplicationServiceProvider)
+                        .saveMatch(newMatch);
+
+                    if (context.mounted) {
+                      context.push(
+                        '/match/${newMatch.id}?tournamentId=$dateId&dojoId=$dojoId',
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.play_arrow, size: 20),
+                  label: const Text(
+                    '🚀 試合スタート',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: themeColors.primaryAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

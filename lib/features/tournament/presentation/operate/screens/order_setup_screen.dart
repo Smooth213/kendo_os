@@ -1277,18 +1277,64 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                         ],
                       ),
                     ),
-                    // ★ Phase 8-1: 親がListViewになったので、ここはExpandedを外してshrinkWrapを付与
-                    ListView.builder(
+                    // ★ 直感UX向上：ドラッグ＆ドロップ（長押し並び替え）対応のオーダー登録スロット一覧
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.swap_vert,
+                            size: 16,
+                            color: _themeColors.primaryAccent,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '長押しドラッグで選手の配置・順番を自由に入れ替えできます',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: subTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       itemCount: _positions.length,
+                      onReorderItem: (oldIndex, newIndex) {
+                        setState(() {
+                          final oldPlayer = _selectedPlayers[oldIndex];
+                          final newPlayer = _selectedPlayers[newIndex];
+
+                          if (oldPlayer != null) {
+                            _selectedPlayers[newIndex] = oldPlayer;
+                          } else {
+                            _selectedPlayers.remove(newIndex);
+                          }
+
+                          if (newPlayer != null) {
+                            _selectedPlayers[oldIndex] = newPlayer;
+                          } else {
+                            _selectedPlayers.remove(oldIndex);
+                          }
+                        });
+                      },
                       itemBuilder: (context, index) {
                         final posName = _positions[index];
                         final playerName = _selectedPlayers[index] ?? '未定';
                         final isSelected = _selectedPlayers.containsKey(index);
 
                         return Card(
+                          key: ValueKey(
+                            'order_slot_${_positions[index]}_$index',
+                          ),
                           margin: const EdgeInsets.only(bottom: 16),
                           elevation: 0,
                           color: inputBgColor,
@@ -1304,7 +1350,6 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           child: Column(
                             children: [
                               InkWell(
-                                // ★ 真の解決：ダイアログ終了後に自動でフォーカスが戻ってサジェストが暴発する「ゴーストフォーカス」を完全に殺す
                                 onTap: () async {
                                   FocusManager.instance.primaryFocus?.unfocus();
                                   await _selectPlayer(index, masterPlayers);
@@ -1366,8 +1411,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 8,
+                                          horizontal: 14,
+                                          vertical: 6,
                                         ),
                                         decoration: BoxDecoration(
                                           color: isSelected
@@ -1387,6 +1432,20 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                 : subTextColor,
                                             fontSize: 13,
                                             fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      ReorderableDragStartListener(
+                                        index: index,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4.0),
+                                          child: Icon(
+                                            Icons.drag_handle,
+                                            color: subTextColor.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            size: 22,
                                           ),
                                         ),
                                       ),
