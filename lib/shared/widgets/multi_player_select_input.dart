@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
-import 'smart_player_input.dart'; // マスタ取得用のプロバイダを参照するため
+import 'smart_player_input.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class MultiPlayerSelectInput extends ConsumerStatefulWidget {
@@ -39,6 +40,7 @@ class _MultiPlayerSelectInputState
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     String searchText = '';
+    String selectedFilter = 'すべて';
     // モーダル内でのみ操作する一時的な選択リスト
     List<String> tempSelected = List.from(widget.initialSelected);
 
@@ -47,21 +49,67 @@ class _MultiPlayerSelectInputState
       isScrollControlled: true,
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext sheetContext) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
-            final filteredMaster = masterPlayers
+            List<PlayerModel> filteredMaster = masterPlayers
                 .where((p) => p.name.contains(searchText))
                 .toList();
-            final filteredGuest = guestPlayers
-                .where((name) => name.contains(searchText))
-                .toList();
+
+            if (selectedFilter != 'すべて') {
+              if (selectedFilter == 'ゲスト') {
+                filteredMaster = [];
+              } else if (selectedFilter == '初心者') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '幼年') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade == 0 && !p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '低学年') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade >= 1 && p.grade <= 4 && !p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '高学年') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade >= 5 && p.grade <= 6 && !p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '中学生') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade >= 7 && p.grade <= 9 && !p.isBeginner)
+                    .toList();
+              } else if (selectedFilter == '高校生') {
+                filteredMaster = filteredMaster
+                    .where(
+                      (p) => p.grade >= 10 && p.grade <= 12 && !p.isBeginner,
+                    )
+                    .toList();
+              } else if (selectedFilter == '一般') {
+                filteredMaster = filteredMaster
+                    .where((p) => p.grade >= 13 && !p.isBeginner)
+                    .toList();
+              } else {
+                filteredMaster = [];
+              }
+            }
+
+            // よみがな順でソート
+            filteredMaster.sort((a, b) => a.nameKana.compareTo(b.nameKana));
+
+            final filteredGuest =
+                (selectedFilter == 'すべて' || selectedFilter == 'ゲスト')
+                ? guestPlayers
+                      .where((name) => name.contains(searchText))
+                      .toList()
+                : <String>[];
+
             final isNewName =
                 searchText.trim().isNotEmpty &&
-                !filteredMaster.any((p) => p.name == searchText.trim()) &&
-                !filteredGuest.any((name) => name == searchText.trim());
+                !masterPlayers.any((p) => p.name == searchText.trim()) &&
+                !guestPlayers.any((name) => name == searchText.trim());
 
             return Padding(
               padding: EdgeInsets.only(
@@ -145,6 +193,69 @@ class _MultiPlayerSelectInputState
                           });
                         }
                       },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // ★ カテゴリフィルターチップ（横スクロール）
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children:
+                          [
+                            'すべて',
+                            '初心者',
+                            '幼年',
+                            '低学年',
+                            '高学年',
+                            '中学生',
+                            '高校生',
+                            '一般',
+                            'ゲスト',
+                          ].map((filterName) {
+                            final isSelected = selectedFilter == filterName;
+                            final activeColor = _accentColor;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                showCheckmark: false,
+                                label: Text(filterName),
+                                labelStyle: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : (isDark
+                                            ? Colors.grey.shade300
+                                            : Colors.grey.shade800),
+                                ),
+                                selected: isSelected,
+                                selectedColor: activeColor,
+                                backgroundColor: isDark
+                                    ? Colors.grey.shade900
+                                    : Colors.grey.shade100,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(
+                                    color: isSelected
+                                        ? activeColor
+                                        : (isDark
+                                              ? Colors.grey.shade800
+                                              : Colors.grey.shade300),
+                                  ),
+                                ),
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    setStateSheet(
+                                      () => selectedFilter = filterName,
+                                    );
+                                  }
+                                },
+                              ),
+                            );
+                          }).toList(),
                     ),
                   ),
                   const SizedBox(height: 8),

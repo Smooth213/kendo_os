@@ -148,173 +148,287 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
         ? const Color(0xFF38383A)
         : Colors.grey.shade300;
 
+    String searchText = '';
+    String selectedFilter = 'すべて';
+
     final result = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        decoration: BoxDecoration(
-          color: sheetBgColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 16,
-          left: 24,
-          right: 24,
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 48,
-              height: 5,
-              decoration: BoxDecoration(
-                color: dividerColor,
-                borderRadius: BorderRadius.circular(10),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateSheet) {
+          List<PlayerModel> filteredMaster = masterPlayers
+              .where((p) => p.name.contains(searchText))
+              .toList();
+
+          if (selectedFilter != 'すべて') {
+            if (selectedFilter == '初心者') {
+              filteredMaster = filteredMaster
+                  .where((p) => p.isBeginner)
+                  .toList();
+            } else if (selectedFilter == '幼年') {
+              filteredMaster = filteredMaster
+                  .where((p) => p.grade == 0 && !p.isBeginner)
+                  .toList();
+            } else if (selectedFilter == '低学年') {
+              filteredMaster = filteredMaster
+                  .where((p) => p.grade >= 1 && p.grade <= 4 && !p.isBeginner)
+                  .toList();
+            } else if (selectedFilter == '高学年') {
+              filteredMaster = filteredMaster
+                  .where((p) => p.grade >= 5 && p.grade <= 6 && !p.isBeginner)
+                  .toList();
+            } else if (selectedFilter == '中学生') {
+              filteredMaster = filteredMaster
+                  .where((p) => p.grade >= 7 && p.grade <= 9 && !p.isBeginner)
+                  .toList();
+            } else if (selectedFilter == '高校生') {
+              filteredMaster = filteredMaster
+                  .where((p) => p.grade >= 10 && p.grade <= 12 && !p.isBeginner)
+                  .toList();
+            } else if (selectedFilter == '一般') {
+              filteredMaster = filteredMaster
+                  .where((p) => p.grade >= 13 && !p.isBeginner)
+                  .toList();
+            }
+          }
+
+          filteredMaster.sort((a, b) => a.nameKana.compareTo(b.nameKana));
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.80,
+            decoration: BoxDecoration(
+              color: sheetBgColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
               ),
             ),
-            const SizedBox(height: 24),
-            Text(
-              '選手の選択',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: _themeColors.primaryAccent,
-              ),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              top: 16,
+              left: 24,
+              right: 24,
             ),
-            const SizedBox(height: 24),
-            Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => Navigator.pop(context, 'CLEAR_FLAG'),
-                    icon: const Icon(Icons.person_outline, size: 16),
-                    label: const Text(
-                      '未定（空枠）',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.grey.shade700,
-                      side: BorderSide(color: Colors.grey.shade300),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: dividerColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '選手の選択',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _themeColors.primaryAccent,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.pop(context, 'CLEAR_FLAG'),
+                        icon: const Icon(Icons.person_outline, size: 16),
+                        label: const Text(
+                          '未定（空枠）',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey.shade700,
+                          side: BorderSide(color: Colors.grey.shade300),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.pop(context, '欠員'),
+                        icon: const Icon(Icons.block, size: 16),
+                        label: const Text(
+                          '欠員（不戦敗）',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red.shade600,
+                          side: BorderSide(color: Colors.red.shade200),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final inputName = await _showManualInputDialog();
+                    if (context.mounted && inputName != null) {
+                      Navigator.pop(context, inputName);
+                    }
+                  },
+                  icon: const Icon(Icons.edit, size: 16),
+                  label: const Text(
+                    '直接入力（助っ人など）',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _themeColors.primaryAccent,
+                    side: BorderSide(color: _themeColors.softAccent),
+                    minimumSize: const Size(double.infinity, 44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(height: 12),
+                // 検索窓
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: '名前で絞り込み...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: isDark
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade100,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  ),
+                  onChanged: (val) => setStateSheet(() => searchText = val),
+                ),
+                const SizedBox(height: 8),
+                // カテゴリフィルター
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children:
+                        [
+                          'すべて',
+                          '初心者',
+                          '幼年',
+                          '低学年',
+                          '高学年',
+                          '中学生',
+                          '高校生',
+                          '一般',
+                        ].map((filterName) {
+                          final isSelected = selectedFilter == filterName;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              showCheckmark: false,
+                              label: Text(filterName),
+                              labelStyle: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark
+                                          ? Colors.grey.shade300
+                                          : Colors.grey.shade800),
+                              ),
+                              selected: isSelected,
+                              selectedColor: _themeColors.primaryAccent,
+                              backgroundColor: isDark
+                                  ? Colors.grey.shade900
+                                  : Colors.grey.shade100,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? _themeColors.primaryAccent
+                                      : (isDark
+                                            ? Colors.grey.shade800
+                                            : Colors.grey.shade300),
+                                ),
+                              ),
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setStateSheet(
+                                    () => selectedFilter = filterName,
+                                  );
+                                }
+                              },
+                            ),
+                          );
+                        }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => Navigator.pop(context, '欠員'),
-                    icon: const Icon(Icons.block, size: 16),
-                    label: const Text(
-                      '欠員（不戦敗）',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red.shade600,
-                      side: BorderSide(color: Colors.red.shade200),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  child: ListView(
+                    children: [
+                      ...filteredMaster.map(
+                        (p) => Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          elevation: 0,
+                          color: _themeColors.softAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: isDark
+                                  ? Colors.transparent
+                                  : _themeColors.softAccent,
+                            ),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : Colors.white,
+                              child: Text(
+                                p.name.substring(0, 1),
+                                style: TextStyle(
+                                  color: _themeColors.primaryAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              p.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: textColor,
+                              ),
+                            ),
+                            subtitle: Text(
+                              p.gradeName,
+                              style: TextStyle(
+                                color: _themeColors.primaryAccent,
+                                fontSize: 12,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.check_circle_outline,
+                              color: _themeColors.primaryAccent,
+                            ),
+                            onTap: () => Navigator.pop(context, p.name),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: () async {
-                final inputName = await _showManualInputDialog();
-                if (context.mounted && inputName != null) {
-                  Navigator.pop(context, inputName);
-                }
-              },
-              icon: const Icon(Icons.edit, size: 16),
-              label: const Text(
-                '直接入力（助っ人など）',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _themeColors.primaryAccent,
-                side: BorderSide(color: _themeColors.softAccent),
-                minimumSize: const Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      '登録選手から選択',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: _themeColors.primaryAccent,
-                      ),
-                    ),
-                  ),
-                  ...masterPlayers.map(
-                    (p) => Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      elevation: 0,
-                      color: _themeColors.softAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                          color: isDark
-                              ? Colors.transparent
-                              : _themeColors.softAccent,
-                        ),
-                      ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: isDark
-                              ? const Color(0xFF2C2C2E)
-                              : Colors.white,
-                          child: Text(
-                            p.name.substring(0, 1),
-                            style: TextStyle(
-                              color: _themeColors.primaryAccent,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          p.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
-                        subtitle: Text(
-                          p.gradeName,
-                          style: TextStyle(
-                            color: _themeColors.primaryAccent,
-                            fontSize: 12,
-                          ),
-                        ),
-                        trailing: Icon(
-                          Icons.check_circle_outline,
-                          color: _themeColors.primaryAccent,
-                        ),
-                        onTap: () => Navigator.pop(context, p.name),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
 
