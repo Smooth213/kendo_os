@@ -153,7 +153,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     const SizedBox(height: 16),
 
                     // 2. メタデータ（練習試合フラグ）トグル
-                    SwitchListTile(
+                    SwitchListTile.adaptive(
                       title: const Text(
                         '星取表（ランキング）に集計する',
                         style: TextStyle(fontWeight: FontWeight.bold),

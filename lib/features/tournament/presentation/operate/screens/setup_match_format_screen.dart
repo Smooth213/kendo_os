@@ -761,26 +761,51 @@ class _SetupMatchFormatScreenState
   }
 
   Widget _buildReadOnlyRuleRow(String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 110,
+            width: 120,
             child: Text(
               label,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
                 fontSize: 13,
-                color: Colors.grey,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
               ),
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : _themeColors.softAccent,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white12
+                        : _themeColors.primaryAccent.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : _themeColors.textColor,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

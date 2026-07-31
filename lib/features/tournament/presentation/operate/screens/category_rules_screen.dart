@@ -1153,7 +1153,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               ),
               const SizedBox(height: 12),
 
-              SwitchListTile(
+              SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
                   '⚔️ 遠征マルチシーンルール（錬成会・本戦・申し合わせ）',
@@ -1173,7 +1173,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
               const Divider(height: 16),
 
-              SwitchListTile(
+              SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
                   '準決勝・決勝は別ルールにする',
@@ -1590,7 +1590,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           // ----------------------------------------------------
           // 錬成会モード (Renseikai Mode)
           // ----------------------------------------------------
-          SwitchListTile(
+          SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text('ランニングタイム計測'),
             subtitle: const Text('ON: 試合中断時も時計を止めない / OFF: 都度停止'),
@@ -1778,7 +1778,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           // ----------------------------------------------------
           // 個人戦 / リーグ個人戦 (Individual Mode)
           // ----------------------------------------------------
-          SwitchListTile(
+          SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text('延長戦を有効にする'),
             value: hasExtension,
@@ -1794,7 +1794,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             },
           ),
           if (hasExtension) ...[
-            SwitchListTile(
+            SwitchListTile.adaptive(
               contentPadding: const EdgeInsets.only(left: 16),
               title: const Text('時間・回数無制限'),
               value: isEnchoUnlimited,
@@ -1875,7 +1875,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             ),
           ],
           if (!hasExtension || !isEnchoUnlimited) ...[
-            SwitchListTile(
+            SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: const Text('引き分け時の判定を有効にする'),
               value: hasHantei,
@@ -1901,7 +1901,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           // ----------------------------------------------------
           // 団体戦 / リーグ団体戦 (Team Mode)
           // ----------------------------------------------------
-          SwitchListTile(
+          SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text('代表戦あり（団体戦用）'),
             subtitle: const Text('チーム合計が引き分けの時、代表者同士で決定戦を行います。'),
@@ -2010,7 +2010,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            SwitchListTile(
+            SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: const Text('代表戦の延長を有効にする'),
               value: daihyoHasExtension,
@@ -2101,7 +2101,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               ),
             ],
             const SizedBox(height: 8),
-            SwitchListTile(
+            SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: const Text('代表戦の判定を有効にする'),
               subtitle: const Text('時間切れで決着がつかない場合に判定を行います。'),
@@ -3127,7 +3127,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           step: 0.5,
           onChanged: onTimeChanged,
         ),
-        SwitchListTile(
+        SwitchListTile.adaptive(
           contentPadding: EdgeInsets.zero,
           title: const Text('流し（タイマーを止めない）'),
           value: isRunning,
