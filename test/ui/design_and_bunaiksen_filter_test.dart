@@ -246,5 +246,113 @@ void main() {
         expect(find.text('中学生 次郎'), findsNothing);
       },
     );
+
+    testWidgets(
+      '4. Comprehensive Bunaiksen Player Category Filter Unit & Integration Verification (All Categories)',
+      (WidgetTester tester) async {
+        final mockAllPlayers = [
+          PlayerModel(
+            id: 'younen',
+            lastName: '幼年',
+            firstName: '花子',
+            lastNameKana: 'ようねん',
+            firstNameKana: 'はなこ',
+            grade: 0,
+          ),
+          PlayerModel(
+            id: 'teigakunen',
+            lastName: '低学年',
+            firstName: '一郎',
+            lastNameKana: 'ていがくねん',
+            firstNameKana: 'いちろう',
+            grade: 2,
+          ),
+          PlayerModel(
+            id: 'kougakunen',
+            lastName: '高学年',
+            firstName: '二郎',
+            lastNameKana: 'こうがくねん',
+            firstNameKana: 'じろう',
+            grade: 5,
+          ),
+          PlayerModel(
+            id: 'chuugaku',
+            lastName: '中学生',
+            firstName: '三郎',
+            lastNameKana: 'ちゅうがく',
+            firstNameKana: 'さぶろう',
+            grade: 8,
+          ),
+          PlayerModel(
+            id: 'koukou',
+            lastName: '高校生',
+            firstName: '四郎',
+            lastNameKana: 'こうこう',
+            firstNameKana: 'しろう',
+            grade: 11,
+          ),
+          PlayerModel(
+            id: 'ippan',
+            lastName: '一般',
+            firstName: '五郎',
+            lastNameKana: 'いっぱん',
+            firstNameKana: 'ごろう',
+            grade: 14,
+          ),
+        ];
+
+        when(
+          () => mockPlayerRepo.getPlayers(),
+        ).thenAnswer((_) => Stream.value(mockAllPlayers));
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test204'),
+              playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+              isarProvider.overrideWithValue(null),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+            ],
+            child: const MaterialApp(home: BunaiksenHomeScreen()),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. クイック対戦 ➔ 名簿シート起動
+        await tester.tap(find.text('クイック対戦を始める'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('選手A'));
+        await tester.pumpAndSettle();
+
+        // 2. 「幼年」フィルターを検証
+        await tester.tap(find.text('幼年'));
+        await tester.pumpAndSettle();
+        expect(find.text('幼年 花子'), findsOneWidget);
+        expect(find.text('低学年 一郎'), findsNothing);
+
+        // 3. 「低学年」フィルターを検証
+        await tester.tap(find.text('低学年'));
+        await tester.pumpAndSettle();
+        expect(find.text('低学年 一郎'), findsOneWidget);
+        expect(find.text('幼年 花子'), findsNothing);
+
+        // 4. 「中学生」フィルターを検証
+        await tester.tap(find.text('中学生'));
+        await tester.pumpAndSettle();
+        expect(find.text('中学生 三郎'), findsOneWidget);
+        expect(find.text('低学年 一郎'), findsNothing);
+
+        // 5. 「一般」フィルターを検証
+        await tester.tap(find.text('一般'));
+        await tester.pumpAndSettle();
+        expect(find.text('一般 五郎'), findsOneWidget);
+        expect(find.text('中学生 三郎'), findsNothing);
+      },
+    );
   });
 }
