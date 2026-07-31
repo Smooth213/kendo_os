@@ -22,7 +22,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import '../components/bulk_rule_edit_sheet.dart';
 
 import 'package:uuid/uuid.dart';
-import 'package:kendo_os/shared/widgets/multi_player_select_input.dart';
+import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -972,42 +972,54 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           InkWell(
-                            onTap: () {
-                              showModalBottomSheet<void>(
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (subCtx) => MultiPlayerSelectInput(
-                                  initialSelected: const [],
-                                  onConfirm: (selectedList) {
-                                    if (selectedList.isNotEmpty) {
-                                      setStateSheet(
-                                        () => redPlayer = selectedList.first,
-                                      );
-                                    }
-                                    Navigator.pop(subCtx);
-                                  },
-                                ),
+                            onTap: () async {
+                              final picked = await _selectSinglePlayerSheet(
+                                context,
+                                ref,
+                                '赤',
+                                Colors.red.shade700,
                               );
+                              if (picked != null) {
+                                setStateSheet(() => redPlayer = picked);
+                              }
                             },
+                            borderRadius: BorderRadius.circular(8),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
-                                vertical: 8,
+                                vertical: 10,
                               ),
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF2C2C2E)
                                     : Colors.white,
                                 borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                redPlayer,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: themeColors.textColor,
+                                border: Border.all(
+                                  color: Colors.red.shade300.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
-                                overflow: TextOverflow.ellipsis,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      redPlayer,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: themeColors.textColor,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_drop_down,
+                                    color: Colors.red.shade600,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -1069,22 +1081,18 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           InkWell(
-                            onTap: () {
-                              showModalBottomSheet<void>(
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (subCtx) => MultiPlayerSelectInput(
-                                  initialSelected: const [],
-                                  onConfirm: (selectedList) {
-                                    if (selectedList.isNotEmpty) {
-                                      setStateSheet(
-                                        () => whitePlayer = selectedList.first,
-                                      );
-                                    }
-                                    Navigator.pop(subCtx);
-                                  },
-                                ),
+                            onTap: () async {
+                              final picked = await _selectSinglePlayerSheet(
+                                context,
+                                ref,
+                                '白',
+                                isDark
+                                    ? Colors.blueGrey.shade300
+                                    : Colors.blueGrey.shade700,
                               );
+                              if (picked != null) {
+                                setStateSheet(() => whitePlayer = picked);
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -1170,6 +1178,236 @@ class BunaiksenHomeScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Future<String?> _selectSinglePlayerSheet(
+    BuildContext context,
+    WidgetRef ref,
+    String sideName,
+    Color accentColor,
+  ) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final repo = ref.read(playerRepositoryProvider);
+    final masterPlayers = await repo.getPlayers().first;
+
+    if (!context.mounted) return null;
+
+    String searchText = '';
+    String selectedFilter = 'すべて';
+
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            final filtered = masterPlayers.where((p) {
+              final matchSearch =
+                  searchText.isEmpty ||
+                  p.name.contains(searchText) ||
+                  p.nameKana.contains(searchText);
+              final matchFilter =
+                  selectedFilter == 'すべて' || p.gradeName == selectedFilter;
+              return matchSearch && matchFilter;
+            }).toList();
+
+            return Container(
+              height: MediaQuery.of(ctx).size.height * 0.75,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade400,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Icon(Icons.person_search, color: accentColor, size: 24),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$sideNameの選手を選択',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // 検索窓・自由テキスト入力
+                  TextField(
+                    autofocus: false,
+                    decoration: InputDecoration(
+                      hintText: '名前を入力または名簿から1タップ選択',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: searchText.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              ),
+                              onPressed: () => Navigator.pop(ctx, searchText),
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: isDark
+                          ? const Color(0xFF2C2C2E)
+                          : Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    onChanged: (val) => setModalState(() => searchText = val),
+                    onSubmitted: (val) {
+                      if (val.trim().isNotEmpty) {
+                        Navigator.pop(ctx, val.trim());
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  // カテゴリフィルター
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children:
+                          [
+                            'すべて',
+                            '初心者',
+                            '幼年',
+                            '低学年',
+                            '高学年',
+                            '中学生',
+                            '高校生',
+                            '一般',
+                          ].map((filterName) {
+                            final isSel = selectedFilter == filterName;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ChoiceChip(
+                                showCheckmark: false,
+                                label: Text(filterName),
+                                labelStyle: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSel
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSel
+                                      ? Colors.white
+                                      : (isDark
+                                            ? Colors.white70
+                                            : Colors.black87),
+                                ),
+                                selected: isSel,
+                                selectedColor: accentColor,
+                                backgroundColor: isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : Colors.grey.shade200,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    setModalState(
+                                      () => selectedFilter = filterName,
+                                    );
+                                  }
+                                },
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // 名簿リスト (ワンタップ決定)
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? Center(
+                            child: Text(
+                              searchText.isNotEmpty
+                                  ? '「$searchText」をタップして決定できます'
+                                  : '該当する選手がいません',
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.white54
+                                    : Colors.grey.shade600,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: filtered.length,
+                            itemBuilder: (itemCtx, index) {
+                              final p = filtered[index];
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                color: isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : Colors.grey.shade50,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: accentColor.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                    child: Text(
+                                      p.name.isNotEmpty
+                                          ? p.name.substring(0, 1)
+                                          : '?',
+                                      style: TextStyle(
+                                        color: accentColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    p.name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    p.gradeName,
+                                    style: TextStyle(
+                                      color: accentColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  trailing: Icon(
+                                    Icons.touch_app,
+                                    color: accentColor,
+                                  ),
+                                  onTap: () => Navigator.pop(ctx, p.name),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
