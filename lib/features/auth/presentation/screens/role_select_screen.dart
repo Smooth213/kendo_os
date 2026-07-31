@@ -101,94 +101,140 @@ class RoleSelectScreen extends ConsumerWidget {
                           Consumer(
                             builder: (context, ref, child) {
                               final dojoId = ref.watch(currentDojoIdProvider);
+                              final displayDojoId = dojoId.isNotEmpty
+                                  ? dojoId
+                                  : '未設定';
                               final isDark =
                                   Theme.of(context).brightness ==
                                   Brightness.dark;
 
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
+                                  vertical: 8,
                                 ),
                                 child: InkWell(
                                   onTap: () => RoomJoinQrDialog.show(context),
                                   borderRadius: BorderRadius.circular(16),
                                   child: Container(
+                                    width: double.infinity,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 20,
-                                      vertical: 12,
+                                      vertical: 14,
                                     ),
                                     decoration: BoxDecoration(
-                                      // 背景色：ダーク/ライトモードに応じた半透明グラス風
                                       color: isDark
-                                          ? Colors.white.withValues(alpha: 0.07)
-                                          : Colors.black.withValues(
-                                              alpha: 0.05,
-                                            ),
+                                          ? const Color(0xFF2C2C2E)
+                                          : Colors.white,
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
                                         color: isDark
-                                            ? Colors.white.withValues(
-                                                alpha: 0.15,
+                                            ? Colors.indigo.shade400.withValues(
+                                                alpha: 0.5,
                                               )
-                                            : Colors.black.withValues(
-                                                alpha: 0.1,
-                                              ),
+                                            : Colors.indigo.shade200,
+                                        width: 1.5,
                                       ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.indigo.withValues(
+                                            alpha: isDark ? 0.25 : 0.08,
+                                          ),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
                                     ),
                                     child: Row(
-                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(
-                                          Icons.hub_outlined,
-                                          color: isDark
-                                              ? Colors.tealAccent
-                                              : Colors.teal.shade700,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Flexible(
-                                          child: Text.rich(
-                                            TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: '接続中の道場ルーム: ',
-                                                  style: TextStyle(
-                                                    color: isDark
-                                                        ? Colors.white
-                                                              .withValues(
-                                                                alpha: 0.6,
-                                                              )
-                                                        : Colors.black
-                                                              .withValues(
-                                                                alpha: 0.6,
-                                                              ),
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                                TextSpan(
-                                                  text: dojoId,
-                                                  style: TextStyle(
-                                                    color: isDark
-                                                        ? Colors.white
-                                                        : Colors.black87,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.bold,
-                                                    letterSpacing: 0.5,
-                                                  ),
-                                                ),
-                                              ],
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: Colors.indigo.withValues(
+                                              alpha: isDark ? 0.25 : 0.1,
                                             ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.shield_outlined,
+                                            color: isDark
+                                                ? Colors.indigo.shade200
+                                                : Colors.indigo.shade700,
+                                            size: 22,
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
-                                        Icon(
-                                          Icons.edit_note,
-                                          color: isDark
-                                              ? Colors.white30
-                                              : Colors.black26,
-                                          size: 16,
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '接続中の道場ID (ルーム)',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isDark
+                                                      ? Colors.grey.shade400
+                                                      : Colors.grey.shade600,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                displayDojoId,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: isDark
+                                                      ? Colors.white
+                                                      : Colors.indigo.shade900,
+                                                  letterSpacing: 1.0,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isDark
+                                                ? Colors.grey.shade800
+                                                : Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            border: Border.all(
+                                              color: isDark
+                                                  ? Colors.grey.shade700
+                                                  : Colors.grey.shade300,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.edit,
+                                                size: 14,
+                                                color: isDark
+                                                    ? Colors.indigo.shade200
+                                                    : Colors.indigo.shade700,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '変更',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isDark
+                                                      ? Colors.indigo.shade200
+                                                      : Colors.indigo.shade700,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),
