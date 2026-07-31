@@ -1026,7 +1026,7 @@ class _TeamRegistrationScreenState
           controller: _teamNameController,
           focusNode: _teamNameFocusNode, // ★ 追加：永続化したFocusNodeを渡す
           suggestions: ref.watch(customTeamNamesProvider).value ?? [],
-          labelText: 'チーム名 (例: 道上剣友会A)',
+          labelText: 'チーム名 (例: 〇〇剣友会A)',
           hintText: 'タップして登録済みリストから選択',
           fillColor: inputBgColor,
           borderColor: borderColor,

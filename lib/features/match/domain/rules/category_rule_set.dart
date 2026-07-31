@@ -13,6 +13,34 @@ abstract class CategoryRuleSet with _$CategoryRuleSet {
     @Default(['準決勝', '準決', '決勝', 'final', '3位決定', '3決', 'ベスト4'])
     List<String> advancedKeywords,
     @Default('個人戦') String matchType,
+    @Default(false) bool isMultiScene,
+    @Default(true) bool useHonsenRule,
+    @Default(true) bool useRenseikaiRule,
+    @Default(true) bool useMoushiawaseRule,
+    @Default(
+      MatchRule(
+        matchTimeMinutes: 2,
+        isRunningTime: true,
+        hasHantei: true,
+        enchoCount: 0,
+        isEnchoUnlimited: false,
+        isRenseikai: true,
+        matchScene: 'renseikai',
+      ),
+    )
+    MatchRule renseikaiRule,
+    @Default(
+      MatchRule(
+        matchTimeMinutes: 2,
+        isRunningTime: true,
+        hasHantei: true,
+        enchoCount: 0,
+        isEnchoUnlimited: false,
+        isRenseikai: true,
+        matchScene: 'moushiawase',
+      ),
+    )
+    MatchRule moushiawaseRule,
   }) = _CategoryRuleSet;
 
   factory CategoryRuleSet.fromJson(Map<String, dynamic> json) =>

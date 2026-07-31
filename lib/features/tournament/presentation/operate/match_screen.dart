@@ -3718,6 +3718,37 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         actionsAlignment: MainAxisAlignment.center,
         actionsOverflowDirection: VerticalDirection.down,
         actions: [
+          // ★ 錬成会・申し合わせ時の爆速「次の対戦を設定」アクションボタン
+          if (match.matchScene == 'renseikai' ||
+              match.matchScene == 'moushiawase' ||
+              (match.rule?.isRenseikai ?? false)) ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.push(
+                    '/new-match?tournamentId=${match.tournamentId ?? ""}',
+                  );
+                },
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text(
+                  '⚔️ 次の申し合わせ・錬成試合を追加設定',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber.shade700,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           if (nextCardMatch != null)
             SizedBox(
               width: double.infinity,

@@ -5,6 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
 import '../providers/last_used_settings_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart'; // ★ MatchRuleモデルを読み込む
+import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -73,6 +74,8 @@ class _SetupMatchFormatScreenState
   // ★ 追加：2段階選択用の状態変数
   late String _selectedMajorCategory;
   late String _selectedMinorCategory;
+  String _selectedRuleScene =
+      'honsen'; // 'renseikai', 'honsen', 'moushiawase', 'advanced'
 
   // ★ 追加：チーム登録画面と共通！最終的なカテゴリ名を生成
   String get _category {
@@ -601,15 +604,19 @@ class _SetupMatchFormatScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(icon, color: color),
                   const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                        fontSize: 15,
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ],
@@ -883,13 +890,57 @@ class _SetupMatchFormatScreenState
         final categoryRules = tournament.categoryRules;
         if (categoryRules.containsKey(categoryName)) {
           final ruleSet = categoryRules[categoryName]!;
-          final isAdvanced = _isCurrentMatchAdvanced && ruleSet.useAdvancedRule;
-          final targetRule = isAdvanced
-              ? ruleSet.advancedRule
-              : ruleSet.normalRule;
-          _applyMatchRuleToState(targetRule);
+          if (!ruleSet.useHonsenRule && _selectedRuleScene == 'honsen') {
+            if (ruleSet.useRenseikaiRule) {
+              _selectedRuleScene = 'renseikai';
+            } else if (ruleSet.useMoushiawaseRule) {
+              _selectedRuleScene = 'moushiawase';
+            }
+          }
+          if (_selectedRuleScene == 'renseikai') {
+            _applyMatchRuleToState(ruleSet.renseikaiRule);
+            _isRenseikai = true;
+          } else if (_selectedRuleScene == 'moushiawase') {
+            _applyMatchRuleToState(ruleSet.moushiawaseRule);
+            _isRenseikai = true;
+          } else if (_selectedRuleScene == 'advanced' &&
+              ruleSet.useAdvancedRule) {
+            _applyMatchRuleToState(ruleSet.advancedRule);
+            _isRenseikai = false;
+          } else {
+            final isAdvanced =
+                _isCurrentMatchAdvanced && ruleSet.useAdvancedRule;
+            final targetRule = isAdvanced
+                ? ruleSet.advancedRule
+                : ruleSet.normalRule;
+            _applyMatchRuleToState(targetRule);
+            _isRenseikai = false;
+          }
         }
       }
+    });
+  }
+
+  void _applyCategoryRuleScene(String scene, CategoryRuleSet ruleSet) {
+    setState(() {
+      _selectedRuleScene = scene;
+      MatchRule targetRule;
+      if (scene == 'renseikai') {
+        targetRule = ruleSet.renseikaiRule;
+        _isRenseikai = true;
+        _renseikaiType = ruleSet.renseikaiRule.renseikaiType;
+      } else if (scene == 'moushiawase') {
+        targetRule = ruleSet.moushiawaseRule;
+        _isRenseikai = true;
+        _renseikaiType = ruleSet.moushiawaseRule.renseikaiType;
+      } else if (scene == 'advanced') {
+        targetRule = ruleSet.advancedRule;
+        _isRenseikai = false;
+      } else {
+        targetRule = ruleSet.normalRule;
+        _isRenseikai = false;
+      }
+      _applyMatchRuleToState(targetRule);
     });
   }
 
@@ -1399,9 +1450,21 @@ class _SetupMatchFormatScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
 
-    // 現在適用中のルールセットを取得
-    final isAdvanced = _isCurrentMatchAdvanced;
-    final ruleName = isAdvanced ? '上位戦（準決勝・決勝）ルール' : '通常戦ルール';
+    final categoryName = _category;
+    final asyncTourney = ref.watch(tournamentProvider(widget.tournamentId));
+    final tournament = asyncTourney.valueOrNull;
+    final ruleSet = tournament?.categoryRules[categoryName];
+
+    final displayRuleName = _selectedRuleScene == 'renseikai'
+        ? '⚔️ 錬成会ルール'
+        : (_selectedRuleScene == 'moushiawase'
+              ? '🤝 申し合わせルール'
+              : (_selectedRuleScene == 'advanced'
+                    ? '⭐ 上位戦ルール'
+                    : '🏆 本戦（通常戦）ルール'));
+
+    final isAdvanced =
+        _selectedRuleScene == 'advanced' || _isCurrentMatchAdvanced;
 
     // 延長表示用のテキストを生成するヘルパー
     String getExtensionText() {
@@ -1429,8 +1492,79 @@ class _SetupMatchFormatScreenState
         ),
         const SizedBox(height: 16),
 
+        // ★ 部門設定ルールのシーン切り替えUI
+        if (ruleSet != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6.0),
+            child: Text(
+              'この部門（$categoryName）に設定されているルールを選択:',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (ruleSet.isMultiScene) ...[
+                if (ruleSet.useRenseikaiRule)
+                  ChoiceChip(
+                    label: const Text('⚔️ 錬成会ルール'),
+                    selected: _selectedRuleScene == 'renseikai',
+                    selectedColor: Colors.amber.shade200,
+                    onSelected: (selected) {
+                      if (selected)
+                        _applyCategoryRuleScene('renseikai', ruleSet);
+                    },
+                  ),
+                if (ruleSet.useHonsenRule)
+                  ChoiceChip(
+                    label: const Text('🏆 本戦ルール'),
+                    selected: _selectedRuleScene == 'honsen',
+                    selectedColor: Colors.indigo.shade200,
+                    onSelected: (selected) {
+                      if (selected) _applyCategoryRuleScene('honsen', ruleSet);
+                    },
+                  ),
+                if (ruleSet.useMoushiawaseRule)
+                  ChoiceChip(
+                    label: const Text('🤝 申し合わせルール'),
+                    selected: _selectedRuleScene == 'moushiawase',
+                    selectedColor: Colors.teal.shade200,
+                    onSelected: (selected) {
+                      if (selected)
+                        _applyCategoryRuleScene('moushiawase', ruleSet);
+                    },
+                  ),
+              ] else if (ruleSet.useHonsenRule) ...[
+                ChoiceChip(
+                  label: const Text('🏆 通常戦ルール'),
+                  selected: _selectedRuleScene == 'honsen',
+                  selectedColor: Colors.indigo.shade200,
+                  onSelected: (selected) {
+                    if (selected) _applyCategoryRuleScene('honsen', ruleSet);
+                  },
+                ),
+              ],
+              if (ruleSet.useAdvancedRule)
+                ChoiceChip(
+                  label: const Text('⭐ 上位戦ルール'),
+                  selected: _selectedRuleScene == 'advanced',
+                  selectedColor: Colors.deepOrange.shade200,
+                  onSelected: (selected) {
+                    if (selected) _applyCategoryRuleScene('advanced', ruleSet);
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
+
         _buildDynamicSectionBox(
-          title: '現在適用中のルール: $ruleName',
+          title: '現在適用中のルール: $displayRuleName',
           icon: isAdvanced ? Icons.stars : Icons.gavel,
           color: isAdvanced ? Colors.teal : _themeColors.primaryAccent,
           child: Column(
@@ -1893,6 +2027,7 @@ class _SetupMatchFormatScreenState
                           winPoint: winPt,
                           lossPoint: lossPt,
                           drawPoint: drawPt,
+                          matchScene: _selectedRuleScene,
                         ),
                       );
 

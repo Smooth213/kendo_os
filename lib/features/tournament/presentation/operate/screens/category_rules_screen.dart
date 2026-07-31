@@ -46,6 +46,23 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
   String _editingMatchType = '個人戦';
   bool _editingIsRenseikai = false;
 
+  // 道場遠征用マルチシーン設定
+  bool _isMultiScene = false;
+  bool _useHonsenRule = true;
+  bool _useRenseikaiRule = true;
+  bool _useMoushiawaseRule = true;
+  double _renseikaiTime = 2.0;
+  bool _renseikaiIsRunningTime = true;
+  bool _renseikaiHasHantei = true;
+  String _renseikaiType = '一試合制';
+  int _renseikaiOverallTime = 30;
+
+  double _moushiawaseTime = 2.0;
+  bool _moushiawaseIsRunningTime = true;
+  bool _moushiawaseHasHantei = true;
+  String _moushiawaseType = '一試合制';
+  int _moushiawaseOverallTime = 30;
+
   // 通常戦の設定
   double _normalTime = 3.0;
   bool _normalIsRunningTime = false;
@@ -137,6 +154,22 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     setState(() {
       _editingCategory = category;
       _useAdvancedRule = rules.useAdvancedRule;
+
+      _isMultiScene = rules.isMultiScene;
+      _useHonsenRule = rules.useHonsenRule;
+      _useRenseikaiRule = rules.useRenseikaiRule;
+      _useMoushiawaseRule = rules.useMoushiawaseRule;
+      _renseikaiTime = rules.renseikaiRule.matchTimeMinutes;
+      _renseikaiIsRunningTime = rules.renseikaiRule.isRunningTime;
+      _renseikaiHasHantei = rules.renseikaiRule.hasHantei;
+      _renseikaiType = rules.renseikaiRule.renseikaiType;
+      _renseikaiOverallTime = rules.renseikaiRule.overallTimeMinutes;
+
+      _moushiawaseTime = rules.moushiawaseRule.matchTimeMinutes;
+      _moushiawaseIsRunningTime = rules.moushiawaseRule.isRunningTime;
+      _moushiawaseHasHantei = rules.moushiawaseRule.hasHantei;
+      _moushiawaseType = rules.moushiawaseRule.renseikaiType;
+      _moushiawaseOverallTime = rules.moushiawaseRule.overallTimeMinutes;
 
       // 通常戦設定
       _normalTime = rules.normalRule.matchTimeMinutes;
@@ -371,12 +404,40 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     final normalRule = _buildNormalMatchRule(category);
     final advancedRule = _buildAdvancedMatchRule(category);
 
+    final renseikaiRule = MatchRule(
+      matchTimeMinutes: _renseikaiTime,
+      isRunningTime: _renseikaiIsRunningTime,
+      hasHantei: _renseikaiHasHantei,
+      enchoCount: 0,
+      isEnchoUnlimited: false,
+      isRenseikai: true,
+      renseikaiType: _renseikaiType,
+      overallTimeMinutes: _renseikaiOverallTime,
+    );
+
+    final moushiawaseRule = MatchRule(
+      matchTimeMinutes: _moushiawaseTime,
+      isRunningTime: _moushiawaseIsRunningTime,
+      hasHantei: _moushiawaseHasHantei,
+      enchoCount: 0,
+      isEnchoUnlimited: false,
+      isRenseikai: true,
+      renseikaiType: _moushiawaseType,
+      overallTimeMinutes: _moushiawaseOverallTime,
+    );
+
     final newRuleSet = CategoryRuleSet(
       normalRule: normalRule,
       advancedRule: advancedRule,
       useAdvancedRule: _useAdvancedRule,
       advancedKeywords: _editingAdvancedKeywords,
       matchType: _editingIsRenseikai ? '錬成会' : _editingMatchType,
+      isMultiScene: _isMultiScene,
+      useHonsenRule: _useHonsenRule,
+      useRenseikaiRule: _useRenseikaiRule,
+      useMoushiawaseRule: _useMoushiawaseRule,
+      renseikaiRule: renseikaiRule,
+      moushiawaseRule: moushiawaseRule,
     );
 
     final updatedCategoryRules = Map<String, CategoryRuleSet>.from(
@@ -547,9 +608,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     if (cleanName.isEmpty) return;
 
     if (tournament.categoryRules.containsKey(cleanName)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('すでに同じ名前の部門が存在します')));
+      final existingRuleSet = tournament.categoryRules[cleanName]!;
+      _startEditing(cleanName, existingRuleSet);
       return;
     }
 
@@ -855,32 +915,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                                 fontSize: 16,
                               ),
                             ),
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '通常戦: ${_formatMinutes(ruleSet.normalRule.matchTimeMinutes)}'
-                                    ' / ${ruleSet.normalRule.enchoCount > 0 ? "延長${ruleSet.normalRule.enchoCount}回" : (ruleSet.normalRule.isEnchoUnlimited ? "延長無制限" : "延長なし")}'
-                                    ' / ${ruleSet.normalRule.hasHantei ? "判定あり" : "判定なし"}',
-                                  ),
-                                  if (ruleSet.useAdvancedRule)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
-                                      child: Text(
-                                        '上位戦: ${_formatMinutes(ruleSet.advancedRule.matchTimeMinutes)}'
-                                        ' / ${ruleSet.advancedRule.enchoCount > 0 ? "延長${ruleSet.advancedRule.enchoCount}回" : (ruleSet.advancedRule.isEnchoUnlimited ? "延長無制限" : "延長なし")}'
-                                        ' / ${ruleSet.advancedRule.hasHantei ? "判定あり" : "判定なし"}',
-                                        style: TextStyle(
-                                          color: Colors.indigo.shade500,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
+                            subtitle: _buildRuleChips(ruleSet),
                           ),
                         ),
                       ),
@@ -1005,15 +1040,17 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
-                  '錬成会（練習試合）モード',
+                  '⚔️ 遠征マルチシーンルール（錬成会・本戦・申し合わせ）',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                subtitle: const Text('ONにすると、全体の制限時間内での総当たり形式になります。'),
-                value: _editingIsRenseikai,
-                activeThumbColor: Colors.indigo,
+                subtitle: const Text(
+                  'ONにすると、1つの部門に「錬成会」「本戦」「申し合わせ」の各ルールを個別に定義できます。',
+                ),
+                value: _isMultiScene,
+                activeThumbColor: Colors.amber.shade700,
                 onChanged: (val) {
                   setState(() {
-                    _editingIsRenseikai = val;
+                    _isMultiScene = val;
                   });
                 },
               ),
@@ -1038,33 +1075,183 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
               const Divider(height: 32),
 
-              if (!_useAdvancedRule) ...[
-                _buildRuleFormSection('通常ルール設定', true, themeColors),
+              if (_isMultiScene) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.amber.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '実施するルールシーンの選択',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.amber,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      CheckboxListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          '⚔️ 錬成会ルール',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        value: _useRenseikaiRule,
+                        onChanged: (val) {
+                          if (val != null)
+                            setState(() => _useRenseikaiRule = val);
+                        },
+                      ),
+                      CheckboxListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          '🏆 本戦ルール',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        value: _useHonsenRule,
+                        onChanged: (val) {
+                          if (val != null) setState(() => _useHonsenRule = val);
+                        },
+                      ),
+                      CheckboxListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          '🤝 申し合わせルール',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        value: _useMoushiawaseRule,
+                        onChanged: (val) {
+                          if (val != null)
+                            setState(() => _useMoushiawaseRule = val);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                DefaultTabController(
+                  length: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const TabBar(
+                        labelColor: Colors.indigo,
+                        unselectedLabelColor: Colors.grey,
+                        indicatorColor: Colors.indigo,
+                        isScrollable: true,
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        tabs: [
+                          Tab(text: '⚔️ 錬成会ルール'),
+                          Tab(text: '🏆 本戦ルール'),
+                          Tab(text: '🤝 申し合わせルール'),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        height: 450,
+                        child: TabBarView(
+                          children: [
+                            ListView(
+                              children: [
+                                _buildSimpleSceneRuleForm(
+                                  '⚔️ 錬成会ルール',
+                                  _renseikaiTime,
+                                  _renseikaiIsRunningTime,
+                                  _renseikaiHasHantei,
+                                  _renseikaiType,
+                                  _renseikaiOverallTime,
+                                  (val) => setState(() => _renseikaiTime = val),
+                                  (val) => setState(
+                                    () => _renseikaiIsRunningTime = val,
+                                  ),
+                                  (val) =>
+                                      setState(() => _renseikaiHasHantei = val),
+                                  (val) => setState(() => _renseikaiType = val),
+                                  (val) => setState(
+                                    () => _renseikaiOverallTime = val,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            ListView(
+                              children: [
+                                _buildRuleFormSection(
+                                  '🏆 本戦ルール',
+                                  true,
+                                  themeColors,
+                                ),
+                              ],
+                            ),
+                            ListView(
+                              children: [
+                                _buildSimpleSceneRuleForm(
+                                  '🤝 申し合わせルール',
+                                  _moushiawaseTime,
+                                  _moushiawaseIsRunningTime,
+                                  _moushiawaseHasHantei,
+                                  _moushiawaseType,
+                                  _moushiawaseOverallTime,
+                                  (val) =>
+                                      setState(() => _moushiawaseTime = val),
+                                  (val) => setState(
+                                    () => _moushiawaseIsRunningTime = val,
+                                  ),
+                                  (val) => setState(
+                                    () => _moushiawaseHasHantei = val,
+                                  ),
+                                  (val) =>
+                                      setState(() => _moushiawaseType = val),
+                                  (val) => setState(
+                                    () => _moushiawaseOverallTime = val,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (!_useAdvancedRule) ...[
+                _buildRuleFormSection('通常戦（本戦）ルール', true, themeColors),
               ] else ...[
                 DefaultTabController(
                   length: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TabBar(
+                      const TabBar(
                         labelColor: Colors.indigo,
                         unselectedLabelColor: Colors.grey,
                         indicatorColor: Colors.indigo,
-                        labelStyle: const TextStyle(
+                        labelStyle: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                         ),
-                        tabs: const [
+                        tabs: [
                           Tab(text: '通常戦のルール'),
                           Tab(text: '上位戦（準決勝・決勝）'),
                         ],
                       ),
                       const SizedBox(height: 20),
                       SizedBox(
-                        height: 800, // フォームを包み込む高さ
+                        height: 800,
                         child: TabBarView(
-                          physics:
-                              const NeverScrollableScrollPhysics(), // スクロールでの誤動作防止
+                          physics: const NeverScrollableScrollPhysics(),
                           children: [
                             ListView(
                               children: [
@@ -2690,6 +2877,233 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           color: color,
         ),
       ),
+    );
+  }
+
+  Widget _buildRuleChips(CategoryRuleSet ruleSet) {
+    Widget buildChip(String label, Color bg, Color text) {
+      return Container(
+        margin: const EdgeInsets.only(right: 6, top: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: text,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    if (ruleSet.isMultiScene) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 4),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              buildChip('⚔️ 錬成会', Colors.amber.shade100, Colors.amber.shade900),
+              buildChip(
+                _formatMinutes(ruleSet.renseikaiRule.matchTimeMinutes),
+                Colors.grey.shade200,
+                Colors.black87,
+              ),
+              if (ruleSet.renseikaiRule.isRunningTime)
+                buildChip('流し', Colors.blue.shade100, Colors.blue.shade900),
+              if (ruleSet.renseikaiRule.hasHantei)
+                buildChip('引分有', Colors.green.shade100, Colors.green.shade900),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              buildChip(
+                '🏆 本戦',
+                Colors.indigo.shade100,
+                Colors.indigo.shade900,
+              ),
+              buildChip(
+                _formatMinutes(ruleSet.normalRule.matchTimeMinutes),
+                Colors.grey.shade200,
+                Colors.black87,
+              ),
+              if (ruleSet.normalRule.isEnchoUnlimited ||
+                  ruleSet.normalRule.enchoCount > 0)
+                buildChip(
+                  '代表戦/延長有',
+                  Colors.purple.shade100,
+                  Colors.purple.shade900,
+                ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              buildChip('🤝 申し合わせ', Colors.teal.shade100, Colors.teal.shade900),
+              buildChip(
+                _formatMinutes(ruleSet.moushiawaseRule.matchTimeMinutes),
+                Colors.grey.shade200,
+                Colors.black87,
+              ),
+              if (ruleSet.moushiawaseRule.hasHantei)
+                buildChip('引分有', Colors.green.shade100, Colors.green.shade900),
+            ],
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 4),
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            buildChip('標準ルール', Colors.blue.shade100, Colors.blue.shade900),
+            buildChip(
+              _formatMinutes(ruleSet.normalRule.matchTimeMinutes),
+              Colors.grey.shade200,
+              Colors.black87,
+            ),
+            buildChip(
+              ruleSet.normalRule.enchoCount > 0
+                  ? "延長${ruleSet.normalRule.enchoCount}回"
+                  : (ruleSet.normalRule.isEnchoUnlimited ? "延長無制限" : "延長なし"),
+              Colors.purple.shade100,
+              Colors.purple.shade900,
+            ),
+            if (ruleSet.normalRule.hasHantei)
+              buildChip('判定あり', Colors.green.shade100, Colors.green.shade900),
+          ],
+        ),
+        if (ruleSet.useAdvancedRule)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                buildChip(
+                  '上位戦',
+                  Colors.deepOrange.shade100,
+                  Colors.deepOrange.shade900,
+                ),
+                buildChip(
+                  _formatMinutes(ruleSet.advancedRule.matchTimeMinutes),
+                  Colors.grey.shade200,
+                  Colors.black87,
+                ),
+                buildChip(
+                  ruleSet.advancedRule.enchoCount > 0
+                      ? "延長${ruleSet.advancedRule.enchoCount}回"
+                      : (ruleSet.advancedRule.isEnchoUnlimited
+                            ? "延長無制限"
+                            : "延長なし"),
+                  Colors.purple.shade100,
+                  Colors.purple.shade900,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSimpleSceneRuleForm(
+    String title,
+    double time,
+    bool isRunning,
+    bool hasHantei,
+    String renseikaiType,
+    int overallTime,
+    ValueChanged<double> onTimeChanged,
+    ValueChanged<bool> onRunningChanged,
+    ValueChanged<bool> onHanteiChanged,
+    ValueChanged<String> onTypeChanged,
+    ValueChanged<int> onOverallTimeChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.indigo,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          '錬成形式（試合方式）',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: ['一試合制', '時間制'].map((type) {
+            final isSelected = renseikaiType == type;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ChoiceChip(
+                label: Text(type),
+                selected: isSelected,
+                selectedColor: Colors.indigo.shade100,
+                onSelected: (selected) {
+                  if (selected) onTypeChanged(type);
+                },
+              ),
+            );
+          }).toList(),
+        ),
+        if (renseikaiType == '時間制') ...[
+          const SizedBox(height: 12),
+          TextFormField(
+            initialValue: overallTime.toString(),
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: '全体の制限時間（分）',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.all(12),
+            ),
+            onChanged: (val) {
+              final i = int.tryParse(val) ?? 30;
+              onOverallTimeChanged(i);
+            },
+          ),
+        ],
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('1試合の時間: ${_formatMinutes(time)}'),
+            Slider(
+              value: time,
+              min: 1.0,
+              max: 5.0,
+              divisions: 8,
+              label: _formatMinutes(time),
+              onChanged: onTimeChanged,
+            ),
+          ],
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('流し（タイマーを止めない）'),
+          value: isRunning,
+          onChanged: onRunningChanged,
+        ),
+      ],
     );
   }
 }

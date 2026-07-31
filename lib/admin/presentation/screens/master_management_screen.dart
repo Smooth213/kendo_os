@@ -920,7 +920,7 @@ class _MasterManagementScreenState
                         ),
                         decoration: InputDecoration(
                           labelText: '名字',
-                          hintText: '例: 道上',
+                          hintText: '例: 山田',
                           prefixIcon: isKeyboardVisible
                               ? null
                               : Icon(
@@ -2191,7 +2191,7 @@ class _MasterManagementScreenState
                         controller: nameController,
                         autofocus: false,
                         decoration: InputDecoration(
-                          hintText: '例：道上剣友会A',
+                          hintText: '例：〇〇剣友会A',
                           filled: true,
                           fillColor: isDark
                               ? const Color(0xFF2C2C2E)

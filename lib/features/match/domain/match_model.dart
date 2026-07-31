@@ -128,6 +128,8 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
     String? category,
     String? groupName,
     int? matchOrder,
+    @Default('honsen')
+    String matchScene, // 'renseikai', 'honsen', 'moushiawase'
 
     @Default(3.0) double matchTimeMinutes,
     @Default(false) bool isRunningTime,

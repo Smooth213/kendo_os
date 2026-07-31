@@ -31,8 +31,8 @@ class PlayerRepository {
         .collection('custom_team_names');
   }
 
-  // ① 選手一覧を取得する（道上剣友会のメンバーだけを取るなど）
-  Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) {
+  // ① 選手一覧を取得する
+  Stream<List<PlayerModel>> getPlayers({String organization = ''}) {
     return _playersCollection.snapshots().map((snapshot) {
       return snapshot.docs
           .map((doc) => PlayerModel.fromMap(doc.data(), doc.id))
@@ -56,7 +56,7 @@ class PlayerRepository {
   }
 
   // ★⑤ 魔法のボタン用：全員を一括進級させる！
-  Future<void> promoteAllPlayers({String organization = '道上剣友会'}) async {
+  Future<void> promoteAllPlayers({String organization = ''}) async {
     final snapshot = await _playersCollection
         .where('organization', isEqualTo: organization)
         .get();
@@ -84,7 +84,7 @@ class PlayerRepository {
   // --- よく使う自チーム名（カスタムチーム名）の管理機能 ---
 
   /// 所属道場に関連付けられたカスタムチーム名の一覧を監視する
-  Stream<List<String>> watchCustomTeamNames({String organization = '道上剣友会'}) {
+  Stream<List<String>> watchCustomTeamNames({String organization = ''}) {
     return _customTeamsCollection
         .where('organization', isEqualTo: organization)
         .snapshots()
@@ -98,7 +98,7 @@ class PlayerRepository {
   /// 新しいカスタムチーム名を追加する
   Future<void> addCustomTeamName(
     String name, {
-    String organization = '道上剣友会',
+    String organization = '',
   }) async {
     final docId = '${organization}_$name'; // 重複防止のためのID
     await _customTeamsCollection.doc(docId).set({
@@ -111,7 +111,7 @@ class PlayerRepository {
   /// カスタムチーム名を削除する
   Future<void> deleteCustomTeamName(
     String name, {
-    String organization = '道上剣友会',
+    String organization = '',
   }) async {
     final docId = '${organization}_$name';
     await _customTeamsCollection.doc(docId).delete();

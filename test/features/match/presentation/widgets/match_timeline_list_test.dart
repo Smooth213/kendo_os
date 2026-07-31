@@ -27,7 +27,7 @@ class FakePlayerRepository implements PlayerRepository {
   FakePlayerRepository(this.players);
 
   @override
-  Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) {
+  Stream<List<PlayerModel>> getPlayers({String organization = ''}) {
     return Stream.value(players);
   }
 

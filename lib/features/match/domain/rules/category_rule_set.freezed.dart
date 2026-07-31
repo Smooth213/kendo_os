@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CategoryRuleSet {
 
- MatchRule get normalRule; MatchRule get advancedRule; bool get useAdvancedRule; List<String> get advancedKeywords; String get matchType;
+ MatchRule get normalRule; MatchRule get advancedRule; bool get useAdvancedRule; List<String> get advancedKeywords; String get matchType; bool get isMultiScene; bool get useHonsenRule; bool get useRenseikaiRule; bool get useMoushiawaseRule; MatchRule get renseikaiRule; MatchRule get moushiawaseRule;
 /// Create a copy of CategoryRuleSet
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CategoryRuleSetCopyWith<CategoryRuleSet> get copyWith => _$CategoryRuleSetCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryRuleSet&&(identical(other.normalRule, normalRule) || other.normalRule == normalRule)&&(identical(other.advancedRule, advancedRule) || other.advancedRule == advancedRule)&&(identical(other.useAdvancedRule, useAdvancedRule) || other.useAdvancedRule == useAdvancedRule)&&const DeepCollectionEquality().equals(other.advancedKeywords, advancedKeywords)&&(identical(other.matchType, matchType) || other.matchType == matchType));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryRuleSet&&(identical(other.normalRule, normalRule) || other.normalRule == normalRule)&&(identical(other.advancedRule, advancedRule) || other.advancedRule == advancedRule)&&(identical(other.useAdvancedRule, useAdvancedRule) || other.useAdvancedRule == useAdvancedRule)&&const DeepCollectionEquality().equals(other.advancedKeywords, advancedKeywords)&&(identical(other.matchType, matchType) || other.matchType == matchType)&&(identical(other.isMultiScene, isMultiScene) || other.isMultiScene == isMultiScene)&&(identical(other.useHonsenRule, useHonsenRule) || other.useHonsenRule == useHonsenRule)&&(identical(other.useRenseikaiRule, useRenseikaiRule) || other.useRenseikaiRule == useRenseikaiRule)&&(identical(other.useMoushiawaseRule, useMoushiawaseRule) || other.useMoushiawaseRule == useMoushiawaseRule)&&(identical(other.renseikaiRule, renseikaiRule) || other.renseikaiRule == renseikaiRule)&&(identical(other.moushiawaseRule, moushiawaseRule) || other.moushiawaseRule == moushiawaseRule));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,normalRule,advancedRule,useAdvancedRule,const DeepCollectionEquality().hash(advancedKeywords),matchType);
+int get hashCode => Object.hash(runtimeType,normalRule,advancedRule,useAdvancedRule,const DeepCollectionEquality().hash(advancedKeywords),matchType,isMultiScene,useHonsenRule,useRenseikaiRule,useMoushiawaseRule,renseikaiRule,moushiawaseRule);
 
 @override
 String toString() {
-  return 'CategoryRuleSet(normalRule: $normalRule, advancedRule: $advancedRule, useAdvancedRule: $useAdvancedRule, advancedKeywords: $advancedKeywords, matchType: $matchType)';
+  return 'CategoryRuleSet(normalRule: $normalRule, advancedRule: $advancedRule, useAdvancedRule: $useAdvancedRule, advancedKeywords: $advancedKeywords, matchType: $matchType, isMultiScene: $isMultiScene, useHonsenRule: $useHonsenRule, useRenseikaiRule: $useRenseikaiRule, useMoushiawaseRule: $useMoushiawaseRule, renseikaiRule: $renseikaiRule, moushiawaseRule: $moushiawaseRule)';
 }
 
 
@@ -48,11 +48,11 @@ abstract mixin class $CategoryRuleSetCopyWith<$Res>  {
   factory $CategoryRuleSetCopyWith(CategoryRuleSet value, $Res Function(CategoryRuleSet) _then) = _$CategoryRuleSetCopyWithImpl;
 @useResult
 $Res call({
- MatchRule normalRule, MatchRule advancedRule, bool useAdvancedRule, List<String> advancedKeywords, String matchType
+ MatchRule normalRule, MatchRule advancedRule, bool useAdvancedRule, List<String> advancedKeywords, String matchType, bool isMultiScene, bool useHonsenRule, bool useRenseikaiRule, bool useMoushiawaseRule, MatchRule renseikaiRule, MatchRule moushiawaseRule
 });
 
 
-$MatchRuleCopyWith<$Res> get normalRule;$MatchRuleCopyWith<$Res> get advancedRule;
+$MatchRuleCopyWith<$Res> get normalRule;$MatchRuleCopyWith<$Res> get advancedRule;$MatchRuleCopyWith<$Res> get renseikaiRule;$MatchRuleCopyWith<$Res> get moushiawaseRule;
 
 }
 /// @nodoc
@@ -65,14 +65,20 @@ class _$CategoryRuleSetCopyWithImpl<$Res>
 
 /// Create a copy of CategoryRuleSet
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? normalRule = null,Object? advancedRule = null,Object? useAdvancedRule = null,Object? advancedKeywords = null,Object? matchType = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? normalRule = null,Object? advancedRule = null,Object? useAdvancedRule = null,Object? advancedKeywords = null,Object? matchType = null,Object? isMultiScene = null,Object? useHonsenRule = null,Object? useRenseikaiRule = null,Object? useMoushiawaseRule = null,Object? renseikaiRule = null,Object? moushiawaseRule = null,}) {
   return _then(_self.copyWith(
 normalRule: null == normalRule ? _self.normalRule : normalRule // ignore: cast_nullable_to_non_nullable
 as MatchRule,advancedRule: null == advancedRule ? _self.advancedRule : advancedRule // ignore: cast_nullable_to_non_nullable
 as MatchRule,useAdvancedRule: null == useAdvancedRule ? _self.useAdvancedRule : useAdvancedRule // ignore: cast_nullable_to_non_nullable
 as bool,advancedKeywords: null == advancedKeywords ? _self.advancedKeywords : advancedKeywords // ignore: cast_nullable_to_non_nullable
 as List<String>,matchType: null == matchType ? _self.matchType : matchType // ignore: cast_nullable_to_non_nullable
-as String,
+as String,isMultiScene: null == isMultiScene ? _self.isMultiScene : isMultiScene // ignore: cast_nullable_to_non_nullable
+as bool,useHonsenRule: null == useHonsenRule ? _self.useHonsenRule : useHonsenRule // ignore: cast_nullable_to_non_nullable
+as bool,useRenseikaiRule: null == useRenseikaiRule ? _self.useRenseikaiRule : useRenseikaiRule // ignore: cast_nullable_to_non_nullable
+as bool,useMoushiawaseRule: null == useMoushiawaseRule ? _self.useMoushiawaseRule : useMoushiawaseRule // ignore: cast_nullable_to_non_nullable
+as bool,renseikaiRule: null == renseikaiRule ? _self.renseikaiRule : renseikaiRule // ignore: cast_nullable_to_non_nullable
+as MatchRule,moushiawaseRule: null == moushiawaseRule ? _self.moushiawaseRule : moushiawaseRule // ignore: cast_nullable_to_non_nullable
+as MatchRule,
   ));
 }
 /// Create a copy of CategoryRuleSet
@@ -92,6 +98,24 @@ $MatchRuleCopyWith<$Res> get advancedRule {
   
   return $MatchRuleCopyWith<$Res>(_self.advancedRule, (value) {
     return _then(_self.copyWith(advancedRule: value));
+  });
+}/// Create a copy of CategoryRuleSet
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MatchRuleCopyWith<$Res> get renseikaiRule {
+  
+  return $MatchRuleCopyWith<$Res>(_self.renseikaiRule, (value) {
+    return _then(_self.copyWith(renseikaiRule: value));
+  });
+}/// Create a copy of CategoryRuleSet
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MatchRuleCopyWith<$Res> get moushiawaseRule {
+  
+  return $MatchRuleCopyWith<$Res>(_self.moushiawaseRule, (value) {
+    return _then(_self.copyWith(moushiawaseRule: value));
   });
 }
 }
@@ -175,10 +199,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( MatchRule normalRule,  MatchRule advancedRule,  bool useAdvancedRule,  List<String> advancedKeywords,  String matchType)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( MatchRule normalRule,  MatchRule advancedRule,  bool useAdvancedRule,  List<String> advancedKeywords,  String matchType,  bool isMultiScene,  bool useHonsenRule,  bool useRenseikaiRule,  bool useMoushiawaseRule,  MatchRule renseikaiRule,  MatchRule moushiawaseRule)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CategoryRuleSet() when $default != null:
-return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.advancedKeywords,_that.matchType);case _:
+return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.advancedKeywords,_that.matchType,_that.isMultiScene,_that.useHonsenRule,_that.useRenseikaiRule,_that.useMoushiawaseRule,_that.renseikaiRule,_that.moushiawaseRule);case _:
   return orElse();
 
 }
@@ -196,10 +220,10 @@ return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( MatchRule normalRule,  MatchRule advancedRule,  bool useAdvancedRule,  List<String> advancedKeywords,  String matchType)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( MatchRule normalRule,  MatchRule advancedRule,  bool useAdvancedRule,  List<String> advancedKeywords,  String matchType,  bool isMultiScene,  bool useHonsenRule,  bool useRenseikaiRule,  bool useMoushiawaseRule,  MatchRule renseikaiRule,  MatchRule moushiawaseRule)  $default,) {final _that = this;
 switch (_that) {
 case _CategoryRuleSet():
-return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.advancedKeywords,_that.matchType);case _:
+return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.advancedKeywords,_that.matchType,_that.isMultiScene,_that.useHonsenRule,_that.useRenseikaiRule,_that.useMoushiawaseRule,_that.renseikaiRule,_that.moushiawaseRule);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -216,10 +240,10 @@ return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( MatchRule normalRule,  MatchRule advancedRule,  bool useAdvancedRule,  List<String> advancedKeywords,  String matchType)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( MatchRule normalRule,  MatchRule advancedRule,  bool useAdvancedRule,  List<String> advancedKeywords,  String matchType,  bool isMultiScene,  bool useHonsenRule,  bool useRenseikaiRule,  bool useMoushiawaseRule,  MatchRule renseikaiRule,  MatchRule moushiawaseRule)?  $default,) {final _that = this;
 switch (_that) {
 case _CategoryRuleSet() when $default != null:
-return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.advancedKeywords,_that.matchType);case _:
+return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.advancedKeywords,_that.matchType,_that.isMultiScene,_that.useHonsenRule,_that.useRenseikaiRule,_that.useMoushiawaseRule,_that.renseikaiRule,_that.moushiawaseRule);case _:
   return null;
 
 }
@@ -231,7 +255,7 @@ return $default(_that.normalRule,_that.advancedRule,_that.useAdvancedRule,_that.
 @JsonSerializable()
 
 class _CategoryRuleSet implements CategoryRuleSet {
-  const _CategoryRuleSet({this.normalRule = const MatchRule(), this.advancedRule = const MatchRule(), this.useAdvancedRule = false, final  List<String> advancedKeywords = const ['準決勝', '準決', '決勝', 'final', '3位決定', '3決', 'ベスト4'], this.matchType = '個人戦'}): _advancedKeywords = advancedKeywords;
+  const _CategoryRuleSet({this.normalRule = const MatchRule(), this.advancedRule = const MatchRule(), this.useAdvancedRule = false, final  List<String> advancedKeywords = const ['準決勝', '準決', '決勝', 'final', '3位決定', '3決', 'ベスト4'], this.matchType = '個人戦', this.isMultiScene = false, this.useHonsenRule = true, this.useRenseikaiRule = true, this.useMoushiawaseRule = true, this.renseikaiRule = const MatchRule(matchTimeMinutes: 2, isRunningTime: true, hasHantei: true, enchoCount: 0, isEnchoUnlimited: false, isRenseikai: true, matchScene: 'renseikai'), this.moushiawaseRule = const MatchRule(matchTimeMinutes: 2, isRunningTime: true, hasHantei: true, enchoCount: 0, isEnchoUnlimited: false, isRenseikai: true, matchScene: 'moushiawase')}): _advancedKeywords = advancedKeywords;
   factory _CategoryRuleSet.fromJson(Map<String, dynamic> json) => _$CategoryRuleSetFromJson(json);
 
 @override@JsonKey() final  MatchRule normalRule;
@@ -245,6 +269,12 @@ class _CategoryRuleSet implements CategoryRuleSet {
 }
 
 @override@JsonKey() final  String matchType;
+@override@JsonKey() final  bool isMultiScene;
+@override@JsonKey() final  bool useHonsenRule;
+@override@JsonKey() final  bool useRenseikaiRule;
+@override@JsonKey() final  bool useMoushiawaseRule;
+@override@JsonKey() final  MatchRule renseikaiRule;
+@override@JsonKey() final  MatchRule moushiawaseRule;
 
 /// Create a copy of CategoryRuleSet
 /// with the given fields replaced by the non-null parameter values.
@@ -259,16 +289,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategoryRuleSet&&(identical(other.normalRule, normalRule) || other.normalRule == normalRule)&&(identical(other.advancedRule, advancedRule) || other.advancedRule == advancedRule)&&(identical(other.useAdvancedRule, useAdvancedRule) || other.useAdvancedRule == useAdvancedRule)&&const DeepCollectionEquality().equals(other._advancedKeywords, _advancedKeywords)&&(identical(other.matchType, matchType) || other.matchType == matchType));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategoryRuleSet&&(identical(other.normalRule, normalRule) || other.normalRule == normalRule)&&(identical(other.advancedRule, advancedRule) || other.advancedRule == advancedRule)&&(identical(other.useAdvancedRule, useAdvancedRule) || other.useAdvancedRule == useAdvancedRule)&&const DeepCollectionEquality().equals(other._advancedKeywords, _advancedKeywords)&&(identical(other.matchType, matchType) || other.matchType == matchType)&&(identical(other.isMultiScene, isMultiScene) || other.isMultiScene == isMultiScene)&&(identical(other.useHonsenRule, useHonsenRule) || other.useHonsenRule == useHonsenRule)&&(identical(other.useRenseikaiRule, useRenseikaiRule) || other.useRenseikaiRule == useRenseikaiRule)&&(identical(other.useMoushiawaseRule, useMoushiawaseRule) || other.useMoushiawaseRule == useMoushiawaseRule)&&(identical(other.renseikaiRule, renseikaiRule) || other.renseikaiRule == renseikaiRule)&&(identical(other.moushiawaseRule, moushiawaseRule) || other.moushiawaseRule == moushiawaseRule));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,normalRule,advancedRule,useAdvancedRule,const DeepCollectionEquality().hash(_advancedKeywords),matchType);
+int get hashCode => Object.hash(runtimeType,normalRule,advancedRule,useAdvancedRule,const DeepCollectionEquality().hash(_advancedKeywords),matchType,isMultiScene,useHonsenRule,useRenseikaiRule,useMoushiawaseRule,renseikaiRule,moushiawaseRule);
 
 @override
 String toString() {
-  return 'CategoryRuleSet(normalRule: $normalRule, advancedRule: $advancedRule, useAdvancedRule: $useAdvancedRule, advancedKeywords: $advancedKeywords, matchType: $matchType)';
+  return 'CategoryRuleSet(normalRule: $normalRule, advancedRule: $advancedRule, useAdvancedRule: $useAdvancedRule, advancedKeywords: $advancedKeywords, matchType: $matchType, isMultiScene: $isMultiScene, useHonsenRule: $useHonsenRule, useRenseikaiRule: $useRenseikaiRule, useMoushiawaseRule: $useMoushiawaseRule, renseikaiRule: $renseikaiRule, moushiawaseRule: $moushiawaseRule)';
 }
 
 
@@ -279,11 +309,11 @@ abstract mixin class _$CategoryRuleSetCopyWith<$Res> implements $CategoryRuleSet
   factory _$CategoryRuleSetCopyWith(_CategoryRuleSet value, $Res Function(_CategoryRuleSet) _then) = __$CategoryRuleSetCopyWithImpl;
 @override @useResult
 $Res call({
- MatchRule normalRule, MatchRule advancedRule, bool useAdvancedRule, List<String> advancedKeywords, String matchType
+ MatchRule normalRule, MatchRule advancedRule, bool useAdvancedRule, List<String> advancedKeywords, String matchType, bool isMultiScene, bool useHonsenRule, bool useRenseikaiRule, bool useMoushiawaseRule, MatchRule renseikaiRule, MatchRule moushiawaseRule
 });
 
 
-@override $MatchRuleCopyWith<$Res> get normalRule;@override $MatchRuleCopyWith<$Res> get advancedRule;
+@override $MatchRuleCopyWith<$Res> get normalRule;@override $MatchRuleCopyWith<$Res> get advancedRule;@override $MatchRuleCopyWith<$Res> get renseikaiRule;@override $MatchRuleCopyWith<$Res> get moushiawaseRule;
 
 }
 /// @nodoc
@@ -296,14 +326,20 @@ class __$CategoryRuleSetCopyWithImpl<$Res>
 
 /// Create a copy of CategoryRuleSet
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? normalRule = null,Object? advancedRule = null,Object? useAdvancedRule = null,Object? advancedKeywords = null,Object? matchType = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? normalRule = null,Object? advancedRule = null,Object? useAdvancedRule = null,Object? advancedKeywords = null,Object? matchType = null,Object? isMultiScene = null,Object? useHonsenRule = null,Object? useRenseikaiRule = null,Object? useMoushiawaseRule = null,Object? renseikaiRule = null,Object? moushiawaseRule = null,}) {
   return _then(_CategoryRuleSet(
 normalRule: null == normalRule ? _self.normalRule : normalRule // ignore: cast_nullable_to_non_nullable
 as MatchRule,advancedRule: null == advancedRule ? _self.advancedRule : advancedRule // ignore: cast_nullable_to_non_nullable
 as MatchRule,useAdvancedRule: null == useAdvancedRule ? _self.useAdvancedRule : useAdvancedRule // ignore: cast_nullable_to_non_nullable
 as bool,advancedKeywords: null == advancedKeywords ? _self._advancedKeywords : advancedKeywords // ignore: cast_nullable_to_non_nullable
 as List<String>,matchType: null == matchType ? _self.matchType : matchType // ignore: cast_nullable_to_non_nullable
-as String,
+as String,isMultiScene: null == isMultiScene ? _self.isMultiScene : isMultiScene // ignore: cast_nullable_to_non_nullable
+as bool,useHonsenRule: null == useHonsenRule ? _self.useHonsenRule : useHonsenRule // ignore: cast_nullable_to_non_nullable
+as bool,useRenseikaiRule: null == useRenseikaiRule ? _self.useRenseikaiRule : useRenseikaiRule // ignore: cast_nullable_to_non_nullable
+as bool,useMoushiawaseRule: null == useMoushiawaseRule ? _self.useMoushiawaseRule : useMoushiawaseRule // ignore: cast_nullable_to_non_nullable
+as bool,renseikaiRule: null == renseikaiRule ? _self.renseikaiRule : renseikaiRule // ignore: cast_nullable_to_non_nullable
+as MatchRule,moushiawaseRule: null == moushiawaseRule ? _self.moushiawaseRule : moushiawaseRule // ignore: cast_nullable_to_non_nullable
+as MatchRule,
   ));
 }
 
@@ -324,6 +360,24 @@ $MatchRuleCopyWith<$Res> get advancedRule {
   
   return $MatchRuleCopyWith<$Res>(_self.advancedRule, (value) {
     return _then(_self.copyWith(advancedRule: value));
+  });
+}/// Create a copy of CategoryRuleSet
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MatchRuleCopyWith<$Res> get renseikaiRule {
+  
+  return $MatchRuleCopyWith<$Res>(_self.renseikaiRule, (value) {
+    return _then(_self.copyWith(renseikaiRule: value));
+  });
+}/// Create a copy of CategoryRuleSet
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MatchRuleCopyWith<$Res> get moushiawaseRule {
+  
+  return $MatchRuleCopyWith<$Res>(_self.moushiawaseRule, (value) {
+    return _then(_self.copyWith(moushiawaseRule: value));
   });
 }
 }

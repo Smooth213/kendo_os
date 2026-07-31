@@ -13,6 +13,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/shared/application/services/csv_service.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
@@ -26,12 +27,21 @@ import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart'
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
-class OfficialRecordScreen extends ConsumerWidget {
+class OfficialRecordScreen extends ConsumerStatefulWidget {
   final String tournamentId;
   const OfficialRecordScreen({super.key, required this.tournamentId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OfficialRecordScreen> createState() =>
+      _OfficialRecordScreenState();
+}
+
+class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
+  String _selectedSummaryTeam = '全体';
+
+  @override
+  Widget build(BuildContext context) {
+    final tournamentId = widget.tournamentId;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isExporting = ref.watch(isExportingProvider);
 
@@ -48,6 +58,20 @@ class OfficialRecordScreen extends ConsumerWidget {
 
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
+
+    final registeredTeamsAsync = ref.watch(
+      registeredTeamsProvider(tournamentId),
+    );
+    final registeredTeams = registeredTeamsAsync.value ?? [];
+    final registeredTeamNames = registeredTeams
+        .map((t) => t.teamName.trim())
+        .where((n) => n.isNotEmpty)
+        .toSet();
+    final registeredPlayerNames = registeredTeams
+        .expand((t) => t.playerNames)
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty)
+        .toSet();
 
     // ★ Step 3-2: selectによる最適化
     final matchesForThisTournament = ref.watch(
@@ -225,8 +249,62 @@ class OfficialRecordScreen extends ConsumerWidget {
                   return aLast.compareTo(bLast);
                 });
 
+              final categoryMatches = matchesForThisTournament.where((m) {
+                final cName = (m.category != null && m.category!.isNotEmpty)
+                    ? m.category!
+                    : '一般';
+                return cName == cat;
+              }).toList();
+
+              final categoryRegisteredTeams = registeredTeams
+                  .where((t) => t.category == cat)
+                  .toList();
+
+              final Set<String> categoryRegisteredTeamNames;
+              if (categoryRegisteredTeams.isNotEmpty) {
+                categoryRegisteredTeamNames = categoryRegisteredTeams
+                    .map((t) => t.teamName.trim())
+                    .where((n) => n.isNotEmpty)
+                    .toSet();
+              } else if (registeredTeamNames.isNotEmpty) {
+                // 大会全体の登録チームから現在の部門の試合に合致するものがあるか確認
+                final matchedInCat = registeredTeamNames.where((tName) {
+                  return categoryMatches.any((m) {
+                    final r = m.redName.contains(':')
+                        ? m.redName.split(':').first.trim()
+                        : m.redName.trim();
+                    final w = m.whiteName.contains(':')
+                        ? m.whiteName.split(':').first.trim()
+                        : m.whiteName.trim();
+                    return r == tName || w == tName;
+                  });
+                }).toSet();
+                categoryRegisteredTeamNames = matchedInCat;
+              } else {
+                categoryRegisteredTeamNames = <String>{};
+              }
+
+              final Set<String> categoryRegisteredPlayerNames;
+              if (categoryRegisteredTeams.isNotEmpty) {
+                categoryRegisteredPlayerNames = categoryRegisteredTeams
+                    .expand((t) => t.playerNames)
+                    .map((p) => p.trim())
+                    .where((p) => p.isNotEmpty)
+                    .toSet();
+              } else if (registeredPlayerNames.isNotEmpty) {
+                categoryRegisteredPlayerNames = registeredPlayerNames;
+              } else {
+                categoryRegisteredPlayerNames = <String>{};
+              }
+
               return Column(
                 children: [
+                  _buildExpeditionSummaryWidget(
+                    categoryMatches,
+                    isDark,
+                    categoryRegisteredTeamNames,
+                    categoryRegisteredPlayerNames,
+                  ),
                   // ★ Phase 3: 三位一体の出力ボタン（PDF・画像・CSV）
                   Container(
                     width: double.infinity,
@@ -1284,4 +1362,491 @@ class OfficialRecordScreen extends ConsumerWidget {
       isDark: isDark,
     );
   }
+
+  Widget _buildExpeditionSummaryWidget(
+    List<MatchModel> matches,
+    bool isDark,
+    Set<String> registeredTeamNames,
+    Set<String> registeredPlayerNames,
+  ) {
+    if (matches.isEmpty) return const SizedBox.shrink();
+
+    // 1. 自チーム名の確定（登録されている自チームのみをリスト化）
+    final List<String> teamsList;
+    if (registeredTeamNames.isNotEmpty) {
+      teamsList = registeredTeamNames.toList()..sort();
+    } else {
+      final teamsSet = <String>{};
+      for (final m in matches) {
+        if (m.redName.isNotEmpty) {
+          final rTeam = m.redName.contains(':')
+              ? m.redName.split(':').first.trim()
+              : m.redName.trim();
+          if (rTeam.isNotEmpty) teamsSet.add(rTeam);
+        }
+        if (m.whiteName.isNotEmpty) {
+          final wTeam = m.whiteName.contains(':')
+              ? m.whiteName.split(':').first.trim()
+              : m.whiteName.trim();
+          if (wTeam.isNotEmpty) teamsSet.add(wTeam);
+        }
+      }
+      teamsList = teamsSet.toList()..sort();
+    }
+
+    // 自チーム判定
+    bool isMyTeam(String teamName) {
+      if (registeredTeamNames.isNotEmpty) {
+        return registeredTeamNames.contains(teamName);
+      }
+      // 登録がない場合は一覧の最初のチームをメイン自チームとして扱う
+      return teamsList.isNotEmpty && teamsList.first == teamName;
+    }
+
+    // 自チーム選手判定
+    bool isMyPlayer(String playerName, String teamName) {
+      if (registeredPlayerNames.isNotEmpty) {
+        return registeredPlayerNames.contains(playerName);
+      }
+      return isMyTeam(teamName);
+    }
+
+    int renseikaiWin = 0, renseikaiLoss = 0, renseikaiDraw = 0;
+    int honsenWin = 0, honsenLoss = 0, honsenDraw = 0;
+    int moushiawaseWin = 0, moushiawaseLoss = 0, moushiawaseDraw = 0;
+
+    final Map<String, _PlayerStats> playerStatsMap = {};
+
+    // groupName ごとに試合をまとめる（団体戦・勝ち抜き戦・リーグ団体戦のチーム単位集計）
+    final Map<String, List<MatchModel>> groupMap = {};
+    for (final m in matches) {
+      final key = (m.groupName != null && m.groupName!.isNotEmpty)
+          ? m.groupName!
+          : m.id;
+      groupMap.putIfAbsent(key, () => []).add(m);
+    }
+
+    // ★ 試合が実施済み（終了済み、スコア入力済み、または打突イベントあり）かを判定するヘルパー
+    bool isMatchPlayed(MatchModel m) {
+      if (m.status == 'finished') return true;
+      if (m.redScore > 0 || m.whiteScore > 0) return true;
+      if (m.events.isNotEmpty) return true;
+      return false;
+    }
+
+    for (final entry in groupMap.entries) {
+      final bouts = entry.value;
+      if (bouts.isEmpty) continue;
+
+      final firstMatch = bouts.first;
+      final bool isTeamMatch =
+          bouts.length > 1 ||
+          firstMatch.isKachinuki ||
+          firstMatch.matchType.contains('団体');
+
+      if (isTeamMatch) {
+        // ★ 団体戦 / 勝ち抜き戦 / リーグ団体戦: チーム対戦カード全体の勝敗を算出
+        final rTeam = firstMatch.redName.contains(':')
+            ? firstMatch.redName.split(':').first.trim()
+            : firstMatch.redName.trim();
+        final wTeam = firstMatch.whiteName.contains(':')
+            ? firstMatch.whiteName.split(':').first.trim()
+            : firstMatch.whiteName.trim();
+
+        final bool rIsMine = isMyTeam(rTeam);
+        final bool wIsMine = isMyTeam(wTeam);
+
+        // 自チームがどちらにも含まれない対戦は集計対象外
+        if (!rIsMine && !wIsMine) continue;
+
+        final bool isTargetRed =
+            (_selectedSummaryTeam == '全体' && rIsMine) ||
+            (_selectedSummaryTeam == rTeam);
+        final bool isTargetWhite =
+            (_selectedSummaryTeam == '全体' && wIsMine) ||
+            (_selectedSummaryTeam == wTeam);
+
+        if (!isTargetRed && !isTargetWhite) continue;
+
+        // 実施済みの試合（終了済み、またはスコア/イベントあり）を取得
+        final playedBouts = bouts.where((b) => isMatchPlayed(b)).toList();
+
+        // 1試合も実施されていない（全試合前）カードはサマリーから除外
+        if (playedBouts.isEmpty) continue;
+
+        int redWins = 0;
+        int whiteWins = 0;
+
+        if (firstMatch.isKachinuki) {
+          final lastMatch = bouts.last;
+          if (isMatchPlayed(lastMatch)) {
+            if (lastMatch.redRemaining.length >
+                lastMatch.whiteRemaining.length) {
+              redWins = 1;
+            } else if (lastMatch.whiteRemaining.length >
+                lastMatch.redRemaining.length) {
+              whiteWins = 1;
+            }
+          } else {
+            // 途中経過の場合でも勝者数でカウント
+            for (final b in playedBouts) {
+              if (b.redScore > b.whiteScore) {
+                redWins++;
+              } else if (b.whiteScore > b.redScore) {
+                whiteWins++;
+              }
+            }
+          }
+        } else {
+          for (final b in playedBouts) {
+            if (b.redScore > b.whiteScore) {
+              redWins++;
+            } else if (b.whiteScore > b.redScore) {
+              whiteWins++;
+            }
+          }
+        }
+
+        bool isWin = false;
+        final bool isCardFinished = bouts.every((b) => isMatchPlayed(b));
+        bool isDraw = false;
+
+        if (redWins > whiteWins) {
+          if (isTargetRed) isWin = true;
+        } else if (whiteWins > redWins) {
+          if (isTargetWhite) isWin = true;
+        } else {
+          // 引き分け（または途中経過で同点）
+          if (isCardFinished || playedBouts.length >= (bouts.length / 2)) {
+            isDraw = true;
+          } else {
+            continue;
+          }
+        }
+
+        final scene = firstMatch.matchScene;
+        if (scene == 'renseikai') {
+          if (isDraw) {
+            renseikaiDraw++;
+          } else if (isWin) {
+            renseikaiWin++;
+          } else {
+            renseikaiLoss++;
+          }
+        } else if (scene == 'moushiawase') {
+          if (isDraw) {
+            moushiawaseDraw++;
+          } else if (isWin) {
+            moushiawaseWin++;
+          } else {
+            moushiawaseLoss++;
+          }
+        } else {
+          if (isDraw) {
+            honsenDraw++;
+          } else if (isWin) {
+            honsenWin++;
+          } else {
+            honsenLoss++;
+          }
+        }
+      } else {
+        // ★ 個人戦 / リーグ個人戦: 実施済みの試合（isMatchPlayed）のみを集計
+        for (final m in bouts) {
+          if (!isMatchPlayed(m)) {
+            continue;
+          }
+
+          final rTeam = m.redName.contains(':')
+              ? m.redName.split(':').first.trim()
+              : m.redName.trim();
+          final wTeam = m.whiteName.contains(':')
+              ? m.whiteName.split(':').first.trim()
+              : m.whiteName.trim();
+
+          final rPlayer = m.redName.contains(':')
+              ? m.redName.split(':').last.trim()
+              : m.redName.trim();
+          final wPlayer = m.whiteName.contains(':')
+              ? m.whiteName.split(':').last.trim()
+              : m.whiteName.trim();
+
+          final bool rIsMine = isMyTeam(rTeam) || isMyPlayer(rPlayer, rTeam);
+          final bool wIsMine = isMyTeam(wTeam) || isMyPlayer(wPlayer, wTeam);
+
+          if (!rIsMine && !wIsMine) continue;
+
+          final bool isTargetRed =
+              (_selectedSummaryTeam == '全体' && rIsMine) ||
+              (_selectedSummaryTeam == rTeam);
+          final bool isTargetWhite =
+              (_selectedSummaryTeam == '全体' && wIsMine) ||
+              (_selectedSummaryTeam == wTeam);
+
+          if (!isTargetRed && !isTargetWhite) continue;
+
+          final isDraw = m.redScore == m.whiteScore;
+          bool isWin = false;
+
+          if (!isDraw) {
+            if (isTargetRed && m.redScore > m.whiteScore) {
+              isWin = true;
+            } else if (isTargetWhite && m.whiteScore > m.redScore) {
+              isWin = true;
+            }
+          }
+
+          // 自チームの選手のみを個人成績マップに記録
+          if (isTargetRed && rPlayer.isNotEmpty && isMyPlayer(rPlayer, rTeam)) {
+            final stats = playerStatsMap.putIfAbsent(
+              rPlayer,
+              () => _PlayerStats(),
+            );
+            if (isDraw) {
+              stats.draw++;
+            } else if (m.redScore > m.whiteScore) {
+              stats.win++;
+            } else {
+              stats.loss++;
+            }
+          }
+          if (isTargetWhite &&
+              wPlayer.isNotEmpty &&
+              isMyPlayer(wPlayer, wTeam)) {
+            final stats = playerStatsMap.putIfAbsent(
+              wPlayer,
+              () => _PlayerStats(),
+            );
+            if (isDraw) {
+              stats.draw++;
+            } else if (m.whiteScore > m.redScore) {
+              stats.win++;
+            } else {
+              stats.loss++;
+            }
+          }
+
+          final scene = m.matchScene;
+          if (scene == 'renseikai') {
+            if (isDraw) {
+              renseikaiDraw++;
+            } else if (isWin) {
+              renseikaiWin++;
+            } else {
+              renseikaiLoss++;
+            }
+          } else if (scene == 'moushiawase') {
+            if (isDraw) {
+              moushiawaseDraw++;
+            } else if (isWin) {
+              moushiawaseWin++;
+            } else {
+              moushiawaseLoss++;
+            }
+          } else {
+            if (isDraw) {
+              honsenDraw++;
+            } else if (isWin) {
+              honsenWin++;
+            } else {
+              honsenLoss++;
+            }
+          }
+        }
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: const [
+                  Icon(
+                    Icons.analytics_outlined,
+                    color: Colors.indigo,
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    '🏆 遠征成績サマリー',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                ],
+              ),
+              if (teamsList.length > 1)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.indigo.shade900.withValues(alpha: 0.5)
+                        : Colors.indigo.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.indigo.shade200),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: teamsList.contains(_selectedSummaryTeam)
+                          ? _selectedSummaryTeam
+                          : '全体',
+                      isDense: true,
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.indigo,
+                        size: 20,
+                      ),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: isDark ? Colors.white : Colors.indigo.shade900,
+                      ),
+                      items: ['全体', ...teamsList].map((t) {
+                        return DropdownMenuItem<String>(
+                          value: t,
+                          child: Text(t == '全体' ? '全チーム合計' : t),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedSummaryTeam = val;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const Divider(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildSummaryItem(
+                '⚔️ 錬成会',
+                renseikaiWin,
+                renseikaiLoss,
+                renseikaiDraw,
+                Colors.amber.shade900,
+              ),
+              _buildSummaryItem(
+                '🏆 本戦',
+                honsenWin,
+                honsenLoss,
+                honsenDraw,
+                Colors.indigo.shade900,
+              ),
+              _buildSummaryItem(
+                '🤝 申し合わせ',
+                moushiawaseWin,
+                moushiawaseLoss,
+                moushiawaseDraw,
+                Colors.teal.shade900,
+              ),
+            ],
+          ),
+          if (playerStatsMap.isNotEmpty) ...[
+            const Divider(height: 24),
+            const Text(
+              '👤 個人戦・選手別成績',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: playerStatsMap.entries.map((entry) {
+                final pName = entry.key;
+                final st = entry.value;
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.grey.shade700
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Text(
+                    '$pName: ${st.win}勝${st.loss}敗${st.draw > 0 ? "${st.draw}分" : ""}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(
+    String title,
+    int win,
+    int loss,
+    int draw,
+    Color color,
+  ) {
+    final total = win + loss + draw;
+    return Column(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          total > 0 ? '$win勝 $loss敗 ${draw > 0 ? "$draw分" : ""}' : '未実施',
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+        if (total > 0)
+          Text(
+            '（計$total試合）',
+            style: const TextStyle(fontSize: 11, color: Colors.grey),
+          ),
+      ],
+    );
+  }
+}
+
+class _PlayerStats {
+  int win = 0;
+  int loss = 0;
+  int draw = 0;
 }

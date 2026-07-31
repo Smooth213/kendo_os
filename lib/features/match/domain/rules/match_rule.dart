@@ -62,6 +62,8 @@ abstract class MatchRule with _$MatchRule {
     @Default(false) bool isRenseikai,
     @Default('一試合制') String renseikaiType,
     @Default(30) int overallTimeMinutes,
+    @Default('honsen')
+    String matchScene, // ★ 追加: 'renseikai', 'honsen', 'moushiawase'
   }) = _MatchRule;
 
   factory MatchRule.fromJson(Map<String, dynamic> json) =>

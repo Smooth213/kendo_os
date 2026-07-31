@@ -80,7 +80,7 @@ class MockPlayerRepository implements PlayerRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
-  Stream<List<String>> watchCustomTeamNames({String organization = '道上剣友会'}) =>
+  Stream<List<String>> watchCustomTeamNames({String organization = ''}) =>
       Stream.value([]);
 }
 

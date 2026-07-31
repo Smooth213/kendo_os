@@ -1646,6 +1646,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   order: baseOrder + (pIndex * 10),
                                   note: saveNote,
                                   isKachinuki: true,
+                                  matchScene: rule.matchScene != 'honsen'
+                                      ? rule.matchScene
+                                      : (rule.isRenseikai
+                                            ? 'renseikai'
+                                            : 'honsen'),
                                   rule: rule,
                                   redRemaining: redFull.length > 1
                                       ? redFull.sublist(1)
@@ -1735,7 +1740,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     hasHantei: rule.hasHantei,
 
                                     order: baseOrder + (pIndex * 10) + i,
-                                    note: saveNote,
+                                    matchScene: rule.matchScene != 'honsen'
+                                        ? rule.matchScene
+                                        : (rule.isRenseikai
+                                              ? 'renseikai'
+                                              : 'honsen'),
                                     rule: rule, // ★ これだけで全てが封印されます
                                   );
                                   debugPrint(

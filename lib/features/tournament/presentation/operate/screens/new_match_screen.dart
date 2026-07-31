@@ -13,6 +13,8 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 
 // 選手マスタ取得用プロバイダ
 final newMatchPlayerMasterProvider =
@@ -50,6 +52,7 @@ class NewMatchScreen extends ConsumerStatefulWidget {
 class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
   String _creationMode = '単発試合';
   bool _countForStandings = true;
+  String _selectedScene = 'honsen'; // 'renseikai', 'honsen', 'moushiawase'
 
   final _redNameController = TextEditingController();
   final _whiteNameController = TextEditingController();
@@ -84,6 +87,13 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         .watch(organizationRepositoryProvider)
         .watchOrganizations();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final asyncTournament = widget.tournamentId != null
+        ? ref.watch(tournamentProvider(widget.tournamentId!))
+        : null;
+    final tournament = asyncTournament?.value;
+    final categoryRules = tournament?.categoryRules ?? {};
+    final existingCategories = tournament?.categories ?? [];
 
     // ★ Phase 3 追加: サジェスト候補の統合（マスタ＋履歴）
     final masterPlayers = ref.watch(newMatchPlayerMasterProvider).value ?? [];
@@ -213,13 +223,51 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     const SizedBox(height: 32),
 
                     const SizedBox(height: 16),
+                    if (existingCategories.isNotEmpty) ...[
+                      const Text(
+                        '登録済み部門',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: existingCategories.map((cat) {
+                          final isSelected =
+                              _categoryController.text.trim() == cat;
+                          return ChoiceChip(
+                            label: Text(cat),
+                            selected: isSelected,
+                            selectedColor: Colors.indigo.shade100,
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() {
+                                  _categoryController.text = cat;
+                                });
+                              }
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
                     TextField(
                       controller: _categoryController,
+                      onChanged: (text) => setState(() {}),
                       decoration: const InputDecoration(
                         labelText: 'カテゴリ（例：小学生の部）',
                         border: OutlineInputBorder(),
                       ),
                     ),
+                    const SizedBox(height: 16),
+
+                    // ★ 適用ルールのインタラクティブカード選択
+                    _buildRuleSelectionSection(categoryRules, isDark),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _noteController,
@@ -487,6 +535,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         tournamentId: widget.tournamentId,
         category: _categoryController.text,
         note: _noteController.text,
+        matchScene: _selectedScene,
       );
       await ref
           .read(matchApplicationServiceProvider)
@@ -530,5 +579,200 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
       return;
     }
     Navigator.pop(context);
+  }
+
+  Widget _buildRuleSelectionSection(
+    Map<String, CategoryRuleSet> categoryRules,
+    bool isDark,
+  ) {
+    final cleanCategory = _categoryController.text.trim();
+    final ruleSet = categoryRules[cleanCategory];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              '現在適用するルール（タップして選択）',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (ruleSet != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.indigo.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.indigo.shade200),
+                ),
+                child: Text(
+                  '部門ルール適用中: $cleanCategory',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.indigo.shade800,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        if (ruleSet != null && ruleSet.isMultiScene) ...[
+          _buildRuleCard(
+            sceneId: 'renseikai',
+            title: '⚔️ 錬成会ルール（午前・練習試合）',
+            subText:
+                '時間: ${ruleSet.renseikaiRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.renseikaiRule.isRunningTime ? '流し' : '正式'}) / 引き分け: ${ruleSet.renseikaiRule.hasHantei ? 'あり' : 'なし'} / ${ruleSet.renseikaiRule.renseikaiType}',
+            accentColor: Colors.amber,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 8),
+          _buildRuleCard(
+            sceneId: 'honsen',
+            title: '🏆 本戦ルール（午後・トーナメント）',
+            subText:
+                '時間: ${ruleSet.normalRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.normalRule.isRunningTime ? '流し' : '正式'}) / 延長: ${ruleSet.normalRule.isEnchoUnlimited ? '無制限' : (ruleSet.normalRule.enchoCount > 0 ? 'あり' : 'なし')}',
+            accentColor: Colors.indigo,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 8),
+          _buildRuleCard(
+            sceneId: 'moushiawase',
+            title: '🤝 申し合わせルール（終了後・自由戦）',
+            subText:
+                '時間: ${ruleSet.moushiawaseRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.moushiawaseRule.isRunningTime ? '流し' : '正式'}) / 引き分け: ${ruleSet.moushiawaseRule.hasHantei ? 'あり' : 'なし'}',
+            accentColor: Colors.teal,
+            isDark: isDark,
+          ),
+        ] else if (ruleSet != null) ...[
+          _buildRuleCard(
+            sceneId: 'honsen',
+            title: '🏆 本戦（通常戦）ルール',
+            subText:
+                '時間: ${ruleSet.normalRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.normalRule.isRunningTime ? '流し' : '正式'}) / 延長: ${ruleSet.normalRule.isEnchoUnlimited ? '無制限' : (ruleSet.normalRule.enchoCount > 0 ? 'あり' : 'なし')}',
+            accentColor: Colors.indigo,
+            isDark: isDark,
+          ),
+        ] else ...[
+          _buildRuleCard(
+            sceneId: 'renseikai',
+            title: '⚔️ 錬成会（練習試合）',
+            subText: '2分流し / 引き分けあり',
+            accentColor: Colors.amber,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 8),
+          _buildRuleCard(
+            sceneId: 'honsen',
+            title: '🏆 本戦（通常戦）',
+            subText: '3分正式 / 代表戦・勝敗重視',
+            accentColor: Colors.indigo,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 8),
+          _buildRuleCard(
+            sceneId: 'moushiawase',
+            title: '🤝 申し合わせ（自由対戦）',
+            subText: '2分流し / 引き分けあり',
+            accentColor: Colors.teal,
+            isDark: isDark,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildRuleCard({
+    required String sceneId,
+    required String title,
+    required String subText,
+    required MaterialColor accentColor,
+    required bool isDark,
+  }) {
+    final isSelected = _selectedScene == sceneId;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedScene = sceneId;
+          });
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark
+                      ? accentColor.shade900.withValues(alpha: 0.4)
+                      : accentColor.shade50)
+                : (isDark ? const Color(0xFF2C2C2E) : Colors.white),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? (isDark ? accentColor.shade300 : accentColor.shade700)
+                  : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
+              width: isSelected ? 2.0 : 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                color: isSelected
+                    ? (isDark ? accentColor.shade300 : accentColor.shade700)
+                    : Colors.grey,
+                size: 22,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected
+                            ? (isDark ? Colors.white : accentColor.shade900)
+                            : (isDark ? Colors.white70 : Colors.black87),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isSelected
+                            ? (isDark ? Colors.white70 : accentColor.shade800)
+                            : Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

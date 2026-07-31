@@ -249,7 +249,7 @@ class _CreateTournamentScreenState
           decoration: InputDecoration(
             labelText: '大会名',
             labelStyle: const TextStyle(color: Colors.grey),
-            hintText: '例：第50回 道上剣友会大会',
+            hintText: '例：第1回 〇〇剣道大会',
             hintStyle: TextStyle(color: hintColor, fontSize: 13),
             prefixIcon: const Icon(Icons.emoji_events, color: Colors.amber),
             enabledBorder: OutlineInputBorder(
@@ -331,7 +331,7 @@ class _CreateTournamentScreenState
           decoration: InputDecoration(
             labelText: '会場・住所',
             labelStyle: const TextStyle(color: Colors.grey),
-            hintText: '例：広島県立体育館',
+            hintText: '例：〇〇県立武道館',
             hintStyle: TextStyle(color: hintColor, fontSize: 13),
             prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
             suffixIcon: IconButton(

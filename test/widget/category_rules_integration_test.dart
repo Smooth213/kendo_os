@@ -102,8 +102,8 @@ void main() {
 
       // Check category card is rendered
       expect(find.text('小学生の部'), findsAtLeast(1));
-      expect(find.textContaining('通常戦: 2分'), findsOneWidget);
-      expect(find.textContaining('上位戦: 3分'), findsOneWidget);
+      expect(find.text('標準ルール'), findsWidgets);
+      expect(find.text('2分'), findsWidgets);
 
       // Swipe left on the card to reveal edit action
       await tester.drag(

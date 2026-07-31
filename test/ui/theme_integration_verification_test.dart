@@ -25,6 +25,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
     show customTeamNamesProvider, tournamentProvider;
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
+import 'package:kendo_os/shared/domain/entities/team_model.dart';
+
 class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class MockTeamRepository extends Mock implements TeamRepository {}
@@ -245,6 +247,10 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
+              registeredTeamsProvider(
+                'test_id',
+              ).overrideWith((ref) => Stream.value(<TeamModel>[])),
+              isExportingProvider.overrideWith((ref) => false),
               sharedPreferencesProvider.overrideWithValue(prefs),
               isarProvider.overrideWithValue(null),
               matchListProvider.overrideWith(

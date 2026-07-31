@@ -20,7 +20,7 @@ class PlayerModel {
     required this.lastNameKana,
     required this.firstNameKana,
     required this.grade,
-    this.organization = '道上剣友会',
+    this.organization = '',
     this.gender = '男子',
     this.isBeginner = false, // デフォルトは通常選手
   });

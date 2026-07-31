@@ -131,14 +131,14 @@ class MockPlayerRepository implements PlayerRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
-  Stream<List<String>> watchCustomTeamNames({String organization = '道上剣友会'}) =>
+  Stream<List<String>> watchCustomTeamNames({String organization = ''}) =>
       Stream.value([]);
 
   // ★ 追加: Playerの取得系メソッドが呼ばれた場合に対応
   @override
-  Stream<List<PlayerModel>> getPlayers({String organization = '道上剣友会'}) =>
+  Stream<List<PlayerModel>> getPlayers({String organization = ''}) =>
       Stream.value([]);
-  Stream<List<String>> watchPlayers({String organization = '道上剣友会'}) =>
+  Stream<List<String>> watchPlayers({String organization = ''}) =>
       Stream.value([]);
 }
 
