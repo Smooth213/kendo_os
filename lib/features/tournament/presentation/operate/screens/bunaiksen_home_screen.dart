@@ -1434,8 +1434,24 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   searchText.isEmpty ||
                   p.name.contains(searchText) ||
                   p.nameKana.contains(searchText);
-              final matchFilter =
-                  selectedFilter == 'すべて' || p.gradeName == selectedFilter;
+
+              bool matchFilter = true;
+              if (selectedFilter == '初心者') {
+                matchFilter = p.isBeginner;
+              } else if (selectedFilter == '幼年') {
+                matchFilter = p.grade == 0 && !p.isBeginner;
+              } else if (selectedFilter == '低学年') {
+                matchFilter = p.grade >= 1 && p.grade <= 4 && !p.isBeginner;
+              } else if (selectedFilter == '高学年') {
+                matchFilter = p.grade >= 5 && p.grade <= 6 && !p.isBeginner;
+              } else if (selectedFilter == '中学生') {
+                matchFilter = p.grade >= 7 && p.grade <= 9 && !p.isBeginner;
+              } else if (selectedFilter == '高校生') {
+                matchFilter = p.grade >= 10 && p.grade <= 12 && !p.isBeginner;
+              } else if (selectedFilter == '一般') {
+                matchFilter = p.grade >= 13 && !p.isBeginner;
+              }
+
               return matchSearch && matchFilter;
             }).toList();
 
