@@ -118,8 +118,8 @@ class RoleSelectScreen extends ConsumerWidget {
                                   child: Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
+                                      horizontal: 18,
+                                      vertical: 14,
                                     ),
                                     decoration: BoxDecoration(
                                       color: isDark
@@ -137,56 +137,72 @@ class RoleSelectScreen extends ConsumerWidget {
                                       ),
                                     ),
                                     child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        Icon(
-                                          Icons.hub_outlined,
-                                          color: isDark
-                                              ? Colors.tealAccent
-                                              : Colors.indigo.shade600,
-                                          size: 20,
+                                        Container(
+                                          padding: const EdgeInsets.all(9),
+                                          decoration: BoxDecoration(
+                                            color: isDark
+                                                ? Colors.tealAccent.withValues(
+                                                    alpha: 0.15,
+                                                  )
+                                                : Colors.indigo.withValues(
+                                                    alpha: 0.08,
+                                                  ),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.shield_outlined,
+                                            color: isDark
+                                                ? Colors.tealAccent
+                                                : Colors.indigo.shade700,
+                                            size: 20,
+                                          ),
                                         ),
-                                        const SizedBox(width: 10),
+                                        const SizedBox(width: 12),
                                         Expanded(
-                                          child: Row(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                '接続中の道場ルーム: ',
+                                                '接続中の道場ID (ルーム)',
                                                 style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
                                                   color: isDark
                                                       ? Colors.grey.shade400
                                                       : Colors.grey.shade600,
+                                                  letterSpacing: 0.5,
                                                 ),
                                               ),
-                                              Flexible(
-                                                child: Text(
-                                                  displayDojoId,
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: isDark
-                                                        ? Colors.white
-                                                        : Colors.black87,
-                                                    letterSpacing: 0.5,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                displayDojoId,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: isDark
+                                                      ? Colors.white
+                                                      : Colors.indigo.shade900,
+                                                  letterSpacing: 0.8,
                                                 ),
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ],
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 10),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 10,
-                                            vertical: 5,
+                                            vertical: 6,
                                           ),
                                           decoration: BoxDecoration(
                                             color: isDark
                                                 ? Colors.white.withValues(
-                                                    alpha: 0.1,
+                                                    alpha: 0.12,
                                                   )
                                                 : Colors.white,
                                             borderRadius: BorderRadius.circular(
