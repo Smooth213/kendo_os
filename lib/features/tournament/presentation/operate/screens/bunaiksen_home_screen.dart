@@ -1128,75 +1128,104 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 試合時間ラベル
+                    // 試合時間 (＋／－ カプセルステッパー)
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.timer_outlined,
-                          size: 16,
-                          color: isDark
-                              ? Colors.grey.shade400
-                              : Colors.grey.shade700,
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.timer_outlined,
+                              size: 16,
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade700,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '試合時間',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: themeColors.textColor,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '試合時間',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: themeColors.textColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // 試合時間チップ (Expandedで画面幅に完全フィット)
-                    Row(
-                      children: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
-                        final isSel = selectedMatchTime == t;
-                        final timeLabel = t % 1 == 0 ? '${t.toInt()}分' : '$t分';
-                        return Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 2),
-                            child: InkWell(
-                              onTap: () =>
-                                  setStateSheet(() => selectedMatchTime = t),
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                alignment: Alignment.center,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSel
-                                      ? themeColors.primaryAccent
-                                      : (isDark
-                                            ? const Color(0xFF3A3A3C)
-                                            : Colors.white),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isSel
-                                        ? themeColors.primaryAccent
-                                        : Colors.grey.shade300,
-                                  ),
-                                ),
-                                child: Text(
-                                  timeLabel,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: isSel
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    color: isSel
-                                        ? Colors.white
-                                        : themeColors.textColor,
-                                  ),
-                                ),
+                        // ＋／－ カプセルコントローラー
+                        Container(
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF3A3A3C)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: themeColors.primaryAccent.withValues(
+                                alpha: 0.5,
                               ),
                             ),
                           ),
-                        );
-                      }).toList(),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove, size: 18),
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 32,
+                                ),
+                                color: selectedMatchTime > 0.5
+                                    ? themeColors.primaryAccent
+                                    : Colors.grey,
+                                onPressed: selectedMatchTime > 0.5
+                                    ? () => setStateSheet(
+                                        () => selectedMatchTime =
+                                            (selectedMatchTime - 0.5).clamp(
+                                              0.5,
+                                              10.0,
+                                            ),
+                                      )
+                                    : null,
+                              ),
+                              Container(
+                                constraints: const BoxConstraints(minWidth: 54),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  selectedMatchTime % 1 == 0
+                                      ? '${selectedMatchTime.toInt()}分'
+                                      : '$selectedMatchTime分',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: themeColors.textColor,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add, size: 18),
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 32,
+                                ),
+                                color: selectedMatchTime < 10.0
+                                    ? themeColors.primaryAccent
+                                    : Colors.grey,
+                                onPressed: selectedMatchTime < 10.0
+                                    ? () => setStateSheet(
+                                        () => selectedMatchTime =
+                                            (selectedMatchTime + 0.5).clamp(
+                                              0.5,
+                                              10.0,
+                                            ),
+                                      )
+                                    : null,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 14),
                     // 勝負形式 (3本勝負 / 1本勝負)
