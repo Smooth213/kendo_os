@@ -1259,7 +1259,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               onTap: () => setStateSheet(
                                 () => selectedIsIpponShobu = false,
                               ),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(16),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 14,
@@ -1271,7 +1271,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       : (isDark
                                             ? const Color(0xFF3A3A3C)
                                             : Colors.white),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: !selectedIsIpponShobu
                                         ? themeColors.primaryAccent
@@ -1298,10 +1298,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               onTap: () => setStateSheet(
                                 () => selectedIsIpponShobu = true,
                               ),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(16),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: 14,
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
@@ -1310,7 +1310,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       : (isDark
                                             ? const Color(0xFF3A3A3C)
                                             : Colors.white),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: selectedIsIpponShobu
                                         ? themeColors.primaryAccent
@@ -1560,6 +1560,16 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 backgroundColor: isDark
                                     ? const Color(0xFF2C2C2E)
                                     : Colors.grey.shade200,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(
+                                    color: isSel
+                                        ? Colors.transparent
+                                        : (isDark
+                                              ? const Color(0xFF3A3A3C)
+                                              : Colors.grey.shade300),
+                                  ),
+                                ),
                                 onSelected: (selected) {
                                   if (selected) {
                                     setModalState(
