@@ -207,10 +207,16 @@ class _SetupMatchFormatScreenState
   double _extTime = -2.0;
 
   String _formatMinutesText(double time) {
-    if (time == time.toInt()) {
-      return '${time.toInt()}分';
+    if (time <= 0) return '0分';
+    final mins = time.floor();
+    final secs = ((time - mins) * 60).round();
+    if (mins == 0) {
+      return '$secs秒';
     }
-    return '$time分';
+    if (secs == 0) {
+      return '$mins分';
+    }
+    return '$mins分$secs秒';
   }
 
   @override

@@ -103,9 +103,6 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
   String _advancedRenseikaiType = '一試合制';
   int _advancedOverallTime = 30;
 
-  bool _isNormalCustomTime = false;
-  bool _isAdvancedCustomTime = false;
-
   // 代表戦の詳細設定 (通常戦用)
   double _normalDaihyoMatchTime = 0.0; // 0.0: 無制限
   bool _normalDaihyoHasExtension = true;
@@ -137,10 +134,16 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
   ];
 
   String _formatMinutes(double minutes) {
-    if (minutes == minutes.toInt()) {
-      return '${minutes.toInt()}分';
+    if (minutes <= 0) return '0分';
+    final mins = minutes.floor();
+    final secs = ((minutes - mins) * 60).round();
+    if (mins == 0) {
+      return '$secs秒';
     }
-    return '$minutes分';
+    if (secs == 0) {
+      return '$mins分';
+    }
+    return '$mins分$secs秒';
   }
 
   @override
@@ -216,23 +219,6 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       _advancedOverallTime = rules.advancedRule.overallTimeMinutes;
       _editingAdvancedKeywords = List.from(rules.advancedKeywords);
       _keywordsController.text = _editingAdvancedKeywords.join(', ');
-
-      _isNormalCustomTime = !const [
-        1.5,
-        2.0,
-        2.5,
-        3.0,
-        4.0,
-        5.0,
-      ].contains(rules.normalRule.matchTimeMinutes);
-      _isAdvancedCustomTime = !const [
-        1.5,
-        2.0,
-        2.5,
-        3.0,
-        4.0,
-        5.0,
-      ].contains(rules.advancedRule.matchTimeMinutes);
 
       _normalDaihyoMatchTime = rules.normalRule.daihyoMatchTimeMinutes;
       _normalDaihyoHasExtension = rules.normalRule.daihyoHasExtension;
@@ -942,6 +928,136 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     );
   }
 
+  Widget _buildTimeStepperTile({
+    required String title,
+    required double value,
+    required double minValue,
+    required double maxValue,
+    required double step,
+    required ValueChanged<double> onChanged,
+    String? subtitle,
+    AppThemeColors? themeColors,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = themeColors?.primaryAccent ?? Colors.indigo;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.grey.shade200,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isDark ? Colors.white24 : Colors.grey.shade300,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.remove, size: 18),
+                  padding: const EdgeInsets.all(6),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  color: value > minValue ? primaryColor : Colors.grey.shade400,
+                  onPressed: value > minValue
+                      ? () {
+                          final newVal = (value - step).clamp(
+                            minValue,
+                            maxValue,
+                          );
+                          onChanged(newVal);
+                        }
+                      : null,
+                ),
+                Container(
+                  constraints: const BoxConstraints(minWidth: 68),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    _formatMinutes(value),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: primaryColor,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add, size: 18),
+                  padding: const EdgeInsets.all(6),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  color: value < maxValue ? primaryColor : Colors.grey.shade400,
+                  onPressed: value < maxValue
+                      ? () {
+                          final newVal = (value + step).clamp(
+                            minValue,
+                            maxValue,
+                          );
+                          onChanged(newVal);
+                        }
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRuleEditor(
     TournamentModel tournament,
     String category,
@@ -1386,7 +1502,6 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     int overallTime = isNormal ? _normalOverallTime : _advancedOverallTime;
 
     // 追加分のマッピング
-    bool isCustomTime = isNormal ? _isNormalCustomTime : _isAdvancedCustomTime;
     double daihyoMatchTime = isNormal
         ? _normalDaihyoMatchTime
         : _advancedDaihyoMatchTime;
@@ -1403,9 +1518,6 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         ? _normalDaihyoHasHantei
         : _advancedDaihyoHasHantei;
 
-    final timePresets = [1.5, 2.0, 2.5, 3.0, 4.0, 5.0];
-    final bool showCustomTimeField = isCustomTime;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1413,91 +1525,64 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         const SizedBox(height: 16),
 
         // 1. 共通: 試合時間設定
-        const Text(
-          '試合時間',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        _buildTimeStepperTile(
+          title: '試合時間',
+          subtitle: '30秒単位で自由に増減できます',
+          value: matchTime,
+          minValue: 0.5,
+          maxValue: 15.0,
+          step: 0.5,
+          themeColors: themeColors,
+          onChanged: (newVal) {
+            setState(() {
+              if (isNormal) {
+                _normalTime = newVal;
+              } else {
+                _advancedTime = newVal;
+              }
+            });
+          },
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Text(
+            'クイック選択',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: [
-            ...timePresets.map((t) {
-              final isSelected = !isCustomTime && matchTime == t;
-              return ChoiceChip(
-                label: Text(_formatMinutes(t)),
-                selected: isSelected,
-                selectedColor: themeColors.softAccent,
-                labelStyle: TextStyle(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? themeColors.primaryAccent : textColor,
-                ),
-                onSelected: (s) {
-                  if (s) {
-                    setState(() {
-                      if (isNormal) {
-                        _isNormalCustomTime = false;
-                        _normalTime = t;
-                      } else {
-                        _isAdvancedCustomTime = false;
-                        _advancedTime = t;
-                      }
-                    });
-                  }
-                },
-              );
-            }),
-            ChoiceChip(
-              label: const Text('任意'),
-              selected: isCustomTime,
+          children: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
+            final isSelected = matchTime == t;
+            return ChoiceChip(
+              label: Text(_formatMinutes(t)),
+              selected: isSelected,
               selectedColor: themeColors.softAccent,
               labelStyle: TextStyle(
-                fontWeight: isCustomTime ? FontWeight.bold : FontWeight.normal,
-                color: isCustomTime ? themeColors.primaryAccent : textColor,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? themeColors.primaryAccent : textColor,
               ),
               onSelected: (s) {
                 if (s) {
                   setState(() {
                     if (isNormal) {
-                      _isNormalCustomTime = true;
-                      if (timePresets.contains(_normalTime)) {
-                        _normalTime = 3.0;
-                      }
+                      _normalTime = t;
                     } else {
-                      _isAdvancedCustomTime = true;
-                      if (timePresets.contains(_advancedTime)) {
-                        _advancedTime = 3.0;
-                      }
+                      _advancedTime = t;
                     }
                   });
                 }
               },
-            ),
-          ],
+            );
+          }).toList(),
         ),
-        if (showCustomTimeField) ...[
-          const SizedBox(height: 12),
-          TextFormField(
-            key: ValueKey('custom_match_time_${isNormal}_$_editingCategory'),
-            initialValue: matchTime.toString(),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-              labelText: '任意の試合時間（分）',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.all(12),
-            ),
-            onChanged: (val) {
-              final parsed = double.tryParse(val) ?? 3.0;
-              setState(() {
-                if (isNormal) {
-                  _normalTime = parsed;
-                } else {
-                  _advancedTime = parsed;
-                }
-              });
-            },
-          ),
-        ],
         const SizedBox(height: 16),
 
         // === 形式別表示 ===
@@ -1771,46 +1856,22 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
               ),
             ],
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('延長戦の時間（分）'),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: enchoTime > 1.0
-                            ? () => setState(() {
-                                if (isNormal) {
-                                  _normalEnchoTime -= 1.0;
-                                } else {
-                                  _advancedEnchoTime -= 1.0;
-                                }
-                              })
-                            : null,
-                      ),
-                      Text(
-                        _formatMinutes(enchoTime),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: enchoTime < 10.0
-                            ? () => setState(() {
-                                if (isNormal) {
-                                  _normalEnchoTime += 1.0;
-                                } else {
-                                  _advancedEnchoTime += 1.0;
-                                }
-                              })
-                            : null,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            _buildTimeStepperTile(
+              title: '延長戦の時間',
+              value: enchoTime,
+              minValue: 0.5,
+              maxValue: 10.0,
+              step: 0.5,
+              themeColors: themeColors,
+              onChanged: (newVal) {
+                setState(() {
+                  if (isNormal) {
+                    _normalEnchoTime = newVal;
+                  } else {
+                    _advancedEnchoTime = newVal;
+                  }
+                });
+              },
             ),
           ],
           if (!hasExtension || !isEnchoUnlimited) ...[
@@ -1965,50 +2026,22 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               },
             ),
             if (daihyoHasExtension) ...[
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16.0,
-                  right: 8.0,
-                  top: 8.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('代表戦延長の時間（分）'),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: daihyoEnchoTime > 1.0
-                              ? () => setState(() {
-                                  if (isNormal) {
-                                    _normalDaihyoEnchoTime -= 1.0;
-                                  } else {
-                                    _advancedDaihyoEnchoTime -= 1.0;
-                                  }
-                                })
-                              : null,
-                        ),
-                        Text(
-                          _formatMinutes(daihyoEnchoTime),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.add_circle_outline),
-                          onPressed: daihyoEnchoTime < 10.0
-                              ? () => setState(() {
-                                  if (isNormal) {
-                                    _normalDaihyoEnchoTime += 1.0;
-                                  } else {
-                                    _advancedDaihyoEnchoTime += 1.0;
-                                  }
-                                })
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              _buildTimeStepperTile(
+                title: '代表戦延長の時間',
+                value: daihyoEnchoTime,
+                minValue: 0.5,
+                maxValue: 10.0,
+                step: 0.5,
+                themeColors: themeColors,
+                onChanged: (newVal) {
+                  setState(() {
+                    if (isNormal) {
+                      _normalDaihyoEnchoTime = newVal;
+                    } else {
+                      _advancedDaihyoEnchoTime = newVal;
+                    }
+                  });
+                },
               ),
               const SizedBox(height: 8),
               const Padding(
@@ -3086,20 +3119,13 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             },
           ),
         ],
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('1試合の時間: ${_formatMinutes(time)}'),
-            Slider(
-              value: time,
-              min: 1.0,
-              max: 5.0,
-              divisions: 8,
-              label: _formatMinutes(time),
-              onChanged: onTimeChanged,
-            ),
-          ],
+        _buildTimeStepperTile(
+          title: '1試合の時間',
+          value: time,
+          minValue: 0.5,
+          maxValue: 10.0,
+          step: 0.5,
+          onChanged: onTimeChanged,
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
