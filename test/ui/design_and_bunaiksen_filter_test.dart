@@ -11,10 +11,7 @@ import 'package:kendo_os/shared/widgets/multi_player_select_input.dart';
 class MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class FakeBunaiksenGuestNotifier extends BunaiksenGuestNotifier {
-  FakeBunaiksenGuestNotifier(Ref ref) : super(ref);
-
-  @override
-  void _listenToGuests() {
+  FakeBunaiksenGuestNotifier(super.ref) {
     state = [];
   }
 }
