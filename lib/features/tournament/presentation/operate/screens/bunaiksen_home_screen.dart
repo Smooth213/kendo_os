@@ -874,6 +874,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
   ) {
     String redPlayer = '選手A';
     String whitePlayer = '選手B';
+    final initialRule = ref.read(bunaiksenRuleProvider);
+    double selectedMatchTime = initialRule.matchTimeMinutes;
+    bool selectedIsIpponShobu = initialRule.isIpponShobu;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
@@ -1111,15 +1115,218 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              // 試合時間＆勝負設定
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    // 試合時間
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.timer_outlined,
+                              size: 16,
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade700,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '試合時間',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: themeColors.textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [2.0, 3.0, 4.0, 5.0].map((t) {
+                              final isSel = selectedMatchTime == t;
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 4),
+                                child: InkWell(
+                                  onTap: () => setStateSheet(
+                                    () => selectedMatchTime = t,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isSel
+                                          ? themeColors.primaryAccent
+                                          : (isDark
+                                                ? const Color(0xFF3A3A3C)
+                                                : Colors.white),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: isSel
+                                            ? themeColors.primaryAccent
+                                            : Colors.grey.shade300,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '${t.toInt()}分',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: isSel
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                        color: isSel
+                                            ? Colors.white
+                                            : themeColors.textColor,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // 勝負形式 (3本勝負 / 1本勝負)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.emoji_events_outlined,
+                              size: 16,
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade700,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '勝負形式',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: themeColors.textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            // 3本勝負
+                            InkWell(
+                              onTap: () => setStateSheet(
+                                () => selectedIsIpponShobu = false,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: !selectedIsIpponShobu
+                                      ? themeColors.primaryAccent
+                                      : (isDark
+                                            ? const Color(0xFF3A3A3C)
+                                            : Colors.white),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: !selectedIsIpponShobu
+                                        ? themeColors.primaryAccent
+                                        : Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Text(
+                                  '3本勝負',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: !selectedIsIpponShobu
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: !selectedIsIpponShobu
+                                        ? Colors.white
+                                        : themeColors.textColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            // 1本勝負
+                            InkWell(
+                              onTap: () => setStateSheet(
+                                () => selectedIsIpponShobu = true,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: selectedIsIpponShobu
+                                      ? themeColors.primaryAccent
+                                      : (isDark
+                                            ? const Color(0xFF3A3A3C)
+                                            : Colors.white),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: selectedIsIpponShobu
+                                        ? themeColors.primaryAccent
+                                        : Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Text(
+                                  '1本勝負',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: selectedIsIpponShobu
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: selectedIsIpponShobu
+                                        ? Colors.white
+                                        : themeColors.textColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     Navigator.pop(sheetContext);
                     final dojoId = ref.read(currentDojoIdProvider);
-                    final rule = ref.read(bunaiksenRuleProvider);
+                    final baseRule = ref.read(bunaiksenRuleProvider);
                     final matchId = const Uuid().v4();
+
+                    final matchRule = baseRule.copyWith(
+                      matchTimeMinutes: selectedMatchTime,
+                      isIpponShobu: selectedIsIpponShobu,
+                      ipponLimit: selectedIsIpponShobu ? 1 : 2,
+                    );
 
                     final newMatch = MatchModel(
                       id: matchId,
@@ -1128,13 +1335,14 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       matchType: '個人戦',
                       redName: redPlayer,
                       whiteName: whitePlayer,
-                      matchTimeMinutes: rule.matchTimeMinutes,
+                      matchTimeMinutes: selectedMatchTime,
                       hasExtension:
-                          rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited,
-                      extensionTimeMinutes: rule.enchoTimeMinutes,
+                          baseRule.enchoTimeMinutes > 0 ||
+                          baseRule.isEnchoUnlimited,
+                      extensionTimeMinutes: baseRule.enchoTimeMinutes,
                       status: 'in_progress',
                       order: DateTime.now().millisecondsSinceEpoch.toDouble(),
-                      rule: rule,
+                      rule: matchRule,
                       note: 'クイック対戦',
                     );
 
