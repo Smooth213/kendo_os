@@ -1516,8 +1516,9 @@ class _SetupMatchFormatScreenState
                     selected: _selectedRuleScene == 'renseikai',
                     selectedColor: Colors.amber.shade200,
                     onSelected: (selected) {
-                      if (selected)
+                      if (selected) {
                         _applyCategoryRuleScene('renseikai', ruleSet);
+                      }
                     },
                   ),
                 if (ruleSet.useHonsenRule)
@@ -1526,7 +1527,9 @@ class _SetupMatchFormatScreenState
                     selected: _selectedRuleScene == 'honsen',
                     selectedColor: Colors.indigo.shade200,
                     onSelected: (selected) {
-                      if (selected) _applyCategoryRuleScene('honsen', ruleSet);
+                      if (selected) {
+                        _applyCategoryRuleScene('honsen', ruleSet);
+                      }
                     },
                   ),
                 if (ruleSet.useMoushiawaseRule)
@@ -1535,8 +1538,9 @@ class _SetupMatchFormatScreenState
                     selected: _selectedRuleScene == 'moushiawase',
                     selectedColor: Colors.teal.shade200,
                     onSelected: (selected) {
-                      if (selected)
+                      if (selected) {
                         _applyCategoryRuleScene('moushiawase', ruleSet);
+                      }
                     },
                   ),
               ] else if (ruleSet.useHonsenRule) ...[
@@ -1545,7 +1549,9 @@ class _SetupMatchFormatScreenState
                   selected: _selectedRuleScene == 'honsen',
                   selectedColor: Colors.indigo.shade200,
                   onSelected: (selected) {
-                    if (selected) _applyCategoryRuleScene('honsen', ruleSet);
+                    if (selected) {
+                      _applyCategoryRuleScene('honsen', ruleSet);
+                    }
                   },
                 ),
               ],

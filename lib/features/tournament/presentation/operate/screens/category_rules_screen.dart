@@ -1106,8 +1106,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         ),
                         value: _useRenseikaiRule,
                         onChanged: (val) {
-                          if (val != null)
+                          if (val != null) {
                             setState(() => _useRenseikaiRule = val);
+                          }
                         },
                       ),
                       CheckboxListTile(
@@ -1119,7 +1120,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         ),
                         value: _useHonsenRule,
                         onChanged: (val) {
-                          if (val != null) setState(() => _useHonsenRule = val);
+                          if (val != null) {
+                            setState(() => _useHonsenRule = val);
+                          }
                         },
                       ),
                       CheckboxListTile(
@@ -1131,8 +1134,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         ),
                         value: _useMoushiawaseRule,
                         onChanged: (val) {
-                          if (val != null)
+                          if (val != null) {
                             setState(() => _useMoushiawaseRule = val);
+                          }
                         },
                       ),
                     ],
