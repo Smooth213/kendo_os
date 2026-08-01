@@ -97,34 +97,45 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   }
 
   void _applyCategoryRuleSet(MatchRule normRule) {
+    // 1. 基本ルール
     _matchTime = normRule.matchTimeMinutes;
     _isIpponShobu = normRule.isIpponShobu;
 
+    // 2. 延長ルール: normRule で延長時間が設定されているか無制限の場合のみ ON。それ以外は完全強制 OFF！
+    final bool extensionEnabled =
+        (normRule.enchoTimeMinutes > 0) || normRule.isEnchoUnlimited;
+    _hasExtension = extensionEnabled;
+    _isEnchoUnlimited = extensionEnabled ? normRule.isEnchoUnlimited : false;
+    _enchoTime = normRule.enchoTimeMinutes > 0
+        ? normRule.enchoTimeMinutes
+        : 3.0;
+    _enchoCount = normRule.enchoCount > 0 ? normRule.enchoCount : 1;
+
+    // 3. 個人戦判定 & 団体戦代表戦ルール: 部門ルールで有効化されている項目のみ ON。それ以外は全強制 OFF！
     final isTeam = _isCurrentFilterTeamMatch;
     final isIndiv = _isCurrentFilterIndividualMatch;
 
     if (isTeam && !isIndiv) {
-      // 団体戦: 無関係な「個人戦判定(hasHantei)」を自動的にOFFへスマートリセット
+      // 団体戦選択時: 個人戦判定は絶対に OFF、代表戦は normRule の設定に従う
       _hasHantei = false;
       _hasRepresentativeMatch = normRule.hasRepresentativeMatch;
-      _isDaihyoIpponShobu = normRule.isDaihyoIpponShobu;
+      _isDaihyoIpponShobu = normRule.hasRepresentativeMatch
+          ? normRule.isDaihyoIpponShobu
+          : false;
     } else if (isIndiv && !isTeam) {
-      // 個人戦: 無関係な「団体戦代表戦(hasRepresentativeMatch)」を自動的にOFFへスマートリセット
+      // 個人戦選択時: 団体戦代表戦は絶対に OFF、個人戦判定は normRule の設定に従う
       _hasRepresentativeMatch = false;
       _isDaihyoIpponShobu = false;
       _hasHantei = normRule.hasHantei;
     } else {
       _hasHantei = normRule.hasHantei;
       _hasRepresentativeMatch = normRule.hasRepresentativeMatch;
-      _isDaihyoIpponShobu = normRule.isDaihyoIpponShobu;
+      _isDaihyoIpponShobu = normRule.hasRepresentativeMatch
+          ? normRule.isDaihyoIpponShobu
+          : false;
     }
 
-    _isEnchoUnlimited = normRule.isEnchoUnlimited;
-    _hasExtension = normRule.enchoTimeMinutes > 0 || normRule.isEnchoUnlimited;
-    _enchoTime = normRule.enchoTimeMinutes > 0
-        ? normRule.enchoTimeMinutes
-        : 3.0;
-    _enchoCount = normRule.enchoCount;
+    // 4. 錬成会設定
     _isRenseikai = normRule.isRenseikai;
     _renseikaiType = normRule.renseikaiType;
     _overallTimeController.text = normRule.overallTimeMinutes.toString();

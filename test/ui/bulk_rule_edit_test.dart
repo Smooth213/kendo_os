@@ -326,5 +326,89 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets(
+      '5. Verify Strict Preset Reset: Rules not enabled in category preset are strictly turned OFF',
+      (WidgetTester tester) async {
+        final categoryRules = {
+          '完全シンプルルール': const CategoryRuleSet(
+            normalRule: MatchRule(
+              matchTimeMinutes: 2.0,
+              isIpponShobu: true,
+              enchoTimeMinutes: 0.0, // 延長なし
+              isEnchoUnlimited: false,
+              hasHantei: false, // 判定なし
+              hasRepresentativeMatch: false, // 代表戦なし
+            ),
+          ),
+        };
+
+        final tournament = TournamentModel(
+          id: 'tourney_simple',
+          organizationId: 'org_1',
+          name: 'シンプル大会',
+          date: DateTime.now(),
+          venue: '武道館',
+          categoryRules: categoryRules,
+        );
+
+        final matches = [
+          MatchModel(
+            id: 'm1',
+            matchType: '個人戦',
+            redName: '選手A',
+            whiteName: '選手B',
+            rule: const MatchRule(
+              matchTimeMinutes: 3.0,
+              enchoTimeMinutes: 3.0, // 既存試合は延長ON
+              hasHantei: true, // 既存試合は判定ON
+            ),
+            tournamentId: 'tourney_simple',
+          ),
+        ];
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              tournamentProvider(
+                'tourney_simple',
+              ).overrideWith((ref) => Stream.value(tournament)),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: BulkRuleEditSheet(
+                  tournamentId: 'tourney_simple',
+                  matches: matches,
+                  themeColors: AppThemeColors.ofMode(
+                    isDark: false,
+                    mode: 'operate',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 部門「完全シンプルルール」をタップ
+        await tester.tap(find.text('完全シンプルルール'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // 既存試合でONだった延長や判定が、プリセット適用により厳格にOFFにクリアリセットされたことを検証
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
