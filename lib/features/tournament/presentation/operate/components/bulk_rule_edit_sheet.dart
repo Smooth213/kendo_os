@@ -61,6 +61,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   List<String> _selectedMatchIds = [];
   String? _loadedMatchId;
   String? _selectedCategoryRuleName;
+  String _selectedSceneType = 'normal';
 
   // 2. 新ルールの状態変数
   late double _matchTime;
@@ -90,6 +91,53 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     _isRenseikai = normRule.isRenseikai;
     _renseikaiType = normRule.renseikaiType;
     _overallTimeController.text = normRule.overallTimeMinutes.toString();
+  }
+
+  String _formatRuleSummary(MatchRule r) {
+    final timeStr = r.matchTimeMinutes.truncateToDouble() == r.matchTimeMinutes
+        ? r.matchTimeMinutes.toInt().toString()
+        : r.matchTimeMinutes.toString();
+    final formatStr = r.isIpponShobu ? '1本' : '3本';
+    return '$timeStr分・$formatStr';
+  }
+
+  Widget _buildSceneSubChip({
+    required String sceneKey,
+    required String label,
+    required MatchRule targetRule,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isSel = _selectedSceneType == sceneKey;
+    return ChoiceChip(
+      showCheckmark: false,
+      label: Text(label),
+      labelStyle: TextStyle(
+        fontSize: 11,
+        fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+        color: isSel
+            ? Colors.white
+            : (isDark ? Colors.grey.shade300 : Colors.grey.shade800),
+      ),
+      selected: isSel,
+      selectedColor: widget.themeColors.primaryAccent,
+      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isSel
+              ? widget.themeColors.primaryAccent
+              : (isDark ? const Color(0xFF3A3A3C) : Colors.grey.shade300),
+        ),
+      ),
+      onSelected: (selected) {
+        if (selected) {
+          setState(() {
+            _selectedSceneType = sceneKey;
+            _applyCategoryRuleSet(targetRule);
+          });
+        }
+      },
+    );
   }
 
   // 錬成会
@@ -556,7 +604,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 _buildSectionHeader('STEP 2: 新しいルールを設定'),
                 const SizedBox(height: 16),
 
-                // 部門別ルールプリセットからの選択UI
+                // 部門別ルールプリセットからの選択UI (アイデア1: 部門選択 ➔ シーンサブチップ)
                 ...(() {
                   final asyncTournament = ref.watch(
                     tournamentProvider(widget.tournamentId),
@@ -564,6 +612,10 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   final categoryRules =
                       asyncTournament.valueOrNull?.categoryRules ?? {};
                   if (categoryRules.isEmpty) return <Widget>[];
+
+                  final selectedRuleSet = _selectedCategoryRuleName != null
+                      ? categoryRules[_selectedCategoryRuleName]
+                      : null;
 
                   return [
                     Container(
@@ -602,33 +654,21 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                             ],
                           ),
                           const SizedBox(height: 8),
+
+                          // 1段目: 部門名選択チップ
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: categoryRules.entries.map((entry) {
                                 final catName = entry.key;
                                 final ruleSet = entry.value;
-                                final normRule = ruleSet.normalRule;
                                 final isSel =
                                     _selectedCategoryRuleName == catName;
-                                final timeStr =
-                                    normRule.matchTimeMinutes
-                                            .truncateToDouble() ==
-                                        normRule.matchTimeMinutes
-                                    ? normRule.matchTimeMinutes
-                                          .toInt()
-                                          .toString()
-                                    : normRule.matchTimeMinutes.toString();
-                                final formatStr = normRule.isIpponShobu
-                                    ? '1本勝負'
-                                    : '3本勝負';
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8),
                                   child: ChoiceChip(
                                     showCheckmark: false,
-                                    label: Text(
-                                      '$catName ($timeStr分・$formatStr)',
-                                    ),
+                                    label: Text(catName),
                                     labelStyle: TextStyle(
                                       fontSize: 12,
                                       fontWeight: isSel
@@ -660,7 +700,10 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                                       if (selected) {
                                         setState(() {
                                           _selectedCategoryRuleName = catName;
-                                          _applyCategoryRuleSet(normRule);
+                                          _selectedSceneType = 'normal';
+                                          _applyCategoryRuleSet(
+                                            ruleSet.normalRule,
+                                          );
                                         });
                                       }
                                     },
@@ -669,6 +712,73 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                               }).toList(),
                             ),
                           ),
+
+                          // 2段目: 選択中部門のシーンサブチップ（本戦・錬成会・申し合わせ・決勝戦）
+                          if (selectedRuleSet != null) ...[
+                            const SizedBox(height: 10),
+                            const Divider(height: 1, thickness: 0.5),
+                            const SizedBox(height: 8),
+                            Text(
+                              '試合シーン・ルール用途を選択:',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? Colors.grey.shade400
+                                    : Colors.grey.shade600,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  // 1) 本戦 (通常)
+                                  if (selectedRuleSet.useHonsenRule)
+                                    _buildSceneSubChip(
+                                      sceneKey: 'normal',
+                                      label:
+                                          '🏆 本戦 (${_formatRuleSummary(selectedRuleSet.normalRule)})',
+                                      targetRule: selectedRuleSet.normalRule,
+                                    ),
+
+                                  // 2) 錬成会 (練習試合)
+                                  if (selectedRuleSet.useRenseikaiRule) ...[
+                                    const SizedBox(width: 6),
+                                    _buildSceneSubChip(
+                                      sceneKey: 'renseikai',
+                                      label:
+                                          '⚔️ 錬成会 (${_formatRuleSummary(selectedRuleSet.renseikaiRule)})',
+                                      targetRule: selectedRuleSet.renseikaiRule,
+                                    ),
+                                  ],
+
+                                  // 3) 申し合わせ
+                                  if (selectedRuleSet.useMoushiawaseRule) ...[
+                                    const SizedBox(width: 6),
+                                    _buildSceneSubChip(
+                                      sceneKey: 'moushiawase',
+                                      label:
+                                          '🤝 申し合わせ (${_formatRuleSummary(selectedRuleSet.moushiawaseRule)})',
+                                      targetRule:
+                                          selectedRuleSet.moushiawaseRule,
+                                    ),
+                                  ],
+
+                                  // 4) 決勝・準決勝
+                                  if (selectedRuleSet.useAdvancedRule) ...[
+                                    const SizedBox(width: 6),
+                                    _buildSceneSubChip(
+                                      sceneKey: 'advanced',
+                                      label:
+                                          '🔥 決勝・準決勝 (${_formatRuleSummary(selectedRuleSet.advancedRule)})',
+                                      targetRule: selectedRuleSet.advancedRule,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

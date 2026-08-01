@@ -140,13 +140,108 @@ void main() {
 
         // 「部門別ルールから一括セット」のセクションが表示されていること
         expect(find.text('部門別ルールから一括セット'), findsOneWidget);
-        // 各部門ルールのチップが表示されていること
-        expect(find.text('小学生低学年の部 (1.5分・1本勝負)'), findsOneWidget);
-        expect(find.text('中学生の部 (3分・3本勝負)'), findsOneWidget);
+        // 1段目の部門名チップが表示されていること
+        expect(find.text('小学生低学年の部'), findsOneWidget);
+        expect(find.text('中学生の部'), findsOneWidget);
 
-        // 「小学生低学年の部 (1.5分・1本勝負)」チップをタップ
-        final chipFinder = find.text('小学生低学年の部 (1.5分・1本勝負)');
+        // 「小学生低学年の部」チップをタップ
+        final chipFinder = find.text('小学生低学年の部');
         await tester.tap(chipFinder, warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      '3. Verify 2-Stage Selection: Selecting Category dynamically expands Scene Sub-Chips (Honsen, Renseikai, Moushiawase)',
+      (WidgetTester tester) async {
+        final categoryRules = {
+          '小学生の部': const CategoryRuleSet(
+            isMultiScene: true,
+            useHonsenRule: true,
+            normalRule: MatchRule(matchTimeMinutes: 3.0, isIpponShobu: false),
+            useRenseikaiRule: true,
+            renseikaiRule: MatchRule(
+              matchTimeMinutes: 2.0,
+              isIpponShobu: true,
+              isRenseikai: true,
+            ),
+            useMoushiawaseRule: true,
+            moushiawaseRule: MatchRule(
+              matchTimeMinutes: 1.5,
+              isIpponShobu: true,
+              isRenseikai: true,
+            ),
+          ),
+        };
+
+        final tournament = TournamentModel(
+          id: 'tourney_2',
+          organizationId: 'org_1',
+          name: '第2回テスト大会',
+          date: DateTime.now(),
+          venue: '武道館',
+          categoryRules: categoryRules,
+        );
+
+        final matches = [
+          MatchModel(
+            id: 'm1',
+            matchType: '個人戦',
+            redName: '選手1',
+            whiteName: '選手2',
+            tournamentId: 'tourney_2',
+          ),
+        ];
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              tournamentProvider(
+                'tourney_2',
+              ).overrideWith((ref) => Stream.value(tournament)),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: BulkRuleEditSheet(
+                  tournamentId: 'tourney_2',
+                  matches: matches,
+                  themeColors: AppThemeColors.ofMode(
+                    isDark: false,
+                    mode: 'operate',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. 部門名「小学生の部」チップをタップ
+        await tester.tap(find.text('小学生の部'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // 2. 2段目のシーンサブチップ群（本戦、錬成会、申し合わせ）が動的に表示されていること
+        expect(find.text('試合シーン・ルール用途を選択:'), findsOneWidget);
+        expect(find.text('🏆 本戦 (3分・3本)'), findsOneWidget);
+        expect(find.text('⚔️ 錬成会 (2分・1本)'), findsOneWidget);
+        expect(find.text('🤝 申し合わせ (1.5分・1本)'), findsOneWidget);
+
+        // 3. 「⚔️ 錬成会 (2分・1本)」サブチップをタップ
+        await tester.tap(find.text('⚔️ 錬成会 (2分・1本)'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);
