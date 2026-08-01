@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void showBulkRuleEditSheet(
@@ -59,6 +60,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   String _selectedTypeFilter = 'すべて';
   List<String> _selectedMatchIds = [];
   String? _loadedMatchId;
+  String? _selectedCategoryRuleName;
 
   // 2. 新ルールの状態変数
   late double _matchTime;
@@ -72,6 +74,23 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   // 団体戦
   late bool _hasRepresentativeMatch;
   late bool _isDaihyoIpponShobu;
+
+  void _applyCategoryRuleSet(MatchRule normRule) {
+    _matchTime = normRule.matchTimeMinutes;
+    _isIpponShobu = normRule.isIpponShobu;
+    _hasHantei = normRule.hasHantei;
+    _isEnchoUnlimited = normRule.isEnchoUnlimited;
+    _hasExtension = normRule.enchoTimeMinutes > 0 || normRule.isEnchoUnlimited;
+    _enchoTime = normRule.enchoTimeMinutes > 0
+        ? normRule.enchoTimeMinutes
+        : 3.0;
+    _enchoCount = normRule.enchoCount;
+    _hasRepresentativeMatch = normRule.hasRepresentativeMatch;
+    _isDaihyoIpponShobu = normRule.isDaihyoIpponShobu;
+    _isRenseikai = normRule.isRenseikai;
+    _renseikaiType = normRule.renseikaiType;
+    _overallTimeController.text = normRule.overallTimeMinutes.toString();
+  }
 
   // 錬成会
   late bool _isRenseikai;
@@ -536,6 +555,125 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 // STEP 2. 新ルールの設定
                 _buildSectionHeader('STEP 2: 新しいルールを設定'),
                 const SizedBox(height: 16),
+
+                // 部門別ルールプリセットからの選択UI
+                ...(() {
+                  final asyncTournament = ref.watch(
+                    tournamentProvider(widget.tournamentId),
+                  );
+                  final categoryRules =
+                      asyncTournament.valueOrNull?.categoryRules ?? {};
+                  if (categoryRules.isEmpty) return <Widget>[];
+
+                  return [
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: widget.themeColors.primaryAccent.withAlpha(
+                          isDark ? 25 : 12,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: widget.themeColors.primaryAccent.withAlpha(
+                            isDark ? 80 : 40,
+                          ),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.auto_awesome,
+                                size: 16,
+                                color: widget.themeColors.primaryAccent,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '部門別ルールから一括セット',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: categoryRules.entries.map((entry) {
+                                final catName = entry.key;
+                                final ruleSet = entry.value;
+                                final normRule = ruleSet.normalRule;
+                                final isSel =
+                                    _selectedCategoryRuleName == catName;
+                                final timeStr =
+                                    normRule.matchTimeMinutes
+                                            .truncateToDouble() ==
+                                        normRule.matchTimeMinutes
+                                    ? normRule.matchTimeMinutes
+                                          .toInt()
+                                          .toString()
+                                    : normRule.matchTimeMinutes.toString();
+                                final formatStr = normRule.isIpponShobu
+                                    ? '1本勝負'
+                                    : '3本勝負';
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ChoiceChip(
+                                    showCheckmark: false,
+                                    label: Text(
+                                      '$catName ($timeStr分・$formatStr)',
+                                    ),
+                                    labelStyle: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSel
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: isSel
+                                          ? Colors.white
+                                          : (isDark
+                                                ? Colors.grey.shade300
+                                                : Colors.grey.shade800),
+                                    ),
+                                    selected: isSel,
+                                    selectedColor:
+                                        widget.themeColors.primaryAccent,
+                                    backgroundColor: isDark
+                                        ? const Color(0xFF2C2C2E)
+                                        : Colors.grey.shade100,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      side: BorderSide(
+                                        color: isSel
+                                            ? Colors.transparent
+                                            : (isDark
+                                                  ? const Color(0xFF3A3A3C)
+                                                  : Colors.grey.shade300),
+                                      ),
+                                    ),
+                                    onSelected: (selected) {
+                                      if (selected) {
+                                        setState(() {
+                                          _selectedCategoryRuleName = catName;
+                                          _applyCategoryRuleSet(normRule);
+                                        });
+                                      }
+                                    },
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ];
+                })(),
 
                 if (_hasDifferingRules()) ...[
                   Container(

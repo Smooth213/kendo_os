@@ -302,12 +302,22 @@ class MatchCommandService {
       for (final matchId in targetMatchIds) {
         final match = _getMatch(matchId);
         if (match != null) {
+          final existingRule = match.rule;
+          final mergedRule = newRule.copyWith(
+            teamName: (existingRule?.teamName.isNotEmpty == true)
+                ? existingRule!.teamName
+                : newRule.teamName,
+            category: (existingRule?.category.isNotEmpty == true)
+                ? existingRule!.category
+                : newRule.category,
+          );
           final updatedMatch = match.copyWith(
-            matchTimeMinutes: newRule.matchTimeMinutes,
+            matchTimeMinutes: mergedRule.matchTimeMinutes,
             hasExtension:
-                newRule.enchoTimeMinutes > 0 || newRule.isEnchoUnlimited,
-            extensionTimeMinutes: newRule.enchoTimeMinutes,
-            rule: newRule,
+                mergedRule.enchoTimeMinutes > 0 || mergedRule.isEnchoUnlimited,
+            extensionTimeMinutes: mergedRule.enchoTimeMinutes,
+            hasHantei: mergedRule.hasHantei,
+            rule: mergedRule,
           );
           updatedMatches.add(updatedMatch);
         }
