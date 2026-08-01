@@ -76,18 +76,55 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   late bool _hasRepresentativeMatch;
   late bool _isDaihyoIpponShobu;
 
+  bool get _isCurrentFilterTeamMatch {
+    if (_selectedTypeFilter.contains('団体')) return true;
+    if (_selectedTypeFilter.contains('個人')) return false;
+    final selectedMatches = widget.matches
+        .where((m) => _selectedMatchIds.contains(m.id))
+        .toList();
+    if (selectedMatches.isEmpty) return false;
+    return selectedMatches.any((m) => _getResolvedType(m).contains('団体'));
+  }
+
+  bool get _isCurrentFilterIndividualMatch {
+    if (_selectedTypeFilter.contains('個人')) return true;
+    if (_selectedTypeFilter.contains('団体')) return false;
+    final selectedMatches = widget.matches
+        .where((m) => _selectedMatchIds.contains(m.id))
+        .toList();
+    if (selectedMatches.isEmpty) return false;
+    return selectedMatches.any((m) => _getResolvedType(m).contains('個人'));
+  }
+
   void _applyCategoryRuleSet(MatchRule normRule) {
     _matchTime = normRule.matchTimeMinutes;
     _isIpponShobu = normRule.isIpponShobu;
-    _hasHantei = normRule.hasHantei;
+
+    final isTeam = _isCurrentFilterTeamMatch;
+    final isIndiv = _isCurrentFilterIndividualMatch;
+
+    if (isTeam && !isIndiv) {
+      // 団体戦: 無関係な「個人戦判定(hasHantei)」を自動的にOFFへスマートリセット
+      _hasHantei = false;
+      _hasRepresentativeMatch = normRule.hasRepresentativeMatch;
+      _isDaihyoIpponShobu = normRule.isDaihyoIpponShobu;
+    } else if (isIndiv && !isTeam) {
+      // 個人戦: 無関係な「団体戦代表戦(hasRepresentativeMatch)」を自動的にOFFへスマートリセット
+      _hasRepresentativeMatch = false;
+      _isDaihyoIpponShobu = false;
+      _hasHantei = normRule.hasHantei;
+    } else {
+      _hasHantei = normRule.hasHantei;
+      _hasRepresentativeMatch = normRule.hasRepresentativeMatch;
+      _isDaihyoIpponShobu = normRule.isDaihyoIpponShobu;
+    }
+
     _isEnchoUnlimited = normRule.isEnchoUnlimited;
     _hasExtension = normRule.enchoTimeMinutes > 0 || normRule.isEnchoUnlimited;
     _enchoTime = normRule.enchoTimeMinutes > 0
         ? normRule.enchoTimeMinutes
         : 3.0;
     _enchoCount = normRule.enchoCount;
-    _hasRepresentativeMatch = normRule.hasRepresentativeMatch;
-    _isDaihyoIpponShobu = normRule.isDaihyoIpponShobu;
     _isRenseikai = normRule.isRenseikai;
     _renseikaiType = normRule.renseikaiType;
     _overallTimeController.text = normRule.overallTimeMinutes.toString();

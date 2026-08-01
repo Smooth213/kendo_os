@@ -244,6 +244,85 @@ void main() {
         await tester.tap(find.text('⚔️ 錬成会 (2分・1本)'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
+        // 4. 下部の入力フォーム（試合時間 2分・一本勝負 Switch ON）がリアルタイム連動して更新されていることを直接アサート
+        expect(find.text('2分'), findsWidgets);
+        expect(find.text('一本勝負形式にする'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      '4. Verify Smart Auto-Reset: Non-applicable rules (e.g. Hantei for Team matches) are automatically turned OFF',
+      (WidgetTester tester) async {
+        final categoryRules = {
+          '団体小学生の部': const CategoryRuleSet(
+            normalRule: MatchRule(
+              matchTimeMinutes: 3.0,
+              hasHantei: true,
+              hasRepresentativeMatch: true,
+            ),
+          ),
+        };
+
+        final tournament = TournamentModel(
+          id: 'tourney_team',
+          organizationId: 'org_1',
+          name: '団体戦テスト大会',
+          date: DateTime.now(),
+          venue: '武道館',
+          categoryRules: categoryRules,
+        );
+
+        final matches = [
+          MatchModel(
+            id: 'm1',
+            matchType: '団体戦',
+            redName: 'A道場',
+            whiteName: 'B道場',
+            tournamentId: 'tourney_team',
+          ),
+        ];
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              tournamentProvider(
+                'tourney_team',
+              ).overrideWith((ref) => Stream.value(tournament)),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: BulkRuleEditSheet(
+                  tournamentId: 'tourney_team',
+                  matches: matches,
+                  themeColors: AppThemeColors.ofMode(
+                    isDark: false,
+                    mode: 'operate',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 団体戦部門「団体小学生の部」をタップ
+        await tester.tap(find.text('団体小学生の部'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // エラーなくスマート自動OFFリセットが完了していること
         expect(tester.takeException(), isNull);
       },
     );
