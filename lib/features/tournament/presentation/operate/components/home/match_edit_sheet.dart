@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 
@@ -55,7 +56,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
     final r = first.rule ?? const MatchRule();
 
-    // チーム名
     final initialRedTeam = first.rule?.teamName ?? first.note;
     _redTeamController = TextEditingController(
       text: initialRedTeam.isNotEmpty ? initialRedTeam : '赤チーム',
@@ -64,7 +64,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       text: first.whiteName.isNotEmpty ? first.whiteName : '白チーム',
     );
 
-    // ポジション別の選手入力コントローラー
     _redPlayerControllers = widget.matches
         .map((m) => TextEditingController(text: m.redName))
         .toList();
@@ -122,17 +121,23 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
   void _swapTeamsAndPlayers() {
     setState(() {
-      // チーム名の入れ替え
       final tempTeam = _redTeamController.text;
       _redTeamController.text = _whiteTeamController.text;
       _whiteTeamController.text = tempTeam;
 
-      // 全ポジの選手名を一括入れ替え
       for (int i = 0; i < _redPlayerControllers.length; i++) {
         final tempPlayer = _redPlayerControllers[i].text;
         _redPlayerControllers[i].text = _whitePlayerControllers[i].text;
         _whitePlayerControllers[i].text = tempPlayer;
       }
+    });
+  }
+
+  void _applyTargetPresetRule(MatchRule rule) {
+    setState(() {
+      _matchTime = rule.matchTimeMinutes > 0 ? rule.matchTimeMinutes : 2.0;
+      _isIpponShobu = rule.isIpponShobu;
+      _hasHantei = rule.hasHantei;
     });
   }
 
@@ -291,7 +296,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        // チーム名設定カード
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -315,7 +319,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               const SizedBox(height: 12),
               Row(
                 children: [
-                  // 赤チーム名
                   Expanded(
                     child: _buildTextField(
                       controller: _redTeamController,
@@ -326,7 +329,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // 白チーム名
                   Expanded(
                     child: _buildTextField(
                       controller: _whiteTeamController,
@@ -339,8 +341,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 ],
               ),
               const SizedBox(height: 12),
-
-              // チーム丸ごと赤白入れ替えボタン
               Center(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.swap_horiz, color: Colors.white),
@@ -364,7 +364,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
         const SizedBox(height: 20),
 
-        // 各ポジションの選手リスト
         Text(
           _isDantai ? '👥 選手オーダー一覧（先鋒〜大将）' : '👤 選手名',
           style: TextStyle(
@@ -460,7 +459,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        // 会場（コート）情報
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -520,7 +518,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
         const SizedBox(height: 16),
 
-        // グループ・ラウンド情報
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -579,9 +576,100 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
   // --- Tab 3: 一括ルール・メモ ---
   Widget _buildRuleAndMemoTab(bool isDark, Color textColor) {
+    // 大会の「部門別ルール設定」を取得
+    final tourneyId =
+        widget.tournamentId ?? widget.matches.first.tournamentId ?? '';
+    final asyncTourney = ref.watch(tournamentProvider(tourneyId));
+    final categoryRules = asyncTourney.valueOrNull?.categoryRules ?? {};
+
+    // 部門別ルールチップ生成
+    final List<Widget> categoryPresetChips = [];
+    categoryRules.forEach((catName, ruleSet) {
+      if (ruleSet.useHonsenRule) {
+        categoryPresetChips.add(
+          ActionChip(
+            avatar: const Icon(Icons.bookmark, size: 14, color: Colors.indigo),
+            label: Text(
+              '$catName (本線: ${ruleSet.normalRule.matchTimeMinutes}分)',
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+            onPressed: () => _applyTargetPresetRule(ruleSet.normalRule),
+          ),
+        );
+      }
+      if (ruleSet.useRenseikaiRule) {
+        categoryPresetChips.add(
+          ActionChip(
+            avatar: const Icon(Icons.flash_on, size: 14, color: Colors.orange),
+            label: Text(
+              '$catName (錬成: ${ruleSet.renseikaiRule.matchTimeMinutes}分)',
+              style: const TextStyle(fontSize: 11),
+            ),
+            onPressed: () => _applyTargetPresetRule(ruleSet.renseikaiRule),
+          ),
+        );
+      }
+      if (ruleSet.useMoushiawaseRule) {
+        categoryPresetChips.add(
+          ActionChip(
+            avatar: const Icon(Icons.handshake, size: 14, color: Colors.teal),
+            label: Text(
+              '$catName (申し合わせ: ${ruleSet.moushiawaseRule.matchTimeMinutes}分)',
+              style: const TextStyle(fontSize: 11),
+            ),
+            onPressed: () => _applyTargetPresetRule(ruleSet.moushiawaseRule),
+          ),
+        );
+      }
+    });
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        // 部門別ルールからのワンタップ選択エリア
+        if (categoryPresetChips.isNotEmpty) ...[
+          Container(
+            padding: const EdgeInsets.all(14),
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: widget.themeColors.primaryAccent.withAlpha(
+                isDark ? 25 : 12,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: widget.themeColors.primaryAccent.withAlpha(
+                  isDark ? 80 : 40,
+                ),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome,
+                      size: 16,
+                      color: widget.themeColors.primaryAccent,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '🏷️ 部門別ルール設定からワンタップ選択',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(spacing: 6, runSpacing: 6, children: categoryPresetChips),
+              ],
+            ),
+          ),
+        ],
+
         // 一括ルール
         Container(
           padding: const EdgeInsets.all(16),
