@@ -96,49 +96,70 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     return selectedMatches.any((m) => _getResolvedType(m).contains('個人'));
   }
 
-  void _applyCategoryRuleSet(MatchRule normRule) {
+  void _applyCategoryRuleSet(MatchRule targetRule, {String? sceneKey}) {
+    final effectiveScene = sceneKey ?? targetRule.matchScene;
+    final isRenseikaiOrMoushiawase =
+        effectiveScene == 'renseikai' ||
+        effectiveScene == 'moushiawase' ||
+        targetRule.isRenseikai ||
+        targetRule.matchScene == 'renseikai' ||
+        targetRule.matchScene == 'moushiawase';
+
     // 1. 基本ルール
-    _matchTime = normRule.matchTimeMinutes;
-    _isIpponShobu = normRule.isIpponShobu;
+    _matchTime = targetRule.matchTimeMinutes;
+    _isIpponShobu = targetRule.isIpponShobu;
 
-    // 2. 延長ルール: normRule で延長時間が設定されているか無制限の場合のみ ON。それ以外は完全強制 OFF！
-    final bool extensionEnabled =
-        (normRule.enchoTimeMinutes > 0) || normRule.isEnchoUnlimited;
-    _hasExtension = extensionEnabled;
-    _isEnchoUnlimited = extensionEnabled ? normRule.isEnchoUnlimited : false;
-    _enchoTime = normRule.enchoTimeMinutes > 0
-        ? normRule.enchoTimeMinutes
-        : 3.0;
-    _enchoCount = normRule.enchoCount > 0 ? normRule.enchoCount : 1;
-
-    // 3. 個人戦判定 & 団体戦代表戦ルール: 部門ルールで有効化されている項目のみ ON。それ以外は全強制 OFF！
-    final isTeam = _isCurrentFilterTeamMatch;
-    final isIndiv = _isCurrentFilterIndividualMatch;
-
-    if (isTeam && !isIndiv) {
-      // 団体戦選択時: 個人戦判定は絶対に OFF、代表戦は normRule の設定に従う
-      _hasHantei = false;
-      _hasRepresentativeMatch = normRule.hasRepresentativeMatch;
-      _isDaihyoIpponShobu = normRule.hasRepresentativeMatch
-          ? normRule.isDaihyoIpponShobu
+    // 2. 延長ルール (錬成会・申し合わせ時は完全強制 OFF！)
+    if (isRenseikaiOrMoushiawase) {
+      _hasExtension = false;
+      _isEnchoUnlimited = false;
+      _enchoTime = 0.0;
+      _enchoCount = 0;
+    } else {
+      final bool extensionEnabled =
+          (targetRule.enchoTimeMinutes > 0) || targetRule.isEnchoUnlimited;
+      _hasExtension = extensionEnabled;
+      _isEnchoUnlimited = extensionEnabled
+          ? targetRule.isEnchoUnlimited
           : false;
-    } else if (isIndiv && !isTeam) {
-      // 個人戦選択時: 団体戦代表戦は絶対に OFF、個人戦判定は normRule の設定に従う
+      _enchoTime = targetRule.enchoTimeMinutes > 0
+          ? targetRule.enchoTimeMinutes
+          : 3.0;
+      _enchoCount = targetRule.enchoCount > 0 ? targetRule.enchoCount : 1;
+    }
+
+    // 3. 個人戦判定 & 団体戦代表戦ルール (錬成会・申し合わせ時は判定・代表戦ともに完全強制 OFF！)
+    if (isRenseikaiOrMoushiawase) {
+      _hasHantei = false;
       _hasRepresentativeMatch = false;
       _isDaihyoIpponShobu = false;
-      _hasHantei = normRule.hasHantei;
     } else {
-      _hasHantei = normRule.hasHantei;
-      _hasRepresentativeMatch = normRule.hasRepresentativeMatch;
-      _isDaihyoIpponShobu = normRule.hasRepresentativeMatch
-          ? normRule.isDaihyoIpponShobu
-          : false;
+      final isTeam = _isCurrentFilterTeamMatch;
+      final isIndiv = _isCurrentFilterIndividualMatch;
+
+      if (isTeam && !isIndiv) {
+        _hasHantei = false;
+        _hasRepresentativeMatch = targetRule.hasRepresentativeMatch;
+        _isDaihyoIpponShobu = targetRule.hasRepresentativeMatch
+            ? targetRule.isDaihyoIpponShobu
+            : false;
+      } else if (isIndiv && !isTeam) {
+        _hasRepresentativeMatch = false;
+        _isDaihyoIpponShobu = false;
+        _hasHantei = targetRule.hasHantei;
+      } else {
+        _hasHantei = targetRule.hasHantei;
+        _hasRepresentativeMatch = targetRule.hasRepresentativeMatch;
+        _isDaihyoIpponShobu = targetRule.hasRepresentativeMatch
+            ? targetRule.isDaihyoIpponShobu
+            : false;
+      }
     }
 
     // 4. 錬成会設定
-    _isRenseikai = normRule.isRenseikai;
-    _renseikaiType = normRule.renseikaiType;
-    _overallTimeController.text = normRule.overallTimeMinutes.toString();
+    _isRenseikai = isRenseikaiOrMoushiawase || targetRule.isRenseikai;
+    _renseikaiType = targetRule.renseikaiType;
+    _overallTimeController.text = targetRule.overallTimeMinutes.toString();
   }
 
   String _formatRuleSummary(MatchRule r) {
@@ -181,7 +202,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
         if (selected) {
           setState(() {
             _selectedSceneType = sceneKey;
-            _applyCategoryRuleSet(targetRule);
+            _applyCategoryRuleSet(targetRule, sceneKey: sceneKey);
           });
         }
       },

@@ -410,5 +410,99 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets(
+      '6. Verify Renseikai & Moushiawase Scenes strictly turn OFF personal hantei, extension, and representative match',
+      (WidgetTester tester) async {
+        final categoryRules = {
+          '小学生の部': const CategoryRuleSet(
+            isMultiScene: true,
+            useHonsenRule: true,
+            normalRule: MatchRule(matchTimeMinutes: 3.0, hasHantei: true),
+            useRenseikaiRule: true,
+            renseikaiRule: MatchRule(
+              matchTimeMinutes: 2.0,
+              isIpponShobu: true,
+              hasHantei: true,
+            ),
+            useMoushiawaseRule: true,
+            moushiawaseRule: MatchRule(
+              matchTimeMinutes: 1.5,
+              isIpponShobu: true,
+              hasHantei: true,
+            ),
+          ),
+        };
+
+        final tournament = TournamentModel(
+          id: 'tourney_sub',
+          organizationId: 'org_1',
+          name: '錬成会テスト大会',
+          date: DateTime.now(),
+          venue: '武道館',
+          categoryRules: categoryRules,
+        );
+
+        final matches = [
+          MatchModel(
+            id: 'm1',
+            matchType: '個人戦',
+            redName: '選手1',
+            whiteName: '選手2',
+            rule: const MatchRule(matchTimeMinutes: 3.0, hasHantei: true),
+            tournamentId: 'tourney_sub',
+          ),
+        ];
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              tournamentProvider(
+                'tourney_sub',
+              ).overrideWith((ref) => Stream.value(tournament)),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: BulkRuleEditSheet(
+                  tournamentId: 'tourney_sub',
+                  matches: matches,
+                  themeColors: AppThemeColors.ofMode(
+                    isDark: false,
+                    mode: 'operate',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. 部門「小学生の部」をタップ
+        await tester.tap(find.text('小学生の部'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // 2. 「⚔️ 錬成会 (2分・1本)」をタップ
+        await tester.tap(find.text('⚔️ 錬成会 (2分・1本)'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // 3. 「🤝 申し合わせ (1.5分・1本)」をタップ
+        await tester.tap(find.text('🤝 申し合わせ (1.5分・1本)'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
