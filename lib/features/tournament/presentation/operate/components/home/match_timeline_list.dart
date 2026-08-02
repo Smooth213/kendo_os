@@ -4877,7 +4877,7 @@ void _showEditGroupNoteDialog(
     backgroundColor: Colors.transparent,
     builder: (ctx) {
       return MatchEditSheet(
-        match: firstMatch,
+        matches: groupList,
         tournamentId: firstMatch.tournamentId,
         themeColors: AppThemeColors.ofMode(
           isDark: Theme.of(context).brightness == Brightness.dark,
@@ -5021,7 +5021,7 @@ void _showEditNoteDialog(
     backgroundColor: Colors.transparent,
     builder: (ctx) {
       return MatchEditSheet(
-        match: match,
+        matches: [match],
         tournamentId: match.tournamentId,
         themeColors: AppThemeColors.ofMode(
           isDark: Theme.of(context).brightness == Brightness.dark,

@@ -728,7 +728,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return MatchEditSheet(
-          match: match,
+          matches: [match],
           tournamentId: match.tournamentId,
           themeColors: themeColors,
         );
