@@ -632,7 +632,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             avatar: Icon(
               Icons.bookmark,
               size: 14,
-              color: isSelected ? Colors.white : Colors.indigo,
+              color: isSelected
+                  ? (isDark ? Colors.indigo.shade200 : Colors.indigo.shade900)
+                  : Colors.indigo,
             ),
             label: Text(
               '本線ルール (${ruleSet.normalRule.matchTimeMinutes == ruleSet.normalRule.matchTimeMinutes.toInt() ? ruleSet.normalRule.matchTimeMinutes.toInt() : ruleSet.normalRule.matchTimeMinutes}分)',
@@ -640,14 +642,24 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected
-                    ? Colors.white
+                    ? (isDark ? Colors.indigo.shade100 : Colors.indigo.shade900)
                     : (isDark ? Colors.white : Colors.indigo.shade900),
               ),
             ),
-            selectedColor: Colors.indigo,
+            selectedColor: isDark
+                ? Colors.indigo.withAlpha(100)
+                : Colors.indigo.shade100,
             backgroundColor: isDark
-                ? Colors.indigo.withAlpha(40)
+                ? Colors.indigo.withAlpha(30)
                 : Colors.indigo.shade50,
+            side: BorderSide(
+              color: isSelected
+                  ? Colors.indigo
+                  : (isDark
+                        ? Colors.indigo.withAlpha(60)
+                        : Colors.indigo.shade200),
+              width: isSelected ? 1.5 : 1.0,
+            ),
             onSelected: (selected) {
               if (selected) {
                 _applyTargetPresetRule(ruleSet.normalRule, 'honsen');
@@ -669,7 +681,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             avatar: Icon(
               Icons.flash_on,
               size: 14,
-              color: isSelected ? Colors.white : Colors.orange.shade800,
+              color: isSelected
+                  ? (isDark ? Colors.orange.shade200 : Colors.orange.shade900)
+                  : Colors.orange.shade800,
             ),
             label: Text(
               '錬成会ルール (${ruleSet.renseikaiRule.matchTimeMinutes == ruleSet.renseikaiRule.matchTimeMinutes.toInt() ? ruleSet.renseikaiRule.matchTimeMinutes.toInt() : ruleSet.renseikaiRule.matchTimeMinutes}分)',
@@ -677,14 +691,24 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected
-                    ? Colors.white
+                    ? (isDark ? Colors.orange.shade100 : Colors.orange.shade900)
                     : (isDark ? Colors.white : Colors.orange.shade900),
               ),
             ),
-            selectedColor: Colors.orange.shade700,
+            selectedColor: isDark
+                ? Colors.orange.withAlpha(100)
+                : Colors.orange.shade100,
             backgroundColor: isDark
-                ? Colors.orange.withAlpha(40)
+                ? Colors.orange.withAlpha(30)
                 : Colors.orange.shade50,
+            side: BorderSide(
+              color: isSelected
+                  ? Colors.orange.shade800
+                  : (isDark
+                        ? Colors.orange.withAlpha(60)
+                        : Colors.orange.shade200),
+              width: isSelected ? 1.5 : 1.0,
+            ),
             onSelected: (selected) {
               if (selected) {
                 _applyTargetPresetRule(ruleSet.renseikaiRule, 'renseikai');
@@ -706,7 +730,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             avatar: Icon(
               Icons.handshake,
               size: 14,
-              color: isSelected ? Colors.white : Colors.teal.shade800,
+              color: isSelected
+                  ? (isDark ? Colors.teal.shade200 : Colors.teal.shade900)
+                  : Colors.teal.shade800,
             ),
             label: Text(
               '申し合わせルール (${ruleSet.moushiawaseRule.matchTimeMinutes == ruleSet.moushiawaseRule.matchTimeMinutes.toInt() ? ruleSet.moushiawaseRule.matchTimeMinutes.toInt() : ruleSet.moushiawaseRule.matchTimeMinutes}分)',
@@ -714,14 +740,22 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected
-                    ? Colors.white
+                    ? (isDark ? Colors.teal.shade100 : Colors.teal.shade900)
                     : (isDark ? Colors.white : Colors.teal.shade900),
               ),
             ),
-            selectedColor: Colors.teal.shade700,
+            selectedColor: isDark
+                ? Colors.teal.withAlpha(100)
+                : Colors.teal.shade100,
             backgroundColor: isDark
-                ? Colors.teal.withAlpha(40)
+                ? Colors.teal.withAlpha(30)
                 : Colors.teal.shade50,
+            side: BorderSide(
+              color: isSelected
+                  ? Colors.teal.shade800
+                  : (isDark ? Colors.teal.withAlpha(60) : Colors.teal.shade200),
+              width: isSelected ? 1.5 : 1.0,
+            ),
             onSelected: (selected) {
               if (selected) {
                 _applyTargetPresetRule(ruleSet.moushiawaseRule, 'moushiawase');
