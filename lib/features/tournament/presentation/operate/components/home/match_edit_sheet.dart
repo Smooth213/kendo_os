@@ -646,8 +646,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 ? Colors.indigo.withAlpha(40)
                 : Colors.indigo.shade50,
             onSelected: (selected) {
-              if (selected)
+              if (selected) {
                 _applyTargetPresetRule(ruleSet.normalRule, 'honsen');
+              }
             },
           ),
         );
@@ -678,8 +679,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 ? Colors.orange.withAlpha(40)
                 : Colors.orange.shade50,
             onSelected: (selected) {
-              if (selected)
+              if (selected) {
                 _applyTargetPresetRule(ruleSet.renseikaiRule, 'renseikai');
+              }
             },
           ),
         );
@@ -710,8 +712,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 ? Colors.teal.withAlpha(40)
                 : Colors.teal.shade50,
             onSelected: (selected) {
-              if (selected)
+              if (selected) {
                 _applyTargetPresetRule(ruleSet.moushiawaseRule, 'moushiawase');
+              }
             },
           ),
         );
