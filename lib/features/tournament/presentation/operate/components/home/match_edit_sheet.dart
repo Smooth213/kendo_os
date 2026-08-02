@@ -582,15 +582,25 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     final asyncTourney = ref.watch(tournamentProvider(tourneyId));
     final categoryRules = asyncTourney.valueOrNull?.categoryRules ?? {};
 
-    // 部門別ルールチップ生成
+    final matchCategory = widget.matches.first.category;
+
+    // 部門別ルールチップ生成 (該当試合の部門のみに絞り込み)
     final List<Widget> categoryPresetChips = [];
     categoryRules.forEach((catName, ruleSet) {
+      if (matchCategory != null &&
+          matchCategory.isNotEmpty &&
+          catName != matchCategory &&
+          !catName.contains(matchCategory) &&
+          !matchCategory.contains(catName)) {
+        return;
+      }
+
       if (ruleSet.useHonsenRule) {
         categoryPresetChips.add(
           ActionChip(
             avatar: const Icon(Icons.bookmark, size: 14, color: Colors.indigo),
             label: Text(
-              '$catName (本線: ${ruleSet.normalRule.matchTimeMinutes}分)',
+              '本線ルール (${ruleSet.normalRule.matchTimeMinutes == ruleSet.normalRule.matchTimeMinutes.toInt() ? ruleSet.normalRule.matchTimeMinutes.toInt() : ruleSet.normalRule.matchTimeMinutes}分)',
               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
             ),
             onPressed: () => _applyTargetPresetRule(ruleSet.normalRule),
@@ -602,7 +612,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           ActionChip(
             avatar: const Icon(Icons.flash_on, size: 14, color: Colors.orange),
             label: Text(
-              '$catName (錬成: ${ruleSet.renseikaiRule.matchTimeMinutes}分)',
+              '錬成会ルール (${ruleSet.renseikaiRule.matchTimeMinutes == ruleSet.renseikaiRule.matchTimeMinutes.toInt() ? ruleSet.renseikaiRule.matchTimeMinutes.toInt() : ruleSet.renseikaiRule.matchTimeMinutes}分)',
               style: const TextStyle(fontSize: 11),
             ),
             onPressed: () => _applyTargetPresetRule(ruleSet.renseikaiRule),
@@ -614,7 +624,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           ActionChip(
             avatar: const Icon(Icons.handshake, size: 14, color: Colors.teal),
             label: Text(
-              '$catName (申し合わせ: ${ruleSet.moushiawaseRule.matchTimeMinutes}分)',
+              '申し合わせルール (${ruleSet.moushiawaseRule.matchTimeMinutes == ruleSet.moushiawaseRule.matchTimeMinutes.toInt() ? ruleSet.moushiawaseRule.matchTimeMinutes.toInt() : ruleSet.moushiawaseRule.matchTimeMinutes}分)',
               style: const TextStyle(fontSize: 11),
             ),
             onPressed: () => _applyTargetPresetRule(ruleSet.moushiawaseRule),
