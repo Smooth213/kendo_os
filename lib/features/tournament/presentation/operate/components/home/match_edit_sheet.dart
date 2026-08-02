@@ -40,6 +40,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   late TextEditingController _groupNameController;
 
   // 3. ルール・メモ
+  MatchRule? _selectedPresetRule;
   late double _matchTime;
   late bool _isIpponShobu;
   late bool _hasHantei;
@@ -135,6 +136,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
   void _applyTargetPresetRule(MatchRule rule) {
     setState(() {
+      _selectedPresetRule = rule;
       _matchTime = rule.matchTimeMinutes > 0 ? rule.matchTimeMinutes : 2.0;
       _isIpponShobu = rule.isIpponShobu;
       _hasHantei = rule.hasHantei;
@@ -824,15 +826,13 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
     for (int i = 0; i < widget.matches.length; i++) {
       final m = widget.matches[i];
-      final existingRule = m.rule ?? const MatchRule();
+      final baseRule = _selectedPresetRule ?? m.rule ?? const MatchRule();
 
-      final updatedRule = existingRule.copyWith(
+      final updatedRule = baseRule.copyWith(
         matchTimeMinutes: _matchTime,
         isIpponShobu: _isIpponShobu,
         hasHantei: _hasHantei,
-        teamName: redTeamInput.isNotEmpty
-            ? redTeamInput
-            : existingRule.teamName,
+        teamName: redTeamInput.isNotEmpty ? redTeamInput : baseRule.teamName,
       );
 
       final noteCombined =
