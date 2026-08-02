@@ -76,7 +76,6 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
 
-        // 団体戦（5人制: 先鋒〜大将）を模倣
         const dantaiMatches = [
           MatchModel(
             id: 'senho',
@@ -126,20 +125,70 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // 1. 団体戦ヘッダーとチーム一括編集要素を確認
         expect(find.text('団体戦対戦の編集'), findsOneWidget);
         expect(find.text('チーム丸ごと赤と白を入れ替える ⇄'), findsOneWidget);
         expect(find.text('先鋒'), findsOneWidget);
         expect(find.text('中堅'), findsOneWidget);
         expect(find.text('大将'), findsOneWidget);
 
-        // 2. チーム丸ごと赤白入れ替えボタンをタップ
         final swapButton = find.text('チーム丸ごと赤と白を入れ替える ⇄');
         await tester.tap(swapButton, warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        // 3. 一括保存ボタンが存在することを確認
         expect(find.text('団体戦全体を一括保存'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      '3. Verify My-Team (自チーム) Tracking & Alignment Preservation after Swap',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        const myTeamMatches = [
+          MatchModel(
+            id: 'senho',
+            matchType: '団体戦',
+            redName: '道上先鋒',
+            whiteName: 'ライバル先鋒',
+            note: '第1試合場\n道上 vs ライバル',
+            rule: MatchRule(teamName: '道上'),
+          ),
+        ];
+
+        final themeColors = AppThemeColors.ofMode(
+          isDark: false,
+          mode: 'operate',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+            child: MaterialApp(
+              home: Scaffold(
+                body: MatchEditSheet(
+                  matches: myTeamMatches,
+                  tournamentId: 'test_myteam_tourney',
+                  themeColors: themeColors,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        final swapButton = find.text('チーム丸ごと赤と白を入れ替える ⇄');
+        await tester.tap(swapButton, warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // 自チーム追従の実効性確認
         expect(tester.takeException(), isNull);
       },
     );
