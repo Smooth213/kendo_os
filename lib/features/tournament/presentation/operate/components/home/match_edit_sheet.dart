@@ -56,6 +56,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     _isDantai = widget.matches.length > 1 || first.matchType == '団体戦';
 
     final r = first.rule ?? const MatchRule();
+    _selectedPresetRule = r;
 
     final initialRedTeam = first.rule?.teamName ?? first.note;
     _redTeamController = TextEditingController(
@@ -135,11 +136,31 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   }
 
   void _applyTargetPresetRule(MatchRule rule) {
+    // 錬成会・申し合わせルールの判定
+    final isRenseikaiOrMoushiawase =
+        rule.isRenseikai ||
+        rule.matchScene == 'renseikai' ||
+        rule.matchScene == 'moushiawase';
+
+    // 無関係なルール（判定・延長戦・代表戦）は必ず強制的にOFFにする
+    final sanitizedRule = rule.copyWith(
+      hasHantei: isRenseikaiOrMoushiawase ? false : rule.hasHantei,
+      enchoTimeMinutes: isRenseikaiOrMoushiawase ? 0.0 : rule.enchoTimeMinutes,
+      isEnchoUnlimited: isRenseikaiOrMoushiawase
+          ? false
+          : rule.isEnchoUnlimited,
+      hasRepresentativeMatch: isRenseikaiOrMoushiawase
+          ? false
+          : rule.hasRepresentativeMatch,
+    );
+
     setState(() {
-      _selectedPresetRule = rule;
-      _matchTime = rule.matchTimeMinutes > 0 ? rule.matchTimeMinutes : 2.0;
-      _isIpponShobu = rule.isIpponShobu;
-      _hasHantei = rule.hasHantei;
+      _selectedPresetRule = sanitizedRule;
+      _matchTime = sanitizedRule.matchTimeMinutes > 0
+          ? sanitizedRule.matchTimeMinutes
+          : 2.0;
+      _isIpponShobu = sanitizedRule.isIpponShobu;
+      _hasHantei = sanitizedRule.hasHantei;
     });
   }
 
@@ -578,7 +599,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
   // --- Tab 3: 一括ルール・メモ ---
   Widget _buildRuleAndMemoTab(bool isDark, Color textColor) {
-    // 大会の「部門別ルール設定」を取得
     final tourneyId =
         widget.tournamentId ?? widget.matches.first.tournamentId ?? '';
     final asyncTourney = ref.watch(tournamentProvider(tourneyId));
@@ -586,7 +606,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
     final matchCategory = widget.matches.first.category;
 
-    // 部門別ルールチップ生成 (該当試合の部門のみに絞り込み)
     final List<Widget> categoryPresetChips = [];
     categoryRules.forEach((catName, ruleSet) {
       if (matchCategory != null &&
@@ -635,6 +654,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       }
     });
 
+    final currentRule = _selectedPresetRule ?? const MatchRule();
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -682,7 +703,79 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           ),
         ],
 
-        // 一括ルール
+        // 🛡️ 適用中ルールの全内訳表示カード
+        Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF232326) : Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.blue.shade800 : Colors.blue.shade200,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.verified, size: 18, color: Colors.blue),
+                  const SizedBox(width: 6),
+                  Text(
+                    '🛡️ 適用されるルールの全内訳 (リアルタイム同期)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? Colors.blue.shade200
+                          : Colors.blue.shade900,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  _buildRuleSummaryChip(
+                    icon: Icons.timer,
+                    label:
+                        '試合時間: ${_matchTime == _matchTime.toInt() ? _matchTime.toInt() : _matchTime}分${currentRule.isRunningTime ? " (ランニング)" : ""}',
+                    isActive: true,
+                    isDark: isDark,
+                  ),
+                  _buildRuleSummaryChip(
+                    icon: Icons.sports_mma,
+                    label: _isIpponShobu ? '勝負: 一本勝負 ⚡' : '勝負: 三本勝負 ⚔️',
+                    isActive: true,
+                    isDark: isDark,
+                  ),
+                  _buildRuleSummaryChip(
+                    icon: Icons.gavel,
+                    label: _hasHantei ? '判定: ON ⭕' : '判定: 強制OFF ❌',
+                    isActive: _hasHantei,
+                    isDark: isDark,
+                  ),
+                  _buildRuleSummaryChip(
+                    icon: Icons.more_time,
+                    label:
+                        (currentRule.enchoTimeMinutes > 0 ||
+                            currentRule.isEnchoUnlimited)
+                        ? '延長: ${currentRule.isEnchoUnlimited ? "無制限" : "${currentRule.enchoTimeMinutes}分"}'
+                        : '延長: 強制OFF ❌',
+                    isActive:
+                        (currentRule.enchoTimeMinutes > 0 ||
+                        currentRule.isEnchoUnlimited),
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // 一括ルールスイッチコントロール
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -696,7 +789,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '⏱️ 試合ルールの一括設定',
+                '⏱️ ルールの詳細コントロール & 微調整',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -717,7 +810,16 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       );
                     }).toList(),
                     onChanged: (v) {
-                      if (v != null) setState(() => _matchTime = v);
+                      if (v != null) {
+                        setState(() {
+                          _matchTime = v;
+                          if (_selectedPresetRule != null) {
+                            _selectedPresetRule = _selectedPresetRule!.copyWith(
+                              matchTimeMinutes: v,
+                            );
+                          }
+                        });
+                      }
                     },
                   ),
                 ],
@@ -730,7 +832,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   title: const Text('一本勝負にする'),
                   value: _isIpponShobu,
                   activeTrackColor: widget.themeColors.primaryAccent,
-                  onChanged: (v) => setState(() => _isIpponShobu = v),
+                  onChanged: (v) => setState(() {
+                    _isIpponShobu = v;
+                    if (_selectedPresetRule != null) {
+                      _selectedPresetRule = _selectedPresetRule!.copyWith(
+                        isIpponShobu: v,
+                      );
+                    }
+                  }),
                 ),
               ),
               const Divider(),
@@ -738,10 +847,44 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 color: Colors.transparent,
                 child: SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('個人戦の判定（ハンテイ）を適用'),
+                  title: Text(
+                    '個人戦の判定（ハンテイ）を適用',
+                    style: TextStyle(
+                      color:
+                          currentRule.isRenseikai ||
+                              currentRule.matchScene == 'renseikai' ||
+                              currentRule.matchScene == 'moushiawase'
+                          ? Colors.grey
+                          : textColor,
+                    ),
+                  ),
+                  subtitle:
+                      currentRule.isRenseikai ||
+                          currentRule.matchScene == 'renseikai' ||
+                          currentRule.matchScene == 'moushiawase'
+                      ? const Text(
+                          '※錬成会・申し合わせルールのため強制OFFに固定されています',
+                          style: TextStyle(fontSize: 10, color: Colors.orange),
+                        )
+                      : null,
                   value: _hasHantei,
                   activeTrackColor: widget.themeColors.primaryAccent,
-                  onChanged: (v) => setState(() => _hasHantei = v),
+                  onChanged: (v) {
+                    // 錬成会・申し合わせルール時はON変更不可
+                    final isRenseikaiOrMoushiawase =
+                        currentRule.isRenseikai ||
+                        currentRule.matchScene == 'renseikai' ||
+                        currentRule.matchScene == 'moushiawase';
+                    if (isRenseikaiOrMoushiawase) return;
+                    setState(() {
+                      _hasHantei = v;
+                      if (_selectedPresetRule != null) {
+                        _selectedPresetRule = _selectedPresetRule!.copyWith(
+                          hasHantei: v,
+                        );
+                      }
+                    });
+                  },
                 ),
               ),
             ],
@@ -760,6 +903,43 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           maxLines: 3,
         ),
       ],
+    );
+  }
+
+  Widget _buildRuleSummaryChip({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isActive
+            ? (isDark ? Colors.blue.withAlpha(40) : Colors.white)
+            : (isDark ? Colors.grey.shade800 : Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isActive ? Colors.blue.shade300 : Colors.grey.shade400,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: isActive ? Colors.blue : Colors.grey),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              color: isActive
+                  ? (isDark ? Colors.white : Colors.blue.shade900)
+                  : Colors.grey,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
