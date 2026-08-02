@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -504,5 +505,133 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets(
+      '7. Verify Full Execution Flow: Tapping Apply Bulk Rule updates target matches and preserves teamName/category',
+      (WidgetTester tester) async {
+        final categoryRules = {
+          '小学生の部': const CategoryRuleSet(
+            normalRule: MatchRule(
+              matchTimeMinutes: 2.5,
+              isIpponShobu: true,
+              hasHantei: false,
+            ),
+          ),
+        };
+
+        final tournament = TournamentModel(
+          id: 'tourney_apply',
+          organizationId: 'org_1',
+          name: 'ルール一括適用テスト大会',
+          date: DateTime.now(),
+          venue: '武道館',
+          categoryRules: categoryRules,
+        );
+
+        final matches = [
+          MatchModel(
+            id: 'match_1',
+            matchType: '個人戦',
+            redName: '選手1',
+            whiteName: '選手2',
+            rule: const MatchRule(
+              matchTimeMinutes: 3.0,
+              teamName: '自道場A',
+              category: '小学生の部',
+            ),
+            tournamentId: 'tourney_apply',
+          ),
+          MatchModel(
+            id: 'match_2',
+            matchType: '個人戦',
+            redName: '選手3',
+            whiteName: '選手4',
+            rule: const MatchRule(
+              matchTimeMinutes: 3.0,
+              teamName: '自道場B',
+              category: '小学生の部',
+            ),
+            tournamentId: 'tourney_apply',
+          ),
+        ];
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        tester.view.physicalSize = const Size(800, 1400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final mockService = MockMatchCommandService();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              matchCommandServiceProvider.overrideWithValue(mockService),
+              tournamentProvider(
+                'tourney_apply',
+              ).overrideWith((ref) => Stream.value(tournament)),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: BulkRuleEditSheet(
+                  tournamentId: 'tourney_apply',
+                  matches: matches,
+                  themeColors: AppThemeColors.ofMode(
+                    isDark: false,
+                    mode: 'operate',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. STEP 1 の対象選択が表示されていること
+        expect(find.text('STEP 1: 変更対象の試合を選択'), findsOneWidget);
+
+        // 2. 部門別ルール「小学生の部」をタップして新ルール（2.5分・1本勝負）を一括セット
+        await tester.tap(find.text('小学生の部'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // 3. 一括変更実行ボタン（ElevatedButton）を探してタップ
+        final applyButtonFinder = find.byType(ElevatedButton);
+        expect(applyButtonFinder, findsWidgets);
+
+        await tester.tap(applyButtonFinder.last, warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // 4. Provider 経由で bulkUpdateMatchRules が新しいルール(2.5分・1本)で正しくコールされたことを証明
+        expect(mockService.bulkUpdateCalled, isTrue);
+        expect(mockService.appliedNewRule?.matchTimeMinutes, equals(2.5));
+        expect(mockService.appliedNewRule?.isIpponShobu, isTrue);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
+}
+
+class MockMatchCommandService implements MatchCommandService {
+  bool bulkUpdateCalled = false;
+  MatchRule? appliedNewRule;
+  List<String>? appliedTargetIds;
+
+  @override
+  Future<void> bulkUpdateMatchRules({
+    required List<String> targetMatchIds,
+    required MatchRule newRule,
+  }) async {
+    bulkUpdateCalled = true;
+    appliedTargetIds = targetMatchIds;
+    appliedNewRule = newRule;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
