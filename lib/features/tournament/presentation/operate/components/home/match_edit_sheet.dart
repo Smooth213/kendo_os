@@ -41,6 +41,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
   // 3. ルール・メモ
   MatchRule? _selectedPresetRule;
+  String? _selectedPresetKey; // 'honsen', 'renseikai', 'moushiawase'
   late double _matchTime;
   late bool _isIpponShobu;
   late bool _hasHantei;
@@ -135,9 +136,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     });
   }
 
-  void _applyTargetPresetRule(MatchRule rule) {
+  void _applyTargetPresetRule(MatchRule rule, String key) {
     // 錬成会・申し合わせルールの判定
     final isRenseikaiOrMoushiawase =
+        key == 'renseikai' ||
+        key == 'moushiawase' ||
         rule.isRenseikai ||
         rule.matchScene == 'renseikai' ||
         rule.matchScene == 'moushiawase';
@@ -155,6 +158,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     );
 
     setState(() {
+      _selectedPresetKey = key;
       _selectedPresetRule = sanitizedRule;
       _matchTime = sanitizedRule.matchTimeMinutes > 0
           ? sanitizedRule.matchTimeMinutes
@@ -617,38 +621,98 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       }
 
       if (ruleSet.useHonsenRule) {
+        final isSelected = _selectedPresetKey == 'honsen';
         categoryPresetChips.add(
-          ActionChip(
-            avatar: const Icon(Icons.bookmark, size: 14, color: Colors.indigo),
+          ChoiceChip(
+            selected: isSelected,
+            showCheckmark: true,
+            avatar: Icon(
+              Icons.bookmark,
+              size: 14,
+              color: isSelected ? Colors.white : Colors.indigo,
+            ),
             label: Text(
               '本線ルール (${ruleSet.normalRule.matchTimeMinutes == ruleSet.normalRule.matchTimeMinutes.toInt() ? ruleSet.normalRule.matchTimeMinutes.toInt() : ruleSet.normalRule.matchTimeMinutes}分)',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white : Colors.indigo.shade900),
+              ),
             ),
-            onPressed: () => _applyTargetPresetRule(ruleSet.normalRule),
+            selectedColor: Colors.indigo,
+            backgroundColor: isDark
+                ? Colors.indigo.withAlpha(40)
+                : Colors.indigo.shade50,
+            onSelected: (selected) {
+              if (selected)
+                _applyTargetPresetRule(ruleSet.normalRule, 'honsen');
+            },
           ),
         );
       }
       if (ruleSet.useRenseikaiRule) {
+        final isSelected = _selectedPresetKey == 'renseikai';
         categoryPresetChips.add(
-          ActionChip(
-            avatar: const Icon(Icons.flash_on, size: 14, color: Colors.orange),
+          ChoiceChip(
+            selected: isSelected,
+            showCheckmark: true,
+            avatar: Icon(
+              Icons.flash_on,
+              size: 14,
+              color: isSelected ? Colors.white : Colors.orange.shade800,
+            ),
             label: Text(
               '錬成会ルール (${ruleSet.renseikaiRule.matchTimeMinutes == ruleSet.renseikaiRule.matchTimeMinutes.toInt() ? ruleSet.renseikaiRule.matchTimeMinutes.toInt() : ruleSet.renseikaiRule.matchTimeMinutes}分)',
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white : Colors.orange.shade900),
+              ),
             ),
-            onPressed: () => _applyTargetPresetRule(ruleSet.renseikaiRule),
+            selectedColor: Colors.orange.shade700,
+            backgroundColor: isDark
+                ? Colors.orange.withAlpha(40)
+                : Colors.orange.shade50,
+            onSelected: (selected) {
+              if (selected)
+                _applyTargetPresetRule(ruleSet.renseikaiRule, 'renseikai');
+            },
           ),
         );
       }
       if (ruleSet.useMoushiawaseRule) {
+        final isSelected = _selectedPresetKey == 'moushiawase';
         categoryPresetChips.add(
-          ActionChip(
-            avatar: const Icon(Icons.handshake, size: 14, color: Colors.teal),
+          ChoiceChip(
+            selected: isSelected,
+            showCheckmark: true,
+            avatar: Icon(
+              Icons.handshake,
+              size: 14,
+              color: isSelected ? Colors.white : Colors.teal.shade800,
+            ),
             label: Text(
               '申し合わせルール (${ruleSet.moushiawaseRule.matchTimeMinutes == ruleSet.moushiawaseRule.matchTimeMinutes.toInt() ? ruleSet.moushiawaseRule.matchTimeMinutes.toInt() : ruleSet.moushiawaseRule.matchTimeMinutes}分)',
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white : Colors.teal.shade900),
+              ),
             ),
-            onPressed: () => _applyTargetPresetRule(ruleSet.moushiawaseRule),
+            selectedColor: Colors.teal.shade700,
+            backgroundColor: isDark
+                ? Colors.teal.withAlpha(40)
+                : Colors.teal.shade50,
+            onSelected: (selected) {
+              if (selected)
+                _applyTargetPresetRule(ruleSet.moushiawaseRule, 'moushiawase');
+            },
           ),
         );
       }
