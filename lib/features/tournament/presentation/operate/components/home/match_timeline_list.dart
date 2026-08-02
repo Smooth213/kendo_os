@@ -26,6 +26,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart'; // ★ 追加
 import '../bulk_rule_edit_sheet.dart';
+import 'match_edit_sheet.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
@@ -5057,63 +5058,20 @@ void _showEditNoteDialog(
   WidgetRef ref,
   MatchModel match,
 ) {
-  final controller = TextEditingController(text: match.note);
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  showDialog(
+  showModalBottomSheet(
     context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      title: Text(
-        '試合詳細の編集',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: isDark ? Colors.white : Colors.black87,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) {
+      return MatchEditSheet(
+        match: match,
+        tournamentId: match.tournamentId,
+        themeColors: AppThemeColors.ofMode(
+          isDark: Theme.of(context).brightness == Brightness.dark,
+          mode: 'operate',
         ),
-      ),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-        decoration: InputDecoration(
-          hintText: '試合のメモを入力',
-          filled: true,
-          fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        maxLines: 2,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            final newNote = controller.text.trim();
-            if (newNote != match.note) {
-              await ref.read(matchApplicationServiceProvider).saveMatchesBulk([
-                match.copyWith(note: newNote),
-              ]);
-            }
-            if (ctx.mounted) {
-              Navigator.pop(ctx);
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.indigo,
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          child: const Text(
-            '保存',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    ),
+      );
+    },
   );
 }
 

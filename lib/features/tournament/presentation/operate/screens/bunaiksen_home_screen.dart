@@ -20,6 +20,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import '../components/bulk_rule_edit_sheet.dart';
+import '../components/home/match_edit_sheet.dart';
 
 import 'package:uuid/uuid.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
@@ -716,82 +717,22 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     WidgetRef ref,
     MatchModel match,
   ) {
-    final controller = TextEditingController(text: match.note);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: themeColors.cardBackground,
-        title: Text(
-          '試合詳細（コメント）の編集',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: themeColors.textColor,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(color: themeColors.textColor),
-          decoration: InputDecoration(
-            hintText: '試合に関するメモや詳細を入力',
-            hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
-            filled: true,
-            fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: themeColors.primaryAccent),
-            ),
-          ),
-          maxLines: 2,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final newNote = controller.text.trim();
-              if (newNote != match.note) {
-                final updatedMatch = match.copyWith(note: newNote);
-                await ref.read(matchApplicationServiceProvider).saveMatchesBulk(
-                  [updatedMatch],
-                );
-              }
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeColors.primaryAccent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              '保存',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return MatchEditSheet(
+          match: match,
+          tournamentId: match.tournamentId,
+          themeColors: themeColors,
+        );
+      },
     );
   }
 
@@ -874,8 +815,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
   ) {
     String redPlayer = '選手A';
     String whitePlayer = '選手B';
+    String selectedCourt = '部内戦コート';
+    String selectedGroupName = '部内対戦';
     final initialRule = ref.read(bunaiksenRuleProvider);
-    double selectedMatchTime = 2.0; // ★ デフォルトを2分に変更
+    double selectedMatchTime = 2.0;
     bool selectedIsIpponShobu = initialRule.isIpponShobu;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1357,7 +1300,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                     final newMatch = MatchModel(
                       id: matchId,
                       tournamentId: dateId,
-                      groupName: const Uuid().v4(),
+                      groupName: selectedGroupName,
                       matchType: '個人戦',
                       redName: redPlayer,
                       whiteName: whitePlayer,
@@ -1369,7 +1312,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       status: 'in_progress',
                       order: DateTime.now().millisecondsSinceEpoch.toDouble(),
                       rule: matchRule,
-                      note: 'クイック対戦',
+                      note: '$selectedCourt\n$selectedGroupName',
                     );
 
                     await ref
