@@ -4868,66 +4868,23 @@ void _showEditGroupNoteDialog(
   WidgetRef ref,
   List<MatchModel> groupList,
 ) {
+  if (groupList.isEmpty) return;
   final firstMatch = groupList.first;
-  final controller = TextEditingController(text: firstMatch.note);
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  showDialog(
+
+  showModalBottomSheet(
     context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      title: Text(
-        'グループ詳細の編集',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: isDark ? Colors.white : Colors.black87,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) {
+      return MatchEditSheet(
+        match: firstMatch,
+        tournamentId: firstMatch.tournamentId,
+        themeColors: AppThemeColors.ofMode(
+          isDark: Theme.of(context).brightness == Brightness.dark,
+          mode: 'operate',
         ),
-      ),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-        decoration: InputDecoration(
-          hintText: 'グループのメモを入力',
-          filled: true,
-          fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        maxLines: 2,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            final newNote = controller.text.trim();
-            if (newNote != firstMatch.note) {
-              await ref
-                  .read(matchApplicationServiceProvider)
-                  .saveMatchesBulk(
-                    groupList.map((m) => m.copyWith(note: newNote)).toList(),
-                  );
-            }
-            if (ctx.mounted) {
-              Navigator.pop(ctx);
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.indigo,
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          child: const Text(
-            '保存',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    ),
+      );
+    },
   );
 }
 
