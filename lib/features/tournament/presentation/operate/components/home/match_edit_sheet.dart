@@ -620,7 +620,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         return;
       }
 
-      if (ruleSet.useHonsenRule) {
+      // 設定が存在・有効化されているルールのみチップとして表示
+      final bool hasValidHonsen =
+          ruleSet.useHonsenRule && ruleSet.normalRule.matchTimeMinutes > 0;
+      if (hasValidHonsen) {
         final isSelected = _selectedPresetKey == 'honsen';
         categoryPresetChips.add(
           ChoiceChip(
@@ -653,7 +656,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           ),
         );
       }
-      if (ruleSet.useRenseikaiRule) {
+
+      final bool hasValidRenseikai =
+          ruleSet.useRenseikaiRule &&
+          ruleSet.renseikaiRule.matchTimeMinutes > 0;
+      if (hasValidRenseikai) {
         final isSelected = _selectedPresetKey == 'renseikai';
         categoryPresetChips.add(
           ChoiceChip(
@@ -686,7 +693,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           ),
         );
       }
-      if (ruleSet.useMoushiawaseRule) {
+
+      final bool hasValidMoushiawase =
+          ruleSet.useMoushiawaseRule &&
+          ruleSet.moushiawaseRule.matchTimeMinutes > 0;
+      if (hasValidMoushiawase) {
         final isSelected = _selectedPresetKey == 'moushiawase';
         categoryPresetChips.add(
           ChoiceChip(
