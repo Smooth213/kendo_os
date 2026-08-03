@@ -212,7 +212,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Enter "準決勝" in the note field to trigger auto advanced rules toggle
-        final noteField = find.widgetWithText(TextField, '試合詳細（任意）');
+        final noteField = find.widgetWithText(TextField, '試合のメモ・詳細コメント');
         expect(noteField, findsOneWidget);
         await tester.enterText(noteField, 'Aコート 準決勝 第1試合');
         await tester.pumpAndSettle();

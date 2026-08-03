@@ -5,11 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/screens/setup_match_format_screen.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/screens/new_match_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
