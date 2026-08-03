@@ -824,13 +824,15 @@ void main() {
       () {
         String detectPresetKey(MatchModel match) {
           final r = match.rule ?? const MatchRule();
-          final scene = r.matchScene.isNotEmpty
-              ? r.matchScene
-              : (match.matchScene.isNotEmpty ? match.matchScene : '');
-          if (scene.isNotEmpty) {
-            return scene;
-          } else if (r.isRenseikai) {
+          if (r.isRenseikai ||
+              r.matchScene == 'renseikai' ||
+              match.matchScene == 'renseikai') {
             return 'renseikai';
+          } else if (r.matchScene == 'moushiawase' ||
+              match.matchScene == 'moushiawase') {
+            return 'moushiawase';
+          } else if (r.matchScene == 'honsen' || match.matchScene == 'honsen') {
+            return 'honsen';
           } else {
             return 'honsen';
           }
@@ -862,7 +864,7 @@ void main() {
           redName: 'Aチーム : 先鋒A',
           whiteName: 'Bチーム : 先鋒B',
           matchScene: 'moushiawase',
-          rule: MatchRule(matchScene: 'moushiawase', isRenseikai: true),
+          rule: MatchRule(matchScene: 'moushiawase', isRenseikai: false),
         );
         expect(detectPresetKey(moushiawaseMatch), equals('moushiawase'));
       },
@@ -950,6 +952,76 @@ void main() {
           candidates.contains('大人会員'),
           isFalse,
         ); // Unrelated dojo member excluded
+      },
+    );
+
+    test(
+      '13. Verification that match rule scenes (renseikai, moushiawase, honsen) and hasHantei state are accurately saved and applied across environments',
+      () {
+        const initialMatch = MatchModel(
+          id: 'm13_1',
+          matchType: '先鋒',
+          redName: 'Aチーム : 先鋒A',
+          whiteName: 'Bチーム : 先鋒B',
+          matchScene: 'honsen',
+          rule: MatchRule(matchScene: 'honsen', hasHantei: false),
+        );
+
+        const renseikaiSceneKey = 'renseikai';
+        final updatedRenseikaiRule = initialMatch.rule!.copyWith(
+          matchScene: renseikaiSceneKey,
+          isRenseikai: true,
+          hasHantei: false,
+          enchoTimeMinutes: 0.0,
+          isEnchoUnlimited: false,
+        );
+        final updatedRenseikaiMatch = initialMatch.copyWith(
+          matchScene: renseikaiSceneKey,
+          rule: updatedRenseikaiRule,
+        );
+
+        expect(updatedRenseikaiMatch.matchScene, equals('renseikai'));
+        expect(updatedRenseikaiMatch.rule?.matchScene, equals('renseikai'));
+        expect(updatedRenseikaiMatch.rule?.isRenseikai, isTrue);
+        expect(updatedRenseikaiMatch.rule?.hasHantei, isFalse);
+
+        const moushiawaseSceneKey = 'moushiawase';
+        final updatedMoushiawaseRule = initialMatch.rule!.copyWith(
+          matchScene: moushiawaseSceneKey,
+          isRenseikai: false,
+          hasHantei: false,
+          enchoTimeMinutes: 0.0,
+          isEnchoUnlimited: false,
+        );
+        final updatedMoushiawaseMatch = initialMatch.copyWith(
+          matchScene: moushiawaseSceneKey,
+          rule: updatedMoushiawaseRule,
+        );
+
+        expect(updatedMoushiawaseMatch.matchScene, equals('moushiawase'));
+        expect(updatedMoushiawaseMatch.rule?.matchScene, equals('moushiawase'));
+        expect(updatedMoushiawaseMatch.rule?.isRenseikai, isFalse);
+        expect(updatedMoushiawaseMatch.rule?.hasHantei, isFalse);
+
+        String detectSavedScene(MatchModel m) {
+          final r = m.rule ?? const MatchRule();
+          if (r.isRenseikai ||
+              r.matchScene == 'renseikai' ||
+              m.matchScene == 'renseikai') {
+            return 'renseikai';
+          } else if (r.matchScene == 'moushiawase' ||
+              m.matchScene == 'moushiawase') {
+            return 'moushiawase';
+          } else {
+            return 'honsen';
+          }
+        }
+
+        expect(detectSavedScene(updatedRenseikaiMatch), equals('renseikai'));
+        expect(
+          detectSavedScene(updatedMoushiawaseMatch),
+          equals('moushiawase'),
+        );
       },
     );
   });

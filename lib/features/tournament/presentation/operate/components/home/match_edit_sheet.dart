@@ -59,18 +59,26 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     _isDantai = widget.matches.length > 1 || first.matchType == '団体戦';
 
     final r = first.rule ?? const MatchRule();
-    _selectedPresetRule = r;
 
-    final String scene = r.matchScene.isNotEmpty
-        ? r.matchScene
-        : (first.matchScene.isNotEmpty ? first.matchScene : '');
-    if (scene.isNotEmpty) {
-      _selectedPresetKey = scene;
-    } else if (r.isRenseikai) {
-      _selectedPresetKey = 'renseikai';
+    String detectedKey;
+    if (r.isRenseikai ||
+        r.matchScene == 'renseikai' ||
+        first.matchScene == 'renseikai') {
+      detectedKey = 'renseikai';
+    } else if (r.matchScene == 'moushiawase' ||
+        first.matchScene == 'moushiawase') {
+      detectedKey = 'moushiawase';
+    } else if (r.matchScene == 'honsen' || first.matchScene == 'honsen') {
+      detectedKey = 'honsen';
     } else {
-      _selectedPresetKey = 'honsen';
+      detectedKey = 'honsen';
     }
+
+    _selectedPresetKey = detectedKey;
+    _selectedPresetRule = r.copyWith(
+      matchScene: detectedKey,
+      isRenseikai: detectedKey == 'renseikai',
+    );
 
     // チーム名と選手名の分離抽出
     final extractedRedTeam = _extractTeamName(
@@ -111,7 +119,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         ? r.matchTimeMinutes
         : first.matchTimeMinutes;
     _isIpponShobu = r.isIpponShobu;
-    _hasHantei = r.hasHantei || first.hasHantei;
+    _hasHantei = (detectedKey == 'renseikai' || detectedKey == 'moushiawase')
+        ? false
+        : r.hasHantei;
 
     _noteController = TextEditingController(text: _cleanNoteText(first.note));
     _status = first.status;
@@ -227,6 +237,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
     // 無関係なルール（判定・延長戦・代表戦）は必ず強制的にOFFにする
     final sanitizedRule = rule.copyWith(
+      matchScene: key,
+      isRenseikai: key == 'renseikai',
       hasHantei: isRenseikaiOrMoushiawase ? false : rule.hasHantei,
       enchoTimeMinutes: isRenseikaiOrMoushiawase ? 0.0 : rule.enchoTimeMinutes,
       isEnchoUnlimited: isRenseikaiOrMoushiawase
@@ -1292,6 +1304,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         ? redTeamInput
         : whiteTeamInput;
 
+    final String sceneKey = _selectedPresetKey ?? 'honsen';
+    final bool isRenseikaiBool = sceneKey == 'renseikai';
+    final bool isRenseikaiOrMoushiawase =
+        sceneKey == 'renseikai' || sceneKey == 'moushiawase';
+
     final updatedMatches = <MatchModel>[];
 
     for (int i = 0; i < widget.matches.length; i++) {
@@ -1299,9 +1316,20 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       final baseRule = _selectedPresetRule ?? m.rule ?? const MatchRule();
 
       final updatedRule = baseRule.copyWith(
+        matchScene: sceneKey,
+        isRenseikai: isRenseikaiBool,
         matchTimeMinutes: _matchTime,
         isIpponShobu: _isIpponShobu,
-        hasHantei: _hasHantei,
+        hasHantei: isRenseikaiOrMoushiawase ? false : _hasHantei,
+        enchoTimeMinutes: isRenseikaiOrMoushiawase
+            ? 0.0
+            : baseRule.enchoTimeMinutes,
+        isEnchoUnlimited: isRenseikaiOrMoushiawase
+            ? false
+            : baseRule.isEnchoUnlimited,
+        hasRepresentativeMatch: isRenseikaiOrMoushiawase
+            ? false
+            : baseRule.hasRepresentativeMatch,
         teamName: targetOwnTeamName.isNotEmpty
             ? targetOwnTeamName
             : baseRule.teamName,
@@ -1344,6 +1372,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         groupName: finalGroupName,
         note: noteCombined,
         rule: updatedRule,
+        matchScene: sceneKey,
         status: _status,
       );
 
