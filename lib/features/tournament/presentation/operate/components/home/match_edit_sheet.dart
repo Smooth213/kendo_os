@@ -78,13 +78,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         )
         .toList();
 
-    _courtController = TextEditingController(
-      text: _extractCourtName(first.note),
-    );
+    _courtController = TextEditingController(text: _extractHeadingText(first));
 
-    _groupNameController = TextEditingController(
-      text: _extractGroupName(first.groupName, first.note),
-    );
+    _groupNameController = TextEditingController(text: '');
 
     _matchTime = r.matchTimeMinutes > 0
         ? r.matchTimeMinutes
@@ -131,44 +127,68 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     return rawName.trim();
   }
 
-  String _extractCourtName(String rawNote) {
-    if (rawNote.contains('試合場') || rawNote.contains('コート')) {
-      final match = RegExp(
-        r'第\d+試合場|[A-Z]コート|\S+試合場|\S+コート',
-      ).firstMatch(rawNote);
-      if (match != null) return match.group(0)!;
-    }
-    return '';
-  }
+  String _extractHeadingText(MatchModel match) {
+    // 1. groupName に有効な見出し文字列(UUIDでない)があれば最優先使用
+    final gName = match.groupName ?? '';
+    final isUuidGroup = RegExp(
+      r'^[a-f0-9\-]{20,}$',
+      caseSensitive: false,
+    ).hasMatch(gName);
 
-  String _extractGroupName(String? groupName, String rawNote) {
-    if (groupName != null && groupName.isNotEmpty) {
-      final isUuidLike = RegExp(
-        r'^[a-f0-9\-]{20,}$',
-        caseSensitive: false,
-      ).hasMatch(groupName);
-      if (!isUuidLike) return groupName;
+    final rawNote = match.note.trim();
+    if (rawNote.isEmpty) {
+      return (!isUuidGroup && gName.isNotEmpty) ? gName : '';
     }
-    if (rawNote.isEmpty) return '';
+
+    // 2. note の1行目をチェック
     final firstLine = rawNote.split('\n').first.trim();
-    final isUuidLikeNote = RegExp(
+    final isUuidNote = RegExp(
       r'^[a-f0-9\-]{20,}$',
       caseSensitive: false,
     ).hasMatch(firstLine);
-    return isUuidLikeNote ? '' : firstLine;
+
+    if (isUuidNote) return '';
+
+    // note の 1行目が vs 行でなく、かつ見出し項目（カンマ区切り含む）または groupName であれば見出しとみなす
+    if (!firstLine.contains(' vs ') &&
+        (firstLine.contains('試合場') ||
+            firstLine.contains('コート') ||
+            firstLine.contains('回戦') ||
+            firstLine.contains('リーグ') ||
+            firstLine.contains('試合目') ||
+            firstLine.contains(',') ||
+            (!isUuidGroup && gName.isNotEmpty && firstLine == gName))) {
+      return firstLine;
+    }
+
+    if (!isUuidGroup && gName.isNotEmpty) {
+      return gName;
+    }
+
+    return '';
   }
 
   String _cleanNoteText(String rawNote) {
     if (rawNote.isEmpty) return '';
     final lines = rawNote.split('\n');
-    // 自動生成されたコート名や vs 行を除去
-    final cleanLines = lines.where((line) {
-      final trimmed = line.trim();
-      if (trimmed.contains('試合場') || trimmed.contains('コート')) return false;
-      if (trimmed.contains(' vs ')) return false;
-      return true;
-    }).toList();
-    return cleanLines.join('\n').trim();
+    if (lines.isEmpty) return '';
+
+    final firstLine = lines.first.trim();
+    final isHeadingLine =
+        !firstLine.contains(' vs ') &&
+        (firstLine.contains('試合場') ||
+            firstLine.contains('コート') ||
+            firstLine.contains('回戦') ||
+            firstLine.contains('リーグ') ||
+            firstLine.contains('試合目') ||
+            firstLine.contains(','));
+
+    // 1行目が進行見出しまたは vs 行の場合はそれを取り除いた残りを純粋メモコメントとする
+    final noteLines = (isHeadingLine || firstLine.contains(' vs '))
+        ? lines.skip(1).where((line) => line.trim().isNotEmpty).toList()
+        : lines.where((line) => line.trim().isNotEmpty).toList();
+
+    return noteLines.join('\n').trim();
   }
 
   void _swapTeamsAndPlayers() {
