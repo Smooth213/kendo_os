@@ -1268,6 +1268,19 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     final whiteTeamInput = _whiteTeamController.text.trim();
     final courtInput = _courtController.text.trim();
 
+    // 団体戦アコーディオンを崩さずに1つのカードとして維持するグループキー導出
+    final firstMatch = widget.matches.first;
+    final String fallbackGroupKey =
+        (firstMatch.groupName != null && firstMatch.groupName!.isNotEmpty)
+        ? firstMatch.groupName!
+        : firstMatch.id;
+
+    final String finalGroupName = _isDantai
+        ? (courtInput.isNotEmpty
+              ? courtInput
+              : (groupInput.isNotEmpty ? groupInput : fallbackGroupKey))
+        : (courtInput.isNotEmpty ? courtInput : groupInput);
+
     // 自チームが赤から白（または白から赤）に入れ替わったか判定
     final bool currentOwnIsRed = _isSwapped
         ? !_initialOwnIsRed
@@ -1325,7 +1338,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       final updatedMatch = m.copyWith(
         redName: finalRedName,
         whiteName: finalWhiteName,
-        groupName: courtInput,
+        groupName: finalGroupName,
         note: noteCombined,
         rule: updatedRule,
         status: _status,
