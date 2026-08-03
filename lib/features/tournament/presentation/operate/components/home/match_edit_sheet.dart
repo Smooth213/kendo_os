@@ -142,19 +142,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   }
 
   String _extractHeadingText(MatchModel match) {
-    // 1. groupName に有効な見出し文字列(UUIDでない)があれば最優先使用
-    final gName = match.groupName ?? '';
-    final isUuidGroup = RegExp(
-      r'^[a-f0-9\-]{20,}$',
-      caseSensitive: false,
-    ).hasMatch(gName);
-
     final rawNote = match.note.trim();
-    if (rawNote.isEmpty) {
-      return (!isUuidGroup && gName.isNotEmpty) ? gName : '';
-    }
+    if (rawNote.isEmpty) return '';
 
-    // 2. note の1行目をチェック
     final firstLine = rawNote.split('\n').first.trim();
     final isUuidNote = RegExp(
       r'^[a-f0-9\-]{20,}$',
@@ -163,20 +153,15 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
     if (isUuidNote) return '';
 
-    // note の 1行目が vs 行でなく、かつ見出し項目（カンマ区切り含む）または groupName であれば見出しとみなす
+    // note の 1行目が vs 行でなく、かつ見出し項目（カンマ区切り含む）であれば見出しとみなす
     if (!firstLine.contains(' vs ') &&
         (firstLine.contains('試合場') ||
             firstLine.contains('コート') ||
             firstLine.contains('回戦') ||
             firstLine.contains('リーグ') ||
             firstLine.contains('試合目') ||
-            firstLine.contains(',') ||
-            (!isUuidGroup && gName.isNotEmpty && firstLine == gName))) {
+            firstLine.contains(','))) {
       return firstLine;
-    }
-
-    if (!isUuidGroup && gName.isNotEmpty) {
-      return gName;
     }
 
     return '';
@@ -1270,10 +1255,19 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
     // 団体戦アコーディオンを崩さずに1つのカードとして維持するグループキー導出
     final firstMatch = widget.matches.first;
+    final rawGroup = firstMatch.groupName ?? '';
+    final isUuidGroup = RegExp(
+      r'^[a-f0-9\-]{20,}$',
+      caseSensitive: false,
+    ).hasMatch(rawGroup);
+
     final String fallbackGroupKey =
-        (firstMatch.groupName != null && firstMatch.groupName!.isNotEmpty)
-        ? firstMatch.groupName!
-        : firstMatch.id;
+        (rawGroup.isNotEmpty &&
+            !isUuidGroup &&
+            rawGroup != '1回戦' &&
+            rawGroup != '2回戦')
+        ? rawGroup
+        : 'group_${firstMatch.id}';
 
     final String finalGroupName = _isDantai
         ? (courtInput.isNotEmpty
