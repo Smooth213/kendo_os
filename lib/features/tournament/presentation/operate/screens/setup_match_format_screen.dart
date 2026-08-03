@@ -1923,10 +1923,11 @@ class _SetupMatchFormatScreenState
               const SizedBox(height: 12),
               TextField(
                 controller: _courtController,
+                textAlign: TextAlign.start,
                 style: TextStyle(color: textColor),
                 decoration: _buildTextFieldDecoration(
-                  labelText: '試合場・進行見出し (カンマ区切り)',
-                  hintText: '例: 第1試合場, 1回戦, 3試合目 (未入力時は空欄になります)',
+                  labelText: '試合場・進行の見出し',
+                  hintText: '例: 第1試合場, 1回戦, 3試合目',
                   prefixIcon: Icon(
                     Icons.edit_location_alt,
                     color: _themeColors.primaryAccent,
