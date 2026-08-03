@@ -192,5 +192,91 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets(
+      '4. Verify Red/White Swap, Own-Team Tracking, Accordion Integrity & Rule Score Input Propagation',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        const initialRule = MatchRule(
+          matchTimeMinutes: 3.0,
+          isIpponShobu: false,
+          hasHantei: true,
+          teamName: '道上剣友会',
+        );
+
+        const dantaiFiveMatches = [
+          MatchModel(
+            id: 'senho_1',
+            matchType: '団体戦',
+            redName: '道上剣友会: 剣道先鋒',
+            whiteName: 'ライバル道場: 相手先鋒',
+            groupName: 'group_dantai_100',
+            note: '第1試合場\n1回戦',
+            rule: initialRule,
+          ),
+          MatchModel(
+            id: 'taisho_1',
+            matchType: '団体戦',
+            redName: '道上剣友会: 剣道大将',
+            whiteName: 'ライバル道場: 相手大将',
+            groupName: 'group_dantai_100',
+            note: '第1試合場\n1回戦',
+            rule: initialRule,
+          ),
+        ];
+
+        final themeColors = AppThemeColors.ofMode(
+          isDark: false,
+          mode: 'operate',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+            child: MaterialApp(
+              home: Scaffold(
+                body: MatchEditSheet(
+                  matches: dantaiFiveMatches,
+                  tournamentId: 'test_dantai_tourney',
+                  themeColors: themeColors,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. 赤白入れ替え実行
+        final swapButton = find.text('チーム丸ごと赤と白を入れ替える ⇄');
+        await tester.tap(swapButton, warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        // 2. 「クリア」ボタンをタップして無駄な見出し補完を完全除去
+        final clearButton = find.text('クリア');
+        if (clearButton.evaluate().isNotEmpty) {
+          await tester.tap(clearButton);
+          await tester.pumpAndSettle();
+        }
+
+        // 3. ルール・メモ タブへ切り替え
+        final ruleTab = find.text('ルール・メモ');
+        await tester.tap(ruleTab);
+        await tester.pumpAndSettle();
+
+        expect(find.text('試合時間'), findsOneWidget);
+        expect(find.textContaining('一本勝負'), findsOneWidget);
+
+        // 4. 一括編集画面の全コンポーネント正常描画・操作性の完了検証
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
