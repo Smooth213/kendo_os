@@ -59,19 +59,23 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     final r = first.rule ?? const MatchRule();
     _selectedPresetRule = r;
 
-    final initialRedTeam = first.rule?.teamName ?? first.note;
-    _redTeamController = TextEditingController(
-      text: initialRedTeam.isNotEmpty ? initialRedTeam : '赤チーム',
+    // チーム名と選手名の分離抽出
+    final extractedRedTeam = _extractTeamName(
+      first.redName,
+      r.teamName.isNotEmpty ? r.teamName : '赤チーム',
     );
-    _whiteTeamController = TextEditingController(
-      text: first.whiteName.isNotEmpty ? first.whiteName : '白チーム',
-    );
+    final extractedWhiteTeam = _extractTeamName(first.whiteName, '白チーム');
+
+    _redTeamController = TextEditingController(text: extractedRedTeam);
+    _whiteTeamController = TextEditingController(text: extractedWhiteTeam);
 
     _redPlayerControllers = widget.matches
-        .map((m) => TextEditingController(text: m.redName))
+        .map((m) => TextEditingController(text: _extractPlayerName(m.redName)))
         .toList();
     _whitePlayerControllers = widget.matches
-        .map((m) => TextEditingController(text: m.whiteName))
+        .map(
+          (m) => TextEditingController(text: _extractPlayerName(m.whiteName)),
+        )
         .toList();
 
     _courtController = TextEditingController(
@@ -88,7 +92,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     _isIpponShobu = r.isIpponShobu;
     _hasHantei = r.hasHantei || first.hasHantei;
 
-    _noteController = TextEditingController(text: first.note);
+    _noteController = TextEditingController(text: _cleanNoteText(first.note));
     _status = first.status;
   }
 
@@ -109,6 +113,24 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     super.dispose();
   }
 
+  String _extractTeamName(String rawName, String fallback) {
+    if (rawName.contains(':')) {
+      final teamPart = rawName.split(':').first.trim();
+      if (teamPart.isNotEmpty) return teamPart;
+    }
+    if (rawName.isNotEmpty && !rawName.contains(':') && _isDantai) {
+      return rawName.trim();
+    }
+    return fallback;
+  }
+
+  String _extractPlayerName(String rawName) {
+    if (rawName.contains(':')) {
+      return rawName.split(':').last.trim();
+    }
+    return rawName.trim();
+  }
+
   String _extractCourtName(String rawNote) {
     if (rawNote.contains('試合場')) {
       final match = RegExp(r'第\d+試合場|[A-Z]コート').firstMatch(rawNote);
@@ -120,6 +142,19 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   String _extractGroupName(String rawNote) {
     if (rawNote.isEmpty) return 'Aリーグ';
     return rawNote.split('\n').first;
+  }
+
+  String _cleanNoteText(String rawNote) {
+    if (rawNote.isEmpty) return '';
+    final lines = rawNote.split('\n');
+    // 自動生成されたコート名や vs 行を除去
+    final cleanLines = lines.where((line) {
+      final trimmed = line.trim();
+      if (trimmed.contains('試合場') || trimmed.contains('コート')) return false;
+      if (trimmed.contains(' vs ')) return false;
+      return true;
+    }).toList();
+    return cleanLines.join('\n').trim();
   }
 
   void _swapTeamsAndPlayers() {
@@ -982,7 +1017,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   value: _hasHantei,
                   activeTrackColor: widget.themeColors.primaryAccent,
                   onChanged: (v) {
-                    // 錬成会・申し合わせルール時はON変更不可
                     final isRenseikaiOrMoushiawase =
                         currentRule.isRenseikai ||
                         currentRule.matchScene == 'renseikai' ||
@@ -1127,14 +1161,35 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         teamName: redTeamInput.isNotEmpty ? redTeamInput : baseRule.teamName,
       );
 
-      final noteCombined =
-          _isDantai && redTeamInput.isNotEmpty && whiteTeamInput.isNotEmpty
-          ? '$courtInput\n$redTeamInput vs $whiteTeamInput\n${_noteController.text.trim()}'
-          : _noteController.text.trim();
+      final redPlayer = _redPlayerControllers[i].text.trim();
+      final whitePlayer = _whitePlayerControllers[i].text.trim();
+
+      // 団体戦の場合は 'チーム名: 選手名' の形式で実際のチーム名を確実に適用・保存
+      final finalRedName = _isDantai
+          ? (redTeamInput.isNotEmpty
+                ? (redPlayer.isNotEmpty
+                      ? '$redTeamInput: $redPlayer'
+                      : redTeamInput)
+                : redPlayer)
+          : redPlayer;
+
+      final finalWhiteName = _isDantai
+          ? (whiteTeamInput.isNotEmpty
+                ? (whitePlayer.isNotEmpty
+                      ? '$whiteTeamInput: $whitePlayer'
+                      : whiteTeamInput)
+                : whitePlayer)
+          : whitePlayer;
+
+      // メモは余計な文字列合成を行わず、純粋なコート名と詳細コメントのみを保存
+      final userNote = _noteController.text.trim();
+      final noteCombined = courtInput.isNotEmpty
+          ? (userNote.isNotEmpty ? '$courtInput\n$userNote' : courtInput)
+          : userNote;
 
       final updatedMatch = m.copyWith(
-        redName: _redPlayerControllers[i].text.trim(),
-        whiteName: _whitePlayerControllers[i].text.trim(),
+        redName: finalRedName,
+        whiteName: finalWhiteName,
         groupName: groupInput.isNotEmpty ? groupInput : m.groupName,
         note: noteCombined,
         rule: updatedRule,
