@@ -335,7 +335,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           const SizedBox(height: 12),
                           TextField(
                             controller: _courtController,
-                            textAlign: TextAlign.right,
+                            textAlign: TextAlign.left,
                             style: TextStyle(
                               color: isDark ? Colors.white : Colors.black87,
                               fontSize: 13,

@@ -1925,7 +1925,7 @@ class _SetupMatchFormatScreenState
               const SizedBox(height: 12),
               TextField(
                 controller: _courtController,
-                textAlign: TextAlign.right,
+                textAlign: TextAlign.left,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 13,
