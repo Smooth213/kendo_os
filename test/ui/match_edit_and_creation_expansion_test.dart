@@ -59,8 +59,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('試合情報の編集'), findsOneWidget);
-        expect(find.text('コート・グループ'), findsOneWidget);
-        expect(find.text('一括ルール・メモ'), findsOneWidget);
+        expect(find.text('コート・組'), findsOneWidget);
+        expect(find.text('ルール・メモ'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );

@@ -83,7 +83,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     );
 
     _groupNameController = TextEditingController(
-      text: first.groupName ?? _extractGroupName(first.note),
+      text: _extractGroupName(first.groupName, first.note),
     );
 
     _matchTime = r.matchTimeMinutes > 0
@@ -141,9 +141,21 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     return '';
   }
 
-  String _extractGroupName(String rawNote) {
+  String _extractGroupName(String? groupName, String rawNote) {
+    if (groupName != null && groupName.isNotEmpty) {
+      final isUuidLike = RegExp(
+        r'^[a-f0-9\-]{20,}$',
+        caseSensitive: false,
+      ).hasMatch(groupName);
+      if (!isUuidLike) return groupName;
+    }
     if (rawNote.isEmpty) return 'Aリーグ';
-    return rawNote.split('\n').first;
+    final firstLine = rawNote.split('\n').first.trim();
+    final isUuidLikeNote = RegExp(
+      r'^[a-f0-9\-]{20,}$',
+      caseSensitive: false,
+    ).hasMatch(firstLine);
+    return isUuidLikeNote ? 'Aリーグ' : firstLine;
   }
 
   String _cleanNoteText(String rawNote) {
@@ -281,16 +293,21 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             unselectedLabelColor: isDark
                 ? Colors.grey.shade400
                 : Colors.grey.shade600,
+            labelStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+            unselectedLabelStyle: const TextStyle(fontSize: 12),
             tabs: [
               Tab(
                 icon: Icon(
                   _isDantai ? Icons.groups : Icons.people_alt,
                   size: 18,
                 ),
-                text: _isDantai ? 'チーム・選手' : '選手・チーム',
+                text: _isDantai ? '対戦・選手' : '選手・チーム',
               ),
-              const Tab(icon: Icon(Icons.place, size: 18), text: 'コート・グループ'),
-              const Tab(icon: Icon(Icons.tune, size: 18), text: '一括ルール・メモ'),
+              const Tab(icon: Icon(Icons.place, size: 18), text: 'コート・組'),
+              const Tab(icon: Icon(Icons.tune, size: 18), text: 'ルール・メモ'),
             ],
           ),
           const Divider(height: 1),
@@ -571,13 +588,15 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    '※ここに入力した試合場名は、メモ（詳細情報）に保存・表示されます',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade600,
+                  Expanded(
+                    child: Text(
+                      '※ここに入力した試合場名は、メモ（詳細情報）に保存・表示されます',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade600,
+                      ),
                     ),
                   ),
                 ],
