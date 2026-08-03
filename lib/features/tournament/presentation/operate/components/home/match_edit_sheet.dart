@@ -132,11 +132,13 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   }
 
   String _extractCourtName(String rawNote) {
-    if (rawNote.contains('試合場')) {
-      final match = RegExp(r'第\d+試合場|[A-Z]コート').firstMatch(rawNote);
+    if (rawNote.contains('試合場') || rawNote.contains('コート')) {
+      final match = RegExp(
+        r'第\d+試合場|[A-Z]コート|\S+試合場|\S+コート',
+      ).firstMatch(rawNote);
       if (match != null) return match.group(0)!;
     }
-    return '第1試合場';
+    return '';
   }
 
   String _extractGroupName(String rawNote) {
@@ -555,10 +557,30 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               const SizedBox(height: 12),
               _buildTextField(
                 controller: _courtController,
-                label: '試合場名 (例: 第1試合場, Aコート)',
-                hint: '試合場を入力',
+                label: '試合場名',
+                hint: '例: 第1試合場 (未入力時は空欄になります)',
                 isDark: isDark,
                 textColor: textColor,
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 13,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '※ここに入力した試合場名は、メモ（詳細情報）に保存・表示されます',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
               Wrap(
