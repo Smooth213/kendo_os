@@ -3251,28 +3251,34 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             if ((matchCat.contains('低学年') ||
                     matchCat.contains('1・2年') ||
                     matchCat.contains('3・4年')) &&
-                (grade >= 1 && grade <= 4))
+                (grade >= 1 && grade <= 4)) {
               return true;
+            }
             if ((matchCat.contains('高学年') || matchCat.contains('5・6年')) &&
-                (grade >= 5 && grade <= 6))
+                (grade >= 5 && grade <= 6)) {
               return true;
+            }
             if ((matchCat.contains('小学生') ||
                     matchCat.contains('学童') ||
                     matchCat.contains('児童')) &&
-                (grade >= 1 && grade <= 6))
+                (grade >= 1 && grade <= 6)) {
               return true;
+            }
             if ((matchCat.contains('中学生') || matchCat.contains('中学')) &&
-                (grade >= 7 && grade <= 9))
+                (grade >= 7 && grade <= 9)) {
               return true;
+            }
             if ((matchCat.contains('高校生') || matchCat.contains('高校')) &&
-                (grade >= 10 && grade <= 12))
+                (grade >= 10 && grade <= 12)) {
               return true;
+            }
             if ((matchCat.contains('一般') ||
                     matchCat.contains('成人') ||
                     matchCat.contains('社会人') ||
                     matchCat.contains('大学')) &&
-                (grade >= 13 || grade == 0))
+                (grade >= 13 || grade == 0)) {
               return true;
+            }
 
             final hasKnownSchoolLevel =
                 matchCat.contains('低学年') ||
