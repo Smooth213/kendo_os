@@ -1852,19 +1852,23 @@ class _SetupMatchFormatScreenState
             );
           },
         ),
-        // ★ 統合された「試合場・進行見出し」および「試合メモ」入力セクション
+        // ★ 統合された「試合場・進行見出し」および「試合メモ」入力セクション (ウィザードテーマ完全調和)
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+            color: isDark
+                ? const Color(0xFF2C2C2E)
+                : _themeColors.cardBackground,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
+              color: isDark
+                  ? const Color(0xFF38383A)
+                  : _themeColors.separatorColor,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(isDark ? 30 : 10),
-                blurRadius: 8,
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -1884,14 +1888,26 @@ class _SetupMatchFormatScreenState
                     '試合場・進行見出しの一括設定',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
+                      fontSize: 14,
                       color: textColor,
                     ),
                   ),
                   const Spacer(),
                   if (_courtController.text.isNotEmpty)
                     TextButton.icon(
-                      icon: const Icon(Icons.clear, size: 14),
-                      label: const Text('クリア', style: TextStyle(fontSize: 11)),
+                      icon: Icon(
+                        Icons.clear,
+                        size: 14,
+                        color: _themeColors.primaryAccent,
+                      ),
+                      label: Text(
+                        'クリア',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _themeColors.primaryAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         visualDensity: VisualDensity.compact,
@@ -1917,13 +1933,13 @@ class _SetupMatchFormatScreenState
                   ),
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Icon(
                     Icons.info_outline,
                     size: 13,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    color: _themeColors.subTextColor,
                   ),
                   const SizedBox(width: 4),
                   Expanded(
@@ -1931,27 +1947,25 @@ class _SetupMatchFormatScreenState
                       '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
                       style: TextStyle(
                         fontSize: 11,
-                        color: isDark
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade600,
+                        color: _themeColors.subTextColor,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Text(
                 '🏟️ 試合場（コート）を選択',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                  color: _themeColors.subTextColor,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Wrap(
-                spacing: 6,
-                runSpacing: 6,
+                spacing: 8,
+                runSpacing: 8,
                 children: ['第1試合場', '第2試合場', '第3試合場', '部内戦コート'].map((preset) {
                   final isSelected = _courtController.text
                       .split(',')
@@ -1959,10 +1973,42 @@ class _SetupMatchFormatScreenState
                       .contains(preset);
                   return FilterChip(
                     selected: isSelected,
-                    showCheckmark: true,
-                    label: Text(preset, style: const TextStyle(fontSize: 11)),
-                    selectedColor: _themeColors.primaryAccent.withAlpha(
-                      isDark ? 80 : 40,
+                    showCheckmark: isSelected,
+                    avatar: isSelected
+                        ? null
+                        : Icon(
+                            Icons.add,
+                            size: 14,
+                            color: _themeColors.primaryAccent,
+                          ),
+                    label: Text(
+                      preset,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected
+                            ? (isDark
+                                  ? Colors.white
+                                  : _themeColors.primaryAccent)
+                            : (isDark
+                                  ? _themeColors.textColor
+                                  : _themeColors.primaryAccent),
+                      ),
+                    ),
+                    backgroundColor: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : _themeColors.softAccent,
+                    selectedColor: _themeColors.primaryAccent.withValues(
+                      alpha: 0.2,
+                    ),
+                    side: BorderSide(
+                      color: isSelected
+                          ? _themeColors.primaryAccent
+                          : (isDark
+                                ? const Color(0xFF38383A)
+                                : _themeColors.primaryAccent.withValues(
+                                    alpha: 0.2,
+                                  )),
                     ),
                     onSelected: (_) {
                       _toggleHeadingPreset(preset);
@@ -1970,19 +2016,19 @@ class _SetupMatchFormatScreenState
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Text(
                 '🏆 回戦・ラウンド・試合順を選択',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                  color: _themeColors.subTextColor,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Wrap(
-                spacing: 6,
-                runSpacing: 6,
+                spacing: 8,
+                runSpacing: 8,
                 children:
                     [
                       '1回戦',
@@ -2000,13 +2046,42 @@ class _SetupMatchFormatScreenState
                           .contains(preset);
                       return FilterChip(
                         selected: isSelected,
-                        showCheckmark: true,
+                        showCheckmark: isSelected,
+                        avatar: isSelected
+                            ? null
+                            : Icon(
+                                Icons.add,
+                                size: 14,
+                                color: _themeColors.primaryAccent,
+                              ),
                         label: Text(
                           preset,
-                          style: const TextStyle(fontSize: 11),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected
+                                ? (isDark
+                                      ? Colors.white
+                                      : _themeColors.primaryAccent)
+                                : (isDark
+                                      ? _themeColors.textColor
+                                      : _themeColors.primaryAccent),
+                          ),
                         ),
-                        selectedColor: _themeColors.primaryAccent.withAlpha(
-                          isDark ? 80 : 40,
+                        backgroundColor: isDark
+                            ? const Color(0xFF2C2C2E)
+                            : _themeColors.softAccent,
+                        selectedColor: _themeColors.primaryAccent.withValues(
+                          alpha: 0.2,
+                        ),
+                        side: BorderSide(
+                          color: isSelected
+                              ? _themeColors.primaryAccent
+                              : (isDark
+                                    ? const Color(0xFF38383A)
+                                    : _themeColors.primaryAccent.withValues(
+                                        alpha: 0.2,
+                                      )),
                         ),
                         onSelected: (_) {
                           _toggleHeadingPreset(preset);
@@ -2015,7 +2090,7 @@ class _SetupMatchFormatScreenState
                     }).toList(),
               ),
               const SizedBox(height: 16),
-              const Divider(),
+              Divider(color: _themeColors.separatorColor),
               const SizedBox(height: 8),
               TextField(
                 controller: _noteController,
