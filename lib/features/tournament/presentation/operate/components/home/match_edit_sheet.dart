@@ -535,8 +535,45 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     );
   }
 
+  void _toggleHeadingPreset(String preset) {
+    final currentText = _courtController.text.trim();
+    if (currentText.isEmpty) {
+      _courtController.text = preset;
+      return;
+    }
+
+    final items = currentText
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (items.contains(preset)) {
+      items.remove(preset);
+    } else {
+      items.add(preset);
+    }
+    _courtController.text = items.join(', ');
+  }
+
   // --- Tab 2: コート・グループ ---
   Widget _buildCourtAndGroupTab(bool isDark, Color textColor) {
+    final currentText = _courtController.text;
+    final selectedItems = currentText.split(',').map((e) => e.trim()).toSet();
+
+    final courtPresets = ['第1試合場', '第2試合場', '第3試合場', '部内戦コート'];
+    final roundPresets = [
+      '1回戦',
+      '2回戦',
+      '3回戦',
+      '準決勝',
+      '決勝戦',
+      '1試合目',
+      '2試合目',
+      '3試合目',
+      'Aリーグ',
+      'Bリーグ',
+    ];
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -563,19 +600,34 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '試合場（コート）の一括設定',
+                    '試合場・進行見出しの一括設定',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: textColor,
                     ),
                   ),
+                  const Spacer(),
+                  if (_courtController.text.isNotEmpty)
+                    TextButton.icon(
+                      icon: const Icon(Icons.clear, size: 14),
+                      label: const Text('クリア', style: TextStyle(fontSize: 11)),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _courtController.clear();
+                        });
+                      },
+                    ),
                 ],
               ),
               const SizedBox(height: 12),
               _buildTextField(
                 controller: _courtController,
-                label: '試合場名',
-                hint: '例: 第1試合場 (未入力時は空欄になります)',
+                label: '試合場・進行見出し (カンマ区切り)',
+                hint: '例: 第1試合場, 1回戦, 3試合目 (未入力時は空欄になります)',
                 isDark: isDark,
                 textColor: textColor,
               ),
@@ -590,7 +642,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      '※ここに入力した試合場名は、メモ（詳細情報）に保存・表示されます',
+                      '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
                       style: TextStyle(
                         fontSize: 11,
                         color: isDark
@@ -601,92 +653,62 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
+              Text(
+                '🏟️ 試合場（コート）を選択',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 6),
               Wrap(
-                spacing: 8,
-                children: ['第1試合場', '第2試合場', '第3試合場', '部内戦コート'].map((preset) {
-                  return ActionChip(
+                spacing: 6,
+                runSpacing: 6,
+                children: courtPresets.map((preset) {
+                  final isSelected = selectedItems.contains(preset);
+                  return FilterChip(
+                    selected: isSelected,
+                    showCheckmark: true,
                     label: Text(preset, style: const TextStyle(fontSize: 11)),
-                    onPressed: () {
+                    selectedColor: widget.themeColors.primaryAccent.withAlpha(
+                      isDark ? 80 : 40,
+                    ),
+                    onSelected: (_) {
                       setState(() {
-                        _courtController.text = preset;
+                        _toggleHeadingPreset(preset);
                       });
                     },
                   );
                 }).toList(),
               ),
-            ],
-          ),
-        ),
 
-        const SizedBox(height: 16),
-
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.category, size: 18, color: textColor),
-                  const SizedBox(width: 8),
-                  Text(
-                    'グループ・ラウンド見出し（一括グループ名）',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                controller: _groupNameController,
-                label: 'グループ・ラウンド名',
-                hint: '例: Aリーグ, 1回戦, 準決勝 (未入力時は空欄になります)',
-                isDark: isDark,
-                textColor: textColor,
+              const SizedBox(height: 14),
+              Text(
+                '🏆 回戦・ラウンド・試合順を選択',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                ),
               ),
               const SizedBox(height: 6),
-              Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 13,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      '※ここに入力したグループ・ラウンド見出しは、メモ（詳細情報）に保存・表示されます',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
               Wrap(
-                spacing: 8,
-                children: ['Aリーグ', 'Bリーグ', '1回戦', '2回戦', '準決勝', '決勝戦'].map((
-                  preset,
-                ) {
-                  return ActionChip(
+                spacing: 6,
+                runSpacing: 6,
+                children: roundPresets.map((preset) {
+                  final isSelected = selectedItems.contains(preset);
+                  return FilterChip(
+                    selected: isSelected,
+                    showCheckmark: true,
                     label: Text(preset, style: const TextStyle(fontSize: 11)),
-                    onPressed: () {
+                    selectedColor: widget.themeColors.primaryAccent.withAlpha(
+                      isDark ? 80 : 40,
+                    ),
+                    onSelected: (_) {
                       setState(() {
-                        _groupNameController.text = preset;
+                        _toggleHeadingPreset(preset);
                       });
                     },
                   );
