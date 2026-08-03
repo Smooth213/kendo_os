@@ -28,6 +28,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   late TabController _tabController;
 
   late bool _isDantai;
+  bool _isSwapped = false;
+  late bool _initialOwnIsRed;
 
   // 1. チーム・選手情報
   late TextEditingController _redTeamController;
@@ -65,6 +67,18 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       r.teamName.isNotEmpty ? r.teamName : '赤チーム',
     );
     final extractedWhiteTeam = _extractTeamName(first.whiteName, '白チーム');
+
+    // 初期状態での自チーム位置判定
+    final originalRuleTeam = r.teamName.trim();
+    if (originalRuleTeam.isNotEmpty) {
+      if (originalRuleTeam == extractedWhiteTeam) {
+        _initialOwnIsRed = false;
+      } else {
+        _initialOwnIsRed = true;
+      }
+    } else {
+      _initialOwnIsRed = true;
+    }
 
     _redTeamController = TextEditingController(text: extractedRedTeam);
     _whiteTeamController = TextEditingController(text: extractedWhiteTeam);
@@ -193,6 +207,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
   void _swapTeamsAndPlayers() {
     setState(() {
+      _isSwapped = !_isSwapped;
       final tempTeam = _redTeamController.text;
       _redTeamController.text = _whiteTeamController.text;
       _whiteTeamController.text = tempTeam;
@@ -1253,6 +1268,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     final whiteTeamInput = _whiteTeamController.text.trim();
     final courtInput = _courtController.text.trim();
 
+    // 自チームが赤から白（または白から赤）に入れ替わったか判定
+    final bool currentOwnIsRed = _isSwapped
+        ? !_initialOwnIsRed
+        : _initialOwnIsRed;
+    final String targetOwnTeamName = currentOwnIsRed
+        ? redTeamInput
+        : whiteTeamInput;
+
     final updatedMatches = <MatchModel>[];
 
     for (int i = 0; i < widget.matches.length; i++) {
@@ -1263,7 +1286,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         matchTimeMinutes: _matchTime,
         isIpponShobu: _isIpponShobu,
         hasHantei: _hasHantei,
-        teamName: redTeamInput.isNotEmpty ? redTeamInput : baseRule.teamName,
+        teamName: targetOwnTeamName.isNotEmpty
+            ? targetOwnTeamName
+            : baseRule.teamName,
       );
 
       final redPlayer = _redPlayerControllers[i].text.trim();
