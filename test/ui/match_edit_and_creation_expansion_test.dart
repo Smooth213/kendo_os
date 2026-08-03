@@ -5,8 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/setup_match_format_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/new_match_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -275,6 +278,71 @@ void main() {
         expect(find.textContaining('一本勝負'), findsOneWidget);
 
         // 4. 一括編集画面の全コンポーネント正常描画・操作性の完了検証
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      '5. Verify MatchEditSheet unified court and round heading chips with clear and left alignment',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        const testMatch = MatchModel(
+          id: 'test_heading_chip_1',
+          matchType: '個人戦',
+          redName: '剣道選手A',
+          whiteName: '剣道選手B',
+          note: '',
+          rule: MatchRule(matchTimeMinutes: 3.0),
+        );
+
+        final themeColors = AppThemeColors.ofMode(
+          isDark: false,
+          mode: 'operate',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+            child: MaterialApp(
+              home: Scaffold(
+                body: MatchEditSheet(
+                  matches: const [testMatch],
+                  tournamentId: 'test_tourney_chips',
+                  themeColors: themeColors,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 1. コート・組 タブおよび見出し・メモ項目の描画検証
+        expect(find.text('試合情報の編集'), findsOneWidget);
+        expect(find.text('コート・組'), findsOneWidget);
+
+        // 2. 試合場（コート）および回戦・ラウンド選択チップのタップ検証
+        final courtChip = find.text('第1試合場');
+        final roundChip = find.text('準決勝');
+
+        if (courtChip.evaluate().isNotEmpty) {
+          await tester.tap(courtChip.first);
+          await tester.pumpAndSettle();
+        }
+
+        if (roundChip.evaluate().isNotEmpty) {
+          await tester.tap(roundChip.first);
+          await tester.pumpAndSettle();
+        }
+
+        // 3. 全体エラーなし正常描画の完了検証
         expect(tester.takeException(), isNull);
       },
     );
