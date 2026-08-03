@@ -669,12 +669,14 @@ class _SetupMatchFormatScreenState
   }) {
     return InputDecoration(
       labelText: labelText,
-      labelStyle: TextStyle(color: _themeColors.subTextColor),
+      labelStyle: TextStyle(color: _themeColors.subTextColor, fontSize: 13),
       hintText: hintText,
-      hintStyle: TextStyle(color: _themeColors.hintColor),
+      hintStyle: TextStyle(color: _themeColors.hintColor, fontSize: 12.5),
       suffixText: suffixText,
       suffixStyle: TextStyle(color: _themeColors.subTextColor),
       prefixIcon: prefixIcon,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       filled: true,
       fillColor: _themeColors.inputBackground,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -1923,11 +1925,15 @@ class _SetupMatchFormatScreenState
               const SizedBox(height: 12),
               TextField(
                 controller: _courtController,
-                textAlign: TextAlign.start,
-                style: TextStyle(color: textColor),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
                 decoration: _buildTextFieldDecoration(
                   labelText: '試合場・進行の見出し',
-                  hintText: '例: 第1試合場, 1回戦, 3試合目',
+                  hintText: '例: 準決勝, 第1試合場, 23試合目',
                   prefixIcon: Icon(
                     Icons.edit_location_alt,
                     color: _themeColors.primaryAccent,

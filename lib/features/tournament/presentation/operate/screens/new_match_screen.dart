@@ -335,13 +335,21 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           const SizedBox(height: 12),
                           TextField(
                             controller: _courtController,
-                            textAlign: TextAlign.start,
+                            textAlign: TextAlign.right,
                             style: TextStyle(
                               color: isDark ? Colors.white : Colors.black87,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
                               labelText: '試合場・進行の見出し',
-                              hintText: '例: 第1試合場, 1回戦, 3試合目',
+                              hintText: '例: 準決勝, 第1試合場, 23試合目',
+                              hintStyle: const TextStyle(fontSize: 12.5),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
                               border: const OutlineInputBorder(),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
