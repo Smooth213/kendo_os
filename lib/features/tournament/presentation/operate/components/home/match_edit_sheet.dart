@@ -1300,7 +1300,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       final updatedMatch = m.copyWith(
         redName: finalRedName,
         whiteName: finalWhiteName,
-        groupName: groupInput.isNotEmpty ? groupInput : m.groupName,
+        groupName: courtInput,
         note: noteCombined,
         rule: updatedRule,
         status: _status,
