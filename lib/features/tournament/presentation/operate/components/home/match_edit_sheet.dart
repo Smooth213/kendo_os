@@ -149,13 +149,13 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       ).hasMatch(groupName);
       if (!isUuidLike) return groupName;
     }
-    if (rawNote.isEmpty) return 'Aリーグ';
+    if (rawNote.isEmpty) return '';
     final firstLine = rawNote.split('\n').first.trim();
     final isUuidLikeNote = RegExp(
       r'^[a-f0-9\-]{20,}$',
       caseSensitive: false,
     ).hasMatch(firstLine);
-    return isUuidLikeNote ? 'Aリーグ' : firstLine;
+    return isUuidLikeNote ? '' : firstLine;
   }
 
   String _cleanNoteText(String rawNote) {
@@ -649,10 +649,32 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               const SizedBox(height: 12),
               _buildTextField(
                 controller: _groupNameController,
-                label: 'グループ・ラウンド名 (例: Aリーグ, 1回戦, 準決勝)',
-                hint: '見出しグループ名を入力',
+                label: 'グループ・ラウンド名',
+                hint: '例: Aリーグ, 1回戦, 準決勝 (未入力時は空欄になります)',
                 isDark: isDark,
                 textColor: textColor,
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 13,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      '※ここに入力したグループ・ラウンド見出しは、メモ（詳細情報）に保存・表示されます',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -1222,10 +1244,15 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 : whitePlayer)
           : whitePlayer;
 
-      // メモは余計な文字列合成を行わず、純粋なコート名と詳細コメントのみを保存
+      // メモは余計な対戦名合成を行わず、コート名・グループ見出し名・ユーザーメッセージを綺麗に保存
       final userNote = _noteController.text.trim();
-      final noteCombined = courtInput.isNotEmpty
-          ? (userNote.isNotEmpty ? '$courtInput\n$userNote' : courtInput)
+      final prefixParts = <String>[];
+      if (courtInput.isNotEmpty) prefixParts.add(courtInput);
+      if (groupInput.isNotEmpty) prefixParts.add(groupInput);
+
+      final headerPrefix = prefixParts.join(' ');
+      final noteCombined = headerPrefix.isNotEmpty
+          ? (userNote.isNotEmpty ? '$headerPrefix\n$userNote' : headerPrefix)
           : userNote;
 
       final updatedMatch = m.copyWith(
