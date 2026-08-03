@@ -202,6 +202,30 @@ class _SetupMatchFormatScreenState
   }
 
   final _noteController = TextEditingController();
+  final _courtController = TextEditingController();
+
+  void _toggleHeadingPreset(String preset) {
+    final current = _courtController.text.trim();
+    if (current.isEmpty) {
+      setState(() {
+        _courtController.text = preset;
+      });
+      return;
+    }
+    final items = current
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (items.contains(preset)) {
+      items.remove(preset);
+    } else {
+      items.add(preset);
+    }
+    setState(() {
+      _courtController.text = items.join(', ');
+    });
+  }
 
   int _extCount = -2;
   double _extTime = -2.0;
@@ -223,6 +247,7 @@ class _SetupMatchFormatScreenState
   void dispose() {
     _noteController.removeListener(_onNoteChanged);
     _noteController.dispose();
+    _courtController.dispose();
     _overallTimeController.dispose();
     _winPointController.dispose();
     _lossPointController.dispose();
@@ -1827,66 +1852,186 @@ class _SetupMatchFormatScreenState
             );
           },
         ),
-        _buildSectionTitle('試合詳細の入力（任意）'),
-        TextField(
-          controller: _noteController,
-          style: TextStyle(color: textColor),
-          decoration: _buildTextFieldDecoration(
-            labelText: '試合詳細（任意）',
-            hintText: '例：1回戦 第3試合、準決勝 など',
-            prefixIcon: Icon(
-              Icons.edit_note,
-              color: _themeColors.primaryAccent,
+        // ★ 統合された「試合場・進行見出し」および「試合メモ」入力セクション
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(isDark ? 30 : 10),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 12),
-        Consumer(
-          builder: (context, ref, child) {
-            final history = ref.watch(noteHistoryProvider);
-            return Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: history
-                  .map(
-                    (note) => ActionChip(
-                      label: Text(
-                        note,
-                        style: TextStyle(
-                          color: isDark
-                              ? _themeColors.textColor
-                              : _themeColors.primaryAccent,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      backgroundColor: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : _themeColors.softAccent,
-                      side: BorderSide(
-                        color: isDark
-                            ? const Color(0xFF38383A)
-                            : _themeColors.primaryAccent.withValues(alpha: 0.2),
-                      ),
-                      avatar: Icon(
-                        Icons.add,
-                        size: 16,
-                        color: _themeColors.primaryAccent,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.stadium,
+                    size: 18,
+                    color: _themeColors.primaryAccent,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '試合場・進行見出しの一括設定',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (_courtController.text.isNotEmpty)
+                    TextButton.icon(
+                      icon: const Icon(Icons.clear, size: 14),
+                      label: const Text('クリア', style: TextStyle(fontSize: 11)),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        visualDensity: VisualDensity.compact,
                       ),
                       onPressed: () {
-                        final currentText = _noteController.text;
-                        _noteController.text = currentText.isEmpty
-                            ? note
-                            : '$currentText $note';
-                        _noteController.selection = TextSelection.fromPosition(
-                          TextPosition(offset: _noteController.text.length),
-                        );
+                        setState(() {
+                          _courtController.clear();
+                        });
                       },
                     ),
-                  )
-                  .toList(),
-            );
-          },
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _courtController,
+                style: TextStyle(color: textColor),
+                decoration: _buildTextFieldDecoration(
+                  labelText: '試合場・進行見出し (カンマ区切り)',
+                  hintText: '例: 第1試合場, 1回戦, 3試合目 (未入力時は空欄になります)',
+                  prefixIcon: Icon(
+                    Icons.edit_location_alt,
+                    color: _themeColors.primaryAccent,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 13,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                '🏟️ 試合場（コート）を選択',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: ['第1試合場', '第2試合場', '第3試合場', '部内戦コート'].map((preset) {
+                  final isSelected = _courtController.text
+                      .split(',')
+                      .map((e) => e.trim())
+                      .contains(preset);
+                  return FilterChip(
+                    selected: isSelected,
+                    showCheckmark: true,
+                    label: Text(preset, style: const TextStyle(fontSize: 11)),
+                    selectedColor: _themeColors.primaryAccent.withAlpha(
+                      isDark ? 80 : 40,
+                    ),
+                    onSelected: (_) {
+                      _toggleHeadingPreset(preset);
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                '🏆 回戦・ラウンド・試合順を選択',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children:
+                    [
+                      '1回戦',
+                      '2回戦',
+                      '準決勝',
+                      '決勝戦',
+                      'Aリーグ',
+                      'Bリーグ',
+                      '3試合目',
+                      '5試合目',
+                    ].map((preset) {
+                      final isSelected = _courtController.text
+                          .split(',')
+                          .map((e) => e.trim())
+                          .contains(preset);
+                      return FilterChip(
+                        selected: isSelected,
+                        showCheckmark: true,
+                        label: Text(
+                          preset,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        selectedColor: _themeColors.primaryAccent.withAlpha(
+                          isDark ? 80 : 40,
+                        ),
+                        onSelected: (_) {
+                          _toggleHeadingPreset(preset);
+                        },
+                      );
+                    }).toList(),
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _noteController,
+                maxLines: 2,
+                style: TextStyle(color: textColor),
+                decoration: _buildTextFieldDecoration(
+                  labelText: '試合のメモ・詳細コメント',
+                  hintText: 'メモや追記事項があれば入力してください',
+                  prefixIcon: Icon(
+                    Icons.edit_note,
+                    color: _themeColors.primaryAccent,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 48),
       ],
@@ -1956,9 +2101,16 @@ class _SetupMatchFormatScreenState
                     curve: Curves.easeInOut,
                   );
                 } else {
-                  final newNote = _noteController.text.trim();
-                  if (newNote.isNotEmpty) {
-                    final words = newNote.split(' ');
+                  final courtText = _courtController.text.trim();
+                  final userNote = _noteController.text.trim();
+                  final noteCombined = courtText.isNotEmpty
+                      ? (userNote.isNotEmpty
+                            ? '$courtText\n$userNote'
+                            : courtText)
+                      : userNote;
+
+                  if (userNote.isNotEmpty) {
+                    final words = userNote.split(' ');
                     final currentHistory = ref.read(noteHistoryProvider);
                     final updatedHistory = {
                       ...words,
@@ -2040,7 +2192,7 @@ class _SetupMatchFormatScreenState
                           isRunningTime: finalIsRunningTime,
                           isLeague: isLeague,
                           category: _category,
-                          note: _noteController.text,
+                          note: noteCombined,
                           isRenseikai: _isRenseikai,
                           baseOrder: selectedBaseOrder,
                           teamName: teamNamePrefix,
