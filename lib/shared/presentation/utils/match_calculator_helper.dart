@@ -44,4 +44,35 @@ class MatchCalculatorHelper {
 
     return {'red': redPts, 'white': whitePts};
   }
+
+  /// MatchModel から延長戦判定を取得します
+  static bool isEnchoFromModel(MatchModel match) {
+    final isFinished = match.status == 'approved' || match.status == 'finished';
+    if (!isFinished) return false;
+    if (match.note.contains('延長')) return true;
+    if (match.matchType == '代表戦' ||
+        match.matchType == '大将延長戦' ||
+        match.matchType.contains('代表') ||
+        match.matchType.contains('延長')) {
+      return true;
+    }
+    if (match.hasExtension && match.redScore != match.whiteScore) {
+      return true;
+    }
+    return false;
+  }
+
+  /// MatchListProjection から延長戦判定を取得します
+  static bool isEnchoFromProjection(MatchListProjection match) {
+    final isFinished = match.status == 'approved' || match.status == 'finished';
+    if (!isFinished) return false;
+    if (match.note.contains('延長')) return true;
+    if (match.matchType == '代表戦' ||
+        match.matchType == '大将延長戦' ||
+        match.matchType.contains('代表') ||
+        match.matchType.contains('延長')) {
+      return true;
+    }
+    return false;
+  }
 }

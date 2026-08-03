@@ -12,6 +12,7 @@ class ScoreTableMatchItem {
   final int whiteScore;
   final bool isFinished;
   final bool isSummary;
+  final bool isEncho;
   final List<PointMark> redPoints;
   final List<PointMark> whitePoints;
   final VoidCallback? onTap;
@@ -25,6 +26,7 @@ class ScoreTableMatchItem {
     required this.whiteScore,
     required this.isFinished,
     this.isSummary = false,
+    this.isEncho = false,
     required this.redPoints,
     required this.whitePoints,
     this.onTap,
@@ -431,6 +433,34 @@ class ScoreTableCard extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                   color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
                 ),
+              ),
+            )
+          else if (m.isEncho)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '延',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      height: 1.0,
+                      color: isDark ? Colors.grey.shade300 : Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    '長',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      height: 1.0,
+                      color: isDark ? Colors.grey.shade300 : Colors.black87,
+                    ),
+                  ),
+                ],
               ),
             ),
           Column(

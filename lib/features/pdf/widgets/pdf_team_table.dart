@@ -329,6 +329,17 @@ class PdfTeamTable {
     final rScore = (m.redScore as num).toInt();
     final wScore = (m.whiteScore as num).toInt();
     final ptsMap = PdfViewModel.calculatePointsRaw(m);
+
+    final note = (m.note ?? '').toString();
+    final matchType = (m.matchType ?? '').toString();
+    final isEncho =
+        isDone &&
+        (note.contains('延長') ||
+            matchType == '代表戦' ||
+            matchType == '大将延長戦' ||
+            matchType.contains('代表') ||
+            matchType.contains('延長'));
+
     return pw.Container(
       height: 60,
       alignment: pw.Alignment.center,
@@ -339,6 +350,7 @@ class PdfTeamTable {
           if (isDone && rScore == wScore)
             pw.Container(
               padding: const pw.EdgeInsets.symmetric(horizontal: 2),
+              color: PdfColors.white,
               child: pw.Text(
                 '×',
                 style: pw.TextStyle(
@@ -346,6 +358,35 @@ class PdfTeamTable {
                   color: PdfColors.grey600,
                   font: fontBold,
                 ),
+              ),
+            )
+          else if (isEncho)
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 2,
+                vertical: 1,
+              ),
+              color: PdfColors.white,
+              child: pw.Column(
+                mainAxisSize: pw.MainAxisSize.min,
+                children: [
+                  pw.Text(
+                    '延',
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      font: fontBold,
+                      color: PdfColors.black,
+                    ),
+                  ),
+                  pw.Text(
+                    '長',
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      font: fontBold,
+                      color: PdfColors.black,
+                    ),
+                  ),
+                ],
               ),
             ),
           pw.Column(

@@ -3229,73 +3229,155 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             // フェールセーフ
           }
 
+          final matchCat = currentMatch.category?.trim() ?? '';
+
+          bool isCategoryMatch(String teamCat, String matchCat) {
+            final tCat = teamCat.trim();
+            final mCat = matchCat.trim();
+            if (mCat.isEmpty || tCat.isEmpty) return true;
+            if (tCat == mCat || mCat.contains(tCat) || tCat.contains(mCat)) {
+              return true;
+            }
+            final keywords = ['低学年', '高学年', '小学生', '中学生', '高校生', '一般'];
+            for (final kw in keywords) {
+              if (mCat.contains(kw) && tCat.contains(kw)) return true;
+              if (mCat.contains(kw) && !tCat.contains(kw)) return false;
+            }
+            return true;
+          }
+
+          bool isDojoPlayerGradeMatch(int grade, String matchCat) {
+            if (matchCat.isEmpty) return true;
+            if ((matchCat.contains('低学年') ||
+                    matchCat.contains('1・2年') ||
+                    matchCat.contains('3・4年')) &&
+                (grade >= 1 && grade <= 4))
+              return true;
+            if ((matchCat.contains('高学年') || matchCat.contains('5・6年')) &&
+                (grade >= 5 && grade <= 6))
+              return true;
+            if ((matchCat.contains('小学生') ||
+                    matchCat.contains('学童') ||
+                    matchCat.contains('児童')) &&
+                (grade >= 1 && grade <= 6))
+              return true;
+            if ((matchCat.contains('中学生') || matchCat.contains('中学')) &&
+                (grade >= 7 && grade <= 9))
+              return true;
+            if ((matchCat.contains('高校生') || matchCat.contains('高校')) &&
+                (grade >= 10 && grade <= 12))
+              return true;
+            if ((matchCat.contains('一般') ||
+                    matchCat.contains('成人') ||
+                    matchCat.contains('社会人') ||
+                    matchCat.contains('大学')) &&
+                (grade >= 13 || grade == 0))
+              return true;
+
+            final hasKnownSchoolLevel =
+                matchCat.contains('低学年') ||
+                matchCat.contains('高学年') ||
+                matchCat.contains('小学生') ||
+                matchCat.contains('中学生') ||
+                matchCat.contains('高校生') ||
+                matchCat.contains('一般');
+            return !hasKnownSchoolLevel;
+          }
+
           // --- 赤チーム (rTeam) の候補選手抽出 ---
-          // 2-a. 大会登録チーム (第1優先)
-          final redTeamData = registeredTeams.firstWhereOrNull(
-            (t) =>
+          // 2-a. 大会登録チーム (第1優先：同カテゴリの登録チーム)
+          final matchingRedTeams = registeredTeams.where((t) {
+            final nameMatch =
                 t.teamName.trim() == rTeam.trim() ||
                 rTeam.trim().contains(t.teamName.trim()) ||
-                t.teamName.trim().contains(rTeam.trim()),
-          );
+                t.teamName.trim().contains(rTeam.trim());
+            return nameMatch;
+          }).toList();
+
+          final redTeamData =
+              matchingRedTeams.firstWhereOrNull(
+                (t) => isCategoryMatch(t.category, matchCat),
+              ) ??
+              matchingRedTeams.firstOrNull;
+
           final List<String> redMasterPlayers =
-              redTeamData?.playerNames.where((n) => n.isNotEmpty).toList() ??
+              redTeamData?.playerNames
+                  .map((n) => n.trim())
+                  .where(
+                    (n) =>
+                        n.isNotEmpty && !n.contains('未定') && !n.contains('欠員'),
+                  )
+                  .toList() ??
               [];
 
-          // 2-b. 道場名簿 (第1優先)
+          // 2-b. 道場名簿 (第2優先：カテゴリの一致する選手)
           final List<String> redDojoPlayers = localPlayers
               .where((p) {
                 final org = p.organization.trim();
                 if (org.isEmpty) return false;
-                return org == rTeam.trim() ||
+                final orgMatch =
+                    org == rTeam.trim() ||
                     rTeam.trim().contains(org) ||
                     org.contains(rTeam.trim());
+                if (!orgMatch) return false;
+                return isDojoPlayerGradeMatch(p.grade, matchCat);
               })
               .map((p) => p.name.trim())
               .where((n) => n.isNotEmpty)
               .toList();
 
-          final Set<String> redMasterSet = {
-            ...redMasterPlayers,
-            ...redDojoPlayers,
-          };
-          final List<String> redPlayers = {
-            ...redMasterSet,
-            ...baseRedPlayers, // 第2優先 (対戦履歴)
-          }.toList();
+          final List<String> redPlayers = redMasterPlayers.isNotEmpty
+              ? {...redMasterPlayers, ...baseRedPlayers}.toList()
+              : {...redDojoPlayers, ...baseRedPlayers}.toList();
 
           // --- 白チーム (wTeam) の候補選手抽出 ---
-          // 2-c. 大会登録チーム (第1優先)
-          final whiteTeamData = registeredTeams.firstWhereOrNull(
-            (t) =>
+          // 2-c. 大会登録チーム (第1優先：同カテゴリの登録チーム)
+          final matchingWhiteTeams = registeredTeams.where((t) {
+            final nameMatch =
                 t.teamName.trim() == wTeam.trim() ||
                 wTeam.trim().contains(t.teamName.trim()) ||
-                t.teamName.trim().contains(wTeam.trim()),
-          );
+                t.teamName.trim().contains(wTeam.trim());
+            return nameMatch;
+          }).toList();
+
+          final whiteTeamData =
+              matchingWhiteTeams.firstWhereOrNull(
+                (t) => isCategoryMatch(t.category, matchCat),
+              ) ??
+              matchingWhiteTeams.firstOrNull;
+
           final List<String> whiteMasterPlayers =
-              whiteTeamData?.playerNames.where((n) => n.isNotEmpty).toList() ??
+              whiteTeamData?.playerNames
+                  .map((n) => n.trim())
+                  .where(
+                    (n) =>
+                        n.isNotEmpty && !n.contains('未定') && !n.contains('欠員'),
+                  )
+                  .toList() ??
               [];
 
-          // 2-d. 道場名簿 (第1優先)
+          // 2-d. 道場名簿 (第2優先：カテゴリの一致する選手)
           final List<String> whiteDojoPlayers = localPlayers
               .where((p) {
                 final org = p.organization.trim();
                 if (org.isEmpty) return false;
-                return org == wTeam.trim() ||
+                final orgMatch =
+                    org == wTeam.trim() ||
                     wTeam.trim().contains(org) ||
                     org.contains(wTeam.trim());
+                if (!orgMatch) return false;
+                return isDojoPlayerGradeMatch(p.grade, matchCat);
               })
               .map((p) => p.name.trim())
               .where((n) => n.isNotEmpty)
               .toList();
 
-          final Set<String> whiteMasterSet = {
-            ...whiteMasterPlayers,
-            ...whiteDojoPlayers,
-          };
-          final List<String> whitePlayers = {
-            ...whiteMasterSet,
-            ...baseWhitePlayers, // 第2優先 (対戦履歴)
-          }.toList();
+          final List<String> whitePlayers = whiteMasterPlayers.isNotEmpty
+              ? {...whiteMasterPlayers, ...baseWhitePlayers}.toList()
+              : {...whiteDojoPlayers, ...baseWhitePlayers}.toList();
+
+          final Set<String> redMasterSet = redPlayers.toSet();
+          final Set<String> whiteMasterSet = whitePlayers.toSet();
 
           return StatefulBuilder(
             builder: (context, setState) {

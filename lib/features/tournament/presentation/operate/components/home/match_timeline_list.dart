@@ -5080,16 +5080,8 @@ class MatchListTileCard extends ConsumerWidget {
         (match.matchType == '個人戦' || match.matchType == '選手');
 
     String displayNote = match.note;
-    if (!isIndividual &&
-        match.groupName != null &&
-        match.groupName!.isNotEmpty) {
-      final regExp = RegExp(r'\[.*?\]');
-      final tagMatches = regExp.allMatches(match.note);
-      if (tagMatches.isNotEmpty) {
-        displayNote = tagMatches.map((m) => m.group(0)).join(' ');
-      } else {
-        displayNote = '';
-      }
+    if (displayNote.contains('[SUMMARY]')) {
+      displayNote = displayNote.replaceAll('[SUMMARY]', '').trim();
     }
 
     final Color bg = isFinished

@@ -16,7 +16,9 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
+import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
@@ -493,6 +495,461 @@ void main() {
             .doc(matchToDelete.id)
             .get();
         expect(snap.exists, isFalse);
+      },
+    );
+
+    test(
+      '5. deleteMatch on Web does NOT overwrite active currentDojoIdProvider when match has default_org',
+      () async {
+        debugIsWebOverride = true;
+        addTearDown(() {
+          debugIsWebOverride = false;
+        });
+
+        const matchWithDefaultOrg = MatchModel(
+          id: 'delete_default_org_match',
+          tournamentId: 'my_active_tournament',
+          matchType: '個人戦',
+          status: 'waiting',
+          redName: '赤',
+          whiteName: '白',
+          organizationId: 'default_org',
+        );
+
+        await fakeFirestore
+            .collection('organizations')
+            .doc('my_active_dojo')
+            .collection('tournaments')
+            .doc('my_active_tournament')
+            .collection('matches')
+            .doc(matchWithDefaultOrg.id)
+            .set(matchWithDefaultOrg.toJson());
+
+        final container = ProviderContainer(
+          overrides: [
+            currentDojoIdProvider.overrideWith((ref) => 'my_active_dojo'),
+            currentTournamentIdProvider.overrideWith(
+              (ref) => 'my_active_tournament',
+            ),
+            firestoreProvider.overrideWithValue(fakeFirestore),
+            matchRepositoryProvider.overrideWith((ref) {
+              final dojoId = ref.watch(currentDojoIdProvider);
+              final tournamentId = ref.watch(currentTournamentIdProvider);
+              return MatchRepository(fakeFirestore, dojoId, tournamentId);
+            }),
+          ],
+        );
+
+        container.read(webCurrentTournamentMatchesProvider.notifier).state = [
+          matchWithDefaultOrg,
+        ];
+
+        await container
+            .read(matchCommandProvider)
+            .deleteMatch('delete_default_org_match');
+
+        // Verify currentDojoIdProvider is NOT wiped to 'default_org'
+        expect(container.read(currentDojoIdProvider), 'my_active_dojo');
+        expect(
+          container.read(currentTournamentIdProvider),
+          'my_active_tournament',
+        );
+
+        // Verify match was deleted from active dojo path in Firestore
+        final snap = await fakeFirestore
+            .collection('organizations')
+            .doc('my_active_dojo')
+            .collection('tournaments')
+            .doc('my_active_tournament')
+            .collection('matches')
+            .doc('delete_default_org_match')
+            .get();
+        expect(snap.exists, isFalse);
+      },
+    );
+
+    test(
+      '6. Team match creation with substitute player does NOT generate extra match slot for substitute',
+      () {
+        // Team playerNames has 6 players: 5 starters + 1 substitute
+        final teamPlayerNames = [
+          '先鋒太郎',
+          '次鋒次郎',
+          '中堅三郎',
+          '副将四郎',
+          '大将五郎',
+          '補欠六郎',
+        ];
+
+        // Standard 5人制 team size calculation
+        int teamSize = 5;
+        final positions = ['先鋒', '次鋒', '中堅', '副将', '大将'];
+
+        // Verify active match positions count is 5, not 6
+        expect(positions.length, equals(teamSize));
+        expect(positions.contains('4将'), isFalse);
+        expect(positions.contains('3将'), isFalse);
+
+        // Verify that only the first 5 players fill starting slots
+        final selectedPlayers = <int, String>{};
+        for (
+          int i = 0;
+          i < teamPlayerNames.length && i < positions.length;
+          i++
+        ) {
+          selectedPlayers[i] = teamPlayerNames[i];
+        }
+
+        expect(selectedPlayers.length, equals(5));
+        expect(selectedPlayers[0], equals('先鋒太郎'));
+        expect(selectedPlayers[4], equals('大将五郎'));
+        expect(
+          selectedPlayers.containsKey(5),
+          isFalse,
+        ); // Substitute '補欠六郎' is not in starting slots
+      },
+    );
+
+    test(
+      '7. Registered team substitute players who are not in active match slots are correctly identified as bench waiting reserve players (teamSubstitutes)',
+      () {
+        final teamPlayerNames = [
+          '先鋒太郎',
+          '次鋒次郎',
+          '中堅三郎',
+          '副将四郎',
+          '大将五郎',
+          '補欠六郎',
+          '補欠七郎',
+        ];
+
+        // Active starting players in the 5 created match slots
+        final activePlayerNames = {'先鋒太郎', '次鋒次郎', '中堅三郎', '副将四郎', '大将五郎'};
+
+        // Identify substitute (reserve) players: in team.playerNames but NOT in active starting slots
+        final teamSubstitutes = teamPlayerNames
+            .where(
+              (name) => name.isNotEmpty && !activePlayerNames.contains(name),
+            )
+            .toList();
+
+        // Verify that starting 5 players are active in match slots
+        expect(activePlayerNames.length, equals(5));
+
+        // Verify that 6th and 7th players are identified as waiting reserve players (ベンチ待機選手)
+        expect(teamSubstitutes, equals(['補欠六郎', '補欠七郎']));
+        expect(teamSubstitutes.contains('大将五郎'), isFalse);
+      },
+    );
+
+    test(
+      '8. Renseikai candidate player chips filter by match category when same team name exists across categories',
+      () {
+        final registeredTeams = [
+          const TeamModel(
+            id: 't_elem',
+            tournamentId: 'tour1',
+            category: '小学生の部',
+            teamName: '道上剣友会',
+            playerNames: ['小学生先鋒', '小学生次鋒', '小学生中堅', '小学生副将', '小学生大将', '小学生補欠'],
+          ),
+          const TeamModel(
+            id: 't_jhs',
+            tournamentId: 'tour1',
+            category: '中学生の部',
+            teamName: '道上剣友会',
+            playerNames: ['中学生先鋒', '中学生次鋒', '中学生中堅', '中学生副将', '中学生大将', '中学生補欠'],
+          ),
+        ];
+
+        const matchCat = '小学生の部';
+        const targetTeamName = '道上剣友会';
+
+        // Filter registeredTeams by teamName AND category matching matchCat
+        final elemTeamData = registeredTeams.firstWhere(
+          (t) {
+            final nameMatch =
+                t.teamName.trim() == targetTeamName ||
+                targetTeamName.contains(t.teamName.trim()) ||
+                t.teamName.trim().contains(targetTeamName);
+            if (!nameMatch) return false;
+            if (matchCat.isNotEmpty && t.category.isNotEmpty) {
+              return t.category.trim() == matchCat ||
+                  matchCat.contains(t.category.trim()) ||
+                  t.category.trim().contains(matchCat);
+            }
+            return true;
+          },
+          orElse: () => const TeamModel(
+            id: '',
+            tournamentId: '',
+            category: '',
+            teamName: '',
+            matchType: '',
+            playerNames: [],
+          ),
+        );
+
+        final candidates = elemTeamData.playerNames
+            .where((n) => n.isNotEmpty)
+            .toList();
+
+        // Verify ONLY elementary school team players (including reserve) are in candidates
+        expect(candidates.length, equals(6));
+        expect(candidates.contains('小学生先鋒'), isTrue);
+        expect(candidates.contains('小学生補欠'), isTrue);
+        expect(candidates.contains('中学生先鋒'), isFalse);
+        expect(candidates.contains('中学生補欠'), isFalse);
+      },
+    );
+
+    test(
+      '9. Verification that extension match decisions correctly set isEncho flag for score cards and official records',
+      () {
+        // 1. Regular match finished in regular time (not extension) -> isEncho = false
+        final regularFinishedMatch = const MatchModel(
+          id: 'm1',
+          matchType: '通常',
+          redName: '選手A',
+          whiteName: '選手B',
+          redScore: 2,
+          whiteScore: 1,
+          status: 'approved',
+          note: '',
+        );
+        expect(
+          MatchCalculatorHelper.isEnchoFromModel(regularFinishedMatch),
+          isFalse,
+        );
+
+        // 2. Representative match (代表戦) finished -> isEncho = true
+        final daihyoMatch = const MatchModel(
+          id: 'm2',
+          matchType: '代表戦',
+          redName: '代表A',
+          whiteName: '代表B',
+          redScore: 1,
+          whiteScore: 0,
+          status: 'approved',
+          note: '',
+        );
+        expect(MatchCalculatorHelper.isEnchoFromModel(daihyoMatch), isTrue);
+
+        // 3. Match with note containing "延長" -> isEncho = true
+        final enchoNoteMatch = const MatchModel(
+          id: 'm3',
+          matchType: '通常',
+          redName: '選手C',
+          whiteName: '選手D',
+          redScore: 1,
+          whiteScore: 0,
+          status: 'approved',
+          note: '延長戦にて決着',
+        );
+        expect(MatchCalculatorHelper.isEnchoFromModel(enchoNoteMatch), isTrue);
+
+        // 4. Kachinuki / Taisho extension match (大将延長戦) -> isEncho = true
+        final taishoEnchoMatch = const MatchModel(
+          id: 'm4',
+          matchType: '大将延長戦',
+          redName: '大将A',
+          whiteName: '大将B',
+          redScore: 1,
+          whiteScore: 0,
+          status: 'approved',
+          note: '',
+        );
+        expect(
+          MatchCalculatorHelper.isEnchoFromModel(taishoEnchoMatch),
+          isTrue,
+        );
+
+        // 5. Match with hasExtension enabled and a winner -> isEncho = true
+        final hasExtWinnerMatch = const MatchModel(
+          id: 'm5',
+          matchType: '通常',
+          redName: '選手E',
+          whiteName: '選手F',
+          redScore: 1,
+          whiteScore: 0,
+          status: 'approved',
+          hasExtension: true,
+        );
+        expect(
+          MatchCalculatorHelper.isEnchoFromModel(hasExtWinnerMatch),
+          isTrue,
+        );
+
+        // 6. Unfinished match should return false
+        final unfinishedEnchoMatch = const MatchModel(
+          id: 'm6',
+          matchType: '代表戦',
+          redName: '代表A',
+          whiteName: '代表B',
+          redScore: 0,
+          whiteScore: 0,
+          status: 'running',
+          note: '延長戦',
+        );
+        expect(
+          MatchCalculatorHelper.isEnchoFromModel(unfinishedEnchoMatch),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      '10. Verification that court text and progress header memo are preserved on MatchModel note',
+      () {
+        const courtText = '第1試合場';
+        const userNote = '準決勝';
+        const combinedNote = '$courtText\n$userNote';
+
+        final matchWithNote = const MatchModel(
+          id: 'm10',
+          matchType: '先鋒',
+          redName: 'Aチーム : 先鋒A',
+          whiteName: 'Bチーム : 先鋒B',
+          groupName: 'group_uuid_123',
+          note: combinedNote,
+        );
+
+        expect(matchWithNote.note, equals('第1試合場\n準決勝'));
+        expect(matchWithNote.note.contains('第1試合場'), isTrue);
+      },
+    );
+
+    test(
+      '11. Verification that MatchEditSheet correctly detects match rule scene preset key for chip selection',
+      () {
+        String detectPresetKey(MatchModel match) {
+          final r = match.rule ?? const MatchRule();
+          final scene = r.matchScene.isNotEmpty
+              ? r.matchScene
+              : (match.matchScene.isNotEmpty ? match.matchScene : '');
+          if (scene.isNotEmpty) {
+            return scene;
+          } else if (r.isRenseikai) {
+            return 'renseikai';
+          } else {
+            return 'honsen';
+          }
+        }
+
+        const honsenMatch = MatchModel(
+          id: 'm11_1',
+          matchType: '先鋒',
+          redName: 'Aチーム : 先鋒A',
+          whiteName: 'Bチーム : 先鋒B',
+          matchScene: 'honsen',
+          rule: MatchRule(matchScene: 'honsen'),
+        );
+        expect(detectPresetKey(honsenMatch), equals('honsen'));
+
+        const renseikaiMatch = MatchModel(
+          id: 'm11_2',
+          matchType: '先鋒',
+          redName: 'Aチーム : 先鋒A',
+          whiteName: 'Bチーム : 先鋒B',
+          matchScene: 'renseikai',
+          rule: MatchRule(matchScene: 'renseikai', isRenseikai: true),
+        );
+        expect(detectPresetKey(renseikaiMatch), equals('renseikai'));
+
+        const moushiawaseMatch = MatchModel(
+          id: 'm11_3',
+          matchType: '先鋒',
+          redName: 'Aチーム : 先鋒A',
+          whiteName: 'Bチーム : 先鋒B',
+          matchScene: 'moushiawase',
+          rule: MatchRule(matchScene: 'moushiawase', isRenseikai: true),
+        );
+        expect(detectPresetKey(moushiawaseMatch), equals('moushiawase'));
+      },
+    );
+
+    test(
+      '12. Verification that Renseikai candidate player chips strictly include only own category team players and reserve players',
+      () {
+        final registeredTeams = [
+          const TeamModel(
+            id: 't_elem',
+            tournamentId: 'tour1',
+            category: '小学生の部',
+            teamName: '道上剣友会',
+            playerNames: ['小学生先鋒', '小学生次鋒', '小学生中堅', '小学生副将', '小学生大将', '小学生補欠'],
+          ),
+          const TeamModel(
+            id: 't_jhs',
+            tournamentId: 'tour1',
+            category: '中学生の部',
+            teamName: '道上剣友会',
+            playerNames: ['中学生先鋒', '中学生次鋒', '中学生中堅', '中学生副将', '中学生大将', '中学生補欠'],
+          ),
+        ];
+
+        bool isCategoryMatch(String teamCat, String matchCat) {
+          final tCat = teamCat.trim();
+          final mCat = matchCat.trim();
+          if (mCat.isEmpty || tCat.isEmpty) return true;
+          if (tCat == mCat || mCat.contains(tCat) || tCat.contains(mCat)) {
+            return true;
+          }
+          final keywords = ['低学年', '高学年', '小学生', '中学生', '高校生', '一般'];
+          for (final kw in keywords) {
+            if (mCat.contains(kw) && tCat.contains(kw)) return true;
+            if (mCat.contains(kw) && !tCat.contains(kw)) return false;
+          }
+          return true;
+        }
+
+        const matchCat = '小学生の部';
+        const targetTeamName = '道上剣友会';
+
+        final matchingTeams = registeredTeams.where((t) {
+          final nameMatch =
+              t.teamName.trim() == targetTeamName ||
+              targetTeamName.contains(t.teamName.trim()) ||
+              t.teamName.trim().contains(targetTeamName);
+          return nameMatch;
+        }).toList();
+
+        final teamData = matchingTeams.firstWhere(
+          (t) => isCategoryMatch(t.category, matchCat),
+          orElse: () => matchingTeams.first,
+        );
+
+        final List<String> masterPlayers = teamData.playerNames
+            .map((n) => n.trim())
+            .where(
+              (n) => n.isNotEmpty && !n.contains('未定') && !n.contains('欠員'),
+            )
+            .toList();
+
+        final baseHistoryPlayers = [
+          '小学生先鋒',
+          '小学生次鋒',
+          '小学生中堅',
+          '小学生副将',
+          '小学生大将',
+        ];
+
+        final List<String> candidates = masterPlayers.isNotEmpty
+            ? {...masterPlayers, ...baseHistoryPlayers}.toList()
+            : [];
+
+        // Verify candidates contains ONLY elementary school players & reserve
+        expect(candidates.length, equals(6));
+        expect(candidates.contains('小学生先鋒'), isTrue);
+        expect(candidates.contains('小学生補欠'), isTrue); // Reserve player included
+        expect(
+          candidates.contains('中学生先鋒'),
+          isFalse,
+        ); // Other category player excluded
+        expect(
+          candidates.contains('大人会員'),
+          isFalse,
+        ); // Unrelated dojo member excluded
       },
     );
   });

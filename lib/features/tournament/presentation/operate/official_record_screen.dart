@@ -941,6 +941,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         whiteScore: (m.whiteScore as num).toInt(),
         isFinished: isFinished,
         isSummary: m.note.contains('[SUMMARY]'),
+        isEncho: MatchCalculatorHelper.isEnchoFromModel(m),
         redPoints: ptsMap['red'] ?? [],
         whitePoints: ptsMap['white'] ?? [],
       );

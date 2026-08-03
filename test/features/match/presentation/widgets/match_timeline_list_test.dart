@@ -15,11 +15,31 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 
 class FakeSyncEngine implements SyncEngine {
   @override
   dynamic noSuchMethod(Invocation invocation) => Future<void>.value();
+}
+
+class FakeMatchRepository implements MatchRepository {
+  @override
+  Future<void> deleteMatch(String matchId) async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class FakeLocalMatchRepository implements LocalMatchRepository {
+  @override
+  Future<void> deleteMatch(String matchId) async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class FakePlayerRepository implements PlayerRepository {
@@ -97,6 +117,10 @@ void main() {
           (ref, id) => Stream.value(matches),
         ),
         matchApplicationServiceProvider.overrideWithValue(fakeMatchAppService),
+        matchRepositoryProvider.overrideWithValue(FakeMatchRepository()),
+        localMatchRepositoryProvider.overrideWithValue(
+          FakeLocalMatchRepository(),
+        ),
         playerRepositoryProvider.overrideWithValue(
           FakePlayerRepository(players),
         ),
@@ -1012,5 +1036,43 @@ void main() {
       expect(find.text('1件の対戦ルールを一括変更しました。'), findsOneWidget);
       expect(find.text('⚙️ 試合ルールの一括変更'), findsNothing);
     });
+
+    testWidgets(
+      '6. matchCommandProvider.deleteMatch on Web preserves currentDojoIdProvider',
+      (WidgetTester tester) async {
+        debugIsWebOverride = true;
+        addTearDown(() {
+          debugIsWebOverride = false;
+        });
+
+        final matches = [
+          createMockMatch(
+            id: 'm1',
+            category: '一般',
+            groupName: '',
+            matchType: '個人戦',
+            order: 1.0,
+            redName: '赤選手',
+            whiteName: '白選手',
+          ),
+        ];
+
+        await tester.pumpWidget(buildTestableWidget(matches));
+        await tester.pumpAndSettle();
+
+        final element = tester.element(find.byType(MatchTimelineList));
+        final container = ProviderScope.containerOf(element);
+
+        // Verify initial dojo id state
+        final initialDojoId = container.read(currentDojoIdProvider);
+
+        // Execute deleteMatch via matchCommandProvider
+        await container.read(matchCommandProvider).deleteMatch('m1');
+        await tester.pumpAndSettle();
+
+        // Verify that currentDojoIdProvider is preserved and NOT wiped to default_org
+        expect(container.read(currentDojoIdProvider), equals(initialDojoId));
+      },
+    );
   });
 }

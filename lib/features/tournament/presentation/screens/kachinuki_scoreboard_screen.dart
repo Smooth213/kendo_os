@@ -1226,6 +1226,13 @@ class KachinukiBracketPainter extends CustomPainter {
           ..strokeWidth = strokeW,
       );
 
+      final isEncho =
+          match.note.contains('延長') ||
+          match.matchType == '代表戦' ||
+          match.matchType == '大将延長戦' ||
+          match.matchType.contains('代表') ||
+          match.matchType.contains('延長');
+
       if (match.redScore == match.whiteScore) {
         // ★ 修正3：引き分けの✕の太さを太く（strokeWidth: 3.0）
         _drawSmallCross(
@@ -1238,22 +1245,74 @@ class KachinukiBracketPainter extends CustomPainter {
             ..color = drawCrossColor
             ..strokeWidth = 3.0,
         );
-      } else if (match.redScore > match.whiteScore) {
-        _drawScoreMarksVertical(
-          canvas,
-          match.redDisplays,
-          Offset(startX + (i * dx) + dx / 2, y1 + 15),
-          true,
-        );
       } else {
-        _drawScoreMarksVertical(
-          canvas,
-          match.whiteDisplays,
-          Offset(startX + (i * dx) + dx / 2, y2 - 15),
-          false,
-        );
+        if (isEncho) {
+          _drawEnchoTextCenter(
+            canvas,
+            Offset(
+              (redTopVertex.dx + whiteBottomVertex.dx) / 2,
+              (redTopVertex.dy + whiteBottomVertex.dy) / 2,
+            ),
+            isDark,
+          );
+        }
+        if (match.redScore > match.whiteScore) {
+          _drawScoreMarksVertical(
+            canvas,
+            match.redDisplays,
+            Offset(startX + (i * dx) + dx / 2, y1 + 15),
+            true,
+          );
+        } else {
+          _drawScoreMarksVertical(
+            canvas,
+            match.whiteDisplays,
+            Offset(startX + (i * dx) + dx / 2, y2 - 15),
+            false,
+          );
+        }
       }
     }
+  }
+
+  void _drawEnchoTextCenter(Canvas canvas, Offset center, bool isDark) {
+    const double width = 16.0;
+    const double height = 26.0;
+    final bgPaint = Paint()
+      ..color = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final borderPaint = Paint()
+      ..color = isDark ? Colors.grey.shade700 : Colors.grey.shade400
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    final rect = Rect.fromCenter(center: center, width: width, height: height);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+      bgPaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+      borderPaint,
+    );
+
+    final textStyle = TextStyle(
+      color: isDark ? Colors.grey.shade200 : Colors.black87,
+      fontSize: 9.0,
+      fontWeight: FontWeight.bold,
+      fontFamily: 'Noto Sans JP',
+    );
+
+    final tpEn = TextPainter(
+      text: TextSpan(text: '延', style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tpEn.paint(canvas, Offset(center.dx - (tpEn.width / 2), center.dy - 11));
+
+    final tpCho = TextPainter(
+      text: TextSpan(text: '長', style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tpCho.paint(canvas, Offset(center.dx - (tpCho.width / 2), center.dy + 1));
   }
 
   // ★ 修正4：引数に customColor を追加

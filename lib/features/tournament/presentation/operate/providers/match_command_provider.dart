@@ -125,11 +125,13 @@ class MatchCommandService {
       );
       if (matchToDelete.id.isNotEmpty) {
         if (matchToDelete.tournamentId != null &&
-            matchToDelete.tournamentId!.isNotEmpty) {
+            matchToDelete.tournamentId!.isNotEmpty &&
+            matchToDelete.tournamentId != 'default_tournament') {
           ref.read(currentTournamentIdProvider.notifier).state =
               matchToDelete.tournamentId!;
         }
-        if (matchToDelete.organizationId.isNotEmpty) {
+        if (matchToDelete.organizationId.isNotEmpty &&
+            matchToDelete.organizationId != 'default_org') {
           ref.read(currentDojoIdProvider.notifier).state =
               matchToDelete.organizationId;
         }

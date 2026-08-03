@@ -58,6 +58,13 @@ class PdfIndividualList {
       final isDraw = isDone && rScore == wScore;
       final rWin = isDone && rScore > wScore;
       final wWin = isDone && wScore > rScore;
+      final noteStr = (m.note ?? '').toString();
+      final typeStr = (m.matchType ?? '').toString();
+      final isEncho =
+          isDone &&
+          (noteStr.contains('延長') ||
+              typeStr.contains('代表') ||
+              typeStr.contains('延長'));
 
       final ptsMap = PdfViewModel.calculatePointsRaw(m);
 
@@ -119,11 +126,11 @@ class PdfIndividualList {
               pw.Padding(
                 padding: const pw.EdgeInsets.symmetric(horizontal: 6),
                 child: pw.Text(
-                  isDraw ? '×' : '-',
+                  isDraw ? '×' : (isEncho ? '延長' : '-'),
                   style: pw.TextStyle(
-                    font: ttf,
-                    fontSize: 16,
-                    color: PdfColors.grey500,
+                    font: ttfBold,
+                    fontSize: isEncho ? 10 : 16,
+                    color: PdfColors.grey700,
                   ),
                 ),
               ),

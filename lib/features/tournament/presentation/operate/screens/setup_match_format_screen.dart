@@ -263,9 +263,16 @@ class _SetupMatchFormatScreenState
       builder: (context) => StatefulBuilder(
         // ダイアログ内の状態更新のため
         builder: (context, setDialogState) {
-          final List<String> posNames = _generatePositions(
-            team.playerNames.length,
-          );
+          int baseLen = 5;
+          if (team.matchType.contains('3人制')) {
+            baseLen = 3;
+          } else if (team.matchType.contains('個人戦') ||
+              team.matchType.contains('1人制')) {
+            baseLen = 1;
+          } else if (team.matchType.contains('7人制')) {
+            baseLen = 7;
+          }
+          final List<String> posNames = _generatePositions(baseLen);
 
           return Dialog(
             shape: RoundedRectangleBorder(
@@ -2220,14 +2227,48 @@ class _SetupMatchFormatScreenState
                   }
 
                   int teamSize = 5;
+                  if (_matchType == '個人戦' ||
+                      _matchType == 'リーグ個人戦' ||
+                      _matchType.contains('1人制')) {
+                    teamSize = 1;
+                  } else if (_matchType.contains('3人制')) {
+                    teamSize = 3;
+                  } else if (_matchType.contains('7人制')) {
+                    teamSize = 7;
+                  } else if (_selectedTeamId != null) {
+                    final teams =
+                        ref
+                            .read(registeredTeamsProvider(widget.tournamentId))
+                            .value ??
+                        [];
+                    TeamModel? selectedTeam;
+                    for (var t in teams) {
+                      if (t.id == _selectedTeamId) {
+                        selectedTeam = t;
+                        break;
+                      }
+                    }
+                    if (selectedTeam != null &&
+                        selectedTeam.matchType.isNotEmpty) {
+                      if (selectedTeam.matchType.contains('3人制')) {
+                        teamSize = 3;
+                      } else if (selectedTeam.matchType.contains('7人制')) {
+                        teamSize = 7;
+                      } else if (selectedTeam.matchType.contains('1人制') ||
+                          selectedTeam.matchType.contains('個人戦')) {
+                        teamSize = 1;
+                      } else {
+                        teamSize = 5;
+                      }
+                    } else {
+                      teamSize = 5;
+                    }
+                  } else {
+                    teamSize = 5;
+                  }
+
                   bool isLeague = _matchType.contains('リーグ');
                   bool isKachinuki = _matchType == '勝ち抜き戦';
-
-                  if (_matchType == '個人戦' || _matchType == 'リーグ個人戦') {
-                    teamSize = 1;
-                  } else if (selectedBaseOrder.isNotEmpty) {
-                    teamSize = selectedBaseOrder.length;
-                  }
 
                   final generatedPositions = _generatePositions(teamSize);
 

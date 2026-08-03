@@ -1913,6 +1913,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     hasHantei: rule.hasHantei,
 
                                     order: baseOrder + (pIndex * 10) + i,
+                                    note: saveNote,
                                     matchScene: rule.matchScene != 'honsen'
                                         ? rule.matchScene
                                         : (rule.isRenseikai

@@ -873,6 +873,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
         whiteScore: m.whiteScore,
         isFinished: isFinished,
         isSummary: m.note.contains('[SUMMARY]'),
+        isEncho: MatchCalculatorHelper.isEnchoFromProjection(m),
         redPoints: ptsMap['red'] ?? [],
         whitePoints: ptsMap['white'] ?? [],
         onTap: () {},

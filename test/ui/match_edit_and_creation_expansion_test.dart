@@ -59,8 +59,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('試合情報の編集'), findsOneWidget);
-        expect(find.text('コート・組'), findsOneWidget);
-        expect(find.text('ルール・メモ'), findsOneWidget);
+        expect(find.text('コート・メモ'), findsOneWidget);
+        expect(find.text('一括ルール'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );
@@ -266,8 +266,8 @@ void main() {
           await tester.pumpAndSettle();
         }
 
-        // 3. ルール・メモ タブへ切り替え
-        final ruleTab = find.text('ルール・メモ');
+        // 3. 一括ルール タブへ切り替え
+        final ruleTab = find.text('一括ルール');
         await tester.tap(ruleTab);
         await tester.pumpAndSettle();
 
@@ -321,9 +321,9 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // 1. コート・組 タブおよび見出し・メモ項目の描画検証
+        // 1. コート・メモ タブおよび見出し・メモ項目の描画検証
         expect(find.text('試合情報の編集'), findsOneWidget);
-        expect(find.text('コート・組'), findsOneWidget);
+        expect(find.text('コート・メモ'), findsOneWidget);
 
         // 2. 試合場（コート）および回戦・ラウンド選択チップのタップ検証
         final courtChip = find.text('第1試合場');

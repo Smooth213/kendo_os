@@ -61,6 +61,17 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     final r = first.rule ?? const MatchRule();
     _selectedPresetRule = r;
 
+    final String scene = r.matchScene.isNotEmpty
+        ? r.matchScene
+        : (first.matchScene.isNotEmpty ? first.matchScene : '');
+    if (scene.isNotEmpty) {
+      _selectedPresetKey = scene;
+    } else if (r.isRenseikai) {
+      _selectedPresetKey = 'renseikai';
+    } else {
+      _selectedPresetKey = 'honsen';
+    }
+
     // チーム名と選手名の分離抽出
     final extractedRedTeam = _extractTeamName(
       first.redName,
@@ -313,6 +324,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             unselectedLabelColor: isDark
                 ? Colors.grey.shade400
                 : Colors.grey.shade600,
+            labelPadding: const EdgeInsets.symmetric(horizontal: 2),
             labelStyle: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -326,8 +338,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 ),
                 text: _isDantai ? '対戦・選手' : '選手・チーム',
               ),
-              const Tab(icon: Icon(Icons.place, size: 18), text: 'コート・組'),
-              const Tab(icon: Icon(Icons.tune, size: 18), text: 'ルール・メモ'),
+              const Tab(icon: Icon(Icons.place, size: 18), text: 'コート・メモ'),
+              const Tab(icon: Icon(Icons.tune, size: 18), text: '一括ルール'),
             ],
           ),
           const Divider(height: 1),
@@ -737,6 +749,15 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          controller: _noteController,
+          label: '📝 試合のメモ・詳細コメント',
+          hint: '注意事項や備考を入力',
+          isDark: isDark,
+          textColor: textColor,
+          maxLines: 3,
+        ),
       ],
     );
   }
@@ -1140,18 +1161,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               ),
             ],
           ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // メモ・備考
-        _buildTextField(
-          controller: _noteController,
-          label: '📝 試合のメモ・詳細コメント',
-          hint: '注意事項や備考を入力',
-          isDark: isDark,
-          textColor: textColor,
-          maxLines: 3,
         ),
       ],
     );
