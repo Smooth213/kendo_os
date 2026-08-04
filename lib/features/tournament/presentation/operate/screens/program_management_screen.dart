@@ -216,14 +216,17 @@ class _ProgramManagementScreenState
     // ★ 修正1: 初期タイトルをファイル名から取得せず、完全に「空（カラ）」にします
     String title = '';
     List<PlatformFile> orderedFiles = List.from(files);
-    int selectedIndex = 0; // ★ 同期のための単一の状態
+    int selectedIndex = 0;
     final PageController previewController = PageController();
     final formKey = GlobalKey<FormState>();
+    // ★ 修正②: OKボタン押下時にバリデーション失敗したらテキストを強調するフラグ
+    bool showValidationHighlight = false;
 
     return showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
+          final bool isDark = Theme.of(context).brightness == Brightness.dark;
           return AlertDialog(
             insetPadding: const EdgeInsets.symmetric(
               horizontal: 10,
@@ -340,7 +343,10 @@ class _ProgramManagementScreenState
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
-                      color: Colors.indigo.shade50, // ★ 背景色をつけて視覚的に目立たせる
+                      // ★ ダークモード対応: ダーク時は暗い背景、ライト時はインディゴ系の薄い背景
+                      color: isDark
+                          ? const Color(0xFF1C1C2E)
+                          : Colors.indigo.shade50,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -355,17 +361,22 @@ class _ProgramManagementScreenState
                           const SizedBox(height: 8),
                           TextFormField(
                             initialValue: title,
-                            // ★ 修正2: オートフォーカスを解除し、キーボードの自動立ち上げを防ぐ
+                            // ★ 修正: オートフォーカスを解除し、キーボードの自動立ち上げを防ぐ
                             autofocus: false,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            // ★ 修正①: テーマ依存の文字色（ライト時は黒、ダーク時は白）
+                            // 他のTextFieldと同じテーマ依存にすることで両モード共通で正しく表示
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                             decoration: InputDecoration(
-                              // ★ 初期値が空になるため、このヒントテキストが薄いグレーで表示されます
                               hintText: '例：1日目 進行表',
-                              hintStyle: TextStyle(
-                                color: Colors.grey.shade400,
-                              ), // ★ 追加：文字色を薄いグレーにする
+                              hintStyle: TextStyle(color: Colors.grey.shade400),
                               filled: true,
-                              fillColor: Colors.white,
+                              // ★ ダークモード対応: ダーク時は暗い入力欄背景、ライト時は白
+                              fillColor: isDark
+                                  ? const Color(0xFF2C2C3E)
+                                  : Colors.white,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 12,
@@ -387,7 +398,7 @@ class _ProgramManagementScreenState
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            onChanged: (value) => title = value,
+                            onChanged: (value) => setState(() => title = value),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'プログラムのタイトルを入力してください';
@@ -395,6 +406,53 @@ class _ProgramManagementScreenState
                               return null;
                             },
                           ),
+                          // ★ 修正②: タイトル未入力時に常時表示、OK押下後は赤強調表示
+                          if (title.trim().isEmpty)
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.only(
+                                top: 6,
+                                left: 4,
+                                right: 4,
+                                bottom: 4,
+                              ),
+                              decoration: showValidationHighlight
+                                  ? BoxDecoration(
+                                      color: Colors.red.shade50,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: Colors.red.shade300,
+                                        width: 1.2,
+                                      ),
+                                    )
+                                  : null,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    showValidationHighlight
+                                        ? Icons.error_outline
+                                        : Icons.info_outline,
+                                    size: 13,
+                                    color: showValidationHighlight
+                                        ? Colors.red.shade700
+                                        : Colors.orange.shade700,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'タイトルは必須です（入力しないと保存できません）',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: showValidationHighlight
+                                          ? Colors.red.shade700
+                                          : Colors.orange.shade700,
+                                      fontWeight: showValidationHighlight
+                                          ? FontWeight.bold
+                                          : FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           // ★ 複数ファイル選択時のインフォメーションカードをリデザイン
                           if (orderedFiles.length > 1) ...[
                             const SizedBox(height: 12),
@@ -404,10 +462,15 @@ class _ProgramManagementScreenState
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.indigo.shade50.withAlpha(200),
+                                // ★ ダークモード対応: ダーク時は暗いガイドカード
+                                color: isDark
+                                    ? const Color(0xFF252540)
+                                    : Colors.indigo.shade50.withAlpha(200),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: Colors.indigo.shade100,
+                                  color: isDark
+                                      ? const Color(0xFF3A3A6A)
+                                      : Colors.indigo.shade100,
                                   width: 1,
                                 ),
                               ),
@@ -428,7 +491,10 @@ class _ProgramManagementScreenState
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.indigo.shade900,
+                                        // ★ ダークモード対応: ダーク時は明るい色
+                                        color: isDark
+                                            ? Colors.indigo.shade200
+                                            : Colors.indigo.shade900,
                                         height: 1.4,
                                       ),
                                     ),
@@ -444,61 +510,74 @@ class _ProgramManagementScreenState
                     // --- 下半分：並び替えリストエリア (60%) ---
                     Expanded(
                       flex: 6,
-                      child: ReorderableListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        itemCount: orderedFiles.length,
-                        onReorderItem: (oldIndex, newIndex) {
-                          setState(() {
-                            final item = orderedFiles.removeAt(oldIndex);
-                            orderedFiles.insert(newIndex, item);
-                            // 順番が変わっても、今見ていた画像が迷子にならないようにインデックスを調整
-                            selectedIndex = orderedFiles.indexOf(item);
-                            previewController.jumpToPage(selectedIndex);
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          final file = orderedFiles[index];
-                          final isSelected = selectedIndex == index;
-                          return ListTile(
-                            // Web環境で path にアクセスすると例外が飛ぶため、安全な fallback に変更
-                            key: ValueKey(
-                              kIsWeb ? file.name : (file.path ?? file.name),
-                            ),
-                            selected: isSelected,
-                            selectedTileColor: Colors.indigo.shade50,
-                            leading: CircleAvatar(
-                              radius: 12,
-                              backgroundColor: isSelected
-                                  ? Colors.indigo
-                                  : Colors.grey,
-                              child: Text(
-                                '${index + 1}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
+                      child: Theme(
+                        // ★ ダークモード対応: ReorderableListViewの背景色をテーマ依存に上書き
+                        data: Theme.of(context).copyWith(
+                          canvasColor: isDark
+                              ? const Color(0xFF1C1C1E)
+                              : Colors.white,
+                        ),
+                        child: ReorderableListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          itemCount: orderedFiles.length,
+                          onReorderItem: (oldIndex, newIndex) {
+                            setState(() {
+                              final item = orderedFiles.removeAt(oldIndex);
+                              orderedFiles.insert(newIndex, item);
+                              selectedIndex = orderedFiles.indexOf(item);
+                              previewController.jumpToPage(selectedIndex);
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            final file = orderedFiles[index];
+                            final isSelected = selectedIndex == index;
+                            return ListTile(
+                              key: ValueKey(
+                                kIsWeb ? file.name : (file.path ?? file.name),
+                              ),
+                              selected: isSelected,
+                              // ★ ダークモード対応: 選択時のハイライト色
+                              selectedTileColor: isDark
+                                  ? Colors.indigo.shade900.withAlpha(180)
+                                  : Colors.indigo.shade50,
+                              // ★ ダークモード対応: 未選択時のタイル背景色
+                              tileColor: isDark
+                                  ? const Color(0xFF1C1C1E)
+                                  : null,
+                              leading: CircleAvatar(
+                                radius: 12,
+                                backgroundColor: isSelected
+                                    ? Colors.indigo
+                                    : Colors.grey,
+                                child: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               ),
-                            ),
-                            title: Text(
-                              file.name,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                              title: Text(
+                                file.name,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
                               ),
-                            ),
-                            trailing: const Icon(Icons.drag_handle, size: 20),
-                            onTap: () {
-                              setState(() => selectedIndex = index);
-                              previewController.animateToPage(
-                                index,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                          );
-                        },
+                              trailing: const Icon(Icons.drag_handle, size: 20),
+                              onTap: () {
+                                setState(() => selectedIndex = index);
+                                previewController.animateToPage(
+                                  index,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -517,6 +596,9 @@ class _ProgramManagementScreenState
                       'title': title.trim(),
                       'files': orderedFiles,
                     });
+                  } else {
+                    // ★ 修正②: OK押下バリデーション失敗時に案内テキストを赤強調
+                    setState(() => showValidationHighlight = true);
                   }
                 },
                 style: ElevatedButton.styleFrom(
