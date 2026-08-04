@@ -17,6 +17,8 @@ import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dar
 class SyncEngine {
   final Ref _ref;
   Timer? _syncTimer;
+  Timer? _debounceSyncTimer;
+  QuerySnapshot<Map<String, dynamic>>? _pendingMatchesSnapshot;
   bool _isProcessing = false;
   int _retryCount = 0;
 
@@ -67,8 +69,10 @@ class SyncEngine {
   void _bindListeners() {
     _matchesSubscription?.cancel();
     _bunaiksenSubscription?.cancel();
+    _debounceSyncTimer?.cancel();
     _matchesSubscription = null;
     _bunaiksenSubscription = null;
+    _pendingMatchesSnapshot = null;
 
     final dojoId = _ref.read(currentDojoIdProvider);
     final tournamentId = _ref.read(currentTournamentIdProvider);
@@ -89,7 +93,7 @@ class SyncEngine {
       '🚀 [Sync Engine] Firestoreダウンストリーム監視を開始します (dojoId: $dojoId, tournamentId: $activeTournamentId)',
     );
 
-    // 1. 通常のトーナメント戦の試合データ監視
+    // 1. 通常のトーナメント戦の試合データ監視（16msバッチド・デバウンスでUIリビルドをフレーム同期）
     final matchesCollection = _ref
         .read(firestoreProvider)
         .collection('organizations')
@@ -99,8 +103,20 @@ class SyncEngine {
         .collection('matches');
 
     _matchesSubscription = matchesCollection.snapshots().listen(
-      (snapshot) async {
-        await _syncFirestoreToIsar(snapshot);
+      (snapshot) {
+        _pendingMatchesSnapshot = snapshot;
+        _debounceSyncTimer?.cancel();
+        // ★ 最適化 (Web/Native共通): 連続するFirestoreイベントを50ms以内でバッチ集約
+        // - Native: 50ms(約3フレーム)で複数コートの更新をまとめてIsarへ1回書き込み
+        // - Web: IsarはnullのためsaveMatchesBulkは空処理（LocalMatchRepositoryのnullガード済み）
+        //   Firestore→matchListProviderへの通知は別経路なので、Webでも正しく動作する
+        _debounceSyncTimer = Timer(const Duration(milliseconds: 50), () async {
+          final pending = _pendingMatchesSnapshot;
+          if (pending != null) {
+            _pendingMatchesSnapshot = null;
+            await _syncFirestoreToIsar(pending);
+          }
+        });
       },
       onError: (e) {
         debugPrint('⚠️ [Sync Engine Downstream] トーナメント試合監視エラー: $e');

@@ -1541,7 +1541,19 @@ class StrokePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant StrokePainter oldDelegate) {
+    // ★ 最適化: リスト長のショートサーキット判定で変化を最速検知
+    // ストローク追加・削除時は長さが変わるため参照比較より前に判定する
+    if (oldDelegate.sharedStrokes.length != sharedStrokes.length) return true;
+    if (oldDelegate.privateStrokes.length != privateStrokes.length) return true;
+    if (oldDelegate.currentLineColor != currentLineColor) return true;
+    if (oldDelegate.activePenWidth != activePenWidth) return true;
+    // 描画中の点列は参照比較で十分（毎フレーム新しいリストが渡される）
+    if (oldDelegate.currentPoints != currentPoints) return true;
+    // 内容変化はリスト参照変化で十分（保存完了時はリスト参照が入れ替わる）
+    return oldDelegate.sharedStrokes != sharedStrokes ||
+        oldDelegate.privateStrokes != privateStrokes;
+  }
 }
 
 // ★ 画像OCR用のハイライト描画ペインター（計算不要の絶対座標版）

@@ -92,6 +92,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
 
                   return ListView.builder(
                     itemCount: filtered.length,
+                    itemExtent: 76.0,
                     itemBuilder: (context, index) {
                       final log = filtered[index];
                       final action = log['action'] ?? 'Unknown';

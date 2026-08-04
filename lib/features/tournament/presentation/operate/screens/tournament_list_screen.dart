@@ -132,6 +132,9 @@ class TournamentListScreen extends ConsumerWidget {
                   horizontal: 24,
                   vertical: 12,
                 ), // 余白の統一
+                // ★ 最適化: 3画面分先読みキャッシュでスクロール時のレイアウト計算コストを削減
+                // ignore: deprecated_member_use
+                cacheExtent: 1500.0,
                 itemCount: filteredTournaments.length,
                 itemBuilder: (context, index) {
                   final tournament = filteredTournaments[index];

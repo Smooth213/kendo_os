@@ -940,11 +940,12 @@ class PlayerSpan {
 class KachinukiBracketPainter extends CustomPainter {
   final List<MatchProjection> matches;
   final bool isDark;
-  final WidgetRef ref;
+  // ★ nullable: shouldRepaintのみのテスト時はnullを渡す（paint()内でのみ使用）
+  final WidgetRef? ref;
   KachinukiBracketPainter({
     required this.matches,
     this.isDark = false,
-    required this.ref,
+    this.ref,
   });
 
   Map<String, String> _parse(String raw) {
@@ -1447,5 +1448,24 @@ class KachinukiBracketPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant KachinukiBracketPainter oldDelegate) {
+    // ★ 最適化 (Web/Native共通): 描画に影響するフィールドのみを明示的に比較
+    // PointDisplayは==未実装のためlistEqualsの深い比較が参照比較になる。
+    // status/score/nameのみを比較して不要な再描画を安全にスキップする。
+    if (oldDelegate.isDark != isDark) return true;
+    if (oldDelegate.matches.length != matches.length) return true;
+    for (int i = 0; i < matches.length; i++) {
+      final o = oldDelegate.matches[i];
+      final n = matches[i];
+      if (o.status != n.status ||
+          o.redScore != n.redScore ||
+          o.whiteScore != n.whiteScore ||
+          o.redName != n.redName ||
+          o.whiteName != n.whiteName ||
+          o.note != n.note) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

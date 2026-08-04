@@ -826,6 +826,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               : ListView.builder(
                   itemCount: list.length,
                   padding: const EdgeInsets.all(16),
+                  // ★ 最適化: 2画面分先読みキャッシュでスクロール時の描画コストを削減
+                  // ignore: deprecated_member_use
+                  cacheExtent: 1000.0,
                   itemBuilder: (context, index) {
                     final cat = list[index];
                     final ruleSet = tournament.categoryRules[cat]!;

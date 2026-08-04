@@ -756,6 +756,7 @@ class _ProgramManagementScreenState
   Widget _buildListView(List<ProgramModel> programs) {
     return ListView.builder(
       itemCount: programs.length,
+      itemExtent: 68.0,
       itemBuilder: (context, index) {
         final program = programs[index];
         final isUploading = program.fileUrl.contains('placehold.co');
