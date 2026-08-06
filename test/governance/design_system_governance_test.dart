@@ -29,8 +29,9 @@ void main() {
 
         for (final file in dartFiles) {
           // AppSnackBar の基盤定義ファイル自身は除外
-          if (file.path.contains('lib/shared/utils/app_snack_bar.dart'))
+          if (file.path.contains('lib/shared/utils/app_snack_bar.dart')) {
             continue;
+          }
 
           final content = file.readAsStringSync();
           if (content.contains('showSnackBar(')) {
@@ -53,8 +54,9 @@ void main() {
 
       for (final file in dartFiles) {
         // AppBottomSheet の基盤定義ファイル自身は除外
-        if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart'))
+        if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart')) {
           continue;
+        }
 
         final content = file.readAsStringSync();
         if (content.contains('showModalBottomSheet(')) {
