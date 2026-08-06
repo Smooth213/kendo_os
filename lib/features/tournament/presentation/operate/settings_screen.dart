@@ -11,6 +11,8 @@ import 'package:kendo_os/security/feature_gate.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
 import 'package:kendo_os/shared/infrastructure/services/web_notification_helper.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -47,22 +49,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // ★ 全体をLiquidBackgroundでラップ
       child: Scaffold(
         backgroundColor: Colors.transparent, // ★ 背景を透明にして下の光のオーブを透かす
-        appBar: AppBar(
-          title: Text(
-            'システム設定',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-              color: _themeColors.textColor,
-            ),
-          ),
+        appBar: AppHeader(
+          title: 'システム設定',
           backgroundColor: enableLiquidGlass
               ? Colors.transparent
               : _themeColors.cardBackground,
-          foregroundColor: _themeColors.textColor,
-          elevation: 0,
-          centerTitle: true,
-          iconTheme: IconThemeData(color: _themeColors.textColor),
           actions: const [
             // ★ パスコード復旧手順などが載っている「設定マニュアル」へ直行
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
@@ -705,7 +696,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Divider(
       height: 1,
-      thickness: 0.5,
+      thickness: 1,
       color: isDark ? const Color(0xFF38383A) : const Color(0xFFC6C6C8),
       indent: 56,
       endIndent: 0,
@@ -764,9 +755,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'AI自動判定・ガバナンスエンジン',
               false,
               (val) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Stage2 β版では設定固定されています')),
-                );
+                AppSnackBar.show(context, 'Stage2 β版では設定固定されています');
               },
               icon: Icons.smart_toy,
               iconBgColor: Colors.deepPurple,
@@ -777,9 +766,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               '内部メトリクス・ダッシュボード',
               false,
               (val) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Stage2 β版では設定固定されています')),
-                );
+                AppSnackBar.show(context, 'Stage2 β版では設定固定されています');
               },
               icon: Icons.analytics,
               iconBgColor: Colors.blueGrey,

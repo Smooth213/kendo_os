@@ -967,7 +967,7 @@ void main() {
           if (constraints.minWidth == 48 && constraints.minHeight == 5) {
             if (widget.decoration is BoxDecoration) {
               final deco = widget.decoration as BoxDecoration;
-              return deco.borderRadius == BorderRadius.circular(10);
+              return deco.borderRadius == BorderRadius.circular(12);
             }
           }
         }

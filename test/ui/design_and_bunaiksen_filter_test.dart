@@ -348,6 +348,7 @@ void main() {
         expect(find.text('低学年 一郎'), findsNothing);
 
         // 5. 「一般」フィルターを検証
+        await tester.ensureVisible(find.text('一般'));
         await tester.tap(find.text('一般'));
         await tester.pumpAndSettle();
         expect(find.text('一般 五郎'), findsOneWidget);

@@ -18,12 +18,14 @@ import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.da
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/league_grid_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -94,27 +96,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       return LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: headerTextColor,
-                size: 20,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              screenTitle,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: headerTextColor,
-                fontSize: 16,
-              ),
-            ),
-            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-            elevation: 0,
+          appBar: AppHeader(
+            title: screenTitle,
+            backgroundColor: cardColor,
             actions: [
-              // ★ 記録の間違いに気づいた時のために「公式記録の直し方」へ直行
               ManualHelpButton(
                 manualPath: 'docs/manuals/operator/official_record.md',
                 color: headerTextColor,
@@ -138,25 +123,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       child: LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: headerTextColor,
-                size: 20,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              screenTitle,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: headerTextColor,
-                fontSize: 16,
-              ),
-            ),
-            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-            elevation: 0,
+          appBar: AppHeader(
+            title: screenTitle,
+            backgroundColor: cardColor,
             actions: [
               // ★ 記録の間違いに気づいた時のために「公式記録の直し方」へ直行
               ManualHelpButton(
@@ -817,9 +786,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('出力に失敗しました: $e')));
+        AppSnackBar.showError(context, '出力に失敗しました: $e');
       }
     } finally {
       ref.read(isExportingProvider.notifier).state = false;

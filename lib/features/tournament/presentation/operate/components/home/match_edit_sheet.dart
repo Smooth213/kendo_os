@@ -4,6 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 
 /// 🏆 試合・団体戦対戦枠の詳細編集を行うボトムシート
@@ -712,13 +713,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 runSpacing: 6,
                 children: courtPresets.map((preset) {
                   final isSelected = selectedItems.contains(preset);
-                  return FilterChip(
+                  return AppFilterChip(
                     selected: isSelected,
-                    showCheckmark: true,
-                    label: Text(preset, style: const TextStyle(fontSize: 11)),
-                    selectedColor: widget.themeColors.primaryAccent.withAlpha(
-                      isDark ? 80 : 40,
-                    ),
+                    label: Text(preset),
                     onSelected: (_) {
                       setState(() {
                         _toggleHeadingPreset(preset);
@@ -743,13 +740,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 runSpacing: 6,
                 children: roundPresets.map((preset) {
                   final isSelected = selectedItems.contains(preset);
-                  return FilterChip(
+                  return AppFilterChip(
                     selected: isSelected,
-                    showCheckmark: true,
-                    label: Text(preset, style: const TextStyle(fontSize: 11)),
-                    selectedColor: widget.themeColors.primaryAccent.withAlpha(
-                      isDark ? 80 : 40,
-                    ),
+                    label: Text(preset),
                     onSelected: (_) {
                       setState(() {
                         _toggleHeadingPreset(preset);
@@ -799,39 +792,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       if (hasValidHonsen) {
         final isSelected = _selectedPresetKey == 'honsen';
         categoryPresetChips.add(
-          ChoiceChip(
+          AppChoiceChip(
             selected: isSelected,
-            showCheckmark: true,
-            avatar: Icon(
-              Icons.bookmark,
-              size: 14,
-              color: isSelected
-                  ? (isDark ? Colors.indigo.shade200 : Colors.indigo.shade900)
-                  : Colors.indigo,
-            ),
+            icon: Icons.bookmark,
             label: Text(
               '本線ルール (${ruleSet.normalRule.matchTimeMinutes == ruleSet.normalRule.matchTimeMinutes.toInt() ? ruleSet.normalRule.matchTimeMinutes.toInt() : ruleSet.normalRule.matchTimeMinutes}分)',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected
-                    ? (isDark ? Colors.indigo.shade100 : Colors.indigo.shade900)
-                    : (isDark ? Colors.white : Colors.indigo.shade900),
-              ),
-            ),
-            selectedColor: isDark
-                ? Colors.indigo.withAlpha(100)
-                : Colors.indigo.shade100,
-            backgroundColor: isDark
-                ? Colors.indigo.withAlpha(30)
-                : Colors.indigo.shade50,
-            side: BorderSide(
-              color: isSelected
-                  ? Colors.indigo
-                  : (isDark
-                        ? Colors.indigo.withAlpha(60)
-                        : Colors.indigo.shade200),
-              width: isSelected ? 1.5 : 1.0,
             ),
             onSelected: (selected) {
               if (selected) {
@@ -848,39 +813,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       if (hasValidRenseikai) {
         final isSelected = _selectedPresetKey == 'renseikai';
         categoryPresetChips.add(
-          ChoiceChip(
+          AppChoiceChip(
             selected: isSelected,
-            showCheckmark: true,
-            avatar: Icon(
-              Icons.flash_on,
-              size: 14,
-              color: isSelected
-                  ? (isDark ? Colors.orange.shade200 : Colors.orange.shade900)
-                  : Colors.orange.shade800,
-            ),
+            icon: Icons.flash_on,
             label: Text(
               '錬成会ルール (${ruleSet.renseikaiRule.matchTimeMinutes == ruleSet.renseikaiRule.matchTimeMinutes.toInt() ? ruleSet.renseikaiRule.matchTimeMinutes.toInt() : ruleSet.renseikaiRule.matchTimeMinutes}分)',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected
-                    ? (isDark ? Colors.orange.shade100 : Colors.orange.shade900)
-                    : (isDark ? Colors.white : Colors.orange.shade900),
-              ),
-            ),
-            selectedColor: isDark
-                ? Colors.orange.withAlpha(100)
-                : Colors.orange.shade100,
-            backgroundColor: isDark
-                ? Colors.orange.withAlpha(30)
-                : Colors.orange.shade50,
-            side: BorderSide(
-              color: isSelected
-                  ? Colors.orange.shade800
-                  : (isDark
-                        ? Colors.orange.withAlpha(60)
-                        : Colors.orange.shade200),
-              width: isSelected ? 1.5 : 1.0,
             ),
             onSelected: (selected) {
               if (selected) {
@@ -897,37 +834,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       if (hasValidMoushiawase) {
         final isSelected = _selectedPresetKey == 'moushiawase';
         categoryPresetChips.add(
-          ChoiceChip(
+          AppChoiceChip(
             selected: isSelected,
-            showCheckmark: true,
-            avatar: Icon(
-              Icons.handshake,
-              size: 14,
-              color: isSelected
-                  ? (isDark ? Colors.teal.shade200 : Colors.teal.shade900)
-                  : Colors.teal.shade800,
-            ),
+            icon: Icons.handshake,
             label: Text(
               '申し合わせルール (${ruleSet.moushiawaseRule.matchTimeMinutes == ruleSet.moushiawaseRule.matchTimeMinutes.toInt() ? ruleSet.moushiawaseRule.matchTimeMinutes.toInt() : ruleSet.moushiawaseRule.matchTimeMinutes}分)',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected
-                    ? (isDark ? Colors.teal.shade100 : Colors.teal.shade900)
-                    : (isDark ? Colors.white : Colors.teal.shade900),
-              ),
-            ),
-            selectedColor: isDark
-                ? Colors.teal.withAlpha(100)
-                : Colors.teal.shade100,
-            backgroundColor: isDark
-                ? Colors.teal.withAlpha(30)
-                : Colors.teal.shade50,
-            side: BorderSide(
-              color: isSelected
-                  ? Colors.teal.shade800
-                  : (isDark ? Colors.teal.withAlpha(60) : Colors.teal.shade200),
-              width: isSelected ? 1.5 : 1.0,
             ),
             onSelected: (selected) {
               if (selected) {

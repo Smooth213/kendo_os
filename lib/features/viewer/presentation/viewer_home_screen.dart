@@ -23,6 +23,8 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -158,7 +160,6 @@ class ViewerHomeScreen extends ConsumerWidget {
       settingsProvider.select((s) => s.enableLiquidGlass),
     );
     final Color bgColor = themeColors.scaffoldBackground;
-    final Color textColor = themeColors.textColor;
 
     try {
       // ★ 修正: activeMatchesProvider だとリーグ戦や勝ち抜き戦で最初の試合が終了すると
@@ -215,13 +216,7 @@ class ViewerHomeScreen extends ConsumerWidget {
         child: LiquidBackground(
           child: Scaffold(
             backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              // ★ 修正1: 標準の戻るボタン（<）は消す
-              automaticallyImplyLeading: false,
-
-              // ★ 修正2: 「管理者アプリから直接遷移してきた（戻る履歴がある）場合」のみ扉ボタンを出す
-              // 従来の context.canPop() だとWebブラウザでQRから直接アクセスした際に
-              // 暗黙の履歴によって true と誤判定されるため、GoRouterの canPop() を使用します。
+            appBar: AppHeader(
               leading: GoRouter.of(context).canPop()
                   ? IconButton(
                       icon: const Icon(
@@ -231,20 +226,11 @@ class ViewerHomeScreen extends ConsumerWidget {
                       tooltip: '管理画面に戻る',
                       onPressed: () => context.pop(),
                     )
-                  : null, // QRコードから直接来た一般客には何も表示しない（null）
-
-              title: Text(
-                '大会ホーム (観客席)',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: textColor,
-                ),
-              ),
+                  : null,
+              title: '大会ホーム (観客席)',
               backgroundColor: enableLiquidGlass
                   ? Colors.transparent
                   : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-              elevation: 0,
               actions: [
                 NotificationBellButton(
                   tournamentId: tournamentId,
@@ -262,10 +248,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                   ),
                   tooltip: '表示設定',
                   onPressed: () {
-                    showModalBottomSheet(
+                    showAppBottomSheet(
                       context: context,
                       isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
                       builder: (context) => const ViewerSettingsBottomSheet(),
                     );
                   },
@@ -2815,7 +2800,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300,
           width: 1.2,
@@ -2832,7 +2817,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
       ),
       child: Material(
         color: bg,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(

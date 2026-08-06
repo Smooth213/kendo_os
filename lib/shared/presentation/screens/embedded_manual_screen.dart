@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/infrastructure/services/manual_download_service.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 // ============================================================================
 // Phase 5 & 6: Embedded Documentation Viewer (Upgraded for Smart Print & Help Hub)
@@ -197,9 +198,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
         setState(() {
           _isDownloading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('ダウンロードに失敗しました: $e')));
+        AppSnackBar.showError(context, 'ダウンロードに失敗しました: $e');
       }
     }
   }
@@ -334,9 +333,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       }
                     } catch (e) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('印刷の起動に失敗しました: $e')),
-                        );
+                        AppSnackBar.showError(context, '印刷の起動に失敗しました: $e');
                       }
                     }
                   },
@@ -387,9 +384,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       );
                     } catch (e) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('共有に失敗しました: $e')),
-                        );
+                        AppSnackBar.showError(context, '共有に失敗しました: $e');
                       }
                     }
                   },
@@ -747,7 +742,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: isDark ? Colors.black26 : Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(

@@ -16,6 +16,8 @@ import 'package:intl/intl.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   final String tournamentId;
@@ -156,28 +158,16 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
       child: LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            automaticallyImplyLeading: false, // 標準の戻るボタンを消す
-            backgroundColor: isDark
-                ? (enableLiquidGlass
-                      ? Colors.transparent
-                      : themeColors.cardBackground)
-                : (enableLiquidGlass
-                      ? Colors.transparent
+          appBar: AppHeader(
+            backgroundColor: enableLiquidGlass
+                ? Colors.transparent
+                : (isDark
+                      ? themeColors.cardBackground
                       : themeColors.primaryAccent),
-            foregroundColor: isDark
+            foregroundColor: (enableLiquidGlass || isDark)
                 ? themeColors.primaryAccent
-                : (enableLiquidGlass
-                      ? themeColors.primaryAccent
-                      : Colors.white),
-            title: Text(
-              '$dateDisplay の記録 (観戦)',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: themeColors.textColor,
-              ),
-            ),
+                : Colors.white,
+            title: '$dateDisplay の記録 (観戦)',
             elevation: 0,
             centerTitle: true,
             // 🛡️ UI防衛：QRから直接開かれた一般観客の場合は戻るボタンを完全に消滅させ、迷子や不正操作を防止
@@ -263,10 +253,9 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                 icon: const Icon(Icons.settings),
                 tooltip: '表示設定',
                 onPressed: () {
-                  showModalBottomSheet(
+                  showAppBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
                     builder: (context) => const ViewerSettingsBottomSheet(),
                   );
                 },

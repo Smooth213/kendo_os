@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/admin/providers/audit_provider.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
@@ -35,13 +36,9 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            'システム監査ログ',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          actions: const [
+        appBar: const AppHeader(
+          title: 'システム監査ログ',
+          actions: [
             // ★ ログを見ている＝異常を疑っているため「緊急復旧ガイド」へ
             ManualHelpButton(
               manualPath: 'docs/manuals/recovery/failure_catalog.md',

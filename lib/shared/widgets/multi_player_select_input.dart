@@ -4,6 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_pr
 import 'smart_player_input.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 class MultiPlayerSelectInput extends ConsumerStatefulWidget {
   final List<String> initialSelected;
@@ -44,13 +46,9 @@ class _MultiPlayerSelectInputState
     // モーダル内でのみ操作する一時的な選択リスト
     List<String> tempSelected = List.from(widget.initialSelected);
 
-    await showModalBottomSheet(
+    await showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (BuildContext sheetContext) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
@@ -217,36 +215,11 @@ class _MultiPlayerSelectInputState
                             final activeColor = _accentColor;
                             return Padding(
                               padding: const EdgeInsets.only(right: 8),
-                              child: ChoiceChip(
-                                showCheckmark: false,
+                              child: AppChoiceChip(
                                 label: Text(filterName),
-                                labelStyle: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : (isDark
-                                            ? Colors.grey.shade300
-                                            : Colors.grey.shade800),
-                                ),
                                 selected: isSelected,
-                                selectedColor: activeColor,
-                                backgroundColor: isDark
-                                    ? Colors.grey.shade900
-                                    : Colors.grey.shade100,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: BorderSide(
-                                    color: isSelected
-                                        ? activeColor
-                                        : (isDark
-                                              ? Colors.grey.shade800
-                                              : Colors.grey.shade300),
-                                  ),
-                                ),
-                                onSelected: (selected) {
+                                customSelectedColor: activeColor,
+                                onSelected: (bool selected) {
                                   if (selected) {
                                     setStateSheet(
                                       () => selectedFilter = filterName,

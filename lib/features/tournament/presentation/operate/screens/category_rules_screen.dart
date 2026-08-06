@@ -14,6 +14,8 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
 class CategoryRulesScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -478,7 +480,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, 'yes'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo.shade700,
+                foregroundColor: Colors.white,
+              ),
               child: const Text(
                 '一括適用する',
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -528,9 +533,17 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         .updateTournament(updatedTournament);
 
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('「$category」のルール設定を保存しました')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('「$category」のルール設定を保存しました'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
       setState(() {
         _editingCategory = null;
       });
@@ -553,7 +566,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade600,
+              foregroundColor: Colors.white,
+            ),
             child: const Text(
               '削除',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -582,9 +598,17 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           .updateTournament(updatedTournament);
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('「$category」を削除しました')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('「$category」を削除しました'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
     }
   }
@@ -627,9 +651,17 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     _newCategoryController.clear();
 
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('「$cleanName」を追加しました')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('「$cleanName」を追加しました'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
       _startEditing(cleanName, newRuleSet);
     }
   }
@@ -754,7 +786,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               const SizedBox(width: 8),
               IconButton.filled(
                 icon: const Icon(Icons.add),
-                style: IconButton.styleFrom(backgroundColor: Colors.indigo),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.indigo.shade700,
+                ),
                 onPressed: () =>
                     _addNewCategory(tournament, _newCategoryController.text),
               ),
@@ -786,7 +820,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         .map(
                           (name) => Padding(
                             padding: const EdgeInsets.only(right: 8.0),
-                            child: ActionChip(
+                            child: AppActionChip(
                               label: Text(name),
                               onPressed: () =>
                                   _addNewCategory(tournament, name),
@@ -1470,7 +1504,6 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     bool isNormal,
     AppThemeColors themeColors,
   ) {
-    final textColor = themeColors.textColor;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // isNormal に応じて状態変数への参照を分ける
@@ -1564,14 +1597,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           runSpacing: 8,
           children: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
             final isSelected = matchTime == t;
-            return ChoiceChip(
+            return AppChoiceChip(
               label: Text(_formatMinutes(t)),
               selected: isSelected,
-              selectedColor: themeColors.softAccent,
-              labelStyle: TextStyle(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? themeColors.primaryAccent : textColor,
-              ),
               onSelected: (s) {
                 if (s) {
                   setState(() {
@@ -1612,7 +1640,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           const SizedBox(height: 12),
           const Text(
             '進行形式',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -1620,14 +1648,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             runSpacing: 8,
             children: ['一試合制', '時間制'].map((type) {
               final isSelected = renseikaiType == type;
-              return ChoiceChip(
+              return AppChoiceChip(
                 label: Text(type),
                 selected: isSelected,
-                selectedColor: themeColors.softAccent,
-                labelStyle: TextStyle(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? themeColors.primaryAccent : textColor,
-                ),
                 onSelected: (selected) {
                   if (selected) {
                     setState(() {
@@ -1671,20 +1694,19 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           const SizedBox(height: 12),
           const Text(
             '大将 VS 大将 のときの挙動',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
           ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              ChoiceChip(
+              AppChoiceChip(
                 label: const Text('延長戦を行う (デフォルト)'),
                 selected:
                     kachinukiUnlimitedType == '大将対大将' ||
                     kachinukiUnlimitedType == '無制限' ||
                     kachinukiUnlimitedType == '大将のみ',
-                selectedColor: themeColors.softAccent,
                 onSelected: (selected) {
                   if (selected) {
                     setState(() {
@@ -1697,12 +1719,11 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   }
                 },
               ),
-              ChoiceChip(
+              AppChoiceChip(
                 label: const Text('引き分けとする'),
                 selected:
                     kachinukiUnlimitedType == 'なし' ||
                     kachinukiUnlimitedType.isEmpty,
-                selectedColor: themeColors.softAccent,
                 onSelected: (selected) {
                   if (selected) {
                     setState(() {
@@ -1720,21 +1741,20 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           const SizedBox(height: 16),
           const Text(
             '大将対他のポジション（大将以外）の挙動',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
           ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              ChoiceChip(
+              AppChoiceChip(
                 label: const Text('引き分けとする (デフォルト)'),
                 selected:
                     kachinukiUnlimitedType == '大将対大将' ||
                     kachinukiUnlimitedType == 'なし' ||
                     kachinukiUnlimitedType.isEmpty ||
                     kachinukiUnlimitedType == '大将のみ',
-                selectedColor: themeColors.softAccent,
                 onSelected: (selected) {
                   if (selected) {
                     setState(() {
@@ -1757,10 +1777,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   }
                 },
               ),
-              ChoiceChip(
+              AppChoiceChip(
                 label: const Text('延長戦を行う'),
                 selected: kachinukiUnlimitedType == '無制限',
-                selectedColor: themeColors.softAccent,
                 onSelected: (selected) {
                   if (selected) {
                     setState(() {
@@ -1924,17 +1943,16 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             const SizedBox(height: 12),
             const Text(
               '代表戦の本数',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                ChoiceChip(
+                AppChoiceChip(
                   label: const Text('１本勝負 (デフォルト)'),
                   selected: isDaihyoIpponShobu,
-                  selectedColor: themeColors.softAccent,
                   onSelected: (selected) {
                     if (selected) {
                       setState(() {
@@ -1947,10 +1965,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     }
                   },
                 ),
-                ChoiceChip(
+                AppChoiceChip(
                   label: const Text('３本勝負'),
                   selected: !isDaihyoIpponShobu,
-                  selectedColor: themeColors.softAccent,
                   onSelected: (selected) {
                     if (selected) {
                       setState(() {
@@ -1968,17 +1985,16 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             const SizedBox(height: 16),
             const Text(
               '代表戦の試合時間',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                ChoiceChip(
+                AppChoiceChip(
                   label: const Text('時間制限なし (デフォルト)'),
                   selected: daihyoMatchTime == 0.0,
-                  selectedColor: themeColors.softAccent,
                   onSelected: (selected) {
                     if (selected) {
                       setState(() {
@@ -1993,10 +2009,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
                 ...[1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
                   final isSelected = daihyoMatchTime == t;
-                  return ChoiceChip(
+                  return AppChoiceChip(
                     label: Text(_formatMinutes(t)),
                     selected: isSelected,
-                    selectedColor: themeColors.softAccent,
                     onSelected: (s) {
                       if (s) {
                         setState(() {
@@ -2064,10 +2079,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    ChoiceChip(
+                    AppChoiceChip(
                       label: const Text('無制限 (デフォルト)'),
                       selected: daihyoEnchoCount == -2,
-                      selectedColor: themeColors.softAccent,
                       onSelected: (selected) {
                         if (selected) {
                           setState(() {
@@ -2082,10 +2096,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     ),
                     ...[1, 2, 3, 5].map((c) {
                       final isSelected = daihyoEnchoCount == c;
-                      return ChoiceChip(
+                      return AppChoiceChip(
                         label: Text('$c回'),
                         selected: isSelected,
-                        selectedColor: themeColors.softAccent,
                         onSelected: (s) {
                           if (s) {
                             setState(() {
@@ -2351,8 +2364,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              ActionChip(
-                label: const Text('準決勝以上', style: TextStyle(fontSize: 11)),
+              AppActionChip(
+                label: const Text('準決勝以上'),
                 onPressed: () {
                   setState(() {
                     _editingAdvancedKeywords = [
@@ -2370,8 +2383,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   });
                 },
               ),
-              ActionChip(
-                label: const Text('決勝のみ', style: TextStyle(fontSize: 11)),
+              AppActionChip(
+                label: const Text('決勝のみ'),
                 onPressed: () {
                   setState(() {
                     _editingAdvancedKeywords = ['決勝', 'final'];
@@ -2381,8 +2394,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   });
                 },
               ),
-              ActionChip(
-                label: const Text('3回戦以上', style: TextStyle(fontSize: 11)),
+              AppActionChip(
+                label: const Text('3回戦以上'),
                 onPressed: () {
                   setState(() {
                     _editingAdvancedKeywords = [
@@ -2403,8 +2416,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   });
                 },
               ),
-              ActionChip(
-                label: const Text('クリア', style: TextStyle(fontSize: 11)),
+              AppActionChip(
+                label: const Text('クリア'),
                 onPressed: () {
                   setState(() {
                     _editingAdvancedKeywords = [];
@@ -2766,13 +2779,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       );
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (ctx) {
         return DraggableScrollableSheet(
           initialChildSize: 0.6,
@@ -2793,7 +2802,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade400,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
@@ -2861,7 +2870,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       ),
                       child: const Text(
                         '閉じる',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -2885,7 +2894,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             child: Text(
               label,
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 fontSize: 13,
                 color: Colors.grey,
               ),
@@ -3087,7 +3096,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         const SizedBox(height: 8),
         const Text(
           '錬成形式（試合方式）',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         ),
         const SizedBox(height: 6),
         Row(
@@ -3095,10 +3104,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             final isSelected = renseikaiType == type;
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: ChoiceChip(
+              child: AppChoiceChip(
                 label: Text(type),
                 selected: isSelected,
-                selectedColor: Colors.indigo.shade100,
                 onSelected: (selected) {
                   if (selected) onTypeChanged(type);
                 },

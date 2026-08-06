@@ -217,7 +217,19 @@ class LoginScreen extends ConsumerWidget {
                       debugPrint("❌ [LoginScreen] ログインエラー: $e");
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('ログインに失敗しました: ${e.toString()}')),
+                        SnackBar(
+                          content: Text('ログインに失敗しました: ${e.toString()}'),
+                          behavior: SnackBarBehavior.floating,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          margin: const EdgeInsets.only(
+                            bottom: 20,
+                            left: 16,
+                            right: 16,
+                          ),
+                          duration: const Duration(seconds: 4),
+                        ),
                       );
                     }
                   },

@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 class TournamentHeaderCard extends ConsumerWidget {
   final TournamentModel tournament;
@@ -143,9 +145,8 @@ class TournamentHeaderCard extends ConsumerWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -161,7 +162,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                 height: 5,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
@@ -246,7 +247,7 @@ class TournamentHeaderCard extends ConsumerWidget {
     DateTime selectedDate = tournament.date;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
@@ -402,7 +403,7 @@ class TournamentHeaderCard extends ConsumerWidget {
     Color cardColor,
     Color textColor,
   ) async {
-    final confirm = await showDialog<bool>(
+    final confirm = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: cardColor,

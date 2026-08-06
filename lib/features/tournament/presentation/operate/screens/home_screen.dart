@@ -17,6 +17,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'dart:ui';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../components/home/match_timeline_list.dart';
 import '../components/home/operator_action_buttons.dart';
@@ -73,7 +74,6 @@ class HomeScreen extends ConsumerWidget {
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-    final Color textColor = themeColors.textColor;
 
     final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
     final asyncTournament = ref.watch(tournamentProvider(tournamentId));
@@ -183,20 +183,11 @@ class HomeScreen extends ConsumerWidget {
             Expanded(
               child: Scaffold(
                 backgroundColor: Colors.transparent,
-                appBar: AppBar(
-                  automaticallyImplyLeading: !isReadOnly,
-                  title: Text(
-                    '大会ホーム',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                    ),
-                  ),
+                appBar: AppHeader(
+                  title: '大会ホーム',
                   backgroundColor: enableLiquidGlass
                       ? Colors.transparent
                       : themeColors.cardBackground,
-                  elevation: 0,
-                  iconTheme: IconThemeData(color: textColor),
                   actions: [
                     NotificationBellButton(
                       tournamentId: tournamentId,

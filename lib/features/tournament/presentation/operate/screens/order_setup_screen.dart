@@ -16,6 +16,7 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -329,35 +330,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           final isSelected = selectedFilter == filterName;
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              showCheckmark: false,
+                            child: AppChoiceChip(
                               label: Text(filterName),
-                              labelStyle: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isSelected
-                                    ? Colors.white
-                                    : (isDark
-                                          ? Colors.grey.shade300
-                                          : Colors.grey.shade800),
-                              ),
                               selected: isSelected,
-                              selectedColor: _themeColors.primaryAccent,
-                              backgroundColor: isDark
-                                  ? Colors.grey.shade900
-                                  : Colors.grey.shade100,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? _themeColors.primaryAccent
-                                      : (isDark
-                                            ? Colors.grey.shade800
-                                            : Colors.grey.shade300),
-                                ),
-                              ),
                               onSelected: (selected) {
                                 if (selected) {
                                   setStateSheet(

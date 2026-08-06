@@ -12,6 +12,8 @@ import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repositor
 import '../providers/role_provider.dart';
 import '../providers/permission_provider.dart'; // ★ 追加: 閲覧専用権限を識別するためのインポート
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -335,13 +337,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
       return LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            title: const Text('プログラム'),
-            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-            iconTheme: IconThemeData(
-              color: isDark ? Colors.white : Colors.black87,
-            ),
-          ),
+          appBar: const AppHeader(title: 'プログラム'),
           body: const Center(child: Text('表示できるプログラムがありません。')),
         ),
       );
@@ -411,14 +407,36 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       // 画像OCR検索の処理
                       if (!(currentProgram.isOcrProcessed ?? false)) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text('現在クラウドで解析中です。しばらくお待ちください。'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.only(
+                              bottom: 20,
+                              left: 16,
+                              right: 16,
+                            ),
+                            duration: const Duration(seconds: 3),
                           ),
                         );
                       } else if (currentProgram.ocrWords == null ||
                           currentProgram.ocrWords!.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('この画像から文字が検出されませんでした。')),
+                          SnackBar(
+                            content: Text('この画像から文字が検出されませんでした。'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.only(
+                              bottom: 20,
+                              left: 16,
+                              right: 16,
+                            ),
+                            duration: const Duration(seconds: 3),
+                          ),
                         );
                       }
                     }
@@ -1312,12 +1330,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     WidgetRef ref,
     bool canUseSharedPen,
   ) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true, // ★ 追加: ボトムシートの高さ制限を解除
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
       builder: (context) {
         return SafeArea(
           child: Padding(

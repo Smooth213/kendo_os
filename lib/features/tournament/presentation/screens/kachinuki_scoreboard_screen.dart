@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
@@ -11,6 +10,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
 class KachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;
@@ -35,8 +36,6 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     }).toList();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final appBarColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
     final activeTabColor = isDark
         ? Colors.indigoAccent.shade100
         : Colors.indigo.shade700;
@@ -46,41 +45,11 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
       child: LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: headerTextColor,
-                size: 20,
-              ),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else if (teamMatchesModels.isNotEmpty &&
-                    teamMatchesModels.first.tournamentId != null) {
-                  context.go('/home/${teamMatchesModels.first.tournamentId}');
-                } else {
-                  context.go('/');
-                }
-              },
-            ),
-            title: Text(
-              '勝ち抜き戦 記録',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: headerTextColor,
-                fontSize: 16,
-              ),
-            ),
-            backgroundColor: appBarColor,
-            elevation: 0,
+          appBar: AppHeader(
+            title: groupName,
             actions: [
               IconButton(
-                icon: Icon(
-                  Icons.info_outline,
-                  color: headerTextColor,
-                  size: 24,
-                ),
+                icon: const Icon(Icons.info_outline, size: 24),
                 tooltip: 'ルールを確認',
                 onPressed: () =>
                     _showRuleInfoSheet(context, teamMatchesModels.first),
@@ -139,10 +108,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
       formatText = 'リーグ戦';
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -159,7 +127,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                 height: 5,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),

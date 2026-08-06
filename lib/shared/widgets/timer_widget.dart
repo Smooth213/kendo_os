@@ -4,6 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
 import 'package:kendo_os/shared/time/time_source.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 class TimerWidget extends ConsumerWidget {
   final String matchId;
@@ -34,22 +35,16 @@ class TimerWidget extends ConsumerWidget {
 
     // iOS Native カラー
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
     final inputBgColor = isDark
         ? const Color(0xFF2C2C2E)
         : Colors.grey.shade100;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
 
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: bgColor,
-        title: Text(
-          '時間修正',
-          style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      builder: (ctx) => AppDialog(
+        title: '時間修正',
         content: Row(
           children: [
             Expanded(

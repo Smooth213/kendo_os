@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
 /// 🌟 既読にしたアナウンスIDのローカル状態を管理・永続化するプロバイダー
 final readAnnouncementsProvider =
@@ -60,10 +61,9 @@ class AnnounceHistoryBottomSheet extends ConsumerStatefulWidget {
     String tournamentId,
     bool isStaffRoom,
   ) {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => AnnounceHistoryBottomSheet(
         tournamentId: tournamentId,
         isStaffRoom: isStaffRoom,

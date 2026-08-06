@@ -19,6 +19,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 import '../components/bulk_rule_edit_sheet.dart';
 import '../components/home/match_edit_sheet.dart';
 
@@ -722,10 +724,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) {
         return MatchEditSheet(
           matches: [match],
@@ -826,13 +827,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: themeColors.cardBackground,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
       builder: (ctx) => StatefulBuilder(
         builder: (sheetContext, setStateSheet) => Padding(
           padding: EdgeInsets.only(
@@ -1484,35 +1481,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             final isSel = selectedFilter == filterName;
                             return Padding(
                               padding: const EdgeInsets.only(right: 6),
-                              child: ChoiceChip(
-                                showCheckmark: false,
+                              child: AppChoiceChip(
                                 label: Text(filterName),
-                                labelStyle: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSel
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isSel
-                                      ? Colors.white
-                                      : (isDark
-                                            ? Colors.white70
-                                            : Colors.black87),
-                                ),
                                 selected: isSel,
-                                selectedColor: accentColor,
-                                backgroundColor: isDark
-                                    ? const Color(0xFF2C2C2E)
-                                    : Colors.grey.shade200,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: BorderSide(
-                                    color: isSel
-                                        ? Colors.transparent
-                                        : (isDark
-                                              ? const Color(0xFF3A3A3C)
-                                              : Colors.grey.shade300),
-                                  ),
-                                ),
+                                customSelectedColor: accentColor,
                                 onSelected: (selected) {
                                   if (selected) {
                                     setModalState(

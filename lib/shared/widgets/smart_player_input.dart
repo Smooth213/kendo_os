@@ -4,6 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_pr
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 // 部内戦機能で利用する選手マスタを取得する専用Provider
 final bunaiksenPlayerMasterProvider =
@@ -46,13 +48,9 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
     String searchText = '';
     String selectedFilter = 'すべて';
 
-    await showModalBottomSheet(
+    await showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
       builder: (BuildContext sheetContext) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
@@ -188,35 +186,10 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                             final activeColor = _accentColor;
                             return Padding(
                               padding: const EdgeInsets.only(right: 8),
-                              child: ChoiceChip(
-                                showCheckmark: false, // チェックマークは非表示にしてスッキリ
+                              child: AppChoiceChip(
                                 label: Text(filterName),
-                                labelStyle: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : (isDark
-                                            ? Colors.grey.shade300
-                                            : Colors.grey.shade700),
-                                ),
                                 selected: isSelected,
-                                selectedColor: activeColor,
-                                backgroundColor: isDark
-                                    ? Colors.grey.shade900
-                                    : Colors.grey.shade100,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: BorderSide(
-                                    color: isSelected
-                                        ? Colors.transparent
-                                        : (isDark
-                                              ? const Color(0xFF2C2C2E)
-                                              : Colors.grey.shade300),
-                                  ),
-                                ),
+                                customSelectedColor: activeColor,
                                 onSelected: (bool selected) {
                                   if (selected) {
                                     setStateSheet(() {

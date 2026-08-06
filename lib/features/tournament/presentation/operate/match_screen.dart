@@ -38,6 +38,8 @@ import 'package:kendo_os/shared/widgets/scoreboard.dart';
 import 'package:kendo_os/features/match/domain/match_state.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 
@@ -2037,7 +2039,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2485,7 +2487,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           spacing: 8,
                           runSpacing: 8,
                           children: substitutes.map((p) {
-                            return ActionChip(
+                            return AppActionChip(
                               label: Text(p.name),
                               backgroundColor: isDark
                                   ? Colors.teal.shade900.withValues(alpha: 0.3)
@@ -2702,7 +2704,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final textColor = isDark ? Colors.white : Colors.black87;
     final inputBg = isDark ? const Color(0xFF2C2C2E) : Colors.white;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -2799,7 +2801,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   runSpacing: 8,
                                   children: redPlayers
                                       .map(
-                                        (p) => ChoiceChip(
+                                        (p) => AppChoiceChip(
                                           label: Text(p),
                                           selected: redCtrl.text == p,
                                           selectedColor: isDark
@@ -2893,7 +2895,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   runSpacing: 8,
                                   children: whitePlayers
                                       .map(
-                                        (p) => ChoiceChip(
+                                        (p) => AppChoiceChip(
                                           label: Text(p),
                                           selected: whiteCtrl.text == p,
                                           selectedColor: isDark
@@ -3201,7 +3203,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         : Colors.grey.shade100;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -3455,7 +3457,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 runSpacing: 8,
                                 children: redPlayers.map((p) {
                                   final isMaster = redMasterSet.contains(p);
-                                  return ChoiceChip(
+                                  return AppChoiceChip(
                                     label: Text(p),
                                     selected: redCtrl.text == p,
                                     selectedColor: isDark
@@ -3559,7 +3561,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 runSpacing: 8,
                                 children: whitePlayers.map((p) {
                                   final isMaster = whiteMasterSet.contains(p);
-                                  return ChoiceChip(
+                                  return AppChoiceChip(
                                     label: Text(p),
                                     selected: whiteCtrl.text == p,
                                     selectedColor: isDark
@@ -3995,7 +3997,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       daihyoDesc = '不明（古いデータ）';
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

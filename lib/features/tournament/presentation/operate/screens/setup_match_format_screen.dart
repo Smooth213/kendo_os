@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
   return ['1回戦', '2回戦', '準決勝', '決勝', '第1試合', '第2コート'];
@@ -492,7 +493,7 @@ class _SetupMatchFormatScreenState
                   height: 5,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -1146,7 +1147,6 @@ class _SetupMatchFormatScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final selectedChipColor = _themeColors.softAccent;
 
     return ListView(
       // ★ Phase 8-2: 余白のないページ（2ページ目以降）に合わせるため、パディングを調整
@@ -1170,20 +1170,9 @@ class _SetupMatchFormatScreenState
           runSpacing: 8,
           children: _majorCategories
               .map(
-                (cat) => ChoiceChip(
-                  label: Text(
-                    cat,
-                    style: TextStyle(
-                      fontWeight: _selectedMajorCategory == cat
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                      color: _selectedMajorCategory == cat
-                          ? _themeColors.primaryAccent
-                          : (isDark ? Colors.white : Colors.black87),
-                    ),
-                  ),
+                (cat) => AppChoiceChip(
+                  label: Text(cat),
                   selected: _selectedMajorCategory == cat,
-                  selectedColor: selectedChipColor,
                   onSelected: (s) => s
                       ? setState(() {
                           _selectedMajorCategory = cat;
@@ -1210,20 +1199,9 @@ class _SetupMatchFormatScreenState
               if (cat == '低学年') label = '低学年 (1-4年)';
               if (cat == '高学年') label = '高学年 (5-6年)';
             }
-            return ChoiceChip(
-              label: Text(
-                label,
-                style: TextStyle(
-                  fontWeight: _selectedMinorCategory == cat
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                  color: _selectedMinorCategory == cat
-                      ? _themeColors.primaryAccent
-                      : (isDark ? Colors.white : Colors.black87),
-                ),
-              ),
+            return AppChoiceChip(
+              label: Text(label),
               selected: _selectedMinorCategory == cat,
-              selectedColor: selectedChipColor,
               onSelected: (s) => s
                   ? setState(() {
                       _selectedMinorCategory = cat;
@@ -1576,10 +1554,9 @@ class _SetupMatchFormatScreenState
             children: [
               if (ruleSet.isMultiScene) ...[
                 if (ruleSet.useRenseikaiRule)
-                  ChoiceChip(
+                  AppChoiceChip(
                     label: const Text('⚔️ 錬成会ルール'),
                     selected: _selectedRuleScene == 'renseikai',
-                    selectedColor: Colors.amber.shade200,
                     onSelected: (selected) {
                       if (selected) {
                         _applyCategoryRuleScene('renseikai', ruleSet);
@@ -1587,10 +1564,9 @@ class _SetupMatchFormatScreenState
                     },
                   ),
                 if (ruleSet.useHonsenRule)
-                  ChoiceChip(
+                  AppChoiceChip(
                     label: const Text('🏆 本戦ルール'),
                     selected: _selectedRuleScene == 'honsen',
-                    selectedColor: Colors.indigo.shade200,
                     onSelected: (selected) {
                       if (selected) {
                         _applyCategoryRuleScene('honsen', ruleSet);
@@ -1598,10 +1574,9 @@ class _SetupMatchFormatScreenState
                     },
                   ),
                 if (ruleSet.useMoushiawaseRule)
-                  ChoiceChip(
+                  AppChoiceChip(
                     label: const Text('🤝 申し合わせルール'),
                     selected: _selectedRuleScene == 'moushiawase',
-                    selectedColor: Colors.teal.shade200,
                     onSelected: (selected) {
                       if (selected) {
                         _applyCategoryRuleScene('moushiawase', ruleSet);
@@ -1609,10 +1584,9 @@ class _SetupMatchFormatScreenState
                     },
                   ),
               ] else if (ruleSet.useHonsenRule) ...[
-                ChoiceChip(
+                AppChoiceChip(
                   label: const Text('🏆 通常戦ルール'),
                   selected: _selectedRuleScene == 'honsen',
-                  selectedColor: Colors.indigo.shade200,
                   onSelected: (selected) {
                     if (selected) {
                       _applyCategoryRuleScene('honsen', ruleSet);
@@ -1621,10 +1595,9 @@ class _SetupMatchFormatScreenState
                 ),
               ],
               if (ruleSet.useAdvancedRule)
-                ChoiceChip(
+                AppChoiceChip(
                   label: const Text('⭐ 上位戦ルール'),
                   selected: _selectedRuleScene == 'advanced',
-                  selectedColor: Colors.deepOrange.shade200,
                   onSelected: (selected) {
                     if (selected) _applyCategoryRuleScene('advanced', ruleSet);
                   },
@@ -1804,7 +1777,7 @@ class _SetupMatchFormatScreenState
                                   : (isDark ? Colors.white60 : Colors.black87),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                                 side: BorderSide(
                                   color: !isAdvanced
                                       ? Colors.transparent
@@ -1816,7 +1789,7 @@ class _SetupMatchFormatScreenState
                             ),
                             child: const Text(
                               '通常戦のルール',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ),
                         ),
@@ -1835,7 +1808,7 @@ class _SetupMatchFormatScreenState
                                   : (isDark ? Colors.white60 : Colors.black87),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                                 side: BorderSide(
                                   color: isAdvanced
                                       ? Colors.transparent
@@ -1847,7 +1820,7 @@ class _SetupMatchFormatScreenState
                             ),
                             child: const Text(
                               '上位戦のルール',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ),
                         ),
@@ -1985,16 +1958,8 @@ class _SetupMatchFormatScreenState
                       .split(',')
                       .map((e) => e.trim())
                       .contains(preset);
-                  return FilterChip(
+                  return AppFilterChip(
                     selected: isSelected,
-                    showCheckmark: isSelected,
-                    avatar: isSelected
-                        ? null
-                        : Icon(
-                            Icons.add,
-                            size: 14,
-                            color: _themeColors.primaryAccent,
-                          ),
                     label: Text(
                       preset,
                       style: TextStyle(
@@ -2008,21 +1973,6 @@ class _SetupMatchFormatScreenState
                                   ? _themeColors.textColor
                                   : _themeColors.primaryAccent),
                       ),
-                    ),
-                    backgroundColor: isDark
-                        ? const Color(0xFF2C2C2E)
-                        : _themeColors.softAccent,
-                    selectedColor: _themeColors.primaryAccent.withValues(
-                      alpha: 0.2,
-                    ),
-                    side: BorderSide(
-                      color: isSelected
-                          ? _themeColors.primaryAccent
-                          : (isDark
-                                ? const Color(0xFF38383A)
-                                : _themeColors.primaryAccent.withValues(
-                                    alpha: 0.2,
-                                  )),
                     ),
                     onSelected: (_) {
                       _toggleHeadingPreset(preset);
@@ -2058,16 +2008,8 @@ class _SetupMatchFormatScreenState
                           .split(',')
                           .map((e) => e.trim())
                           .contains(preset);
-                      return FilterChip(
+                      return AppFilterChip(
                         selected: isSelected,
-                        showCheckmark: isSelected,
-                        avatar: isSelected
-                            ? null
-                            : Icon(
-                                Icons.add,
-                                size: 14,
-                                color: _themeColors.primaryAccent,
-                              ),
                         label: Text(
                           preset,
                           style: TextStyle(
@@ -2081,21 +2023,6 @@ class _SetupMatchFormatScreenState
                                       ? _themeColors.textColor
                                       : _themeColors.primaryAccent),
                           ),
-                        ),
-                        backgroundColor: isDark
-                            ? const Color(0xFF2C2C2E)
-                            : _themeColors.softAccent,
-                        selectedColor: _themeColors.primaryAccent.withValues(
-                          alpha: 0.2,
-                        ),
-                        side: BorderSide(
-                          color: isSelected
-                              ? _themeColors.primaryAccent
-                              : (isDark
-                                    ? const Color(0xFF38383A)
-                                    : _themeColors.primaryAccent.withValues(
-                                        alpha: 0.2,
-                                      )),
                         ),
                         onSelected: (_) {
                           _toggleHeadingPreset(preset);
@@ -2181,7 +2108,19 @@ class _SetupMatchFormatScreenState
                 if (!isLastPage) {
                   if (_currentPage == 0 && _selectedTeamId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('出場する自チームを選択してください')),
+                      SnackBar(
+                        content: Text('出場する自チームを選択してください'),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        margin: const EdgeInsets.only(
+                          bottom: 20,
+                          left: 16,
+                          right: 16,
+                        ),
+                        duration: const Duration(seconds: 3),
+                      ),
                     );
                     return;
                   }

@@ -273,6 +273,20 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                             ).showSnackBar(
                                               SnackBar(
                                                 content: Text('出力に失敗しました: $e'),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                margin: const EdgeInsets.only(
+                                                  bottom: 20,
+                                                  left: 16,
+                                                  right: 16,
+                                                ),
+                                                duration: const Duration(
+                                                  seconds: 3,
+                                                ),
                                               ),
                                             );
                                           }
@@ -366,6 +380,18 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                       ).showSnackBar(
                                         SnackBar(
                                           content: Text('出力に失敗しました: $e'),
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          margin: const EdgeInsets.only(
+                                            bottom: 20,
+                                            left: 16,
+                                            right: 16,
+                                          ),
+                                          duration: const Duration(seconds: 3),
                                         ),
                                       );
                                     }

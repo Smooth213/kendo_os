@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/match/domain/rules/rule_preset.dart'; // ★ プリセットをインポート
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 // ==========================================
 // ★ Phase 7: UI Rule Builder (Basic/Advanced分離)
@@ -58,12 +59,9 @@ class RuleConfigPanel extends ConsumerWidget {
                   spacing: 8.0,
                   runSpacing: 8.0,
                   children: RulePreset.officials.map((preset) {
-                    return ActionChip(
+                    return AppActionChip(
                       label: Text(preset.name),
                       backgroundColor: Colors.purple.shade50,
-                      side: BorderSide(
-                        color: primaryColor.withValues(alpha: 0.5),
-                      ),
                       onPressed: () => notifier.applyPreset(preset),
                     );
                   }).toList(),

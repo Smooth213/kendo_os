@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 // ★ 安定したProvider定義
 final registeredTeamsProvider = StreamProvider.family
@@ -336,7 +337,7 @@ class _TeamRegistrationScreenState
                     height: 5,
                     decoration: BoxDecoration(
                       color: borderColor,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -779,7 +780,6 @@ class _TeamRegistrationScreenState
   Widget _buildPage1CategoryFormat() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final selectedChipColor = _themeColors.softAccent;
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -802,20 +802,9 @@ class _TeamRegistrationScreenState
           runSpacing: 8,
           children: [
             ..._mainMajorCategories.map(
-              (cat) => ChoiceChip(
-                label: Text(
-                  cat,
-                  style: TextStyle(
-                    fontWeight: _selectedMajorCategory == cat
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    color: _selectedMajorCategory == cat
-                        ? _themeColors.primaryAccent
-                        : (isDark ? Colors.white : Colors.black87),
-                  ),
-                ),
+              (cat) => AppChoiceChip(
+                label: Text(cat),
                 selected: _selectedMajorCategory == cat,
-                selectedColor: selectedChipColor,
                 onSelected: (s) => s
                     ? setState(() {
                         _selectedMajorCategory = cat;
@@ -826,20 +815,9 @@ class _TeamRegistrationScreenState
             ),
             if (_showExtraMajorCategories)
               ..._extraMajorCategories.map(
-                (cat) => ChoiceChip(
-                  label: Text(
-                    cat,
-                    style: TextStyle(
-                      fontWeight: _selectedMajorCategory == cat
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                      color: _selectedMajorCategory == cat
-                          ? _themeColors.primaryAccent
-                          : (isDark ? Colors.white : Colors.black87),
-                    ),
-                  ),
+                (cat) => AppChoiceChip(
+                  label: Text(cat),
                   selected: _selectedMajorCategory == cat,
-                  selectedColor: selectedChipColor,
                   onSelected: (s) => s
                       ? setState(() {
                           _selectedMajorCategory = cat;
@@ -848,17 +826,11 @@ class _TeamRegistrationScreenState
                       : null,
                 ),
               ),
-            ActionChip(
-              avatar: Icon(
-                _showExtraMajorCategories
-                    ? Icons.expand_less
-                    : Icons.expand_more,
-                size: 18,
-              ),
-              label: Text(
-                _showExtraMajorCategories ? '閉じる' : 'もっと見る',
-                style: const TextStyle(fontSize: 12),
-              ),
+            AppActionChip(
+              icon: _showExtraMajorCategories
+                  ? Icons.expand_less
+                  : Icons.expand_more,
+              label: Text(_showExtraMajorCategories ? '閉じる' : 'もっと見る'),
               onPressed: () => setState(
                 () => _showExtraMajorCategories = !_showExtraMajorCategories,
               ),
@@ -883,20 +855,9 @@ class _TeamRegistrationScreenState
                 label = '高学年 (5-6年)';
               }
             }
-            return ChoiceChip(
-              label: Text(
-                label,
-                style: TextStyle(
-                  fontWeight: _selectedMinorCategory == cat
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                  color: _selectedMinorCategory == cat
-                      ? _themeColors.primaryAccent
-                      : (isDark ? Colors.white : Colors.black87),
-                ),
-              ),
+            return AppChoiceChip(
+              label: Text(label),
               selected: _selectedMinorCategory == cat,
-              selectedColor: selectedChipColor,
               onSelected: (s) =>
                   s ? setState(() => _selectedMinorCategory = cat) : null,
             );
@@ -951,11 +912,9 @@ class _TeamRegistrationScreenState
           runSpacing: 8,
           children: [
             ..._mainMatchTypes.map(
-              (type) => ChoiceChip(
+              (type) => AppChoiceChip(
                 label: Text(type),
                 selected: _matchType == type,
-                selectedColor: selectedChipColor,
-                // ★ 形式変更時に補欠カウントもリセットする
                 onSelected: (s) => s
                     ? setState(() {
                         _matchType = type;
@@ -967,10 +926,9 @@ class _TeamRegistrationScreenState
             ),
             if (_showExtraMatchTypes)
               ..._extraMatchTypes.map(
-                (type) => ChoiceChip(
+                (type) => AppChoiceChip(
                   label: Text(type),
                   selected: _matchType == type,
-                  selectedColor: selectedChipColor,
                   onSelected: (s) => s
                       ? setState(() {
                           _matchType = type;
@@ -980,15 +938,11 @@ class _TeamRegistrationScreenState
                       : null,
                 ),
               ),
-            ActionChip(
-              avatar: Icon(
-                _showExtraMatchTypes ? Icons.expand_less : Icons.expand_more,
-                size: 18,
-              ),
-              label: Text(
-                _showExtraMatchTypes ? '閉じる' : 'もっと見る',
-                style: const TextStyle(fontSize: 12),
-              ),
+            AppActionChip(
+              icon: _showExtraMatchTypes
+                  ? Icons.expand_less
+                  : Icons.expand_more,
+              label: Text(_showExtraMatchTypes ? '閉じる' : 'もっと見る'),
               onPressed: () =>
                   setState(() => _showExtraMatchTypes = !_showExtraMatchTypes),
             ),
@@ -1425,7 +1379,19 @@ class _TeamRegistrationScreenState
                     if (_currentPage == 2) {
                       if (_teamNameController.text.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('チーム名を入力してください')),
+                          SnackBar(
+                            content: Text('チーム名を入力してください'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.only(
+                              bottom: 20,
+                              left: 16,
+                              right: 16,
+                            ),
+                            duration: const Duration(seconds: 3),
+                          ),
                         );
                         return;
                       }
@@ -1460,13 +1426,37 @@ class _TeamRegistrationScreenState
                       });
                       _pageController.jumpToPage(0);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('登録しました。続けて登録できます。')),
+                        SnackBar(
+                          content: Text('登録しました。続けて登録できます。'),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.only(
+                            bottom: 20,
+                            left: 16,
+                            right: 16,
+                          ),
+                          duration: const Duration(seconds: 3),
+                        ),
                       );
                     } else {
                       if (_currentPage == 1 &&
                           _teamNameController.text.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('チーム名を入力してください')),
+                          SnackBar(
+                            content: Text('チーム名を入力してください'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.only(
+                              bottom: 20,
+                              left: 16,
+                              right: 16,
+                            ),
+                            duration: const Duration(seconds: 3),
+                          ),
                         );
                         return;
                       }

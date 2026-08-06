@@ -6,6 +6,8 @@ import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/security/pin_guard.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 class PinAuthScreen extends ConsumerWidget {
@@ -45,11 +47,7 @@ class PinAuthScreen extends ConsumerWidget {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: IconThemeData(color: textColor),
-        ),
+        appBar: const AppHeader(backgroundColor: Colors.transparent),
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -158,12 +156,9 @@ class PinAuthScreen extends ConsumerWidget {
                                     context.go('/');
                                   }
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        '🔒 PINコードが一致しません。認証を拒絶しました。',
-                                      ),
-                                    ),
+                                  AppSnackBar.showError(
+                                    context,
+                                    '🔒 PINコードが一致しません。認証を拒絶しました。',
                                   );
                                 }
                               },

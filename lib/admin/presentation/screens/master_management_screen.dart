@@ -22,7 +22,11 @@ import 'package:flutter/services.dart'; // ★ 長押し時のバイブレーシ
 import 'package:flutter_slidable/flutter_slidable.dart'; // ★ iPhoneライクなスワイプ用
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -82,6 +86,9 @@ class _MasterManagementScreenState
     final bool isReadOnly = (currentRole == UserRole.viewer);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
 
     final Color primaryColor = isDark
@@ -92,8 +99,7 @@ class _MasterManagementScreenState
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          // ★ 修正1: 左側（Leading）の「✕」にキャンセル機能を割り当て
+        appBar: AppHeader(
           leading: _isSelectionMode
               ? IconButton(
                   icon: const Icon(Icons.close),
@@ -105,18 +111,12 @@ class _MasterManagementScreenState
                   },
                 )
               : null,
-          title: Text(
-            _isSelectionMode ? '${_selectedPlayerIds.length}人選択中' : '選手マスタ管理',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
-              letterSpacing: 1.2,
-            ),
-          ),
+          title: _isSelectionMode
+              ? '${_selectedPlayerIds.length}人選択中'
+              : '選手マスタ管理',
           backgroundColor: enableLiquidGlass
               ? Colors.transparent
-              : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-          elevation: 0,
+              : themeColors.cardBackground,
           actions: _isSelectionMode
               ? [
                   if (!isReadOnly && canManageMaster)
@@ -372,7 +372,7 @@ class _MasterManagementScreenState
                                     if (!isLast)
                                       Divider(
                                         height: 1,
-                                        thickness: 0.5,
+                                        thickness: 1,
                                         color: isDark
                                             ? const Color(0xFF38383A)
                                             : const Color(0xFFC6C6C8),
@@ -759,24 +759,22 @@ class _MasterManagementScreenState
       99: '一般',
     };
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       enableDrag: false,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        final primaryColor = isDark
-            ? Colors.purpleAccent
-            : Colors.purple.shade700;
-        final dialogBgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-        final inputBgColor = isDark
-            ? const Color(0xFF2C2C2C)
-            : Colors.grey.shade50;
-        final textColor = isDark ? Colors.white : Colors.black87;
+        final themeColors =
+            Theme.of(context).extension<AppThemeColors>() ??
+            AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+        final primaryColor = themeColors.primaryAccent;
+        final dialogBgColor = themeColors.cardBackground;
+        final inputBgColor = themeColors.inputBackground;
+        final textColor = themeColors.textColor;
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -805,7 +803,7 @@ class _MasterManagementScreenState
                         color: isDark
                             ? Colors.grey.shade700
                             : Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
@@ -1153,10 +1151,9 @@ class _MasterManagementScreenState
     final initialName = ref.read(currentDojoNameProvider).value ?? '';
     final controller = TextEditingController(text: initialName);
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       enableDrag: false,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -1197,7 +1194,7 @@ class _MasterManagementScreenState
                         color: isDark
                             ? Colors.grey.shade700
                             : Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
@@ -1403,9 +1400,8 @@ class _MasterManagementScreenState
   void _showMasterMenuBottomSheet(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
@@ -1428,7 +1424,7 @@ class _MasterManagementScreenState
                     height: 5,
                     decoration: BoxDecoration(
                       color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
@@ -1555,15 +1551,11 @@ class _MasterManagementScreenState
         await ref.read(playerRepositoryProvider).promoteAllPlayers();
         if (!context.mounted) return;
         Navigator.pop(context);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('一括進級が完了しました🌸')));
+        AppSnackBar.showSuccess(context, '一括進級が完了しました🌸');
       } catch (e) {
         if (!context.mounted) return;
         Navigator.pop(context);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('エラーが発生しました: $e')));
+        AppSnackBar.showError(context, 'エラーが発生しました: $e');
       }
     }
   }
@@ -1666,10 +1658,9 @@ class _MasterManagementScreenState
     final controller = TextEditingController(text: currentOrg);
     final primaryColor = Colors.purple.shade700;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       enableDrag: false,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -1707,7 +1698,7 @@ class _MasterManagementScreenState
                       height: 5,
                       decoration: BoxDecoration(
                         color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
@@ -1821,18 +1812,14 @@ class _MasterManagementScreenState
                               Navigator.pop(context); // ぐるぐるを閉じる
                             }
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('所属名を一括更新しました！')),
-                              );
+                              AppSnackBar.showSuccess(context, '所属名を一括更新しました！');
                             }
                           } catch (e) {
                             if (context.mounted) {
                               Navigator.pop(context);
                             }
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('エラーが発生しました: $e')),
-                              );
+                              AppSnackBar.showError(context, 'エラーが発生しました: $e');
                             }
                           }
                         },
@@ -1900,9 +1887,7 @@ class _MasterManagementScreenState
               trailing: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('キャッシュをクリアし、メモリを解放しました ✨')),
-                  );
+                  AppSnackBar.showSuccess(context, 'キャッシュをクリアし、メモリを解放しました ✨');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple.shade50,
@@ -1965,18 +1950,14 @@ class _MasterManagementScreenState
                     await file.writeAsString(jsonStr);
 
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('✅ バックアップ完了\n${file.path}'),
-                          duration: const Duration(seconds: 4),
-                        ),
+                      AppSnackBar.showSuccess(
+                        context,
+                        '✅ バックアップ完了\n${file.path}',
                       );
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text('❌ バックアップ失敗: $e')));
+                      AppSnackBar.showError(context, '❌ バックアップ失敗: $e');
                     }
                   }
                 },
@@ -2083,10 +2064,9 @@ class _MasterManagementScreenState
 
                       if (!context.mounted) return;
                       Navigator.pop(context); // ぐるぐるを閉じる
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('古いデータを一括削除し、ストレージを最適化しました 🗑️'),
-                        ),
+                      AppSnackBar.showSuccess(
+                        context,
+                        '古いデータを一括削除し、ストレージを最適化しました 🗑️',
                       );
                     }
                   },
@@ -2126,10 +2106,9 @@ class _MasterManagementScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
 
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       enableDrag: false,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -2164,7 +2143,7 @@ class _MasterManagementScreenState
                     height: 5,
                     decoration: BoxDecoration(
                       color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),

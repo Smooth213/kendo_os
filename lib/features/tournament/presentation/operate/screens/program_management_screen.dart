@@ -8,7 +8,10 @@ import 'package:kendo_os/shared/infrastructure/repository/program_repository.dar
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import '../providers/permission_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/utils/image_compressor.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 // =========================================================================
 // 🛡️ Phase 0 - STEP 0-1 要件：UIからFirestoreを完全隔離する抽象化プロバイダー
@@ -49,11 +52,8 @@ class _ProgramManagementScreenState
   }
 
   void _showPickerMenu() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
       builder: (BuildContext context) {
         return SafeArea(
           child: Wrap(
@@ -194,18 +194,14 @@ class _ProgramManagementScreenState
         Navigator.of(context, rootNavigator: true).pop();
       }
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('$fileCount件のプログラムをアップロードしました')));
+        AppSnackBar.showSuccess(context, '$fileCount件のプログラムをアップロードしました');
       }
     } catch (e) {
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
       }
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('エラーが発生しました: $e')));
+        AppSnackBar.showError(context, 'エラーが発生しました: $e');
       }
     }
   }
@@ -687,8 +683,8 @@ class _ProgramManagementScreenState
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text('プログラム管理'),
+        appBar: AppHeader(
+          title: 'プログラム管理',
           actions: [
             IconButton(
               icon: Icon(
@@ -756,7 +752,19 @@ class _ProgramManagementScreenState
           // ★ 修正: アップロード中の場合はタップを無効化し、Viewer画面での無限クルクルを防ぐ
           onTap: isUploading
               ? () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('アップロード中です。完了するまでお待ちください。')),
+                  SnackBar(
+                    content: Text('アップロード中です。完了するまでお待ちください。'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.only(
+                      bottom: 20,
+                      left: 16,
+                      right: 16,
+                    ),
+                    duration: const Duration(seconds: 3),
+                  ),
                 )
               : () => context.push(
                   '/program-viewer',
@@ -878,7 +886,19 @@ class _ProgramManagementScreenState
           // ★ 修正: アップロード中の場合はタップを無効化し、Viewer画面での無限クルクルを防ぐ
           onTap: isUploading
               ? () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('アップロード中です。完了するまでお待ちください。')),
+                  SnackBar(
+                    content: Text('アップロード中です。完了するまでお待ちください。'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.only(
+                      bottom: 20,
+                      left: 16,
+                      right: 16,
+                    ),
+                    duration: const Duration(seconds: 3),
+                  ),
                 )
               : () => context.push(
                   '/program-viewer',

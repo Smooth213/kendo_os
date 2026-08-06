@@ -23,8 +23,11 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/time
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart'; // ★ 追加
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import '../bulk_rule_edit_sheet.dart';
 import 'match_edit_sheet.dart';
 
@@ -3330,10 +3333,9 @@ void _showRenameTeamSheet(
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final primaryColor = isDark ? Colors.indigo.shade300 : Colors.indigo.shade700;
 
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     builder: (ctx) => Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -3355,7 +3357,7 @@ void _showRenameTeamSheet(
               height: 5,
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
@@ -3407,7 +3409,19 @@ void _showRenameTeamSheet(
                 if (ctx.mounted) {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('チーム名を一括更新しました ✨')),
+                    SnackBar(
+                      content: Text('チーム名を一括更新しました ✨'),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.only(
+                        bottom: 20,
+                        left: 16,
+                        right: 16,
+                      ),
+                      duration: const Duration(seconds: 3),
+                    ),
                   );
                 }
               },
@@ -3538,10 +3552,9 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
             : 'なし')
       : '不明（古いデータ）';
 
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     builder: (ctx) => Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -3558,7 +3571,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
               height: 5,
               decoration: BoxDecoration(
                 color: Colors.grey.shade400,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
@@ -4060,6 +4073,11 @@ Future<void> _createTieBreakMatch(
           backgroundColor: themeColors.primaryAccent,
           duration: const Duration(seconds: 4),
           content: Text(isAll ? '三つ巴の決定戦を一括作成しました' : '決定戦を作成しました'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
           action: firstMatchId != null
               ? SnackBarAction(
                   label: '試合へ',
@@ -4072,9 +4090,7 @@ Future<void> _createTieBreakMatch(
     }
   } catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('エラー: $e')));
+      AppSnackBar.showError(context, 'エラー: $e');
     }
   }
 }
@@ -4368,9 +4384,7 @@ void _showSummaryInputDialog(
                   }
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('エラー: $e')));
+                    AppSnackBar.showError(context, 'エラー: $e');
                   }
                 } finally {
                   if (context.mounted) {
@@ -4615,7 +4629,7 @@ void showUnifiedAnnounceDialog(
                     child: Row(
                       children: [
                         Expanded(
-                          child: ChoiceChip(
+                          child: AppChoiceChip(
                             label: SizedBox(
                               width: double.infinity,
                               child: Text(
@@ -4629,9 +4643,9 @@ void showUnifiedAnnounceDialog(
                               ),
                             ),
                             selected: selectedTarget == 'all',
-                            selectedColor: const Color(
+                            customSelectedColor: const Color(
                               0xFFFF69B4,
-                            ).withValues(alpha: 0.2), // サクラピンクの淡い選択色
+                            ).withValues(alpha: 0.2),
                             onSelected: (val) {
                               if (val) {
                                 setDialogState(() => selectedTarget = 'all');
@@ -4641,7 +4655,7 @@ void showUnifiedAnnounceDialog(
                         ),
                         const SizedBox(width: 4),
                         Expanded(
-                          child: ChoiceChip(
+                          child: AppChoiceChip(
                             label: SizedBox(
                               width: double.infinity,
                               child: Text(
@@ -4655,7 +4669,7 @@ void showUnifiedAnnounceDialog(
                               ),
                             ),
                             selected: selectedTarget == 'staff',
-                            selectedColor: Colors.deepOrange.withValues(
+                            customSelectedColor: Colors.deepOrange.withValues(
                               alpha: 0.2,
                             ),
                             onSelected: (val) {
@@ -4765,6 +4779,16 @@ void showUnifiedAnnounceDialog(
                                   ? 'スタッフ限定業務連絡を発信しました'
                                   : '全員向け緊急アナウンスを一斉配信しました',
                             ),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.only(
+                              bottom: 20,
+                              left: 16,
+                              right: 16,
+                            ),
+                            duration: const Duration(seconds: 3),
                           ),
                         );
                       }
@@ -4774,6 +4798,16 @@ void showUnifiedAnnounceDialog(
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('送信に失敗しました: ${e.toString()}'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.only(
+                              bottom: 20,
+                              left: 16,
+                              right: 16,
+                            ),
+                            duration: const Duration(seconds: 3),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -4871,10 +4905,9 @@ void _showEditGroupNoteDialog(
   if (groupList.isEmpty) return;
   final firstMatch = groupList.first;
 
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     builder: (ctx) {
       return MatchEditSheet(
         matches: groupList,
@@ -5015,10 +5048,9 @@ void _showEditNoteDialog(
   WidgetRef ref,
   MatchModel match,
 ) {
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     builder: (ctx) {
       return MatchEditSheet(
         matches: [match],
@@ -5099,7 +5131,7 @@ class MatchListTileCard extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300,
           width: 1.2,
@@ -5639,10 +5671,9 @@ void _showOrderReorderSheet(
   if (sortedMatches.isEmpty) return;
   // firstMatch unused variable removed
 
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     builder: (context) {
       return _OrderReorderBottomSheet(sortedMatches: sortedMatches);
     },
@@ -5868,15 +5899,11 @@ class _OrderReorderBottomSheetState
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('オーダーを更新しました。')));
+        AppSnackBar.showSuccess(context, 'オーダーを更新しました。');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('オーダーの更新に失敗しました: $e')));
+        AppSnackBar.showError(context, 'オーダーの更新に失敗しました: $e');
       }
     } finally {
       if (mounted) {
@@ -6021,7 +6048,7 @@ class _OrderReorderBottomSheetState
                             color: isDark
                                 ? Colors.grey.shade700
                                 : Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),

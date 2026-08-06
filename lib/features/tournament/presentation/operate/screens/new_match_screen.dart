@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 // 選手マスタ取得用プロバイダ
 final newMatchPlayerMasterProvider =
@@ -241,10 +242,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         children: existingCategories.map((cat) {
                           final isSelected =
                               _categoryController.text.trim() == cat;
-                          return ChoiceChip(
+                          return AppChoiceChip(
                             label: Text(cat),
                             selected: isSelected,
-                            selectedColor: Colors.indigo.shade100,
                             onSelected: (selected) {
                               if (selected) {
                                 setState(() {
@@ -405,15 +405,11 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                     .split(',')
                                     .map((e) => e.trim())
                                     .contains(preset);
-                                return FilterChip(
+                                return AppFilterChip(
                                   selected: isSelected,
-                                  showCheckmark: true,
                                   label: Text(
                                     preset,
                                     style: const TextStyle(fontSize: 11),
-                                  ),
-                                  selectedColor: Colors.indigo.withAlpha(
-                                    isDark ? 80 : 40,
                                   ),
                                   onSelected: (_) {
                                     _toggleHeadingPreset(preset);
@@ -452,15 +448,11 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                       .split(',')
                                       .map((e) => e.trim())
                                       .contains(preset);
-                                  return FilterChip(
+                                  return AppFilterChip(
                                     selected: isSelected,
-                                    showCheckmark: true,
                                     label: Text(
                                       preset,
                                       style: const TextStyle(fontSize: 11),
-                                    ),
-                                    selectedColor: Colors.indigo.withAlpha(
-                                      isDark ? 80 : 40,
                                     ),
                                     onSelected: (_) {
                                       _toggleHeadingPreset(preset);
@@ -764,9 +756,17 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         return;
       }
       if (widget.tournamentId == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('大会IDが不明なため保存できません')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('大会IDが不明なため保存できません'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            margin: EdgeInsets.only(bottom: 20, left: 16, right: 16),
+            duration: Duration(seconds: 3),
+          ),
+        );
         return;
       }
 

@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/security/pwa_storage_bridge.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 // ★ テスト時にモック（FakeFirestore）を安全に注入するための専用Provider
 final roomFirestoreProvider = Provider<FirebaseFirestore>(
@@ -17,7 +19,7 @@ class RoomJoinQrDialog extends ConsumerStatefulWidget {
   const RoomJoinQrDialog({super.key});
 
   static void show(BuildContext context) {
-    showDialog(
+    showAppDialog(
       context: context,
       barrierDismissible: true,
       builder: (context) => const RoomJoinQrDialog(),
@@ -221,12 +223,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     // ダイアログを閉じる
     Navigator.of(context).pop();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('⚡ 道場空間 [ $code ] にリアルタイム直結しました'),
-        backgroundColor: Colors.teal,
-      ),
-    );
+    AppSnackBar.showSuccess(context, '⚡ 道場空間 [ $code ] にリアルタイム直結しました');
   }
 
   @override

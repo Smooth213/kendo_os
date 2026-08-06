@@ -4,6 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/role
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart'; // ★ deadLetterQueueProvider を参照するために追加
 import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart'; // ★ Step 8-3: ヘルプ画面への遷移用
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/main.dart'; // ★ 追加: rootNavigatorKey を参照するため
 
 class SyncStatusBar extends ConsumerWidget {
@@ -169,14 +170,9 @@ class SyncStatusBar extends ConsumerWidget {
     final navContext =
         rootNavigatorKey.currentContext ??
         context; // ★ 修正: ルートのNavigatorContextを使用
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: navContext, // ★ 修正: 安全なコンテキストを渡す
-      useRootNavigator: true, // ★ Phase 8修正: ステータスバーからの安全な展開のためルートナビゲーターを使用
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
       builder: (sheetContext) {
         return Consumer(
           builder: (context, sheetRef, _) {

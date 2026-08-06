@@ -594,7 +594,19 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
 
                 if (redName.isEmpty || whiteName.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('両選手の名前を入力してください')),
+                    SnackBar(
+                      content: Text('両選手の名前を入力してください'),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.only(
+                        bottom: 20,
+                        left: 16,
+                        right: 16,
+                      ),
+                      duration: const Duration(seconds: 3),
+                    ),
                   );
                   return;
                 }

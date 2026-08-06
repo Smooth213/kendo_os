@@ -6,6 +6,9 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 void showBulkRuleEditSheet(
   BuildContext context,
@@ -21,13 +24,9 @@ void showBulkRuleEditSheet(
         mode: isBunaiksen ? 'bunaiksen' : 'operate',
       );
 
-  showModalBottomSheet(
+  showAppBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
     builder: (context) {
       return BulkRuleEditSheet(
         tournamentId: tournamentId,
@@ -175,29 +174,10 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     required String label,
     required MatchRule targetRule,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSel = _selectedSceneType == sceneKey;
-    return ChoiceChip(
-      showCheckmark: false,
+    return AppChoiceChip(
       label: Text(label),
-      labelStyle: TextStyle(
-        fontSize: 11,
-        fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-        color: isSel
-            ? Colors.white
-            : (isDark ? Colors.grey.shade300 : Colors.grey.shade800),
-      ),
       selected: isSel,
-      selectedColor: widget.themeColors.primaryAccent,
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isSel
-              ? widget.themeColors.primaryAccent
-              : (isDark ? const Color(0xFF3A3A3C) : Colors.grey.shade300),
-        ),
-      ),
       onSelected: (selected) {
         if (selected) {
           setState(() {
@@ -735,36 +715,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                                     _selectedCategoryRuleName == catName;
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 8),
-                                  child: ChoiceChip(
-                                    showCheckmark: false,
+                                  child: AppChoiceChip(
                                     label: Text(catName),
-                                    labelStyle: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: isSel
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                      color: isSel
-                                          ? Colors.white
-                                          : (isDark
-                                                ? Colors.grey.shade300
-                                                : Colors.grey.shade800),
-                                    ),
                                     selected: isSel,
-                                    selectedColor:
-                                        widget.themeColors.primaryAccent,
-                                    backgroundColor: isDark
-                                        ? const Color(0xFF2C2C2E)
-                                        : Colors.grey.shade100,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      side: BorderSide(
-                                        color: isSel
-                                            ? Colors.transparent
-                                            : (isDark
-                                                  ? const Color(0xFF3A3A3C)
-                                                  : Colors.grey.shade300),
-                                      ),
-                                    ),
                                     onSelected: (selected) {
                                       if (selected) {
                                         setState(() {
@@ -785,7 +738,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                           // 2段目: 選択中部門のシーンサブチップ（本戦・錬成会・申し合わせ・決勝戦）
                           if (selectedRuleSet != null) ...[
                             const SizedBox(height: 10),
-                            const Divider(height: 1, thickness: 0.5),
+                            const Divider(height: 1, thickness: 1),
                             const SizedBox(height: 8),
                             Text(
                               '試合シーン・ルール用途を選択:',
@@ -1156,12 +1109,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                             );
 
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '$totalSelectedUnitsCount件の対戦ルールを一括変更しました。',
-                              ),
-                            ),
+                          AppSnackBar.showSuccess(
+                            context,
+                            '$totalSelectedUnitsCount件の対戦ルールを一括変更しました。',
                           );
                           Navigator.pop(context);
                         }
