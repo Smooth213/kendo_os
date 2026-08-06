@@ -9,6 +9,7 @@ import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import '../providers/permission_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/utils/image_compressor.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
@@ -218,22 +219,15 @@ class _ProgramManagementScreenState
     // ★ 修正②: OKボタン押下時にバリデーション失敗したらテキストを強調するフラグ
     bool showValidationHighlight = false;
 
-    return showDialog<Map<String, dynamic>>(
+    return showAppDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           final bool isDark = Theme.of(context).brightness == Brightness.dark;
-          return AlertDialog(
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 20,
-            ),
+          return AppDialog(
+            title: '順番とタイトルの確認',
             contentPadding: EdgeInsets.zero,
             clipBehavior: Clip.antiAlias,
-            title: const Text(
-              '順番とタイトルの確認',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
             content: Form(
               key: formKey,
               child: SizedBox(
@@ -611,13 +605,13 @@ class _ProgramManagementScreenState
   }
 
   void _showLoadingDialog(ValueNotifier<String> messageNotifier) {
-    showDialog(
+    showAppDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return PopScope(
           canPop: false,
-          child: AlertDialog(
+          child: AppDialog(
             content: ValueListenableBuilder<String>(
               valueListenable: messageNotifier,
               builder: (context, message, child) {
@@ -642,10 +636,12 @@ class _ProgramManagementScreenState
   }
 
   Future<void> _confirmDelete(ProgramModel program) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('プログラムの削除'),
+      builder: (context) => AppDialog(
+        title: 'プログラムの削除',
+        titleIcon: Icons.warning_amber_rounded,
+        iconColor: Colors.red,
         content: Text('「${program.title}」を削除しますか？'),
         actions: [
           TextButton(
@@ -751,21 +747,7 @@ class _ProgramManagementScreenState
         return InkWell(
           // ★ 修正: アップロード中の場合はタップを無効化し、Viewer画面での無限クルクルを防ぐ
           onTap: isUploading
-              ? () => ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('アップロード中です。完了するまでお待ちください。'),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.only(
-                      bottom: 20,
-                      left: 16,
-                      right: 16,
-                    ),
-                    duration: const Duration(seconds: 3),
-                  ),
-                )
+              ? () => AppSnackBar.show(context, 'アップロード中です。完了するまでお待ちください。')
               : () => context.push(
                   '/program-viewer',
                   extra: {'programs': programs, 'index': index},
@@ -885,21 +867,7 @@ class _ProgramManagementScreenState
           ),
           // ★ 修正: アップロード中の場合はタップを無効化し、Viewer画面での無限クルクルを防ぐ
           onTap: isUploading
-              ? () => ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('アップロード中です。完了するまでお待ちください。'),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.only(
-                      bottom: 20,
-                      left: 16,
-                      right: 16,
-                    ),
-                    duration: const Duration(seconds: 3),
-                  ),
-                )
+              ? () => AppSnackBar.show(context, 'アップロード中です。完了するまでお待ちください。')
               : () => context.push(
                   '/program-viewer',
                   extra: {'programs': programs, 'index': index},

@@ -16,6 +16,8 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 // 選手マスタ取得用プロバイダ
 final newMatchPlayerMasterProvider =
@@ -112,11 +114,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            '新規試合作成・自動生成',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+        appBar: const AppHeader(
+          title: '新規試合作成・自動生成',
+          backgroundColor: Colors.transparent,
         ),
         body: Center(
           child: ConstrainedBox(
@@ -756,17 +756,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         return;
       }
       if (widget.tournamentId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('大会IDが不明なため保存できません'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-            ),
-            margin: EdgeInsets.only(bottom: 20, left: 16, right: 16),
-            duration: Duration(seconds: 3),
-          ),
-        );
+        AppSnackBar.showError(context, '大会IDが不明なため保存できません');
         return;
       }
 

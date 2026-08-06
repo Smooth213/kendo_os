@@ -24,6 +24,8 @@ class AppDialog extends StatelessWidget {
   final Color? iconColor;
   final Widget? content;
   final List<Widget>? actions;
+  final EdgeInsetsGeometry? contentPadding;
+  final Clip clipBehavior;
   final EdgeInsetsGeometry? padding;
   final double radius;
 
@@ -34,6 +36,8 @@ class AppDialog extends StatelessWidget {
     this.iconColor,
     this.content,
     this.actions,
+    this.contentPadding,
+    this.clipBehavior = Clip.none,
     this.padding,
     this.radius = AppRadius.largeValue,
   });
@@ -51,8 +55,10 @@ class AppDialog extends StatelessWidget {
       ),
       backgroundColor: themeColors.cardBackground,
       surfaceTintColor: Colors.transparent,
+      clipBehavior: clipBehavior,
       titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      contentPadding:
+          contentPadding ?? const EdgeInsets.fromLTRB(20, 0, 20, 20),
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       title: title != null
           ? Row(

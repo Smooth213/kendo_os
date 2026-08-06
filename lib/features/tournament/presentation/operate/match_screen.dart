@@ -23,6 +23,7 @@ import 'package:kendo_os/features/match/application/usecases/match_application_s
 // ★ 追加：マスタとチーム情報を参照するためのインポート
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 // ★ Phase 3: 分割した専用Widgetをインポート
@@ -437,31 +438,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     // ★ Phase 7 - Step 3: エラー通知の監視（リスナー）
     ref.listen<UiMessage?>(uiMessageProvider, (previous, next) {
       if (next != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              next.text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            backgroundColor: next.isError
-                ? Colors.red.shade800
-                : Colors.green.shade800,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-            duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: 'OK',
-              textColor: Colors.white,
-              onPressed: () {},
-            ),
-          ),
-        );
+        if (next.isError) {
+          AppSnackBar.showError(context, next.text);
+        } else {
+          AppSnackBar.showSuccess(context, next.text);
+        }
       }
     });
 
@@ -1412,20 +1393,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                   ? confirmAction
                                                   : (isViewOnly
                                                         ? null
-                                                        : () => ScaffoldMessenger.of(context).showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                settings.confirmBehavior ==
-                                                                        'double'
-                                                                    ? 'ダブルタップで確定してください'
-                                                                    : '長押しで確定してください',
-                                                              ),
-                                                              duration:
-                                                                  const Duration(
-                                                                    milliseconds:
-                                                                        1500,
-                                                                  ),
-                                                            ),
+                                                        : () => AppSnackBar.show(
+                                                            context,
+                                                            settings.confirmBehavior ==
+                                                                    'double'
+                                                                ? 'ダブルタップで確定してください'
+                                                                : '長押しで確定してください',
                                                           )),
                                               onLongPress:
                                                   settings.confirmBehavior ==
@@ -1615,14 +1588,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                       if (!context.mounted) {
                                                         return;
                                                       }
-                                                      ScaffoldMessenger.of(
+                                                      AppSnackBar.show(
                                                         context,
-                                                      ).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            '$extStr（$extMins分）を開始します',
-                                                          ),
-                                                        ),
+                                                        '$extStr（$extMins分）を開始します',
                                                       );
                                                       return;
                                                     }
@@ -1671,14 +1639,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                         }
                                                       } catch (e) {
                                                         if (context.mounted) {
-                                                          ScaffoldMessenger.of(
+                                                          AppSnackBar.showError(
                                                             context,
-                                                          ).showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                '判定の保存に失敗しました: $e',
-                                                              ),
-                                                            ),
+                                                            '判定の保存に失敗しました: $e',
                                                           );
                                                         }
                                                       }
@@ -1729,20 +1692,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                       ? effectiveFinishAction
                                                       : (isViewOnly
                                                             ? null
-                                                            : () => ScaffoldMessenger.of(context).showSnackBar(
-                                                                SnackBar(
-                                                                  content: Text(
-                                                                    settings.confirmBehavior ==
-                                                                            'double'
-                                                                        ? 'ダブルタップで終了してください'
-                                                                        : '長押しで終了してください',
-                                                                  ),
-                                                                  duration:
-                                                                      const Duration(
-                                                                        milliseconds:
-                                                                            1500,
-                                                                      ),
-                                                                ),
+                                                            : () => AppSnackBar.show(
+                                                                context,
+                                                                settings.confirmBehavior ==
+                                                                        'double'
+                                                                    ? 'ダブルタップで終了してください'
+                                                                    : '長押しで終了してください',
                                                               )),
                                                   onLongPress:
                                                       settings.confirmBehavior ==
@@ -3069,15 +3024,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       ? confirmAction
                       : (isViewOnly
                             ? null
-                            : () => ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    settings.confirmBehavior == 'double'
-                                        ? 'ダブルタップで確定してください'
-                                        : '長押しで確定してください',
-                                  ),
-                                  duration: const Duration(milliseconds: 1500),
-                                ),
+                            : () => AppSnackBar.show(
+                                context,
+                                settings.confirmBehavior == 'double'
+                                    ? 'ダブルタップで確定してください'
+                                    : '長押しで確定してください',
                               )),
                   onLongPress: settings.confirmBehavior == 'long'
                       ? confirmAction
@@ -4489,9 +4440,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         },
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('待機列の選手がいなくなりました。無限稽古を終了します')),
-      );
+      AppSnackBar.show(context, '待機列の選手がいなくなりました。無限稽古を終了します');
       context.pop();
     }
   }

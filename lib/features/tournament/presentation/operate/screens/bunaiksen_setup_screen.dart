@@ -16,6 +16,8 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
   const BunaiksenSetupScreen({super.key});
@@ -243,20 +245,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
+        appBar: AppHeader(
           backgroundColor: enableLiquidGlass
               ? Colors.transparent
               : _themeColors.cardBackground,
           foregroundColor: _themeColors.textColor,
-          title: Text(
-            '試合セットアップ',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: _themeColors.textColor,
-            ),
-          ),
-          elevation: 0,
-          centerTitle: true,
+          title: '試合セットアップ',
           leading: IconButton(
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),
@@ -593,21 +587,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 final whiteName = _whitePlayerController.text.trim();
 
                 if (redName.isEmpty || whiteName.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('両選手の名前を入力してください'),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: const EdgeInsets.only(
-                        bottom: 20,
-                        left: 16,
-                        right: 16,
-                      ),
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
+                  AppSnackBar.showError(context, '両選手の名前を入力してください');
                   return;
                 }
 

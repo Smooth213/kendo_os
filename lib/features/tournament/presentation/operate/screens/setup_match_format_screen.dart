@@ -16,6 +16,9 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
   return ['1回戦', '2回戦', '準決勝', '決勝', '第1試合', '第2コート'];
@@ -466,113 +469,76 @@ class _SetupMatchFormatScreenState
         .where((e) => !players.any((p) => p.name == e.value))
         .toList();
 
-    final selected = await showModalBottomSheet<String>(
+    final selected = await showAppBottomSheet<String>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        height: MediaQuery.of(ctx).size.height * 0.75,
-        clipBehavior: Clip.antiAlias,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom,
-              top: 16,
-              left: 24,
-              right: 24,
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 48,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(12),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+      ),
+      builder: (ctx) => AppBottomSheetContent(
+        title: '${posNames[index]} の選択',
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ListView(
+            children: [
+              if (helperEntries.isNotEmpty) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    '手入力選手から選ぶ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  '${posNames[index]} の選択',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      if (helperEntries.isNotEmpty) ...[
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            '手入力選手から選ぶ',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange,
-                            ),
-                          ),
-                        ),
-                        ...helperEntries.map(
-                          (entry) => Card(
-                            color: Colors.orange.shade50,
-                            child: ListTile(
-                              title: Text(
-                                entry.value,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              trailing: Text(
-                                '${entry.key < posNames.length ? posNames[entry.key] : "補欠"}と入替',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.orange,
-                                ),
-                              ),
-                              onTap: () => Navigator.pop(ctx, entry.value),
-                            ),
-                          ),
-                        ),
-                      ],
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          '登録名簿から選ぶ',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _themeColors.primaryAccent,
-                          ),
+                ...helperEntries.map(
+                  (entry) => Card(
+                    color: Colors.orange.shade50,
+                    child: ListTile(
+                      title: Text(
+                        entry.value,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      trailing: Text(
+                        '${entry.key < posNames.length ? posNames[entry.key] : "補欠"}と入替',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.orange,
                         ),
                       ),
-                      ...players.map((p) {
-                        final usedIdx = team.playerNames.indexOf(p.name);
-                        final isUsed = usedIdx != -1 && usedIdx != index;
-                        return ListTile(
-                          title: Text(p.name),
-                          trailing: isUsed
-                              ? Text(
-                                  '${usedIdx < posNames.length ? posNames[usedIdx] : "補欠"}と入替',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.orange,
-                                  ),
-                                )
-                              : null,
-                          onTap: () => Navigator.pop(ctx, p.name),
-                        );
-                      }),
-                    ],
+                      onTap: () => Navigator.pop(ctx, entry.value),
+                    ),
                   ),
                 ),
               ],
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  '登録名簿から選ぶ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: _themeColors.primaryAccent,
+                  ),
+                ),
+              ),
+              ...players.map((p) {
+                final usedIdx = team.playerNames.indexOf(p.name);
+                final isUsed = usedIdx != -1 && usedIdx != index;
+                return ListTile(
+                  title: Text(p.name),
+                  trailing: isUsed
+                      ? Text(
+                          '${usedIdx < posNames.length ? posNames[usedIdx] : "補欠"}と入替',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.orange,
+                          ),
+                        )
+                      : null,
+                  onTap: () => Navigator.pop(ctx, p.name),
+                );
+              }),
+            ],
           ),
         ),
       ),
@@ -1088,21 +1054,14 @@ class _SetupMatchFormatScreenState
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Text(
-            '対戦フォーマット設定',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: _themeColors.textColor,
-            ),
-          ),
+        appBar: AppHeader(
+          title: '対戦フォーマット設定',
           backgroundColor:
               ref.watch(settingsProvider.select((s) => s.enableLiquidGlass))
               ? Colors.transparent
               : _themeColors.cardBackground,
-          iconTheme: IconThemeData(color: _themeColors.textColor),
+          foregroundColor: _themeColors.textColor,
           actions: const [
-            // 大会設定のマニュアルへ
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
             SizedBox(width: 8),
           ],
@@ -2107,21 +2066,7 @@ class _SetupMatchFormatScreenState
               onPressed: () {
                 if (!isLastPage) {
                   if (_currentPage == 0 && _selectedTeamId == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('出場する自チームを選択してください'),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        margin: const EdgeInsets.only(
-                          bottom: 20,
-                          left: 16,
-                          right: 16,
-                        ),
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
+                    AppSnackBar.show(context, '出場する自チームを選択してください');
                     return;
                   }
                   _pageController.nextPage(

@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 class CreateTournamentScreen extends ConsumerStatefulWidget {
   const CreateTournamentScreen({super.key});
@@ -167,13 +168,10 @@ class _CreateTournamentScreenState
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            '大会の新規作成',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          actions: const [
-            // ★ 設定の意味を確認できるよう「設定マニュアル」へ
+        appBar: const AppHeader(
+          title: '大会の新規作成',
+          backgroundColor: Colors.transparent,
+          actions: [
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
             SizedBox(width: 8),
           ],
@@ -432,21 +430,7 @@ class _CreateTournamentScreenState
               onPressed: () async {
                 if (_currentPage == 0) {
                   if (_nameController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('大会名を入力してください'),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        margin: const EdgeInsets.only(
-                          bottom: 20,
-                          left: 16,
-                          right: 16,
-                        ),
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
+                    AppSnackBar.showError(context, '大会名を入力してください');
                     return;
                   }
                   _pageController.nextPage(
@@ -480,21 +464,7 @@ class _CreateTournamentScreenState
 
                       if (!mounted) return;
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('基本情報を保存しました！'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          margin: const EdgeInsets.only(
-                            bottom: 20,
-                            left: 16,
-                            right: 16,
-                          ),
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
+                      AppSnackBar.showSuccess(context, '基本情報を保存しました！');
 
                       context.push('/team-registration/$newId');
                     } catch (e) {

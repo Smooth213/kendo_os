@@ -17,6 +17,10 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -108,13 +112,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
   Future<String?> _showManualInputDialog() async {
     String manualName = '';
-    return showDialog<String>(
+    return showAppDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          '選手名を直接入力',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+      builder: (context) => AppDialog(
+        title: '選手名を直接入力',
         content: TextField(
           autofocus: true,
           decoration: const InputDecoration(
@@ -143,19 +144,16 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
   Future<void> _selectPlayer(int index, List<PlayerModel> masterPlayers) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sheetBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final dividerColor = isDark
-        ? const Color(0xFF38383A)
-        : Colors.grey.shade300;
 
     String searchText = '';
     String selectedFilter = 'すべて';
 
-    final result = await showModalBottomSheet<String>(
+    final result = await showAppBottomSheet<String>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.80,
+      ),
       builder: (context) => StatefulBuilder(
         builder: (context, setStateSheet) {
           List<PlayerModel> filteredMaster = masterPlayers
@@ -196,211 +194,184 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
           filteredMaster.sort((a, b) => a.nameKana.compareTo(b.nameKana));
 
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.80,
-            decoration: BoxDecoration(
-              color: sheetBgColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-            ),
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              top: 16,
-              left: 24,
-              right: 24,
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 48,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: dividerColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '選手の選択',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: _themeColors.primaryAccent,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => Navigator.pop(context, 'CLEAR_FLAG'),
-                        icon: const Icon(Icons.person_outline, size: 16),
-                        label: const Text(
-                          '未定（空枠）',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.grey.shade700,
-                          side: BorderSide(color: Colors.grey.shade300),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => Navigator.pop(context, '欠員'),
-                        icon: const Icon(Icons.block, size: 16),
-                        label: const Text(
-                          '欠員（不戦敗）',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red.shade600,
-                          side: BorderSide(color: Colors.red.shade200),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                OutlinedButton.icon(
-                  onPressed: () async {
-                    final inputName = await _showManualInputDialog();
-                    if (context.mounted && inputName != null) {
-                      Navigator.pop(context, inputName);
-                    }
-                  },
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: const Text(
-                    '直接入力（助っ人など）',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _themeColors.primaryAccent,
-                    side: BorderSide(color: _themeColors.softAccent),
-                    minimumSize: const Size(double.infinity, 44),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // 検索窓
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: '名前で絞り込み...',
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: isDark
-                        ? Colors.grey.shade900
-                        : Colors.grey.shade100,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  ),
-                  onChanged: (val) => setStateSheet(() => searchText = val),
-                ),
-                const SizedBox(height: 8),
-                // カテゴリフィルター
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children:
-                        [
-                          'すべて',
-                          '初心者',
-                          '幼年',
-                          '低学年',
-                          '高学年',
-                          '中学生',
-                          '高校生',
-                          '一般',
-                        ].map((filterName) {
-                          final isSelected = selectedFilter == filterName;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: AppChoiceChip(
-                              label: Text(filterName),
-                              selected: isSelected,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setStateSheet(
-                                    () => selectedFilter = filterName,
-                                  );
-                                }
-                              },
-                            ),
-                          );
-                        }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: ListView(
+          return AppBottomSheetContent(
+            title: '選手の選択',
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  Row(
                     children: [
-                      ...filteredMaster.map(
-                        (p) => Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          elevation: 0,
-                          color: _themeColors.softAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: isDark
-                                  ? Colors.transparent
-                                  : _themeColors.softAccent,
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.pop(context, 'CLEAR_FLAG'),
+                          icon: const Icon(Icons.person_outline, size: 16),
+                          label: const Text(
+                            '未定（空枠）',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.grey.shade700,
+                            side: BorderSide(color: Colors.grey.shade300),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: isDark
-                                  ? const Color(0xFF2C2C2E)
-                                  : Colors.white,
-                              child: Text(
-                                p.name.substring(0, 1),
-                                style: TextStyle(
-                                  color: _themeColors.primaryAccent,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.pop(context, '欠員'),
+                          icon: const Icon(Icons.block, size: 16),
+                          label: const Text(
+                            '欠員（不戦敗）',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red.shade600,
+                            side: BorderSide(color: Colors.red.shade200),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            title: Text(
-                              p.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
-                              ),
-                            ),
-                            subtitle: Text(
-                              p.gradeName,
-                              style: TextStyle(
-                                color: _themeColors.primaryAccent,
-                                fontSize: 12,
-                              ),
-                            ),
-                            trailing: Icon(
-                              Icons.check_circle_outline,
-                              color: _themeColors.primaryAccent,
-                            ),
-                            onTap: () => Navigator.pop(context, p.name),
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final inputName = await _showManualInputDialog();
+                      if (context.mounted && inputName != null) {
+                        Navigator.pop(context, inputName);
+                      }
+                    },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text(
+                      '直接入力（助っ人など）',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _themeColors.primaryAccent,
+                      side: BorderSide(color: _themeColors.softAccent),
+                      minimumSize: const Size(double.infinity, 44),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // 検索窓
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: '名前で絞り込み...',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: isDark
+                          ? Colors.grey.shade900
+                          : Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
+                    onChanged: (val) => setStateSheet(() => searchText = val),
+                  ),
+                  const SizedBox(height: 8),
+                  // カテゴリフィルター
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children:
+                          [
+                            'すべて',
+                            '初心者',
+                            '幼年',
+                            '低学年',
+                            '高学年',
+                            '中学生',
+                            '高校生',
+                            '一般',
+                          ].map((filterName) {
+                            final isSelected = selectedFilter == filterName;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: AppChoiceChip(
+                                label: Text(filterName),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    setStateSheet(
+                                      () => selectedFilter = filterName,
+                                    );
+                                  }
+                                },
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        ...filteredMaster.map(
+                          (p) => Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            elevation: 0,
+                            color: _themeColors.softAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: isDark
+                                    ? Colors.transparent
+                                    : _themeColors.softAccent,
+                              ),
+                            ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : Colors.white,
+                                child: Text(
+                                  p.name.substring(0, 1),
+                                  style: TextStyle(
+                                    color: _themeColors.primaryAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                p.name,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor,
+                                ),
+                              ),
+                              subtitle: Text(
+                                p.gradeName,
+                                style: TextStyle(
+                                  color: _themeColors.primaryAccent,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              trailing: Icon(
+                                Icons.check_circle_outline,
+                                color: _themeColors.primaryAccent,
+                              ),
+                              onTap: () => Navigator.pop(context, p.name),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -432,92 +403,70 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     );
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return showModalBottomSheet<List<String>>(
+    return showAppBottomSheet<List<String>>(
       context: context,
-      isScrollControlled: true, // キーボード対応
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom, // キーボードを避ける
-          top: 16,
-          left: 24,
-          right: 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '$teamName のオーダー',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: _themeColors.primaryAccent,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.4,
-              ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: positions.length,
-                itemBuilder: (context, i) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: TextField(
-                    controller: controllers[i],
-                    autofocus: i == 0,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: positions[i],
-                      filled: true,
-                      fillColor: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+      builder: (ctx) => AppBottomSheetContent(
+        title: '$teamName のオーダー',
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.4,
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: positions.length,
+                  itemBuilder: (context, i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: TextField(
+                      controller: controllers[i],
+                      autofocus: i == 0,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: positions[i],
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF2C2C2E)
+                            : Colors.grey.shade50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(
-                  ctx,
-                  controllers.map((c) => TextSanitizer.clean(c.text)).toList(),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _themeColors.primaryAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text(
-                  '決定して追加',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(
+                    ctx,
+                    controllers
+                        .map((c) => TextSanitizer.clean(c.text))
+                        .toList(),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _themeColors.primaryAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    '決定して追加',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-            // ★ 修正：団体戦用の下部余白
-            const SizedBox(height: 24),
-          ],
+              // ★ 修正：団体戦用の下部余白
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
@@ -528,78 +477,54 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     final nameController = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return showModalBottomSheet<String>(
+    return showAppBottomSheet<String>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          top: 16,
-          left: 24,
-          right: 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              teamName.isNotEmpty ? '$teamName の選手名' : '選手名の登録',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: _themeColors.primaryAccent,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nameController,
-              autofocus: true,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-              decoration: InputDecoration(
-                labelText: '選手名（例：田中太郎）',
-                filled: true,
-                fillColor: isDark
-                    ? const Color(0xFF2C2C2E)
-                    : Colors.grey.shade50,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+      builder: (ctx) => AppBottomSheetContent(
+        title: teamName.isNotEmpty ? '$teamName の選手名' : '選手名の登録',
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              TextField(
+                controller: nameController,
+                autofocus: true,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: InputDecoration(
+                  labelText: '選手名（例：田中太郎）',
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(
-                  ctx,
-                  TextSanitizer.clean(nameController.text),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _themeColors.primaryAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text(
-                  '決定して追加',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(
+                    ctx,
+                    TextSanitizer.clean(nameController.text),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _themeColors.primaryAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    '決定して追加',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-            // ★ 修正：個人戦用は「少し広め」の48pxに設定
-            const SizedBox(height: 48),
-          ],
+              // ★ 修正：個人戦用は「少し広め」の48pxに設定
+              const SizedBox(height: 48),
+            ],
+          ),
         ),
       ),
     );
@@ -683,13 +608,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            'オーダー編成',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          actions: const [
-            // チーム登録・オーダー設定のマニュアルへ
+        appBar: const AppHeader(
+          title: 'オーダー編成',
+          backgroundColor: Colors.transparent,
+          actions: [
             ManualHelpButton(
               manualPath: 'docs/manuals/operator/team_registration.md',
             ),
@@ -784,10 +706,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   if (_leagueParticipants.contains(
                                     inputTeamName,
                                   )) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('その名称は既に登録されています'),
-                                      ),
+                                    AppSnackBar.showError(
+                                      context,
+                                      'その名称は既に登録されています',
                                     );
                                     return;
                                   }
@@ -813,12 +734,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     }
                                   } else {
                                     if (inputTeamName.isEmpty) {
-                                      ScaffoldMessenger.of(
+                                      AppSnackBar.showError(
                                         context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('チーム名を入力してください'),
-                                        ),
+                                        'チーム名を入力してください',
                                       );
                                       return;
                                     }
@@ -1189,10 +1107,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 ref
                                     .read(matchRuleProvider.notifier)
                                     .updateBaseOrder(currentOrder);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('現在のオーダーを「基本オーダー」として記憶しました'),
-                                  ),
+                                AppSnackBar.showSuccess(
+                                  context,
+                                  '現在のオーダーを「基本オーダー」として記憶しました',
                                 );
                               },
                               icon: const Icon(Icons.save_alt, size: 16),
@@ -1229,12 +1146,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                           }
                                         }
                                       });
-                                      ScaffoldMessenger.of(
+                                      AppSnackBar.showSuccess(
                                         context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('基本オーダーを呼び出しました'),
-                                        ),
+                                        '基本オーダーを呼び出しました',
                                       );
                                     },
                               icon: const Icon(Icons.download, size: 16),
@@ -1584,13 +1498,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     child: GlassButton(
                       onPressed: () async {
                         // ★ 修正：ここではチェックせず、後の pairings 生成直前のバリデーションに集約します
-                        final bool? isStartNow = await showDialog<bool>(
+                        final bool? isStartNow = await showAppDialog<bool>(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text(
-                              '試合の登録',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                          builder: (context) => AppDialog(
+                            title: '試合の登録',
                             content: const Text(
                               'このオーダーで試合を登録します。今すぐ試合画面に進みますか？',
                             ),
@@ -1664,10 +1575,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
                           if (rule.isLeague) {
                             if (_leagueParticipants.length < 2) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('リーグ戦には少なくとも2つのチーム・選手が必要です'),
-                                ),
+                              AppSnackBar.showError(
+                                context,
+                                'リーグ戦には少なくとも2つのチーム・選手が必要です',
                               );
                               Navigator.of(context, rootNavigator: true).pop();
                               return;
@@ -1926,10 +1836,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               context.go('/home/${widget.tournamentId}');
                             }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('試合をプールしました（待機リストに追加）'),
-                              ),
+                            AppSnackBar.showSuccess(
+                              context,
+                              '試合をプールしました（待機リストに追加）',
                             );
                             context.go('/home/${widget.tournamentId}');
                           }
@@ -1938,9 +1847,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             return;
                           }
                           Navigator.of(context, rootNavigator: true).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('保存に失敗しました: $e')),
-                          );
+                          AppSnackBar.showError(context, '保存に失敗しました: $e');
                         }
                       },
                       color: _themeColors.primaryAccent,

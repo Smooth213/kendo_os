@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 class GlassButton extends ConsumerWidget {
   final VoidCallback? onPressed;
@@ -82,7 +83,7 @@ class GlassButton extends ConsumerWidget {
     Widget buttonContent = Material(
       color: bgColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         side: BorderSide(
           color: borderColor,
           width: (enableLiquidGlass || child != null) ? 1.5 : 0,
@@ -105,7 +106,7 @@ class GlassButton extends ConsumerWidget {
     );
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: AppRadius.large,
       child: enableLiquidGlass
           ? BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),
@@ -133,7 +134,7 @@ class GlassButton extends ConsumerWidget {
                 label!,
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: textColor,
                 ),
               ),
@@ -143,7 +144,7 @@ class GlassButton extends ConsumerWidget {
               label!,
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 color: textColor,
               ),
             ),

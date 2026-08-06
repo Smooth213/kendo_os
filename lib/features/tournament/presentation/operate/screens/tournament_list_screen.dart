@@ -11,6 +11,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'dart:ui';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -45,20 +46,14 @@ class TournamentListScreen extends ConsumerWidget {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          // ★ 修正：白飛びして見えなくなっていた戻るボタンを、タイトルと同じ色で明示的に配置！
+        appBar: AppHeader(
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: accentColor, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text(
-            isArchive ? '過去の大会 (アーカイブ)' : '最近の大会',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          title: isArchive ? '過去の大会 (アーカイブ)' : '最近の大会',
           backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
-          elevation: 0,
           actions: const [
-            // 全体の目次へ誘導
             ManualHelpButton(manualPath: 'docs/manuals/manual_index.md'),
             SizedBox(width: 8),
           ],

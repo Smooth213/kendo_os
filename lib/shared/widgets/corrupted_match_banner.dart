@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 class CorruptedMatchBanner extends ConsumerWidget {
   final String matchId;
@@ -28,7 +29,7 @@ class CorruptedMatchBanner extends ConsumerWidget {
               'データに問題が発生しました',
               style: TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 fontSize: 13,
               ),
             ),

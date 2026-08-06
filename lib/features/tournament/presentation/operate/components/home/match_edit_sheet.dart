@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 /// 🏆 試合・団体戦対戦枠の詳細編集を行うボトムシート
 class MatchEditSheet extends ConsumerStatefulWidget {
@@ -1295,11 +1296,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         .saveMatchesBulk(updatedMatches);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isDantai ? '団体戦の全試合情報を一括保存しました' : '試合情報を保存・更新しました'),
-          duration: const Duration(seconds: 2),
-        ),
+      AppSnackBar.showSuccess(
+        context,
+        _isDantai ? '団体戦の全試合情報を一括保存しました' : '試合情報を保存・更新しました',
       );
       Navigator.pop(context);
     }

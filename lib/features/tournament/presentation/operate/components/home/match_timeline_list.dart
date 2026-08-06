@@ -3408,21 +3408,7 @@ void _showRenameTeamSheet(
                     );
                 if (ctx.mounted) {
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('チーム名を一括更新しました ✨'),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: const EdgeInsets.only(
-                        bottom: 20,
-                        left: 16,
-                        right: 16,
-                      ),
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
+                  AppSnackBar.showSuccess(context, 'チーム名を一括更新しました ✨');
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -4012,13 +3998,6 @@ Future<void> _createTieBreakMatch(
   required bool isAll,
   String mode = 'daihyo',
 }) async {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  final bool isBunaiksen =
-      firstMatch.tournamentId?.startsWith('bunaiksen_') ?? false;
-  final themeColors = AppThemeColors.ofMode(
-    isDark: isDark,
-    mode: isBunaiksen ? 'bunaiksen' : 'normal',
-  );
   try {
     final List<Map<String, String>> matchups = [];
     if (isAll) {
@@ -4068,24 +4047,9 @@ Future<void> _createTieBreakMatch(
       }
     }
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: themeColors.primaryAccent,
-          duration: const Duration(seconds: 4),
-          content: Text(isAll ? '三つ巴の決定戦を一括作成しました' : '決定戦を作成しました'),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
-          action: firstMatchId != null
-              ? SnackBarAction(
-                  label: '試合へ',
-                  textColor: Colors.white,
-                  onPressed: () => context.push('/match/$firstMatchId'),
-                )
-              : null,
-        ),
+      AppSnackBar.showSuccess(
+        context,
+        isAll ? '三つ巴の決定戦を一括作成しました' : '決定戦を作成しました',
       );
     }
   } catch (e) {
@@ -4772,44 +4736,19 @@ void showUnifiedAnnounceDialog(
                           );
 
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              selectedTarget == 'staff'
-                                  ? 'スタッフ限定業務連絡を発信しました'
-                                  : '全員向け緊急アナウンスを一斉配信しました',
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.only(
-                              bottom: 20,
-                              left: 16,
-                              right: 16,
-                            ),
-                            duration: const Duration(seconds: 3),
-                          ),
+                        AppSnackBar.showSuccess(
+                          context,
+                          selectedTarget == 'staff'
+                              ? 'スタッフ限定業務連絡を発信しました'
+                              : '全員向け緊急アナウンスを一斉配信しました',
                         );
                       }
                     } catch (e) {
                       debugPrint('🚨 [AnnounceDialog] 送信エラー: $e');
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('送信に失敗しました: ${e.toString()}'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.only(
-                              bottom: 20,
-                              left: 16,
-                              right: 16,
-                            ),
-                            duration: const Duration(seconds: 3),
-                            backgroundColor: Colors.red,
-                          ),
+                        AppSnackBar.showError(
+                          context,
+                          '送信に失敗しました: ${e.toString()}',
                         );
                       }
                     }

@@ -11,6 +11,7 @@ import 'package:kendo_os/shared/widgets/match_tables/league_grid_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -268,26 +269,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                           );
                                         } catch (e) {
                                           if (context.mounted) {
-                                            ScaffoldMessenger.of(
+                                            AppSnackBar.showError(
                                               context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text('出力に失敗しました: $e'),
-                                                behavior:
-                                                    SnackBarBehavior.floating,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                margin: const EdgeInsets.only(
-                                                  bottom: 20,
-                                                  left: 16,
-                                                  right: 16,
-                                                ),
-                                                duration: const Duration(
-                                                  seconds: 3,
-                                                ),
-                                              ),
+                                              '出力に失敗しました: $e',
                                             );
                                           }
                                         } finally {
@@ -375,24 +359,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     );
                                   } catch (e) {
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(
+                                      AppSnackBar.showError(
                                         context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text('出力に失敗しました: $e'),
-                                          behavior: SnackBarBehavior.floating,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          margin: const EdgeInsets.only(
-                                            bottom: 20,
-                                            left: 16,
-                                            right: 16,
-                                          ),
-                                          duration: const Duration(seconds: 3),
-                                        ),
+                                        '出力に失敗しました: $e',
                                       );
                                     }
                                   } finally {

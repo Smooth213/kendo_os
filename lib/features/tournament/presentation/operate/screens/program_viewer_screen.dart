@@ -16,6 +16,7 @@ import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 // ★ 追加: Viewer画面を開いたままでもOCR完了をリアルタイムで検知するための専用プロバイダ
 final viewerProgramListProvider =
@@ -367,14 +368,11 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
+        appBar: AppHeader(
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          iconTheme: IconThemeData(
-            color: isDark ? Colors.white : Colors.black87,
-          ),
+          foregroundColor: isDark ? Colors.white : Colors.black87,
           elevation: _isDrawingMode ? 0 : 1,
-          // ★ 検索モード時はタイトルをTextFieldに切り替える
-          title: _isSearchMode
+          titleWidget: _isSearchMode
               ? TextField(
                   controller: _searchTextController,
                   autofocus: true,
@@ -406,38 +404,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     } else {
                       // 画像OCR検索の処理
                       if (!(currentProgram.isOcrProcessed ?? false)) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('現在クラウドで解析中です。しばらくお待ちください。'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.only(
-                              bottom: 20,
-                              left: 16,
-                              right: 16,
-                            ),
-                            duration: const Duration(seconds: 3),
-                          ),
-                        );
+                        AppSnackBar.show(context, '現在クラウドで解析中です。しばらくお待ちください。');
                       } else if (currentProgram.ocrWords == null ||
                           currentProgram.ocrWords!.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('この画像から文字が検出されませんでした。'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.only(
-                              bottom: 20,
-                              left: 16,
-                              right: 16,
-                            ),
-                            duration: const Duration(seconds: 3),
-                          ),
-                        );
+                        AppSnackBar.show(context, 'この画像から文字が検出されませんでした。');
                       }
                     }
                     setState(() {});

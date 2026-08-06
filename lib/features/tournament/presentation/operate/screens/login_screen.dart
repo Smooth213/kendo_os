@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/infrastructure/repository/auth_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -216,20 +217,9 @@ class LoginScreen extends ConsumerWidget {
                     } catch (e) {
                       debugPrint("❌ [LoginScreen] ログインエラー: $e");
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('ログインに失敗しました: ${e.toString()}'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
-                          ),
-                          margin: const EdgeInsets.only(
-                            bottom: 20,
-                            left: 16,
-                            right: 16,
-                          ),
-                          duration: const Duration(seconds: 4),
-                        ),
+                      AppSnackBar.showError(
+                        context,
+                        'ログインに失敗しました: ${e.toString()}',
                       );
                     }
                   },

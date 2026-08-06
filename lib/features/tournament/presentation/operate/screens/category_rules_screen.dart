@@ -16,6 +16,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 class CategoryRulesScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -459,11 +462,11 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
     if (targetMatches.isNotEmpty) {
       // 確認ダイアログを表示
-      final result = await showDialog<String>(
+      final result = await showAppDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          title: const Text('作成済みの試合に一括適用しますか？'),
+        builder: (ctx) => AppDialog(
+          title: '作成済みの試合に一括適用しますか？',
           content: Text(
             '「$category」の未開始・進行前の試合が ${targetMatches.length} 件見つかりました。\n'
             '設定したルールをこれらの既存の試合にも今すぐ適用しますか？\n'
@@ -533,17 +536,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         .updateTournament(updatedTournament);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('「$category」のルール設定を保存しました'),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      AppSnackBar.showSuccess(context, '「$category」のルール設定を保存しました');
       setState(() {
         _editingCategory = null;
       });
@@ -554,10 +547,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     TournamentModel tournament,
     String category,
   ) async {
-    final result = await showDialog<bool>(
+    final result = await showAppDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('部門を削除しますか？'),
+      builder: (ctx) => AppDialog(
+        title: '部門を削除しますか？',
+        titleIcon: Icons.warning_amber_rounded,
+        iconColor: Colors.red,
         content: Text('「$category」の部門および設定されているデフォルトルールをリストから削除します。よろしいですか？'),
         actions: [
           TextButton(
@@ -598,17 +593,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           .updateTournament(updatedTournament);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('「$category」を削除しました'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        AppSnackBar.show(context, '「$category」を削除しました');
       }
     }
   }
@@ -651,17 +636,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     _newCategoryController.clear();
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('「$cleanName」を追加しました'),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      AppSnackBar.showSuccess(context, '「$cleanName」を追加しました');
       _startEditing(cleanName, newRuleSet);
     }
   }
@@ -678,11 +653,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Text(
-            _editingCategory == null ? '部門別ルール設定' : 'ルールの編集',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+        appBar: AppHeader(
+          title: _editingCategory == null ? '部門別ルール設定' : 'ルールの編集',
+          backgroundColor: Colors.transparent,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {

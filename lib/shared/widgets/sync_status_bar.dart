@@ -5,6 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart'; // ★ deadLetterQueueProvider を参照するために追加
 import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart'; // ★ Step 8-3: ヘルプ画面への遷移用
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/main.dart'; // ★ 追加: rootNavigatorKey を参照するため
 
 class SyncStatusBar extends ConsumerWidget {
@@ -63,7 +64,7 @@ class SyncStatusBar extends ConsumerWidget {
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
               ),
 
@@ -82,7 +83,7 @@ class SyncStatusBar extends ConsumerWidget {
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                   ] else if (deadLetterCount > 0 ||

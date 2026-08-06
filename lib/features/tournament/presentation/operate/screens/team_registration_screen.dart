@@ -13,6 +13,8 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 // ★ 安定したProvider定義
 final registeredTeamsProvider = StreamProvider.family
@@ -250,9 +252,7 @@ class _TeamRegistrationScreenState
   ) async {
     final TextEditingController customNameController = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sheetBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
 
     // 手入力選手の抽出
     final helperEntries = _tempSelectedPlayers.entries
@@ -262,10 +262,11 @@ class _TeamRegistrationScreenState
 
     bool showAllPlayers = false; // フィルタ解除フラグ
 
-    final selected = await showModalBottomSheet<String>(
+    final selected = await showAppBottomSheet<String>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       builder: (ctx) => StatefulBuilder(
         // 内部で「全員表示」を切り替えるため
         builder: (context, setStateBottomSheet) {
@@ -313,35 +314,13 @@ class _TeamRegistrationScreenState
           // よみがな順でソート（常に美しく並ぶ）
           displayList.sort((a, b) => a.nameKana.compareTo(b.nameKana));
 
-          // ★ Phase 8-3: BottomSheetをキーボードの上に「スライド」させる魔法
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            ),
-            child: Container(
-              // 固定heightをやめ、maxHeightにすることでキーボード分上に持ち上がる
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(ctx).size.height * 0.85,
-              ),
-              decoration: BoxDecoration(
-                color: sheetBgColor,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-              ),
-              padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+          return AppBottomSheetContent(
+            title: '選手の選択 (${posNames[index]})',
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  Container(
-                    width: 48,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: borderColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1378,21 +1357,7 @@ class _TeamRegistrationScreenState
                   onPressed: () async {
                     if (_currentPage == 2) {
                       if (_teamNameController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('チーム名を入力してください'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.only(
-                              bottom: 20,
-                              left: 16,
-                              right: 16,
-                            ),
-                            duration: const Duration(seconds: 3),
-                          ),
-                        );
+                        AppSnackBar.showError(context, 'チーム名を入力してください');
                         return;
                       }
                       final cleanTeamName = TextSanitizer.clean(
@@ -1425,39 +1390,11 @@ class _TeamRegistrationScreenState
                         _currentPage = 0;
                       });
                       _pageController.jumpToPage(0);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('登録しました。続けて登録できます。'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          margin: const EdgeInsets.only(
-                            bottom: 20,
-                            left: 16,
-                            right: 16,
-                          ),
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
+                      AppSnackBar.showSuccess(context, '登録しました。続けて登録できます。');
                     } else {
                       if (_currentPage == 1 &&
                           _teamNameController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('チーム名を入力してください'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.only(
-                              bottom: 20,
-                              left: 16,
-                              right: 16,
-                            ),
-                            duration: const Duration(seconds: 3),
-                          ),
-                        );
+                        AppSnackBar.showError(context, 'チーム名を入力してください');
                         return;
                       }
                       _pageController.nextPage(
