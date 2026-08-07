@@ -98,7 +98,7 @@ class _MasterManagementScreenState
     final Color primaryColor = isDark
         ? Colors.purpleAccent
         : Colors.purple.shade700;
-    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color textColor = context.appColors.textColor;
 
     return LiquidBackground(
       child: Scaffold(
@@ -311,11 +311,7 @@ class _MasterManagementScreenState
                           ? Colors.purple.shade900.withValues(alpha: 0.4)
                           : Colors.purple.shade50,
                       selectedForegroundColor: primaryColor,
-                      side: BorderSide(
-                        color: isDark
-                            ? const Color(0xFF38383A)
-                            : Colors.grey.shade200,
-                      ),
+                      side: BorderSide(color: context.appColors.separatorColor),
                     ),
                   ),
                 ),
@@ -356,9 +352,7 @@ class _MasterManagementScreenState
                               horizontal: AppSpacing.lg,
                             ),
                             decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF1C1C1E)
-                                  : Colors.white,
+                              color: context.appColors.cardBackground,
                               borderRadius: AppRadius.medium,
                             ),
                             clipBehavior: Clip.antiAlias,
@@ -537,7 +531,7 @@ class _MasterManagementScreenState
                             style: TextStyle(
                               fontWeight: AppFontWeight.medium,
                               fontSize: AppFontSize.subhead,
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: context.appColors.textColor,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1164,7 +1158,7 @@ class _MasterManagementScreenState
     final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
     final dialogBgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
     final inputBgColor = isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade50;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     final initialName = ref.read(currentDojoNameProvider).value ?? '';
     final controller = TextEditingController(text: initialName);
@@ -1368,9 +1362,7 @@ class _MasterManagementScreenState
     bool isDark,
     VoidCallback onTap,
   ) {
-    final finalColor = isSel
-        ? color
-        : (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
+    final finalColor = isSel ? color : (context.appColors.subTextColor);
     return OutlinedButton(
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
@@ -1412,7 +1404,7 @@ class _MasterManagementScreenState
       builder: (ctx) => Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          color: context.appColors.cardBackground,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xlargeValue),
           ),
@@ -1450,7 +1442,7 @@ class _MasterManagementScreenState
                     'データとストレージ管理',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: context.appColors.textColor,
                     ),
                   ),
                   subtitle: const Text(
@@ -1485,7 +1477,7 @@ class _MasterManagementScreenState
                     '新年度の一括進級',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: context.appColors.textColor,
                     ),
                   ),
                   subtitle: const Text(
@@ -2117,7 +2109,7 @@ class _MasterManagementScreenState
 
           return Container(
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              color: context.appColors.cardBackground,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppRadius.xlargeValue),
               ),

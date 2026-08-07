@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/admin/providers/audit_provider.dart';
@@ -126,7 +128,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                           horizontal: AppSpacing.lg,
                           vertical: AppSpacing.xs,
                         ),
-                        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                        color: context.appColors.cardBackground,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: AppRadius.medium,
@@ -144,7 +146,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                             '$action',
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: context.appColors.textColor,
                               fontSize: AppFontSize.body,
                             ),
                           ),

@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,8 +30,8 @@ class RoleSelectScreen extends ConsumerWidget {
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
         : Colors.white.withValues(alpha: 0.6);
 
-    final textColor = isDark ? Colors.white : const Color(0xFF1A237E);
-    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final textColor = context.appColors.textColor;
+    final subTextColor = context.appColors.subTextColor;
 
     return LiquidBackground(
       child: Scaffold(
@@ -175,9 +177,9 @@ class RoleSelectScreen extends ConsumerWidget {
                                                   fontSize: AppFontSize.caption,
                                                   fontWeight:
                                                       AppFontWeight.bold,
-                                                  color: isDark
-                                                      ? Colors.grey.shade400
-                                                      : Colors.grey.shade600,
+                                                  color: context
+                                                      .appColors
+                                                      .subTextColor,
                                                   letterSpacing: 0.5,
                                                 ),
                                               ),

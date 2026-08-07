@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart' deferred as md;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1089,7 +1091,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 ),
                 em: TextStyle(
                   backgroundColor: Colors.yellow.withValues(alpha: 0.5),
-                  color: isDark ? Colors.white : Colors.black,
+                  color: context.appColors.textColor,
                   fontStyle: FontStyle.normal,
                   fontWeight: AppFontWeight.bold,
                 ),

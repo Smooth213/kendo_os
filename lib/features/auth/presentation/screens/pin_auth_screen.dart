@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
@@ -26,8 +28,8 @@ class PinAuthScreen extends ConsumerWidget {
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
         : Colors.white.withValues(alpha: 0.6);
 
-    final textColor = isDark ? Colors.white : const Color(0xFF1A237E);
-    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final textColor = context.appColors.textColor;
+    final subTextColor = context.appColors.subTextColor;
 
     // 前の画面のボタン色と合わせるためのテーマカラー定義
     Color roleColor;
