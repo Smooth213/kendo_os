@@ -40,7 +40,7 @@ class RoleSelectScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: AppRadius.huge,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
@@ -50,7 +50,7 @@ class RoleSelectScreen extends ConsumerWidget {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: AppRadius.huge,
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
                     child: Container(
@@ -208,9 +208,7 @@ class RoleSelectScreen extends ConsumerWidget {
                                                     alpha: 0.12,
                                                   )
                                                 : Colors.white,
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
+                                            borderRadius: AppRadius.medium,
                                             border: Border.all(
                                               color: isDark
                                                   ? Colors.transparent

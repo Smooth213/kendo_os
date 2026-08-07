@@ -135,7 +135,7 @@ class StartScreen extends ConsumerWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(32),
+                  bottom: Radius.circular(AppRadius.giantValue),
                 ),
                 boxShadow: isDark
                     ? []

@@ -1137,7 +1137,7 @@ class _MasterManagementScreenState
               decoration: BoxDecoration(
                 color: dialogBgColor,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+                  top: Radius.circular(AppRadius.xlargeValue),
                 ),
               ),
               padding: const EdgeInsets.only(
@@ -1186,7 +1186,7 @@ class _MasterManagementScreenState
             decoration: BoxDecoration(
               color: dialogBgColor,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+                top: Radius.circular(AppRadius.xlargeValue),
               ),
             ),
             padding: const EdgeInsets.only(
@@ -1409,7 +1409,9 @@ class _MasterManagementScreenState
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
         child: Material(
           color: Colors.transparent,
@@ -1679,7 +1681,9 @@ class _MasterManagementScreenState
             constraints: BoxConstraints(maxHeight: maxSheetHeight),
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(AppRadius.xlargeValue),
+              ),
             ),
             padding: const EdgeInsets.only(
               top: AppSpacing.lg,
@@ -2111,7 +2115,7 @@ class _MasterManagementScreenState
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+                top: Radius.circular(AppRadius.xlargeValue),
               ),
             ),
             padding: const EdgeInsets.only(

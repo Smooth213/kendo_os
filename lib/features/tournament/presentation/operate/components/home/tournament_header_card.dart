@@ -167,7 +167,9 @@ class TournamentHeaderCard extends ConsumerWidget {
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
         padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 56),
         child: Column(

@@ -289,7 +289,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       height: MediaQuery.of(context).size.height * 0.88,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xlargeValue),
+        ),
       ),
       child: Column(
         children: [

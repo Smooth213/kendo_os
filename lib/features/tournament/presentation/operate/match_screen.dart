@@ -674,7 +674,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                               : Colors.grey.shade100,
                                           borderRadius:
                                               const BorderRadius.vertical(
-                                                top: Radius.circular(8),
+                                                top: Radius.circular(
+                                                  AppRadius.smallValue,
+                                                ),
                                               ),
                                         ),
                                         alignment: Alignment
@@ -820,7 +822,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                               : null,
                                           borderRadius:
                                               const BorderRadius.vertical(
-                                                bottom: Radius.circular(8),
+                                                bottom: Radius.circular(
+                                                  AppRadius.smallValue,
+                                                ),
                                               ),
                                           child: Container(
                                             height: 36, // ★ さらに縮小
@@ -834,7 +838,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                   validEvents.isNotEmpty
                                                   ? const BorderRadius.vertical(
                                                       bottom: Radius.circular(
-                                                        8,
+                                                        AppRadius.smallValue,
                                                       ),
                                                     )
                                                   : AppRadius.small,
@@ -1732,12 +1736,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                       double.infinity,
                                                       36, // ★ さらに縮小して余裕を持たせる
                                                     ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            16,
-                                                          ),
-                                                    ),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              AppRadius.large,
+                                                        ),
                                                     elevation: 0,
                                                   ),
                                                   child: isProcessing
@@ -2212,7 +2215,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               elevation: 0,
               color: cardColor,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadius.compact,
                 side: borderSide,
               ),
               child: ListTile(
@@ -2322,7 +2325,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             child: Material(
               color: bgColor,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+                top: Radius.circular(AppRadius.xlargeValue),
               ),
               clipBehavior: Clip.antiAlias,
               child: Container(
@@ -2341,7 +2344,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       height: 5,
                       decoration: BoxDecoration(
                         color: Colors.grey.shade400,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: AppRadius.compact,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xl),
@@ -2443,7 +2446,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           side: BorderSide(color: Colors.red.shade400),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: AppRadius.compact,
                           ),
                         ),
                       ),
@@ -2715,7 +2718,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+                  top: Radius.circular(AppRadius.xlargeValue),
                 ),
               ),
               padding: const EdgeInsets.only(
@@ -2730,7 +2733,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     height: 5,
                     decoration: BoxDecoration(
                       color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppRadius.compact,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
@@ -3408,7 +3411,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
+                      top: Radius.circular(AppRadius.xlargeValue),
                     ),
                   ),
                   padding: const EdgeInsets.only(
@@ -3424,7 +3427,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         height: 5,
                         decoration: BoxDecoration(
                           color: Colors.grey.shade400,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: AppRadius.compact,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
@@ -4003,7 +4006,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
         child: Column(
@@ -4016,7 +4021,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 height: 5,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadius.compact,
                 ),
               ),
             ),
@@ -4540,7 +4545,7 @@ class _RenseikaiMasterTimerWidget extends ConsumerWidget {
           ),
           decoration: BoxDecoration(
             color: timerBgColor,
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: AppRadius.giant,
             border: Border.all(
               color: isTimeUp
                   ? Colors.red

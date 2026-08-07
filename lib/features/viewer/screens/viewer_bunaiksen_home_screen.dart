@@ -462,9 +462,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                                             : Colors
                                                                   .grey
                                                                   .shade200)),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
+                                            borderRadius: AppRadius.tiny,
                                           ),
                                           child: Text(
                                             isPlaying

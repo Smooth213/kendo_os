@@ -216,7 +216,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             side: BorderSide(color: Colors.grey.shade300),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: AppRadius.compact,
                             ),
                           ),
                         ),
@@ -235,7 +235,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             side: BorderSide(color: Colors.red.shade200),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: AppRadius.compact,
                             ),
                           ),
                         ),
@@ -260,7 +260,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       side: BorderSide(color: _themeColors.softAccent),
                       minimumSize: const Size(double.infinity, 44),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: AppRadius.compact,
                       ),
                     ),
                   ),
@@ -560,7 +560,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+        borderRadius: const BorderRadius.vertical(
+          bottom: Radius.circular(AppRadius.giantValue),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -589,7 +591,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             backgroundColor: Colors.white.withValues(alpha: 0.3),
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             minHeight: 6,
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: AppRadius.tiny,
           ),
         ],
       ),
@@ -929,9 +931,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                     ? const Color(0xFF2C2C2E)
                                                     : Colors.white)
                                               : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
+                                          borderRadius: AppRadius.small,
                                           boxShadow: (_isOwnTeamRed && !isDark)
                                               ? [
                                                   BoxShadow(
@@ -988,9 +988,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                     ? const Color(0xFF2C2C2E)
                                                     : Colors.white)
                                               : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
+                                          borderRadius: AppRadius.small,
                                           boxShadow: (!_isOwnTeamRed && !isDark)
                                               ? [
                                                   BoxShadow(
@@ -1265,7 +1263,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   FocusManager.instance.primaryFocus?.unfocus();
                                 },
                                 borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12),
+                                  top: Radius.circular(AppRadius.mediumValue),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(AppSpacing.lg),
@@ -1328,9 +1326,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                               : (isDark
                                                     ? const Color(0xFF2C2C2E)
                                                     : Colors.grey.shade100),
-                                          borderRadius: BorderRadius.circular(
-                                            20,
-                                          ),
+                                          borderRadius: AppRadius.round,
                                         ),
                                         child: Text(
                                           isSelected ? '変更' : '選択',
@@ -1379,7 +1375,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                         ? const Color(0xFF1E1E1E)
                                         : Colors.grey.shade50,
                                     borderRadius: const BorderRadius.vertical(
-                                      bottom: Radius.circular(12),
+                                      bottom: Radius.circular(
+                                        AppRadius.mediumValue,
+                                      ),
                                     ),
                                   ),
                                   padding: const EdgeInsets.symmetric(

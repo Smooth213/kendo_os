@@ -593,7 +593,7 @@ class HomeScreen extends ConsumerWidget {
           backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
           valueColor: AlwaysStoppedAnimation<Color>(themeColors.primaryAccent),
           minHeight: 6,
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: AppRadius.tiny,
         ),
         const SizedBox(height: AppSpacing.lg),
         _buildChecklistItem(

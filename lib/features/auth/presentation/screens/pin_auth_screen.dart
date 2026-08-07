@@ -55,7 +55,7 @@ class PinAuthScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: AppRadius.huge,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
@@ -65,7 +65,7 @@ class PinAuthScreen extends ConsumerWidget {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: AppRadius.huge,
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
                     child: Container(

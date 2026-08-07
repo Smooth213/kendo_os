@@ -107,7 +107,9 @@ class _AnnounceHistoryBottomSheetState
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white, // 90%のクリーンな白ベース
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.roundValue),
+        ),
       ),
       child: StreamBuilder<QuerySnapshot>(
         stream: query.snapshots(),

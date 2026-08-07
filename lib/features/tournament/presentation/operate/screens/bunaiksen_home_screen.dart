@@ -493,7 +493,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 label: '削除',
                                 // ★ 修正：カードの角丸と完全に一致させる
                                 borderRadius: const BorderRadius.horizontal(
-                                  right: Radius.circular(16),
+                                  right: Radius.circular(AppRadius.largeValue),
                                 ),
                               ),
                             ],
@@ -564,9 +564,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                                             : Colors
                                                                   .grey
                                                                   .shade200)),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
+                                            borderRadius: AppRadius.tiny,
                                           ),
                                           child: Text(
                                             isPlaying

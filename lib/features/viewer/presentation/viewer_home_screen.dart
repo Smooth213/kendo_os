@@ -536,9 +536,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                             ? const Color(0xFF2C2C2E)
                                             : Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
+                                          borderRadius: AppRadius.small,
                                           borderSide: BorderSide(
                                             color: isDark
                                                 ? const Color(0xFF38383A)
@@ -546,9 +544,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
+                                          borderRadius: AppRadius.small,
                                           borderSide: BorderSide(
                                             color: Colors.blueGrey.shade400,
                                           ),
@@ -1134,7 +1130,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                 : Colors.blueGrey.shade50,
                                             borderRadius:
                                                 const BorderRadius.vertical(
-                                                  top: Radius.circular(14),
+                                                  top: Radius.circular(
+                                                    AppRadius.modernValue,
+                                                  ),
                                                 ),
                                             border: Border(
                                               bottom: BorderSide(
@@ -1321,9 +1319,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                     decoration: BoxDecoration(
                                                       // ★ 修正: color: cardBg, を削除
                                                       borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
+                                                          AppRadius.medium,
                                                       border: Border.all(
                                                         color: isDark
                                                             ? const Color(
@@ -1355,9 +1351,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                     ),
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.circular(
-                                                            11,
-                                                          ),
+                                                          AppRadius.smooth,
                                                       child: ExpansionTile(
                                                         key:
                                                             PageStorageKey<
@@ -1415,9 +1409,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                         ),
                                                                         shape: RoundedRectangleBorder(
                                                                           borderRadius:
-                                                                              BorderRadius.circular(
-                                                                                6,
-                                                                              ),
+                                                                              AppRadius.sub,
                                                                         ),
                                                                       ),
                                                                       child: Text(
@@ -1462,9 +1454,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                       )
                                                                                     : Colors.grey.shade200)),
                                                                     borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          4,
-                                                                        ),
+                                                                        AppRadius
+                                                                            .tiny,
                                                                   ),
                                                                   child: Text(
                                                                     hasInProgress
@@ -1912,9 +1903,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     ),
                                                                     decoration: BoxDecoration(
                                                                       borderRadius:
-                                                                          BorderRadius.circular(
-                                                                            8,
-                                                                          ),
+                                                                          AppRadius
+                                                                              .small,
                                                                       border: Border.all(
                                                                         color:
                                                                             isDark
@@ -1943,9 +1933,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     ),
                                                                     child: ClipRRect(
                                                                       borderRadius:
-                                                                          BorderRadius.circular(
-                                                                            7,
-                                                                          ),
+                                                                          AppRadius
+                                                                              .sub,
                                                                       child: Theme(
                                                                         data:
                                                                             Theme.of(
@@ -2003,9 +1992,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                               ),
                                                                                             ),
                                                                                             shape: RoundedRectangleBorder(
-                                                                                              borderRadius: BorderRadius.circular(
-                                                                                                6,
-                                                                                              ),
+                                                                                              borderRadius: AppRadius.sub,
                                                                                             ),
                                                                                           ),
                                                                                           child: Text(
@@ -2036,9 +2023,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                           0xFF2C2C2E,
                                                                                                         )
                                                                                                       : Colors.grey.shade200)),
-                                                                                      borderRadius: BorderRadius.circular(
-                                                                                        4,
-                                                                                      ),
+                                                                                      borderRadius: AppRadius.tiny,
                                                                                     ),
                                                                                     child: Text(
                                                                                       boutsInProgress
@@ -2438,8 +2423,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                     : [],
                                               ),
                                               child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(11),
+                                                borderRadius: AppRadius.smooth,
                                                 child: ExpansionTile(
                                                   collapsedBackgroundColor:
                                                       pCardBg,
@@ -2523,9 +2507,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             )
                                                                           : Colors.grey.shade200)),
                                                           borderRadius:
-                                                              BorderRadius.circular(
-                                                                4,
-                                                              ),
+                                                              AppRadius.tiny,
                                                         ),
                                                         child: Text(
                                                           pInProgress
@@ -3519,7 +3501,9 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.roundValue),
+        ),
       ),
       child: SafeArea(
         child: SingleChildScrollView(

@@ -865,7 +865,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                               icon: Icons.delete,
                               label: '削除',
                               borderRadius: const BorderRadius.horizontal(
-                                right: Radius.circular(16),
+                                right: Radius.circular(AppRadius.largeValue),
                               ),
                             ),
                           ],

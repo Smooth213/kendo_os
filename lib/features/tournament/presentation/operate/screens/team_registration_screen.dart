@@ -214,7 +214,7 @@ class _TeamRegistrationScreenState
               end: Alignment.bottomRight,
             ),
             borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(32),
+              bottom: Radius.circular(AppRadius.giantValue),
             ),
           ),
           child: Column(
@@ -244,7 +244,7 @@ class _TeamRegistrationScreenState
                 backgroundColor: Colors.white.withValues(alpha: 0.3),
                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 minHeight: 6,
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: AppRadius.tiny,
               ),
             ],
           ),

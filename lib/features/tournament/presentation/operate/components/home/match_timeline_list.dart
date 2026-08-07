@@ -745,7 +745,7 @@ class MatchTimelineList extends ConsumerWidget {
                                 ? Colors.indigo.shade900.withValues(alpha: 0.3)
                                 : Colors.indigo.shade50,
                             borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(14),
+                              top: Radius.circular(AppRadius.modernValue),
                             ),
                             border: Border(
                               bottom: BorderSide(
@@ -900,9 +900,7 @@ class MatchTimelineList extends ConsumerWidget {
                                             color: isDark
                                                 ? const Color(0xFF2C2C2E)
                                                 : Colors.grey.shade100,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
+                                            borderRadius: AppRadius.small,
                                             border: Border.all(
                                               color: isDark
                                                   ? const Color(0xFF38383A)
@@ -1050,7 +1048,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                   borderRadius:
                                                       const BorderRadius.horizontal(
                                                         right: Radius.circular(
-                                                          8,
+                                                          AppRadius.smallValue,
                                                         ),
                                                       ),
                                                   label: '削除',
@@ -1275,10 +1273,10 @@ class MatchTimelineList extends ConsumerWidget {
                                                         icon: Icons.delete,
                                                         borderRadius:
                                                             const BorderRadius.horizontal(
-                                                              right:
-                                                                  Radius.circular(
-                                                                    12,
-                                                                  ),
+                                                              right: Radius.circular(
+                                                                AppRadius
+                                                                    .mediumValue,
+                                                              ),
                                                             ),
                                                         label: '削除',
                                                       ),
@@ -1288,9 +1286,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                     decoration: BoxDecoration(
                                                       // ★ 修正: color: cardBg, を削除
                                                       borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
+                                                          AppRadius.medium,
                                                       border: Border.all(
                                                         color: isDark
                                                             ? const Color(
@@ -1322,9 +1318,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                     ),
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.circular(
-                                                            11,
-                                                          ),
+                                                          AppRadius.smooth,
                                                       child: ExpansionTileTheme(
                                                         data: ExpansionTileThemeData(
                                                           backgroundColor:
@@ -1460,9 +1454,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             ),
                                                                           ),
                                                                           shape: RoundedRectangleBorder(
-                                                                            borderRadius: BorderRadius.circular(
-                                                                              6,
-                                                                            ),
+                                                                            borderRadius:
+                                                                                AppRadius.sub,
                                                                           ),
                                                                         ),
                                                                       ),
@@ -1485,9 +1478,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                           firstMatch,
                                                                         ),
                                                                         borderRadius:
-                                                                            BorderRadius.circular(
-                                                                              12,
-                                                                            ),
+                                                                            AppRadius.medium,
                                                                         child: Padding(
                                                                           padding: const EdgeInsets.all(
                                                                             4.0,
@@ -1582,9 +1573,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             ),
                                                                           ),
                                                                           shape: RoundedRectangleBorder(
-                                                                            borderRadius: BorderRadius.circular(
-                                                                              6,
-                                                                            ),
+                                                                            borderRadius:
+                                                                                AppRadius.sub,
                                                                           ),
                                                                         ),
                                                                         child: Text(
@@ -1626,9 +1616,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                         )
                                                                                       : Colors.grey.shade200)),
                                                                       borderRadius:
-                                                                          BorderRadius.circular(
-                                                                            4,
-                                                                          ),
+                                                                          AppRadius
+                                                                              .tiny,
                                                                     ),
                                                                     child: Text(
                                                                       hasInProgress
@@ -2067,9 +2056,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               .shade300,
                                                                         ),
                                                                         borderRadius:
-                                                                            BorderRadius.circular(
-                                                                              12,
-                                                                            ),
+                                                                            AppRadius.medium,
                                                                       ),
                                                                       child: Column(
                                                                         children: tieGroups.map((
@@ -2313,9 +2300,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         ),
                                                                         decoration: BoxDecoration(
                                                                           borderRadius:
-                                                                              BorderRadius.circular(
-                                                                                8,
-                                                                              ),
+                                                                              AppRadius.small,
                                                                           border: Border.all(
                                                                             color:
                                                                                 isDark
@@ -2344,9 +2329,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         ),
                                                                         child: ClipRRect(
                                                                           borderRadius:
-                                                                              BorderRadius.circular(
-                                                                                7,
-                                                                              ),
+                                                                              AppRadius.sub,
                                                                           child: ExpansionTileTheme(
                                                                             data: ExpansionTileThemeData(
                                                                               backgroundColor: isDark
@@ -2489,9 +2472,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                           ),
                                                                                                         ),
                                                                                                         shape: RoundedRectangleBorder(
-                                                                                                          borderRadius: BorderRadius.circular(
-                                                                                                            6,
-                                                                                                          ),
+                                                                                                          borderRadius: AppRadius.sub,
                                                                                                         ),
                                                                                                       ),
                                                                                                     ),
@@ -2536,9 +2517,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                 ),
                                                                                               ),
                                                                                               shape: RoundedRectangleBorder(
-                                                                                                borderRadius: BorderRadius.circular(
-                                                                                                  6,
-                                                                                                ),
+                                                                                                borderRadius: AppRadius.sub,
                                                                                               ),
                                                                                             ),
                                                                                             child: Text(
@@ -2570,9 +2549,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                               0xFF2C2C2E,
                                                                                                             )
                                                                                                           : Colors.grey.shade200)),
-                                                                                          borderRadius: BorderRadius.circular(
-                                                                                            4,
-                                                                                          ),
+                                                                                          borderRadius: AppRadius.tiny,
                                                                                         ),
                                                                                         child: Text(
                                                                                           boutsInProgress
@@ -3152,7 +3129,7 @@ class MatchTimelineList extends ConsumerWidget {
                                     : [],
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(11),
+                                borderRadius: AppRadius.smooth,
                                 child: ExpansionTileTheme(
                                   data: ExpansionTileThemeData(
                                     backgroundColor: isDark
@@ -3240,9 +3217,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                             : Colors
                                                                   .grey
                                                                   .shade200)),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
+                                            borderRadius: AppRadius.tiny,
                                           ),
                                           child: Text(
                                             pInProgress
@@ -3361,7 +3336,9 @@ void _showRenameTeamSheet(
     builder: (ctx) => Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xlargeValue),
+        ),
       ),
       padding: EdgeInsets.only(
         top: AppSpacing.lg,
@@ -3564,7 +3541,9 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
     builder: (ctx) => Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xlargeValue),
+        ),
       ),
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
       child: Column(
@@ -4998,7 +4977,7 @@ Widget _buildInnerCommentWidget(
             foregroundColor: Colors.white,
             icon: Icons.delete,
             borderRadius: const BorderRadius.horizontal(
-              right: Radius.circular(8),
+              right: Radius.circular(AppRadius.smallValue),
             ),
             label: '削除',
           ),
@@ -5898,7 +5877,9 @@ class _OrderReorderBottomSheetState
         height: 300,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
         child: const Center(child: CircularProgressIndicator()),
       );
@@ -5913,7 +5894,9 @@ class _OrderReorderBottomSheetState
         height: 300,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
         child: const Center(child: CircularProgressIndicator()),
       ),
@@ -5921,7 +5904,9 @@ class _OrderReorderBottomSheetState
         height: 300,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
         child: Center(child: Text('選手リストの読み込みに失敗しました: $err')),
       ),
@@ -5932,7 +5917,7 @@ class _OrderReorderBottomSheetState
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+                top: Radius.circular(AppRadius.xlargeValue),
               ),
             ),
             child: const Center(child: CircularProgressIndicator()),
@@ -5942,7 +5927,7 @@ class _OrderReorderBottomSheetState
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+                top: Radius.circular(AppRadius.xlargeValue),
               ),
             ),
             child: Center(child: Text('チームリストの読み込みに失敗しました: $err')),
@@ -5999,7 +5984,7 @@ class _OrderReorderBottomSheetState
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+                  top: Radius.circular(AppRadius.xlargeValue),
                 ),
               ),
               child: SafeArea(

@@ -116,7 +116,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
         child: Column(
@@ -531,7 +533,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               : Colors.red.shade50)
                         : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
                     borderRadius: const BorderRadius.horizontal(
-                      left: Radius.circular(16),
+                      left: Radius.circular(AppRadius.largeValue),
                     ),
                     border: Border.all(
                       color: rWin
@@ -690,7 +692,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               : Colors.blueGrey.shade50)
                         : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
                     borderRadius: const BorderRadius.horizontal(
-                      right: Radius.circular(16),
+                      right: Radius.circular(AppRadius.largeValue),
                     ),
                     border: Border.all(
                       color: wWin
@@ -1273,11 +1275,11 @@ class KachinukiBracketPainter extends CustomPainter {
 
     final rect = Rect.fromCenter(center: center, width: width, height: height);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+      RRect.fromRectAndRadius(rect, const Radius.circular(AppRadius.tinyValue)),
       bgPaint,
     );
     canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+      RRect.fromRectAndRadius(rect, const Radius.circular(AppRadius.tinyValue)),
       borderPaint,
     );
 
