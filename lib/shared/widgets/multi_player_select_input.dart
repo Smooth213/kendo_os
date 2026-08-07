@@ -161,7 +161,7 @@ class _MultiPlayerSelectInputState
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   // 検索窓
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -194,7 +194,7 @@ class _MultiPlayerSelectInputState
                       },
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   // ★ カテゴリフィルターチップ（横スクロール）
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -232,7 +232,7 @@ class _MultiPlayerSelectInputState
                           }).toList(),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   // 選手リスト（チェックボックス式）
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.45,

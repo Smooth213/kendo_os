@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,9 +84,7 @@ void _showAnnounceDialog(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00796B), // 引き締めTealグリーン
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 elevation: 0,
               ),
               onPressed: () {
@@ -97,7 +96,7 @@ void _showAnnounceDialog(
               },
               child: const Text(
                 '内容を確認しました',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 13),
               ),
             ),
           ),

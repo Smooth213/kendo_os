@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -157,7 +158,7 @@ class AppStartup {
       return Scaffold(
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -165,11 +166,11 @@ class AppStartup {
                   '⚠️ UIレンダリング・エラー発生',
                   style: TextStyle(
                     color: Colors.red,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     fontSize: 18,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 const Text(
                   '以下のログを開発者へ共有してください：',
                   style: TextStyle(color: Colors.black87, fontSize: 12),
@@ -179,11 +180,11 @@ class AppStartup {
                   details.exceptionAsString(),
                   style: const TextStyle(
                     color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   details.stack?.toString() ?? 'スタックトレースなし',
                   style: const TextStyle(color: Colors.grey, fontSize: 10),
@@ -226,13 +227,13 @@ class AppStartup {
         home: Scaffold(
           body: Center(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               child: Text(
                 displayMessage,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.red,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
               ),
             ),

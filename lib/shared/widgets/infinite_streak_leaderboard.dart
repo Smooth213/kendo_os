@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
@@ -45,14 +46,14 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
           title: Text(
             e.key,
             style: TextStyle(
-              fontWeight: isTop ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isTop ? AppFontWeight.bold : FontWeight.normal,
               color: themeColors.textColor,
             ),
           ),
           trailing: Text(
             '${e.value} 連勝',
             style: TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               color: isTop ? Colors.red.shade600 : themeColors.textColor,
               fontSize: 15,
             ),

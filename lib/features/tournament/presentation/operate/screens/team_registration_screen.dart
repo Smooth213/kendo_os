@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -215,12 +216,12 @@ class _TeamRegistrationScreenState
                 'チームとオーダー登録',
                 style: TextStyle(
                   fontSize: 26,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 1.0,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 '魔法のウィザードに従って、\n3つのステップで編成を完了しましょう',
                 style: TextStyle(
@@ -320,7 +321,7 @@ class _TeamRegistrationScreenState
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -329,7 +330,7 @@ class _TeamRegistrationScreenState
                           '選手の選択 (${posNames[index]})',
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             color: textColor,
                           ),
                         ),
@@ -349,7 +350,7 @@ class _TeamRegistrationScreenState
                           showAllPlayers ? 'フィルタ適用' : '全員表示',
                           style: const TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                           ),
                         ),
                         style: TextButton.styleFrom(
@@ -359,7 +360,7 @@ class _TeamRegistrationScreenState
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // 助っ人直接入力
                   TextField(
@@ -386,7 +387,7 @@ class _TeamRegistrationScreenState
                                 backgroundColor: _themeColors.primaryAccent,
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: AppRadius.medium,
                                 ),
                                 elevation: 0,
                               ),
@@ -395,7 +396,7 @@ class _TeamRegistrationScreenState
                           ),
                         ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   Expanded(
                     child: ListView(
@@ -407,7 +408,7 @@ class _TeamRegistrationScreenState
                               '現在チームにいる手入力選手',
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 color: Colors.orange.shade800,
                               ),
                             ),
@@ -426,7 +427,7 @@ class _TeamRegistrationScreenState
                               onTap: () => Navigator.pop(ctx, entry.value),
                             );
                           }),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                         ],
 
                         Padding(
@@ -435,7 +436,7 @@ class _TeamRegistrationScreenState
                             showAllPlayers ? '名簿の全選手' : 'おすすめの選手',
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: _themeColors.primaryAccent,
                             ),
                           ),
@@ -451,7 +452,7 @@ class _TeamRegistrationScreenState
                                 child: const Text('未定'),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.md),
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () => Navigator.pop(ctx, '欠員'),
@@ -463,11 +464,11 @@ class _TeamRegistrationScreenState
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.lg),
 
                         if (displayList.isEmpty)
                           Padding(
-                            padding: const EdgeInsets.all(32),
+                            padding: const EdgeInsets.all(AppSpacing.xxl),
                             child: Column(
                               children: [
                                 Icon(
@@ -475,7 +476,7 @@ class _TeamRegistrationScreenState
                                   size: 48,
                                   color: Colors.grey.withValues(alpha: 0.3),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: AppSpacing.lg),
                                 Text(
                                   '該当する選手がいません',
                                   style: TextStyle(
@@ -582,7 +583,7 @@ class _TeamRegistrationScreenState
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         side: BorderSide(color: borderColor),
       ),
       child: ListTile(
@@ -593,20 +594,20 @@ class _TeamRegistrationScreenState
             name.isNotEmpty ? name.substring(0, 1) : '？',
             style: TextStyle(
               color: leadingTextColor,
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
             ),
           ),
         ),
         title: Text(
           name,
-          style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+          style: TextStyle(fontWeight: AppFontWeight.bold, color: textColor),
         ),
         subtitle: Text(
           subtitle,
           style: TextStyle(
             fontSize: 12,
             color: subtitleColor,
-            fontWeight: isHelper ? FontWeight.bold : FontWeight.normal,
+            fontWeight: isHelper ? AppFontWeight.bold : FontWeight.normal,
           ),
         ),
         trailing: (isHelper || isUsed)
@@ -614,7 +615,7 @@ class _TeamRegistrationScreenState
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.small,
                   border: Border.all(color: Colors.orange.shade200),
                 ),
                 child: Text(
@@ -622,7 +623,7 @@ class _TeamRegistrationScreenState
                   style: TextStyle(
                     color: Colors.orange.shade700,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                   ),
                 ),
               )
@@ -650,13 +651,13 @@ class _TeamRegistrationScreenState
       prefixIcon: prefixIcon,
       filled: true,
       fillColor: _themeColors.inputBackground,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      border: OutlineInputBorder(borderRadius: AppRadius.medium),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         borderSide: BorderSide(color: _themeColors.separatorColor, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         borderSide: BorderSide(color: _themeColors.primaryAccent, width: 2),
       ),
     );
@@ -761,18 +762,18 @@ class _TeamRegistrationScreenState
     final textColor = isDark ? Colors.white : Colors.black87;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
         Text(
           '出場するカテゴリと\n試合形式を選んでください',
           style: TextStyle(
             fontSize: 22,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxl),
 
         // ★ 修正：カテゴリ大分類
         _buildSectionTitle('1. 出場カテゴリ（大分類）'),
@@ -816,7 +817,7 @@ class _TeamRegistrationScreenState
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.xl),
 
         // ★ 修正：カテゴリ小分類（大分類に応じて動的に現れる）
         _buildSectionTitle('2. 出場カテゴリ（小分類）'),
@@ -842,14 +843,14 @@ class _TeamRegistrationScreenState
             );
           }).toList(),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
 
         // ★ 修正：最終的に生成されるカテゴリ名のプレビュー表示
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: _themeColors.softAccent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
             border: Border.all(
               color: _themeColors.primaryAccent.withValues(alpha: 0.3),
             ),
@@ -857,7 +858,7 @@ class _TeamRegistrationScreenState
           child: Row(
             children: [
               Icon(Icons.check_circle, color: _themeColors.primaryAccent),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -869,11 +870,11 @@ class _TeamRegistrationScreenState
                         color: _themeColors.primaryAccent,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
                       _selectedCategory,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         fontSize: 18,
                         color: textColor,
                       ),
@@ -884,7 +885,7 @@ class _TeamRegistrationScreenState
             ],
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxl),
         _buildSectionTitle('3. 試合形式'),
         Wrap(
           spacing: 8,
@@ -948,12 +949,12 @@ class _TeamRegistrationScreenState
           'チーム名とオーダーを\n入力してください',
           style: TextStyle(
             fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.xl),
         // ★ 修正：通常のTextFieldと履歴チップを廃止し、マスタ連動のサジェスト入力に統合！
         _buildTeamAutocomplete(
           controller: _teamNameController,
@@ -967,13 +968,13 @@ class _TeamRegistrationScreenState
           subTextColor: _themeColors.primaryAccent,
           isDark: isDark,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxl),
         _buildSectionTitle('オーダー編成（タップして選択）'),
         Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: inputBgColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
             border: Border.all(color: borderColor, width: 1.5),
             boxShadow: isDark
                 ? []
@@ -1026,7 +1027,7 @@ class _TeamRegistrationScreenState
                                       ? Colors.orange.shade400
                                       : Colors.orange.shade700)
                                 : _themeColors.primaryAccent,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
@@ -1035,7 +1036,7 @@ class _TeamRegistrationScreenState
                         _tempSelectedPlayers[index] ?? '未選択',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: _tempSelectedPlayers[index] == null
                               ? (isDark
                                     ? Colors.grey.shade600
@@ -1050,7 +1051,7 @@ class _TeamRegistrationScreenState
                               ? Colors.orange.shade600
                               : _themeColors.primaryAccent,
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                         ),
                       ),
                       // 補欠行には「削除」ボタンを表示
@@ -1108,7 +1109,7 @@ class _TeamRegistrationScreenState
 
         // ★ 上限を4名に変更
         if (_substituteCount < 4 && !_matchType.contains('個人戦')) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Align(
             alignment: Alignment.centerRight,
             child: OutlinedButton.icon(
@@ -1123,7 +1124,7 @@ class _TeamRegistrationScreenState
                 '補欠を追加 ($_substituteCount/4)',
                 style: TextStyle(
                   color: _themeColors.primaryAccent,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
               ),
               style: OutlinedButton.styleFrom(
@@ -1136,9 +1137,7 @@ class _TeamRegistrationScreenState
                 backgroundColor: isDark
                     ? const Color(0xFF1C1C1E)
                     : _themeColors.softAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
@@ -1161,32 +1160,32 @@ class _TeamRegistrationScreenState
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
         Text(
           '登録内容の確認と\n登録済みの一覧です',
           style: TextStyle(
             fontSize: 22,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxl),
         _buildSectionTitle('今回登録するチームのプレビュー'),
         Card(
           elevation: 0,
           color: inputBgColor,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             side: BorderSide(color: _themeColors.primaryAccent, width: 2),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
+            contentPadding: const EdgeInsets.all(AppSpacing.lg),
             title: Text(
               '$_selectedCategory : ${_teamNameController.text.isEmpty ? "(チーム名未入力)" : _teamNameController.text}',
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 fontSize: 16,
                 color: textColor,
               ),
@@ -1203,7 +1202,7 @@ class _TeamRegistrationScreenState
             ),
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxl),
         _buildSectionTitle('現在の登録済み一覧'),
         registeredTeamsAsync.when(
           data: (teams) {
@@ -1221,14 +1220,14 @@ class _TeamRegistrationScreenState
                       elevation: 0,
                       color: inputBgColor,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                         side: BorderSide(color: borderColor),
                       ),
                       child: ListTile(
                         title: Text(
                           '${t.category} : ${t.teamName}',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             color: textColor,
                           ),
                         ),
@@ -1341,7 +1340,7 @@ class _TeamRegistrationScreenState
                       curve: Curves.easeInOut,
                     ),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       shape: const CircleBorder(),
                       side: BorderSide(color: borderColor),
                     ),
@@ -1417,7 +1416,7 @@ class _TeamRegistrationScreenState
             ],
           ),
           if (_currentPage == 2) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             SizedBox(
               width: double.infinity,
               child: GlassButton(
@@ -1477,7 +1476,7 @@ class _TeamRegistrationScreenState
         title,
         style: TextStyle(
           fontSize: 16,
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           color: _themeColors.primaryAccent,
         ),
       ),
@@ -1514,24 +1513,25 @@ class _TeamRegistrationScreenState
             return TextField(
               controller: fieldController,
               focusNode: focusNode,
-              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: textColor,
+                fontWeight: AppFontWeight.bold,
+              ),
               decoration: InputDecoration(
                 labelText: labelText,
                 labelStyle: TextStyle(
                   color: subTextColor,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
                 hintText: hintText,
                 hintStyle: TextStyle(color: Colors.grey),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.medium,
                   borderSide: BorderSide(color: borderColor),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: AppRadius.medium),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.medium,
                   borderSide: BorderSide(color: subTextColor, width: 2),
                 ),
                 prefixIcon: Icon(Icons.shield, color: subTextColor),
@@ -1553,7 +1553,7 @@ class _TeamRegistrationScreenState
           alignment: Alignment.topLeft,
           child: Material(
             elevation: 8.0,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
             color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -1571,7 +1571,7 @@ class _TeamRegistrationScreenState
                       option,
                       style: TextStyle(
                         color: textColor,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                     trailing: Icon(

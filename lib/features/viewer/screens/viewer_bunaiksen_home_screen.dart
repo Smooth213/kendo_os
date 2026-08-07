@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -87,7 +88,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
           rMarksStr,
           style: TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: textColor,
             height: 1.1,
           ),
@@ -104,7 +105,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
           wMarksStr,
           style: TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: textColor,
             height: 1.1,
           ),
@@ -286,7 +287,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                         size: 64,
                         color: Colors.grey.withValues(alpha: 0.5),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       const Text(
                         'この日の記録はありません',
                         style: TextStyle(color: Colors.grey),
@@ -299,15 +300,15 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                     if (hasInfiniteKachinuki) ...[
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(AppSpacing.lg),
                           child: Card(
                             color: isDark ? Colors.grey.shade900 : Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: AppRadius.large,
                             ),
                             elevation: 2,
                             child: Padding(
-                              padding: const EdgeInsets.all(16.0),
+                              padding: const EdgeInsets.all(AppSpacing.lg),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -317,12 +318,12 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                         Icons.local_fire_department,
                                         color: Colors.deepOrange,
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: AppSpacing.sm),
                                       Text(
                                         '無限勝ち抜き 連勝ランキング',
                                         style: TextStyle(
                                           fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: AppFontWeight.bold,
                                           color: isDark
                                               ? Colors.white
                                               : Colors.black87,
@@ -349,7 +350,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                           child: Text(
                             '本日の試合一覧',
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: themeColors.primaryAccent,
                             ),
                           ),
@@ -397,7 +398,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                             elevation: 0,
                             color: bg,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: AppRadius.large,
                               side: BorderSide(
                                 color: isDark
                                     ? Colors.white10
@@ -407,7 +408,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                             child: InkWell(
                               // ★ STEP 1, 5, 9：ウィジェット内部の構造変更に左右されない安定したテスト Keys 規約の適用
                               key: Key('viewer_match_card_${match.id}'),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: AppRadius.large,
                               onTap: () {
                                 final dojoId = ref.read(currentDojoIdProvider);
                                 // 🛡️ 閲覧スコープ防衛：観客席プレビューからの遷移のため、スコア入力画面(/match)ではなく、閲覧専用の一本速報詳細画面(/viewer)へ正しくルーティング
@@ -416,7 +417,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                 );
                               },
                               child: Padding(
-                                padding: const EdgeInsets.all(16.0),
+                                padding: const EdgeInsets.all(AppSpacing.lg),
                                 child: Column(
                                   children: [
                                     Row(
@@ -429,7 +430,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                             style: TextStyle(
                                               fontSize: 11,
                                               color: noteC,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: AppFontWeight.bold,
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -471,7 +472,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                                 : (isFinished ? '終了' : '待機中'),
                                             style: TextStyle(
                                               fontSize: 10,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: AppFontWeight.bold,
                                               color: isPlaying
                                                   ? Colors.white
                                                   : (isFinished
@@ -501,7 +502,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: AppSpacing.md),
                                     Row(
                                       children: [
                                         Expanded(
@@ -509,7 +510,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                             match.redName,
                                             style: TextStyle(
                                               fontSize: 16,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: AppFontWeight.bold,
                                               color: textC,
                                             ),
                                             textAlign: TextAlign.right,
@@ -530,7 +531,8 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                                   'VS',
                                                   style: TextStyle(
                                                     fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
+                                                    fontWeight:
+                                                        AppFontWeight.bold,
                                                     color: textC,
                                                   ),
                                                 ),
@@ -540,7 +542,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                             match.whiteName,
                                             style: TextStyle(
                                               fontSize: 16,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: AppFontWeight.bold,
                                               color: textC,
                                             ),
                                             textAlign: TextAlign.left,
@@ -590,9 +592,9 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 color: Colors.white,
                 child: QrImageView(
                   data: shareUrl,
@@ -601,7 +603,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                   backgroundColor: Colors.white,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton.icon(
                 // ★ Phase 9最適化: 名称から「AI/OS」を排し、現場に寄り添った文言へブラッシュアップ
                 onPressed: () => SharePlus.instance.share(

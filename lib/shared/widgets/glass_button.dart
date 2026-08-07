@@ -125,7 +125,7 @@ class GlassButton extends ConsumerWidget {
       children: [
         if (icon != null) ...[
           Icon(icon, size: 24, color: accentColor),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.lg),
         ],
         if (label != null)
           if (expandContent)
@@ -149,7 +149,7 @@ class GlassButton extends ConsumerWidget {
               ),
             ),
         if (trailing != null) ...[
-          if (!expandContent) const SizedBox(width: 16),
+          if (!expandContent) const SizedBox(width: AppSpacing.lg),
           trailing!,
         ],
       ],

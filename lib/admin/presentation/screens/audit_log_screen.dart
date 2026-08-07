@@ -44,13 +44,13 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
             ManualHelpButton(
               manualPath: 'docs/manuals/recovery/failure_catalog.md',
             ),
-            SizedBox(width: 8),
+            SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: TextField(
                 decoration: InputDecoration(
                   labelText: '試合IDで絞り込み (フィルタ)',
@@ -58,7 +58,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                   filled: true,
                   fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     borderSide: BorderSide.none,
                   ),
                 ),
@@ -129,7 +129,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadius.medium,
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
@@ -151,7 +151,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const SizedBox(height: 4),
+                              const SizedBox(height: AppSpacing.xs),
                               Text(
                                 '詳細: $details',
                                 style: TextStyle(

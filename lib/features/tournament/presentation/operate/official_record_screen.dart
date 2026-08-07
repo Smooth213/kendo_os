@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +20,7 @@ import 'package:kendo_os/features/match/application/mappers/match_projection_map
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/league_grid_card.dart';
@@ -146,7 +148,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     'トップへ',
                     style: TextStyle(
                       color: isDark ? Colors.white : Colors.indigo.shade700,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       fontSize: 12,
                     ),
                   ),
@@ -312,7 +314,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                   tVenue: tVenue,
                                 ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         // 2. 画像出力
                         _buildHeaderActionButton(
                           icon: Icons.share,
@@ -332,7 +334,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                   tVenue: tVenue,
                                 ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         // 3. ★新規: CSV出力
                         _buildHeaderActionButton(
                           icon: Icons.table_chart,
@@ -359,7 +361,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     child: ListView.builder(
                       shrinkWrap: true, // ★ 追加
                       physics: const ClampingScrollPhysics(), // ★ 追加
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(AppSpacing.sm),
                       itemCount: sortedGroupKeys.length,
                       itemBuilder: (context, index) {
                         final groupName = sortedGroupKeys[index];
@@ -417,7 +419,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                             ),
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: AppRadius.large,
                               side: BorderSide(
                                 color: isDark
                                     ? const Color(0xFF38383A)
@@ -429,7 +431,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(AppSpacing.md),
                                   color: isDark
                                       ? Colors.indigo.shade900.withValues(
                                           alpha: 0.4,
@@ -439,7 +441,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                   child: Text(
                                     titleText,
                                     style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: AppFontWeight.bold,
                                       color: isDark
                                           ? Colors.indigo.shade100
                                           : Colors.indigo.shade900,
@@ -450,7 +452,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Container(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.all(
+                                      AppSpacing.lg,
+                                    ),
                                     color: isDark ? Colors.black : Colors.white,
                                     width:
                                         canvasWidth <
@@ -540,7 +544,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 child: Text(
                                   '【リーグ戦】 $leagueTitle',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                     color: textColor,
                                     fontSize: 16,
                                   ),
@@ -557,13 +561,13 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 ref: ref,
                               ),
 
-                              const SizedBox(height: 32),
+                              const SizedBox(height: AppSpacing.xxl),
                               const Padding(
                                 padding: EdgeInsets.only(left: 8, bottom: 12),
                                 child: Text(
                                   '▼ 対戦カード別 スコア詳細',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                     fontSize: 14,
                                     color: Colors.grey,
                                   ),
@@ -599,13 +603,13 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
                               // 3. 順位決定戦
                               if (tieBouts.isNotEmpty) ...[
-                                const SizedBox(height: 16),
+                                const SizedBox(height: AppSpacing.lg),
                                 const Padding(
                                   padding: EdgeInsets.only(left: 8, bottom: 8),
                                   child: Text(
                                     '▼ 順位決定戦',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: AppFontWeight.bold,
                                       fontSize: 14,
                                       color: Colors.orange,
                                     ),
@@ -709,14 +713,14 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         icon: Icon(icon, size: 16),
         label: Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          style: const TextStyle(fontWeight: AppFontWeight.bold, fontSize: 12),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 12),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
         ),
       ),
     );
@@ -747,7 +751,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         .toList();
 
     BuildContext? dialogContext;
-    showDialog(
+    showAppDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
@@ -1114,7 +1118,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                     isDark: isDark,
                                   ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           ElevatedButton(
                             onPressed: () => Navigator.pop(ctx),
                             style: ElevatedButton.styleFrom(
@@ -1133,7 +1137,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                             ),
                             child: const Text(
                               '閉じる',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: AppFontWeight.bold),
                             ),
                           ),
                         ],
@@ -1626,10 +1630,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -1651,10 +1655,13 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     color: Colors.indigo,
                     size: 20,
                   ),
-                  SizedBox(width: 8),
+                  SizedBox(width: AppSpacing.sm),
                   Text(
                     '🏆 遠征成績サマリー',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                 ],
               ),
@@ -1683,7 +1690,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                         size: 20,
                       ),
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         fontSize: 13,
                         color: isDark ? Colors.white : Colors.indigo.shade900,
                       ),
@@ -1737,12 +1744,12 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
             const Text(
               '👤 個人戦・選手別成績',
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 fontSize: 13,
                 color: Colors.grey,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: 8,
               runSpacing: 6,
@@ -1756,7 +1763,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     border: Border.all(
                       color: isDark
                           ? Colors.grey.shade700
@@ -1767,7 +1774,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     '$pName: ${st.win}勝${st.loss}敗${st.draw > 0 ? "${st.draw}分" : ""}',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
@@ -1793,15 +1800,18 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         Text(
           title,
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             fontSize: 13,
             color: color,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           total > 0 ? '$win勝 $loss敗 ${draw > 0 ? "$draw分" : ""}' : '未実施',
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: AppFontWeight.semiBold,
+          ),
         ),
         if (total > 0)
           Text(

@@ -29,7 +29,7 @@ class RuleConfigPanel extends ConsumerWidget {
       elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         side: BorderSide(color: Colors.grey.shade300),
       ),
       child: Column(
@@ -86,7 +86,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   color: Colors.blueGrey,
                   size: 20,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     summary,
@@ -108,7 +108,7 @@ class RuleConfigPanel extends ConsumerWidget {
               style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 14),
             ),
             collapsedBackgroundColor: Colors.grey.shade50,
-            childrenPadding: const EdgeInsets.all(16.0),
+            childrenPadding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               // 1. 規定本数の切り替え
               Align(
@@ -118,7 +118,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               SegmentedButton<int>(
                 segments: const [
                   ButtonSegment(value: 2, label: Text('3本勝負 (2本先取)')),
@@ -132,7 +132,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   );
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
 
               // 2. 延長設定
               Row(

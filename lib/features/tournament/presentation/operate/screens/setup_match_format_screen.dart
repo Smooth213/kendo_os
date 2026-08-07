@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
@@ -262,7 +264,7 @@ class _SetupMatchFormatScreenState
 
   // ★ 修正：詳細ダイアログ内でスマート・スワップを実行し、保存まで行う
   void _showTeamDetailDialog(BuildContext context, TeamModel team) {
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         // ダイアログ内の状態更新のため
@@ -279,9 +281,7 @@ class _SetupMatchFormatScreenState
           final List<String> posNames = _generatePositions(baseLen);
 
           return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.xlarge),
             backgroundColor: Colors.white,
             clipBehavior: Clip.antiAlias,
             child: ConstrainedBox(
@@ -313,7 +313,7 @@ class _SetupMatchFormatScreenState
                           backgroundColor: Colors.white24,
                           child: Icon(Icons.shield, color: Colors.white),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: AppSpacing.lg),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,10 +323,10 @@ class _SetupMatchFormatScreenState
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: AppSpacing.xs),
                               Text(
                                 '${team.category} / ${team.matchType}',
                                 style: const TextStyle(
@@ -348,7 +348,7 @@ class _SetupMatchFormatScreenState
                         'オーダー（タップして入れ替え）',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: Colors.grey,
                         ),
                       ),
@@ -397,7 +397,7 @@ class _SetupMatchFormatScreenState
                                 color: isSub
                                     ? Colors.orange.shade700
                                     : _themeColors.primaryAccent,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 fontSize: 13,
                               ),
                             ),
@@ -405,7 +405,7 @@ class _SetupMatchFormatScreenState
                           title: Text(
                             name,
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: name == '未設定'
                                   ? Colors.grey
                                   : Colors.black87,
@@ -436,7 +436,7 @@ class _SetupMatchFormatScreenState
                       child: Text(
                         '完了',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: _themeColors.primaryAccent,
                         ),
                       ),
@@ -486,7 +486,7 @@ class _SetupMatchFormatScreenState
                   child: Text(
                     '手入力選手から選ぶ',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: Colors.orange,
                     ),
                   ),
@@ -497,7 +497,7 @@ class _SetupMatchFormatScreenState
                     child: ListTile(
                       title: Text(
                         entry.value,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: AppFontWeight.bold),
                       ),
                       trailing: Text(
                         '${entry.key < posNames.length ? posNames[entry.key] : "補欠"}と入替',
@@ -516,7 +516,7 @@ class _SetupMatchFormatScreenState
                 child: Text(
                   '登録名簿から選ぶ',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: _themeColors.primaryAccent,
                   ),
                 ),
@@ -597,14 +597,14 @@ class _SetupMatchFormatScreenState
       margin: const EdgeInsets.only(top: 24),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -612,12 +612,12 @@ class _SetupMatchFormatScreenState
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(icon, color: color),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       title,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: color,
                         fontSize: 15,
                       ),
@@ -653,13 +653,13 @@ class _SetupMatchFormatScreenState
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       filled: true,
       fillColor: _themeColors.inputBackground,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      border: OutlineInputBorder(borderRadius: AppRadius.medium),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         borderSide: BorderSide(color: _themeColors.separatorColor, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         borderSide: BorderSide(color: _themeColors.primaryAccent, width: 2),
       ),
     );
@@ -705,12 +705,12 @@ class _SetupMatchFormatScreenState
                 '試合ルールの設定',
                 style: TextStyle(
                   fontSize: 26,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 1.0,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 '魔法のウィザードに従って、\n2つのステップで条件を設定しましょう',
                 style: TextStyle(
@@ -747,12 +747,12 @@ class _SetupMatchFormatScreenState
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             title,
             style: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               color: accentColor,
             ),
           ),
@@ -773,7 +773,7 @@ class _SetupMatchFormatScreenState
             child: Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.w600,
+                fontWeight: AppFontWeight.semiBold,
                 fontSize: 13,
                 color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
               ),
@@ -791,7 +791,7 @@ class _SetupMatchFormatScreenState
                   color: isDark
                       ? Colors.white.withValues(alpha: 0.08)
                       : _themeColors.softAccent,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.small,
                   border: Border.all(
                     color: isDark
                         ? Colors.white12
@@ -802,7 +802,7 @@ class _SetupMatchFormatScreenState
                   value,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: isDark ? Colors.white : _themeColors.textColor,
                   ),
                 ),
@@ -1063,7 +1063,7 @@ class _SetupMatchFormatScreenState
           foregroundColor: _themeColors.textColor,
           actions: const [
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
-            SizedBox(width: 8),
+            SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: Column(
@@ -1115,12 +1115,12 @@ class _SetupMatchFormatScreenState
           '対象のカテゴリと\n自チームを選んでください',
           style: TextStyle(
             fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxl),
 
         // ★ 修正：カテゴリ大分類
         _buildSectionTitle('1. 対象カテゴリを選択（大分類）'),
@@ -1145,7 +1145,7 @@ class _SetupMatchFormatScreenState
               )
               .toList(),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.xl),
 
         // ★ 修正：カテゴリ小分類（大分類に応じて動的に現れる）
         _buildSectionTitle('2. 対象カテゴリを選択（小分類）'),
@@ -1172,14 +1172,14 @@ class _SetupMatchFormatScreenState
             );
           }).toList(),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
 
         // ★ 修正：最終的に設定されるカテゴリ名のプレビュー表示
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: _themeColors.softAccent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
             border: Border.all(
               color: _themeColors.primaryAccent.withValues(alpha: 0.3),
             ),
@@ -1187,7 +1187,7 @@ class _SetupMatchFormatScreenState
           child: Row(
             children: [
               Icon(Icons.check_circle, color: _themeColors.primaryAccent),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1199,11 +1199,11 @@ class _SetupMatchFormatScreenState
                         color: _themeColors.primaryAccent,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
                       _category,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         fontSize: 18,
                         color: textColor,
                       ),
@@ -1230,7 +1230,10 @@ class _SetupMatchFormatScreenState
                 icon: const Icon(Icons.group_add, size: 18),
                 label: const Text(
                   'チームを追加・編集',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
                 style: TextButton.styleFrom(
                   foregroundColor: _themeColors.primaryAccent,
@@ -1260,7 +1263,7 @@ class _SetupMatchFormatScreenState
                       color: isDark
                           ? const Color(0xFF2C2C2E)
                           : Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: AppRadius.large,
                       border: Border.all(
                         color: isDark
                             ? const Color(0xFF38383A)
@@ -1277,7 +1280,7 @@ class _SetupMatchFormatScreenState
                               : Colors.grey.shade400,
                           size: 40,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.lg),
                         Text(
                           '「$_category」のチームが未登録です。\n右上の「チームを追加・編集」から\n登録を行ってください。',
                           textAlign: TextAlign.center,
@@ -1286,7 +1289,7 @@ class _SetupMatchFormatScreenState
                                 ? Colors.grey.shade300
                                 : Colors.grey.shade600,
                             fontSize: 13,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             height: 1.5,
                           ),
                         ),
@@ -1305,7 +1308,7 @@ class _SetupMatchFormatScreenState
                           ? _themeColors.softAccent
                           : inputBgColor,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                         side: BorderSide(
                           color: isSelected
                               ? _themeColors.primaryAccent
@@ -1348,7 +1351,7 @@ class _SetupMatchFormatScreenState
                             title: Text(
                               team.teamName,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 fontSize: 18,
                                 color: isSelected
                                     ? _themeColors.primaryAccent
@@ -1408,7 +1411,7 @@ class _SetupMatchFormatScreenState
                                       'オーダーを調整',
                                       style: TextStyle(
                                         color: _themeColors.primaryAccent,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: AppFontWeight.bold,
                                       ),
                                     ),
                                     style: OutlinedButton.styleFrom(
@@ -1420,7 +1423,7 @@ class _SetupMatchFormatScreenState
                                         width: 1.5,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: AppRadius.medium,
                                       ),
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
@@ -1438,7 +1441,7 @@ class _SetupMatchFormatScreenState
                 );
               },
               loading: () => const Padding(
-                padding: EdgeInsets.all(32),
+                padding: EdgeInsets.all(AppSpacing.xxl),
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (e, s) =>
@@ -1481,18 +1484,18 @@ class _SetupMatchFormatScreenState
     final headerColor = isAdvanced ? Colors.teal : _themeColors.primaryAccent;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
         Text(
           '適用ルールの確認と\n詳細情報の入力',
           style: TextStyle(
             fontSize: 22,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
 
         // ★ 部門設定ルールのシーン切り替えUI
         if (ruleSet != null) ...[
@@ -1501,7 +1504,7 @@ class _SetupMatchFormatScreenState
             child: Text(
               'この部門（$categoryName）に設定されているルールを選択:',
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 fontSize: 13,
                 color: Colors.grey,
               ),
@@ -1563,7 +1566,7 @@ class _SetupMatchFormatScreenState
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
         ],
 
         _buildDynamicSectionBox(
@@ -1688,7 +1691,7 @@ class _SetupMatchFormatScreenState
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.xl),
 
         // 適用ルールの手動切替トグル (useAdvancedRule が有効な場合のみ)
         Builder(
@@ -1714,7 +1717,7 @@ class _SetupMatchFormatScreenState
                     const Text(
                       '適用ルール（自動判別・手動切替）',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         fontSize: 13,
                         color: Colors.grey,
                       ),
@@ -1736,7 +1739,7 @@ class _SetupMatchFormatScreenState
                                   : (isDark ? Colors.white60 : Colors.black87),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.medium,
                                 side: BorderSide(
                                   color: !isAdvanced
                                       ? Colors.transparent
@@ -1748,11 +1751,13 @@ class _SetupMatchFormatScreenState
                             ),
                             child: const Text(
                               '通常戦のルール',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                fontWeight: AppFontWeight.semiBold,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () => _setManualRoundType('advanced'),
@@ -1767,7 +1772,7 @@ class _SetupMatchFormatScreenState
                                   : (isDark ? Colors.white60 : Colors.black87),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.medium,
                                 side: BorderSide(
                                   color: isAdvanced
                                       ? Colors.transparent
@@ -1779,13 +1784,15 @@ class _SetupMatchFormatScreenState
                             ),
                             child: const Text(
                               '上位戦のルール',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                fontWeight: AppFontWeight.semiBold,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.xl),
                   ],
                 );
               },
@@ -1795,12 +1802,12 @@ class _SetupMatchFormatScreenState
         ),
         // ★ 統合された「試合場・進行見出し」および「試合メモ」入力セクション (ウィザードテーマ完全調和)
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: isDark
                 ? const Color(0xFF2C2C2E)
                 : _themeColors.cardBackground,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             border: Border.all(
               color: isDark
                   ? const Color(0xFF38383A)
@@ -1824,11 +1831,11 @@ class _SetupMatchFormatScreenState
                     size: 18,
                     color: _themeColors.primaryAccent,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Text(
                     '試合場・進行見出しの一括設定',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       fontSize: 14,
                       color: textColor,
                     ),
@@ -1846,7 +1853,7 @@ class _SetupMatchFormatScreenState
                         style: TextStyle(
                           fontSize: 12,
                           color: _themeColors.primaryAccent,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                         ),
                       ),
                       style: TextButton.styleFrom(
@@ -1861,14 +1868,14 @@ class _SetupMatchFormatScreenState
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: _courtController,
                 textAlign: TextAlign.left,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: AppFontWeight.semiBold,
                 ),
                 decoration: _buildTextFieldDecoration(
                   labelText: '試合場・進行の見出し',
@@ -1879,7 +1886,7 @@ class _SetupMatchFormatScreenState
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
                   Icon(
@@ -1887,7 +1894,7 @@ class _SetupMatchFormatScreenState
                     size: 13,
                     color: _themeColors.subTextColor,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: Text(
                       '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
@@ -1899,16 +1906,16 @@ class _SetupMatchFormatScreenState
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Text(
                 '🏟️ 試合場（コート）を選択',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: _themeColors.subTextColor,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -1923,7 +1930,7 @@ class _SetupMatchFormatScreenState
                       preset,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: isSelected
                             ? (isDark
                                   ? Colors.white
@@ -1939,16 +1946,16 @@ class _SetupMatchFormatScreenState
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Text(
                 '🏆 回戦・ラウンド・試合順を選択',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: _themeColors.subTextColor,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -1973,7 +1980,7 @@ class _SetupMatchFormatScreenState
                           preset,
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             color: isSelected
                                 ? (isDark
                                       ? Colors.white
@@ -1989,9 +1996,9 @@ class _SetupMatchFormatScreenState
                       );
                     }).toList(),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Divider(color: _themeColors.separatorColor),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: _noteController,
                 maxLines: 2,
@@ -2050,7 +2057,7 @@ class _SetupMatchFormatScreenState
                   curve: Curves.easeInOut,
                 ),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   shape: const CircleBorder(),
                   side: BorderSide(color: borderColor),
                 ),
@@ -2249,7 +2256,7 @@ class _SetupMatchFormatScreenState
         title,
         style: TextStyle(
           fontSize: 16,
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           color: _themeColors.primaryAccent,
         ),
       ),

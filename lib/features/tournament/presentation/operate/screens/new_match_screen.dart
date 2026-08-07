@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -122,7 +123,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,13 +154,13 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
 
                     // 2. メタデータ（練習試合フラグ）トグル
                     SwitchListTile.adaptive(
                       title: const Text(
                         '星取表（ランキング）に集計する',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(fontWeight: AppFontWeight.bold),
                       ),
                       subtitle: const Text('練習試合の場合はオフにしてください'),
                       value: _countForStandings,
@@ -179,7 +180,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         labelText: '赤の選手名（またはチーム名）',
                         isDark: isDark,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       _buildSmartAutocomplete(
                         controller: _whiteNameController,
                         focusNode: _whiteFocusNode,
@@ -192,7 +193,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         '参加チーム（選手）をカンマ( , )区切りで入力してください\n例: Aチーム, Bチーム, C道場, D剣友会',
                         style: TextStyle(color: Colors.blueGrey),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       TextField(
                         controller: _leagueParticipantsController,
                         decoration: const InputDecoration(
@@ -215,7 +216,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           return Column(
                             children: [
                               _buildTeamSelector('赤', orgs, true),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: AppSpacing.lg),
                               _buildTeamSelector('白', orgs, false),
                             ],
                           );
@@ -223,16 +224,16 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       ),
                     ],
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.xxl),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     if (existingCategories.isNotEmpty) ...[
                       const Text(
                         '登録済み部門',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -255,7 +256,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           );
                         }).toList(),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.md),
                     ],
 
                     TextField(
@@ -266,17 +267,17 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
 
                     // ★ 適用ルールのインタラクティブカード選択
                     _buildRuleSelectionSection(categoryRules, isDark),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     // ★ 統合された「試合場・進行見出し」および「試合メモ」入力セクション
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                         border: Border.all(
                           color: isDark
                               ? const Color(0xFF38383A)
@@ -302,11 +303,11 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                     ? Colors.cyanAccent
                                     : Colors.indigo,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppSpacing.sm),
                               Text(
                                 '試合場・進行見出しの設定',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   color: isDark ? Colors.white : Colors.black87,
                                 ),
                               ),
@@ -332,14 +333,14 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.md),
                           TextField(
                             controller: _courtController,
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               color: isDark ? Colors.white : Colors.black87,
                               fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: AppFontWeight.semiBold,
                             ),
                             decoration: InputDecoration(
                               labelText: '試合場・進行の見出し',
@@ -370,7 +371,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade600,
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: AppSpacing.xs),
                               Expanded(
                                 child: Text(
                                   '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
@@ -389,7 +390,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                             '🏟️ 試合場（コート）を選択',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: isDark
                                   ? Colors.grey.shade300
                                   : Colors.grey.shade700,
@@ -423,7 +424,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                             '🏆 回戦・ラウンド・試合順を選択',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: isDark
                                   ? Colors.grey.shade300
                                   : Colors.grey.shade700,
@@ -460,9 +461,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                   );
                                 }).toList(),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           const Divider(),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                           TextField(
                             controller: _noteController,
                             maxLines: 2,
@@ -485,7 +486,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.xxl),
 
                     // 4. 実行（生成）ボタン
                     GlassButton(
@@ -516,14 +517,14 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     return Card(
       color: isRed ? Colors.red.shade50 : Colors.grey.shade100,
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '$colorLabelチーム選択',
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 color: isRed ? Colors.red : Colors.black87,
               ),
             ),
@@ -545,7 +546,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
               }),
             ),
             if (currentOrg != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               StreamBuilder<List<TeamTemplate>>(
                 stream: ref
                     .watch(organizationRepositoryProvider)
@@ -646,11 +647,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       Icons.arrow_drop_down,
                       color: Colors.grey,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    border: OutlineInputBorder(borderRadius: AppRadius.small),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadius.small,
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
@@ -658,7 +657,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadius.small,
                       borderSide: BorderSide(color: Colors.redAccent),
                     ),
                     filled: true,
@@ -671,7 +670,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
               alignment: Alignment.topLeft,
               child: Material(
                 elevation: 8.0,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.medium,
                 color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -692,7 +691,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           option,
                           style: TextStyle(
                             color: isDark ? Colors.white : Colors.black87,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                           ),
                         ),
                         trailing: const Icon(
@@ -834,7 +833,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
               ),
             ),
             if (ruleSet != null)
@@ -842,7 +841,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.indigo.shade50,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.medium,
                   border: Border.all(color: Colors.indigo.shade200),
                 ),
                 child: Text(
@@ -850,13 +849,13 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.indigo.shade800,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                   ),
                 ),
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
 
         if (ruleSet != null && ruleSet.isMultiScene) ...[
           _buildRuleCard(
@@ -867,7 +866,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             accentColor: Colors.amber,
             isDark: isDark,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildRuleCard(
             sceneId: 'honsen',
             title: '🏆 本戦ルール（午後・トーナメント）',
@@ -876,7 +875,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             accentColor: Colors.indigo,
             isDark: isDark,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildRuleCard(
             sceneId: 'moushiawase',
             title: '🤝 申し合わせルール（終了後・自由戦）',
@@ -902,7 +901,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             accentColor: Colors.amber,
             isDark: isDark,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildRuleCard(
             sceneId: 'honsen',
             title: '🏆 本戦（通常戦）',
@@ -910,7 +909,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             accentColor: Colors.indigo,
             isDark: isDark,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildRuleCard(
             sceneId: 'moushiawase',
             title: '🤝 申し合わせ（自由対戦）',
@@ -940,7 +939,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             _selectedScene = sceneId;
           });
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -950,7 +949,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       ? accentColor.shade900.withValues(alpha: 0.4)
                       : accentColor.shade50)
                 : (isDark ? const Color(0xFF2C2C2E) : Colors.white),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
             border: Border.all(
               color: isSelected
                   ? (isDark ? accentColor.shade300 : accentColor.shade700)
@@ -976,7 +975,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     : Colors.grey,
                 size: 22,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -985,7 +984,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       title,
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: isSelected
                             ? (isDark ? Colors.white : accentColor.shade900)
                             : (isDark ? Colors.white70 : Colors.black87),

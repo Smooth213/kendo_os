@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -60,10 +61,13 @@ class _ProgramManagementScreenState
           child: Wrap(
             children: <Widget>[
               const Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(AppSpacing.lg),
                 child: Text(
                   'プログラムの追加',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
               ListTile(
@@ -82,7 +86,7 @@ class _ProgramManagementScreenState
                   _pickAndUpload(isPhoto: false);
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
             ],
           ),
         );
@@ -265,7 +269,7 @@ class _ProgramManagementScreenState
                                                 color: Colors.white,
                                                 size: 64,
                                               ),
-                                              SizedBox(height: 8),
+                                              SizedBox(height: AppSpacing.sm),
                                               Text(
                                                 'PDFプレビュー非対応\n(アップロード後に確認可能)',
                                                 textAlign: TextAlign.center,
@@ -332,7 +336,7 @@ class _ProgramManagementScreenState
                     // --- 中間：タイトル入力＆説明エリア ---
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       // ★ ダークモード対応: ダーク時は暗い背景、ライト時はインディゴ系の薄い背景
                       color: isDark
                           ? const Color(0xFF1C1C2E)
@@ -343,12 +347,12 @@ class _ProgramManagementScreenState
                           const Text(
                             '📝 プログラム名（ベースタイトル）',
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: Colors.indigo,
                               fontSize: 13,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                           TextFormField(
                             initialValue: title,
                             // ★ 修正: オートフォーカスを解除し、キーボードの自動立ち上げを防ぐ
@@ -356,7 +360,7 @@ class _ProgramManagementScreenState
                             // ★ 修正①: テーマ依存の文字色（ライト時は黒、ダーク時は白）
                             // 他のTextFieldと同じテーマ依存にすることで両モード共通で正しく表示
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
                             decoration: InputDecoration(
@@ -372,20 +376,20 @@ class _ProgramManagementScreenState
                                 vertical: 12,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: AppRadius.small,
                                 borderSide: BorderSide(
                                   color: Colors.indigo.shade200,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: AppRadius.small,
                                 borderSide: BorderSide(
                                   color: Colors.indigo.shade200,
                                 ),
                               ),
                               errorStyle: const TextStyle(
                                 color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                               ),
                             ),
                             onChanged: (value) => setState(() => title = value),
@@ -427,7 +431,7 @@ class _ProgramManagementScreenState
                                         ? Colors.red.shade700
                                         : Colors.orange.shade700,
                                   ),
-                                  const SizedBox(width: 4),
+                                  const SizedBox(width: AppSpacing.xs),
                                   Text(
                                     'タイトルは必須です（入力しないと保存できません）',
                                     style: TextStyle(
@@ -436,8 +440,8 @@ class _ProgramManagementScreenState
                                           ? Colors.red.shade700
                                           : Colors.orange.shade700,
                                       fontWeight: showValidationHighlight
-                                          ? FontWeight.bold
-                                          : FontWeight.w600,
+                                          ? AppFontWeight.bold
+                                          : AppFontWeight.semiBold,
                                     ),
                                   ),
                                 ],
@@ -445,7 +449,7 @@ class _ProgramManagementScreenState
                             ),
                           // ★ 複数ファイル選択時のインフォメーションカードをリデザイン
                           if (orderedFiles.length > 1) ...[
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppSpacing.md),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -456,7 +460,7 @@ class _ProgramManagementScreenState
                                 color: isDark
                                     ? const Color(0xFF252540)
                                     : Colors.indigo.shade50.withAlpha(200),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: AppRadius.small,
                                 border: Border.all(
                                   color: isDark
                                       ? const Color(0xFF3A3A6A)
@@ -472,7 +476,7 @@ class _ProgramManagementScreenState
                                     size: 18,
                                     color: Colors.indigo.shade700,
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: AppSpacing.sm),
                                   Expanded(
                                     child: Text(
                                       '複数アップロードのガイド：\n'
@@ -480,7 +484,7 @@ class _ProgramManagementScreenState
                                       '• 保存時、自動的に「[入力タイトル] (1/${orderedFiles.length})」のように連番が付与されて保存されます。',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: AppFontWeight.semiBold,
                                         // ★ ダークモード対応: ダーク時は明るい色
                                         color: isDark
                                             ? Colors.indigo.shade200
@@ -552,7 +556,7 @@ class _ProgramManagementScreenState
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: isSelected
-                                      ? FontWeight.bold
+                                      ? AppFontWeight.bold
                                       : FontWeight.normal,
                                 ),
                               ),
@@ -732,7 +736,7 @@ class _ProgramManagementScreenState
 
   Widget _buildGridView(List<ProgramModel> programs) {
     return GridView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 12,
@@ -754,9 +758,7 @@ class _ProgramManagementScreenState
                 ),
           child: Card(
             clipBehavior: Clip.antiAlias,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
             elevation: 2,
             child: Stack(
               fit: StackFit.expand,
@@ -835,7 +837,7 @@ class _ProgramManagementScreenState
 
         return ListTile(
           leading: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: AppRadius.small,
             child: Container(
               width: 48,
               height: 48,
@@ -858,7 +860,7 @@ class _ProgramManagementScreenState
           ),
           title: Text(
             program.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: AppFontWeight.bold),
           ),
           subtitle: Text(program.fileType.toUpperCase()),
           trailing: IconButton(

@@ -165,7 +165,7 @@ class ViewerMatchScreen extends ConsumerWidget {
               manualPath: 'docs/manuals/faq/viewer_faq.md',
               color: iconColor,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: Column(
@@ -291,9 +291,9 @@ class ViewerMatchScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 color: Colors.white,
                 child: QrImageView(
                   data: shareUrl,
@@ -301,7 +301,7 @@ class ViewerMatchScreen extends ConsumerWidget {
                   size: 200.0,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton.icon(
                 onPressed: () => SharePlus.instance.share(
                   ShareParams(
@@ -438,7 +438,7 @@ class LargeViewerScoreboard extends StatelessWidget {
     final isWhiteWinner = isFinished && winner == 'white';
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
           // 🔴 赤選手エリア
@@ -493,7 +493,7 @@ class LargeViewerScoreboard extends StatelessWidget {
     final isWhiteWinner = isFinished && winner == 'white';
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         children: [
           // 🔴 赤選手エリア
@@ -549,7 +549,7 @@ class LargeViewerScoreboard extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: AppRadius.xlarge,
         border: Border.all(
           color: isWinner
               ? Colors.amber.shade600
@@ -566,7 +566,7 @@ class LargeViewerScoreboard extends StatelessWidget {
               ]
             : [],
       ),
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: FittedBox(
         fit: BoxFit.contain, // 🛡️ 究極のレイアウト崩れ・オーバーフロー防止
         child: Column(
@@ -584,7 +584,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                       color: Colors.amber.shade600,
                       size: 28,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
                       '勝者',
                       style: TextStyle(
@@ -610,12 +610,12 @@ class LargeViewerScoreboard extends StatelessWidget {
               maxLines: 1,
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             // 🌟 技マーク（メ、コ、ド、ツ、反、判定など）＆ 勝敗確定時の丸囲み
             _buildLargePointBox(displays, isWinner, side),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
 
             // 反則表示 (▲)
             if (foulCount > 0)

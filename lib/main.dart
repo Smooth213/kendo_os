@@ -308,7 +308,7 @@ void main() {
         return Scaffold(
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -316,7 +316,7 @@ void main() {
                     '⚠️ UIレンダリング・エラー発生',
                     style: TextStyle(
                       color: Colors.red,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
@@ -324,7 +324,7 @@ void main() {
                     details.exceptionAsString(),
                     style: const TextStyle(
                       color: Colors.black,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       fontSize: 14,
                     ),
                   ),
@@ -388,12 +388,12 @@ void main() {
                                             color: Colors.white,
                                             size: 18,
                                           ),
-                                          SizedBox(width: 8),
+                                          SizedBox(width: AppSpacing.sm),
                                           Text(
                                             '⚠️ 体育館オフライン運営モード：ローカルキャッシュへ即時保存中',
                                             style: TextStyle(
                                               color: Colors.white,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: AppFontWeight.bold,
                                               fontSize: 13,
                                               decoration: TextDecoration.none,
                                             ),
@@ -852,7 +852,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                             color: Colors.white,
                             size: 18,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Flexible(
                             child: Text(
                               kIsWeb
@@ -860,7 +860,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                                   : '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 fontSize: 13,
                                 decoration: TextDecoration.none,
                               ),

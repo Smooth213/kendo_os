@@ -104,7 +104,7 @@ class ScoreTableCard extends StatelessWidget {
           Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 color: themeColors.inputBackground,
                 width: double.infinity,
                 child: Text(
@@ -135,7 +135,7 @@ class ScoreTableCard extends StatelessWidget {
                               : Colors.transparent,
                           child: Center(
                             child: Padding(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(AppSpacing.sm),
                               child: Text(
                                 m.matchType,
                                 style: TextStyle(
@@ -156,7 +156,7 @@ class ScoreTableCard extends StatelessWidget {
                       ),
                       Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(AppSpacing.sm),
                           child: Text(
                             '本/勝',
                             style: TextStyle(
@@ -365,7 +365,7 @@ class ScoreTableCard extends StatelessWidget {
 
   Widget _teamCell(String name, Color color) => Center(
     child: Padding(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(AppSpacing.xs),
       child: Text(
         name,
         textAlign: TextAlign.center,

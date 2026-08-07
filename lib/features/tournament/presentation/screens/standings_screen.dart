@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -186,12 +187,12 @@ class StandingsScreen extends ConsumerWidget {
                           ? const Color(0xFF38383A)
                           : Colors.grey.shade300,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.xl),
                     Text(
                       'まだ承認済みの試合結果がありません',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: subTextColor,
                       ),
                     ),
@@ -234,7 +235,7 @@ class StandingsScreen extends ConsumerWidget {
                 // 元々の順位表リスト
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     itemCount: sortedStats.length,
                     itemExtent: 92.0,
                     itemBuilder: (context, index) {
@@ -279,7 +280,7 @@ class StandingsScreen extends ConsumerWidget {
                         elevation: 0,
                         color: cardColor,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16), // iOS角丸
+                          borderRadius: AppRadius.large, // iOS角丸
                           side: isDark
                               ? BorderSide.none
                               : BorderSide(color: borderColor),
@@ -301,7 +302,7 @@ class StandingsScreen extends ConsumerWidget {
                                 : Text(
                                     '${index + 1}',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: AppFontWeight.bold,
                                       color: iconColor,
                                       fontSize: 18,
                                     ),
@@ -313,7 +314,7 @@ class StandingsScreen extends ConsumerWidget {
                                 child: Text(
                                   stat.name,
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                     fontSize: 18,
                                     color: textColor,
                                   ),
@@ -322,7 +323,7 @@ class StandingsScreen extends ConsumerWidget {
                               Text(
                                 '勝率: $rateStr',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   color: isDark
                                       ? Colors.indigo.shade300
                                       : Colors.indigo.shade600,

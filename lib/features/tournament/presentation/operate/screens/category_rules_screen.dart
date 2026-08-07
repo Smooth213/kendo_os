@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -489,7 +490,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               ),
               child: const Text(
                 '一括適用する',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: AppFontWeight.bold),
               ),
             ),
           ],
@@ -567,7 +568,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             ),
             child: const Text(
               '削除',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: AppFontWeight.bold),
             ),
           ),
         ],
@@ -676,7 +677,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   'スキップ',
                   style: TextStyle(
                     color: themeColors.primaryAccent,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                   ),
                 ),
               ),
@@ -716,7 +717,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             children: [
               Expanded(
@@ -731,7 +732,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     filled: true,
                     fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.medium,
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
@@ -739,7 +740,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.medium,
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
@@ -747,7 +748,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.medium,
                       borderSide: BorderSide(
                         color: Colors.indigo.shade500,
                         width: 2.0,
@@ -756,7 +757,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               IconButton.filled(
                 icon: const Icon(Icons.add),
                 style: IconButton.styleFrom(
@@ -780,12 +781,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 const Text(
                   '💡 定番の部門をワンタップで追加',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: Colors.grey,
                     fontSize: 12,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -808,7 +809,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         const Divider(height: 1),
         Expanded(
           child: list.isEmpty
@@ -817,7 +818,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.gavel, size: 48, color: Colors.grey.shade400),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       Text(
                         '部門別ルールが未登録です。\n上の入力欄から部門を追加してください。',
                         textAlign: TextAlign.center,
@@ -832,7 +833,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 )
               : ListView.builder(
                   itemCount: list.length,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   // ★ 最適化: 2画面分先読みキャッシュでスクロール時の描画コストを削減
                   // ignore: deprecated_member_use
                   cacheExtent: 1000.0,
@@ -871,7 +872,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                           elevation: 0,
                           margin: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: AppRadius.large,
                             side: enableLiquidGlass
                                 ? BorderSide(
                                     color: isDark
@@ -907,7 +908,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                             title: Text(
                               cat,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
@@ -921,7 +922,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         ),
         if (widget.isFromSetup && list.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: SizedBox(
               width: double.infinity,
               child: GlassButton(
@@ -958,7 +959,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         color: isDark
             ? Colors.white.withValues(alpha: 0.05)
             : Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         border: Border.all(
           color: isDark ? Colors.white12 : Colors.grey.shade200,
         ),
@@ -973,7 +974,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 Text(
                   title,
                   style: TextStyle(
-                    fontWeight: FontWeight.w600,
+                    fontWeight: AppFontWeight.semiBold,
                     fontSize: 14,
                     color: isDark ? Colors.white : Colors.black87,
                   ),
@@ -996,7 +997,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           Container(
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: AppRadius.xlarge,
               border: Border.all(
                 color: isDark ? Colors.white24 : Colors.grey.shade300,
               ),
@@ -1036,7 +1037,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   child: Text(
                     _formatMinutes(value),
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       fontSize: 14,
                       color: primaryColor,
                     ),
@@ -1086,10 +1087,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             padding: const EdgeInsets.all(20),
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
                   color: Colors.indigo.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.medium,
                   border: Border.all(
                     color: Colors.indigo.withValues(alpha: 0.2),
                   ),
@@ -1097,7 +1098,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 child: Row(
                   children: [
                     const Icon(Icons.info_outline, color: Colors.indigo),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1107,14 +1108,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.indigo,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                             ),
                           ),
                           Text(
                             category,
                             style: TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: textColor,
                             ),
                           ),
@@ -1124,17 +1125,17 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
 
               const Text(
                 '試合方式',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   fontSize: 14,
                   color: Colors.indigo,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<String>(
                 initialValue: _editingMatchType,
                 decoration: InputDecoration(
@@ -1161,13 +1162,16 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   }
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
 
               SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
                   '⚔️ 遠征マルチシーンルール（錬成会・本戦・申し合わせ）',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 subtitle: const Text(
                   'ONにすると、1つの部門に「錬成会」「本戦」「申し合わせ」の各ルールを個別に定義できます。',
@@ -1187,7 +1191,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
                   '準決勝・決勝は別ルールにする',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 subtitle: const Text('ONにすると、上位戦用の特別ルールを別途定義できます。'),
                 value: _useAdvancedRule,
@@ -1203,10 +1210,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
               if (_isMultiScene) ...[
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: Colors.amber.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     border: Border.all(
                       color: Colors.amber.withValues(alpha: 0.3),
                     ),
@@ -1217,7 +1224,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       const Text(
                         '実施するルールシーンの選択',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 13,
                           color: Colors.amber,
                         ),
@@ -1268,7 +1275,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 DefaultTabController(
                   length: 3,
                   child: Column(
@@ -1280,7 +1287,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         indicatorColor: Colors.indigo,
                         isScrollable: true,
                         labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 14,
                         ),
                         tabs: [
@@ -1369,7 +1376,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         unselectedLabelColor: Colors.grey,
                         indicatorColor: Colors.indigo,
                         labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 15,
                         ),
                         tabs: [
@@ -1445,16 +1452,16 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.medium,
                     ),
                   ),
                   child: const Text(
                     'キャンセル',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: AppFontWeight.bold),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: GlassButton(
                   onPressed: () => _saveCategoryRules(tournament),
@@ -1531,7 +1538,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader(title),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
 
         // 1. 共通: 試合時間設定
         _buildTimeStepperTile(
@@ -1559,7 +1566,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             'クイック選択',
             style: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
             ),
           ),
@@ -1587,7 +1594,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             );
           }).toList(),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
 
         // === 形式別表示 ===
         if (_editingIsRenseikai) ...[
@@ -1610,12 +1617,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               });
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           const Text(
             '進行形式',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            style: TextStyle(fontWeight: AppFontWeight.semiBold, fontSize: 14),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -1639,7 +1646,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             }).toList(),
           ),
           if (renseikaiType == '時間制') ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             TextFormField(
               key: ValueKey('renseikai_time_${isNormal}_$_editingCategory'),
               initialValue: overallTime.toString(),
@@ -1647,7 +1654,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               decoration: const InputDecoration(
                 labelText: '全体の制限時間（分）',
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.all(12),
+                contentPadding: EdgeInsets.all(AppSpacing.md),
               ),
               onChanged: (val) {
                 final i = int.tryParse(val) ?? 30;
@@ -1664,12 +1671,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           // ----------------------------------------------------
           // 勝ち抜き戦 (Kachinuki Mode)
           // ----------------------------------------------------
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           const Text(
             '大将 VS 大将 のときの挙動',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            style: TextStyle(fontWeight: AppFontWeight.semiBold, fontSize: 14),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -1711,12 +1718,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           const Text(
             '大将対他のポジション（大将以外）の挙動',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            style: TextStyle(fontWeight: AppFontWeight.semiBold, fontSize: 14),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -1831,7 +1838,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         ),
                         Text(
                           '$enchoCount回',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontWeight: AppFontWeight.bold,
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.add_circle_outline),
@@ -1913,12 +1922,15 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             },
           ),
           if (hasLeagueDaihyo) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             const Text(
               '代表戦の本数',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              style: TextStyle(
+                fontWeight: AppFontWeight.semiBold,
+                fontSize: 14,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -1955,12 +1967,15 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             const Text(
               '代表戦の試合時間',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              style: TextStyle(
+                fontWeight: AppFontWeight.semiBold,
+                fontSize: 14,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -2000,7 +2015,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 }),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: const Text('代表戦の延長を有効にする'),
@@ -2034,13 +2049,13 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               const Padding(
                 padding: EdgeInsets.only(left: 16.0),
                 child: Text(
                   '代表戦延長の回数',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     fontSize: 13,
                     color: Colors.grey,
                   ),
@@ -2089,7 +2104,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             SwitchListTile.adaptive(
               contentPadding: EdgeInsets.zero,
               title: const Text('代表戦の判定を有効にする'),
@@ -2123,11 +2138,11 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             title: const Row(
               children: [
                 Icon(Icons.settings_outlined, color: Colors.grey, size: 20),
-                SizedBox(width: 8),
+                SizedBox(width: AppSpacing.sm),
                 Text(
                   '詳細設定（得点制限・反則ルール）',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     fontSize: 14,
                     color: Colors.grey,
                   ),
@@ -2140,10 +2155,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             ),
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.medium,
                   border: Border.all(
                     color: isDark
                         ? const Color(0xFF38383A)
@@ -2164,7 +2179,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                               Text(
                                 '勝敗本数制限（得点制限）',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   fontSize: 13,
                                 ),
                               ),
@@ -2199,7 +2214,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                             Text(
                               '$ipponLimit本',
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 fontSize: 14,
                               ),
                             ),
@@ -2234,7 +2249,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                               Text(
                                 '反則制限本数（ペナルティ）',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   fontSize: 13,
                                 ),
                               ),
@@ -2269,7 +2284,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                             Text(
                               '$hansokuLimit回',
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 fontSize: 14,
                               ),
                             ),
@@ -2304,17 +2319,17 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           const Text(
             '自動判別用キーワード設定',
             style: TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               fontSize: 14,
               color: Colors.indigo,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           const Text(
             '試合詳細メモに入力された文字と部分一致した場合に、この上位戦ルールを自動適用します。',
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           TextFormField(
             key: ValueKey('advanced_keywords_field_$_editingCategory'),
             controller: _keywordsController,
@@ -2322,7 +2337,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               labelText: '自動判定キーワード（カンマ「,」区切り）',
               hintText: '例: 準決勝, 決勝, 3位決定',
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.all(12),
+              contentPadding: EdgeInsets.all(AppSpacing.md),
             ),
             onChanged: (val) {
               _editingAdvancedKeywords = val
@@ -2332,7 +2347,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   .toList();
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -2419,12 +2434,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         const Text(
           '勝ち点（リーグ戦の順位決定用）',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             fontSize: 14,
             color: Colors.indigo,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Row(
           children: [
             Expanded(
@@ -2437,7 +2452,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 decoration: const InputDecoration(
                   labelText: '勝ち（点）',
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(12),
+                  contentPadding: EdgeInsets.all(AppSpacing.md),
                 ),
                 onChanged: (val) {
                   final d = double.tryParse(val) ?? 0.0;
@@ -2451,7 +2466,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 },
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: TextFormField(
                 key: ValueKey('loss_pt_${isNormal}_$_editingCategory'),
@@ -2462,7 +2477,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 decoration: const InputDecoration(
                   labelText: '負け（点）',
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(12),
+                  contentPadding: EdgeInsets.all(AppSpacing.md),
                 ),
                 onChanged: (val) {
                   final d = double.tryParse(val) ?? 0.0;
@@ -2476,7 +2491,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 },
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: TextFormField(
                 key: ValueKey('draw_pt_${isNormal}_$_editingCategory'),
@@ -2487,7 +2502,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 decoration: const InputDecoration(
                   labelText: '引き分け（点）',
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(12),
+                  contentPadding: EdgeInsets.all(AppSpacing.md),
                 ),
                 onChanged: (val) {
                   final d = double.tryParse(val) ?? 0.0;
@@ -2516,7 +2531,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       child: Text(
         title,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           fontSize: 15,
           color: Colors.indigo,
         ),
@@ -2634,12 +2649,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   title,
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: accentColor,
                   ),
                 ),
@@ -2775,7 +2790,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade400,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.medium,
                       ),
                     ),
                   ),
@@ -2786,13 +2801,13 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         color: themeColors.primaryAccent,
                         size: 24,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           '$categoryName のルール設定',
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             color: isDark ? Colors.white : Colors.black87,
                           ),
                         ),
@@ -2809,7 +2824,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   ),
 
                   if (ruleSet.useAdvancedRule) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     const Divider(),
                     buildRuleSection(
                       '上位戦（準決勝・決勝等）ルール',
@@ -2817,7 +2832,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       Colors.teal,
                       ruleSet.matchType,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     _buildDetailRow(
                       '上位戦 適用ワード',
                       ruleSet.advancedKeywords.join('、'),
@@ -2825,7 +2840,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     ),
                   ],
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -2838,12 +2853,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadius.medium,
                         ),
                       ),
                       child: const Text(
                         '閉じる',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        style: TextStyle(fontWeight: AppFontWeight.semiBold),
                       ),
                     ),
                   ),
@@ -2867,7 +2882,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             child: Text(
               label,
               style: const TextStyle(
-                fontWeight: FontWeight.w600,
+                fontWeight: AppFontWeight.semiBold,
                 fontSize: 13,
                 color: Colors.grey,
               ),
@@ -2895,7 +2910,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         label,
         style: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           color: color,
         ),
       ),
@@ -2907,16 +2922,13 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       return Container(
         margin: const EdgeInsets.only(right: 6, top: 4),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: BoxDecoration(color: bg, borderRadius: AppRadius.small),
         child: Text(
           label,
           style: TextStyle(
             color: text,
             fontSize: 11,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
           ),
         ),
       );
@@ -2926,7 +2938,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
@@ -2986,7 +2998,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
@@ -3060,16 +3072,16 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           child: Text(
             title,
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               fontSize: 16,
               color: Colors.indigo,
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         const Text(
           '錬成形式（試合方式）',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+          style: TextStyle(fontWeight: AppFontWeight.semiBold, fontSize: 13),
         ),
         const SizedBox(height: 6),
         Row(
@@ -3088,14 +3100,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           }).toList(),
         ),
         if (renseikaiType == '時間制') ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           TextFormField(
             initialValue: overallTime.toString(),
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: '全体の制限時間（分）',
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.all(12),
+              contentPadding: EdgeInsets.all(AppSpacing.md),
             ),
             onChanged: (val) {
               final i = int.tryParse(val) ?? 30;

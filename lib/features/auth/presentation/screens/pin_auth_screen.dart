@@ -52,7 +52,7 @@ class PinAuthScreen extends ConsumerWidget {
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
@@ -125,12 +125,12 @@ class PinAuthScreen extends ConsumerWidget {
                                 color: isDark ? Colors.white30 : Colors.black26,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: AppRadius.large,
                                 borderSide: BorderSide.none,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: AppSpacing.xxl),
                           SizedBox(
                             width: double.infinity,
                             height: 56,
@@ -142,7 +142,7 @@ class PinAuthScreen extends ConsumerWidget {
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: AppRadius.large,
                                 ),
                               ),
                               onPressed: () async {

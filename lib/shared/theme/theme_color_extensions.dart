@@ -11,6 +11,10 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color inputBackground;
   final Color hintColor;
   final Color rosePink; // 差し色としてのローズピンク
+  final Color successColor; // 成功状態カラー
+  final Color warningColor; // 警告状態カラー
+  final Color errorColor; // エラー状態カラー
+  final Color infoColor; // 情報状態カラー
 
   const AppThemeColors({
     required this.primaryAccent,
@@ -23,6 +27,10 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.inputBackground,
     required this.hintColor,
     required this.rosePink,
+    required this.successColor,
+    required this.warningColor,
+    required this.errorColor,
+    required this.infoColor,
   });
 
   @override
@@ -37,6 +45,10 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? inputBackground,
     Color? hintColor,
     Color? rosePink,
+    Color? successColor,
+    Color? warningColor,
+    Color? errorColor,
+    Color? infoColor,
   }) {
     return AppThemeColors(
       primaryAccent: primaryAccent ?? this.primaryAccent,
@@ -49,6 +61,10 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       inputBackground: inputBackground ?? this.inputBackground,
       hintColor: hintColor ?? this.hintColor,
       rosePink: rosePink ?? this.rosePink,
+      successColor: successColor ?? this.successColor,
+      warningColor: warningColor ?? this.warningColor,
+      errorColor: errorColor ?? this.errorColor,
+      infoColor: infoColor ?? this.infoColor,
     );
   }
 
@@ -72,6 +88,10 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       inputBackground: Color.lerp(inputBackground, other.inputBackground, t)!,
       hintColor: Color.lerp(hintColor, other.hintColor, t)!,
       rosePink: Color.lerp(rosePink, other.rosePink, t)!,
+      successColor: Color.lerp(successColor, other.successColor, t)!,
+      warningColor: Color.lerp(warningColor, other.warningColor, t)!,
+      errorColor: Color.lerp(errorColor, other.errorColor, t)!,
+      infoColor: Color.lerp(infoColor, other.infoColor, t)!,
     );
   }
 
@@ -136,6 +156,18 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade600;
 
+    // 3. セマンティックステータスカラー
+    final Color successColor = isDark
+        ? Colors.green.shade400
+        : Colors.green.shade700;
+    final Color warningColor = isDark
+        ? Colors.orange.shade400
+        : Colors.orange.shade800;
+    final Color errorColor = isDark ? Colors.red.shade400 : Colors.red.shade700;
+    final Color infoColor = isDark
+        ? Colors.blue.shade400
+        : Colors.blue.shade700;
+
     return AppThemeColors(
       primaryAccent: primaryAccent,
       softAccent: softAccent,
@@ -147,6 +179,10 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       inputBackground: inputBackground,
       hintColor: hintColor,
       rosePink: rosePink,
+      successColor: successColor,
+      warningColor: warningColor,
+      errorColor: errorColor,
+      infoColor: infoColor,
     );
   }
 }

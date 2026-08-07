@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -140,13 +141,13 @@ class _AnnounceHistoryBottomSheetState
                       Icons.notifications_active_outlined,
                       color: isDark ? Colors.white : const Color(0xFF2C3E50),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
                         widget.isStaffRoom ? '新着通知一覧 (スタッフ専用)' : '新着通知一覧',
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: isDark
                               ? Colors.white
                               : const Color(0xFF2C3E50),
@@ -175,7 +176,7 @@ class _AnnounceHistoryBottomSheetState
                           'すべて既読',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                           ),
                         ),
                       ),
@@ -211,9 +212,10 @@ class _AnnounceHistoryBottomSheetState
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       itemCount: snapshot.data!.docs.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.md),
       itemBuilder: (context, index) {
         final doc = snapshot.data!.docs[index];
         final data = doc.data() as Map<String, dynamic>;
@@ -235,7 +237,7 @@ class _AnnounceHistoryBottomSheetState
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF8F9FA),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               border: Border.all(
                 color: !isRead
                     ? const Color(0xFFFF69B4).withValues(
@@ -275,7 +277,7 @@ class _AnnounceHistoryBottomSheetState
                                 fontSize: 14,
                                 fontWeight: !isRead
                                     ? FontWeight.w900
-                                    : FontWeight.bold,
+                                    : AppFontWeight.bold,
                                 color: isStaffOnly
                                     ? Colors.deepOrange
                                     : (isDark ? Colors.white : Colors.black87),

@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
@@ -279,7 +280,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: AppRadius.large,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
@@ -288,7 +289,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
             color: isDark
                 ? Colors.black.withValues(alpha: 0.5)
                 : Colors.white.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.1)
@@ -307,13 +308,16 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       horizontal: 8,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.medium,
                     ),
                   ),
                   icon: const Icon(Icons.print, size: 18),
                   label: const Text(
                     'A4印刷',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: 13,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -340,7 +344,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                   },
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
@@ -351,13 +355,16 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       horizontal: 8,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.medium,
                     ),
                   ),
                   icon: const Icon(Icons.share, size: 18),
                   label: const Text(
                     '共有/保存',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: 13,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -402,7 +409,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
   Widget _buildFloatingActionBarForWeb() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: AppRadius.large,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
@@ -411,7 +418,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
             color: isDark
                 ? Colors.black.withValues(alpha: 0.5)
                 : Colors.white.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.1)
@@ -430,13 +437,16 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       horizontal: 8,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.medium,
                     ),
                   ),
                   icon: const Icon(Icons.open_in_new, size: 18),
                   label: const Text(
                     'PDF版をブラウザで開く',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: 13,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -455,7 +465,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                   },
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
@@ -466,13 +476,16 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       horizontal: 8,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.medium,
                     ),
                   ),
                   icon: const Icon(Icons.share, size: 18),
                   label: const Text(
                     '共有する',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: 13,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -551,7 +564,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               children: [
                 const Text(
                   '📖 テキスト簡易版（オフライン対応）',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: AppFontWeight.bold),
                 ),
                 TextButton.icon(
                   icon: const Icon(Icons.arrow_back),
@@ -581,11 +594,11 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       // ダウンロード中
       return Center(
         child: Container(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           width: 300,
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: AppRadius.xlarge,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
@@ -597,18 +610,18 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircularProgressIndicator(),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               const Text(
                 'マニュアルをロード中...',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 16),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               LinearProgressIndicator(value: _downloadProgress),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 '${(_downloadProgress * 100).toStringAsFixed(0)}%',
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   fontSize: 14,
                 ),
               ),
@@ -623,15 +636,15 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       final isDark = Theme.of(context).brightness == Brightness.dark;
       return Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Container(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.all(AppSpacing.xxl),
             constraints: const BoxConstraints(maxWidth: 450),
             decoration: BoxDecoration(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.05)
                   : Colors.black.withValues(alpha: 0.02),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: AppRadius.xlarge,
               border: Border.all(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.1)
@@ -649,21 +662,24 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 const SizedBox(height: 20),
                 const Text(
                   'Kendo Sync 総合取扱説明書',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: AppFontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 const Text(
                   '印刷や文字検索、高倍率ズームが可能な公式PDF版マニュアルをダウンロードできます。一度保存すると、オフラインでも閲覧可能です。',
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 const Text(
                   'ファイルサイズ: 約 2.6 MB',
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: Colors.blueAccent,
                   ),
                 ),
@@ -676,7 +692,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       backgroundColor: Colors.blueAccent,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                       ),
                     ),
                     icon: const Icon(Icons.download),
@@ -684,13 +700,13 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       'PDF版をダウンロード (無料)',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                     onPressed: _startDownload,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 TextButton.icon(
                   icon: const Icon(Icons.chrome_reader_mode_outlined),
                   label: const Text('テキスト簡易版（オフライン対応）を読む'),
@@ -743,7 +759,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: isDark ? Colors.black26 : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.medium,
           border: Border.all(color: borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
@@ -759,7 +775,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(Icons.search, color: searchIconColor, size: 20),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: TextField(
                 controller: _searchController,
@@ -892,7 +908,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(AppSpacing.md),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
@@ -913,7 +929,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       ? Colors.white10
                       : Colors.black.withValues(alpha: 0.05),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: AppRadius.small,
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -953,7 +969,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                           title,
                           style: TextStyle(
                             fontWeight: isSelected
-                                ? FontWeight.bold
+                                ? AppFontWeight.bold
                                 : FontWeight.normal,
                             color: isSelected ? Colors.blueAccent : null,
                           ),
@@ -1034,12 +1050,12 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               styleSheet: md.MarkdownStyleSheet(
                 h1: const TextStyle(
                   fontSize: 28,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: Colors.blueAccent,
                 ),
                 h2: const TextStyle(
                   fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: Colors.teal,
                   decoration: TextDecoration.underline,
                 ),
@@ -1055,7 +1071,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                   backgroundColor: Colors.yellow.withValues(alpha: 0.5),
                   color: isDark ? Colors.white : Colors.black,
                   fontStyle: FontStyle.normal,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
               ),
             ),

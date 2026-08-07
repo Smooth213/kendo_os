@@ -131,7 +131,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                       color: _accentColor,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: TextField(
@@ -165,7 +165,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   // ★ カテゴリフィルターチップ（横スクロール）
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -203,7 +203,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                           }).toList(),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.4, // リストの高さ
                     child: ListView(

@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
@@ -108,7 +110,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 ':',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 24, fontWeight: AppFontWeight.bold),
               ),
             ),
             Expanded(
@@ -139,7 +141,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             },
             child: const Text(
               '設定する',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: AppFontWeight.bold),
             ),
           ),
         ],
@@ -217,13 +219,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
       prefixIcon: prefixIcon,
       filled: true,
       fillColor: _themeColors.inputBackground,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      border: OutlineInputBorder(borderRadius: AppRadius.medium),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         borderSide: BorderSide(color: _themeColors.separatorColor, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         borderSide: BorderSide(color: _themeColors.primaryAccent, width: 2),
       ),
     );
@@ -258,7 +260,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             unselectedLabelColor: isDark ? Colors.grey : Colors.grey.shade600,
             indicatorColor: _themeColors.primaryAccent,
             indicatorWeight: 3,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+            labelStyle: const TextStyle(fontWeight: AppFontWeight.bold),
             tabs: const [
               Tab(text: '個人'),
               Tab(text: '団体'),
@@ -276,7 +278,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 '⚙️ 試合ルール: ${rule.matchTimeMinutes == rule.matchTimeMinutes.toInt() ? rule.matchTimeMinutes.toInt() : rule.matchTimeMinutes.toStringAsFixed(1)}分 / ${(rule.isIpponShobu) ? '1' : '3'}本勝負 / 延長${(rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited) ? 'あり' : 'なし'}',
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: isDark ? Colors.white70 : Colors.black87,
                 ),
               ),
@@ -298,7 +300,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             size: 16,
                             color: _themeColors.primaryAccent,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
                               '💡 設定したルールは、試合を追加したあとでも「一括ルール変更」からいつでも変更できます。',
@@ -310,13 +312,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             '試合時間',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(fontWeight: AppFontWeight.bold),
                           ),
                           DropdownButton<double?>(
                             value:
@@ -391,7 +393,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                         children: [
                           const Text(
                             '勝敗条件',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(fontWeight: AppFontWeight.bold),
                           ),
                           DropdownButton<bool>(
                             value: rule.isIpponShobu,
@@ -428,7 +430,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                         children: [
                           const Text(
                             '延長戦',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(fontWeight: AppFontWeight.bold),
                           ),
                           DropdownButton<String>(
                             value: rule.isEnchoUnlimited
@@ -493,7 +495,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                         children: [
                           const Text(
                             '判定',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(fontWeight: AppFontWeight.bold),
                           ),
                           Switch(
                             value: rule.hasHantei,
@@ -554,7 +556,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   'VS',
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: Colors.grey.shade500,
                   ),
                 ),
@@ -618,7 +620,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               },
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
         ],
       ),
     );
@@ -638,7 +640,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
     required bool isDark,
   }) {
     final count = _getUsageCount(name);
-    return Chip(
+    return AppActionChip(
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -648,13 +650,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               color: isAssigned
                   ? Colors.grey
                   : (isDark ? Colors.white : Colors.black87),
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
             ),
           ),
           if (count > 0 && !isFeedback) ...[
-            const SizedBox(width: 4),
+            const SizedBox(width: AppSpacing.xs),
             Container(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(AppSpacing.xs),
               decoration: const BoxDecoration(
                 color: Colors.red,
                 shape: BoxShape.circle,
@@ -664,7 +666,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
               ),
             ),
@@ -714,7 +716,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 Text(
                   '参加者プール (${_poolPlayers.length}名)',
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     fontSize: 13,
                     color: Colors.grey,
                   ),
@@ -742,7 +744,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 });
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
           ],
 
           // ★ ベンチ（横スクロール）エリア
@@ -784,7 +786,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               },
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
 
           // コントロールエリア（枠数変更・S字振り分け）
           Row(
@@ -807,7 +809,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   Text(
                     '$_teamSize 対 $_teamSize',
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
@@ -860,7 +862,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 color: Colors.red.shade300,
                                 width: candidateData.isNotEmpty ? 2 : 1,
                               ),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: AppRadius.large,
                             ),
                             child: ListTile(
                               dense: true, // 少しコンパクトに
@@ -872,14 +874,14 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                   style: TextStyle(
                                     color: Colors.red.shade800,
                                     fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                   ),
                                 ),
                               ),
                               title: Text(
                                 _redTeam[index] ?? '未定',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   color: _redTeam[index] == null
                                       ? Colors.grey
                                       : (isDark ? Colors.white : Colors.black),
@@ -894,7 +896,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 // 白チーム列
                 Expanded(
                   child: ListView.builder(
@@ -915,7 +917,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 color: Colors.blueGrey.shade300,
                                 width: candidateData.isNotEmpty ? 2 : 1,
                               ),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: AppRadius.large,
                             ),
                             child: ListTile(
                               dense: true, // 少しコンパクトに
@@ -927,14 +929,14 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                   style: TextStyle(
                                     color: Colors.blueGrey.shade800,
                                     fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                   ),
                                 ),
                               ),
                               title: Text(
                                 _whiteTeam[index] ?? '未定',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   color: _whiteTeam[index] == null
                                       ? Colors.grey
                                       : (isDark ? Colors.white : Colors.black),
@@ -954,7 +956,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
           ),
 
           // 確定ボタン
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           SizedBox(
             width: double.infinity,
             child: GlassButton(
@@ -1026,13 +1028,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               });
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Expanded(
             child: Container(
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.medium,
                 border: Border.all(
                   color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                 ),
@@ -1066,7 +1068,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 style: TextStyle(
                                   color: _themeColors.primaryAccent,
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                 ),
                               ),
                             ),
@@ -1082,7 +1084,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: GlassButton(
@@ -1171,13 +1173,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   .setPlayers(selectedList);
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '待機列 (${queue.length}人)',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: AppFontWeight.bold),
               ),
               TextButton.icon(
                 icon: const Icon(Icons.shuffle),
@@ -1192,7 +1194,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.medium,
                 border: Border.all(
                   color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                 ),
@@ -1228,7 +1230,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                       ? Colors.red.shade800
                                       : Colors.grey.shade700,
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                 ),
                               ),
                             ),
@@ -1236,7 +1238,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                               p,
                               style: TextStyle(
                                 fontWeight: index < 2
-                                    ? FontWeight.bold
+                                    ? AppFontWeight.bold
                                     : FontWeight.normal,
                               ),
                             ),
@@ -1269,7 +1271,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: GlassButton(

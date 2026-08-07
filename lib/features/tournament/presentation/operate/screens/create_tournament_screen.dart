@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -131,12 +132,12 @@ class _CreateTournamentScreenState
                 '大会を新規作成',
                 style: TextStyle(
                   fontSize: 28,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 1.0,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 '魔法のウィザードに従って、\n2つのステップで設定を完了しましょう',
                 style: TextStyle(
@@ -173,7 +174,7 @@ class _CreateTournamentScreenState
           backgroundColor: Colors.transparent,
           actions: [
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
-            SizedBox(width: 8),
+            SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: Stack(
@@ -226,21 +227,21 @@ class _CreateTournamentScreenState
         : Colors.grey.shade400;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
         Text(
           '大会の名前と日付を\n教えてください',
           style: TextStyle(
             fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxl),
         TextFormField(
           controller: _nameController,
-          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
           decoration: InputDecoration(
             labelText: '大会名',
             labelStyle: const TextStyle(color: Colors.grey),
@@ -248,14 +249,14 @@ class _CreateTournamentScreenState
             hintStyle: TextStyle(color: hintColor, fontSize: 13),
             prefixIcon: const Icon(Icons.emoji_events, color: Colors.amber),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
                 width: 1.0,
               ), // iOS Border
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
             ),
             filled: true,
@@ -263,7 +264,7 @@ class _CreateTournamentScreenState
           ),
           validator: (v) => v == null || v.isEmpty ? '大会名を入力してください' : null,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.xl),
         ListTile(
           title: const Text(
             '開催年月日',
@@ -275,7 +276,7 @@ class _CreateTournamentScreenState
               DateFormat('yyyy年MM月dd日').format(_selectedDate),
               style: TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 color: textColor,
               ),
             ),
@@ -286,7 +287,7 @@ class _CreateTournamentScreenState
               color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
               width: 1.0,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
           ),
           tileColor: inputBgColor,
           contentPadding: const EdgeInsets.symmetric(
@@ -308,21 +309,21 @@ class _CreateTournamentScreenState
         : Colors.grey.shade400;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
         Text(
           '開催場所とメモを\n入力してください',
           style: TextStyle(
             fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxl),
         TextFormField(
           controller: _venueController,
-          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
           decoration: InputDecoration(
             labelText: '会場・住所',
             labelStyle: const TextStyle(color: Colors.grey),
@@ -335,14 +336,14 @@ class _CreateTournamentScreenState
               tooltip: '地図で場所を確認',
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
                 width: 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
             ),
             filled: true,
@@ -350,7 +351,7 @@ class _CreateTournamentScreenState
           ),
           validator: (v) => v == null || v.isEmpty ? '会場を入力してください' : null,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.xl),
         TextFormField(
           controller: _notesController,
           maxLines: 4,
@@ -362,14 +363,14 @@ class _CreateTournamentScreenState
             hintStyle: TextStyle(color: hintColor, fontSize: 13),
             prefixIcon: const Icon(Icons.note_alt, color: Colors.grey),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
                 width: 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
             ),
             filled: true,
@@ -414,7 +415,7 @@ class _CreateTournamentScreenState
                   curve: Curves.easeInOut,
                 ),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   shape: const CircleBorder(),
                   side: BorderSide(color: separatorColor),
                 ),

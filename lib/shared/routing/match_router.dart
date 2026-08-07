@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +26,7 @@ class MatchRouter extends ConsumerWidget {
         body: Center(
           child: Text(
             '🔒 アクセス制限：指定されたページへアクセスする権限がありません。',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: AppFontWeight.bold),
             textAlign: TextAlign.center,
           ),
         ),

@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
@@ -13,6 +14,7 @@ import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -206,7 +208,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                             .toList();
 
                                         BuildContext? dialogContext;
-                                        showDialog(
+                                        showAppDialog(
                                           context: context,
                                           barrierDismissible: false,
                                           builder: (ctx) {
@@ -261,7 +263,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                 icon: const Icon(Icons.print),
                                 label: const Text(
                                   'PDF印刷',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontWeight: AppFontWeight.bold,
+                                  ),
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.grey.shade800,
@@ -271,12 +275,12 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   ),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: AppRadius.medium,
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.md),
                             Expanded(
                               child: ElevatedButton.icon(
                                 key: const Key('viewer_export_image_button'),
@@ -297,7 +301,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                       .toList();
 
                                   BuildContext? dialogContext;
-                                  showDialog(
+                                  showAppDialog(
                                     context: context,
                                     barrierDismissible: false,
                                     builder: (ctx) {
@@ -344,7 +348,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                 icon: const Icon(Icons.share),
                                 label: const Text(
                                   '画像シェア',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontWeight: AppFontWeight.bold,
+                                  ),
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF06C755),
@@ -354,7 +360,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   ),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: AppRadius.medium,
                                   ),
                                 ),
                               ),
@@ -366,7 +372,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                         child: ListView.builder(
                           shrinkWrap: true,
                           physics: const ClampingScrollPhysics(),
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(AppSpacing.sm),
                           itemCount: sortedGroupKeys.length,
                           itemBuilder: (context, index) {
                             final groupName = sortedGroupKeys[index];
@@ -421,7 +427,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   ),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: AppRadius.medium,
                                     side: BorderSide(
                                       color: isDark
                                           ? const Color(0xFF38383A)
@@ -434,7 +440,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.all(12),
+                                        padding: const EdgeInsets.all(
+                                          AppSpacing.md,
+                                        ),
                                         color: isDark
                                             ? Colors.indigo.shade900.withValues(
                                                 alpha: 0.4,
@@ -444,7 +452,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                         child: Text(
                                           titleText,
                                           style: TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: AppFontWeight.bold,
                                             color: isDark
                                                 ? Colors.indigo.shade100
                                                 : Colors.indigo.shade900,
@@ -454,7 +462,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                       SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Container(
-                                          padding: const EdgeInsets.all(16),
+                                          padding: const EdgeInsets.all(
+                                            AppSpacing.lg,
+                                          ),
                                           color: isDark
                                               ? Colors.black
                                               : Colors.white,
@@ -552,7 +562,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     child: Text(
                                       '【リーグ戦】 $leagueTitle',
                                       style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: AppFontWeight.bold,
                                         color: textColor,
                                         fontSize: 16,
                                       ),
@@ -569,7 +579,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     isLeagueRule: teamProj.isLeague,
                                   ),
 
-                                  const SizedBox(height: 32),
+                                  const SizedBox(height: AppSpacing.xxl),
                                   const Padding(
                                     padding: EdgeInsets.only(
                                       left: 8,
@@ -578,7 +588,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     child: Text(
                                       '▼ 対戦カード別 スコア詳細',
                                       style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: AppFontWeight.bold,
                                         fontSize: 14,
                                         color: Colors.grey,
                                       ),
@@ -617,7 +627,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     }),
 
                                   if (tieBouts.isNotEmpty) ...[
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: AppSpacing.lg),
                                     const Padding(
                                       padding: EdgeInsets.only(
                                         left: 8,
@@ -626,7 +636,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                       child: Text(
                                         '▼ 順位決定戦',
                                         style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: AppFontWeight.bold,
                                           fontSize: 14,
                                           color: Colors.orange,
                                         ),
@@ -1049,7 +1059,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     isDark: isDark,
                                   ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           ElevatedButton(
                             onPressed: () => Navigator.pop(ctx),
                             style: ElevatedButton.styleFrom(
@@ -1068,7 +1078,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                             ),
                             child: const Text(
                               '閉じる',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: AppFontWeight.bold),
                             ),
                           ),
                         ],

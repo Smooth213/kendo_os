@@ -135,7 +135,7 @@ class MatchScoreboard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildResultOverlay(context, viewState),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 scoreboardRow,
               ],
             )
@@ -169,7 +169,7 @@ class MatchScoreboard extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center, // 垂直中央ロックの前提
         children: [
-          const SizedBox(height: 16), // ★ 余白圧縮 (24 -> 16)
+          const SizedBox(height: AppSpacing.lg), // ★ 余白圧縮 (24 -> 16)
           GestureDetector(
             onTap: onNameTap != null ? () => onNameTap(side.name) : null,
             child: Container(

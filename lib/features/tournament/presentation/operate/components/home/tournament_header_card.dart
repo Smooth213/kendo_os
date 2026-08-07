@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,7 +33,7 @@ class TournamentHeaderCard extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         side: BorderSide(color: borderColor, width: isDark ? 0.5 : 1.0),
       ),
       color: cardColor,
@@ -44,7 +45,7 @@ class TournamentHeaderCard extends ConsumerWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: iconBgColor,
                     shape: BoxShape.circle,
@@ -55,13 +56,13 @@ class TournamentHeaderCard extends ConsumerWidget {
                     size: 24,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
                     tournament.name,
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: textColor,
                     ),
                   ),
@@ -96,14 +97,14 @@ class TournamentHeaderCard extends ConsumerWidget {
                   color: Colors.grey.shade500,
                   size: 16,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   DateFormat('yyyy年MM月dd日').format(tournament.date),
                   style: TextStyle(color: subTextColor, fontSize: 13),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.lg),
                 Icon(Icons.location_on, color: Colors.grey.shade500, size: 16),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     tournament.venue,
@@ -114,13 +115,13 @@ class TournamentHeaderCard extends ConsumerWidget {
               ],
             ),
             if (tournament.notes.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: noteBgColor,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.small,
                 ),
                 child: Text(
                   tournament.notes,
@@ -162,11 +163,11 @@ class TournamentHeaderCard extends ConsumerWidget {
                 height: 5,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.medium,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             ListTile(
               leading: CircleAvatar(
                 backgroundColor: Colors.indigo.withValues(alpha: 0.1),
@@ -174,7 +175,10 @@ class TournamentHeaderCard extends ConsumerWidget {
               ),
               title: Text(
                 '大会情報の編集',
-                style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+                style: TextStyle(
+                  fontWeight: AppFontWeight.bold,
+                  color: textColor,
+                ),
               ),
               subtitle: const Text(
                 '大会名や会場、日付を変更します',
@@ -207,7 +211,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                   'この大会を削除',
                   style: TextStyle(
                     color: Colors.red,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                   ),
                 ),
                 subtitle: const Text(
@@ -268,7 +272,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   InkWell(
                     onTap: () async {
                       final DateTime? picked = await showDatePicker(
@@ -320,7 +324,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   TextField(
                     controller: venueController,
                     style: TextStyle(color: textColor),
@@ -332,7 +336,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   TextField(
                     controller: notesController,
                     style: TextStyle(color: textColor),
@@ -361,9 +365,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                   backgroundColor: Colors.indigo.shade600,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),
                 onPressed: () async {
                   await ref
@@ -379,7 +381,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                 },
                 child: const Text(
                   '保存',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: AppFontWeight.bold),
                 ),
               ),
             ],
@@ -416,14 +418,12 @@ class TournamentHeaderCard extends ConsumerWidget {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text(
               '削除する',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: AppFontWeight.bold),
             ),
           ),
         ],

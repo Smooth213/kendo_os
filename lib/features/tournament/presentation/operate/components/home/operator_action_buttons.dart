@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,7 +34,7 @@ class OperatorActionButtons extends ConsumerWidget {
             Colors.indigo,
             () => context.push('/setup-match/$tournamentId'),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildHugeMenuButton(
             context,
             enableLiquidGlass,
@@ -42,7 +43,7 @@ class OperatorActionButtons extends ConsumerWidget {
             Colors.teal,
             () => context.push('/tournament/$tournamentId/category-rules'),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
         ],
         // ★ 修正: 本部操作員が「保護者や観客のスマートフォンにどう見えているか」を手元でシミュレート確認するための完璧な表現へ進化
         _buildHugeMenuButton(
@@ -58,7 +59,7 @@ class OperatorActionButtons extends ConsumerWidget {
             );
           },
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         _buildHugeMenuButton(
           context,
           enableLiquidGlass,
@@ -67,7 +68,7 @@ class OperatorActionButtons extends ConsumerWidget {
           Colors.blueGrey,
           () => context.push('/official-record/$tournamentId'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
 
         // ★ 修正: ご要望に基づき、ExpansionTileを廃止して「大会プログラム」をメインの1等地に昇格
         // 観客権限（isReadOnly）の時は「見るだけ（閲覧専用）」であることを画面上に明示し、保護者に絶対的な安心感を提供
@@ -84,7 +85,7 @@ class OperatorActionButtons extends ConsumerWidget {
             label: Text(
               '大会プログラムの管理・追加',
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 fontSize: 14,
                 color: isDark ? Colors.white : Colors.grey.shade800,
               ),
@@ -94,9 +95,7 @@ class OperatorActionButtons extends ConsumerWidget {
                 color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
               ),
               backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
             ),
           ),
         ),

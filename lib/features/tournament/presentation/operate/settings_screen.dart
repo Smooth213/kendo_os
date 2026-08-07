@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -58,7 +59,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           actions: const [
             // ★ パスコード復旧手順などが載っている「設定マニュアル」へ直行
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
-            SizedBox(width: 8),
+            SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: Column(
@@ -83,14 +84,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       trailing: DropdownButton<String>(
                         value: settings.themeMode,
                         underline: const SizedBox(),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.medium,
                         icon: Icon(
                           Icons.arrow_drop_down,
                           color: dynamicTextColor,
                         ),
                         style: TextStyle(
                           color: dynamicTextColor,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 14,
                         ),
                         items: const [
@@ -134,7 +135,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     context,
                     'ダークモードは端末本体の設定に連動させることもできます。スリープ防止をオンにすると、長時間の試合記録中に画面が暗くなるのを防ぎます。\n省エネモードをオンにする、または端末のバッテリー残量が20%以下になると自動的に省エネモード（背景アニメーション停止）になり、パフォーマンスを最優先します。',
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ==========================================
                   // 2. 音と振動・フィードバック
@@ -149,14 +150,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       trailing: DropdownButton<String>(
                         value: settings.audioFeedbackMode,
                         underline: const SizedBox(),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.medium,
                         icon: Icon(
                           Icons.arrow_drop_down,
                           color: dynamicTextColor,
                         ),
                         style: TextStyle(
                           color: dynamicTextColor,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 14,
                         ),
                         items: const [
@@ -198,7 +199,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ]),
                   _buildSectionFooter(context, 'ポイント入力時や試合終了時に音や振動で知らせます。'),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ==========================================
                   // 2-2. プッシュ通知設定
@@ -282,7 +283,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     context,
                     '※ iPhone/Safariで通知を受信するには、必ず「ホーム画面に追加」して起動し、通知スイッチをオンにして表示される「通知の許可」を承諾してください。',
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ==========================================
                   // 3. ローカル保存と保護
@@ -321,7 +322,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     context,
                     'ログアウトすると現在のセッションが終了し、次回利用時に再ログインが必要になります。',
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                 ],
               ),
             ),
@@ -338,7 +339,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 decoration: BoxDecoration(
                   color: _themeColors.cardBackground,
                   borderRadius: enableLiquidGlass
-                      ? BorderRadius.circular(24)
+                      ? AppRadius.xlarge
                       : BorderRadius.zero,
                   border: enableLiquidGlass
                       ? Border.all(
@@ -364,25 +365,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: enableLiquidGlass
-                      ? BorderRadius.circular(24)
+                      ? AppRadius.xlarge
                       : BorderRadius.zero,
                   child: BackdropFilter(
                     filter: enableLiquidGlass
                         ? ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0)
                         : ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(AppSpacing.xl),
                       child: Column(
                         children: [
                           Text(
                             _testMessage,
                             style: TextStyle(
                               color: dynamicTextColor,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               fontSize: 13,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           GestureDetector(
                             onTap: () {
                               if (settings.haptic) HapticFeedback.lightImpact();
@@ -424,7 +425,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               height: 54,
                               decoration: BoxDecoration(
                                 color: accentPink,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: AppRadius.large,
                                 // 影も少し控えめに調整
                                 boxShadow: [
                                   BoxShadow(
@@ -441,7 +442,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                     letterSpacing: 1.1,
                                   ),
                                 ),
@@ -492,7 +493,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: isActive
                 ? accentPink.withValues(alpha: 0.15)
                 : dynamicCardColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             border: Border.all(
               color: isActive ? accentPink : Colors.transparent,
               width: 2,
@@ -526,13 +527,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 28,
                 ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 title,
                 style: TextStyle(
                   color: isActive ? dynamicTextColor : Colors.grey.shade600,
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -553,7 +554,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         style: TextStyle(
           color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
           fontSize: 13,
-          fontWeight: FontWeight.w600,
+          fontWeight: AppFontWeight.semiBold,
           letterSpacing: 0.5,
         ),
       ),
@@ -579,13 +580,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (enableLiquidGlass) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Container(
             decoration: BoxDecoration(
               color: _themeColors.cardBackground,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppRadius.large,
               border: Border.all(color: _themeColors.separatorColor),
             ),
             child: blockContent,
@@ -597,7 +598,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: _themeColors.cardBackground,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.large,
           border: Border.all(color: _themeColors.separatorColor),
         ),
         child: blockContent,
@@ -638,7 +639,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: iconBgColor,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.small,
         ),
         child: Icon(icon, color: Colors.white, size: 20),
       ),
@@ -726,7 +727,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
             child: const Text(
               'ログアウト',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: AppFontWeight.bold,
+              ),
             ),
           ),
         ],

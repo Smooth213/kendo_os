@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -55,7 +56,7 @@ class TournamentListScreen extends ConsumerWidget {
           backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
           actions: const [
             ManualHelpButton(manualPath: 'docs/manuals/manual_index.md'),
-            SizedBox(width: 8),
+            SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: StreamBuilder<List<TournamentModel>>(
@@ -91,16 +92,16 @@ class TournamentListScreen extends ConsumerWidget {
                           ? const Color(0xFF38383A)
                           : Colors.grey.shade300,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.xl),
                     Text(
                       isArchive ? '過去の大会記録はありません' : '今日の大会はまだありません',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: accentColor,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
                       isArchive
                           ? '終了した大会がここにアーカイブされます。'
@@ -153,7 +154,7 @@ class TournamentListScreen extends ConsumerWidget {
                         : cardColor;
 
                     final ShapeBorder cardShape = RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: AppRadius.large,
                       side: enableLiquidGlass
                           ? BorderSide(
                               color: isDark
@@ -184,13 +185,13 @@ class TournamentListScreen extends ConsumerWidget {
                             context.push('/home/$id');
                           }
                         },
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(AppSpacing.lg),
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(AppSpacing.md),
                                 decoration: BoxDecoration(
                                   color: softAccentColor,
                                   shape: BoxShape.circle,
@@ -203,7 +204,7 @@ class TournamentListScreen extends ConsumerWidget {
                                   size: 24,
                                 ),
                               ),
-                              const SizedBox(width: 16),
+                              const SizedBox(width: AppSpacing.lg),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,11 +215,11 @@ class TournamentListScreen extends ConsumerWidget {
                                           .textTheme
                                           .titleMedium
                                           ?.copyWith(
-                                            fontWeight: FontWeight.w600,
+                                            fontWeight: AppFontWeight.semiBold,
                                             color: textColor,
                                           ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: AppSpacing.xs),
                                     Row(
                                       children: [
                                         Text(
@@ -248,7 +249,7 @@ class TournamentListScreen extends ConsumerWidget {
 
                     if (enableLiquidGlass) {
                       return ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
                           child: cardChild,
@@ -271,7 +272,7 @@ class TournamentListScreen extends ConsumerWidget {
                         currentMonth,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: isDark
                               ? accentColor
                               : Colors.grey.shade500, // ★ ダーク時はアイコンと同じ色で光らせる

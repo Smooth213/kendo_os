@@ -230,7 +230,7 @@ class TimerWidget extends ConsumerWidget {
                               : Colors.indigo.shade500)),
               size: 28,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Consumer(
               builder: (context, ref, child) {
                 final seconds = ref.watch(

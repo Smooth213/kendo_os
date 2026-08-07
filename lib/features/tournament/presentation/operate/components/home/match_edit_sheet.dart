@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -290,7 +291,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       child: Column(
         children: [
           // Drag Handle
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Container(
             width: 40,
             height: 4,
@@ -299,7 +300,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
 
           // Header
           Padding(
@@ -311,12 +312,12 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   color: widget.themeColors.primaryAccent,
                   size: 24,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   sheetTitle,
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: textColor,
                   ),
                 ),
@@ -328,7 +329,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
 
           // Tab Bar
           TabBar(
@@ -341,7 +342,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             labelPadding: const EdgeInsets.symmetric(horizontal: 2),
             labelStyle: const TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
             ),
             unselectedLabelStyle: const TextStyle(fontSize: 12),
             tabs: [
@@ -378,7 +379,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           // Footer Save Button
           SafeArea(
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
                 color: backgroundColor,
                 boxShadow: [
@@ -398,14 +399,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     _isDantai ? '団体戦全体を一括保存' : '変更内容を保存',
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.themeColors.primaryAccent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: AppRadius.large,
                     ),
                   ),
                   onPressed: _saveChanges,
@@ -424,10 +425,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       padding: const EdgeInsets.all(20),
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             border: Border.all(
               color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
             ),
@@ -438,12 +439,12 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               Text(
                 _isDantai ? '🏫 団体戦 対戦チーム' : '👤 対戦者情報',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   fontSize: 14,
                   color: textColor,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
                   Expanded(
@@ -455,7 +456,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       textColor: Colors.red,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: _buildTextField(
                       controller: _whiteTeamController,
@@ -467,13 +468,13 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Center(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.swap_horiz, color: Colors.white),
                   label: Text(
                     _isDantai ? 'チーム丸ごと赤と白を入れ替える ⇄' : '赤と白を入れ替える ⇄',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: AppFontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
@@ -494,7 +495,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         Text(
           _isDantai ? '👥 選手オーダー一覧（先鋒〜大将）' : '👤 選手名',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             fontSize: 14,
             color: textColor,
           ),
@@ -505,10 +506,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           final posLabel = _getPositionLabel(index, widget.matches.length);
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF252527) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               border: Border.all(
                 color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
               ),
@@ -520,11 +521,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   posLabel,
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: widget.themeColors.primaryAccent,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
                     Expanded(
@@ -540,7 +541,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                             vertical: 8,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: AppRadius.small,
                             borderSide: BorderSide.none,
                           ),
                         ),
@@ -565,7 +566,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                             vertical: 8,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: AppRadius.small,
                             borderSide: BorderSide.none,
                           ),
                         ),
@@ -624,10 +625,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       padding: const EdgeInsets.all(20),
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: widget.themeColors.primaryAccent.withAlpha(isDark ? 25 : 12),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             border: Border.all(
               color: widget.themeColors.primaryAccent.withAlpha(
                 isDark ? 80 : 40,
@@ -644,11 +645,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     size: 18,
                     color: widget.themeColors.primaryAccent,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Text(
                     '試合場・進行見出しの一括設定',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: textColor,
                     ),
                   ),
@@ -669,7 +670,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               _buildTextField(
                 controller: _courtController,
                 label: '試合場・進行見出し (カンマ区切り)',
@@ -685,7 +686,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     size: 13,
                     color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: Text(
                       '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
@@ -704,7 +705,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 '🏟️ 試合場（コート）を選択',
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
                 ),
               ),
@@ -731,7 +732,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 '🏆 回戦・ラウンド・試合順を選択',
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
                 ),
               ),
@@ -755,7 +756,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
         _buildTextField(
           controller: _noteController,
           label: '📝 試合のメモ・詳細コメント',
@@ -865,7 +866,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               color: widget.themeColors.primaryAccent.withAlpha(
                 isDark ? 25 : 12,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppRadius.large,
               border: Border.all(
                 color: widget.themeColors.primaryAccent.withAlpha(
                   isDark ? 80 : 40,
@@ -887,13 +888,13 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       '🏷️ 部門別ルール設定からワンタップ選択',
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: textColor,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Wrap(spacing: 6, runSpacing: 6, children: categoryPresetChips),
               ],
             ),
@@ -903,10 +904,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         // 🛡️ 適用中ルールの全内訳表示カード
         Container(
           margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF232326) : Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             border: Border.all(
               color: isDark ? Colors.blue.shade800 : Colors.blue.shade200,
             ),
@@ -922,7 +923,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     '🛡️ 適用されるルールの全内訳 (リアルタイム同期)',
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: isDark
                           ? Colors.blue.shade200
                           : Colors.blue.shade900,
@@ -974,10 +975,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
         // 一括ルールスイッチコントロール
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.large,
             border: Border.all(
               color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
             ),
@@ -988,12 +989,12 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               Text(
                 '⏱️ ルールの詳細コントロール & 微調整',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   fontSize: 14,
                   color: textColor,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -1096,34 +1097,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     required bool isActive,
     required bool isDark,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: isActive
-            ? (isDark ? Colors.blue.withAlpha(40) : Colors.white)
-            : (isDark ? Colors.grey.shade800 : Colors.grey.shade200),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isActive ? Colors.blue.shade300 : Colors.grey.shade400,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: isActive ? Colors.blue : Colors.grey),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color: isActive
-                  ? (isDark ? Colors.white : Colors.blue.shade900)
-                  : Colors.grey,
-            ),
-          ),
-        ],
-      ),
+    return AppChoiceChip(
+      icon: icon,
+      label: Text(label),
+      selected: isActive,
+      onSelected: null,
     );
   }
 
@@ -1142,7 +1120,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           label,
           style: TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
           ),
         ),
@@ -1163,13 +1141,13 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               vertical: 10,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
               ),

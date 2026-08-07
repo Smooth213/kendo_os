@@ -105,7 +105,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
 
   /// ⚠️ 被りが発生した際に、ユーザーを誤操作から物理救済するエラー警告ポップアップ
   void _showDuplicateWarningDialog(BuildContext parentContext, String code) {
-    showDialog(
+    showAppDialog(
       context: parentContext,
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -126,7 +126,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
               child: Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppSpacing.xl),
                 decoration: BoxDecoration(
                   color: cardBgColor,
                   borderRadius: AppRadius.xlarge,
@@ -268,7 +268,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                       color: textColor,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   Container(
                     width: 130,
                     height: 130,
@@ -282,7 +282,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                       color: Color(0xFF161B26),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     '会場のQRコードをスキャンするか\n「道場ルームコード」を入力してください',
                     textAlign: TextAlign.center,
@@ -415,7 +415,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                     '※ 使用可能な文字: 半角英数字、ハイフン(-)、アンダーバー(_)',
                     style: TextStyle(fontSize: 11, color: subTextColor),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   Wrap(
                     alignment: WrapAlignment.end,
                     spacing: 12,

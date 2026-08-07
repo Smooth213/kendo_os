@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -164,13 +165,13 @@ class HomeScreen extends ConsumerWidget {
                           color: Colors.white,
                           size: 18,
                         ),
-                        SizedBox(width: 8),
+                        SizedBox(width: AppSpacing.sm),
                         Flexible(
                           child: Text(
                             '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
                             style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               fontSize: 13,
                             ),
                           ),
@@ -216,7 +217,7 @@ class HomeScreen extends ConsumerWidget {
                                   color: isDark
                                       ? Colors.white
                                       : themeColors.primaryAccent,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                 ),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -226,7 +227,7 @@ class HomeScreen extends ConsumerWidget {
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.medium,
                             ),
                           ),
                         ),
@@ -242,7 +243,7 @@ class HomeScreen extends ConsumerWidget {
                       onPressed: () =>
                           _showShareDialog(context, ref, tournamentId),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                   ],
                 ),
                 body: Column(
@@ -279,7 +280,7 @@ class HomeScreen extends ConsumerWidget {
 
                           final bannerDecoration = BoxDecoration(
                             color: bannerColor,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: AppRadius.large,
                             border: enableLiquidGlass
                                 ? Border.all(
                                     color: isDark
@@ -344,7 +345,7 @@ class HomeScreen extends ConsumerWidget {
                             return Padding(
                               padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: AppRadius.large,
                                 child: BackdropFilter(
                                   filter: ImageFilter.blur(
                                     sigmaX: 12.0,
@@ -353,7 +354,9 @@ class HomeScreen extends ConsumerWidget {
                                   child: Container(
                                     width: double.infinity,
                                     margin: EdgeInsets.zero,
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.all(
+                                      AppSpacing.lg,
+                                    ),
                                     decoration: bannerDecoration,
                                     child: bannerContent,
                                   ),
@@ -365,7 +368,7 @@ class HomeScreen extends ConsumerWidget {
                           return Container(
                             width: double.infinity,
                             margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(AppSpacing.lg),
                             decoration: bannerDecoration,
                             child: bannerContent,
                           );
@@ -416,9 +419,9 @@ class HomeScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 color: Colors.white,
                 child: QrImageView(
                   data: shareUrl,
@@ -427,7 +430,7 @@ class HomeScreen extends ConsumerWidget {
                   backgroundColor: Colors.white,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton.icon(
                 onPressed: () => SharePlus.instance.share(
                   ShareParams(
@@ -472,7 +475,7 @@ class HomeScreen extends ConsumerWidget {
             match.note,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: textColor.withValues(alpha: 0.7),
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
             ),
           ),
         Row(
@@ -482,16 +485,16 @@ class HomeScreen extends ConsumerWidget {
               label,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: textColor,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Flexible(
               child: Text(
                 _getMatchTitle(match),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: textColor,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -557,13 +560,13 @@ class HomeScreen extends ConsumerWidget {
               color: themeColors.primaryAccent,
               size: 22,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 '大会準備ステップ',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: themeColors.textColor,
                 ),
               ),
@@ -572,7 +575,7 @@ class HomeScreen extends ConsumerWidget {
               '${(progress * 100).toInt()}% 完了',
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 color: themeColors.primaryAccent,
               ),
             ),
@@ -586,7 +589,7 @@ class HomeScreen extends ConsumerWidget {
           minHeight: 6,
           borderRadius: BorderRadius.circular(3),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
         _buildChecklistItem(
           title: '大会基本情報の登録',
           isCompleted: true,
@@ -621,15 +624,15 @@ class HomeScreen extends ConsumerWidget {
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.large,
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
                 color: cardBgColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: AppRadius.large,
                 border: cardBorder,
               ),
               child: content,
@@ -642,10 +645,10 @@ class HomeScreen extends ConsumerWidget {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: cardBgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         border: cardBorder,
         boxShadow: [
           BoxShadow(
@@ -673,7 +676,7 @@ class HomeScreen extends ConsumerWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.small,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
           child: Row(
@@ -683,13 +686,15 @@ class HomeScreen extends ConsumerWidget {
                 color: isCompleted ? Colors.green.shade600 : Colors.grey,
                 size: 20,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: isCompleted ? FontWeight.w500 : FontWeight.bold,
+                    fontWeight: isCompleted
+                        ? FontWeight.w500
+                        : AppFontWeight.bold,
                     color: isCompleted ? inactiveTextColor : activeTextColor,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),

@@ -37,7 +37,7 @@ class RoleSelectScreen extends ConsumerWidget {
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
@@ -161,7 +161,7 @@ class RoleSelectScreen extends ConsumerWidget {
                                             size: 20,
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
+                                        const SizedBox(width: AppSpacing.md),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:

@@ -79,7 +79,7 @@ class IndividualListCard extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(AppSpacing.md),
             color: headerBgColor,
             width: double.infinity,
             child: Text(
@@ -148,7 +148,7 @@ class IndividualListCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     PointBox(
                       points: m.redPoints,
                       isWinner: m.rWin,
@@ -172,7 +172,7 @@ class IndividualListCard extends StatelessWidget {
                       isRed: false,
                       isDark: isDark,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

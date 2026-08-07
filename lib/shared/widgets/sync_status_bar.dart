@@ -185,7 +185,7 @@ class SyncStatusBar extends ConsumerWidget {
 
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,14 +197,14 @@ class SyncStatusBar extends ConsumerWidget {
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
 
                     if (deadLetters.isEmpty) ...[
                       // 通常の未送信データのみの場合（従来のリセット機能を提供）
                       const Text(
                         '現在、送信待ちのデータがキューに溜まっています。電波状況が回復すると自動的に送信されます。',
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       if (pendingStatus == SyncStatus.pending)
                         Center(
                           child: ElevatedButton.icon(
@@ -225,7 +225,7 @@ class SyncStatusBar extends ConsumerWidget {
                     ] else ...[
                       // デッドレター（送信エラー）がある場合
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
                           color: Colors.red.shade50,
                           borderRadius: AppRadius.small,
@@ -256,7 +256,7 @@ class SyncStatusBar extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: AppSpacing.sm),
                             // ★ Phase 3-2: 操作員を動揺させない、現場FAQマニュアルと完全に一貫した優しい日本語への洗練マージ
                             const Expanded(
                               child: Text(
@@ -267,7 +267,7 @@ class SyncStatusBar extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       // エラーデータのリスト表示
                       Flexible(
                         child: ListView.separated(
@@ -337,7 +337,7 @@ class SyncStatusBar extends ConsumerWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                   ],
                 ),
               ),

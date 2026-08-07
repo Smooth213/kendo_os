@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +15,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 class TeamPointDisplay {
   final String mark;
@@ -193,7 +195,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                     color: isDark
                         ? Colors.indigo.shade900.withValues(alpha: 0.2)
                         : Colors.indigo.shade50,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     border: Border.all(
                       color: isDark
                           ? Colors.indigo.shade800
@@ -207,7 +209,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                           matchNote,
                           style: TextStyle(
                             fontSize: 15,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             color: isDark
                                 ? Colors.indigo.shade100
                                 : Colors.indigo.shade900,
@@ -220,17 +222,17 @@ class TeamScoreboardScreen extends ConsumerWidget {
                 ),
 
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Container(
                   decoration: BoxDecoration(
                     color: cardColor,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: AppRadius.large,
                     border: isDark
                         ? null
                         : Border.all(color: borderColor, width: 1.0),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: AppRadius.large,
                     child: Stack(
                       children: [
                         Table(
@@ -293,7 +295,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                     color: isDark
                                         ? Colors.black87
                                         : Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: AppRadius.small,
                                     border: Border.all(
                                       color: isDark
                                           ? Colors.grey.shade800
@@ -313,7 +315,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 13,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: AppFontWeight.bold,
                                       color: isDark
                                           ? Colors.grey.shade300
                                           : Colors.grey.shade700,
@@ -334,7 +336,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         bottomNavigationBar: (result.isTie && isDaihyoAllowed)
             ? SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.all(16), // 他の画面のボタンと同じ余白
+                  padding: const EdgeInsets.all(AppSpacing.lg), // 他の画面のボタンと同じ余白
                   child: SizedBox(
                     width: double.infinity,
                     height: 54, // 他の画面の確定ボタンと同じ高さ
@@ -385,7 +387,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                         if (!context.mounted) return;
 
                         // ★ 成功したAppleライクなダイアログ
-                        showDialog(
+                        showAppDialog(
                           context: context,
                           barrierDismissible: false,
                           barrierColor: Colors.black.withValues(alpha: 0.4),
@@ -408,7 +410,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.all(
+                                      AppSpacing.lg,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.green.withValues(
                                         alpha: 0.1,
@@ -421,18 +425,18 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                       size: 36,
                                     ),
                                   ),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: AppSpacing.xl),
                                   Text(
                                     '代表戦を追加しました',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: AppFontWeight.bold,
                                       fontSize: 17,
                                       color: isDark
                                           ? Colors.white
                                           : Colors.black87,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: AppSpacing.sm),
                                   Text(
                                     '試合画面へ移動します...',
                                     style: TextStyle(
@@ -521,7 +525,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         '(欠員)',
         fs: 17,
         color: subTextColor,
-        fontWeight: FontWeight.bold,
+        fontWeight: AppFontWeight.bold,
       );
     }
 
@@ -536,7 +540,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         text: TextSpan(
           style: TextStyle(
             fontSize: 17,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: textColor,
           ),
           children: [
@@ -550,7 +554,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                     parsed['first']!.substring(0, 1),
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: subTextColor,
                     ),
                   ),
@@ -597,7 +601,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
           _cell(
             m.matchType,
             fs: 12,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: matchTypeColor,
           ),
         ),
@@ -745,7 +749,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
           style: TextStyle(
             fontSize: 10,
             color: color,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
           ),
         ),
       );
@@ -757,7 +761,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         style: TextStyle(
           fontSize: 14,
           color: color,
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
         ),
       ),
     );
@@ -777,7 +781,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: fs,
-          fontWeight: isH ? FontWeight.bold : (fontWeight ?? FontWeight.normal),
+          fontWeight: isH
+              ? AppFontWeight.bold
+              : (fontWeight ?? FontWeight.normal),
           color: color,
         ),
       ),
@@ -816,7 +822,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                       child: Text(
                         '引き分け',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 18,
                           color: isDark
                               ? Colors.amber.shade200

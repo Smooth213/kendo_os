@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,20 +40,20 @@ class StartScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: isDark ? 0.2 : 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 36, color: color),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 color: textColor,
                 height: 1.3,
               ),
@@ -64,7 +65,7 @@ class StartScreen extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 color: subTextColor,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
               ),
             ),
           ],
@@ -153,7 +154,7 @@ class StartScreen extends ConsumerWidget {
                         'Kendo Sync',
                         style: TextStyle(
                           fontSize: 36,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: Colors.white,
                           letterSpacing: 1.0,
                         ),
@@ -187,16 +188,16 @@ class StartScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     '現在の権限: $roleDisplayName',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.orangeAccent,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -220,7 +221,7 @@ class StartScreen extends ConsumerWidget {
                         '部内戦をはじめる',
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 15,
                         ),
                       ),
@@ -229,7 +230,7 @@ class StartScreen extends ConsumerWidget {
                         side: const BorderSide(color: Colors.white, width: 1.5),
                         backgroundColor: Colors.white.withValues(alpha: 0.15),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: AppRadius.large,
                         ),
                         elevation: 0,
                       ),
@@ -263,7 +264,7 @@ class StartScreen extends ConsumerWidget {
                                         context.push('/create-tournament'),
                                   ),
                                 ),
-                                const SizedBox(width: 16),
+                                const SizedBox(width: AppSpacing.lg),
                               ],
                               Expanded(
                                 child: _buildActionCard(
@@ -280,7 +281,7 @@ class StartScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           Row(
                             children: [
                               Expanded(
@@ -297,7 +298,7 @@ class StartScreen extends ConsumerWidget {
                                 ),
                               ),
                               if (showPlayerMaster) ...[
-                                const SizedBox(width: 16),
+                                const SizedBox(width: AppSpacing.lg),
                                 Expanded(
                                   child: _buildActionCard(
                                     context,
@@ -330,13 +331,13 @@ class StartScreen extends ConsumerWidget {
                                 alpha: 0.2,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppSpacing.md),
                             Text(
                               'Kendo Sync v1.0.0',
                               style: TextStyle(
                                 color: Colors.grey.shade400,
                                 fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 letterSpacing: 1.5,
                               ),
                             ),

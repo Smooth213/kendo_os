@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -471,7 +472,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
         children: [
           // ヘッダー部
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -479,7 +480,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   '⚙️ 試合ルールの一括変更',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: textColor,
                   ),
                 ),
@@ -498,7 +499,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
               children: [
                 // STEP 1. 対象選択
                 _buildSectionHeader('STEP 1: 変更対象の試合を選択'),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
 
                 // カテゴリフィルター
                 _buildFilterRow(
@@ -512,7 +513,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     }
                   },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
 
                 // 形式フィルター
                 _buildFilterRow(
@@ -526,13 +527,13 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     }
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 対象試合チェックリスト
                 Container(
                   constraints: const BoxConstraints(maxHeight: 180),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     border: Border.all(
                       color: isDark
                           ? Colors.grey.shade800
@@ -541,11 +542,11 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   ),
                   child: Material(
                     color: isDark ? Colors.grey.shade900 : Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     child: currentFilteredUnits.isEmpty
                         ? const Center(
                             child: Padding(
-                              padding: EdgeInsets.all(16.0),
+                              padding: EdgeInsets.all(AppSpacing.lg),
                               child: Text('条件に一致する試合がありません'),
                             ),
                           )
@@ -596,7 +597,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -604,7 +605,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       '現在 $selectedUnitsCount 件を選択中 / 全 ${currentFilteredUnits.length} 件中',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: widget.themeColors.primaryAccent,
                       ),
                     ),
@@ -647,11 +648,11 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xl),
 
                 // STEP 2. 新ルールの設定
                 _buildSectionHeader('STEP 2: 新しいルールを設定'),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 部門別ルールプリセットからの選択UI (アイデア1: 部門選択 ➔ シーンサブチップ)
                 ...(() {
@@ -669,12 +670,12 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   return [
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
                         color: widget.themeColors.primaryAccent.withAlpha(
                           isDark ? 25 : 12,
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                         border: Border.all(
                           color: widget.themeColors.primaryAccent.withAlpha(
                             isDark ? 80 : 40,
@@ -696,13 +697,13 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                                 '部門別ルールから一括セット',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   color: textColor,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
 
                           // 1段目: 部門名選択チップ
                           SingleChildScrollView(
@@ -739,7 +740,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                           if (selectedRuleSet != null) ...[
                             const SizedBox(height: 10),
                             const Divider(height: 1, thickness: 1),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.sm),
                             Text(
                               '試合シーン・ルール用途を選択:',
                               style: TextStyle(
@@ -747,7 +748,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                                 color: isDark
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade600,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -815,7 +816,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     ),
                     decoration: BoxDecoration(
                       color: Colors.amber.withAlpha(isDark ? 30 : 15),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadius.small,
                       border: Border.all(
                         color: Colors.amber.withAlpha(isDark ? 60 : 30),
                       ),
@@ -827,7 +828,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                           color: Colors.amber,
                           size: 18,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
                             '選択した対戦の中に、設定が異なる試合が含まれています（先頭の試合のルールを表示中）',
@@ -842,7 +843,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                 ],
 
                 // 基本ルールカード
@@ -873,7 +874,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 延長ルールカード
                 _buildCardGroup(
@@ -923,7 +924,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     ],
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 個人戦：判定ルール
                 _buildCardGroup(
@@ -945,7 +946,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 団体戦：代表戦ルール
                 _buildCardGroup(
@@ -989,7 +990,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                               color: Colors.blue,
                               size: 16,
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: Text(
                                 '代表戦の延長戦は、自動的に「時間無制限・一本勝負（サドンデス）」として行われます。',
@@ -1007,7 +1008,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     ],
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 錬成会ルール
                 _buildCardGroup(
@@ -1063,7 +1064,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     ],
                   ],
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxl),
               ],
             ),
           ),
@@ -1071,7 +1072,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
           // 下部固定実行ボタン
           SafeArea(
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                 boxShadow: [
@@ -1126,9 +1127,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       ? Colors.white30
                       : Colors.black38,
                   minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
                   elevation: 0,
                 ),
                 child: Text(
@@ -1136,7 +1135,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       ? '適用対象の試合を選択してください'
                       : '選択した $totalSelectedUnitsCount 件にルールを適用する',
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
@@ -1154,7 +1153,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       title,
       style: TextStyle(
         fontSize: 14,
-        fontWeight: FontWeight.bold,
+        fontWeight: AppFontWeight.bold,
         color: widget.themeColors.primaryAccent,
       ),
     );
@@ -1168,7 +1167,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         border: Border.all(
           color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
         ),
@@ -1177,20 +1176,20 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
         color: isDark
             ? Colors.grey.shade900.withAlpha(128)
             : Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   fontSize: 13,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ...children,
             ],
           ),
@@ -1218,13 +1217,13 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 14, fontWeight: AppFontWeight.bold),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
           ),
           child: DropdownButton<String>(
             value: value,
@@ -1264,7 +1263,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
           ),
           child: DropdownButton<T>(
             value: value,

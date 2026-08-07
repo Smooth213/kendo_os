@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -417,7 +418,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
               : Text(
                   '${currentProgram.title} (${safeIndex + 1}/${displayPrograms.length})',
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
@@ -542,7 +543,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                           color: isDark
                               ? const Color(0xFF2C2C2E)
                               : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadius.small,
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 4,
@@ -566,7 +567,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: activePenColor.withAlpha(26),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: AppRadius.small,
                                     border: Border.all(
                                       color: activePenColor.withAlpha(128),
                                     ),
@@ -581,7 +582,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                         size: 18,
                                         color: activePenColor,
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: AppSpacing.sm),
                                       Expanded(
                                         child: Text(
                                           _selectedTool == 'marker'
@@ -591,7 +592,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                               : '${_getPenName(activePenColor)} (個人)',
                                           style: TextStyle(
                                             color: activePenColor,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: AppFontWeight.bold,
                                             fontSize: 14,
                                           ),
                                           overflow: TextOverflow.ellipsis,
@@ -606,7 +607,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: AppSpacing.xs),
                             // ペンツール
                             _buildToolButton(
                               tool: 'pen',
@@ -629,7 +630,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     ),
 
                     // 2つのグループの間の区切り
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
 
                     // 🧹 2. 【消去・履歴グループ】(消しゴム + 1つ戻る + 全消し)
                     Container(
@@ -637,7 +638,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         color: isDark
                             ? const Color(0xFF3A3A3C)
                             : Colors.blueGrey.shade50.withAlpha(220),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: AppRadius.small,
                         border: Border.all(
                           color: isDark
                               ? Colors.transparent
@@ -734,7 +735,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                                 '※他の人の画面からも消えてしまいます。間違いないですか？\n',
                                             style: TextStyle(
                                               color: Colors.redAccent,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: AppFontWeight.bold,
                                             ),
                                           ),
                                         const TextSpan(
@@ -809,13 +810,13 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   if (isItemMaterialOnly) {
                     return Center(
                       child: Container(
-                        margin: const EdgeInsets.all(32),
-                        padding: const EdgeInsets.all(24),
+                        margin: const EdgeInsets.all(AppSpacing.xxl),
+                        padding: const EdgeInsets.all(AppSpacing.xl),
                         decoration: BoxDecoration(
                           color: isDark
                               ? const Color(0xFF1C1C1E)
                               : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: AppRadius.large,
                           border: Border.all(
                             color: isDark
                                 ? Colors.grey.shade800
@@ -837,11 +838,11 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               program.title,
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppSpacing.md),
                             Text(
                               '【材料データ同期済み】\nオフラインファースト最適化の規約に基づき、通信帯域を圧迫する実ファイル（バイナリ）の自動ロードは行われません。プログラムの構成情報は安全に保護されています。',
                               style: TextStyle(
@@ -1316,7 +1317,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 children: [
                   const Text(
                     'ペンの選択',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: AppFontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   if (canUseSharedPen) ...[
@@ -1325,7 +1329,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.black87,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -1347,7 +1351,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.black87,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -1385,7 +1389,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           padding: const EdgeInsets.symmetric(vertical: 15),
           decoration: BoxDecoration(
             color: isSelected ? color.withAlpha(26) : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
             border: Border.all(
               color: isSelected ? color : Colors.grey.shade300,
               width: 2,
@@ -1394,7 +1398,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           child: Column(
             children: [
               Icon(Icons.edit, color: color, size: 28),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               // ★ はみ出しエラー修正: ペン名が長くても絶対に改行・はみ出しが起きないようにFittedBoxでガード
               FittedBox(
                 fit: BoxFit.scaleDown,
@@ -1403,7 +1407,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   style: TextStyle(
                     color: color,
                     fontWeight: isSelected
-                        ? FontWeight.bold
+                        ? AppFontWeight.bold
                         : FontWeight.normal,
                     fontSize: 12,
                   ),

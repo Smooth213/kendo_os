@@ -99,7 +99,7 @@ class LeagueGridCard extends StatelessWidget {
                 ...teams.map(
                   (t) => Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(AppSpacing.xs),
                       child: VerticalNameText(text: t.teamName, isDark: isDark),
                     ),
                   ),
@@ -119,7 +119,7 @@ class LeagueGridCard extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(color: headerColor),
                     child: Padding(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(AppSpacing.xs),
                       child: Text(
                         rowTeam.teamName,
                         style: TextStyle(
@@ -185,7 +185,7 @@ class LeagueGridCard extends StatelessWidget {
                                         color: textColor,
                                         isDark: isDark,
                                       )
-                                    : const SizedBox(height: 12),
+                                    : const SizedBox(height: AppSpacing.md),
                                 Container(
                                   height: 0.5,
                                   width: 18,
@@ -200,7 +200,7 @@ class LeagueGridCard extends StatelessWidget {
                                         color: textColor,
                                         isDark: isDark,
                                       )
-                                    : const SizedBox(height: 12),
+                                    : const SizedBox(height: AppSpacing.md),
                               ],
                             )
                           else

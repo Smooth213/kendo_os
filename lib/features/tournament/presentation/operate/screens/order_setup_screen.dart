@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -208,7 +209,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           icon: const Icon(Icons.person_outline, size: 16),
                           label: const Text(
                             '未定（空枠）',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(fontWeight: AppFontWeight.bold),
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.grey.shade700,
@@ -220,14 +221,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => Navigator.pop(context, '欠員'),
                           icon: const Icon(Icons.block, size: 16),
                           label: const Text(
                             '欠員（不戦敗）',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(fontWeight: AppFontWeight.bold),
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red.shade600,
@@ -252,7 +253,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     icon: const Icon(Icons.edit, size: 16),
                     label: const Text(
                       '直接入力（助っ人など）',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: AppFontWeight.bold),
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: _themeColors.primaryAccent,
@@ -263,7 +264,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   // 検索窓
                   TextField(
                     decoration: InputDecoration(
@@ -274,14 +275,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           ? Colors.grey.shade900
                           : Colors.grey.shade100,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: AppRadius.small,
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     ),
                     onChanged: (val) => setStateSheet(() => searchText = val),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   // カテゴリフィルター
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -315,7 +316,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           }).toList(),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   Expanded(
                     child: ListView(
                       children: [
@@ -325,7 +326,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             elevation: 0,
                             color: _themeColors.softAccent,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.medium,
                               side: BorderSide(
                                 color: isDark
                                     ? Colors.transparent
@@ -341,14 +342,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   p.name.substring(0, 1),
                                   style: TextStyle(
                                     color: _themeColors.primaryAccent,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                   ),
                                 ),
                               ),
                               title: Text(
                                 p.name,
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   color: textColor,
                                 ),
                               ),
@@ -412,7 +413,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               ConstrainedBox(
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.4,
@@ -435,14 +436,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             ? const Color(0xFF2C2C2E)
                             : Colors.grey.shade50,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadius.small,
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -459,12 +460,12 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   ),
                   child: const Text(
                     '決定して追加',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: AppFontWeight.bold),
                   ),
                 ),
               ),
               // ★ 修正：団体戦用の下部余白
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),
@@ -486,7 +487,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: nameController,
                 autofocus: true,
@@ -497,12 +498,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   fillColor: isDark
                       ? const Color(0xFF2C2C2E)
                       : Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  border: OutlineInputBorder(borderRadius: AppRadius.small),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -517,7 +516,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   ),
                   child: const Text(
                     '決定して追加',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: AppFontWeight.bold),
                   ),
                 ),
               ),
@@ -559,12 +558,12 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             '最終ステップ: オーダー編成',
             style: TextStyle(
               fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               color: Colors.white,
               letterSpacing: 1.0,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             '対戦相手と出場選手を決定し、\n試合枠を生成します',
             style: TextStyle(
@@ -615,7 +614,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             ManualHelpButton(
               manualPath: 'docs/manuals/operator/team_registration.md',
             ),
-            SizedBox(width: 8),
+            SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: Column(
@@ -629,7 +628,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   children: [
                     _buildStaticHeader(),
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       color: _themeColors.softAccent,
                       child: Row(
                         children: [
@@ -637,7 +636,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             Icons.info_outline,
                             color: _themeColors.primaryAccent,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
                               '自チームの選手を選択し、必要に応じて相手のチーム・選手名を入力してください。',
@@ -651,19 +650,19 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     ),
                     if (rule.isLeague)
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               '1. リーグ参加者リストの作成',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 color: _themeColors.primaryAccent,
                                 fontSize: 16,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: AppSpacing.xs),
                             Text(
                               '大会パンフレットの番号順に並べ替えてください（長押しで移動）',
                               style: TextStyle(
@@ -671,7 +670,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 color: subTextColor,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.lg),
 
                             // 参加者追加フォーム
                             _buildTeamAutocomplete(
@@ -690,7 +689,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               subTextColor: subTextColor,
                               isDark: isDark,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.sm),
                             // ★ 統一改修：ダイアログからボトムシート呼び出しへ変更
                             SizedBox(
                               width: double.infinity,
@@ -758,7 +757,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 icon: const Icon(Icons.person_add),
                                 label: const Text(
                                   'リストに追加',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontWeight: AppFontWeight.bold,
+                                  ),
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _themeColors.primaryAccent,
@@ -766,7 +767,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: AppSpacing.xl),
 
                             // 並び替え可能なリスト
                             Container(
@@ -775,7 +776,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 color: isDark
                                     ? const Color(0xFF1C1C1E)
                                     : Colors.white,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: AppRadius.large,
                                 border: Border.all(color: borderColor),
                               ),
                               child: Material(
@@ -809,14 +810,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                           '${index + 1}',
                                           style: TextStyle(
                                             color: _themeColors.primaryAccent,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: AppFontWeight.bold,
                                           ),
                                         ),
                                       ),
                                       title: Text(
                                         name,
                                         style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: AppFontWeight.bold,
                                           color: textColor,
                                         ),
                                       ),
@@ -853,11 +854,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: AppSpacing.xxl),
                             Text(
                               '2. 自チームのオーダーを確認',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 color: _themeColors.primaryAccent,
                                 fontSize: 16,
                               ),
@@ -874,29 +875,29 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             Text(
                               '自チームの紅白（タスキ）',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 color: _themeColors.primaryAccent,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: AppSpacing.xs),
                             const Text(
                               '※数字の小さい方または上・左のチーム（選手）が赤になります',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.red,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppSpacing.md),
                             Container(
                               // ★ 修正：外枠を沈み込むダークグレーへ
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF1C1C1E)
                                     : Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.medium,
                               ),
-                              padding: const EdgeInsets.all(4),
+                              padding: const EdgeInsets.all(AppSpacing.xs),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -941,14 +942,16 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                         ? Colors.grey.shade600
                                                         : Colors.grey),
                                             ),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(
+                                              width: AppSpacing.sm,
+                                            ),
                                             Text(
                                               '赤 (左側)',
                                               style: TextStyle(
                                                 color: _isOwnTeamRed
                                                     ? Colors.red.shade700
                                                     : subTextColor,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: AppFontWeight.bold,
                                                 fontSize: 14,
                                               ),
                                             ),
@@ -1004,7 +1007,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                         ? Colors.grey.shade600
                                                         : Colors.grey),
                                             ),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(
+                                              width: AppSpacing.sm,
+                                            ),
                                             // ★ 修正：白チーム選択時の文字色を純白へ
                                             Text(
                                               '白 (右側)',
@@ -1016,7 +1021,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                                 .blueGrey
                                                                 .shade700)
                                                     : subTextColor,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: AppFontWeight.bold,
                                                 fontSize: 14,
                                               ),
                                             ),
@@ -1028,20 +1033,20 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 24), // 余白を広げる
+                            const SizedBox(height: AppSpacing.xl), // 余白を広げる
                             // ★ 直感UX改修：相手チームの入力を明確なブロック（カード風）で囲み、迷いをなくす
                             Container(
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF1C1C1E)
                                     : Colors.grey.shade100, // 背景を少し落とす
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: AppRadius.large,
                                 border: Border.all(
                                   color: borderColor,
                                   width: 1.5,
                                 ),
                               ),
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(AppSpacing.lg),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -1054,11 +1059,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                             : Colors.blueGrey.shade600,
                                         size: 18,
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: AppSpacing.sm),
                                       Text(
                                         '相手チームの情報を入力',
                                         style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: AppFontWeight.bold,
                                           color: isDark
                                               ? Colors.blueGrey.shade300
                                               : Colors.blueGrey.shade800,
@@ -1066,7 +1071,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: AppSpacing.md),
                                   // ★ 修正：先ほど作ったヘルパー関数を使ってサジェスト（予測変換）対応にする
                                   _buildTeamAutocomplete(
                                     controller: _opponentTeamController,
@@ -1125,7 +1130,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: rule.baseOrder.isEmpty
@@ -1179,19 +1184,19 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             size: 16,
                             color: _themeColors.primaryAccent,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppSpacing.xs),
                           Text(
                             '長押しドラッグで選手の配置・順番を自由に入れ替えできます',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: subTextColor,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -1234,7 +1239,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   : borderColor,
                               width: isSelected ? 2 : 1,
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppRadius.medium,
                           ),
                           child: Column(
                             children: [
@@ -1249,7 +1254,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   top: Radius.circular(12),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.all(AppSpacing.lg),
                                   child: Row(
                                     children: [
                                       CircleAvatar(
@@ -1264,11 +1269,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                             color: isSelected
                                                 ? _themeColors.primaryAccent
                                                 : subTextColor,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: AppFontWeight.bold,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 16),
+                                      const SizedBox(width: AppSpacing.lg),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -1282,14 +1287,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                 fontSize: 12,
                                                 color:
                                                     _themeColors.primaryAccent,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: AppFontWeight.bold,
                                               ),
                                             ),
                                             Text(
                                               playerName,
                                               style: TextStyle(
                                                 fontSize: 18,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: AppFontWeight.bold,
                                                 color: isSelected
                                                     ? textColor
                                                     : subTextColor,
@@ -1320,15 +1325,17 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                 ? _themeColors.primaryAccent
                                                 : subTextColor,
                                             fontSize: 13,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: AppFontWeight.bold,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: AppSpacing.sm),
                                       ReorderableDragStartListener(
                                         index: index,
                                         child: Padding(
-                                          padding: const EdgeInsets.all(4.0),
+                                          padding: const EdgeInsets.all(
+                                            AppSpacing.xs,
+                                          ),
                                           child: Icon(
                                             Icons.drag_handle,
                                             color: subTextColor.withValues(
@@ -1385,19 +1392,19 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                         color: Colors.blueGrey,
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: AppRadius.small,
                                         borderSide: BorderSide(
                                           color: borderColor,
                                         ),
                                       ),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: AppRadius.small,
                                         borderSide: BorderSide(
                                           color: borderColor,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: AppRadius.small,
                                         borderSide: BorderSide(
                                           color: _themeColors.primaryAccent,
                                         ),
@@ -1431,7 +1438,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                             '欠員',
                                             style: TextStyle(
                                               color: Colors.redAccent,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: AppFontWeight.bold,
                                               fontSize: 12,
                                             ),
                                           ),
@@ -1488,11 +1495,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       'イレギュラー枠を追加する（錬成会用）',
                       style: TextStyle(
                         color: _themeColors.primaryAccent,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   SizedBox(
                     width: double.infinity,
                     child: GlassButton(
@@ -1522,7 +1529,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 ),
                                 child: const Text(
                                   '今すぐ試合開始',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontWeight: AppFontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],
@@ -1537,7 +1546,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           return;
                         }
                         // ★ Phase 8-1: ダイアログの「戻る」が画面を消さないように、rootNavigatorを使う
-                        showDialog(
+                        showAppDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (context) =>
@@ -1907,22 +1916,25 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                 }
               },
               onChanged: (text) {},
-              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: textColor,
+                fontWeight: AppFontWeight.bold,
+              ),
               decoration: InputDecoration(
                 labelText: labelText,
                 labelStyle: TextStyle(color: subTextColor),
                 hintText: hintText,
                 hintStyle: TextStyle(color: subTextColor),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.small,
                   borderSide: BorderSide(color: borderColor),
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.small,
                   borderSide: BorderSide(color: borderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.small,
                   borderSide: BorderSide(color: _themeColors.primaryAccent),
                 ),
                 prefixIcon: Icon(
@@ -1947,7 +1959,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
           alignment: Alignment.topLeft,
           child: Material(
             elevation: 8.0,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.medium,
             color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
             child: ConstrainedBox(
               // 幅を画面に合わせる
@@ -1966,7 +1978,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       option,
                       style: TextStyle(
                         color: textColor,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                     trailing: Icon(

@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -38,7 +39,7 @@ class LoginScreen extends ConsumerWidget {
             children: [
               // iOS Native: Elevation（浮き上がり）を光の輪で表現
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppSpacing.xl),
                 decoration: BoxDecoration(
                   color: cardColor,
                   shape: BoxShape.circle,
@@ -71,17 +72,17 @@ class LoginScreen extends ConsumerWidget {
                   letterSpacing: 2.5,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 '次世代の剣道スコア入力システム',
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: secondaryText,
                   letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xxl),
 
               // 🏢 現在の接続先 道場ID 表示カード（ひと目で認識できる洗練されたデザイン）
               Container(
@@ -92,7 +93,7 @@ class LoginScreen extends ConsumerWidget {
                 ),
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: AppRadius.large,
                   border: Border.all(
                     color: buttonColor.withValues(alpha: isDark ? 0.4 : 0.25),
                     width: 1.5,
@@ -130,7 +131,7 @@ class LoginScreen extends ConsumerWidget {
                             '接続中の道場ID',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: secondaryText,
                               letterSpacing: 0.8,
                             ),
@@ -158,7 +159,7 @@ class LoginScreen extends ConsumerWidget {
                         color: isDark
                             ? Colors.grey.shade900
                             : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.medium,
                         border: Border.all(
                           color: isDark
                               ? Colors.grey.shade800
@@ -172,12 +173,12 @@ class LoginScreen extends ConsumerWidget {
                             size: 14,
                             color: Colors.green.shade500,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppSpacing.xs),
                           Text(
                             '選択中',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: secondaryText,
                             ),
                           ),
@@ -188,7 +189,7 @@ class LoginScreen extends ConsumerWidget {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xxl),
 
               // ★ プレミアムなログインボタン（他画面のボタンと同等のクオリティ）
               Padding(
@@ -203,7 +204,7 @@ class LoginScreen extends ConsumerWidget {
                     'Googleでログイン',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: buttonTextColor,
                       letterSpacing: 1.1,
                     ),
@@ -230,7 +231,7 @@ class LoginScreen extends ConsumerWidget {
                     elevation: 0,
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: AppRadius.large,
                     ),
                   ),
                 ),

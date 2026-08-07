@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -314,7 +315,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
               actions: const [
                 // 観客向けのFAQ（点数や勝敗の見方）へ
                 ManualHelpButton(manualPath: 'docs/manuals/faq/viewer_faq.md'),
-                SizedBox(width: 8),
+                SizedBox(width: AppSpacing.sm),
               ],
             ),
             body: SingleChildScrollView(
@@ -332,7 +333,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                         color: isDark
                             ? Colors.indigo.shade900.withValues(alpha: 0.2)
                             : Colors.indigo.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.medium,
                         border: Border.all(
                           color: isDark
                               ? Colors.indigo.shade800
@@ -343,7 +344,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                         teamProj.note,
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: isDark
                               ? Colors.indigo.shade100
                               : Colors.indigo.shade900,
@@ -352,17 +353,17 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                     ),
 
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Container(
                       decoration: BoxDecoration(
                         color: cardColor,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                         border: isDark
                             ? null
                             : Border.all(color: borderColor, width: 1.0),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                         child: Table(
                           border: TableBorder.symmetric(
                             inside: BorderSide(color: borderColor, width: 0.5),
@@ -472,7 +473,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         '(欠員)',
         fs: 17,
         color: subTextColor,
-        fontWeight: FontWeight.bold,
+        fontWeight: AppFontWeight.bold,
       );
     }
 
@@ -487,7 +488,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         text: TextSpan(
           style: TextStyle(
             fontSize: 17,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: textColor,
           ),
           children: [
@@ -501,7 +502,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                     parsed['first']!.substring(0, 1),
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: subTextColor,
                     ),
                   ),
@@ -546,7 +547,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
           _cell(
             m.matchType,
             fs: 12,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: matchTypeColor,
           ),
         ),
@@ -703,7 +704,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
           style: TextStyle(
             fontSize: 10,
             color: color,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
           ),
         ),
       );
@@ -715,7 +716,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         style: TextStyle(
           fontSize: 14,
           color: color,
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
         ),
       ),
     );
@@ -735,7 +736,9 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: fs,
-          fontWeight: isH ? FontWeight.bold : (fontWeight ?? FontWeight.normal),
+          fontWeight: isH
+              ? AppFontWeight.bold
+              : (fontWeight ?? FontWeight.normal),
           color: color,
         ),
       ),
@@ -773,7 +776,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                       child: Text(
                         '引き分け',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 18,
                           color: isDark
                               ? Colors.amber.shade200

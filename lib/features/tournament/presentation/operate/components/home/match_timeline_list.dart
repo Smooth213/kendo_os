@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -198,7 +199,7 @@ class MatchTimelineList extends ConsumerWidget {
                   : const SizedBox.shrink(),
               loading: () => const Center(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
+                  padding: EdgeInsets.all(AppSpacing.lg),
                   child: CircularProgressIndicator(),
                 ),
               ),
@@ -215,7 +216,7 @@ class MatchTimelineList extends ConsumerWidget {
                   '試合リスト',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                   ),
                 ),
@@ -249,7 +250,7 @@ class MatchTimelineList extends ConsumerWidget {
                               ? const Color(0xFF2C2C2E)
                               : Colors.white,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: AppRadius.small,
                             borderSide: BorderSide(
                               color: isDark
                                   ? const Color(0xFF38383A)
@@ -257,7 +258,7 @@ class MatchTimelineList extends ConsumerWidget {
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: AppRadius.small,
                             borderSide: BorderSide(
                               color: isDark
                                   ? const Color(0xFF38383A)
@@ -265,7 +266,7 @@ class MatchTimelineList extends ConsumerWidget {
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: AppRadius.small,
                             borderSide: BorderSide(
                               color: Colors.indigo.shade400,
                             ),
@@ -307,7 +308,7 @@ class MatchTimelineList extends ConsumerWidget {
                               ref.read(isSearchVisibleProvider.notifier).state =
                                   true,
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AppSpacing.md),
                         if (!isReadOnlyUI && allMatches.isNotEmpty) ...[
                           OutlinedButton.icon(
                             onPressed: () => showBulkRuleEditSheet(
@@ -326,7 +327,7 @@ class MatchTimelineList extends ConsumerWidget {
                             label: Text(
                               'ルール一括変更',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 fontSize: 12,
                                 color: isDark
                                     ? Colors.indigo.shade300
@@ -348,11 +349,11 @@ class MatchTimelineList extends ConsumerWidget {
                               ),
                               minimumSize: const Size(0, 32),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: AppRadius.small,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                         ],
                         OutlinedButton.icon(
                           onPressed: () =>
@@ -369,7 +370,7 @@ class MatchTimelineList extends ConsumerWidget {
                                 ? 'カテゴリ昇順'
                                 : 'カテゴリ降順',
                             style: const TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               fontSize: 12,
                             ),
                           ),
@@ -388,7 +389,7 @@ class MatchTimelineList extends ConsumerWidget {
                             ),
                             minimumSize: const Size(0, 32),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: AppRadius.small,
                             ),
                           ),
                         ),
@@ -402,20 +403,20 @@ class MatchTimelineList extends ConsumerWidget {
 
         if (timelineResult.hasError)
           Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: const EdgeInsets.all(AppSpacing.xxl),
             child: Center(
               child: Column(
                 children: [
                   const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   Text(
                     'データの取得に失敗しました',
                     style: TextStyle(
                       color: isDark ? Colors.red.shade300 : Colors.red,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     timelineResult.errorMessage ?? '通信状況を確認してください',
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
@@ -428,7 +429,7 @@ class MatchTimelineList extends ConsumerWidget {
 
         if (timelineResult.entries.isEmpty && sanitizedQuery.isNotEmpty)
           const Padding(
-            padding: EdgeInsets.all(32.0),
+            padding: EdgeInsets.all(AppSpacing.xxl),
             child: Center(
               child: Text(
                 '該当する試合が見つかりません',
@@ -450,7 +451,7 @@ class MatchTimelineList extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   height: 1.5,
                 ),
               ),
@@ -459,7 +460,7 @@ class MatchTimelineList extends ConsumerWidget {
 
         if (timelineResult.entries.isEmpty && timelineResult.isLoading)
           const Padding(
-            padding: EdgeInsets.all(32.0),
+            padding: EdgeInsets.all(AppSpacing.xxl),
             child: Center(child: CircularProgressIndicator()),
           ),
 
@@ -570,7 +571,7 @@ class MatchTimelineList extends ConsumerWidget {
                     categoryName,
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: isDark
                           ? Colors.indigo.shade300
                           : Colors.indigo.shade800,
@@ -706,7 +707,7 @@ class MatchTimelineList extends ConsumerWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF161618) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: AppRadius.large,
                       border: Border.all(
                         color: isDark
                             ? const Color(0xFF38383A)
@@ -756,13 +757,13 @@ class MatchTimelineList extends ConsumerWidget {
                                     : Colors.indigo.shade700,
                                 size: 20,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Text(
                                   teamName,
                                   style: TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                     color: isDark
                                         ? Colors.white
                                         : Colors.indigo.shade900,
@@ -826,7 +827,7 @@ class MatchTimelineList extends ConsumerWidget {
                           ),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
 
                         Builder(
                           builder: (context) {
@@ -910,13 +911,16 @@ class MatchTimelineList extends ConsumerWidget {
                                                     : Colors.grey.shade600,
                                                 size: 16,
                                               ),
-                                              const SizedBox(width: 8),
+                                              const SizedBox(
+                                                width: AppSpacing.sm,
+                                              ),
                                               Expanded(
                                                 child: Text(
                                                   c.text,
                                                   style: TextStyle(
                                                     fontSize: 13,
-                                                    fontWeight: FontWeight.bold,
+                                                    fontWeight:
+                                                        AppFontWeight.bold,
                                                     color: isDark
                                                         ? Colors.grey.shade300
                                                         : Colors.grey.shade800,
@@ -967,7 +971,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                           '見出しの削除',
                                                           style: TextStyle(
                                                             fontWeight:
-                                                                FontWeight.bold,
+                                                                AppFontWeight
+                                                                    .bold,
                                                             color: isDark
                                                                 ? Colors.white
                                                                 : Colors
@@ -1074,12 +1079,15 @@ class MatchTimelineList extends ConsumerWidget {
                                                       : Colors.indigo.shade700,
                                                   size: 16,
                                                 ),
-                                                const SizedBox(width: 4),
+                                                const SizedBox(
+                                                  width: AppSpacing.xs,
+                                                ),
                                                 Text(
                                                   label,
                                                   style: TextStyle(
                                                     fontSize: 13,
-                                                    fontWeight: FontWeight.bold,
+                                                    fontWeight:
+                                                        AppFontWeight.bold,
                                                     color: isDark
                                                         ? Colors.indigo.shade300
                                                         : Colors
@@ -1425,7 +1433,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             fontSize:
                                                                                 9,
                                                                             fontWeight:
-                                                                                FontWeight.bold,
+                                                                                AppFontWeight.bold,
                                                                             color:
                                                                                 titleColor,
                                                                           ),
@@ -1574,7 +1582,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             fontSize:
                                                                                 10,
                                                                             fontWeight:
-                                                                                FontWeight.bold,
+                                                                                AppFontWeight.bold,
                                                                             color:
                                                                                 titleColor,
                                                                           ),
@@ -1621,7 +1629,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         fontSize:
                                                                             10,
                                                                         fontWeight:
-                                                                            FontWeight.bold,
+                                                                            AppFontWeight.bold,
                                                                         color:
                                                                             hasInProgress
                                                                             ? Colors.white
@@ -1751,7 +1759,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             ),
                                                                             style: TextStyle(
                                                                               fontSize: 13,
-                                                                              fontWeight: FontWeight.bold,
+                                                                              fontWeight: AppFontWeight.bold,
                                                                               color: titleColor,
                                                                             ),
                                                                             textAlign:
@@ -1795,7 +1803,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               fontSize: 15,
                                                                               fontWeight: showLeftOwn
                                                                                   ? FontWeight.w900
-                                                                                  : FontWeight.bold,
+                                                                                  : AppFontWeight.bold,
                                                                               color: showLeftOwn
                                                                                   ? Colors.amber.shade600
                                                                                   : titleColor,
@@ -1820,7 +1828,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 '$showLeftWins',
                                                                                 style: TextStyle(
                                                                                   fontSize: 16,
-                                                                                  fontWeight: FontWeight.bold,
+                                                                                  fontWeight: AppFontWeight.bold,
                                                                                   color: isDark
                                                                                       ? Colors.red.shade300
                                                                                       : Colors.red.shade700,
@@ -1844,7 +1852,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   style: TextStyle(
                                                                                     fontSize: 14,
                                                                                     color: Colors.grey.shade400,
-                                                                                    fontWeight: FontWeight.bold,
+                                                                                    fontWeight: AppFontWeight.bold,
                                                                                   ),
                                                                                 ),
                                                                               ),
@@ -1852,7 +1860,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 '$showRightWins',
                                                                                 style: TextStyle(
                                                                                   fontSize: 16,
-                                                                                  fontWeight: FontWeight.bold,
+                                                                                  fontWeight: AppFontWeight.bold,
                                                                                   color: isDark
                                                                                       ? Colors.white
                                                                                       : Colors.black87,
@@ -1878,7 +1886,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               fontSize: 15,
                                                                               fontWeight: showRightOwn
                                                                                   ? FontWeight.w900
-                                                                                  : FontWeight.bold,
+                                                                                  : AppFontWeight.bold,
                                                                               color: showRightOwn
                                                                                   ? Colors.amber.shade600
                                                                                   : titleColor,
@@ -2391,7 +2399,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                         style: const TextStyle(
                                                                                           fontSize: 11,
                                                                                           color: Colors.grey,
-                                                                                          fontWeight: FontWeight.bold,
+                                                                                          fontWeight: AppFontWeight.bold,
                                                                                         ),
                                                                                       ),
                                                                                       const Spacer(),
@@ -2455,7 +2463,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         '簡易入力',
                                                                                                         style: TextStyle(
                                                                                                           fontSize: 9,
-                                                                                                          fontWeight: FontWeight.bold,
+                                                                                                          fontWeight: AppFontWeight.bold,
                                                                                                           color: mTitleColor,
                                                                                                         ),
                                                                                                       ),
@@ -2525,7 +2533,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                               'スコア',
                                                                                               style: TextStyle(
                                                                                                 fontSize: 10,
-                                                                                                fontWeight: FontWeight.bold,
+                                                                                                fontWeight: AppFontWeight.bold,
                                                                                                 color: mTitleColor,
                                                                                               ),
                                                                                             ),
@@ -2562,7 +2570,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                     : '待機中'),
                                                                                           style: TextStyle(
                                                                                             fontSize: 10,
-                                                                                            fontWeight: FontWeight.bold,
+                                                                                            fontWeight: AppFontWeight.bold,
                                                                                             color: boutsInProgress
                                                                                                 ? Colors.white
                                                                                                 : (boutsAllFinished
@@ -2651,7 +2659,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                     fontSize: 14,
                                                                                                     fontWeight: showLeftOwn
                                                                                                         ? FontWeight.w900
-                                                                                                        : FontWeight.bold,
+                                                                                                        : AppFontWeight.bold,
                                                                                                     color: showLeftOwn
                                                                                                         ? Colors.amber.shade600
                                                                                                         : mTitleColor,
@@ -2671,7 +2679,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       '$showLeftWins',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: 15,
-                                                                                                        fontWeight: FontWeight.bold,
+                                                                                                        fontWeight: AppFontWeight.bold,
                                                                                                         color: isDark
                                                                                                             ? Colors.red.shade300
                                                                                                             : Colors.red.shade700,
@@ -2693,7 +2701,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         style: TextStyle(
                                                                                                           fontSize: 13,
                                                                                                           color: Colors.grey.shade400,
-                                                                                                          fontWeight: FontWeight.bold,
+                                                                                                          fontWeight: AppFontWeight.bold,
                                                                                                         ),
                                                                                                       ),
                                                                                                     ),
@@ -2701,7 +2709,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       '$showRightWins',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: 15,
-                                                                                                        fontWeight: FontWeight.bold,
+                                                                                                        fontWeight: AppFontWeight.bold,
                                                                                                         color: isDark
                                                                                                             ? Colors.white
                                                                                                             : Colors.black87,
@@ -2724,7 +2732,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                     fontSize: 14,
                                                                                                     fontWeight: showRightOwn
                                                                                                         ? FontWeight.w900
-                                                                                                        : FontWeight.bold,
+                                                                                                        : AppFontWeight.bold,
                                                                                                     color: showRightOwn
                                                                                                         ? Colors.amber.shade600
                                                                                                         : mTitleColor,
@@ -3035,14 +3043,14 @@ class MatchTimelineList extends ConsumerWidget {
                                   color: Colors.orange.shade700,
                                   size: 16,
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: AppSpacing.xs),
                                 Text(
                                   sanitizedQuery.isNotEmpty
                                       ? '抽出された個別試合'
                                       : '個人戦',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                     color: Colors.orange.shade700,
                                   ),
                                 ),
@@ -3111,7 +3119,7 @@ class MatchTimelineList extends ConsumerWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.medium,
                                 border: Border.all(
                                   color: isDark
                                       ? const Color(0xFF38383A)
@@ -3174,14 +3182,14 @@ class MatchTimelineList extends ConsumerWidget {
                                                     : Colors.grey.shade600)
                                               : Colors.orange.shade800,
                                           fontSize: 12,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: AppFontWeight.bold,
                                         ),
                                       ),
                                     ),
                                     title: Text(
                                       playerName,
                                       style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: AppFontWeight.bold,
                                         fontSize: 15,
                                         color: pTitleColor,
                                       ),
@@ -3195,7 +3203,7 @@ class MatchTimelineList extends ConsumerWidget {
                                             color: pSubTitleColor,
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: AppSpacing.sm),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 6,
@@ -3229,7 +3237,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                 : (pAllFinished ? '終了' : '待機中'),
                                             style: TextStyle(
                                               fontSize: 10,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: AppFontWeight.bold,
                                               color: pInProgress
                                                   ? Colors.white
                                                   : (pAllFinished
@@ -3305,7 +3313,7 @@ class MatchTimelineList extends ConsumerWidget {
                             );
                           }),
                         ],
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                       ],
                     ),
                   );
@@ -3358,25 +3366,25 @@ void _showRenameTeamSheet(
               height: 5,
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.medium,
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           Text(
             'チーム名の修正・統合',
             style: TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               color: primaryColor,
               fontSize: 18,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           const Text(
             '名前を修正すると、この大会内のすべての試合データが自動で書き換わり、同じ名前のチームと合流します。',
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           TextField(
             controller: controller,
             autofocus: true,
@@ -3385,12 +3393,12 @@ void _showRenameTeamSheet(
               filled: true,
               fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.medium,
                 borderSide: BorderSide.none,
               ),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppSpacing.xxl),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -3416,13 +3424,11 @@ void _showRenameTeamSheet(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
               ),
               child: const Text(
                 '一括修正して統合する',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: AppFontWeight.bold),
               ),
             ),
           ),
@@ -3558,7 +3564,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
               height: 5,
               decoration: BoxDecoration(
                 color: Colors.grey.shade400,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.medium,
               ),
             ),
           ),
@@ -3570,12 +3576,12 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 color: themeColors.primaryAccent,
                 size: 22,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 '試合レギュレーション',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: isDark ? Colors.white : Colors.black87,
                 ),
               ),
@@ -3585,10 +3591,10 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
           if (rule == null)
             Container(
               margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
                 color: Colors.orange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppRadius.small,
                 border: Border.all(color: Colors.orange.shade300),
               ),
               child: Row(
@@ -3598,14 +3604,14 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                     color: Colors.orange.shade700,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       'この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。',
                       style: TextStyle(
                         color: Colors.orange.shade800,
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                   ),
@@ -3621,7 +3627,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 '錬成会設定',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: themeColors.primaryAccent,
                 ),
               ),
@@ -3640,7 +3646,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 '勝ち抜き戦設定',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: themeColors.primaryAccent,
                 ),
               ),
@@ -3664,7 +3670,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 '団体戦・チーム設定',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: themeColors.primaryAccent,
                 ),
               ),
@@ -3683,7 +3689,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 'ポジション設定',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: themeColors.primaryAccent,
                 ),
               ),
@@ -3697,7 +3703,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 'リーグ戦設定',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: Colors.orange,
                 ),
               ),
@@ -3712,10 +3718,10 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
             _buildRuleRow('同点時代表戦', rule.hasLeagueDaihyo ? 'あり' : 'なし', isDark),
           ],
           if (match.note.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             _buildRuleRow('備考・メモ', match.note, isDark),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -3726,14 +3732,12 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                     : Colors.grey.shade200,
                 foregroundColor: isDark ? Colors.white : Colors.black87,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: const Text(
                 '閉じる',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: AppFontWeight.bold),
               ),
             ),
           ),
@@ -3765,7 +3769,7 @@ Widget _buildRuleRow(String label, String value, bool isDark) {
             value,
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               fontSize: 14,
             ),
           ),
@@ -3791,7 +3795,7 @@ void _showTieBreakDialog(
           return AppDialog(
             titleWidget: const Text(
               '決定戦の形式を選択',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: AppFontWeight.bold),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -3800,7 +3804,7 @@ void _showTieBreakDialog(
                   '同順位を解消するための形式を選んでください：',
                   style: TextStyle(fontSize: 12),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 _buildTieOption(
                   ctx,
                   Icons.person,
@@ -3862,7 +3866,7 @@ void _showTieBreakDialog(
           return AppDialog(
             titleWidget: Text(
               '$modeTextの作成',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: AppFontWeight.bold),
             ),
             content: SizedBox(
               width: double.maxFinite,
@@ -3873,7 +3877,7 @@ void _showTieBreakDialog(
                     '作成する組み合わせを選んでください：',
                     style: TextStyle(fontSize: 12),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   _buildTieOption(
                     ctx,
                     Icons.auto_awesome,
@@ -3897,11 +3901,11 @@ void _showTieBreakDialog(
                     '個別に対戦を作成：',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   ...(() {
                     final combos = <Widget>[];
                     for (int i = 0; i < tieTeams.length; i++) {
@@ -3960,7 +3964,7 @@ Widget _buildTieOption(
     margin: const EdgeInsets.only(bottom: 8),
     color: isSub ? Colors.transparent : Colors.orange.shade50,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadius.small,
       side: BorderSide(
         color: isSub ? Colors.grey.shade300 : Colors.orange.shade300,
       ),
@@ -3973,7 +3977,7 @@ Widget _buildTieOption(
       title: Text(
         title,
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           fontSize: 13,
           color: isSub ? Colors.black87 : Colors.orange.shade900,
         ),
@@ -4091,7 +4095,10 @@ void _showSummaryInputDialog(
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                label,
+                style: const TextStyle(fontWeight: AppFontWeight.bold),
+              ),
               Row(
                 children: [
                   IconButton(
@@ -4110,7 +4117,7 @@ void _showSummaryInputDialog(
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                   ),
@@ -4146,12 +4153,10 @@ void _showSummaryInputDialog(
 
         return AppDialog(
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
           titleWidget: const Text(
             '他コートの簡易入力',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: AppFontWeight.bold),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -4161,14 +4166,14 @@ void _showSummaryInputDialog(
                   '他チームの試合結果（勝者数と本数）だけを素早く記録します。',
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: isDark
                         ? Colors.red.shade900.withValues(alpha: 0.15)
                         : Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     border: Border.all(color: Colors.red.shade200),
                   ),
                   child: Column(
@@ -4179,11 +4184,11 @@ void _showSummaryInputDialog(
                           color: isDark
                               ? Colors.red.shade400
                               : Colors.red.shade700,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       buildCounter('勝者数', rWins, () => rWins--, () {
                         if (rWins + wWins < totalMatches) {
                           rWins++;
@@ -4197,14 +4202,14 @@ void _showSummaryInputDialog(
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: isDark
                         ? Colors.blue.shade900.withValues(alpha: 0.15)
                         : Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     border: Border.all(color: Colors.blue.shade200),
                   ),
                   child: Column(
@@ -4215,11 +4220,11 @@ void _showSummaryInputDialog(
                           color: isDark
                               ? Colors.blue.shade400
                               : Colors.blue.shade700,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       buildCounter('勝者数', wWins, () => wWins--, () {
                         if (rWins + wWins < totalMatches) {
                           wWins++;
@@ -4241,7 +4246,7 @@ void _showSummaryInputDialog(
                       style: const TextStyle(
                         color: Colors.red,
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                   ),
@@ -4260,7 +4265,7 @@ void _showSummaryInputDialog(
                     context: context,
                     builder: (dialogCtx) => AppDialog(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadius.large,
                       ),
                       titleWidget: const Row(
                         children: [
@@ -4268,13 +4273,13 @@ void _showSummaryInputDialog(
                             Icons.warning_amber_rounded,
                             color: Colors.orange,
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: AppSpacing.sm),
                           Text('入力エラー'),
                         ],
                       ),
                       content: Text(
                         errorMsg,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: AppFontWeight.bold),
                       ),
                       actions: [
                         TextButton(
@@ -4364,7 +4369,7 @@ void _showSummaryInputDialog(
               ),
               child: const Text(
                 '記録を確定する',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: AppFontWeight.bold),
               ),
             ),
           ],
@@ -4532,22 +4537,20 @@ void showUnifiedAnnounceDialog(
 
           return AppDialog(
             backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
             titleWidget: Row(
               children: [
                 const Icon(
                   Icons.add_alert,
                   color: Color(0xFFFF69B4),
                 ), // 差し色：サクラピンク
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
                     '公式アナウンス・コメントの一斉発信',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
@@ -4568,7 +4571,7 @@ void showUnifiedAnnounceDialog(
                       hintText: '空欄の場合は自動で見出しになります',
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   TextField(
                     controller: bodyController,
                     maxLines: 3,
@@ -4584,12 +4587,12 @@ void showUnifiedAnnounceDialog(
 
                   // 🏢 全員向け / スタッフ限定 の完全送り分け選択UIセクション
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(AppSpacing.xs),
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF2C2C2E)
                           : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadius.small,
                     ),
                     child: Row(
                       children: [
@@ -4618,7 +4621,7 @@ void showUnifiedAnnounceDialog(
                             },
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: AppSpacing.xs),
                         Expanded(
                           child: AppChoiceChip(
                             label: SizedBox(
@@ -4662,9 +4665,7 @@ void showUnifiedAnnounceDialog(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColors.primaryAccent,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),
                 onPressed: () {
                   final String title = titleController.text.trim();
@@ -4757,7 +4758,7 @@ void showUnifiedAnnounceDialog(
                 },
                 child: const Text(
                   '一斉発信して保存',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: AppFontWeight.bold),
                 ),
               ),
             ],
@@ -4782,7 +4783,7 @@ void _showEditCommentDialog(
       titleWidget: Text(
         '見出し（コメント）の編集',
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           color: isDark ? Colors.white : Colors.black87,
         ),
       ),
@@ -4795,7 +4796,7 @@ void _showEditCommentDialog(
           filled: true,
           fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: AppRadius.small,
             borderSide: BorderSide.none,
           ),
         ),
@@ -4829,7 +4830,7 @@ void _showEditCommentDialog(
           ),
           child: const Text(
             '保存',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: AppFontWeight.bold),
           ),
         ),
       ],
@@ -4872,7 +4873,7 @@ Widget _buildInnerCommentWidget(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     decoration: BoxDecoration(
       color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadius.small,
       border: Border.all(
         color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
       ),
@@ -4884,13 +4885,13 @@ Widget _buildInnerCommentWidget(
           color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
           size: 16,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             c.text,
             style: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.bold,
+              fontWeight: AppFontWeight.bold,
               color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
             ),
           ),
@@ -4931,7 +4932,7 @@ Widget _buildInnerCommentWidget(
                   titleWidget: Text(
                     '内部見出しの削除',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
@@ -4955,7 +4956,7 @@ Widget _buildInnerCommentWidget(
                         '削除',
                         style: TextStyle(
                           color: Colors.red,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                         ),
                       ),
                     ),
@@ -5071,7 +5072,7 @@ class MatchListTileCard extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.medium,
         border: Border.all(
           color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300,
           width: 1.2,
@@ -5136,7 +5137,7 @@ class MatchListTileCard extends ConsumerWidget {
                                 '簡易',
                                 style: TextStyle(
                                   fontSize: 9,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   color: textC,
                                 ),
                               ),
@@ -5164,9 +5165,9 @@ class MatchListTileCard extends ConsumerWidget {
                       padding: const EdgeInsets.only(right: 6),
                       child: InkWell(
                         onTap: () => _showRuleInfoSheet(context, match),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.medium,
                         child: Padding(
-                          padding: const EdgeInsets.all(4.0),
+                          padding: const EdgeInsets.all(AppSpacing.xs),
                           child: Icon(
                             Icons.info_outline,
                             color: isDark
@@ -5211,7 +5212,7 @@ class MatchListTileCard extends ConsumerWidget {
                             'スコア',
                             style: TextStyle(
                               fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: textC,
                             ),
                           ),
@@ -5240,7 +5241,7 @@ class MatchListTileCard extends ConsumerWidget {
                       isPlaying ? '進行中' : (isFinished ? '終了' : '待機中'),
                       style: TextStyle(
                         fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: isPlaying
                             ? Colors.white
                             : (isFinished
@@ -5275,7 +5276,7 @@ class MatchListTileCard extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 11,
                       color: noteC,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                     ),
                   ),
                 ),
@@ -5329,7 +5330,7 @@ class MatchListTileCard extends ConsumerWidget {
                           mark,
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             color: textColor,
                           ),
                         ),
@@ -5349,7 +5350,7 @@ class MatchListTileCard extends ConsumerWidget {
                           mark,
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             color: textColor,
                             height: 1.1,
                           ),
@@ -5363,7 +5364,7 @@ class MatchListTileCard extends ConsumerWidget {
                         mark,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: textColor,
                         ),
                       ),
@@ -5397,7 +5398,7 @@ class MatchListTileCard extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 32),
+                          const SizedBox(width: AppSpacing.xxl),
                           Expanded(
                             child: Text(
                               wTeam.isNotEmpty ? wTeam : '（個人エントリー）',
@@ -5414,7 +5415,7 @@ class MatchListTileCard extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xs),
                       // 🥋 【3行目】: ピュア選手名＆中央掲示板式リアルタイムスコアライン
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -5427,7 +5428,7 @@ class MatchListTileCard extends ConsumerWidget {
                                 fontSize: 14,
                                 fontWeight: isRedOwn
                                     ? FontWeight.w900
-                                    : FontWeight.bold,
+                                    : AppFontWeight.bold,
                                 color: isRedOwn
                                     ? Colors.amber.shade600
                                     : (isDark ? Colors.white : Colors.black87),
@@ -5440,7 +5441,7 @@ class MatchListTileCard extends ConsumerWidget {
                           if (!hasValidPoints)
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: SizedBox(width: 12),
+                              child: SizedBox(width: AppSpacing.md),
                             )
                           else
                             Padding(
@@ -5472,7 +5473,7 @@ class MatchListTileCard extends ConsumerWidget {
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: Colors.grey.shade400,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: AppFontWeight.bold,
                                       ),
                                     ),
                                   ),
@@ -5500,7 +5501,7 @@ class MatchListTileCard extends ConsumerWidget {
                                 fontSize: 14,
                                 fontWeight: isWhiteOwn
                                     ? FontWeight.w900
-                                    : FontWeight.bold,
+                                    : AppFontWeight.bold,
                                 color: isWhiteOwn
                                     ? Colors.amber.shade600
                                     : (isDark ? Colors.white : Colors.black87),
@@ -5554,7 +5555,7 @@ class MatchListTileCard extends ConsumerWidget {
                   titleWidget: Text(
                     '試合の削除',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
@@ -5575,7 +5576,7 @@ class MatchListTileCard extends ConsumerWidget {
                         '削除',
                         style: TextStyle(
                           color: Colors.red,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                         ),
                       ),
                     ),
@@ -5988,11 +5989,11 @@ class _OrderReorderBottomSheetState
                             color: isDark
                                 ? Colors.grey.shade700
                                 : Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppRadius.medium,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -6000,7 +6001,7 @@ class _OrderReorderBottomSheetState
                             'オーダー編集 : $_ownTeamName',
                             style: const TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                             ),
                           ),
                           IconButton(
@@ -6017,7 +6018,7 @@ class _OrderReorderBottomSheetState
                           style: TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       ConstrainedBox(
                         constraints: BoxConstraints(
                           maxHeight: MediaQuery.of(context).size.height * 0.5,
@@ -6059,7 +6060,7 @@ class _OrderReorderBottomSheetState
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 11,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: AppFontWeight.bold,
                                     ),
                                   ),
                                 ),
@@ -6067,7 +6068,7 @@ class _OrderReorderBottomSheetState
                                   name,
                                   style: TextStyle(
                                     fontWeight: isPosition
-                                        ? FontWeight.bold
+                                        ? AppFontWeight.bold
                                         : FontWeight.normal,
                                   ),
                                 ),
@@ -6078,7 +6079,7 @@ class _OrderReorderBottomSheetState
                           onReorderItem: _onReorder,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.md),
                       Row(
                         children: [
                           OutlinedButton.icon(
@@ -6167,7 +6168,7 @@ class _AddReservePlayerDialogState extends State<_AddReservePlayerDialog> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 ElevatedButton(
                   onPressed: () {
                     final name = _textController.text.trim();
@@ -6179,18 +6180,18 @@ class _AddReservePlayerDialogState extends State<_AddReservePlayerDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             const Divider(),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             const Text(
               '所属名簿から選択：',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             if (widget.availablePlayers.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),

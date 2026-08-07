@@ -24,11 +24,11 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
             ManualHelpButton(
               manualPath: 'docs/manuals/recovery/failure_catalog.md',
             ),
-            SizedBox(width: 8),
+            SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: ListView(
             children: [
               const Padding(
@@ -83,13 +83,13 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
     return Card(
       color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
             Icon(icon, size: 36, color: color),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.lg),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -101,7 +101,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                     fontWeight: AppFontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   value,
                   style: TextStyle(
