@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -24,7 +26,7 @@ class StartScreen extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade600;

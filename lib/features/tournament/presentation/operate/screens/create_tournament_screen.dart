@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -226,7 +228,7 @@ class _CreateTournamentScreenState
   Widget _buildPage1() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade400;
@@ -314,7 +316,7 @@ class _CreateTournamentScreenState
   Widget _buildPage2() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade400;

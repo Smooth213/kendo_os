@@ -602,7 +602,7 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: 10),
         LinearProgressIndicator(
           value: progress,
-          backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+          backgroundColor: context.appColors.separatorColor,
           valueColor: AlwaysStoppedAnimation<Color>(themeColors.primaryAccent),
           minHeight: 6,
           borderRadius: AppRadius.tiny,
@@ -697,7 +697,7 @@ class HomeScreen extends ConsumerWidget {
     required bool isDark,
     VoidCallback? onTap,
   }) {
-    final activeTextColor = isDark ? Colors.white : Colors.black87;
+    final activeTextColor = themeColors.textColor;
     final inactiveTextColor = isDark ? Colors.white54 : Colors.black54;
 
     return Material(

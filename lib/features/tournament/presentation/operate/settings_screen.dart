@@ -47,7 +47,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
     // iOS Native カラーパレット
-    final Color dynamicTextColor = isDark ? Colors.white : Colors.black;
+    final Color dynamicTextColor = context.appColors.textColor;
 
     return LiquidBackground(
       // ★ 全体をLiquidBackgroundでラップ
@@ -646,8 +646,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     VoidCallback? onTap,
     String? subtitle,
   }) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color dynamicTextColor = isDark ? Colors.white : Colors.black;
+    final Color dynamicTextColor = context.appColors.textColor;
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(

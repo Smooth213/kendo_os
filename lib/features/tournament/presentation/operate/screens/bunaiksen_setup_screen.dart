@@ -284,7 +284,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 style: TextStyle(
                   fontSize: AppFontSize.body,
                   fontWeight: AppFontWeight.bold,
-                  color: isDark ? Colors.white70 : Colors.black87,
+                  color: context.appColors.subTextColor,
                 ),
               ),
               backgroundColor: isDark
@@ -657,9 +657,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
           Text(
             name,
             style: TextStyle(
-              color: isAssigned
-                  ? Colors.grey
-                  : (isDark ? Colors.white : Colors.black87),
+              color: isAssigned ? Colors.grey : (context.appColors.textColor),
               fontWeight: AppFontWeight.bold,
             ),
           ),
@@ -686,7 +684,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
       backgroundColor: isFeedback
           ? _themeColors.primaryAccent.withValues(alpha: 0.2)
           : (isAssigned
-                ? (isDark ? Colors.grey.shade800 : Colors.grey.shade200)
+                ? (context.appColors.separatorColor)
                 : (isDark ? Colors.grey.shade700 : Colors.white)),
       side: BorderSide(
         color: isAssigned
@@ -899,7 +897,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                   fontWeight: AppFontWeight.bold,
                                   color: _redTeam[index] == null
                                       ? Colors.grey
-                                      : (isDark ? Colors.white : Colors.black),
+                                      : (context.appColors.textColor),
                                 ),
                               ),
                               onTap: () =>
@@ -954,7 +952,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                   fontWeight: AppFontWeight.bold,
                                   color: _whiteTeam[index] == null
                                       ? Colors.grey
-                                      : (isDark ? Colors.white : Colors.black),
+                                      : (context.appColors.textColor),
                                 ),
                               ),
                               onTap: () =>
@@ -1027,7 +1025,6 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
 
   // リーグ戦タブのプレースホルダー
   Widget _buildLeagueTab(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -1053,11 +1050,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             child: Container(
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
+                color: context.appColors.inputBackground,
                 borderRadius: AppRadius.medium,
-                border: Border.all(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-                ),
+                border: Border.all(color: context.appColors.separatorColor),
               ),
               child: Material(
                 color: Colors.transparent,
@@ -1177,7 +1172,6 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
   // 無限勝ち抜きタブのプレースホルダー
   Widget _buildInfiniteTab(BuildContext context, WidgetRef ref) {
     final queue = ref.watch(bunaiksenInfiniteQueueProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -1218,11 +1212,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             child: Container(
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
+                color: context.appColors.inputBackground,
                 borderRadius: AppRadius.medium,
-                border: Border.all(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-                ),
+                border: Border.all(color: context.appColors.separatorColor),
               ),
               child: Material(
                 color: Colors.transparent,

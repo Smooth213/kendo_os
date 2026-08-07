@@ -616,7 +616,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     _themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -663,7 +663,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             child: Text(
                               '自チームの選手を選択し、必要に応じて相手のチーム・選手名を入力してください。',
                               style: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black87,
+                                color: context.appColors.subTextColor,
                               ),
                             ),
                           ),

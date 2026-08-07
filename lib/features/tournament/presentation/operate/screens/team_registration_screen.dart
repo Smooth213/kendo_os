@@ -261,7 +261,7 @@ class _TeamRegistrationScreenState
   ) async {
     final TextEditingController customNameController = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     // 手入力選手の抽出
     final helperEntries = _tempSelectedPlayers.entries
@@ -564,7 +564,7 @@ class _TeamRegistrationScreenState
     bool isBeginner = false,
     required VoidCallback onTap,
   }) {
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     // 状態に応じて色を決定 (助っ人 or 使用済み or 選択可能)
     final Color cardColor;
@@ -773,8 +773,7 @@ class _TeamRegistrationScreenState
   // ===== ウィザード構成部品 =====
 
   Widget _buildPage1CategoryFormat() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -953,7 +952,7 @@ class _TeamRegistrationScreenState
     List<PlayerModel> players,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -1178,7 +1177,7 @@ class _TeamRegistrationScreenState
     int playerCount,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');

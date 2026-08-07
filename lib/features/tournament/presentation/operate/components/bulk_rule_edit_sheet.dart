@@ -443,7 +443,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     // 現在のフィルターに該当する全試合（グループ化された表示単位）
     final currentFilteredUnits = _buildGroupUnits().where((unit) {
@@ -536,11 +536,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   constraints: const BoxConstraints(maxHeight: 180),
                   decoration: BoxDecoration(
                     borderRadius: AppRadius.medium,
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.grey.shade800
-                          : Colors.grey.shade200,
-                    ),
+                    border: Border.all(color: context.appColors.separatorColor),
                   ),
                   child: Material(
                     color: isDark ? Colors.grey.shade900 : Colors.grey.shade50,
@@ -1130,9 +1126,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: widget.themeColors.primaryAccent,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: isDark
-                      ? Colors.grey.shade800
-                      : Colors.grey.shade200,
+                  disabledBackgroundColor: context.appColors.separatorColor,
                   disabledForegroundColor: isDark
                       ? Colors.white30
                       : Colors.black38,
@@ -1178,9 +1172,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: AppRadius.large,
-        border: Border.all(
-          color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-        ),
+        border: Border.all(color: context.appColors.separatorColor),
       ),
       child: Material(
         color: isDark
@@ -1216,7 +1208,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     required ValueChanged<String?> onChanged,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     final resolvedOptions = options.contains(value)
         ? options
@@ -1264,7 +1256,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     required ValueChanged<T?> onChanged,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     final resolvedItems = items.contains(value) ? items : [value, ...items];
 

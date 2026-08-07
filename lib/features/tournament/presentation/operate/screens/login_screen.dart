@@ -26,7 +26,7 @@ class LoginScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final Color cardColor = themeColors.cardBackground;
-    final Color primaryText = isDark ? Colors.white : Colors.black;
+    final Color primaryText = context.appColors.textColor;
     final Color secondaryText = isDark
         ? const Color(0xFF8E8E93)
         : const Color(0xFF636366);
@@ -160,14 +160,10 @@ class LoginScreen extends ConsumerWidget {
                         vertical: AppSpacing.xs,
                       ),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.grey.shade900
-                            : Colors.grey.shade100,
+                        color: context.appColors.inputBackground,
                         borderRadius: AppRadius.medium,
                         border: Border.all(
-                          color: isDark
-                              ? Colors.grey.shade800
-                              : Colors.grey.shade300,
+                          color: context.appColors.separatorColor,
                         ),
                       ),
                       child: Row(

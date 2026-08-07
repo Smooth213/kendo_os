@@ -281,7 +281,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final backgroundColor = themeColors.cardBackground;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     final sheetTitle = _isDantai ? '団体戦対戦の編集' : '試合情報の編集';
 
@@ -472,7 +472,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       label: '白（WHITE）チーム名',
                       hint: '白チーム名を入力',
                       isDark: isDark,
-                      textColor: isDark ? Colors.white : Colors.black87,
+                      textColor: context.appColors.textColor,
                     ),
                   ),
                 ],
@@ -519,9 +519,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF252527) : Colors.white,
               borderRadius: AppRadius.medium,
-              border: Border.all(
-                color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-              ),
+              border: Border.all(color: context.appColors.separatorColor),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

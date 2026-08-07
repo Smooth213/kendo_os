@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -310,7 +312,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 '試合場・進行見出しの設定',
                                 style: TextStyle(
                                   fontWeight: AppFontWeight.bold,
-                                  color: isDark ? Colors.white : Colors.black87,
+                                  color: context.appColors.textColor,
                                 ),
                               ),
                               const Spacer(),
@@ -342,7 +344,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                             controller: _courtController,
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: context.appColors.textColor,
                               fontSize: AppFontSize.bodySmall,
                               fontWeight: AppFontWeight.semiBold,
                             ),
@@ -478,7 +480,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                             controller: _noteController,
                             maxLines: 2,
                             style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: context.appColors.textColor,
                             ),
                             decoration: InputDecoration(
                               labelText: '試合のメモ・詳細コメント',
@@ -646,9 +648,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     });
                     onFieldSubmitted();
                   },
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
+                  style: TextStyle(color: context.appColors.textColor),
                   decoration: InputDecoration(
                     labelText: labelText,
                     prefixIcon: const Icon(
@@ -702,7 +702,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         title: Text(
                           option,
                           style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: context.appColors.textColor,
                             fontWeight: AppFontWeight.bold,
                           ),
                         ),
@@ -1005,7 +1005,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         fontWeight: AppFontWeight.bold,
                         color: isSelected
                             ? (isDark ? Colors.white : accentColor.shade900)
-                            : (isDark ? Colors.white70 : Colors.black87),
+                            : (context.appColors.subTextColor),
                       ),
                     ),
                     const SizedBox(height: 2),

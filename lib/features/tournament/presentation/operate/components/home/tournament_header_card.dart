@@ -25,7 +25,7 @@ class TournamentHeaderCard extends ConsumerWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade700;
@@ -311,7 +311,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                             colorScheme: ColorScheme.light(
                               primary: Colors.indigo,
                               onPrimary: Colors.white,
-                              onSurface: isDark ? Colors.white : Colors.black,
+                              onSurface: context.appColors.textColor,
                             ),
                             dialogTheme: DialogThemeData(
                               backgroundColor: cardColor,

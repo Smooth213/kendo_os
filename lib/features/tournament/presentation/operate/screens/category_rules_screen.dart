@@ -983,7 +983,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   style: TextStyle(
                     fontWeight: AppFontWeight.semiBold,
                     fontSize: AppFontSize.body,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: context.appColors.textColor,
                   ),
                 ),
                 if (subtitle != null) ...[
@@ -2843,7 +2843,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                           style: TextStyle(
                             fontSize: AppFontSize.headline,
                             fontWeight: AppFontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: context.appColors.textColor,
                           ),
                         ),
                       ),
@@ -2881,10 +2881,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(ctx),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? Colors.grey.shade800
-                            : Colors.grey.shade200,
-                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        backgroundColor: context.appColors.separatorColor,
+                        foregroundColor: context.appColors.textColor,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.lg,
@@ -2930,7 +2928,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               value,
               style: TextStyle(
                 fontSize: AppFontSize.bodySmall,
-                color: isDark ? Colors.white70 : Colors.black87,
+                color: context.appColors.subTextColor,
                 fontWeight: AppFontWeight.medium,
               ),
             ),

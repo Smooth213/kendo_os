@@ -235,7 +235,7 @@ class MatchTimelineList extends ConsumerWidget {
                         autofocus: true,
                         style: TextStyle(
                           fontSize: AppFontSize.bodySmall,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: context.appColors.textColor,
                         ),
                         decoration: InputDecoration(
                           hintText: '選手名・チーム名で検索...',
@@ -1140,9 +1140,7 @@ class MatchTimelineList extends ConsumerWidget {
                                             ? (isDark
                                                   ? Colors.grey.shade600
                                                   : Colors.grey.shade500)
-                                            : (isDark
-                                                  ? Colors.white
-                                                  : Colors.black87);
+                                            : (context.appColors.textColor);
                                         final Color subTitleColor = allFinished
                                             ? (isDark
                                                   ? Colors.grey.shade700
@@ -1347,9 +1345,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                     .shade700,
                                                           collapsedIconColor:
                                                               Colors.grey,
-                                                          textColor: isDark
-                                                              ? Colors.white
-                                                              : Colors.black87,
+                                                          textColor: context
+                                                              .appColors
+                                                              .textColor,
                                                           collapsedTextColor:
                                                               isDark
                                                               ? Colors.white70
@@ -1613,9 +1611,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                           hasInProgress
                                                                           ? Colors.blue.shade600
                                                                           : (allFinished
-                                                                                ? (isDark
-                                                                                      ? Colors.grey.shade800
-                                                                                      : Colors.grey.shade300)
+                                                                                ? (context.appColors.separatorColor)
                                                                                 : (isDark
                                                                                       ? const Color(
                                                                                           0xFF2C2C2E,
@@ -1868,9 +1864,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 style: TextStyle(
                                                                                   fontSize: AppFontSize.subhead,
                                                                                   fontWeight: AppFontWeight.bold,
-                                                                                  color: isDark
-                                                                                      ? Colors.white
-                                                                                      : Colors.black87,
+                                                                                  color: context.appColors.textColor,
                                                                                 ),
                                                                               ),
                                                                               Text(
@@ -2290,9 +2284,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                           ? (isDark
                                                                                 ? Colors.grey.shade600
                                                                                 : Colors.grey.shade500)
-                                                                          : (isDark
-                                                                                ? Colors.white
-                                                                                : Colors.black87);
+                                                                          : (context.appColors.textColor);
 
                                                                       return Container(
                                                                         key: ValueKey(
@@ -2352,9 +2344,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? Colors.indigo.shade300
                                                                                   : Colors.indigo.shade700,
                                                                               collapsedIconColor: Colors.grey,
-                                                                              textColor: isDark
-                                                                                  ? Colors.white
-                                                                                  : Colors.black87,
+                                                                              textColor: context.appColors.textColor,
                                                                               collapsedTextColor: isDark
                                                                                   ? Colors.white70
                                                                                   : Colors.black54,
@@ -2377,9 +2367,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? Colors.indigo.shade300
                                                                                   : Colors.indigo.shade700,
                                                                               collapsedIconColor: Colors.grey,
-                                                                              textColor: isDark
-                                                                                  ? Colors.white
-                                                                                  : Colors.black87,
+                                                                              textColor: context.appColors.textColor,
                                                                               collapsedTextColor: isDark
                                                                                   ? Colors.white70
                                                                                   : Colors.black54,
@@ -2547,9 +2535,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                           color: boutsInProgress
                                                                                               ? Colors.blue.shade600
                                                                                               : (boutsAllFinished
-                                                                                                    ? (isDark
-                                                                                                          ? Colors.grey.shade800
-                                                                                                          : Colors.grey.shade300)
+                                                                                                    ? (context.appColors.separatorColor)
                                                                                                     : (isDark
                                                                                                           ? const Color(
                                                                                                               0xFF2C2C2E,
@@ -2705,9 +2691,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       style: TextStyle(
                                                                                                         fontSize: AppFontSize.bodyMedium,
                                                                                                         fontWeight: AppFontWeight.bold,
-                                                                                                        color: isDark
-                                                                                                            ? Colors.white
-                                                                                                            : Colors.black87,
+                                                                                                        color: context.appColors.textColor,
                                                                                                       ),
                                                                                                     ),
                                                                                                     Text(
@@ -3101,7 +3085,7 @@ class MatchTimelineList extends ConsumerWidget {
                                 ? (isDark
                                       ? Colors.grey.shade600
                                       : Colors.grey.shade500)
-                                : (isDark ? Colors.white : Colors.black87);
+                                : (context.appColors.textColor);
                             final Color pSubTitleColor = pAllFinished
                                 ? (isDark
                                       ? Colors.grey.shade700
@@ -3149,9 +3133,7 @@ class MatchTimelineList extends ConsumerWidget {
                                         ? Colors.indigo.shade300
                                         : Colors.indigo.shade700,
                                     collapsedIconColor: Colors.grey,
-                                    textColor: isDark
-                                        ? Colors.white
-                                        : Colors.black87,
+                                    textColor: context.appColors.textColor,
                                     collapsedTextColor: isDark
                                         ? Colors.white70
                                         : Colors.black54,
@@ -3166,9 +3148,7 @@ class MatchTimelineList extends ConsumerWidget {
                                     ),
                                     leading: CircleAvatar(
                                       backgroundColor: pAllFinished
-                                          ? (isDark
-                                                ? Colors.grey.shade800
-                                                : Colors.grey.shade300)
+                                          ? (context.appColors.separatorColor)
                                           : Colors.orange.shade100,
                                       child: Text(
                                         playerName[0],
@@ -3586,7 +3566,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 style: TextStyle(
                   fontSize: AppFontSize.headline,
                   fontWeight: AppFontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: context.appColors.textColor,
                 ),
               ),
             ],
@@ -3731,10 +3711,8 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? Colors.grey.shade800
-                    : Colors.grey.shade200,
-                foregroundColor: isDark ? Colors.white : Colors.black87,
+                backgroundColor: context.appColors.separatorColor,
+                foregroundColor: context.appColors.textColor,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
                 padding: const EdgeInsets.symmetric(
@@ -4226,9 +4204,7 @@ void _showSummaryInputDialog(
                       Text(
                         wTeam,
                         style: TextStyle(
-                          color: isDark
-                              ? Colors.blue.shade400
-                              : Colors.blue.shade700,
+                          color: context.appColors.infoColor,
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.subhead,
                         ),
@@ -4560,7 +4536,7 @@ void showUnifiedAnnounceDialog(
                     style: TextStyle(
                       fontSize: AppFontSize.subhead,
                       fontWeight: AppFontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: context.appColors.textColor,
                     ),
                   ),
                 ),
@@ -4572,9 +4548,7 @@ void showUnifiedAnnounceDialog(
                 children: [
                   TextField(
                     controller: titleController,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: TextStyle(color: context.appColors.textColor),
                     decoration: const InputDecoration(
                       labelText: 'タイトル（例：【緊急】会場変更）',
                       hintText: '空欄の場合は自動で見出しになります',
@@ -4584,9 +4558,7 @@ void showUnifiedAnnounceDialog(
                   TextField(
                     controller: bodyController,
                     maxLines: 3,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: TextStyle(color: context.appColors.textColor),
                     decoration: const InputDecoration(
                       labelText: 'アナウンス本文内容',
                       hintText: '例：3会場へ移動になりました。選手は速やかに移動してください。',
@@ -4614,7 +4586,7 @@ void showUnifiedAnnounceDialog(
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: selectedTarget == 'all'
-                                      ? (isDark ? Colors.white : Colors.black87)
+                                      ? (context.appColors.textColor)
                                       : Colors.grey,
                                 ),
                               ),
@@ -4640,7 +4612,7 @@ void showUnifiedAnnounceDialog(
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: selectedTarget == 'staff'
-                                      ? (isDark ? Colors.white : Colors.black87)
+                                      ? (context.appColors.textColor)
                                       : Colors.grey,
                                 ),
                               ),
@@ -4793,13 +4765,13 @@ void _showEditCommentDialog(
         '見出し（コメント）の編集',
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
-          color: isDark ? Colors.white : Colors.black87,
+          color: context.appColors.textColor,
         ),
       ),
       content: TextField(
         controller: controller,
         autofocus: true,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+        style: TextStyle(color: context.appColors.textColor),
         decoration: InputDecoration(
           hintText: '見出しやコメントを入力',
           filled: true,
@@ -4951,14 +4923,12 @@ Widget _buildInnerCommentWidget(
                     '内部見出しの削除',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: context.appColors.textColor,
                     ),
                   ),
                   content: Text(
                     'この見出しを削除しますか？\n(取り消せません)',
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: TextStyle(color: context.appColors.textColor),
                   ),
                   actions: [
                     TextButton(
@@ -5080,7 +5050,7 @@ class MatchListTileCard extends ConsumerWidget {
         : (isDark ? const Color(0xFF1E1E20) : Colors.white);
     final Color textC = isFinished
         ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500)
-        : (isDark ? Colors.white : Colors.black87);
+        : (context.appColors.textColor);
     final Color noteC = isFinished
         ? (isDark ? Colors.grey.shade700 : Colors.grey.shade500)
         : Colors.grey.shade600;
@@ -5256,9 +5226,7 @@ class MatchListTileCard extends ConsumerWidget {
                       color: isPlaying
                           ? Colors.blue.shade600
                           : (isFinished
-                                ? (isDark
-                                      ? Colors.grey.shade800
-                                      : Colors.grey.shade300)
+                                ? (context.appColors.separatorColor)
                                 : (isDark
                                       ? const Color(0xFF2C2C2E)
                                       : Colors.grey.shade200)),
@@ -5466,7 +5434,7 @@ class MatchListTileCard extends ConsumerWidget {
                                     : AppFontWeight.bold,
                                 color: isRedOwn
                                     ? AppKendoColors.ipponGold
-                                    : (isDark ? Colors.white : Colors.black87),
+                                    : (context.appColors.textColor),
                               ),
                               textAlign: TextAlign.start,
                               overflow: TextOverflow.ellipsis,
@@ -5520,9 +5488,7 @@ class MatchListTileCard extends ConsumerWidget {
                                         .map(
                                           (p) => buildMarkItem(
                                             p,
-                                            isDark
-                                                ? Colors.white
-                                                : Colors.black87,
+                                            context.appColors.textColor,
                                           ),
                                         )
                                         .toList(),
@@ -5541,7 +5507,7 @@ class MatchListTileCard extends ConsumerWidget {
                                     : AppFontWeight.bold,
                                 color: isWhiteOwn
                                     ? AppKendoColors.ipponGold
-                                    : (isDark ? Colors.white : Colors.black87),
+                                    : (context.appColors.textColor),
                               ),
                               textAlign: TextAlign.end,
                               overflow: TextOverflow.ellipsis,
@@ -5593,14 +5559,12 @@ class MatchListTileCard extends ConsumerWidget {
                     '試合の削除',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: context.appColors.textColor,
                     ),
                   ),
                   content: Text(
                     '削除しますか？\n(取り消せません)',
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: TextStyle(color: context.appColors.textColor),
                   ),
                   actions: [
                     TextButton(

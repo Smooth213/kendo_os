@@ -879,9 +879,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                     fontWeight:
                                                         AppFontWeight.black,
                                                     color: canUndoReal
-                                                        ? (isDark
-                                                              ? Colors.white
-                                                              : Colors.black87)
+                                                        ? (context
+                                                              .appColors
+                                                              .textColor)
                                                         : Colors.grey,
                                                   ),
                                                 ),
@@ -1149,9 +1149,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                           color: isDark
                                               ? const Color(0xFF1C1C1E)
                                               : Colors.grey.shade100,
-                                          textColor: isDark
-                                              ? Colors.white
-                                              : Colors.black87,
+                                          textColor:
+                                              context.appColors.textColor,
                                           isLocked: isInputLocked,
                                         );
                                         return Row(
@@ -2021,7 +2020,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final bgColor = themeColors.cardBackground;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     showAppBottomSheet(
       context: context,
@@ -2700,7 +2699,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final bgColor = themeColors.cardBackground;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
     final inputBg = isDark ? const Color(0xFF2C2C2E) : Colors.white;
 
     showAppBottomSheet(
@@ -2915,9 +2914,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                               : Colors.white,
                                           labelStyle: TextStyle(
                                             color: whiteCtrl.text == p
-                                                ? (isDark
-                                                      ? Colors.white
-                                                      : Colors.black)
+                                                ? (context.appColors.textColor)
                                                 : textColor,
                                             fontWeight: AppFontWeight.bold,
                                           ),
@@ -3211,7 +3208,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final bgColor = themeColors.cardBackground;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
     final inputBgColor = isDark
         ? const Color(0xFF2C2C2E)
         : Colors.grey.shade100;
@@ -3497,9 +3494,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                           ? Colors.transparent
                                           : (isMaster
                                                 ? Colors.transparent
-                                                : (isDark
-                                                      ? Colors.grey.shade800
-                                                      : Colors.grey.shade300)),
+                                                : (context
+                                                      .appColors
+                                                      .separatorColor)),
                                       width: 1.0,
                                     ),
                                     labelStyle: TextStyle(
@@ -3601,9 +3598,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                           ? Colors.transparent
                                           : (isMaster
                                                 ? Colors.transparent
-                                                : (isDark
-                                                      ? Colors.grey.shade800
-                                                      : Colors.grey.shade300)),
+                                                : (context
+                                                      .appColors
+                                                      .separatorColor)),
                                       width: 1.0,
                                     ),
                                     labelStyle: TextStyle(
@@ -4047,7 +4044,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   style: TextStyle(
                     fontSize: AppFontSize.headline,
                     fontWeight: AppFontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: context.appColors.textColor,
                   ),
                 ),
               ],
@@ -4205,10 +4202,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(ctx),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark
-                      ? Colors.grey.shade800
-                      : Colors.grey.shade200,
-                  foregroundColor: isDark ? Colors.white : Colors.black87,
+                  backgroundColor: context.appColors.separatorColor,
+                  foregroundColor: context.appColors.textColor,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
                   padding: const EdgeInsets.symmetric(
@@ -4248,7 +4243,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             child: Text(
               value,
               style: TextStyle(
-                color: isDark ? Colors.white : Colors.black87,
+                color: context.appColors.textColor,
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.body,
               ),

@@ -333,9 +333,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       style: TextStyle(
                                         fontSize: AppFontSize.subhead,
                                         fontWeight: AppFontWeight.bold,
-                                        color: isDark
-                                            ? Colors.white
-                                            : Colors.black87,
+                                        color: context.appColors.textColor,
                                       ),
                                     ),
                                   ],
@@ -459,7 +457,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           ? (isDark
                                 ? Colors.grey.shade600
                                 : Colors.grey.shade500)
-                          : (isDark ? Colors.white : Colors.black87);
+                          : (context.appColors.textColor);
                       final Color noteC = isFinished
                           ? (isDark
                                 ? Colors.grey.shade700
@@ -1418,7 +1416,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: AppFontSize.headline,
                             fontWeight: AppFontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: context.appColors.textColor,
                           ),
                         ),
                       ],
@@ -1545,9 +1543,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       p.name,
                                       style: TextStyle(
                                         fontWeight: AppFontWeight.bold,
-                                        color: isDark
-                                            ? Colors.white
-                                            : Colors.black87,
+                                        color: context.appColors.textColor,
                                       ),
                                     ),
                                     subtitle: Text(

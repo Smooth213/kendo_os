@@ -1122,7 +1122,7 @@ class _SetupMatchFormatScreenState
 
   Widget _buildPage1Category() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -1481,7 +1481,7 @@ class _SetupMatchFormatScreenState
 
   Widget _buildPage2RuleSummaryAndDetails() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = context.appColors.textColor;
 
     final categoryName = _category;
     final asyncTourney = ref.watch(tournamentProvider(widget.tournamentId));

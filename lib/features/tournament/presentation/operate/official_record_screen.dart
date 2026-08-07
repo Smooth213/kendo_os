@@ -117,7 +117,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           body: Center(
             child: Text(
               '記録データがありません',
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              style: TextStyle(color: context.appColors.textColor),
             ),
           ),
         ),
@@ -1148,12 +1148,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                           ElevatedButton(
                             onPressed: () => Navigator.pop(ctx),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isDark
-                                  ? Colors.grey.shade800
-                                  : Colors.grey.shade200,
-                              foregroundColor: isDark
-                                  ? Colors.white
-                                  : Colors.black87,
+                              backgroundColor: context.appColors.separatorColor,
+                              foregroundColor: context.appColors.textColor,
                               shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 40,
@@ -1804,7 +1800,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     style: TextStyle(
                       fontSize: AppFontSize.small,
                       fontWeight: AppFontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: context.appColors.textColor,
                     ),
                   ),
                 );

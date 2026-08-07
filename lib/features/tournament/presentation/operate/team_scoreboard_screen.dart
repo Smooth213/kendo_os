@@ -140,7 +140,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
           body: Center(
             child: Text(
               'データなし',
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              style: TextStyle(color: context.appColors.textColor),
             ),
           ),
         ),
@@ -307,9 +307,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                         : Colors.white,
                                     borderRadius: AppRadius.small,
                                     border: Border.all(
-                                      color: isDark
-                                          ? Colors.grey.shade800
-                                          : Colors.grey.shade300,
+                                      color: context.appColors.separatorColor,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
@@ -441,9 +439,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.bold,
                                       fontSize: AppFontSize.title,
-                                      color: isDark
-                                          ? Colors.white
-                                          : Colors.black87,
+                                      color: context.appColors.textColor,
                                     ),
                                   ),
                                   const SizedBox(height: AppSpacing.sm),

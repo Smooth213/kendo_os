@@ -2,6 +2,8 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -374,7 +376,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         backgroundColor: Colors.transparent,
         appBar: AppHeader(
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          foregroundColor: isDark ? Colors.white : Colors.black87,
+          foregroundColor: context.appColors.textColor,
           elevation: _isDrawingMode ? 0 : 1,
           titleWidget: _isSearchMode
               ? TextField(
@@ -490,7 +492,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         icon: Icon(_isDrawingMode ? Icons.check : Icons.edit),
                         color: _isDrawingMode
                             ? activePenColor
-                            : (isDark ? Colors.white : Colors.black87),
+                            : (context.appColors.textColor),
                         tooltip: _isDrawingMode ? '完了' : '書き込む',
                       )
                     : ElevatedButton.icon(
@@ -505,12 +507,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _isDrawingMode
                               ? activePenColor
-                              : (isDark
-                                    ? Colors.grey.shade800
-                                    : Colors.grey.shade200),
+                              : (context.appColors.separatorColor),
                           foregroundColor: _isDrawingMode
                               ? Colors.white
-                              : (isDark ? Colors.white : Colors.black87),
+                              : (context.appColors.textColor),
                           elevation: 0,
                         ),
                       ),
@@ -824,9 +824,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               : Colors.white,
                           borderRadius: AppRadius.large,
                           border: Border.all(
-                            color: isDark
-                                ? Colors.grey.shade800
-                                : Colors.grey.shade300,
+                            color: context.appColors.separatorColor,
                           ),
                         ),
                         child: Column(
