@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
@@ -80,18 +81,18 @@ class RoleSelectScreen extends ConsumerWidget {
                             'Kendo Sync',
                             style: TextStyle(
                               fontSize: 32,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: textColor,
                               letterSpacing: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                           Text(
                             'Stage2 β：利用権限を選択してください',
                             style: TextStyle(
                               fontSize: 13,
                               color: subTextColor,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -170,7 +171,8 @@ class RoleSelectScreen extends ConsumerWidget {
                                                 '接続中の道場ID (ルーム)',
                                                 style: TextStyle(
                                                   fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
+                                                  fontWeight:
+                                                      AppFontWeight.bold,
                                                   color: isDark
                                                       ? Colors.grey.shade400
                                                       : Colors.grey.shade600,
@@ -182,7 +184,8 @@ class RoleSelectScreen extends ConsumerWidget {
                                                 displayDojoId,
                                                 style: TextStyle(
                                                   fontSize: 16,
-                                                  fontWeight: FontWeight.w800,
+                                                  fontWeight:
+                                                      AppFontWeight.bold,
                                                   color: isDark
                                                       ? Colors.white
                                                       : Colors.indigo.shade900,
@@ -221,7 +224,8 @@ class RoleSelectScreen extends ConsumerWidget {
                                                 '変更',
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
+                                                  fontWeight:
+                                                      AppFontWeight.bold,
                                                   color: isDark
                                                       ? Colors.tealAccent
                                                       : Colors.indigo.shade700,
@@ -245,7 +249,7 @@ class RoleSelectScreen extends ConsumerWidget {
                               );
                             },
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: AppSpacing.xxl),
                           _buildRoleRow(
                             context,
                             ref,
@@ -253,7 +257,7 @@ class RoleSelectScreen extends ConsumerWidget {
                             UserRole.admin,
                             Colors.purple,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           _buildRoleRow(
                             context,
                             ref,
@@ -261,7 +265,7 @@ class RoleSelectScreen extends ConsumerWidget {
                             UserRole.operator,
                             Colors.teal,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           _buildRoleRow(
                             context,
                             ref,
@@ -269,7 +273,7 @@ class RoleSelectScreen extends ConsumerWidget {
                             UserRole.recorder,
                             Colors.indigo,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           _buildRoleRow(
                             context,
                             ref,
@@ -304,9 +308,7 @@ class RoleSelectScreen extends ConsumerWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: color.withValues(alpha: 0.85),
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.large),
         ),
         onPressed: () async {
           if (role == UserRole.viewer) {
@@ -330,7 +332,7 @@ class RoleSelectScreen extends ConsumerWidget {
           title,
           style: const TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             fontSize: 16,
           ),
         ),

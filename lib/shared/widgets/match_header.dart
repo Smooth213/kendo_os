@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
   final String matchId; // ★ IDのみに変更
@@ -40,16 +42,21 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
     );
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerColor = Colors.indigo.shade900;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final headerColor = isDark
+        ? themeColors.cardBackground
+        : themeColors.primaryAccent;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          color: isDark ? const Color(0xFF1C1C1E) : headerColor,
+          color: headerColor,
           padding: EdgeInsets.only(
             top: MediaQuery.of(context).padding.top,
-            bottom: 8,
+            bottom: AppSpacing.sm,
           ),
           child: Column(
             children: [
@@ -80,7 +87,7 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             fontSize: 16,
                           ),
                         );
@@ -93,21 +100,21 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
               // ステータスバッジ
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
                   color: isApproved
                       ? Colors.green.shade700
                       : (isAllDone ? Colors.orange.shade700 : Colors.white24),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.medium,
                 ),
                 child: Text(
                   isApproved ? '記録確定済み' : (isAllDone ? '全試合終了' : '試合進行中'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                   ),
                 ),
               ),
@@ -166,7 +173,7 @@ class _MasterTimerBanner extends ConsumerWidget {
           isTimeUp ? '錬成会 終了時間！' : '全体の残り時間: $displayTime',
           style: TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: isTimeUp
                 ? Colors.red
                 : (isDark ? Colors.indigo.shade200 : Colors.indigo),

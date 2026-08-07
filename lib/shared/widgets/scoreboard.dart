@@ -8,6 +8,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/application/usecases/match_usecases.dart'; // ★ 追加: UseCaseの参照
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 // ★ 追加: Scoreboard を const として扱うための Provider
 final scoreboardMatchIdProvider = Provider<String>(
@@ -180,7 +181,7 @@ class MatchScoreboard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppRadius.small,
               ),
               child: FittedBox(
                 fit: BoxFit.scaleDown, // 🌟 基本は40ptで表示、長い名前の時だけ自動縮小
@@ -193,7 +194,7 @@ class MatchScoreboard extends ConsumerWidget {
                       : viewState.whiteCleanName,
                   style: TextStyle(
                     fontSize: 40, // 🌟 視認性をさらに高める40ptへサイズアップ
-                    fontWeight: FontWeight.w900, // 力強い超太字 (w900)
+                    fontWeight: AppFontWeight.bold, // 力強い超太字 (w900)
                     color: nameColor,
                     height: 1.2,
                     letterSpacing: 1.2,
@@ -332,7 +333,7 @@ class MatchScoreboard extends ConsumerWidget {
           pd.mark,
           style: TextStyle(
             fontSize: fs,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: color,
             height: 1.0,
           ),
@@ -347,7 +348,7 @@ class MatchScoreboard extends ConsumerWidget {
             pd.mark,
             style: TextStyle(
               fontSize: fs,
-              fontWeight: FontWeight.w900,
+              fontWeight: AppFontWeight.bold,
               color: color,
               height: 1.0,
             ),
@@ -383,7 +384,7 @@ class MatchScoreboard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 40), // ★ 横幅にゆとりを持たせる
       decoration: BoxDecoration(
         color: isDark ? Colors.indigo.shade900 : Colors.indigo.shade700,
-        borderRadius: BorderRadius.circular(30), // ★ 角丸を調整
+        borderRadius: AppRadius.full, // ★ 角丸を調整
         border: isDark
             ? Border.all(color: Colors.indigo.shade400, width: 1.5)
             : null,
@@ -401,7 +402,7 @@ class MatchScoreboard extends ConsumerWidget {
           resultText,
           style: const TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.w900,
+            fontWeight: AppFontWeight.bold,
             fontSize: 28, // ★ 堂々とした28pt特大サイズへ拡大
             letterSpacing: 1.5,
           ),

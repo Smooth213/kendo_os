@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/vertical_name_text.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
@@ -74,7 +75,7 @@ class LeagueGridCard extends StatelessWidget {
         elevation: 0,
         color: cardColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.small,
           side: BorderSide(color: borderColor),
         ),
         clipBehavior: Clip.antiAlias,
@@ -122,7 +123,7 @@ class LeagueGridCard extends StatelessWidget {
                       child: Text(
                         rowTeam.teamName,
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: 11,
                           color: themeColors.textColor,
                         ),
@@ -210,7 +211,7 @@ class LeagueGridCard extends StatelessWidget {
                                   '${cellData.rPoints}',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                     height: 1.1,
                                     color: textColor,
                                   ),
@@ -227,7 +228,7 @@ class LeagueGridCard extends StatelessWidget {
                                   '${cellData.rWinners}',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                     height: 1.1,
                                     color: textColor,
                                   ),
@@ -300,7 +301,7 @@ class LeagueGridCard extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           fontSize: isRank ? 16 : 13,
           color: isRank ? Colors.orange.shade800 : themeColors.textColor,
         ),

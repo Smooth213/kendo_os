@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'smart_player_input.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
@@ -137,7 +138,7 @@ class _MultiPlayerSelectInputState
                         Text(
                           '${tempSelected.length}名 選択中',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             fontSize: 16,
                             color: _accentColor,
                           ),
@@ -151,7 +152,7 @@ class _MultiPlayerSelectInputState
                           child: Text(
                             '確定',
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               fontSize: 16,
                               color: _accentColor,
                             ),
@@ -173,8 +174,8 @@ class _MultiPlayerSelectInputState
                         fillColor: isDark
                             ? Colors.grey.shade900
                             : Colors.grey.shade100,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        border: const OutlineInputBorder(
+                          borderRadius: AppRadius.small,
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -251,7 +252,7 @@ class _MultiPlayerSelectInputState
                               '"${searchText.trim()}" をゲスト追加して選択',
                               style: TextStyle(
                                 color: _accentColor,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                               ),
                             ),
                             onTap: () {
@@ -364,19 +365,19 @@ class _MultiPlayerSelectInputState
         prefixIcon: Icon(Icons.group_add, color: _accentColor),
         suffixIcon: const Icon(Icons.touch_app),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.small,
           borderSide: BorderSide(
             color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.small,
           borderSide: BorderSide(
             color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.small,
           borderSide: BorderSide(color: _accentColor, width: 2),
         ),
       ),

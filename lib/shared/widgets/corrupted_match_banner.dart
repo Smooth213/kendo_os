@@ -12,7 +12,10 @@ class CorruptedMatchBanner extends ConsumerWidget {
     return Container(
       width: double.infinity,
       color: Colors.red.shade900,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.lg,
+      ),
       child: Row(
         children: [
           const Icon(
@@ -20,7 +23,7 @@ class CorruptedMatchBanner extends ConsumerWidget {
             color: Colors.white,
             size: 20,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           // ★ Phase 7-1: ユーザー向け簡略文への縮退
           // 一般ユーザーや保護者の不安を完全に払拭するため、「破損」「Replay自動復旧」といったデバッグ文言や
           // 特権ボタンを完全にUIからパージし、ロードマップ指定の「データに問題が発生しました」のみに完全緊縛します。

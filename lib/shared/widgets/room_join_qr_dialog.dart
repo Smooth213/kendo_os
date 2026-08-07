@@ -6,6 +6,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/security/pwa_storage_bridge.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 // ★ テスト時にモック（FakeFirestore）を安全に注入するための専用Provider
@@ -121,14 +122,14 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: AppRadius.xlarge,
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: cardBgColor,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: AppRadius.xlarge,
                   border: Border.all(color: borderColor, width: 1.5),
                 ),
                 child: Column(
@@ -140,20 +141,20 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                           Icons.report_problem_rounded,
                           color: Colors.amber,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
                             '⚠️ ID重複・既存の部屋',
                             style: TextStyle(
                               color: textColor,
                               fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
                       'ルームID [ $code ] はすでに存在しています。\n\n'
                       '他の道場が使用中か、過去に作成された部屋です。このまま接続して共有しますか？\n'
@@ -164,11 +165,11 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                         height: 1.5,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.xl),
                     Wrap(
                       alignment: WrapAlignment.end,
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
                       children: [
                         TextButton(
                           onPressed: () =>
@@ -177,7 +178,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                             'キャンセル（変更する）',
                             style: TextStyle(
                               color: Colors.grey,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                             ),
                           ),
                         ),
@@ -194,7 +195,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                             'このまま接続',
                             style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                             ),
                           ),
                         ),
@@ -245,14 +246,14 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
       backgroundColor: Colors.transparent,
       elevation: 0,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: AppRadius.xlarge,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
             decoration: BoxDecoration(
               color: cardBgColor,
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: AppRadius.xlarge,
               border: Border.all(color: borderColor, width: 1.5),
             ),
             child: SingleChildScrollView(
@@ -263,7 +264,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                     '道場ルームへの参加',
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: textColor,
                     ),
                   ),
@@ -271,9 +272,9 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                   Container(
                     width: 130,
                     height: 130,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: AppRadius.large,
                     ),
                     child: const Icon(
                       Icons.qr_code_2,
@@ -313,7 +314,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                 focusNode: focusNode,
                                 style: TextStyle(
                                   color: textColor,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                 ),
                                 decoration: InputDecoration(
                                   hintText: '例: tokyo_dojo_2026',
@@ -323,21 +324,19 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                   errorText: _errorMessage,
                                   errorStyle: const TextStyle(
                                     color: Colors.orangeAccent,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: AppFontWeight.bold,
                                   ),
                                   prefixIcon: Icon(
                                     Icons.meeting_room,
                                     color: subTextColor,
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: AppRadius.medium,
                                     borderSide: BorderSide(color: borderColor),
                                   ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: Colors.teal,
-                                    ),
+                                  focusedBorder: const OutlineInputBorder(
+                                    borderRadius: AppRadius.medium,
+                                    borderSide: BorderSide(color: Colors.teal),
                                   ),
                                 ),
                                 onSubmitted: _handleJoin,
@@ -348,7 +347,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                             alignment: Alignment.topLeft,
                             child: Material(
                               elevation: 8.0,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.medium,
                               color: isDark
                                   ? const Color(0xFF2C2C2E)
                                   : Colors.white,
@@ -373,7 +372,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                         option,
                                         style: TextStyle(
                                           color: textColor,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: AppFontWeight.bold,
                                         ),
                                       ),
                                       trailing: IconButton(
@@ -430,7 +429,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                           'キャンセル',
                           style: TextStyle(
                             color: subTextColor,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                           ),
                         ),
                       ),
@@ -441,15 +440,17 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                 backgroundColor: Colors.teal,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: AppRadius.medium,
                                 ),
                               ),
                               onPressed: () =>
                                   _handleJoin(_codeController.text),
                               child: const Text(
                                 '接続開始',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontWeight: AppFontWeight.bold,
+                                ),
                               ),
                             ),
                     ],

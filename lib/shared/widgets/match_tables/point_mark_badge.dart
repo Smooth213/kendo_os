@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 /// 技マークを表示するための共通データ構造
 class PointMark {
@@ -44,7 +45,7 @@ class PointMarkBadge extends StatelessWidget {
           style: TextStyle(
             fontSize: 8,
             color: color,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             height: 1.1,
           ),
         ),
@@ -58,7 +59,7 @@ class PointMarkBadge extends StatelessWidget {
         style: TextStyle(
           fontSize: 10,
           color: color,
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           height: 1.1,
         ),
       ),

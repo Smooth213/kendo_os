@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import 'dart:math' as math;
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class LiquidBackground extends ConsumerStatefulWidget {
@@ -52,18 +53,18 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
           widget.child,
           // 🔋 エコモード表示インジケーター（タッチ操作を遮断しないように IgnorePointer で保護）
           Positioned(
-            bottom: 16,
-            left: 16,
+            bottom: AppSpacing.lg,
+            left: AppSpacing.lg,
             child: IgnorePointer(
               child: SafeArea(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
                   ),
                   decoration: BoxDecoration(
                     color: themeColors.cardBackground.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     border: Border.all(
                       color: Colors.green.withValues(alpha: 0.4),
                       width: 1,
@@ -80,13 +81,13 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.eco, color: Colors.green, size: 13),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: AppSpacing.xs),
                       Text(
                         'エコモード',
                         style: TextStyle(
                           color: themeColors.textColor.withValues(alpha: 0.87),
                           fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                         ),
                       ),
                     ],

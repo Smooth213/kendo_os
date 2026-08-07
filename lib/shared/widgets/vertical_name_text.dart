@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 class VerticalNameText extends StatelessWidget {
   final String text;
@@ -16,7 +17,7 @@ class VerticalNameText extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = TextStyle(
       fontSize: 11,
-      fontWeight: FontWeight.bold,
+      fontWeight: AppFontWeight.bold,
       color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
     );
 

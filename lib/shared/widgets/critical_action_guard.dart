@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/security/pin_guard.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 /// 大会全削除やマスタ破棄など、現場での取り返しのつかない誤操作（運用事故）を
 /// 「PINコードの再入力」によってランタイムレベルで水際ブロックするディフェンスWidget。
@@ -60,13 +61,13 @@ class CriticalActionGuard {
                       fillColor: Colors.white.withValues(alpha: 0.05),
                       errorText: errorMessage,
                       errorStyle: const TextStyle(color: Colors.orangeAccent),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.white30),
+                      enabledBorder: const OutlineInputBorder(
+                        borderRadius: AppRadius.medium,
+                        borderSide: BorderSide(color: Colors.white30),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.teal),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: AppRadius.medium,
+                        borderSide: BorderSide(color: Colors.teal),
                       ),
                     ),
                   ),

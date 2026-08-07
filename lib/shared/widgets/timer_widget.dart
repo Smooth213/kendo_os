@@ -4,6 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
 import 'package:kendo_os/shared/time/time_source.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 class TimerWidget extends ConsumerWidget {
@@ -55,17 +56,17 @@ class TimerWidget extends ConsumerWidget {
                 style: TextStyle(
                   color: textColor,
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: inputBgColor,
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     borderSide: BorderSide(color: borderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     borderSide: BorderSide(
                       color: Colors.indigo.shade400,
                       width: 2,
@@ -81,7 +82,7 @@ class TimerWidget extends ConsumerWidget {
                 ':',
                 style: TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   color: textColor,
                 ),
               ),
@@ -94,17 +95,17 @@ class TimerWidget extends ConsumerWidget {
                 style: TextStyle(
                   color: textColor,
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                 ),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: inputBgColor,
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     borderSide: BorderSide(color: borderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.medium,
                     borderSide: BorderSide(
                       color: Colors.indigo.shade400,
                       width: 2,
@@ -132,13 +133,13 @@ class TimerWidget extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: isDark ? Colors.indigo.shade600 : Colors.indigo,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+              shape: const RoundedRectangleBorder(
+                borderRadius: AppRadius.small,
               ),
             ),
             child: const Text(
               '更新',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: AppFontWeight.bold),
             ),
           ),
         ],
@@ -203,7 +204,7 @@ class TimerWidget extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
         decoration: BoxDecoration(
           color: timerBgColor,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: AppRadius.full,
           // ★ 修正：ロック時はボーダーを薄いグレーにし、太さも細く(1)固定する
           border: Border.all(
             color: isInputLocked
@@ -239,7 +240,7 @@ class TimerWidget extends ConsumerWidget {
                   _formatTime(seconds),
                   style: TextStyle(
                     fontSize: 46,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: AppFontWeight.bold,
                     // fontFamily: 'Courier',
                     height: 1.1,
                     // ★ 修正：ロック時はテキストもグレーアウトして「非アクティブ」を強調

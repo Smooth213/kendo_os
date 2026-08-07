@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 // ============================================================================
 // 🛡️ DESIGN SYSTEM GOVERNANCE FORTRESS TEST
@@ -168,6 +169,28 @@ void main() {
         expect(AppFontWeight.regular, equals(FontWeight.w400));
         expect(AppFontWeight.semiBold, equals(FontWeight.w600));
         expect(AppFontWeight.bold, equals(FontWeight.w700));
+      },
+    );
+
+    test(
+      '7. AppThemeColors: 全4モード (normal, bunaiksen, normal_viewer, bunaiksen_viewer) x Dark/Light で解像され色の破綻がないこと',
+      () {
+        for (final isDark in [true, false]) {
+          for (final mode in [
+            'normal',
+            'bunaiksen',
+            'normal_viewer',
+            'bunaiksen_viewer',
+          ]) {
+            final theme = AppThemeColors.ofMode(isDark: isDark, mode: mode);
+            expect(theme.primaryAccent, isNotNull);
+            expect(theme.softAccent, isNotNull);
+            expect(theme.cardBackground, isNotNull);
+            expect(theme.scaffoldBackground, isNotNull);
+            expect(theme.textColor, isNotNull);
+            expect(theme.subTextColor, isNotNull);
+          }
+        }
       },
     );
   });

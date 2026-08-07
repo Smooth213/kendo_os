@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 class ScoreActionPanel extends ConsumerWidget {
   final String matchId;
@@ -226,7 +227,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
   TextStyle _getTextStyle(bool isTablet, bool isDark) {
     return TextStyle(
       fontSize: widget.isFoul ? (isTablet ? 32 : 24) : (isTablet ? 56 : 48),
-      fontWeight: FontWeight.w900,
+      fontWeight: AppFontWeight.bold,
       color: widget.disabled ? Colors.grey.shade600 : widget.textColor,
       letterSpacing: 2.0,
       height: 1.3,
@@ -251,7 +252,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
           return Transform.scale(
             scale: scale,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.medium,
               child: Container(
                 alignment: Alignment.center,
                 constraints: const BoxConstraints(minHeight: 72),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
@@ -71,7 +72,7 @@ class IndividualListCard extends StatelessWidget {
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         side: BorderSide(color: borderColor),
       ),
       clipBehavior: Clip.antiAlias,
@@ -83,7 +84,10 @@ class IndividualListCard extends StatelessWidget {
             width: double.infinity,
             child: Text(
               headerTitle,
-              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+              style: TextStyle(
+                fontWeight: AppFontWeight.bold,
+                color: textColor,
+              ),
             ),
           ),
           ListView.separated(
@@ -113,7 +117,7 @@ class IndividualListCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 10,
                           color: Colors.grey.shade500,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -135,8 +139,8 @@ class IndividualListCard extends StatelessWidget {
                             m.redName,
                             style: TextStyle(
                               fontWeight: m.rWin
-                                  ? FontWeight.w900
-                                  : FontWeight.bold,
+                                  ? AppFontWeight.bold
+                                  : AppFontWeight.bold,
                               color: m.rWin ? Colors.red.shade700 : textColor,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -186,8 +190,8 @@ class IndividualListCard extends StatelessWidget {
                             m.whiteName,
                             style: TextStyle(
                               fontWeight: m.wWin
-                                  ? FontWeight.w900
-                                  : FontWeight.bold,
+                                  ? AppFontWeight.bold
+                                  : AppFontWeight.bold,
                               color: m.wWin ? Colors.red.shade700 : textColor,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -221,7 +225,7 @@ class IndividualListCard extends StatelessWidget {
                           color: isDark
                               ? const Color(0xFF1C1C1E)
                               : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadius.small,
                           border: Border.all(
                             color: Colors.grey.shade400,
                             width: 0.5,
@@ -238,7 +242,7 @@ class IndividualListCard extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: AppFontWeight.bold,
                             color: isDark
                                 ? Colors.grey.shade400
                                 : Colors.grey.shade700,

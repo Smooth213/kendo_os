@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart'; // kIsWeb用
 
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/features/viewer/providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
@@ -239,20 +240,20 @@ class ViewerMatchScreen extends ConsumerWidget {
                 '閲覧モード',
                 style: TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   fontSize: 12,
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
               '${p.statusText} | 直前: ${p.lastEventText}',
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 11,
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
               ),
               textAlign: TextAlign.right,
               overflow: TextOverflow.ellipsis,
@@ -588,7 +589,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                       '勝者',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: Colors.amber.shade600,
                         letterSpacing: 2,
                       ),
@@ -602,7 +603,7 @@ class LargeViewerScoreboard extends StatelessWidget {
               name,
               style: TextStyle(
                 fontSize: 48, // 🌟 視認性を高める48pt
-                fontWeight: FontWeight.w900,
+                fontWeight: AppFontWeight.bold,
                 color: textColor,
                 letterSpacing: 1.5,
               ),
@@ -623,7 +624,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 28, // 反則マークも特大表示
                   color: Colors.amber,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: AppFontWeight.bold,
                   letterSpacing: 4,
                 ),
               ),
@@ -703,7 +704,7 @@ class LargeViewerScoreboard extends StatelessWidget {
           pd.mark == '判定' ? '判' : pd.mark,
           style: TextStyle(
             fontSize: fs,
-            fontWeight: FontWeight.bold,
+            fontWeight: AppFontWeight.bold,
             color: color,
             height: 1.0,
           ),
@@ -718,7 +719,7 @@ class LargeViewerScoreboard extends StatelessWidget {
           pd.mark == '判定' ? '判' : pd.mark,
           style: TextStyle(
             fontSize: fs,
-            fontWeight: FontWeight.w900,
+            fontWeight: AppFontWeight.bold,
             color: color,
             height: 1.0,
           ),
@@ -740,7 +741,7 @@ class LargeViewerScoreboard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E24) : Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         border: Border.all(
           color: isTimerRunning ? Colors.orangeAccent : Colors.transparent,
           width: 1.5,
@@ -752,29 +753,32 @@ class LargeViewerScoreboard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.timer, color: timerColor, size: 28),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               timerText,
               style: TextStyle(
                 fontSize: 32, // 🌟 タイマーも特大表示
-                fontWeight: FontWeight.bold,
+                fontWeight: AppFontWeight.bold,
                 fontFamily: 'monospace',
                 color: timerColor,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.lg),
             // スコア対比
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.xs,
+              ),
               decoration: BoxDecoration(
                 color: Colors.indigo.shade600,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppRadius.small,
               ),
               child: Text(
                 '${projection.redScore} - ${projection.whiteScore}',
                 style: const TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: AppFontWeight.bold,
                   color: Colors.white,
                 ),
               ),

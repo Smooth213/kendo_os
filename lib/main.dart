@@ -57,6 +57,7 @@ import 'package:kendo_os/admin/providers/metrics_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/features/auth/presentation/screens/role_select_screen.dart';
 import 'package:kendo_os/features/auth/presentation/screens/pin_auth_screen.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
@@ -768,13 +769,15 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
       currentThemeMode = ThemeMode.dark;
     }
 
-    final commonDialogTheme = DialogThemeData(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    final commonDialogTheme = const DialogThemeData(
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
     );
 
     final commonBottomSheetTheme = const BottomSheetThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xlargeValue),
+        ),
       ),
     );
 

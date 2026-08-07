@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/widgets/vertical_name_text.dart';
@@ -94,7 +95,7 @@ class ScoreTableCard extends StatelessWidget {
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.large,
         side: BorderSide(color: borderColor),
       ),
       clipBehavior: Clip.antiAlias,
@@ -109,7 +110,7 @@ class ScoreTableCard extends StatelessWidget {
                 child: Text(
                   info.headerTitle,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: themeColors.textColor,
                   ),
                 ),
@@ -139,7 +140,7 @@ class ScoreTableCard extends StatelessWidget {
                                 m.matchType,
                                 style: TextStyle(
                                   fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   color: m.matchType == '代表戦'
                                       ? (isDark
                                             ? Colors.red.shade400
@@ -259,7 +260,7 @@ class ScoreTableCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isDark ? Colors.black87 : Colors.white,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadius.small,
                       border: Border.all(
                         color: isDark
                             ? Colors.grey.shade800
@@ -277,7 +278,7 @@ class ScoreTableCard extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         color: isDark
                             ? Colors.grey.shade300
                             : Colors.grey.shade700,
@@ -328,7 +329,7 @@ class ScoreTableCard extends StatelessWidget {
                         winner == 'red' ? '勝' : '負',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: winner == 'red'
                               ? (isDark
                                     ? Colors.red.shade400
@@ -344,7 +345,7 @@ class ScoreTableCard extends StatelessWidget {
                         winner == 'white' ? '勝' : '負',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           color: winner == 'white'
                               ? (isDark
                                     ? Colors.blue.shade400
@@ -370,7 +371,7 @@ class ScoreTableCard extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           color: color,
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           fontSize: 11,
         ),
       ),
@@ -451,7 +452,7 @@ class ScoreTableCard extends StatelessWidget {
                     '✕',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: AppFontWeight.bold,
                       color: themeColors.hintColor,
                     ),
                   ),
@@ -470,7 +471,7 @@ class ScoreTableCard extends StatelessWidget {
                         '延',
                         style: TextStyle(
                           fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           height: 1.0,
                           color: themeColors.textColor,
                         ),
@@ -479,7 +480,7 @@ class ScoreTableCard extends StatelessWidget {
                         '長',
                         style: TextStyle(
                           fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: AppFontWeight.bold,
                           height: 1.0,
                           color: themeColors.textColor,
                         ),
@@ -523,7 +524,7 @@ class ScoreTableCard extends StatelessWidget {
       child: Text(
         '$pts\n--\n$wins',
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: AppFontWeight.bold,
           fontSize: 12,
           color: themeColors.subTextColor,
         ),

@@ -54,7 +54,10 @@ class SyncStatusBar extends ConsumerWidget {
         ),
         color: barColor,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 2,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -77,7 +80,7 @@ class SyncStatusBar extends ConsumerWidget {
                       color: Colors.white70,
                       size: 12,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppSpacing.xs),
                     const Text(
                       'オフライン',
                       style: TextStyle(
@@ -96,19 +99,19 @@ class SyncStatusBar extends ConsumerWidget {
                         child: Row(
                           children: [
                             _buildMatchSyncIcon(matchStatus),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: AppSpacing.xs),
                             Text(
                               deadLetterCount > 0 ? '再接続中' : '同期中',
                               style: TextStyle(
                                 fontSize: 10,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: AppFontWeight.bold,
                                 color: deadLetterCount > 0
                                     ? Colors.yellowAccent
                                     : Colors.blue.shade100,
                               ),
                             ),
                             if (deadLetterCount > 0) ...[
-                              const SizedBox(width: 4),
+                              const SizedBox(width: AppSpacing.xs),
                               Text(
                                 '($deadLetterCount)',
                                 style: const TextStyle(
@@ -128,13 +131,13 @@ class SyncStatusBar extends ConsumerWidget {
                       color: Colors.greenAccent,
                       size: 12,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppSpacing.xs),
                     const Text(
                       '保存済み',
                       style: TextStyle(
                         color: Colors.greenAccent,
                         fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                   ],
@@ -191,7 +194,7 @@ class SyncStatusBar extends ConsumerWidget {
                       '☁️ クラウド同期ステータス',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -225,7 +228,7 @@ class SyncStatusBar extends ConsumerWidget {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadius.small,
                         ),
                         child: Row(
                           children: [
@@ -287,7 +290,7 @@ class SyncStatusBar extends ConsumerWidget {
                               title: Text(
                                 '[$time] $typeStr',
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   fontSize: 14,
                                 ),
                               ),
@@ -315,7 +318,7 @@ class SyncStatusBar extends ConsumerWidget {
                                       backgroundColor: Colors.blue,
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
+                                        horizontal: AppSpacing.md,
                                       ),
                                     ),
                                     onPressed: () {

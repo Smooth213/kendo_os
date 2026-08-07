@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/admin/providers/metrics_provider.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 
 class ObservabilityDashboardScreen extends ConsumerWidget {
@@ -97,7 +98,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -105,7 +106,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                   value,
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: AppFontWeight.bold,
                     color: color,
                   ),
                 ),

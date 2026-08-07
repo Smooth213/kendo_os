@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/match/domain/rules/rule_preset.dart'; // ★ プリセットをインポート
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 // ==========================================
@@ -36,28 +37,28 @@ class RuleConfigPanel extends ConsumerWidget {
         children: [
           // --- Basic Section: プリセット選択 ---
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Icon(Icons.auto_awesome, color: primaryColor),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
                       '1. 大会プリセットを選択 (Basic)',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: AppFontWeight.bold,
                         fontSize: 16,
                         color: primaryColor,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 Wrap(
-                  spacing: 8.0,
-                  runSpacing: 8.0,
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
                   children: RulePreset.officials.map((preset) {
                     return AppActionChip(
                       label: Text(preset.name),
@@ -104,7 +105,7 @@ class RuleConfigPanel extends ConsumerWidget {
           ExpansionTile(
             title: const Text(
               '2. 詳細設定をカスタマイズ (Advanced)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 14),
             ),
             collapsedBackgroundColor: Colors.grey.shade50,
             childrenPadding: const EdgeInsets.all(16.0),
@@ -141,7 +142,7 @@ class RuleConfigPanel extends ConsumerWidget {
                     '延長戦の有無',
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: Colors.grey.shade800,
                     ),
                   ),
@@ -173,7 +174,7 @@ class RuleConfigPanel extends ConsumerWidget {
                     '判定 (引き分け時に旗で決着)',
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: AppFontWeight.bold,
                       color: Colors.grey.shade800,
                     ),
                   ),

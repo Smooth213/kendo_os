@@ -9,6 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
@@ -113,11 +114,11 @@ void main() {
         // Name text styles
         final redText = tester.widget<Text>(find.text('山田 太郎'));
         expect(redText.style?.fontSize, 40);
-        expect(redText.style?.fontWeight, FontWeight.w900);
+        expect(redText.style?.fontWeight, AppFontWeight.bold);
 
         final whiteText = tester.widget<Text>(find.text('山田 のりこ'));
         expect(whiteText.style?.fontSize, 40);
-        expect(whiteText.style?.fontWeight, FontWeight.w900);
+        expect(whiteText.style?.fontWeight, AppFontWeight.bold);
 
         // 3. Verify point badge dimensions (width: 60, height: 60, fontSize: 38)
         // Point text styles
@@ -142,7 +143,7 @@ void main() {
         expect(find.text('赤 の勝ち'), findsOneWidget);
         final resultText = tester.widget<Text>(find.text('赤 の勝ち'));
         expect(resultText.style?.fontSize, 28);
-        expect(resultText.style?.fontWeight, FontWeight.w900);
+        expect(resultText.style?.fontWeight, AppFontWeight.bold);
 
         final resultContainerFinder = find
             .ancestor(of: find.text('赤 の勝ち'), matching: find.byType(Container))

@@ -8,6 +8,7 @@ import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dar
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 class PinAuthScreen extends ConsumerWidget {
@@ -89,21 +90,21 @@ class PinAuthScreen extends ConsumerWidget {
                             size: 64,
                             color: textColor.withValues(alpha: 0.9),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           Text(
                             '${role.name.toUpperCase()} 認証ゲート',
                             style: TextStyle(
                               fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                               color: textColor,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                           Text(
                             '誤操作防止のため、指定のPINコードを入力してください。',
                             style: TextStyle(color: subTextColor, fontSize: 12),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: AppSpacing.xxl),
                           TextField(
                             controller: controller,
                             keyboardType: TextInputType.number,
@@ -111,7 +112,7 @@ class PinAuthScreen extends ConsumerWidget {
                             style: TextStyle(
                               color: textColor,
                               fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: AppFontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
                             decoration: InputDecoration(
@@ -165,7 +166,7 @@ class PinAuthScreen extends ConsumerWidget {
                               child: const Text(
                                 '認証して進入',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: AppFontWeight.bold,
                                   fontSize: 16,
                                 ),
                               ),
