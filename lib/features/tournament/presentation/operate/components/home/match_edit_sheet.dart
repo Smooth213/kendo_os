@@ -277,7 +277,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final backgroundColor = themeColors.cardBackground;
     final textColor = isDark ? Colors.white : Colors.black87;
 
     final sheetTitle = _isDantai ? '団体戦対戦の編集' : '試合情報の編集';

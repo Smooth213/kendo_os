@@ -1105,7 +1105,10 @@ class _SetupMatchFormatScreenState
   Widget _buildPage1Category() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final inputBgColor = themeColors.cardBackground;
 
     return ListView(
       // ★ Phase 8-2: 余白のないページ（2ページ目以降）に合わせるため、パディングを調整

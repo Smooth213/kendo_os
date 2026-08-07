@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +22,10 @@ class LoginScreen extends ConsumerWidget {
 
     // iOS Native カラーパレット
     final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
-    final Color cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final Color cardColor = themeColors.cardBackground;
     final Color primaryText = isDark ? Colors.white : Colors.black;
     final Color secondaryText = isDark
         ? const Color(0xFF8E8E93)

@@ -785,7 +785,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     final isDone = m.status == 'finished' || m.status == 'approved';
     final rScore = (m.redScore as num).toInt();
     final wScore = (m.whiteScore as num).toInt();
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final cardColor = themeColors.cardBackground;
 
     // KendoRuleEngineによる解析を使用
     final engine = KendoRuleEngine();

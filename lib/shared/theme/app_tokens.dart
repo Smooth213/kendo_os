@@ -68,11 +68,50 @@ class AppFontSize {
   static const double micro = 8.0;
   static const double badge = 10.0;
   static const double caption = 11.0;
+  static const double small = 12.0;
   static const double bodySmall = 13.0;
+  static const double body = 14.0;
   static const double bodyMedium = 15.0;
+  static const double subhead = 16.0;
   static const double title = 17.0;
+  static const double headline = 18.0;
   static const double header = 20.0;
   static const double display = 24.0;
+  static const double hero = 28.0;
+  static const double jumbo = 32.0;
   static const double scoreboardTimer = 48.0;
   static const double scoreboardJumbo = 56.0;
+}
+
+/// kendo OS デザインシステムにおける統一パディング (EdgeInsets) トークン
+class AppEdgeInsets {
+  AppEdgeInsets._();
+
+  static const EdgeInsets zero = EdgeInsets.zero;
+
+  // all
+  static const EdgeInsets allXs = EdgeInsets.all(AppSpacing.xs);
+  static const EdgeInsets allSm = EdgeInsets.all(AppSpacing.sm);
+  static const EdgeInsets allMd = EdgeInsets.all(AppSpacing.md);
+  static const EdgeInsets allLg = EdgeInsets.all(AppSpacing.lg);
+  static const EdgeInsets allXl = EdgeInsets.all(AppSpacing.xl);
+  static const EdgeInsets allXxl = EdgeInsets.all(AppSpacing.xxl);
+
+  // symmetric horizontal
+  static const EdgeInsets hXs = EdgeInsets.symmetric(horizontal: AppSpacing.xs);
+  static const EdgeInsets hSm = EdgeInsets.symmetric(horizontal: AppSpacing.sm);
+  static const EdgeInsets hMd = EdgeInsets.symmetric(horizontal: AppSpacing.md);
+  static const EdgeInsets hLg = EdgeInsets.symmetric(horizontal: AppSpacing.lg);
+  static const EdgeInsets hXl = EdgeInsets.symmetric(horizontal: AppSpacing.xl);
+  static const EdgeInsets hXxl = EdgeInsets.symmetric(
+    horizontal: AppSpacing.xxl,
+  );
+
+  // symmetric vertical
+  static const EdgeInsets vXs = EdgeInsets.symmetric(vertical: AppSpacing.xs);
+  static const EdgeInsets vSm = EdgeInsets.symmetric(vertical: AppSpacing.sm);
+  static const EdgeInsets vMd = EdgeInsets.symmetric(vertical: AppSpacing.md);
+  static const EdgeInsets vLg = EdgeInsets.symmetric(vertical: AppSpacing.lg);
+  static const EdgeInsets vXl = EdgeInsets.symmetric(vertical: AppSpacing.xl);
+  static const EdgeInsets vXxl = EdgeInsets.symmetric(vertical: AppSpacing.xxl);
 }

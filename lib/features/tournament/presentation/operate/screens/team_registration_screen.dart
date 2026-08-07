@@ -939,7 +939,10 @@ class _TeamRegistrationScreenState
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final inputBgColor = themeColors.cardBackground;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
 
     return ListView(
@@ -1156,7 +1159,10 @@ class _TeamRegistrationScreenState
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
-    final inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final inputBgColor = themeColors.cardBackground;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
 
     return ListView(

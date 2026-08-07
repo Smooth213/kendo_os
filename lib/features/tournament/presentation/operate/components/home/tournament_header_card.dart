@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +18,10 @@ class TournamentHeaderCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final cardColor = themeColors.cardBackground;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
     final textColor = isDark ? Colors.white : Colors.black87;
     final subTextColor = isDark

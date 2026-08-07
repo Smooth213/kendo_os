@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +31,10 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     const String screenTitle = '大会 公式記録';
 
     final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final cardColor = themeColors.cardBackground;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
 
     // ★ 運営側プロバイダ（tournamentProvider）への依存を完全に遮断し、安全なフォールバック値を適用

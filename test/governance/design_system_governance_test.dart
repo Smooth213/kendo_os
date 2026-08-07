@@ -345,5 +345,24 @@ void main() {
         );
       },
     );
+
+    test(
+      '13. AppFontSize & AppTokens: アプリ全体系でのデザインシステム装飾トークン（AppFontSize / AppRadius / AppFontWeight / AppKendoColors）の定義完全性',
+      () {
+        expect(AppFontSize.micro, equals(8.0));
+        expect(AppFontSize.badge, equals(10.0));
+        expect(AppFontSize.caption, equals(11.0));
+        expect(AppFontSize.small, equals(12.0));
+        expect(AppFontSize.body, equals(14.0));
+        expect(AppFontSize.subhead, equals(16.0));
+        expect(AppFontSize.headline, equals(18.0));
+        expect(AppFontSize.header, equals(20.0));
+        expect(AppFontSize.display, equals(24.0));
+        expect(AppFontSize.hero, equals(28.0));
+        expect(AppFontSize.jumbo, equals(32.0));
+        expect(AppEdgeInsets.zero, equals(EdgeInsets.zero));
+        expect(AppEdgeInsets.allSm, equals(const EdgeInsets.all(8.0)));
+      },
+    );
   });
 }

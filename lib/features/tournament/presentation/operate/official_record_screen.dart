@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,7 +61,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         : null;
     final tVenue = tournamentAsync.value?.venue;
 
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final cardColor = themeColors.cardBackground;
     final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
 
     final registeredTeamsAsync = ref.watch(
