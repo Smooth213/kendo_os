@@ -221,7 +221,9 @@ class MatchTimelineList extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: AppFontSize.subhead,
                     fontWeight: AppFontWeight.bold,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+                    color: isDark
+                        ? AppKendoColors.grey.shade400
+                        : AppKendoColors.grey.shade700,
                   ),
                 ),
 
@@ -242,8 +244,8 @@ class MatchTimelineList extends ConsumerWidget {
                           hintStyle: TextStyle(
                             fontSize: AppFontSize.small,
                             color: isDark
-                                ? Colors.grey.shade500
-                                : Colors.grey.shade400,
+                                ? AppKendoColors.grey.shade500
+                                : AppKendoColors.grey.shade400,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.md,
@@ -252,13 +254,13 @@ class MatchTimelineList extends ConsumerWidget {
                           filled: true,
                           fillColor: isDark
                               ? const Color(0xFF2C2C2E)
-                              : Colors.white,
+                              : AppKendoColors.pureWhite,
                           border: OutlineInputBorder(
                             borderRadius: AppRadius.small,
                             borderSide: BorderSide(
                               color: isDark
                                   ? const Color(0xFF38383A)
-                                  : Colors.grey.shade300,
+                                  : AppKendoColors.grey.shade300,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
@@ -266,13 +268,13 @@ class MatchTimelineList extends ConsumerWidget {
                             borderSide: BorderSide(
                               color: isDark
                                   ? const Color(0xFF38383A)
-                                  : Colors.grey.shade300,
+                                  : AppKendoColors.grey.shade300,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: AppRadius.small,
                             borderSide: BorderSide(
-                              color: Colors.indigo.shade400,
+                              color: AppKendoColors.indigo.shade400,
                             ),
                           ),
                           suffixIcon: IconButton(
@@ -302,8 +304,8 @@ class MatchTimelineList extends ConsumerWidget {
                           icon: Icon(
                             Icons.search,
                             color: isDark
-                                ? Colors.indigo.shade300
-                                : Colors.indigo.shade700,
+                                ? AppKendoColors.indigo.shade300
+                                : AppKendoColors.indigo.shade700,
                             size: 22,
                           ),
                           padding: EdgeInsets.zero,
@@ -325,8 +327,8 @@ class MatchTimelineList extends ConsumerWidget {
                               Icons.gavel,
                               size: 16,
                               color: isDark
-                                  ? Colors.indigo.shade300
-                                  : Colors.indigo.shade700,
+                                  ? AppKendoColors.indigo.shade300
+                                  : AppKendoColors.indigo.shade700,
                             ),
                             label: Text(
                               'ルール一括変更',
@@ -334,18 +336,18 @@ class MatchTimelineList extends ConsumerWidget {
                                 fontWeight: AppFontWeight.bold,
                                 fontSize: AppFontSize.small,
                                 color: isDark
-                                    ? Colors.indigo.shade300
-                                    : Colors.indigo.shade700,
+                                    ? AppKendoColors.indigo.shade300
+                                    : AppKendoColors.indigo.shade700,
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: isDark
-                                  ? Colors.indigo.shade300
-                                  : Colors.indigo.shade700,
+                                  ? AppKendoColors.indigo.shade300
+                                  : AppKendoColors.indigo.shade700,
                               side: BorderSide(
                                 color: isDark
                                     ? const Color(0xFF38383A)
-                                    : Colors.indigo.shade200,
+                                    : AppKendoColors.indigo.shade200,
                               ),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.compact,
@@ -380,12 +382,12 @@ class MatchTimelineList extends ConsumerWidget {
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: isDark
-                                ? Colors.indigo.shade300
-                                : Colors.indigo.shade700,
+                                ? AppKendoColors.indigo.shade300
+                                : AppKendoColors.indigo.shade700,
                             side: BorderSide(
                               color: isDark
                                   ? const Color(0xFF38383A)
-                                  : Colors.indigo.shade200,
+                                  : AppKendoColors.indigo.shade200,
                             ),
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.md,
@@ -411,12 +413,18 @@ class MatchTimelineList extends ConsumerWidget {
             child: Center(
               child: Column(
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  const Icon(
+                    Icons.error_outline,
+                    color: AppKendoColors.red,
+                    size: 48,
+                  ),
                   const SizedBox(height: AppSpacing.lg),
                   Text(
                     'データの取得に失敗しました',
                     style: TextStyle(
-                      color: isDark ? AppKendoColors.hansokuRed : Colors.red,
+                      color: isDark
+                          ? AppKendoColors.hansokuRed
+                          : AppKendoColors.red,
                       fontWeight: AppFontWeight.bold,
                     ),
                   ),
@@ -424,7 +432,7 @@ class MatchTimelineList extends ConsumerWidget {
                   Text(
                     timelineResult.errorMessage ?? '通信状況を確認してください',
                     style: const TextStyle(
-                      color: Colors.grey,
+                      color: AppKendoColors.grey,
                       fontSize: AppFontSize.small,
                     ),
                     textAlign: TextAlign.center,
@@ -440,7 +448,7 @@ class MatchTimelineList extends ConsumerWidget {
             child: Center(
               child: Text(
                 '該当する試合が見つかりません',
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: AppKendoColors.grey),
               ),
             ),
           ),
@@ -457,7 +465,9 @@ class MatchTimelineList extends ConsumerWidget {
                 'まだ試合がありません\n（またはクラウド同期待ちです）',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                  color: isDark
+                      ? AppKendoColors.grey.shade500
+                      : AppKendoColors.grey.shade400,
                   fontWeight: AppFontWeight.bold,
                   height: 1.5,
                 ),
@@ -585,8 +595,8 @@ class MatchTimelineList extends ConsumerWidget {
                       fontSize: AppFontSize.subhead,
                       fontWeight: AppFontWeight.bold,
                       color: isDark
-                          ? Colors.indigo.shade300
-                          : Colors.indigo.shade800,
+                          ? AppKendoColors.indigo.shade300
+                          : AppKendoColors.indigo.shade800,
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -718,19 +728,23 @@ class MatchTimelineList extends ConsumerWidget {
                       bottom: AppSpacing.xl,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF161618) : Colors.white,
+                      color: isDark
+                          ? const Color(0xFF161618)
+                          : AppKendoColors.pureWhite,
                       borderRadius: AppRadius.large,
                       border: Border.all(
                         color: isDark
                             ? const Color(0xFF38383A)
-                            : Colors.grey.shade300,
+                            : AppKendoColors.grey.shade300,
                         width: 2,
                       ),
                       boxShadow: isDark
                           ? []
                           : [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
+                                color: AppKendoColors.pureBlack.withValues(
+                                  alpha: 0.05,
+                                ),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -747,8 +761,10 @@ class MatchTimelineList extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.indigo.shade900.withValues(alpha: 0.3)
-                                : Colors.indigo.shade50,
+                                ? AppKendoColors.indigo.shade900.withValues(
+                                    alpha: 0.3,
+                                  )
+                                : AppKendoColors.indigo.shade50,
                             borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(AppRadius.modernValue),
                             ),
@@ -756,7 +772,7 @@ class MatchTimelineList extends ConsumerWidget {
                               bottom: BorderSide(
                                 color: isDark
                                     ? const Color(0xFF38383A)
-                                    : Colors.indigo.shade100,
+                                    : AppKendoColors.indigo.shade100,
                               ),
                             ),
                           ),
@@ -765,8 +781,8 @@ class MatchTimelineList extends ConsumerWidget {
                               Icon(
                                 Icons.business,
                                 color: isDark
-                                    ? Colors.indigo.shade300
-                                    : Colors.indigo.shade700,
+                                    ? AppKendoColors.indigo.shade300
+                                    : AppKendoColors.indigo.shade700,
                                 size: 20,
                               ),
                               const SizedBox(width: AppSpacing.sm),
@@ -777,8 +793,8 @@ class MatchTimelineList extends ConsumerWidget {
                                     fontSize: AppFontSize.headline,
                                     fontWeight: AppFontWeight.bold,
                                     color: isDark
-                                        ? Colors.white
-                                        : Colors.indigo.shade900,
+                                        ? AppKendoColors.pureWhite
+                                        : AppKendoColors.indigo.shade900,
                                   ),
                                 ),
                               ),
@@ -788,8 +804,8 @@ class MatchTimelineList extends ConsumerWidget {
                                   icon: Icon(
                                     Icons.add_comment,
                                     color: isDark
-                                        ? Colors.indigo.shade400
-                                        : Colors.indigo.shade300,
+                                        ? AppKendoColors.indigo.shade400
+                                        : AppKendoColors.indigo.shade300,
                                     size: 20,
                                   ),
                                   tooltip: '見出し（コメント）を追加',
@@ -822,8 +838,8 @@ class MatchTimelineList extends ConsumerWidget {
                                     icon: Icon(
                                       Icons.edit_note,
                                       color: isDark
-                                          ? Colors.indigo.shade400
-                                          : Colors.indigo.shade300,
+                                          ? AppKendoColors.indigo.shade400
+                                          : AppKendoColors.indigo.shade300,
                                       size: 20,
                                     ),
                                     tooltip: 'チーム名を修正して統合',
@@ -904,12 +920,14 @@ class MatchTimelineList extends ConsumerWidget {
                                           decoration: BoxDecoration(
                                             color: isDark
                                                 ? const Color(0xFF2C2C2E)
-                                                : Colors.grey.shade100,
+                                                : AppKendoColors.grey.shade100,
                                             borderRadius: AppRadius.small,
                                             border: Border.all(
                                               color: isDark
                                                   ? const Color(0xFF38383A)
-                                                  : Colors.grey.shade300,
+                                                  : AppKendoColors
+                                                        .grey
+                                                        .shade300,
                                             ),
                                           ),
                                           child: Row(
@@ -917,8 +935,12 @@ class MatchTimelineList extends ConsumerWidget {
                                               Icon(
                                                 Icons.label_outline,
                                                 color: isDark
-                                                    ? Colors.grey.shade500
-                                                    : Colors.grey.shade600,
+                                                    ? AppKendoColors
+                                                          .grey
+                                                          .shade500
+                                                    : AppKendoColors
+                                                          .grey
+                                                          .shade600,
                                                 size: 16,
                                               ),
                                               const SizedBox(
@@ -933,8 +955,12 @@ class MatchTimelineList extends ConsumerWidget {
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: isDark
-                                                        ? Colors.grey.shade300
-                                                        : Colors.grey.shade800,
+                                                        ? AppKendoColors
+                                                              .grey
+                                                              .shade300
+                                                        : AppKendoColors
+                                                              .grey
+                                                              .shade800,
                                                   ),
                                                 ),
                                               ),
@@ -963,8 +989,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                         c,
                                                       ),
                                                   backgroundColor:
-                                                      Colors.blueAccent,
-                                                  foregroundColor: Colors.white,
+                                                      AppKendoColors.blueAccent,
+                                                  foregroundColor:
+                                                      AppKendoColors.pureWhite,
                                                   icon: Icons.edit,
                                                   label: '編集',
                                                 ),
@@ -977,7 +1004,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                             ? const Color(
                                                                 0xFF1C1C1E,
                                                               )
-                                                            : Colors.white,
+                                                            : AppKendoColors
+                                                                  .pureWhite,
                                                         titleWidget: Text(
                                                           '見出しの削除',
                                                           style: TextStyle(
@@ -985,7 +1013,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                 AppFontWeight
                                                                     .bold,
                                                             color: isDark
-                                                                ? Colors.white
+                                                                ? AppKendoColors
+                                                                      .pureWhite
                                                                 : Colors
                                                                       .black87,
                                                           ),
@@ -994,7 +1023,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                           'この見出しを削除しますか？\n(取り消せません)',
                                                           style: TextStyle(
                                                             color: isDark
-                                                                ? Colors.white
+                                                                ? AppKendoColors
+                                                                      .pureWhite
                                                                 : Colors
                                                                       .black87,
                                                           ),
@@ -1010,7 +1040,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                               'キャンセル',
                                                               style: TextStyle(
                                                                 color:
-                                                                    Colors.grey,
+                                                                    AppKendoColors
+                                                                        .grey,
                                                               ),
                                                             ),
                                                           ),
@@ -1024,7 +1055,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                               '削除',
                                                               style: TextStyle(
                                                                 color:
-                                                                    Colors.red,
+                                                                    AppKendoColors
+                                                                        .red,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
@@ -1047,8 +1079,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                     }
                                                   },
                                                   backgroundColor:
-                                                      Colors.redAccent,
-                                                  foregroundColor: Colors.white,
+                                                      AppKendoColors.redAccent,
+                                                  foregroundColor:
+                                                      AppKendoColors.pureWhite,
                                                   icon: Icons.delete,
                                                   borderRadius:
                                                       const BorderRadius.horizontal(
@@ -1086,8 +1119,12 @@ class MatchTimelineList extends ConsumerWidget {
                                                 Icon(
                                                   Icons.groups,
                                                   color: isDark
-                                                      ? Colors.indigo.shade300
-                                                      : Colors.indigo.shade700,
+                                                      ? AppKendoColors
+                                                            .indigo
+                                                            .shade300
+                                                      : AppKendoColors
+                                                            .indigo
+                                                            .shade700,
                                                   size: 16,
                                                 ),
                                                 const SizedBox(
@@ -1101,7 +1138,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: isDark
-                                                        ? Colors.indigo.shade300
+                                                        ? AppKendoColors
+                                                              .indigo
+                                                              .shade300
                                                         : Colors
                                                               .indigo
                                                               .shade700,
@@ -1138,16 +1177,22 @@ class MatchTimelineList extends ConsumerWidget {
                                         );
                                         final Color titleColor = allFinished
                                             ? (isDark
-                                                  ? Colors.grey.shade600
-                                                  : Colors.grey.shade500)
+                                                  ? AppKendoColors.grey.shade600
+                                                  : AppKendoColors
+                                                        .grey
+                                                        .shade500)
                                             : (context.appColors.textColor);
                                         final Color subTitleColor = allFinished
                                             ? (isDark
-                                                  ? Colors.grey.shade700
-                                                  : Colors.grey.shade500)
+                                                  ? AppKendoColors.grey.shade700
+                                                  : AppKendoColors
+                                                        .grey
+                                                        .shade500)
                                             : (isDark
-                                                  ? Colors.grey.shade500
-                                                  : Colors.grey.shade600);
+                                                  ? AppKendoColors.grey.shade500
+                                                  : AppKendoColors
+                                                        .grey
+                                                        .shade600);
 
                                         return Container(
                                           key: ValueKey(entry.key),
@@ -1180,9 +1225,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                               groupList,
                                                             ),
                                                         backgroundColor:
-                                                            Colors.blueAccent,
+                                                            AppKendoColors
+                                                                .blueAccent,
                                                         foregroundColor:
-                                                            Colors.white,
+                                                            AppKendoColors
+                                                                .pureWhite,
                                                         icon: Icons.edit,
                                                         label: '編集',
                                                       ),
@@ -1270,9 +1317,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                           }
                                                         },
                                                         backgroundColor:
-                                                            Colors.redAccent,
+                                                            AppKendoColors
+                                                                .redAccent,
                                                         foregroundColor:
-                                                            Colors.white,
+                                                            AppKendoColors
+                                                                .pureWhite,
                                                         icon: Icons.delete,
                                                         borderRadius:
                                                             const BorderRadius.horizontal(
@@ -1329,13 +1378,15 @@ class MatchTimelineList extends ConsumerWidget {
                                                               ? const Color(
                                                                   0xFF1C1C1E,
                                                                 )
-                                                              : Colors.white,
+                                                              : AppKendoColors
+                                                                    .pureWhite,
                                                           collapsedBackgroundColor:
                                                               isDark
                                                               ? const Color(
                                                                   0xFF161618,
                                                                 )
-                                                              : Colors.white,
+                                                              : AppKendoColors
+                                                                    .pureWhite,
                                                           iconColor: isDark
                                                               ? Colors
                                                                     .indigo
@@ -1344,14 +1395,25 @@ class MatchTimelineList extends ConsumerWidget {
                                                                     .indigo
                                                                     .shade700,
                                                           collapsedIconColor:
-                                                              Colors.grey,
+                                                              AppKendoColors
+                                                                  .grey,
                                                           textColor: context
                                                               .appColors
                                                               .textColor,
                                                           collapsedTextColor:
                                                               isDark
-                                                              ? Colors.white70
-                                                              : Colors.black54,
+                                                              ? AppKendoColors
+                                                                    .pureWhite
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.7,
+                                                                    )
+                                                              : AppKendoColors
+                                                                    .pureBlack
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.54,
+                                                                    ),
                                                         ),
                                                         child: ExpansionTile(
                                                           key: ValueKey(
@@ -1489,8 +1551,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             Icons.info_outline,
                                                                             color:
                                                                                 isDark
-                                                                                ? Colors.grey.shade600
-                                                                                : Colors.grey.shade400,
+                                                                                ? AppKendoColors.grey.shade600
+                                                                                : AppKendoColors.grey.shade400,
                                                                             size:
                                                                                 16,
                                                                           ),
@@ -1520,8 +1582,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               18,
                                                                           color:
                                                                               isDark
-                                                                              ? Colors.blue.shade300
-                                                                              : Colors.blue.shade700,
+                                                                              ? AppKendoColors.blue.shade300
+                                                                              : AppKendoColors.blue.shade700,
                                                                         ),
                                                                         onPressed: () => _showOrderReorderSheet(
                                                                           context,
@@ -1609,14 +1671,14 @@ class MatchTimelineList extends ConsumerWidget {
                                                                     decoration: BoxDecoration(
                                                                       color:
                                                                           hasInProgress
-                                                                          ? Colors.blue.shade600
+                                                                          ? AppKendoColors.blue.shade600
                                                                           : (allFinished
                                                                                 ? (context.appColors.separatorColor)
                                                                                 : (isDark
                                                                                       ? const Color(
                                                                                           0xFF2C2C2E,
                                                                                         )
-                                                                                      : Colors.grey.shade200)),
+                                                                                      : AppKendoColors.grey.shade200)),
                                                                       borderRadius:
                                                                           AppRadius
                                                                               .tiny,
@@ -1634,14 +1696,14 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             AppFontWeight.bold,
                                                                         color:
                                                                             hasInProgress
-                                                                            ? Colors.white
+                                                                            ? AppKendoColors.pureWhite
                                                                             : (allFinished
                                                                                   ? (isDark
-                                                                                        ? Colors.grey.shade400
-                                                                                        : Colors.grey.shade600)
+                                                                                        ? AppKendoColors.grey.shade400
+                                                                                        : AppKendoColors.grey.shade600)
                                                                                   : (isDark
-                                                                                        ? Colors.grey.shade400
-                                                                                        : Colors.grey.shade700)),
+                                                                                        ? AppKendoColors.grey.shade400
+                                                                                        : AppKendoColors.grey.shade700)),
                                                                       ),
                                                                     ),
                                                                   ),
@@ -1842,8 +1904,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 style: TextStyle(
                                                                                   fontSize: AppFontSize.caption,
                                                                                   color: isDark
-                                                                                      ? Colors.grey.shade400
-                                                                                      : Colors.grey.shade600,
+                                                                                      ? AppKendoColors.grey.shade400
+                                                                                      : AppKendoColors.grey.shade600,
                                                                                 ),
                                                                               ),
                                                                               Padding(
@@ -1854,7 +1916,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   'ー',
                                                                                   style: TextStyle(
                                                                                     fontSize: AppFontSize.body,
-                                                                                    color: Colors.grey.shade400,
+                                                                                    color: AppKendoColors.grey.shade400,
                                                                                     fontWeight: AppFontWeight.bold,
                                                                                   ),
                                                                                 ),
@@ -1872,8 +1934,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 style: TextStyle(
                                                                                   fontSize: AppFontSize.caption,
                                                                                   color: isDark
-                                                                                      ? Colors.grey.shade400
-                                                                                      : Colors.grey.shade600,
+                                                                                      ? AppKendoColors.grey.shade400
+                                                                                      : AppKendoColors.grey.shade600,
                                                                                 ),
                                                                               ),
                                                                             ],
@@ -2046,10 +2108,10 @@ class MatchTimelineList extends ConsumerWidget {
                                                                       decoration: BoxDecoration(
                                                                         color:
                                                                             isDark
-                                                                            ? Colors.orange.shade900.withValues(
+                                                                            ? AppKendoColors.orange.shade900.withValues(
                                                                                 alpha: 0.2,
                                                                               )
-                                                                            : Colors.orange.shade50,
+                                                                            : AppKendoColors.orange.shade50,
                                                                         border: Border.all(
                                                                           color: Colors
                                                                               .orange
@@ -2077,8 +2139,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               '順位決定戦を作成',
                                                                             ),
                                                                             style: ElevatedButton.styleFrom(
-                                                                              backgroundColor: Colors.orange.shade700,
-                                                                              foregroundColor: Colors.white,
+                                                                              backgroundColor: AppKendoColors.orange.shade700,
+                                                                              foregroundColor: AppKendoColors.pureWhite,
                                                                             ),
                                                                           );
                                                                         }).toList(),
@@ -2282,8 +2344,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                       mTitleColor =
                                                                           boutsAllFinished
                                                                           ? (isDark
-                                                                                ? Colors.grey.shade600
-                                                                                : Colors.grey.shade500)
+                                                                                ? AppKendoColors.grey.shade600
+                                                                                : AppKendoColors.grey.shade500)
                                                                           : (context.appColors.textColor);
 
                                                                       return Container(
@@ -2305,7 +2367,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 ? const Color(
                                                                                     0xFF38383A,
                                                                                   )
-                                                                                : Colors.grey.shade300,
+                                                                                : AppKendoColors.grey.shade300,
                                                                             width:
                                                                                 1,
                                                                           ),
@@ -2313,7 +2375,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               boutsInProgress
                                                                               ? [
                                                                                   BoxShadow(
-                                                                                    color: Colors.blue.withValues(
+                                                                                    color: AppKendoColors.blue.withValues(
                                                                                       alpha: 0.1,
                                                                                     ),
                                                                                     blurRadius: 4,
@@ -2334,20 +2396,24 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? const Color(
                                                                                       0xFF1C1C1E,
                                                                                     )
-                                                                                  : Colors.white,
+                                                                                  : AppKendoColors.pureWhite,
                                                                               collapsedBackgroundColor: isDark
                                                                                   ? const Color(
                                                                                       0xFF161618,
                                                                                     )
-                                                                                  : Colors.white,
+                                                                                  : AppKendoColors.pureWhite,
                                                                               iconColor: isDark
-                                                                                  ? Colors.indigo.shade300
-                                                                                  : Colors.indigo.shade700,
-                                                                              collapsedIconColor: Colors.grey,
+                                                                                  ? AppKendoColors.indigo.shade300
+                                                                                  : AppKendoColors.indigo.shade700,
+                                                                              collapsedIconColor: AppKendoColors.grey,
                                                                               textColor: context.appColors.textColor,
                                                                               collapsedTextColor: isDark
-                                                                                  ? Colors.white70
-                                                                                  : Colors.black54,
+                                                                                  ? AppKendoColors.pureWhite.withValues(
+                                                                                      alpha: 0.7,
+                                                                                    )
+                                                                                  : AppKendoColors.pureBlack.withValues(
+                                                                                      alpha: 0.54,
+                                                                                    ),
                                                                             ),
                                                                             child: ExpansionTile(
                                                                               key: ValueKey(
@@ -2357,20 +2423,24 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? const Color(
                                                                                       0xFF1C1C1E,
                                                                                     )
-                                                                                  : Colors.white,
+                                                                                  : AppKendoColors.pureWhite,
                                                                               collapsedBackgroundColor: isDark
                                                                                   ? const Color(
                                                                                       0xFF161618,
                                                                                     )
-                                                                                  : Colors.white,
+                                                                                  : AppKendoColors.pureWhite,
                                                                               iconColor: isDark
-                                                                                  ? Colors.indigo.shade300
-                                                                                  : Colors.indigo.shade700,
-                                                                              collapsedIconColor: Colors.grey,
+                                                                                  ? AppKendoColors.indigo.shade300
+                                                                                  : AppKendoColors.indigo.shade700,
+                                                                              collapsedIconColor: AppKendoColors.grey,
                                                                               textColor: context.appColors.textColor,
                                                                               collapsedTextColor: isDark
-                                                                                  ? Colors.white70
-                                                                                  : Colors.black54,
+                                                                                  ? AppKendoColors.pureWhite.withValues(
+                                                                                      alpha: 0.7,
+                                                                                    )
+                                                                                  : AppKendoColors.pureBlack.withValues(
+                                                                                      alpha: 0.54,
+                                                                                    ),
                                                                               shape: const Border(),
                                                                               collapsedShape: const Border(),
                                                                               childrenPadding: EdgeInsets.zero,
@@ -2387,7 +2457,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                         '${bouts.length}ポジション',
                                                                                         style: const TextStyle(
                                                                                           fontSize: AppFontSize.caption,
-                                                                                          color: Colors.grey,
+                                                                                          color: AppKendoColors.grey,
                                                                                           fontWeight: AppFontWeight.bold,
                                                                                         ),
                                                                                       ),
@@ -2533,14 +2603,14 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                         ),
                                                                                         decoration: BoxDecoration(
                                                                                           color: boutsInProgress
-                                                                                              ? Colors.blue.shade600
+                                                                                              ? AppKendoColors.blue.shade600
                                                                                               : (boutsAllFinished
                                                                                                     ? (context.appColors.separatorColor)
                                                                                                     : (isDark
                                                                                                           ? const Color(
                                                                                                               0xFF2C2C2E,
                                                                                                             )
-                                                                                                          : Colors.grey.shade200)),
+                                                                                                          : AppKendoColors.grey.shade200)),
                                                                                           borderRadius: AppRadius.tiny,
                                                                                         ),
                                                                                         child: Text(
@@ -2553,14 +2623,14 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                             fontSize: AppFontSize.badge,
                                                                                             fontWeight: AppFontWeight.bold,
                                                                                             color: boutsInProgress
-                                                                                                ? Colors.white
+                                                                                                ? AppKendoColors.pureWhite
                                                                                                 : (boutsAllFinished
                                                                                                       ? (isDark
-                                                                                                            ? Colors.grey.shade400
-                                                                                                            : Colors.grey.shade600)
+                                                                                                            ? AppKendoColors.grey.shade400
+                                                                                                            : AppKendoColors.grey.shade600)
                                                                                                       : (isDark
-                                                                                                            ? Colors.grey.shade400
-                                                                                                            : Colors.grey.shade700)),
+                                                                                                            ? AppKendoColors.grey.shade400
+                                                                                                            : AppKendoColors.grey.shade700)),
                                                                                           ),
                                                                                         ),
                                                                                       ),
@@ -2670,7 +2740,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       '($showLeftPts)',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: AppFontSize.badge,
-                                                                                                        color: Colors.grey.shade500,
+                                                                                                        color: AppKendoColors.grey.shade500,
                                                                                                       ),
                                                                                                     ),
                                                                                                     Padding(
@@ -2681,7 +2751,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         'ー',
                                                                                                         style: TextStyle(
                                                                                                           fontSize: AppFontSize.bodySmall,
-                                                                                                          color: Colors.grey.shade400,
+                                                                                                          color: AppKendoColors.grey.shade400,
                                                                                                           fontWeight: AppFontWeight.bold,
                                                                                                         ),
                                                                                                       ),
@@ -2698,7 +2768,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       '($showRightPts)',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: AppFontSize.badge,
-                                                                                                        color: Colors.grey.shade500,
+                                                                                                        color: AppKendoColors.grey.shade500,
                                                                                                       ),
                                                                                                     ),
                                                                                                   ],
@@ -3021,7 +3091,7 @@ class MatchTimelineList extends ConsumerWidget {
                                   sanitizedQuery.isNotEmpty
                                       ? Icons.manage_search
                                       : Icons.person,
-                                  color: Colors.orange.shade700,
+                                  color: AppKendoColors.orange.shade700,
                                   size: 16,
                                 ),
                                 const SizedBox(width: AppSpacing.xs),
@@ -3032,7 +3102,7 @@ class MatchTimelineList extends ConsumerWidget {
                                   style: TextStyle(
                                     fontSize: AppFontSize.bodySmall,
                                     fontWeight: AppFontWeight.bold,
-                                    color: Colors.orange.shade700,
+                                    color: AppKendoColors.orange.shade700,
                                   ),
                                 ),
                               ],
@@ -3083,16 +3153,16 @@ class MatchTimelineList extends ConsumerWidget {
                             );
                             final Color pTitleColor = pAllFinished
                                 ? (isDark
-                                      ? Colors.grey.shade600
-                                      : Colors.grey.shade500)
+                                      ? AppKendoColors.grey.shade600
+                                      : AppKendoColors.grey.shade500)
                                 : (context.appColors.textColor);
                             final Color pSubTitleColor = pAllFinished
                                 ? (isDark
-                                      ? Colors.grey.shade700
-                                      : Colors.grey.shade500)
+                                      ? AppKendoColors.grey.shade700
+                                      : AppKendoColors.grey.shade500)
                                 : (isDark
-                                      ? Colors.grey.shade500
-                                      : Colors.grey.shade600);
+                                      ? AppKendoColors.grey.shade500
+                                      : AppKendoColors.grey.shade600);
 
                             return Container(
                               margin: const EdgeInsets.symmetric(
@@ -3104,13 +3174,13 @@ class MatchTimelineList extends ConsumerWidget {
                                 border: Border.all(
                                   color: isDark
                                       ? const Color(0xFF38383A)
-                                      : Colors.grey.shade300,
+                                      : AppKendoColors.grey.shade300,
                                   width: 1,
                                 ),
                                 boxShadow: pInProgress
                                     ? [
                                         BoxShadow(
-                                          color: Colors.blue.withValues(
+                                          color: AppKendoColors.blue.withValues(
                                             alpha: 0.1,
                                           ),
                                           blurRadius: 8,
@@ -3125,18 +3195,22 @@ class MatchTimelineList extends ConsumerWidget {
                                   data: ExpansionTileThemeData(
                                     backgroundColor: isDark
                                         ? const Color(0xFF1C1C1E)
-                                        : Colors.white,
+                                        : AppKendoColors.pureWhite,
                                     collapsedBackgroundColor: isDark
                                         ? const Color(0xFF161618)
-                                        : Colors.white,
+                                        : AppKendoColors.pureWhite,
                                     iconColor: isDark
-                                        ? Colors.indigo.shade300
-                                        : Colors.indigo.shade700,
-                                    collapsedIconColor: Colors.grey,
+                                        ? AppKendoColors.indigo.shade300
+                                        : AppKendoColors.indigo.shade700,
+                                    collapsedIconColor: AppKendoColors.grey,
                                     textColor: context.appColors.textColor,
                                     collapsedTextColor: isDark
-                                        ? Colors.white70
-                                        : Colors.black54,
+                                        ? AppKendoColors.pureWhite.withValues(
+                                            alpha: 0.7,
+                                          )
+                                        : AppKendoColors.pureBlack.withValues(
+                                            alpha: 0.54,
+                                          ),
                                   ),
                                   child: ExpansionTile(
                                     key: ValueKey('player_$playerName'),
@@ -3149,15 +3223,19 @@ class MatchTimelineList extends ConsumerWidget {
                                     leading: CircleAvatar(
                                       backgroundColor: pAllFinished
                                           ? (context.appColors.separatorColor)
-                                          : Colors.orange.shade100,
+                                          : AppKendoColors.orange.shade100,
                                       child: Text(
                                         playerName[0],
                                         style: TextStyle(
                                           color: pAllFinished
                                               ? (isDark
-                                                    ? Colors.grey.shade500
-                                                    : Colors.grey.shade600)
-                                              : Colors.orange.shade800,
+                                                    ? AppKendoColors
+                                                          .grey
+                                                          .shade500
+                                                    : AppKendoColors
+                                                          .grey
+                                                          .shade600)
+                                              : AppKendoColors.orange.shade800,
                                           fontSize: AppFontSize.small,
                                           fontWeight: AppFontWeight.bold,
                                         ),
@@ -3188,7 +3266,7 @@ class MatchTimelineList extends ConsumerWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: pInProgress
-                                                ? Colors.blue.shade600
+                                                ? AppKendoColors.blue.shade600
                                                 : (pAllFinished
                                                       ? (isDark
                                                             ? Colors
@@ -3214,7 +3292,7 @@ class MatchTimelineList extends ConsumerWidget {
                                               fontSize: AppFontSize.badge,
                                               fontWeight: AppFontWeight.bold,
                                               color: pInProgress
-                                                  ? Colors.white
+                                                  ? AppKendoColors.pureWhite
                                                   : (pAllFinished
                                                         ? (isDark
                                                               ? Colors
@@ -3315,14 +3393,16 @@ void _showRenameTeamSheet(
 ) {
   final controller = TextEditingController(text: oldName);
   final isDark = Theme.of(context).brightness == Brightness.dark;
-  final primaryColor = isDark ? Colors.indigo.shade300 : Colors.indigo.shade700;
+  final primaryColor = isDark
+      ? AppKendoColors.indigo.shade300
+      : AppKendoColors.indigo.shade700;
 
   showAppBottomSheet(
     context: context,
     isScrollControlled: true,
     builder: (ctx) => Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppRadius.xlargeValue),
         ),
@@ -3342,7 +3422,7 @@ void _showRenameTeamSheet(
               width: 48,
               height: 5,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: AppKendoColors.grey.shade300,
                 borderRadius: AppRadius.medium,
               ),
             ),
@@ -3359,7 +3439,10 @@ void _showRenameTeamSheet(
           const SizedBox(height: AppSpacing.sm),
           const Text(
             '名前を修正すると、この大会内のすべての試合データが自動で書き換わり、同じ名前のチームと合流します。',
-            style: TextStyle(fontSize: AppFontSize.small, color: Colors.grey),
+            style: TextStyle(
+              fontSize: AppFontSize.small,
+              color: AppKendoColors.grey,
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           TextField(
@@ -3368,7 +3451,9 @@ void _showRenameTeamSheet(
             decoration: InputDecoration(
               labelText: '新しいチーム名',
               filled: true,
-              fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+              fillColor: isDark
+                  ? const Color(0xFF2C2C2E)
+                  : AppKendoColors.grey.shade50,
               border: OutlineInputBorder(
                 borderRadius: AppRadius.medium,
                 borderSide: BorderSide.none,
@@ -3399,7 +3484,7 @@ void _showRenameTeamSheet(
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
+                foregroundColor: AppKendoColors.pureWhite,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
               ),
@@ -3527,7 +3612,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
     isScrollControlled: true,
     builder: (ctx) => Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppRadius.xlargeValue),
         ),
@@ -3547,7 +3632,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
               width: 48,
               height: 5,
               decoration: BoxDecoration(
-                color: Colors.grey.shade400,
+                color: AppKendoColors.grey.shade400,
                 borderRadius: AppRadius.medium,
               ),
             ),
@@ -3577,15 +3662,15 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
+                color: AppKendoColors.orange.withValues(alpha: 0.1),
                 borderRadius: AppRadius.small,
-                border: Border.all(color: Colors.orange.shade300),
+                border: Border.all(color: AppKendoColors.orange.shade300),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.warning_amber_rounded,
-                    color: Colors.orange.shade700,
+                    color: AppKendoColors.orange.shade700,
                     size: 20,
                   ),
                   const SizedBox(width: AppSpacing.sm),
@@ -3593,7 +3678,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                     child: Text(
                       'この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。',
                       style: TextStyle(
-                        color: Colors.orange.shade800,
+                        color: AppKendoColors.orange.shade800,
                         fontSize: AppFontSize.small,
                         fontWeight: AppFontWeight.bold,
                       ),
@@ -3688,7 +3773,7 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 style: TextStyle(
                   fontSize: AppFontSize.small,
                   fontWeight: AppFontWeight.bold,
-                  color: Colors.orange,
+                  color: AppKendoColors.orange,
                 ),
               ),
             ),
@@ -3743,7 +3828,9 @@ Widget _buildRuleRow(String label, String value, bool isDark) {
           child: Text(
             label,
             style: TextStyle(
-              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+              color: isDark
+                  ? AppKendoColors.grey.shade400
+                  : AppKendoColors.grey.shade600,
               fontSize: AppFontSize.bodySmall,
             ),
           ),
@@ -3752,7 +3839,9 @@ Widget _buildRuleRow(String label, String value, bool isDark) {
           child: Text(
             value,
             style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
+              color: isDark
+                  ? AppKendoColors.pureWhite
+                  : AppKendoColors.pureBlack,
               fontWeight: AppFontWeight.bold,
               fontSize: AppFontSize.body,
             ),
@@ -3886,7 +3975,7 @@ void _showTieBreakDialog(
                     style: TextStyle(
                       fontSize: AppFontSize.small,
                       fontWeight: AppFontWeight.bold,
-                      color: Colors.grey,
+                      color: AppKendoColors.grey,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -3946,31 +4035,39 @@ Widget _buildTieOption(
   return Card(
     elevation: 0,
     margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-    color: isSub ? Colors.transparent : Colors.orange.shade50,
+    color: isSub ? AppKendoColors.transparent : AppKendoColors.orange.shade50,
     shape: RoundedRectangleBorder(
       borderRadius: AppRadius.small,
       side: BorderSide(
-        color: isSub ? Colors.grey.shade300 : Colors.orange.shade300,
+        color: isSub
+            ? AppKendoColors.grey.shade300
+            : AppKendoColors.orange.shade300,
       ),
     ),
     child: ListTile(
       leading: Icon(
         icon,
-        color: isSub ? Colors.grey.shade600 : Colors.orange.shade800,
+        color: isSub
+            ? AppKendoColors.grey.shade600
+            : AppKendoColors.orange.shade800,
       ),
       title: Text(
         title,
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
           fontSize: AppFontSize.bodySmall,
-          color: isSub ? Colors.black87 : Colors.orange.shade900,
+          color: isSub
+              ? AppKendoColors.pureBlack
+              : AppKendoColors.orange.shade900,
         ),
       ),
       subtitle: Text(
         sub,
         style: TextStyle(
           fontSize: AppFontSize.badge,
-          color: isSub ? Colors.grey.shade600 : Colors.orange.shade700,
+          color: isSub
+              ? AppKendoColors.grey.shade600
+              : AppKendoColors.orange.shade700,
         ),
       ),
       onTap: onTap,
@@ -4136,7 +4233,9 @@ void _showSummaryInputDialog(
         }
 
         return AppDialog(
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          backgroundColor: isDark
+              ? const Color(0xFF1C1C1E)
+              : AppKendoColors.pureWhite,
           shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
           titleWidget: const Text(
             '他コートの簡易入力',
@@ -4150,7 +4249,7 @@ void _showSummaryInputDialog(
                   '他チームの試合結果（勝者数と本数）だけを素早く記録します。',
                   style: TextStyle(
                     fontSize: AppFontSize.small,
-                    color: Colors.grey,
+                    color: AppKendoColors.grey,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -4180,12 +4279,12 @@ void _showSummaryInputDialog(
                         if (rWins + wWins < totalMatches) {
                           rWins++;
                         }
-                      }, Colors.red),
+                      }, AppKendoColors.red),
                       buildCounter('取得本数', rPts, () => rPts--, () {
                         if (rPts < rWins * 2) {
                           rPts++;
                         }
-                      }, Colors.red),
+                      }, AppKendoColors.red),
                     ],
                   ),
                 ),
@@ -4194,10 +4293,10 @@ void _showSummaryInputDialog(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? Colors.blue.shade900.withValues(alpha: 0.15)
-                        : Colors.blue.shade50,
+                        ? AppKendoColors.blue.shade900.withValues(alpha: 0.15)
+                        : AppKendoColors.blue.shade50,
                     borderRadius: AppRadius.medium,
-                    border: Border.all(color: Colors.blue.shade200),
+                    border: Border.all(color: AppKendoColors.blue.shade200),
                   ),
                   child: Column(
                     children: [
@@ -4214,12 +4313,12 @@ void _showSummaryInputDialog(
                         if (rWins + wWins < totalMatches) {
                           wWins++;
                         }
-                      }, Colors.blue),
+                      }, AppKendoColors.blue),
                       buildCounter('取得本数', wPts, () => wPts--, () {
                         if (wPts < wWins * 2) {
                           wPts++;
                         }
-                      }, Colors.blue),
+                      }, AppKendoColors.blue),
                     ],
                   ),
                 ),
@@ -4229,7 +4328,7 @@ void _showSummaryInputDialog(
                     child: Text(
                       errorMsg,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: AppKendoColors.red,
                         fontSize: AppFontSize.small,
                         fontWeight: AppFontWeight.bold,
                       ),
@@ -4241,7 +4340,10 @@ void _showSummaryInputDialog(
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+              child: const Text(
+                'キャンセル',
+                style: TextStyle(color: AppKendoColors.grey),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -4256,7 +4358,7 @@ void _showSummaryInputDialog(
                         children: [
                           Icon(
                             Icons.warning_amber_rounded,
-                            color: Colors.orange,
+                            color: AppKendoColors.orange,
                           ),
                           SizedBox(width: AppSpacing.sm),
                           Text('入力エラー'),
@@ -4348,8 +4450,8 @@ void _showSummaryInputDialog(
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo,
-                foregroundColor: Colors.white,
+                backgroundColor: AppKendoColors.indigo,
+                foregroundColor: AppKendoColors.pureWhite,
                 elevation: 0,
               ),
               child: const Text(
@@ -4521,7 +4623,9 @@ void showUnifiedAnnounceDialog(
           final isDark = Theme.of(context).brightness == Brightness.dark;
 
           return AppDialog(
-            backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            backgroundColor: isDark
+                ? const Color(0xFF1C1C1E)
+                : AppKendoColors.pureWhite,
             shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
             titleWidget: Row(
               children: [
@@ -4572,7 +4676,7 @@ void showUnifiedAnnounceDialog(
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF2C2C2E)
-                          : Colors.grey.shade100,
+                          : AppKendoColors.grey.shade100,
                       borderRadius: AppRadius.small,
                     ),
                     child: Row(
@@ -4587,7 +4691,7 @@ void showUnifiedAnnounceDialog(
                                 style: TextStyle(
                                   color: selectedTarget == 'all'
                                       ? (context.appColors.textColor)
-                                      : Colors.grey,
+                                      : AppKendoColors.grey,
                                 ),
                               ),
                             ),
@@ -4613,14 +4717,13 @@ void showUnifiedAnnounceDialog(
                                 style: TextStyle(
                                   color: selectedTarget == 'staff'
                                       ? (context.appColors.textColor)
-                                      : Colors.grey,
+                                      : AppKendoColors.grey,
                                 ),
                               ),
                             ),
                             selected: selectedTarget == 'staff',
-                            customSelectedColor: Colors.deepOrange.withValues(
-                              alpha: 0.2,
-                            ),
+                            customSelectedColor: AppKendoColors.deepOrange
+                                .withValues(alpha: 0.2),
                             onSelected: (val) {
                               if (val) {
                                 setDialogState(() => selectedTarget = 'staff');
@@ -4639,13 +4742,13 @@ void showUnifiedAnnounceDialog(
                 onPressed: () => Navigator.pop(dialogCtx),
                 child: const Text(
                   'キャンセル',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: AppKendoColors.grey),
                 ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColors.primaryAccent,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppKendoColors.pureWhite,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),
                 onPressed: () {
@@ -4760,7 +4863,9 @@ void _showEditCommentDialog(
   showAppDialog(
     context: context,
     builder: (ctx) => AppDialog(
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      backgroundColor: isDark
+          ? const Color(0xFF1C1C1E)
+          : AppKendoColors.pureWhite,
       titleWidget: Text(
         '見出し（コメント）の編集',
         style: TextStyle(
@@ -4775,7 +4880,9 @@ void _showEditCommentDialog(
         decoration: InputDecoration(
           hintText: '見出しやコメントを入力',
           filled: true,
-          fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50,
+          fillColor: isDark
+              ? const Color(0xFF2C2C2E)
+              : AppKendoColors.grey.shade50,
           border: OutlineInputBorder(
             borderRadius: AppRadius.small,
             borderSide: BorderSide.none,
@@ -4786,7 +4893,10 @@ void _showEditCommentDialog(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+          child: const Text(
+            'キャンセル',
+            style: TextStyle(color: AppKendoColors.grey),
+          ),
         ),
         ElevatedButton(
           onPressed: () async {
@@ -4805,8 +4915,8 @@ void _showEditCommentDialog(
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.indigo,
-            foregroundColor: Colors.white,
+            backgroundColor: AppKendoColors.indigo,
+            foregroundColor: AppKendoColors.pureWhite,
             elevation: 0,
           ),
           child: const Text(
@@ -4856,17 +4966,19 @@ Widget _buildInnerCommentWidget(
       vertical: AppSpacing.sm,
     ),
     decoration: BoxDecoration(
-      color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+      color: isDark ? const Color(0xFF2C2C2E) : AppKendoColors.grey.shade100,
       borderRadius: AppRadius.small,
       border: Border.all(
-        color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
+        color: isDark ? const Color(0xFF38383A) : AppKendoColors.grey.shade300,
       ),
     ),
     child: Row(
       children: [
         Icon(
           Icons.label_outline,
-          color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
+          color: isDark
+              ? AppKendoColors.grey.shade500
+              : AppKendoColors.grey.shade600,
           size: 16,
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -4876,7 +4988,9 @@ Widget _buildInnerCommentWidget(
             style: TextStyle(
               fontSize: AppFontSize.bodySmall,
               fontWeight: AppFontWeight.bold,
-              color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+              color: isDark
+                  ? AppKendoColors.grey.shade300
+                  : AppKendoColors.grey.shade800,
             ),
           ),
         ),
@@ -4906,8 +5020,8 @@ Widget _buildInnerCommentWidget(
         children: [
           SlidableAction(
             onPressed: (context) => _showEditCommentDialog(context, ref, c),
-            backgroundColor: Colors.blueAccent,
-            foregroundColor: Colors.white,
+            backgroundColor: AppKendoColors.blueAccent,
+            foregroundColor: AppKendoColors.pureWhite,
             icon: Icons.edit,
             label: '編集',
           ),
@@ -4918,7 +5032,7 @@ Widget _buildInnerCommentWidget(
                 builder: (ctx) => AppDialog(
                   backgroundColor: isDark
                       ? const Color(0xFF1C1C1E)
-                      : Colors.white,
+                      : AppKendoColors.pureWhite,
                   titleWidget: Text(
                     '内部見出しの削除',
                     style: TextStyle(
@@ -4935,7 +5049,7 @@ Widget _buildInnerCommentWidget(
                       onPressed: () => Navigator.pop(ctx, false),
                       child: const Text(
                         'キャンセル',
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: AppKendoColors.grey),
                       ),
                     ),
                     TextButton(
@@ -4943,7 +5057,7 @@ Widget _buildInnerCommentWidget(
                       child: const Text(
                         '削除',
                         style: TextStyle(
-                          color: Colors.red,
+                          color: AppKendoColors.red,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -4957,8 +5071,8 @@ Widget _buildInnerCommentWidget(
                     .deleteComment(c.id, c.tournamentId ?? '');
               }
             },
-            backgroundColor: Colors.redAccent,
-            foregroundColor: Colors.white,
+            backgroundColor: AppKendoColors.redAccent,
+            foregroundColor: AppKendoColors.pureWhite,
             icon: Icons.delete,
             borderRadius: const BorderRadius.horizontal(
               right: Radius.circular(AppRadius.smallValue),
@@ -5046,14 +5160,14 @@ class MatchListTileCard extends ConsumerWidget {
     }
 
     final Color bg = isFinished
-        ? (isDark ? const Color(0xFF161618) : Colors.grey.shade50)
-        : (isDark ? const Color(0xFF1E1E20) : Colors.white);
+        ? (isDark ? const Color(0xFF161618) : AppKendoColors.grey.shade50)
+        : (isDark ? const Color(0xFF1E1E20) : AppKendoColors.pureWhite);
     final Color textC = isFinished
-        ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500)
+        ? (isDark ? AppKendoColors.grey.shade600 : AppKendoColors.grey.shade500)
         : (context.appColors.textColor);
     final Color noteC = isFinished
-        ? (isDark ? Colors.grey.shade700 : Colors.grey.shade500)
-        : Colors.grey.shade600;
+        ? (isDark ? AppKendoColors.grey.shade700 : AppKendoColors.grey.shade500)
+        : AppKendoColors.grey.shade600;
 
     // 🛡️ 補正④: 細線独立カードモデリング化の意匠を適用
     final tile = Container(
@@ -5065,13 +5179,15 @@ class MatchListTileCard extends ConsumerWidget {
         color: bg,
         borderRadius: AppRadius.medium,
         border: Border.all(
-          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300,
+          color: isDark
+              ? const Color(0xFF2C2C2E)
+              : AppKendoColors.grey.shade300,
           width: 1.2,
         ),
         boxShadow: isPlaying
             ? [
                 BoxShadow(
-                  color: Colors.blue.withValues(alpha: 0.1),
+                  color: AppKendoColors.blue.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -5166,8 +5282,8 @@ class MatchListTileCard extends ConsumerWidget {
                           child: Icon(
                             Icons.info_outline,
                             color: isDark
-                                ? Colors.grey.shade500
-                                : Colors.grey.shade400,
+                                ? AppKendoColors.grey.shade500
+                                : AppKendoColors.grey.shade400,
                             size: 16,
                           ),
                         ),
@@ -5224,12 +5340,12 @@ class MatchListTileCard extends ConsumerWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isPlaying
-                          ? Colors.blue.shade600
+                          ? AppKendoColors.blue.shade600
                           : (isFinished
                                 ? (context.appColors.separatorColor)
                                 : (isDark
                                       ? const Color(0xFF2C2C2E)
-                                      : Colors.grey.shade200)),
+                                      : AppKendoColors.grey.shade200)),
                       borderRadius: AppRadius.tiny,
                     ),
                     child: Text(
@@ -5238,14 +5354,14 @@ class MatchListTileCard extends ConsumerWidget {
                         fontSize: AppFontSize.badge,
                         fontWeight: AppFontWeight.bold,
                         color: isPlaying
-                            ? Colors.white
+                            ? AppKendoColors.pureWhite
                             : (isFinished
                                   ? (isDark
-                                        ? Colors.grey.shade400
-                                        : Colors.grey.shade600)
+                                        ? AppKendoColors.grey.shade400
+                                        : AppKendoColors.grey.shade600)
                                   : (isDark
-                                        ? Colors.grey.shade400
-                                        : Colors.grey.shade700)),
+                                        ? AppKendoColors.grey.shade400
+                                        : AppKendoColors.grey.shade700)),
                       ),
                     ),
                   ),
@@ -5393,8 +5509,8 @@ class MatchListTileCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.badge,
                                 color: isDark
-                                    ? Colors.grey.shade400
-                                    : Colors.grey.shade500,
+                                    ? AppKendoColors.grey.shade400
+                                    : AppKendoColors.grey.shade500,
                                 fontWeight: AppFontWeight.medium,
                               ),
                               textAlign: TextAlign.start,
@@ -5408,8 +5524,8 @@ class MatchListTileCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.badge,
                                 color: isDark
-                                    ? Colors.grey.shade400
-                                    : Colors.grey.shade500,
+                                    ? AppKendoColors.grey.shade400
+                                    : AppKendoColors.grey.shade500,
                                 fontWeight: AppFontWeight.medium,
                               ),
                               textAlign: TextAlign.end,
@@ -5477,7 +5593,7 @@ class MatchListTileCard extends ConsumerWidget {
                                       isDraw ? '×' : 'ー',
                                       style: TextStyle(
                                         fontSize: AppFontSize.bodySmall,
-                                        color: Colors.grey.shade400,
+                                        color: AppKendoColors.grey.shade400,
                                         fontWeight: AppFontWeight.bold,
                                       ),
                                     ),
@@ -5542,8 +5658,8 @@ class MatchListTileCard extends ConsumerWidget {
         children: [
           SlidableAction(
             onPressed: (context) => _showEditNoteDialog(context, ref, match),
-            backgroundColor: Colors.blueAccent,
-            foregroundColor: Colors.white,
+            backgroundColor: AppKendoColors.blueAccent,
+            foregroundColor: AppKendoColors.pureWhite,
             icon: Icons.edit,
             label: '編集',
           ),
@@ -5554,7 +5670,7 @@ class MatchListTileCard extends ConsumerWidget {
                 builder: (ctx) => AppDialog(
                   backgroundColor: isDark
                       ? const Color(0xFF1C1C1E)
-                      : Colors.white,
+                      : AppKendoColors.pureWhite,
                   titleWidget: Text(
                     '試合の削除',
                     style: TextStyle(
@@ -5576,7 +5692,7 @@ class MatchListTileCard extends ConsumerWidget {
                       child: const Text(
                         '削除',
                         style: TextStyle(
-                          color: Colors.red,
+                          color: AppKendoColors.red,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -5588,8 +5704,8 @@ class MatchListTileCard extends ConsumerWidget {
                 await ref.read(matchCommandProvider).deleteMatch(match.id);
               }
             },
-            backgroundColor: Colors.redAccent,
-            foregroundColor: Colors.white,
+            backgroundColor: AppKendoColors.redAccent,
+            foregroundColor: AppKendoColors.pureWhite,
             icon: Icons.delete,
             label: '削除',
           ),
@@ -5865,7 +5981,7 @@ class _OrderReorderBottomSheetState
       return Container(
         height: 300,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xlargeValue),
           ),
@@ -5882,7 +5998,7 @@ class _OrderReorderBottomSheetState
       loading: () => Container(
         height: 300,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xlargeValue),
           ),
@@ -5892,7 +6008,7 @@ class _OrderReorderBottomSheetState
       error: (err, stack) => Container(
         height: 300,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xlargeValue),
           ),
@@ -5904,7 +6020,9 @@ class _OrderReorderBottomSheetState
           loading: () => Container(
             height: 300,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              color: isDark
+                  ? const Color(0xFF1C1C1E)
+                  : AppKendoColors.pureWhite,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppRadius.xlargeValue),
               ),
@@ -5914,7 +6032,9 @@ class _OrderReorderBottomSheetState
           error: (err, stack) => Container(
             height: 300,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              color: isDark
+                  ? const Color(0xFF1C1C1E)
+                  : AppKendoColors.pureWhite,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppRadius.xlargeValue),
               ),
@@ -5971,7 +6091,9 @@ class _OrderReorderBottomSheetState
             return Container(
               margin: EdgeInsets.only(bottom: keyboardHeight),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                color: isDark
+                    ? const Color(0xFF1C1C1E)
+                    : AppKendoColors.pureWhite,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(AppRadius.xlargeValue),
                 ),
@@ -5994,8 +6116,8 @@ class _OrderReorderBottomSheetState
                           height: 5,
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.grey.shade700
-                                : Colors.grey.shade300,
+                                ? AppKendoColors.grey.shade700
+                                : AppKendoColors.grey.shade300,
                             borderRadius: AppRadius.medium,
                           ),
                         ),
@@ -6024,7 +6146,7 @@ class _OrderReorderBottomSheetState
                           '右側の三本線を長押し・ドラッグして並び替えます。上の5枠が出場選手になります。',
                           style: TextStyle(
                             fontSize: AppFontSize.caption,
-                            color: Colors.grey,
+                            color: AppKendoColors.grey,
                           ),
                         ),
                       ),
@@ -6051,10 +6173,10 @@ class _OrderReorderBottomSheetState
                               color: isPosition
                                   ? (isDark
                                         ? const Color(0xFF2C2C2E)
-                                        : Colors.blue.shade50)
+                                        : AppKendoColors.blue.shade50)
                                   : (isDark
                                         ? const Color(0xFF1C1C1E)
-                                        : Colors.grey.shade100),
+                                        : AppKendoColors.grey.shade100),
                               child: ListTile(
                                 leading: Container(
                                   padding: const EdgeInsets.symmetric(
@@ -6063,14 +6185,14 @@ class _OrderReorderBottomSheetState
                                   ),
                                   decoration: BoxDecoration(
                                     color: isPosition
-                                        ? Colors.blue.shade600
-                                        : Colors.grey.shade600,
+                                        ? AppKendoColors.blue.shade600
+                                        : AppKendoColors.grey.shade600,
                                     borderRadius: AppRadius.tiny,
                                   ),
                                   child: Text(
                                     label,
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: AppKendoColors.pureWhite,
                                       fontSize: AppFontSize.caption,
                                       fontWeight: AppFontWeight.bold,
                                     ),
@@ -6107,8 +6229,8 @@ class _OrderReorderBottomSheetState
                           ElevatedButton(
                             onPressed: _saveOrder,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade700,
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppKendoColors.blue.shade700,
+                              foregroundColor: AppKendoColors.pureWhite,
                             ),
                             child: const Text('オーダーを確定'),
                           ),
@@ -6199,7 +6321,7 @@ class _AddReservePlayerDialogState extends State<_AddReservePlayerDialog> {
               '所属名簿から選択：',
               style: TextStyle(
                 fontSize: AppFontSize.small,
-                color: Colors.grey,
+                color: AppKendoColors.grey,
                 fontWeight: AppFontWeight.bold,
               ),
             ),
@@ -6210,7 +6332,7 @@ class _AddReservePlayerDialogState extends State<_AddReservePlayerDialog> {
                 child: Text(
                   '未出場の所属選手はいません。',
                   style: TextStyle(
-                    color: Colors.grey,
+                    color: AppKendoColors.grey,
                     fontSize: AppFontSize.bodySmall,
                   ),
                   textAlign: TextAlign.center,

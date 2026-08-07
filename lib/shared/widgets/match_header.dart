@@ -66,7 +66,7 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
                   IconButton(
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
-                      color: Colors.white,
+                      color: AppKendoColors.pureWhite,
                       size: 20,
                     ),
                     onPressed: () => context.pop(),
@@ -87,7 +87,7 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
                           names,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppKendoColors.pureWhite,
                             fontWeight: AppFontWeight.bold,
                             fontSize: AppFontSize.subhead,
                           ),
@@ -106,14 +106,16 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isApproved
-                      ? Colors.green.shade700
-                      : (isAllDone ? Colors.orange.shade700 : Colors.white24),
+                      ? AppKendoColors.green.shade700
+                      : (isAllDone
+                            ? AppKendoColors.orange.shade700
+                            : AppKendoColors.pureWhite.withValues(alpha: 0.24)),
                   borderRadius: AppRadius.medium,
                 ),
                 child: Text(
                   isApproved ? '記録確定済み' : (isAllDone ? '全試合終了' : '試合進行中'),
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppKendoColors.pureWhite,
                     fontSize: AppFontSize.small,
                     fontWeight: AppFontWeight.bold,
                   ),
@@ -162,8 +164,8 @@ class _MasterTimerBanner extends ConsumerWidget {
               ? AppKendoColors.hansokuRed.withValues(alpha: 0.3)
               : AppKendoColors.hansokuRed)
         : (isDark
-              ? Colors.indigo.shade900.withValues(alpha: 0.3)
-              : Colors.indigo.shade50);
+              ? AppKendoColors.indigo.shade900.withValues(alpha: 0.3)
+              : AppKendoColors.indigo.shade50);
 
     return Container(
       width: double.infinity,
@@ -176,8 +178,10 @@ class _MasterTimerBanner extends ConsumerWidget {
             fontSize: AppFontSize.bodySmall,
             fontWeight: AppFontWeight.bold,
             color: isTimeUp
-                ? Colors.red
-                : (isDark ? Colors.indigo.shade200 : Colors.indigo),
+                ? AppKendoColors.red
+                : (isDark
+                      ? AppKendoColors.indigo.shade200
+                      : AppKendoColors.indigo),
           ),
         ),
       ),

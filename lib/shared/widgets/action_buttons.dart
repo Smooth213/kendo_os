@@ -121,7 +121,7 @@ class ScoreActionPanel extends ConsumerWidget {
         child: HoldConfirmButton(
           label: label,
           color: color,
-          textColor: textColor ?? Colors.white,
+          textColor: textColor ?? AppKendoColors.pureWhite,
           disabled: effectiveLocked,
           onConfirm: () =>
               ref.read(matchCommandProvider).addScoreEvent(matchId, side, type),
@@ -147,7 +147,7 @@ class ScoreActionPanel extends ConsumerWidget {
         child: HoldConfirmButton(
           label: label,
           color: AppKendoColors.ipponGold,
-          textColor: Colors.black87,
+          textColor: AppKendoColors.pureBlack,
           disabled: effectiveLocked,
           isFoul: true,
           onConfirm: () {
@@ -228,10 +228,12 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
 
   Color _getDisplayColor(bool isDark) {
     if (widget.disabled) {
-      return isDark ? Colors.grey.shade900 : Colors.grey.shade200;
+      return isDark
+          ? AppKendoColors.grey.shade900
+          : AppKendoColors.grey.shade200;
     }
     return _isHolding
-        ? Color.lerp(widget.color, Colors.black, 0.2)!
+        ? Color.lerp(widget.color, AppKendoColors.pureBlack, 0.2)!
         : widget.color;
   }
 
@@ -239,7 +241,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
     return TextStyle(
       fontSize: widget.isFoul ? (isTablet ? 32 : 24) : (isTablet ? 56 : 48),
       fontWeight: AppFontWeight.bold,
-      color: widget.disabled ? Colors.grey.shade600 : widget.textColor,
+      color: widget.disabled ? AppKendoColors.grey.shade600 : widget.textColor,
       letterSpacing: 2.0,
       height: 1.3,
     );
@@ -271,8 +273,12 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
                   color: _getDisplayColor(isDark),
                   border: Border.all(
                     color: _isHolding
-                        ? Colors.white
-                        : (isDark ? Colors.white12 : Colors.black12),
+                        ? AppKendoColors.pureWhite
+                        : (isDark
+                              ? AppKendoColors.pureWhite.withValues(alpha: 0.12)
+                              : AppKendoColors.pureBlack.withValues(
+                                  alpha: 0.12,
+                                )),
                     width: _isHolding ? 4 : 1,
                   ),
                 ),
@@ -302,7 +308,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
                             value: _controller.value,
                             strokeWidth: 6,
                             valueColor: const AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                              AppKendoColors.pureWhite,
                             ),
                           ),
                         ),

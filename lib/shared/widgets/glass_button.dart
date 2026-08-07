@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,10 +61,10 @@ class GlassButton extends ConsumerWidget {
 
     final Color fallbackBgColor = isDark
         ? const Color(0xFF1C1C1E)
-        : Colors.white;
+        : AppKendoColors.pureWhite;
     final Color fallbackBorderColor = isDark
         ? const Color(0xFF38383A)
-        : Colors.grey.shade300;
+        : AppKendoColors.grey.shade300;
 
     // 背景色: Liquid Glass 無効時は指定色をそのまま（不透明で）適用
     final baseBgColor = surfaceColor ?? color;
@@ -73,17 +75,17 @@ class GlassButton extends ConsumerWidget {
     // 枠線色: Liquid Glass 無効時は枠線を消す
     final borderColor = enableLiquidGlass
         ? (isDark ? color.withValues(alpha: 0.6) : color.withValues(alpha: 0.4))
-        : (child != null ? fallbackBorderColor : Colors.transparent);
+        : (child != null ? fallbackBorderColor : AppKendoColors.transparent);
 
     // 文字色: Liquid Glass 無効時は白文字
     final textColor = enableLiquidGlass
         ? (context.appColors.textColor)
-        : Colors.white;
+        : AppKendoColors.pureWhite;
 
     // アイコンの色はベースカラーから少し明度を調整して視認性を高める
     final accentColor = enableLiquidGlass
         ? (isDark ? _lighten(color, 0.2) : _darken(color, 0.2))
-        : Colors.white;
+        : AppKendoColors.pureWhite;
 
     Widget buttonContent = Material(
       color: bgColor,
@@ -99,10 +101,10 @@ class GlassButton extends ConsumerWidget {
         // タップ時のリップルエフェクト
         splashColor: enableLiquidGlass
             ? color.withValues(alpha: 0.3)
-            : Colors.white.withValues(alpha: 0.2),
+            : AppKendoColors.pureWhite.withValues(alpha: 0.2),
         highlightColor: enableLiquidGlass
             ? color.withValues(alpha: 0.15)
-            : Colors.white.withValues(alpha: 0.1),
+            : AppKendoColors.pureWhite.withValues(alpha: 0.1),
         child: Padding(
           padding: padding,
           child: child ?? _buildStandardLayout(textColor, accentColor),

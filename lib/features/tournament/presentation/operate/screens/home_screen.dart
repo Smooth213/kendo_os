@@ -164,7 +164,7 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         Icon(
                           Icons.wifi_off_rounded,
-                          color: Colors.white,
+                          color: AppKendoColors.pureWhite,
                           size: 18,
                         ),
                         SizedBox(width: AppSpacing.sm),
@@ -172,7 +172,7 @@ class HomeScreen extends ConsumerWidget {
                           child: Text(
                             '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppKendoColors.pureWhite,
                               fontWeight: AppFontWeight.bold,
                               fontSize: AppFontSize.bodySmall,
                             ),
@@ -186,11 +186,11 @@ class HomeScreen extends ConsumerWidget {
             ),
             Expanded(
               child: Scaffold(
-                backgroundColor: Colors.transparent,
+                backgroundColor: AppKendoColors.transparent,
                 appBar: AppHeader(
                   title: '大会ホーム',
                   backgroundColor: enableLiquidGlass
-                      ? Colors.transparent
+                      ? AppKendoColors.transparent
                       : themeColors.cardBackground,
                   actions: [
                     NotificationBellButton(
@@ -208,7 +208,7 @@ class HomeScreen extends ConsumerWidget {
                           icon: Icon(
                             Icons.home,
                             color: isDark
-                                ? Colors.white
+                                ? AppKendoColors.pureWhite
                                 : themeColors.primaryAccent,
                             size: 18,
                           ),
@@ -217,14 +217,16 @@ class HomeScreen extends ConsumerWidget {
                             style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(
                                   color: isDark
-                                      ? Colors.white
+                                      ? AppKendoColors.pureWhite
                                       : themeColors.primaryAccent,
                                   fontWeight: AppFontWeight.bold,
                                 ),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDark
-                                ? Colors.white.withValues(alpha: 0.1)
+                                ? AppKendoColors.pureWhite.withValues(
+                                    alpha: 0.1,
+                                  )
                                 : themeColors.softAccent,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
@@ -240,7 +242,7 @@ class HomeScreen extends ConsumerWidget {
                       icon: Icon(
                         Icons.qr_code_2,
                         color: isDark
-                            ? Colors.white
+                            ? AppKendoColors.pureWhite
                             : themeColors.primaryAccent,
                       ),
                       tooltip: '大会を共有する',
@@ -288,8 +290,12 @@ class HomeScreen extends ConsumerWidget {
                             border: enableLiquidGlass
                                 ? Border.all(
                                     color: isDark
-                                        ? Colors.white.withValues(alpha: 0.15)
-                                        : Colors.black.withValues(alpha: 0.08),
+                                        ? AppKendoColors.pureWhite.withValues(
+                                            alpha: 0.15,
+                                          )
+                                        : AppKendoColors.pureBlack.withValues(
+                                            alpha: 0.08,
+                                          ),
                                     width: 0.5,
                                   )
                                 : null,
@@ -312,16 +318,18 @@ class HomeScreen extends ConsumerWidget {
                                   context,
                                   '進行中',
                                   uniqueInProgress.first,
-                                  Colors.orangeAccent,
+                                  AppKendoColors.orangeAccent,
                                 ),
                               if (uniqueInProgress.isNotEmpty &&
                                   uniqueWaiting.isNotEmpty)
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
                                     vertical: AppSpacing.sm,
                                   ),
                                   child: Divider(
-                                    color: Colors.white24,
+                                    color: AppKendoColors.pureWhite.withValues(
+                                      alpha: 0.24,
+                                    ),
                                     height: 1,
                                   ),
                                 ),
@@ -330,7 +338,7 @@ class HomeScreen extends ConsumerWidget {
                                   context,
                                   '次試合',
                                   uniqueWaiting.first,
-                                  Colors.white,
+                                  AppKendoColors.pureWhite,
                                 ),
                               if (uniqueWaiting.length > 1)
                                 Padding(
@@ -339,8 +347,9 @@ class HomeScreen extends ConsumerWidget {
                                   ),
                                   child: Text(
                                     '次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
+                                    style: TextStyle(
+                                      color: AppKendoColors.pureWhite
+                                          .withValues(alpha: 0.7),
                                       fontSize: AppFontSize.small,
                                     ),
                                     overflow: TextOverflow.ellipsis,
@@ -440,12 +449,12 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               Container(
                 padding: const EdgeInsets.all(AppSpacing.sm),
-                color: Colors.white,
+                color: AppKendoColors.pureWhite,
                 child: QrImageView(
                   data: shareUrl,
                   version: QrVersions.auto,
                   size: 200.0,
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppKendoColors.pureWhite,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -461,8 +470,8 @@ class HomeScreen extends ConsumerWidget {
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppKendoColors.indigo,
+                  foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                 ),
               ),
@@ -472,7 +481,10 @@ class HomeScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
+            child: const Text(
+              '閉じる',
+              style: TextStyle(color: AppKendoColors.grey),
+            ),
           ),
         ],
       ),
@@ -555,17 +567,19 @@ class HomeScreen extends ConsumerWidget {
 
     final cardBgColor = enableLiquidGlass
         ? themeColors.primaryAccent.withValues(alpha: isDark ? 0.15 : 0.08)
-        : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+        : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite);
 
     final cardBorder = enableLiquidGlass
         ? Border.all(
             color: isDark
-                ? Colors.white.withValues(alpha: 0.1)
-                : Colors.black.withValues(alpha: 0.05),
+                ? AppKendoColors.pureWhite.withValues(alpha: 0.1)
+                : AppKendoColors.pureBlack.withValues(alpha: 0.05),
             width: 0.5,
           )
         : Border.all(
-            color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
+            color: isDark
+                ? const Color(0xFF38383A)
+                : AppKendoColors.grey.shade200,
           );
 
     final content = Column(
@@ -680,7 +694,7 @@ class HomeScreen extends ConsumerWidget {
         border: cardBorder,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppKendoColors.pureBlack.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -698,10 +712,12 @@ class HomeScreen extends ConsumerWidget {
     VoidCallback? onTap,
   }) {
     final activeTextColor = themeColors.textColor;
-    final inactiveTextColor = isDark ? Colors.white54 : Colors.black54;
+    final inactiveTextColor = isDark
+        ? AppKendoColors.pureWhite.withValues(alpha: 0.54)
+        : AppKendoColors.pureBlack.withValues(alpha: 0.54);
 
     return Material(
-      color: Colors.transparent,
+      color: AppKendoColors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: AppRadius.small,
@@ -714,7 +730,9 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Icon(
                 isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: isCompleted ? Colors.green.shade600 : Colors.grey,
+                color: isCompleted
+                    ? AppKendoColors.green.shade600
+                    : AppKendoColors.grey,
                 size: 20,
               ),
               const SizedBox(width: AppSpacing.md),

@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -106,7 +108,9 @@ class _AnnounceHistoryBottomSheetState
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white, // 90%のクリーンな白ベース
+        color: isDark
+            ? const Color(0xFF1C1C1E)
+            : AppKendoColors.pureWhite, // 90%のクリーンな白ベース
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppRadius.roundValue),
         ),
@@ -128,7 +132,9 @@ class _AnnounceHistoryBottomSheetState
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                  color: isDark
+                      ? AppKendoColors.grey.shade700
+                      : AppKendoColors.grey.shade300,
                   borderRadius: AppRadius.micro,
                 ),
               ),
@@ -141,7 +147,9 @@ class _AnnounceHistoryBottomSheetState
                   children: [
                     Icon(
                       Icons.notifications_active_outlined,
-                      color: isDark ? Colors.white : const Color(0xFF2C3E50),
+                      color: isDark
+                          ? AppKendoColors.pureWhite
+                          : const Color(0xFF2C3E50),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
@@ -151,7 +159,7 @@ class _AnnounceHistoryBottomSheetState
                           fontSize: AppFontSize.bodyMedium,
                           fontWeight: AppFontWeight.bold,
                           color: isDark
-                              ? Colors.white
+                              ? AppKendoColors.pureWhite
                               : const Color(0xFF2C3E50),
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -207,7 +215,10 @@ class _AnnounceHistoryBottomSheetState
     }
     if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
       return const Center(
-        child: Text('新しい通知はありません', style: TextStyle(color: Colors.grey)),
+        child: Text(
+          '新しい通知はありません',
+          style: TextStyle(color: AppKendoColors.grey),
+        ),
       );
     }
 
@@ -245,7 +256,9 @@ class _AnnounceHistoryBottomSheetState
                     ? const Color(0xFFFF69B4).withValues(
                         alpha: 0.4,
                       ) // 未読時はサクラピンクの淡い輪郭
-                    : (isDark ? const Color(0xFF38383A) : Colors.grey.shade200),
+                    : (isDark
+                          ? const Color(0xFF38383A)
+                          : AppKendoColors.grey.shade200),
                 width: 1.2,
               ),
             ),
@@ -284,8 +297,10 @@ class _AnnounceHistoryBottomSheetState
                                     ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isStaffOnly
-                                    ? Colors.deepOrange
-                                    : (isDark ? Colors.white : Colors.black87),
+                                    ? AppKendoColors.deepOrange
+                                    : (isDark
+                                          ? AppKendoColors.pureWhite
+                                          : AppKendoColors.pureBlack),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -294,7 +309,7 @@ class _AnnounceHistoryBottomSheetState
                             DateFormat('HH:mm').format(announce.timestamp),
                             style: const TextStyle(
                               fontSize: AppFontSize.caption,
-                              color: Colors.grey,
+                              color: AppKendoColors.grey,
                             ),
                           ),
                         ],
@@ -306,8 +321,8 @@ class _AnnounceHistoryBottomSheetState
                           fontSize: AppFontSize.bodySmall,
                           height: 1.4,
                           color: isDark
-                              ? Colors.grey.shade400
-                              : Colors.grey.shade700,
+                              ? AppKendoColors.grey.shade400
+                              : AppKendoColors.grey.shade700,
                         ),
                       ),
                     ],
@@ -355,8 +370,8 @@ class NotificationBellButton extends ConsumerWidget {
         color:
             color ??
             (Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.indigo.shade900),
+                ? AppKendoColors.pureWhite
+                : AppKendoColors.indigo.shade900),
       ),
       tooltip: '通知履歴',
       onPressed: () =>

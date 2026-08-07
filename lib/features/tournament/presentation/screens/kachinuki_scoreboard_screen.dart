@@ -39,14 +39,14 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeTabColor = isDark
-        ? Colors.indigoAccent.shade100
-        : Colors.indigo.shade700;
+        ? AppKendoColors.indigo.shade100
+        : AppKendoColors.indigo.shade700;
 
     return DefaultTabController(
       length: 2,
       child: LiquidBackground(
         child: Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppKendoColors.transparent,
           appBar: AppHeader(
             title: groupName,
             actions: [
@@ -62,7 +62,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               labelColor: activeTabColor,
               unselectedLabelColor: isDark
                   ? const Color(0xFF8E8E93)
-                  : Colors.grey,
+                  : AppKendoColors.grey,
               indicatorColor: activeTabColor,
               indicatorWeight: 3,
               tabs: const [
@@ -115,7 +115,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
       isScrollControlled: true,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xlargeValue),
           ),
@@ -135,7 +135,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                 width: 48,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
+                  color: AppKendoColors.grey.shade400,
                   borderRadius: AppRadius.medium,
                 ),
               ),
@@ -168,7 +168,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                color: isDark
+                    ? AppKendoColors.grey.shade400
+                    : AppKendoColors.grey.shade600,
                 fontSize: AppFontSize.bodySmall,
               ),
             ),
@@ -177,7 +179,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             child: Text(
               value,
               style: TextStyle(
-                color: isDark ? Colors.white : Colors.black87,
+                color: isDark
+                    ? AppKendoColors.pureWhite
+                    : AppKendoColors.pureBlack,
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.body,
               ),
@@ -295,10 +299,12 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           ),
           padding: const EdgeInsets.all(AppSpacing.roundValue),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
             borderRadius: AppRadius.xlarge,
             border: Border.all(
-              color: isDark ? const Color(0xFF38383A) : Colors.indigo.shade50,
+              color: isDark
+                  ? const Color(0xFF38383A)
+                  : AppKendoColors.indigo.shade50,
             ),
           ),
           child: Column(
@@ -308,7 +314,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: AppFontSize.small,
                   fontWeight: AppFontWeight.bold,
-                  color: isDark ? Colors.grey.shade400 : Colors.grey,
+                  color: isDark
+                      ? AppKendoColors.grey.shade400
+                      : AppKendoColors.grey,
                   letterSpacing: 2,
                 ),
               ),
@@ -343,7 +351,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                                   ? AppKendoColors.hansokuRed
                                   : (isDark
                                         ? const Color(0xFF2C2C2E)
-                                        : Colors.grey.shade200),
+                                        : AppKendoColors.grey.shade200),
                               size: 28,
                             ),
                           ),
@@ -361,7 +369,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                       style: TextStyle(
                         fontWeight: AppFontWeight.black,
                         fontSize: AppFontSize.display,
-                        color: isDark ? Colors.white10 : Colors.black12,
+                        color: isDark
+                            ? AppKendoColors.pureWhite.withValues(alpha: 0.10)
+                            : AppKendoColors.pureBlack.withValues(alpha: 0.12),
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -375,8 +385,8 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontWeight: AppFontWeight.black,
                             color: isDark
-                                ? Colors.blueGrey.shade300
-                                : Colors.blueGrey.shade800,
+                                ? AppKendoColors.blueGrey.shade300
+                                : AppKendoColors.blueGrey.shade800,
                             fontSize: AppFontSize.subhead,
                           ),
                         ),
@@ -391,11 +401,11 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               Icons.shield,
                               color: i >= whiteDead
                                   ? (isDark
-                                        ? Colors.blueGrey.shade400
-                                        : Colors.blueGrey.shade600)
+                                        ? AppKendoColors.blueGrey.shade400
+                                        : AppKendoColors.blueGrey.shade600)
                                   : (isDark
                                         ? const Color(0xFF2C2C2E)
-                                        : Colors.grey.shade200),
+                                        : AppKendoColors.grey.shade200),
                               size: 28,
                             ),
                           ),
@@ -466,7 +476,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           style: TextStyle(
             fontSize: AppFontSize.subhead,
             fontWeight: AppFontWeight.bold,
-            color: Colors.grey.shade500,
+            color: AppKendoColors.grey.shade500,
           ),
         );
       }
@@ -482,7 +492,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           style: TextStyle(
             fontSize: AppFontSize.subhead,
             fontWeight: isWin ? AppFontWeight.black : AppFontWeight.bold,
-            color: isFaded ? Colors.grey.shade600 : winColor,
+            color: isFaded ? AppKendoColors.grey.shade600 : winColor,
           ),
           children: [
             TextSpan(text: parsed['last']),
@@ -500,7 +510,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                       fontSize: AppFontSize.badge,
                       fontWeight: AppFontWeight.bold,
                       color: isFaded
-                          ? Colors.grey.shade500
+                          ? AppKendoColors.grey.shade500
                           : winColor.withValues(alpha: 0.7),
                     ),
                   ),
@@ -520,7 +530,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             style: TextStyle(
               fontSize: AppFontSize.caption,
               fontWeight: AppFontWeight.bold,
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              color: isDark
+                  ? AppKendoColors.grey.shade600
+                  : AppKendoColors.grey.shade400,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -539,7 +551,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                                   alpha: 0.15,
                                 )
                               : AppKendoColors.hansokuRed)
-                        : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+                        : (isDark
+                              ? const Color(0xFF1C1C1E)
+                              : AppKendoColors.pureWhite),
                     borderRadius: const BorderRadius.horizontal(
                       left: Radius.circular(AppRadius.largeValue),
                     ),
@@ -550,7 +564,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                                 : AppKendoColors.hansokuRed)
                           : (isDark
                                 ? const Color(0xFF38383A)
-                                : Colors.grey.shade200),
+                                : AppKendoColors.grey.shade200),
                     ),
                   ),
                   child: Column(
@@ -633,19 +647,21 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                   color: isDone
                       ? (isDark
                             ? const Color(0xFF2C2C2E)
-                            : Colors.grey.shade100)
+                            : AppKendoColors.grey.shade100)
                       : (isDark
-                            ? Colors.teal.shade900.withValues(alpha: 0.15)
-                            : Colors.teal.shade50),
+                            ? AppKendoColors.teal.shade900.withValues(
+                                alpha: 0.15,
+                              )
+                            : AppKendoColors.teal.shade50),
                   border: Border.symmetric(
                     horizontal: BorderSide(
                       color: isDone
                           ? (isDark
                                 ? const Color(0xFF38383A)
-                                : Colors.grey.shade200)
+                                : AppKendoColors.grey.shade200)
                           : (isDark
-                                ? Colors.teal.shade900
-                                : Colors.teal.shade200),
+                                ? AppKendoColors.teal.shade900
+                                : AppKendoColors.teal.shade200),
                     ),
                   ),
                 ),
@@ -669,8 +685,8 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               '-',
                               style: TextStyle(
                                 color: isDark
-                                    ? Colors.grey.shade600
-                                    : Colors.grey,
+                                    ? AppKendoColors.grey.shade600
+                                    : AppKendoColors.grey,
                                 fontWeight: AppFontWeight.bold,
                               ),
                             ),
@@ -678,8 +694,8 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                           _buildScoreMarks(
                             match.whiteDisplays,
                             isDark
-                                ? Colors.blueGrey.shade300
-                                : Colors.blueGrey.shade800,
+                                ? AppKendoColors.blueGrey.shade300
+                                : AppKendoColors.blueGrey.shade800,
                             isDraw || rWin,
                             isDark,
                           ),
@@ -690,7 +706,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                           'VS',
                           style: TextStyle(
                             fontWeight: AppFontWeight.black,
-                            color: isDark ? Colors.teal.shade400 : Colors.teal,
+                            color: isDark
+                                ? AppKendoColors.teal.shade400
+                                : AppKendoColors.teal,
                           ),
                         ),
                       ),
@@ -704,20 +722,24 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: wWin
                         ? (isDark
-                              ? Colors.blueGrey.shade900.withValues(alpha: 0.2)
-                              : Colors.blueGrey.shade50)
-                        : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+                              ? AppKendoColors.blueGrey.shade900.withValues(
+                                  alpha: 0.2,
+                                )
+                              : AppKendoColors.blueGrey.shade50)
+                        : (isDark
+                              ? const Color(0xFF1C1C1E)
+                              : AppKendoColors.pureWhite),
                     borderRadius: const BorderRadius.horizontal(
                       right: Radius.circular(AppRadius.largeValue),
                     ),
                     border: Border.all(
                       color: wWin
                           ? (isDark
-                                ? Colors.blueGrey.shade800
-                                : Colors.blueGrey.shade200)
+                                ? AppKendoColors.blueGrey.shade800
+                                : AppKendoColors.blueGrey.shade200)
                           : (isDark
                                 ? const Color(0xFF38383A)
-                                : Colors.grey.shade200),
+                                : AppKendoColors.grey.shade200),
                     ),
                   ),
                   child: Column(
@@ -728,8 +750,8 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         wWin,
                         isDraw || rWin,
                         isDark
-                            ? Colors.blueGrey.shade300
-                            : Colors.blueGrey.shade800,
+                            ? AppKendoColors.blueGrey.shade300
+                            : AppKendoColors.blueGrey.shade800,
                       ),
                       if (wWin && wStreak >= 2) ...[
                         const SizedBox(height: 6),
@@ -803,7 +825,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                 vertical: 2,
               ),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
+                color: isDark
+                    ? const Color(0xFF38383A)
+                    : AppKendoColors.grey.shade300,
                 borderRadius: AppRadius.medium,
               ),
               child: Text(
@@ -811,7 +835,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: AppFontSize.badge,
                   fontWeight: AppFontWeight.bold,
-                  color: isDark ? Colors.grey.shade400 : Colors.black54,
+                  color: isDark
+                      ? AppKendoColors.grey.shade400
+                      : AppKendoColors.pureBlack.withValues(alpha: 0.54),
                 ),
               ),
             ),
@@ -831,7 +857,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: pts.map((p) {
         final textColor = isFaded
-            ? (isDark ? Colors.grey.shade700 : Colors.grey.shade400)
+            ? (isDark
+                  ? AppKendoColors.grey.shade700
+                  : AppKendoColors.grey.shade400)
             : color;
         if (p.isFirstMatchPoint && p.mark != '◯') {
           return Container(
@@ -888,11 +916,11 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
         borderRadius: AppRadius.large,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppKendoColors.pureBlack.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -975,30 +1003,30 @@ class KachinukiBracketPainter extends CustomPainter {
         ? AppKendoColors.hansokuRed
         : AppKendoColors.hansokuRed;
     final Color whiteWinColor = isDark
-        ? Colors.indigo.shade300
-        : Colors.indigo.shade800;
+        ? AppKendoColors.indigo.shade300
+        : AppKendoColors.indigo.shade800;
     final Color centerLineColor = isDark
-        ? Colors.indigo.shade400
-        : Colors.indigo.shade900;
+        ? AppKendoColors.indigo.shade400
+        : AppKendoColors.indigo.shade900;
     final Color baseLineColor = isDark
-        ? Colors.grey.shade700
-        : Colors.grey.shade300;
+        ? AppKendoColors.grey.shade700
+        : AppKendoColors.grey.shade300;
     // ★ 修正2：引き分けの対戦線を濃いグレーに
     final Color drawLineColor = isDark
-        ? Colors.grey.shade500
-        : Colors.grey.shade500;
+        ? AppKendoColors.grey.shade500
+        : AppKendoColors.grey.shade500;
     final Color drawCrossColor = isDark
         ? AppKendoColors.ipponGold
         : AppKendoColors.ipponGold;
 
     final redBgPaint = Paint()
       ..color = isDark
-          ? Colors.red.withValues(alpha: 0.08)
-          : Colors.red.withValues(alpha: 0.03);
+          ? AppKendoColors.red.withValues(alpha: 0.08)
+          : AppKendoColors.red.withValues(alpha: 0.03);
     final whiteBgPaint = Paint()
       ..color = isDark
-          ? Colors.indigo.withValues(alpha: 0.12)
-          : Colors.indigo.withValues(alpha: 0.03);
+          ? AppKendoColors.indigo.withValues(alpha: 0.12)
+          : AppKendoColors.indigo.withValues(alpha: 0.03);
 
     final thickLinePaint = Paint()
       ..color = centerLineColor
@@ -1287,9 +1315,11 @@ class KachinukiBracketPainter extends CustomPainter {
     const double width = 16.0;
     const double height = 26.0;
     final bgPaint = Paint()
-      ..color = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+      ..color = isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite;
     final borderPaint = Paint()
-      ..color = isDark ? Colors.grey.shade700 : Colors.grey.shade400
+      ..color = isDark
+          ? AppKendoColors.grey.shade700
+          : AppKendoColors.grey.shade400
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
@@ -1304,7 +1334,7 @@ class KachinukiBracketPainter extends CustomPainter {
     );
 
     final textStyle = TextStyle(
-      color: isDark ? Colors.grey.shade200 : Colors.black87,
+      color: isDark ? AppKendoColors.grey.shade200 : AppKendoColors.pureBlack,
       fontSize: AppFontSize.nano,
       fontWeight: AppFontWeight.bold,
       fontFamily: 'Noto Sans JP',
@@ -1338,14 +1368,15 @@ class KachinukiBracketPainter extends CustomPainter {
 
     // customColor があればそれを使用、なければデフォルトの色
     final Color textColor =
-        customColor ?? (isDark ? Colors.white : Colors.black87);
+        customColor ??
+        (isDark ? AppKendoColors.pureWhite : AppKendoColors.pureBlack);
 
     if (!isTeamName && span != null && span.rawName.contains('欠員')) {
       final tp = TextPainter(
         text: TextSpan(
           text: '(欠員)',
           style: TextStyle(
-            color: Colors.grey.shade500,
+            color: AppKendoColors.grey.shade500,
             fontSize: AppFontSize.bodySmall,
             fontWeight: AppFontWeight.bold,
           ),
@@ -1389,7 +1420,9 @@ class KachinukiBracketPainter extends CustomPainter {
           text: span.initial,
           style: textStyle.copyWith(
             fontSize: fontSize * 0.65,
-            color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+            color: isDark
+                ? AppKendoColors.grey.shade400
+                : AppKendoColors.grey.shade600,
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -1425,7 +1458,9 @@ class KachinukiBracketPainter extends CustomPainter {
     // 技の色を統一（Red700 / Indigo800）
     final Color color = isRed
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.indigo.shade300 : Colors.indigo.shade800);
+        : (isDark
+              ? AppKendoColors.indigo.shade300
+              : AppKendoColors.indigo.shade800);
 
     final textStyle = TextStyle(
       color: color,

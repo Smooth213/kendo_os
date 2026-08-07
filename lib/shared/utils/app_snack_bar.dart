@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -71,7 +73,7 @@ class AppSnackBar {
         content: Text(
           message,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppKendoColors.pureWhite,
             fontWeight: AppFontWeight.bold,
           ),
         ),
@@ -97,7 +99,7 @@ class AppSnackBar {
         content: Text(
           message,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppKendoColors.pureWhite,
             fontWeight: AppFontWeight.bold,
           ),
         ),

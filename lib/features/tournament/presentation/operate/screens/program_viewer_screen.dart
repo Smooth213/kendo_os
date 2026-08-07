@@ -76,9 +76,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   String _currentSearchText = "";
 
   bool _isDrawingMode = false;
-  Color _selectedPenColor = Colors.pink; // ★ 4色を管理（デフォルトはピンク）
+  Color _selectedPenColor = AppKendoColors.pink; // ★ 4色を管理（デフォルトはピンク）
   bool get _isSharedPen =>
-      _selectedPenColor == Colors.pink || _selectedPenColor == _yellowPenColor;
+      _selectedPenColor == AppKendoColors.pink ||
+      _selectedPenColor == _yellowPenColor;
   List<Offset> _currentPoints = [];
 
   // ★ 画像サイズ取得用キャッシュ（描画ごとのチラつき・無限クルクルを防止）
@@ -308,10 +309,11 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
     // 権限がないのに共有ペンが選ばれている場合のフォールバック（強制的に青にする）
     final activePenColor = (!canUseSharedPen && _isSharedPen)
-        ? Colors.blue
+        ? AppKendoColors.blue
         : _selectedPenColor;
     final activeIsShared =
-        activePenColor == Colors.pink || activePenColor == _yellowPenColor;
+        activePenColor == AppKendoColors.pink ||
+        activePenColor == _yellowPenColor;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -343,7 +345,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     if (displayPrograms.isEmpty) {
       return LiquidBackground(
         child: Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppKendoColors.transparent,
           appBar: const AppHeader(title: 'プログラム'),
           body: const Center(child: Text('表示できるプログラムがありません。')),
         ),
@@ -373,9 +375,11 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          backgroundColor: isDark
+              ? const Color(0xFF1C1C1E)
+              : AppKendoColors.pureWhite,
           foregroundColor: context.appColors.textColor,
           elevation: _isDrawingMode ? 0 : 1,
           titleWidget: _isSearchMode
@@ -465,8 +469,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     child: Icon(
                       Icons.bolt,
                       color: (currentProgram.isOcrProcessed ?? false)
-                          ? Colors.amber
-                          : Colors.grey.shade400,
+                          ? AppKendoColors.amber
+                          : AppKendoColors.grey.shade400,
                       size: 20,
                     ),
                   ),
@@ -509,7 +513,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               ? activePenColor
                               : (context.appColors.separatorColor),
                           foregroundColor: _isDrawingMode
-                              ? Colors.white
+                              ? AppKendoColors.pureWhite
                               : (context.appColors.textColor),
                           elevation: 0,
                         ),
@@ -529,10 +533,12 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                  color: isDark
+                      ? const Color(0xFF1C1C1E)
+                      : AppKendoColors.pureWhite,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withAlpha(26),
+                      color: AppKendoColors.pureBlack.withAlpha(26),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -546,7 +552,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         decoration: BoxDecoration(
                           color: isDark
                               ? const Color(0xFF2C2C2E)
-                              : Colors.grey.shade100,
+                              : AppKendoColors.grey.shade100,
                           borderRadius: AppRadius.small,
                         ),
                         padding: const EdgeInsets.symmetric(
@@ -641,12 +647,12 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFF3A3A3C)
-                            : Colors.blueGrey.shade50.withAlpha(220),
+                            : AppKendoColors.blueGrey.shade50.withAlpha(220),
                         borderRadius: AppRadius.small,
                         border: Border.all(
                           color: isDark
-                              ? Colors.transparent
-                              : Colors.blueGrey.shade100,
+                              ? AppKendoColors.transparent
+                              : AppKendoColors.blueGrey.shade100,
                           width: 1,
                         ),
                       ),
@@ -663,7 +669,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             icon: Icons.cleaning_services,
                             tooltip: '消しゴム',
                             isDark: isDark,
-                            activeColor: Colors.blueGrey.shade600,
+                            activeColor: AppKendoColors.blueGrey.shade600,
                           ),
 
                           // 小さな縦仕切り線
@@ -671,8 +677,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             height: 20,
                             width: 1,
                             color: isDark
-                                ? Colors.grey.shade700
-                                : Colors.blueGrey.shade200,
+                                ? AppKendoColors.grey.shade700
+                                : AppKendoColors.blueGrey.shade200,
                             margin: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.xs,
                             ),
@@ -689,8 +695,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             icon: Icon(
                               Icons.undo,
                               color: isDark
-                                  ? Colors.white70
-                                  : Colors.blueGrey.shade600,
+                                  ? AppKendoColors.pureWhite.withValues(
+                                      alpha: 0.7,
+                                    )
+                                  : AppKendoColors.blueGrey.shade600,
                             ),
                             tooltip: '1つ戻す',
                             onPressed: () {
@@ -717,8 +725,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             icon: Icon(
                               Icons.delete_sweep,
                               color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.blueGrey.shade700,
+                                  ? AppKendoColors.grey.shade400
+                                  : AppKendoColors.blueGrey.shade700,
                             ),
                             tooltip: 'すべて消す',
                             onPressed: () async {
@@ -740,7 +748,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                             text:
                                                 '※他の人の画面からも消えてしまいます。間違いないですか？\n',
                                             style: TextStyle(
-                                              color: Colors.redAccent,
+                                              color: AppKendoColors.redAccent,
                                               fontWeight: AppFontWeight.bold,
                                             ),
                                           ),
@@ -758,14 +766,17 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                       ), // キャンセル
                                       child: const Text(
                                         'キャンセル',
-                                        style: TextStyle(color: Colors.grey),
+                                        style: TextStyle(
+                                          color: AppKendoColors.grey,
+                                        ),
                                       ),
                                     ),
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.pop(context, true), // 実行
                                       style: TextButton.styleFrom(
-                                        foregroundColor: Colors.redAccent,
+                                        foregroundColor:
+                                            AppKendoColors.redAccent,
                                       ),
                                       child: const Text('すべて消去する'),
                                     ),
@@ -821,7 +832,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         decoration: BoxDecoration(
                           color: isDark
                               ? const Color(0xFF1C1C1E)
-                              : Colors.white,
+                              : AppKendoColors.pureWhite,
                           borderRadius: AppRadius.large,
                           border: Border.all(
                             color: context.appColors.separatorColor,
@@ -835,7 +846,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                   ? Icons.picture_as_pdf_outlined
                                   : Icons.image_not_supported_outlined,
                               size: 64,
-                              color: Colors.indigo.shade400,
+                              color: AppKendoColors.indigo.shade400,
                             ),
                             const SizedBox(height: 20),
                             Text(
@@ -851,7 +862,13 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               '【材料データ同期済み】\nオフラインファースト最適化の規約に基づき、通信帯域を圧迫する実ファイル（バイナリ）の自動ロードは行われません。プログラムの構成情報は安全に保護されています。',
                               style: TextStyle(
                                 fontSize: AppFontSize.small,
-                                color: isDark ? Colors.white70 : Colors.black54,
+                                color: isDark
+                                    ? AppKendoColors.pureWhite.withValues(
+                                        alpha: 0.7,
+                                      )
+                                    : AppKendoColors.pureBlack.withValues(
+                                        alpha: 0.54,
+                                      ),
                                 height: 1.5,
                               ),
                               textAlign: TextAlign.center,
@@ -1035,7 +1052,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                                     child: Text(
                                                       'PDFロード失敗: ${bytesSnapshot.error}',
                                                       style: const TextStyle(
-                                                        color: Colors.redAccent,
+                                                        color: AppKendoColors
+                                                            .redAccent,
                                                       ),
                                                     ),
                                                   );
@@ -1188,12 +1206,15 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                             errorBuilder:
                                                 (context, error, stackTrace) {
                                                   return Container(
-                                                    color: Colors.grey.shade200,
+                                                    color: AppKendoColors
+                                                        .grey
+                                                        .shade200,
                                                     child: const Center(
                                                       child: Icon(
                                                         Icons.broken_image,
                                                         size: 64,
-                                                        color: Colors.grey,
+                                                        color:
+                                                            AppKendoColors.grey,
                                                       ),
                                                     ),
                                                   );
@@ -1265,13 +1286,15 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isDark ? Colors.grey.shade800 : Colors.white)
-                : Colors.transparent,
+                ? (isDark
+                      ? AppKendoColors.grey.shade800
+                      : AppKendoColors.pureWhite)
+                : AppKendoColors.transparent,
             borderRadius: AppRadius.sub,
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withAlpha(20),
+                      color: AppKendoColors.pureBlack.withAlpha(20),
                       blurRadius: 2,
                       offset: const Offset(0, 1),
                     ),
@@ -1283,7 +1306,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
             size: 18,
             color: isSelected
                 ? activeColor
-                : (isDark ? Colors.white38 : Colors.black38),
+                : (isDark
+                      ? AppKendoColors.white38
+                      : AppKendoColors.pureBlack.withValues(alpha: 0.38)),
           ),
         ),
       ),
@@ -1292,10 +1317,18 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
   // ペンの名前を返す補助関数
   String _getPenName(Color color) {
-    if (color == Colors.pink) return 'ピンク';
-    if (color == _yellowPenColor || color == Colors.yellow) return 'イエロー';
-    if (color == Colors.blue) return 'ブルー';
-    if (color == Colors.black87) return 'ブラック';
+    if (color == AppKendoColors.pink) {
+      return 'ピンク';
+    }
+    if (color == _yellowPenColor || color == AppKendoColors.yellow) {
+      return 'イエロー';
+    }
+    if (color == AppKendoColors.blue) {
+      return 'ブルー';
+    }
+    if (color == AppKendoColors.pureBlack) {
+      return 'ブラック';
+    }
     return 'ペン';
   }
 
@@ -1336,14 +1369,18 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       '📢 共有ペン (全員の画面に反映されます)',
                       style: TextStyle(
                         fontSize: AppFontSize.bodySmall,
-                        color: Colors.black87,
+                        color: AppKendoColors.pureBlack,
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        _buildLargePenOption(context, Colors.pink, 'ピンク (共有)'),
+                        _buildLargePenOption(
+                          context,
+                          AppKendoColors.pink,
+                          'ピンク (共有)',
+                        ),
                         const SizedBox(width: 10),
                         _buildLargePenOption(
                           context,
@@ -1358,18 +1395,22 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     '📝 個人ペン (自分だけのメモです)',
                     style: TextStyle(
                       fontSize: AppFontSize.bodySmall,
-                      color: Colors.black87,
+                      color: AppKendoColors.pureBlack,
                       fontWeight: AppFontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      _buildLargePenOption(context, Colors.blue, 'ブルー (個人)'),
+                      _buildLargePenOption(
+                        context,
+                        AppKendoColors.blue,
+                        'ブルー (個人)',
+                      ),
                       const SizedBox(width: 10),
                       _buildLargePenOption(
                         context,
-                        Colors.black87,
+                        AppKendoColors.pureBlack,
                         'ブラック (個人)',
                       ),
                     ],
@@ -1396,10 +1437,12 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           decoration: BoxDecoration(
-            color: isSelected ? color.withAlpha(26) : Colors.transparent,
+            color: isSelected
+                ? color.withAlpha(26)
+                : AppKendoColors.transparent,
             borderRadius: AppRadius.medium,
             border: Border.all(
-              color: isSelected ? color : Colors.grey.shade300,
+              color: isSelected ? color : AppKendoColors.grey.shade300,
               width: 2,
             ),
           ),
@@ -1485,9 +1528,9 @@ class StrokePainter extends CustomPainter {
     // 🛡️ 救済パッチ：過去にColors.yellow(0xFFFFEB3B)で書かれたアノテーションデータを読み込んだ場合、
     // 自動的に視認性の高いゴールドイエロー(0xFFCA8A04)に色補正してレンダリングする
     Color finalColor = color;
-    if (color.r == Colors.yellow.r &&
-        color.g == Colors.yellow.g &&
-        color.b == Colors.yellow.b) {
+    if (color.r == AppKendoColors.yellow.r &&
+        color.g == AppKendoColors.yellow.g &&
+        color.b == AppKendoColors.yellow.b) {
       finalColor = const Color(
         0xFFCA8A04,
       ).withAlpha((color.a * 255.0).round().clamp(0, 255));
@@ -1570,7 +1613,7 @@ class OcrHighlightPainter extends CustomPainter {
     final double scale = size.width / originalImageSize.width;
 
     final paint = Paint()
-      ..color = Colors.pinkAccent.withAlpha(128)
+      ..color = AppKendoColors.pinkAccent.withAlpha(128)
       ..style = PaintingStyle.fill;
 
     for (var wordData in ocrWords) {

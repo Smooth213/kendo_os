@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
@@ -241,10 +243,12 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                         ...filteredGuest.map(
                           (name) => ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: Colors.grey.withAlpha(26),
+                              backgroundColor: AppKendoColors.grey.withAlpha(
+                                26,
+                              ),
                               child: const Icon(
                                 Icons.person_outline,
-                                color: Colors.grey,
+                                color: AppKendoColors.grey,
                                 size: 20,
                               ),
                             ),
@@ -253,7 +257,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                               '出稽古・ゲスト',
                               style: TextStyle(
                                 fontSize: AppFontSize.small,
-                                color: Colors.grey,
+                                color: AppKendoColors.grey,
                               ),
                             ),
                             onTap: () {
@@ -277,7 +281,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                               p.gradeName,
                               style: const TextStyle(
                                 fontSize: AppFontSize.small,
-                                color: Colors.grey,
+                                color: AppKendoColors.grey,
                               ),
                             ), // ★ 修正：マスタの学年を表示
                             onTap: () {

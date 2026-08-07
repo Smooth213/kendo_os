@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
@@ -12,11 +14,13 @@ class ViewerKachinukiScoreboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
+    final headerTextColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.indigo.shade900;
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
           leading: IconButton(
             icon: Icon(

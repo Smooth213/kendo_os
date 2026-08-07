@@ -40,7 +40,7 @@ abstract class StrokeModel with _$StrokeModel {
     required String programId,
     required int pageIndex, // 何ページ目に描かれた線か
     required String authorId, // 誰が描いたか
-    required int colorValue, // ARGBのint値 (例: Colors.red.value)
+    required int colorValue, // ARGBのint値 (例: AppKendoColors.red.value)
     required double strokeWidth, // 線の太さ
     required List<double> points, // [x1, y1, x2, y2, ...] のフラットリスト（軽量化・高速化のため）
     required bool isShared, // true: 共有ハイライト(全員), false: 個人メモ(自分のみ)

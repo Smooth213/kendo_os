@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/admin/providers/metrics_provider.dart';
@@ -17,7 +18,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
           title: '運用ダッシュボード (Observability)',
           actions: const [
@@ -38,7 +39,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                   'リアルタイムのシステム健康状態（メトリクス）を表示しています。異常値が検出された場合、自動でCRITICALアラートが発行されます。',
                   style: TextStyle(
                     fontSize: AppFontSize.bodySmall,
-                    color: Colors.grey,
+                    color: AppKendoColors.grey,
                   ),
                 ),
               ),
@@ -46,28 +47,34 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                 '総イベント処理数',
                 '${metrics['totalEvents']} 回',
                 Icons.data_usage,
-                Colors.blue,
+                AppKendoColors.blue,
                 isDark,
               ),
               _buildMetricCard(
                 'システムエラー率 (直近)',
                 '${(metrics['errorRate'] * 100).toStringAsFixed(2)} %',
                 Icons.error_outline,
-                (metrics['errorRate'] > 0.01) ? Colors.red : Colors.green,
+                (metrics['errorRate'] > 0.01)
+                    ? AppKendoColors.red
+                    : AppKendoColors.green,
                 isDark,
               ),
               _buildMetricCard(
                 '同時書き込み競合率 (直近)',
                 '${(metrics['conflictRate'] * 100).toStringAsFixed(2)} %',
                 Icons.sync_problem,
-                (metrics['conflictRate'] > 0.05) ? Colors.orange : Colors.green,
+                (metrics['conflictRate'] > 0.05)
+                    ? AppKendoColors.orange
+                    : AppKendoColors.green,
                 isDark,
               ),
               _buildMetricCard(
                 'Projection遅延 (直近)',
                 '${metrics['lastLagMs']} ms',
                 Icons.timer,
-                (metrics['lastLagMs'] > 2000) ? Colors.red : Colors.green,
+                (metrics['lastLagMs'] > 2000)
+                    ? AppKendoColors.red
+                    : AppKendoColors.green,
                 isDark,
               ),
             ],
@@ -85,7 +92,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
     bool isDark,
   ) {
     return Card(
-      color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
       child: Padding(
@@ -101,7 +108,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                   title,
                   style: const TextStyle(
                     fontSize: AppFontSize.small,
-                    color: Colors.grey,
+                    color: AppKendoColors.grey,
                     fontWeight: AppFontWeight.bold,
                   ),
                 ),

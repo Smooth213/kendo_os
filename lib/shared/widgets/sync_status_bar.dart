@@ -29,16 +29,16 @@ class SyncStatusBar extends ConsumerWidget {
     Color barColor;
     switch (activeRole) {
       case Role.admin:
-        barColor = Colors.indigo.shade800;
+        barColor = AppKendoColors.indigo.shade800;
         break;
       case Role.scorer:
-        barColor = Colors.teal.shade700;
+        barColor = AppKendoColors.teal.shade700;
         break;
       case Role.editor:
-        barColor = Colors.purple.shade700;
+        barColor = AppKendoColors.purple.shade700;
         break;
       case Role.viewer:
-        barColor = Colors.blueGrey.shade700;
+        barColor = AppKendoColors.blueGrey.shade700;
         break;
     }
 
@@ -67,7 +67,7 @@ class SyncStatusBar extends ConsumerWidget {
               Text(
                 '【${mode.label}：${activeRole.label}】',
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppKendoColors.pureWhite,
                   fontSize: AppFontSize.badge,
                   fontWeight: AppFontWeight.bold,
                 ),
@@ -77,16 +77,16 @@ class SyncStatusBar extends ConsumerWidget {
               Row(
                 children: [
                   if (!isOnline) ...[
-                    const Icon(
+                    Icon(
                       Icons.cloud_off,
-                      color: Colors.white70,
+                      color: AppKendoColors.pureWhite.withValues(alpha: 0.7),
                       size: 12,
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    const Text(
+                    Text(
                       'オフライン',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: AppKendoColors.pureWhite.withValues(alpha: 0.7),
                         fontSize: AppFontSize.badge,
                         fontWeight: AppFontWeight.bold,
                       ),
@@ -97,7 +97,7 @@ class SyncStatusBar extends ConsumerWidget {
                     GestureDetector(
                       onTap: () => _showErrorQueueSheet(context, ref),
                       child: Container(
-                        color: Colors.transparent,
+                        color: AppKendoColors.transparent,
                         child: Row(
                           children: [
                             _buildMatchSyncIcon(matchStatus),
@@ -108,8 +108,8 @@ class SyncStatusBar extends ConsumerWidget {
                                 fontSize: AppFontSize.badge,
                                 fontWeight: AppFontWeight.bold,
                                 color: deadLetterCount > 0
-                                    ? Colors.yellowAccent
-                                    : Colors.blue.shade100,
+                                    ? AppKendoColors.yellowAccent
+                                    : AppKendoColors.blue.shade100,
                               ),
                             ),
                             if (deadLetterCount > 0) ...[
@@ -118,7 +118,7 @@ class SyncStatusBar extends ConsumerWidget {
                                 '($deadLetterCount)',
                                 style: const TextStyle(
                                   fontSize: AppFontSize.badge,
-                                  color: Colors.yellowAccent,
+                                  color: AppKendoColors.yellowAccent,
                                 ),
                               ),
                             ],
@@ -130,14 +130,14 @@ class SyncStatusBar extends ConsumerWidget {
                     // 送信待ちがなく、ネットワークも健全で同期が完了している状態
                     const Icon(
                       Icons.cloud_done_outlined,
-                      color: Colors.greenAccent,
+                      color: AppKendoColors.greenAccent,
                       size: 12,
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     const Text(
                       '保存済み',
                       style: TextStyle(
-                        color: Colors.greenAccent,
+                        color: AppKendoColors.greenAccent,
                         fontSize: AppFontSize.badge,
                         fontWeight: AppFontWeight.bold,
                       ),
@@ -157,7 +157,10 @@ class SyncStatusBar extends ConsumerWidget {
       return const SizedBox(
         width: 12,
         height: 12,
-        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue),
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: AppKendoColors.blue,
+        ),
       );
     }
     return Icon(
@@ -165,8 +168,8 @@ class SyncStatusBar extends ConsumerWidget {
           ? Icons.cloud_upload_outlined
           : Icons.cloud_done_outlined,
       color: status == SyncStatus.pending
-          ? Colors.orange.shade300
-          : Colors.greenAccent,
+          ? AppKendoColors.orange.shade300
+          : AppKendoColors.greenAccent,
       size: 14,
     );
   }
@@ -211,8 +214,8 @@ class SyncStatusBar extends ConsumerWidget {
                         Center(
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange.shade100,
-                              foregroundColor: Colors.orange.shade900,
+                              backgroundColor: AppKendoColors.orange.shade100,
+                              foregroundColor: AppKendoColors.orange.shade900,
                             ),
                             icon: const Icon(Icons.delete_sweep),
                             label: const Text('サーバーのデータを優先し、未送信を破棄する'),
@@ -253,7 +256,7 @@ class SyncStatusBar extends ConsumerWidget {
                                 message: '同期エラーが発生しました。タップして復旧手順を確認してください。',
                                 child: Icon(
                                   Icons.sync_problem,
-                                  color: Colors.red,
+                                  color: AppKendoColors.red,
                                   size: 24,
                                 ),
                               ),
@@ -303,7 +306,7 @@ class SyncStatusBar extends ConsumerWidget {
                                 'ID: ${cmd.payload['matchId'] ?? cmd.id}',
                                 style: const TextStyle(
                                   fontSize: AppFontSize.badge,
-                                  color: Colors.grey,
+                                  color: AppKendoColors.grey,
                                 ),
                               ),
                               trailing: Row(
@@ -315,13 +318,15 @@ class SyncStatusBar extends ConsumerWidget {
                                         .discardCommand(cmd),
                                     child: const Text(
                                       '破棄',
-                                      style: TextStyle(color: Colors.grey),
+                                      style: TextStyle(
+                                        color: AppKendoColors.grey,
+                                      ),
                                     ),
                                   ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue,
-                                      foregroundColor: Colors.white,
+                                      backgroundColor: AppKendoColors.blue,
+                                      foregroundColor: AppKendoColors.pureWhite,
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: AppSpacing.md,
                                       ),

@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,12 +31,12 @@ class StartScreen extends ConsumerWidget {
     final textColor = context.appColors.textColor;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : Colors.grey.shade600;
+        : AppKendoColors.grey.shade600;
 
     return GlassButton.custom(
       onPressed: onTap,
       color: color,
-      surfaceColor: Colors.white,
+      surfaceColor: AppKendoColors.pureWhite,
       glassAlpha: isDark ? 0.08 : 0.5,
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -111,15 +113,15 @@ class StartScreen extends ConsumerWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerStartColor = isDark
-        ? Colors.indigo.shade900
-        : Colors.indigo.shade700;
+        ? AppKendoColors.indigo.shade900
+        : AppKendoColors.indigo.shade700;
     final headerEndColor = isDark
         ? const Color(0xFF1A237E)
-        : Colors.blue.shade500;
+        : AppKendoColors.blue.shade500;
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         body: Column(
           children: [
             Container(
@@ -143,7 +145,7 @@ class StartScreen extends ConsumerWidget {
                     ? []
                     : [
                         BoxShadow(
-                          color: Colors.indigo.withValues(alpha: 0.3),
+                          color: AppKendoColors.indigo.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -160,7 +162,7 @@ class StartScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: AppFontSize.heroXxl,
                           fontWeight: AppFontWeight.bold,
-                          color: Colors.white,
+                          color: AppKendoColors.pureWhite,
                           letterSpacing: 1.0,
                         ),
                       ),
@@ -168,18 +170,22 @@ class StartScreen extends ConsumerWidget {
                         children: [
                           if (RolePermissions.canAccessSettings(currentRole))
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.settings,
-                                color: Colors.white70,
+                                color: AppKendoColors.pureWhite.withValues(
+                                  alpha: 0.7,
+                                ),
                                 size: 22,
                               ),
                               tooltip: 'システム設定',
                               onPressed: () => context.push('/settings'),
                             ),
                           IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.logout_outlined,
-                              color: Colors.white70,
+                              color: AppKendoColors.pureWhite.withValues(
+                                alpha: 0.7,
+                              ),
                               size: 22,
                             ),
                             tooltip: '権限を変更（ログアウト）',
@@ -198,7 +204,7 @@ class StartScreen extends ConsumerWidget {
                     '現在の権限: $roleDisplayName',
                     style: const TextStyle(
                       fontSize: AppFontSize.small,
-                      color: Colors.orangeAccent,
+                      color: AppKendoColors.orangeAccent,
                       fontWeight: AppFontWeight.bold,
                     ),
                   ),
@@ -220,12 +226,12 @@ class StartScreen extends ConsumerWidget {
                       },
                       icon: const Icon(
                         Icons.local_fire_department,
-                        color: Colors.white,
+                        color: AppKendoColors.pureWhite,
                       ),
                       label: const Text(
                         '部内戦をはじめる',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppKendoColors.pureWhite,
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.bodyMedium,
                         ),
@@ -234,8 +240,13 @@ class StartScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.lg,
                         ),
-                        side: const BorderSide(color: Colors.white, width: 1.5),
-                        backgroundColor: Colors.white.withValues(alpha: 0.15),
+                        side: const BorderSide(
+                          color: AppKendoColors.pureWhite,
+                          width: 1.5,
+                        ),
+                        backgroundColor: AppKendoColors.pureWhite.withValues(
+                          alpha: 0.15,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: AppRadius.large,
                         ),
@@ -268,7 +279,7 @@ class StartScreen extends ConsumerWidget {
                                     icon: Icons.add_circle,
                                     title: '新しい大会\nを作る',
                                     subtitle: '大会・錬成会',
-                                    color: Colors.indigo.shade600,
+                                    color: AppKendoColors.indigo.shade600,
                                     onTap: () =>
                                         context.push('/create-tournament'),
                                   ),
@@ -281,7 +292,7 @@ class StartScreen extends ConsumerWidget {
                                   icon: Icons.list_alt,
                                   title: '今日の試合\nを作る・見る',
                                   subtitle: '試合進行・記録',
-                                  color: Colors.indigo.shade800,
+                                  color: AppKendoColors.indigo.shade800,
                                   onTap: () => context.push(
                                     '/tournament-list',
                                     extra: false,
@@ -299,7 +310,7 @@ class StartScreen extends ConsumerWidget {
                                   icon: Icons.history,
                                   title: '過去の大会\nを見る',
                                   subtitle: 'アーカイブ',
-                                  color: Colors.blueGrey.shade600,
+                                  color: AppKendoColors.blueGrey.shade600,
                                   onTap: () => context.push(
                                     '/tournament-list',
                                     extra: true,
@@ -314,7 +325,7 @@ class StartScreen extends ConsumerWidget {
                                     icon: Icons.manage_accounts,
                                     title: '選手名簿\n(マスタ) 管理',
                                     subtitle: '道場生データ',
-                                    color: Colors.purple.shade600,
+                                    color: AppKendoColors.purple.shade600,
                                     onTap: () => context.push('/master'),
                                   ),
                                 ),
@@ -339,7 +350,7 @@ class StartScreen extends ConsumerWidget {
                               'assets/kendo_icon.png',
                               width: 72,
                               height: 72,
-                              color: Colors.grey.shade400.withValues(
+                              color: AppKendoColors.grey.shade400.withValues(
                                 alpha: 0.2,
                               ),
                             ),
@@ -347,7 +358,7 @@ class StartScreen extends ConsumerWidget {
                             Text(
                               'Kendo Sync v1.0.0',
                               style: TextStyle(
-                                color: Colors.grey.shade400,
+                                color: AppKendoColors.grey.shade400,
                                 fontSize: AppFontSize.small,
                                 fontWeight: AppFontWeight.bold,
                                 letterSpacing: 1.5,

@@ -219,13 +219,13 @@ class ViewerHomeScreen extends ConsumerWidget {
         canPop: false, // 戻るスワイプをブロック
         child: LiquidBackground(
           child: Scaffold(
-            backgroundColor: Colors.transparent,
+            backgroundColor: AppKendoColors.transparent,
             appBar: AppHeader(
               leading: GoRouter.of(context).canPop()
                   ? IconButton(
                       icon: const Icon(
                         Icons.exit_to_app,
-                        color: Colors.deepOrange,
+                        color: AppKendoColors.deepOrange,
                       ),
                       tooltip: '管理画面に戻る',
                       onPressed: () => context.pop(),
@@ -233,22 +233,28 @@ class ViewerHomeScreen extends ConsumerWidget {
                   : null,
               title: '大会ホーム (観客席)',
               backgroundColor: enableLiquidGlass
-                  ? Colors.transparent
+                  ? AppKendoColors.transparent
                   : (context.appColors.cardBackground),
               actions: [
                 NotificationBellButton(
                   tournamentId: tournamentId,
                   isStaffRoom: false,
-                  color: isDark ? Colors.white : themeColors.primaryAccent,
+                  color: isDark
+                      ? AppKendoColors.pureWhite
+                      : themeColors.primaryAccent,
                 ),
                 ManualHelpButton(
                   manualPath: 'docs/manuals/faq/viewer_faq.md',
-                  color: isDark ? Colors.white : themeColors.primaryAccent,
+                  color: isDark
+                      ? AppKendoColors.pureWhite
+                      : themeColors.primaryAccent,
                 ),
                 IconButton(
                   icon: Icon(
                     Icons.settings,
-                    color: isDark ? Colors.white : themeColors.primaryAccent,
+                    color: isDark
+                        ? AppKendoColors.pureWhite
+                        : themeColors.primaryAccent,
                   ),
                   tooltip: '表示設定',
                   onPressed: () {
@@ -262,7 +268,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                 IconButton(
                   icon: Icon(
                     Icons.qr_code_2,
-                    color: isDark ? Colors.white : themeColors.primaryAccent,
+                    color: isDark
+                        ? AppKendoColors.pureWhite
+                        : themeColors.primaryAccent,
                   ),
                   tooltip: '大会を共有する',
                   onPressed: () => _showShareDialog(context, ref, tournamentId),
@@ -283,11 +291,14 @@ class ViewerHomeScreen extends ConsumerWidget {
                     ),
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: Colors.blueGrey.shade800, // 観客席らしい落ち着いた色に変更
+                      color:
+                          AppKendoColors.blueGrey.shade800, // 観客席らしい落ち着いた色に変更
                       borderRadius: AppRadius.large,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
+                          color: AppKendoColors.pureBlack.withValues(
+                            alpha: 0.2,
+                          ),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -299,21 +310,26 @@ class ViewerHomeScreen extends ConsumerWidget {
                           _buildCallRow(
                             '進行中',
                             uniqueInProgress.first,
-                            Colors.orangeAccent,
+                            AppKendoColors.orangeAccent,
                           ),
                         if (uniqueInProgress.isNotEmpty &&
                             uniqueWaiting.isNotEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
                               vertical: AppSpacing.sm,
                             ),
-                            child: Divider(color: Colors.white24, height: 1),
+                            child: Divider(
+                              color: AppKendoColors.pureWhite.withValues(
+                                alpha: 0.24,
+                              ),
+                              height: 1,
+                            ),
                           ),
                         if (uniqueWaiting.isNotEmpty)
                           _buildCallRow(
                             '次試合',
                             uniqueWaiting.first,
-                            Colors.white,
+                            AppKendoColors.pureWhite,
                           ),
                       ],
                     ),
@@ -339,7 +355,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                         enableLiquidGlass,
                         Icons.print,
                         '試合結果一覧 (PDF/CSV)',
-                        Colors.blueGrey,
+                        AppKendoColors.blueGrey,
                         () => context.push('/official-record/$tournamentId'),
                       ),
                       const SizedBox(
@@ -358,7 +374,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                             Icons.picture_as_pdf,
                             size: 20,
                             color: isDark
-                                ? Colors.redAccent.shade100
+                                ? AppKendoColors.red.shade100
                                 : AppKendoColors.hansokuRed,
                           ),
                           label: Text(
@@ -367,15 +383,15 @@ class ViewerHomeScreen extends ConsumerWidget {
                               fontWeight: AppFontWeight.bold,
                               fontSize: AppFontSize.body,
                               color: isDark
-                                  ? Colors.white
-                                  : Colors.grey.shade800,
+                                  ? AppKendoColors.pureWhite
+                                  : AppKendoColors.grey.shade800,
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(
                               color: isDark
                                   ? const Color(0xFF38383A)
-                                  : Colors.grey.shade300,
+                                  : AppKendoColors.grey.shade300,
                             ),
                             backgroundColor: context.appColors.cardBackground,
                             shape: RoundedRectangleBorder(
@@ -415,12 +431,12 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     color: isDark
                                         ? const Color(0xFF161618)
-                                        : Colors.white,
+                                        : AppKendoColors.pureWhite,
                                     borderRadius: AppRadius.medium,
                                     border: Border.all(
                                       color: isDark
                                           ? const Color(0xFF38383A)
-                                          : Colors.grey.shade300,
+                                          : AppKendoColors.grey.shade300,
                                     ),
                                   ),
                                   child: Column(
@@ -441,7 +457,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       const Text(
                                         '原因候補: 道場IDが一致しない、または大会が他パスに存在します。管理者に確認してください。',
                                         style: TextStyle(
-                                          color: Colors.grey,
+                                          color: AppKendoColors.grey,
                                           fontSize: AppFontSize.small,
                                         ),
                                       ),
@@ -463,12 +479,12 @@ class ViewerHomeScreen extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                   color: isDark
                                       ? const Color(0xFF161618)
-                                      : Colors.white,
+                                      : AppKendoColors.pureWhite,
                                   borderRadius: AppRadius.medium,
                                   border: Border.all(
                                     color: isDark
                                         ? const Color(0xFF38383A)
-                                        : Colors.grey.shade300,
+                                        : AppKendoColors.grey.shade300,
                                   ),
                                 ),
                                 child: Column(
@@ -478,7 +494,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       '大会情報の読み込みに失敗しました',
                                       style: TextStyle(
                                         fontWeight: AppFontWeight.bold,
-                                        color: Colors.red,
+                                        color: AppKendoColors.red,
                                       ),
                                     ),
                                     const SizedBox(height: AppSpacing.sm),
@@ -526,8 +542,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                         hintStyle: TextStyle(
                                           fontSize: AppFontSize.small,
                                           color: isDark
-                                              ? Colors.grey.shade500
-                                              : Colors.grey.shade400,
+                                              ? AppKendoColors.grey.shade500
+                                              : AppKendoColors.grey.shade400,
                                         ),
                                         contentPadding:
                                             const EdgeInsets.symmetric(
@@ -537,19 +553,21 @@ class ViewerHomeScreen extends ConsumerWidget {
                                         filled: true,
                                         fillColor: isDark
                                             ? const Color(0xFF2C2C2E)
-                                            : Colors.white,
+                                            : AppKendoColors.pureWhite,
                                         border: OutlineInputBorder(
                                           borderRadius: AppRadius.small,
                                           borderSide: BorderSide(
                                             color: isDark
                                                 ? const Color(0xFF38383A)
-                                                : Colors.grey.shade300,
+                                                : AppKendoColors.grey.shade300,
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius: AppRadius.small,
                                           borderSide: BorderSide(
-                                            color: Colors.blueGrey.shade400,
+                                            color: AppKendoColors
+                                                .blueGrey
+                                                .shade400,
                                           ),
                                         ),
                                         suffixIcon: IconButton(
@@ -640,7 +658,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                 side: BorderSide(
                                   color: isDark
                                       ? const Color(0xFF38383A)
-                                      : Colors.blueGrey.shade200,
+                                      : AppKendoColors.blueGrey.shade200,
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.md,
@@ -664,7 +682,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                               children: [
                                 const Icon(
                                   Icons.error_outline,
-                                  color: Colors.red,
+                                  color: AppKendoColors.red,
                                   size: 48,
                                 ),
                                 const SizedBox(height: AppSpacing.lg),
@@ -673,7 +691,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     color: isDark
                                         ? AppKendoColors.hansokuRed
-                                        : Colors.red,
+                                        : AppKendoColors.red,
                                     fontWeight: AppFontWeight.bold,
                                   ),
                                 ),
@@ -682,7 +700,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   timelineResult.errorMessage ??
                                       '通信状況を確認してください',
                                   style: const TextStyle(
-                                    color: Colors.grey,
+                                    color: AppKendoColors.grey,
                                     fontSize: AppFontSize.small,
                                   ),
                                   textAlign: TextAlign.center,
@@ -699,7 +717,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                           child: Center(
                             child: Text(
                               '該当する試合が見つかりません',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: AppKendoColors.grey),
                             ),
                           ),
                         ),
@@ -721,7 +739,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                             child: Text(
                               'まだ試合が登録されていません',
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: AppKendoColors.grey,
                                 fontWeight: AppFontWeight.bold,
                               ),
                             ),
@@ -867,8 +885,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       fontSize: AppFontSize.subhead,
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
-                                          ? Colors.blueGrey.shade300
-                                          : Colors.blueGrey.shade800,
+                                          ? AppKendoColors.blueGrey.shade300
+                                          : AppKendoColors.blueGrey.shade800,
                                       letterSpacing: 1.2,
                                     ),
                                   ),
@@ -1093,21 +1111,20 @@ class ViewerHomeScreen extends ConsumerWidget {
                                     decoration: BoxDecoration(
                                       color: isDark
                                           ? const Color(0xFF161618)
-                                          : Colors.white,
+                                          : AppKendoColors.pureWhite,
                                       borderRadius: AppRadius.large,
                                       border: Border.all(
                                         color: isDark
                                             ? const Color(0xFF38383A)
-                                            : Colors.grey.shade300,
+                                            : AppKendoColors.grey.shade300,
                                         width: 2,
                                       ),
                                       boxShadow: isDark
                                           ? []
                                           : [
                                               BoxShadow(
-                                                color: Colors.black.withValues(
-                                                  alpha: 0.05,
-                                                ),
+                                                color: AppKendoColors.pureBlack
+                                                    .withValues(alpha: 0.05),
                                                 blurRadius: 8,
                                                 offset: const Offset(0, 4),
                                               ),
@@ -1125,9 +1142,13 @@ class ViewerHomeScreen extends ConsumerWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: isDark
-                                                ? Colors.blueGrey.shade900
+                                                ? AppKendoColors
+                                                      .blueGrey
+                                                      .shade900
                                                       .withValues(alpha: 0.3)
-                                                : Colors.blueGrey.shade50,
+                                                : AppKendoColors
+                                                      .blueGrey
+                                                      .shade50,
                                             borderRadius:
                                                 const BorderRadius.vertical(
                                                   top: Radius.circular(
@@ -1138,7 +1159,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                               bottom: BorderSide(
                                                 color: isDark
                                                     ? const Color(0xFF38383A)
-                                                    : Colors.blueGrey.shade100,
+                                                    : AppKendoColors
+                                                          .blueGrey
+                                                          .shade100,
                                               ),
                                             ),
                                           ),
@@ -1163,7 +1186,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: isDark
-                                                        ? Colors.white
+                                                        ? AppKendoColors
+                                                              .pureWhite
                                                         : Colors
                                                               .blueGrey
                                                               .shade900,
@@ -1262,25 +1286,39 @@ class ViewerHomeScreen extends ConsumerWidget {
                                             final Color cardBg = allFinished
                                                 ? (isDark
                                                       ? const Color(0xFF161618)
-                                                      : Colors.grey.shade100)
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade100)
                                                 : (context
                                                       .appColors
                                                       .cardBackground);
 
                                             final Color titleColor = allFinished
                                                 ? (isDark
-                                                      ? Colors.grey.shade600
-                                                      : Colors.grey.shade500)
+                                                      ? AppKendoColors
+                                                            .grey
+                                                            .shade600
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade500)
                                                 : (context.appColors.textColor);
 
                                             final Color subTitleColor =
                                                 allFinished
                                                 ? (isDark
-                                                      ? Colors.grey.shade700
-                                                      : Colors.grey.shade500)
+                                                      ? AppKendoColors
+                                                            .grey
+                                                            .shade700
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade500)
                                                 : (isDark
-                                                      ? Colors.grey.shade500
-                                                      : Colors.grey.shade600);
+                                                      ? AppKendoColors
+                                                            .grey
+                                                            .shade500
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade600);
 
                                             final pairingsSet = <String>{};
                                             for (var m in groupList) {
@@ -1449,7 +1487,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                     ? const Color(
                                                                                         0xFF2C2C2E,
                                                                                       )
-                                                                                    : Colors.grey.shade200)),
+                                                                                    : AppKendoColors.grey.shade200)),
                                                                     borderRadius:
                                                                         AppRadius
                                                                             .tiny,
@@ -1469,11 +1507,11 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               .bold,
                                                                       color:
                                                                           hasInProgress
-                                                                          ? Colors.white
+                                                                          ? AppKendoColors.pureWhite
                                                                           : (allFinished
                                                                                 ? (isDark
-                                                                                      ? Colors.grey.shade400
-                                                                                      : Colors.grey.shade600)
+                                                                                      ? AppKendoColors.grey.shade400
+                                                                                      : AppKendoColors.grey.shade600)
                                                                                 : (context.appColors.subTextColor)),
                                                                     ),
                                                                   ),
@@ -1636,7 +1674,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               : AppFontWeight.bold,
                                                                           color:
                                                                               showLeftOwn
-                                                                              ? Colors.amber.shade600
+                                                                              ? AppKendoColors.amber.shade600
                                                                               : titleColor,
                                                                         ),
                                                                         textAlign:
@@ -1669,8 +1707,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             style: TextStyle(
                                                                               fontSize: AppFontSize.caption,
                                                                               color: isDark
-                                                                                  ? Colors.grey.shade400
-                                                                                  : Colors.grey.shade600,
+                                                                                  ? AppKendoColors.grey.shade400
+                                                                                  : AppKendoColors.grey.shade600,
                                                                             ),
                                                                           ),
                                                                           Padding(
@@ -1681,7 +1719,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               'ー',
                                                                               style: TextStyle(
                                                                                 fontSize: AppFontSize.body,
-                                                                                color: Colors.grey.shade400,
+                                                                                color: AppKendoColors.grey.shade400,
                                                                                 fontWeight: AppFontWeight.bold,
                                                                               ),
                                                                             ),
@@ -1699,8 +1737,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             style: TextStyle(
                                                                               fontSize: AppFontSize.caption,
                                                                               color: isDark
-                                                                                  ? Colors.grey.shade400
-                                                                                  : Colors.grey.shade600,
+                                                                                  ? AppKendoColors.grey.shade400
+                                                                                  : AppKendoColors.grey.shade600,
                                                                             ),
                                                                           ),
                                                                         ],
@@ -1718,7 +1756,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               : AppFontWeight.bold,
                                                                           color:
                                                                               showRightOwn
-                                                                              ? Colors.amber.shade600
+                                                                              ? AppKendoColors.amber.shade600
                                                                               : titleColor,
                                                                         ),
                                                                         textAlign:
@@ -1868,19 +1906,19 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             ? const Color(
                                                                                 0xFF161618,
                                                                               )
-                                                                            : Colors.grey.shade100)
+                                                                            : AppKendoColors.grey.shade100)
                                                                       : (isDark
                                                                             ? const Color(
                                                                                 0xFF1C1C1E,
                                                                               )
-                                                                            : Colors.white);
+                                                                            : AppKendoColors.pureWhite);
 
                                                                   final Color
                                                                   mTitleColor =
                                                                       boutsAllFinished
                                                                       ? (isDark
-                                                                            ? Colors.grey.shade600
-                                                                            : Colors.grey.shade50)
+                                                                            ? AppKendoColors.grey.shade600
+                                                                            : AppKendoColors.grey.shade50)
                                                                       : (context
                                                                             .appColors
                                                                             .textColor);
@@ -1904,7 +1942,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             ? const Color(
                                                                                 0xFF38383A,
                                                                               )
-                                                                            : Colors.grey.shade300,
+                                                                            : AppKendoColors.grey.shade300,
                                                                         width:
                                                                             1,
                                                                       ),
@@ -1912,7 +1950,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                           boutsInProgress
                                                                           ? [
                                                                               BoxShadow(
-                                                                                color: Colors.blue.withValues(
+                                                                                color: AppKendoColors.blue.withValues(
                                                                                   alpha: 0.1,
                                                                                 ),
                                                                                 blurRadius: 4,
@@ -1933,7 +1971,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             Theme.of(
                                                                               context,
                                                                             ).copyWith(
-                                                                              dividerColor: Colors.transparent,
+                                                                              dividerColor: AppKendoColors.transparent,
                                                                             ),
                                                                         child: ExpansionTile(
                                                                           collapsedBackgroundColor:
@@ -1950,7 +1988,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                     '${bouts.length}ポジション',
                                                                                     style: const TextStyle(
                                                                                       fontSize: AppFontSize.caption,
-                                                                                      color: Colors.grey,
+                                                                                      color: AppKendoColors.grey,
                                                                                       fontWeight: AppFontWeight.bold,
                                                                                     ),
                                                                                   ),
@@ -2006,14 +2044,14 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                     ),
                                                                                     decoration: BoxDecoration(
                                                                                       color: boutsInProgress
-                                                                                          ? Colors.blueGrey.shade600
+                                                                                          ? AppKendoColors.blueGrey.shade600
                                                                                           : (boutsAllFinished
                                                                                                 ? (context.appColors.separatorColor)
                                                                                                 : (isDark
                                                                                                       ? const Color(
                                                                                                           0xFF2C2C2E,
                                                                                                         )
-                                                                                                      : Colors.grey.shade200)),
+                                                                                                      : AppKendoColors.grey.shade200)),
                                                                                       borderRadius: AppRadius.tiny,
                                                                                     ),
                                                                                     child: Text(
@@ -2026,11 +2064,11 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                         fontSize: AppFontSize.badge,
                                                                                         fontWeight: AppFontWeight.bold,
                                                                                         color: boutsInProgress
-                                                                                            ? Colors.white
+                                                                                            ? AppKendoColors.pureWhite
                                                                                             : (boutsAllFinished
                                                                                                   ? (isDark
-                                                                                                        ? Colors.grey.shade400
-                                                                                                        : Colors.grey.shade600)
+                                                                                                        ? AppKendoColors.grey.shade400
+                                                                                                        : AppKendoColors.grey.shade600)
                                                                                                   : (context.appColors.subTextColor)),
                                                                                       ),
                                                                                     ),
@@ -2116,7 +2154,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                     ? AppFontWeight.black
                                                                                                     : AppFontWeight.bold,
                                                                                                 color: showLeftOwn
-                                                                                                    ? Colors.amber.shade600
+                                                                                                    ? AppKendoColors.amber.shade600
                                                                                                     : mTitleColor,
                                                                                               ),
                                                                                               textAlign: TextAlign.end,
@@ -2155,7 +2193,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                     'ー',
                                                                                                     style: TextStyle(
                                                                                                       fontSize: AppFontSize.bodySmall,
-                                                                                                      color: Colors.grey.shade400,
+                                                                                                      color: AppKendoColors.grey.shade400,
                                                                                                       fontWeight: AppFontWeight.bold,
                                                                                                     ),
                                                                                                   ),
@@ -2187,7 +2225,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                     ? AppFontWeight.black
                                                                                                     : AppFontWeight.bold,
                                                                                                 color: showRightOwn
-                                                                                                    ? Colors.amber.shade600
+                                                                                                    ? AppKendoColors.amber.shade600
                                                                                                     : mTitleColor,
                                                                                               ),
                                                                                               textAlign: TextAlign.start,
@@ -2306,7 +2344,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                   sanitizedQuery.isNotEmpty
                                                       ? Icons.manage_search
                                                       : Icons.person,
-                                                  color: Colors.orange.shade700,
+                                                  color: AppKendoColors
+                                                      .orange
+                                                      .shade700,
                                                   size: 16,
                                                 ),
                                                 const SizedBox(
@@ -2321,8 +2361,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                         AppFontSize.bodySmall,
                                                     fontWeight:
                                                         AppFontWeight.bold,
-                                                    color:
-                                                        Colors.orange.shade700,
+                                                    color: AppKendoColors
+                                                        .orange
+                                                        .shade700,
                                                   ),
                                                 ),
                                               ],
@@ -2353,7 +2394,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                             final Color pCardBg = pAllFinished
                                                 ? (isDark
                                                       ? const Color(0xFF161618)
-                                                      : Colors.grey.shade100)
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade100)
                                                 : (context
                                                       .appColors
                                                       .cardBackground);
@@ -2361,17 +2404,29 @@ class ViewerHomeScreen extends ConsumerWidget {
                                             final Color pTitleColor =
                                                 pAllFinished
                                                 ? (isDark
-                                                      ? Colors.grey.shade600
-                                                      : Colors.grey.shade500)
+                                                      ? AppKendoColors
+                                                            .grey
+                                                            .shade600
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade500)
                                                 : (context.appColors.textColor);
                                             final Color pSubTitleColor =
                                                 pAllFinished
                                                 ? (isDark
-                                                      ? Colors.grey.shade700
-                                                      : Colors.grey.shade500)
+                                                      ? AppKendoColors
+                                                            .grey
+                                                            .shade700
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade500)
                                                 : (isDark
-                                                      ? Colors.grey.shade500
-                                                      : Colors.grey.shade600);
+                                                      ? AppKendoColors
+                                                            .grey
+                                                            .shade500
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade600);
 
                                             return Container(
                                               margin:
@@ -2385,13 +2440,16 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                 border: Border.all(
                                                   color: isDark
                                                       ? const Color(0xFF38383A)
-                                                      : Colors.grey.shade300,
+                                                      : AppKendoColors
+                                                            .grey
+                                                            .shade300,
                                                   width: 1,
                                                 ),
                                                 boxShadow: pInProgress
                                                     ? [
                                                         BoxShadow(
-                                                          color: Colors.blue
+                                                          color: AppKendoColors
+                                                              .blue
                                                               .withValues(
                                                                 alpha: 0.1,
                                                               ),
@@ -2491,7 +2549,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                           ? const Color(
                                                                               0xFF2C2C2E,
                                                                             )
-                                                                          : Colors.grey.shade200)),
+                                                                          : AppKendoColors.grey.shade200)),
                                                           borderRadius:
                                                               AppRadius.tiny,
                                                         ),
@@ -2509,11 +2567,12 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                 AppFontWeight
                                                                     .bold,
                                                             color: pInProgress
-                                                                ? Colors.white
+                                                                ? AppKendoColors
+                                                                      .pureWhite
                                                                 : (pAllFinished
                                                                       ? (isDark
-                                                                            ? Colors.grey.shade400
-                                                                            : Colors.grey.shade600)
+                                                                            ? AppKendoColors.grey.shade400
+                                                                            : AppKendoColors.grey.shade600)
                                                                       : (context
                                                                             .appColors
                                                                             .subTextColor)),
@@ -2549,7 +2608,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                               padding: const EdgeInsets.all(AppSpacing.lg),
                               child: Text(
                                 'レンダリングエラー発生: $e\n$stack',
-                                style: const TextStyle(color: Colors.red),
+                                style: const TextStyle(
+                                  color: AppKendoColors.red,
+                                ),
                               ),
                             );
                           }
@@ -2569,7 +2630,7 @@ class ViewerHomeScreen extends ConsumerWidget {
         body: Center(
           child: Text(
             '致命的なUIエラー: $e\n$stack',
-            style: const TextStyle(color: Colors.red),
+            style: const TextStyle(color: AppKendoColors.red),
           ),
         ),
       );
@@ -2590,11 +2651,13 @@ class ViewerHomeScreen extends ConsumerWidget {
     final textColor = context.appColors.textColor;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : Colors.grey.shade700;
+        : AppKendoColors.grey.shade700;
     final iconBgColor = isDark
-        ? Colors.amber.shade600.withValues(alpha: 0.3)
-        : Colors.amber;
-    final noteBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
+        ? AppKendoColors.amber.shade600.withValues(alpha: 0.3)
+        : AppKendoColors.amber;
+    final noteBgColor = isDark
+        ? const Color(0xFF2C2C2E)
+        : AppKendoColors.grey.shade50;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -2622,7 +2685,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                   ),
                   child: const Icon(
                     Icons.emoji_events,
-                    color: Colors.amber,
+                    color: AppKendoColors.amber,
                     size: 24,
                   ),
                 ),
@@ -2648,7 +2711,7 @@ class ViewerHomeScreen extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.calendar_today,
-                  color: Colors.grey.shade500,
+                  color: AppKendoColors.grey.shade500,
                   size: 16,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -2660,7 +2723,11 @@ class ViewerHomeScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.lg),
-                Icon(Icons.location_on, color: Colors.grey.shade500, size: 16),
+                Icon(
+                  Icons.location_on,
+                  color: AppKendoColors.grey.shade500,
+                  size: 16,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -2753,14 +2820,14 @@ class ViewerMatchListTileCard extends ConsumerWidget {
     }
 
     final Color bg = isFinished
-        ? (isDark ? const Color(0xFF161618) : Colors.grey.shade50)
-        : (isDark ? const Color(0xFF1E1E20) : Colors.white);
+        ? (isDark ? const Color(0xFF161618) : AppKendoColors.grey.shade50)
+        : (isDark ? const Color(0xFF1E1E20) : AppKendoColors.pureWhite);
     final Color textC = isFinished
-        ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500)
+        ? (isDark ? AppKendoColors.grey.shade600 : AppKendoColors.grey.shade500)
         : (context.appColors.textColor);
     final Color noteC = isFinished
-        ? (isDark ? Colors.grey.shade700 : Colors.grey.shade500)
-        : Colors.grey.shade600;
+        ? (isDark ? AppKendoColors.grey.shade700 : AppKendoColors.grey.shade500)
+        : AppKendoColors.grey.shade600;
 
     Widget buildMarkItem(dynamic p, Color textColor) {
       final String mark = p.mark == '✕' ? '×' : p.mark;
@@ -2822,13 +2889,15 @@ class ViewerMatchListTileCard extends ConsumerWidget {
       decoration: BoxDecoration(
         borderRadius: AppRadius.medium,
         border: Border.all(
-          color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300,
+          color: isDark
+              ? const Color(0xFF2C2C2E)
+              : AppKendoColors.grey.shade300,
           width: 1.2,
         ),
         boxShadow: isPlaying
             ? [
                 BoxShadow(
-                  color: Colors.blue.withValues(alpha: 0.1),
+                  color: AppKendoColors.blue.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -2898,12 +2967,12 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isPlaying
-                          ? Colors.blueGrey.shade600
+                          ? AppKendoColors.blueGrey.shade600
                           : (isFinished
                                 ? (context.appColors.separatorColor)
                                 : (isDark
                                       ? const Color(0xFF2C2C2E)
-                                      : Colors.grey.shade200)),
+                                      : AppKendoColors.grey.shade200)),
                       borderRadius: AppRadius.tiny,
                     ),
                     child: Text(
@@ -2912,11 +2981,11 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                         fontSize: AppFontSize.badge,
                         fontWeight: AppFontWeight.bold,
                         color: isPlaying
-                            ? Colors.white
+                            ? AppKendoColors.pureWhite
                             : (isFinished
                                   ? (isDark
-                                        ? Colors.grey.shade400
-                                        : Colors.grey.shade600)
+                                        ? AppKendoColors.grey.shade400
+                                        : AppKendoColors.grey.shade600)
                                   : (context.appColors.subTextColor)),
                       ),
                     ),
@@ -3030,7 +3099,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                     ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isRedOwn
-                                    ? Colors.amber.shade600
+                                    ? AppKendoColors.amber.shade600
                                     : (context.appColors.textColor),
                               ),
                               textAlign: TextAlign.start,
@@ -3076,7 +3145,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                           : 'ー',
                                       style: TextStyle(
                                         fontSize: AppFontSize.bodySmall,
-                                        color: Colors.grey.shade400,
+                                        color: AppKendoColors.grey.shade400,
                                         fontWeight: AppFontWeight.bold,
                                       ),
                                     ),
@@ -3104,7 +3173,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                     ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isWhiteOwn
-                                    ? Colors.amber.shade600
+                                    ? AppKendoColors.amber.shade600
                                     : (context.appColors.textColor),
                               ),
                               textAlign: TextAlign.end,
@@ -3223,12 +3292,12 @@ void _showShareDialog(
             const SizedBox(height: AppSpacing.lg),
             Container(
               padding: const EdgeInsets.all(AppSpacing.sm),
-              color: Colors.white,
+              color: AppKendoColors.pureWhite,
               child: QrImageView(
                 data: shareUrl,
                 version: QrVersions.auto,
                 size: 200.0,
-                backgroundColor: Colors.white,
+                backgroundColor: AppKendoColors.pureWhite,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -3245,8 +3314,8 @@ void _showShareDialog(
               icon: const Icon(Icons.share),
               label: const Text('LINEやSNSでURLを送る'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueGrey.shade700,
-                foregroundColor: Colors.white,
+                backgroundColor: AppKendoColors.blueGrey.shade700,
+                foregroundColor: AppKendoColors.pureWhite,
                 elevation: 0,
               ),
             ),
@@ -3256,7 +3325,10 @@ void _showShareDialog(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
+          child: const Text(
+            '閉じる',
+            style: TextStyle(color: AppKendoColors.grey),
+          ),
         ),
       ],
     ),
@@ -3341,7 +3413,7 @@ Widget _buildHugeMenuButton(
       size: 14,
       color: enableLiquidGlass
           ? (isDark ? color.shade500 : color.shade300)
-          : Colors.white70,
+          : AppKendoColors.pureWhite.withValues(alpha: 0.7),
     ),
   );
 }
@@ -3498,7 +3570,7 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: AppSpacing.xl),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withValues(alpha: 0.5),
+                    color: AppKendoColors.grey.withValues(alpha: 0.5),
                     borderRadius: AppRadius.micro,
                   ),
                 ),
@@ -3531,7 +3603,9 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppKendoColors.grey.withValues(alpha: 0.3),
+                  ),
                   borderRadius: AppRadius.small,
                 ),
                 child: DropdownButtonHideUnderline(

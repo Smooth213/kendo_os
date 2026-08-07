@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -12,7 +14,8 @@ Future<T?> showAppDialog<T>({
   return showDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
-    barrierColor: barrierColor ?? Colors.black54,
+    barrierColor:
+        barrierColor ?? AppKendoColors.pureBlack.withValues(alpha: 0.54),
     builder: builder,
   );
 }
@@ -87,7 +90,7 @@ class AppDialog extends StatelessWidget {
           shape ??
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
       backgroundColor: backgroundColor ?? themeColors.cardBackground,
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: AppKendoColors.transparent,
       clipBehavior: clipBehavior,
       titlePadding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,

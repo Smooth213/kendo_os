@@ -1,6 +1,8 @@
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import '../providers/viewer_view_state_provider.dart';
@@ -30,12 +32,14 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
     const String screenTitle = '大会 公式記録';
 
-    final bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
+    final bgColor = isDark ? AppKendoColors.pureBlack : const Color(0xFFF2F2F7);
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
-    final headerTextColor = isDark ? Colors.white : Colors.indigo.shade900;
+    final headerTextColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.indigo.shade900;
 
     // ★ 運営側プロバイダ（tournamentProvider）への依存を完全に遮断し、安全なフォールバック値を適用
     final String? tName = null;
@@ -83,7 +87,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
         if (proj == null || proj.categoryToGroupKeys.isEmpty) {
           return LiquidBackground(
             child: Scaffold(
-              backgroundColor: Colors.transparent,
+              backgroundColor: AppKendoColors.transparent,
               appBar: AppHeader(
                 leading: IconButton(
                   icon: Icon(
@@ -112,7 +116,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
           length: categories.length,
           child: LiquidBackground(
             child: Scaffold(
-              backgroundColor: Colors.transparent,
+              backgroundColor: AppKendoColors.transparent,
               appBar: AppHeader(
                 leading: IconButton(
                   icon: Icon(
@@ -128,9 +132,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                   isScrollable: true,
                   labelColor: headerTextColor,
                   unselectedLabelColor: isDark
-                      ? Colors.grey.shade600
-                      : Colors.grey.shade500,
-                  indicatorColor: Colors.indigo.shade600,
+                      ? AppKendoColors.grey.shade600
+                      : AppKendoColors.grey.shade500,
+                  indicatorColor: AppKendoColors.indigo.shade600,
                   tabs: categories
                       .map((cat) => Tab(key: Key('viewer_tab_$cat'), text: cat))
                       .toList(),
@@ -270,8 +274,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey.shade800,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: AppKendoColors.grey.shade800,
+                                  foregroundColor: AppKendoColors.pureWhite,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: AppSpacing.md,
                                   ),
@@ -356,7 +360,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF06C755),
-                                  foregroundColor: Colors.white,
+                                  foregroundColor: AppKendoColors.pureWhite,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: AppSpacing.md,
                                   ),
@@ -433,7 +437,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     side: BorderSide(
                                       color: isDark
                                           ? const Color(0xFF38383A)
-                                          : Colors.grey.shade300,
+                                          : AppKendoColors.grey.shade300,
                                     ),
                                   ),
                                   clipBehavior: Clip.antiAlias,
@@ -446,18 +450,19 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                           AppSpacing.md,
                                         ),
                                         color: isDark
-                                            ? Colors.indigo.shade900.withValues(
-                                                alpha: 0.4,
-                                              )
-                                            : Colors.indigo.shade50,
+                                            ? AppKendoColors.indigo.shade900
+                                                  .withValues(alpha: 0.4)
+                                            : AppKendoColors.indigo.shade50,
                                         width: double.infinity,
                                         child: Text(
                                           titleText,
                                           style: TextStyle(
                                             fontWeight: AppFontWeight.bold,
                                             color: isDark
-                                                ? Colors.indigo.shade100
-                                                : Colors.indigo.shade900,
+                                                ? AppKendoColors.indigo.shade100
+                                                : AppKendoColors
+                                                      .indigo
+                                                      .shade900,
                                           ),
                                         ),
                                       ),
@@ -468,8 +473,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                             AppSpacing.lg,
                                           ),
                                           color: isDark
-                                              ? Colors.black
-                                              : Colors.white,
+                                              ? AppKendoColors.pureBlack
+                                              : AppKendoColors.pureWhite,
                                           width:
                                               canvasWidth <
                                                   MediaQuery.of(
@@ -485,7 +490,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                               '※ 勝ち抜き戦のトーナメント表は公式記録出力画面ではサポートされていません。\n各試合のスコアボードからご確認ください',
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
-                                                color: Colors.grey,
+                                                color: AppKendoColors.grey,
                                               ),
                                             ),
                                           ),
@@ -505,8 +510,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     ownTeams,
                                   );
                               final textColor = isDark
-                                  ? Colors.white
-                                  : Colors.indigo.shade900;
+                                  ? AppKendoColors.pureWhite
+                                  : AppKendoColors.indigo.shade900;
 
                               final normalMatches = matches
                                   .where((m) => !m.note.contains('[順位決定戦]'))
@@ -592,7 +597,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                       style: TextStyle(
                                         fontWeight: AppFontWeight.bold,
                                         fontSize: AppFontSize.body,
-                                        color: Colors.grey,
+                                        color: AppKendoColors.grey,
                                       ),
                                     ),
                                   ),
@@ -640,7 +645,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                         style: TextStyle(
                                           fontWeight: AppFontWeight.bold,
                                           fontSize: AppFontSize.body,
-                                          color: Colors.orange,
+                                          color: AppKendoColors.orange,
                                         ),
                                       ),
                                     ),
@@ -654,10 +659,11 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                               '順位決定戦',
                                               tieBouts,
                                               cardColor: isDark
-                                                  ? Colors.orange.withValues(
-                                                      alpha: 0.1,
-                                                    )
-                                                  : Colors.orange.shade50,
+                                                  ? AppKendoColors.orange
+                                                        .withValues(alpha: 0.1)
+                                                  : AppKendoColors
+                                                        .orange
+                                                        .shade50,
                                               isDark: isDark,
                                               applySort: false,
                                             ),
@@ -674,10 +680,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                             matchupName,
                                             bouts,
                                             cardColor: isDark
-                                                ? Colors.orange.withValues(
-                                                    alpha: 0.1,
-                                                  )
-                                                : Colors.orange.shade50,
+                                                ? AppKendoColors.orange
+                                                      .withValues(alpha: 0.1)
+                                                : AppKendoColors.orange.shade50,
                                             isDark: isDark,
                                           ),
                                         );
@@ -1017,12 +1022,12 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
               context: context,
               barrierDismissible: true,
               barrierLabel: '閉じる',
-              barrierColor: Colors.black.withValues(alpha: 0.7),
+              barrierColor: AppKendoColors.pureBlack.withValues(alpha: 0.7),
               transitionDuration: const Duration(milliseconds: 350),
               pageBuilder: (ctx, anim1, anim2) {
                 return Center(
                   child: Dialog(
-                    backgroundColor: Colors.transparent,
+                    backgroundColor: AppKendoColors.transparent,
                     elevation: 0,
                     insetPadding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.roundValue,
@@ -1035,7 +1040,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                         borderRadius: AppRadius.round,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
+                            color: AppKendoColors.pureBlack.withValues(
+                              alpha: 0.3,
+                            ),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -1050,14 +1057,14 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                 ? _buildIndividualMatchesListViewer(
                                     '$rowTeam vs $colTeam',
                                     bouts,
-                                    cardColor: Colors.transparent,
+                                    cardColor: AppKendoColors.transparent,
                                     isDark: isDark,
                                     applySort: false,
                                   )
                                 : _buildScoreTableViewer(
                                     '$rowTeam vs $colTeam',
                                     bouts,
-                                    cardColor: Colors.transparent,
+                                    cardColor: AppKendoColors.transparent,
                                     isDark: isDark,
                                   ),
                           ),

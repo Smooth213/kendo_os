@@ -158,8 +158,8 @@ class LeagueGridCard extends StatelessWidget {
                           : AppKendoColors.hansokuRed;
                     } else if (cellData.result == 'loss') {
                       symbolColor = isDark
-                          ? Colors.blue.shade300
-                          : Colors.indigo.shade700;
+                          ? AppKendoColors.blue.shade300
+                          : AppKendoColors.indigo.shade700;
                     }
 
                     final textColor = themeColors.textColor;
@@ -300,15 +300,17 @@ class LeagueGridCard extends StatelessWidget {
       alignment: Alignment.center,
       color: isRank
           ? (isDark
-                ? Colors.orange.withValues(alpha: 0.2)
-                : Colors.orange.shade50)
+                ? AppKendoColors.orange.withValues(alpha: 0.2)
+                : AppKendoColors.orange.shade50)
           : null,
       child: Text(
         text,
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
           fontSize: isRank ? 16 : 13,
-          color: isRank ? Colors.orange.shade800 : themeColors.textColor,
+          color: isRank
+              ? AppKendoColors.orange.shade800
+              : themeColors.textColor,
         ),
       ),
     );

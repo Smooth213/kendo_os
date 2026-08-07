@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import 'dart:math' as math;
@@ -66,12 +68,12 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                     color: themeColors.cardBackground.withValues(alpha: 0.85),
                     borderRadius: AppRadius.medium,
                     border: Border.all(
-                      color: Colors.green.withValues(alpha: 0.4),
+                      color: AppKendoColors.green.withValues(alpha: 0.4),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
+                        color: AppKendoColors.pureBlack.withValues(alpha: 0.15),
                         blurRadius: 6,
                         offset: const Offset(0, 3),
                       ),
@@ -80,7 +82,11 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.eco, color: Colors.green, size: 13),
+                      const Icon(
+                        Icons.eco,
+                        color: AppKendoColors.green,
+                        size: 13,
+                      ),
                       const SizedBox(width: AppSpacing.xs),
                       Text(
                         'エコモード',
@@ -140,8 +146,8 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isDark
-                      ? Colors.indigo.withValues(alpha: 0.3)
-                      : Colors.indigo.withValues(alpha: 0.15),
+                      ? AppKendoColors.indigo.withValues(alpha: 0.3)
+                      : AppKendoColors.indigo.withValues(alpha: 0.15),
                 ),
               ),
             ),
@@ -155,8 +161,8 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isDark
-                      ? Colors.teal.withValues(alpha: 0.25)
-                      : Colors.teal.withValues(alpha: 0.12),
+                      ? AppKendoColors.teal.withValues(alpha: 0.25)
+                      : AppKendoColors.teal.withValues(alpha: 0.12),
                 ),
               ),
             ),
@@ -164,7 +170,7 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
             Positioned.fill(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 80.0, sigmaY: 80.0),
-                child: Container(color: Colors.transparent),
+                child: Container(color: AppKendoColors.transparent),
               ),
             ),
             // 前面の Scaffold 等

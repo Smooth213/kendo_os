@@ -1,6 +1,8 @@
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/infrastructure/repository/auth_repository.dart';
@@ -21,7 +23,9 @@ class LoginScreen extends ConsumerWidget {
     final Color buttonColor = isDark ? const Color(0xFFE599E5) : pinkAccent;
 
     // iOS Native カラーパレット
-    final Color bgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
+    final Color bgColor = isDark
+        ? AppKendoColors.pureBlack
+        : const Color(0xFFF2F2F7);
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -60,7 +64,7 @@ class LoginScreen extends ConsumerWidget {
                   width: 140,
                   height: 140,
                   color: isDark
-                      ? Colors.white
+                      ? AppKendoColors.pureWhite
                       : buttonColor, // ダークモードではアイコンを白抜きにしても美しい
                 ),
               ),
@@ -104,7 +108,7 @@ class LoginScreen extends ConsumerWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(
+                      color: AppKendoColors.pureBlack.withValues(
                         alpha: isDark ? 0.2 : 0.05,
                       ),
                       blurRadius: 16,
@@ -122,7 +126,9 @@ class LoginScreen extends ConsumerWidget {
                       ),
                       child: Icon(
                         Icons.shield_outlined,
-                        color: isDark ? pinkAccent : Colors.indigo.shade700,
+                        color: isDark
+                            ? pinkAccent
+                            : AppKendoColors.indigo.shade700,
                         size: 22,
                       ),
                     ),
@@ -171,7 +177,7 @@ class LoginScreen extends ConsumerWidget {
                           Icon(
                             Icons.check_circle,
                             size: 14,
-                            color: Colors.green.shade500,
+                            color: AppKendoColors.green.shade500,
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
@@ -229,7 +235,7 @@ class LoginScreen extends ConsumerWidget {
                     foregroundColor: buttonTextColor,
                     minimumSize: const Size(double.infinity, 60),
                     elevation: 0,
-                    shadowColor: Colors.transparent,
+                    shadowColor: AppKendoColors.transparent,
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.large,
                     ),

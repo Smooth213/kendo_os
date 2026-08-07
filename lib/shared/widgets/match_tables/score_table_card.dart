@@ -136,7 +136,7 @@ class ScoreTableCard extends StatelessWidget {
                         (m) => Container(
                           color: m.matchType == '代表戦'
                               ? daihyoBgColor
-                              : Colors.transparent,
+                              : AppKendoColors.transparent,
                           child: Center(
                             child: Padding(
                               padding: const EdgeInsets.all(AppSpacing.sm),
@@ -219,8 +219,8 @@ class ScoreTableCard extends StatelessWidget {
                       _teamCell(
                         info.sideLabelWhite,
                         isDark
-                            ? Colors.blueGrey.shade300
-                            : Colors.blueGrey.shade700,
+                            ? AppKendoColors.blueGrey.shade300
+                            : AppKendoColors.blueGrey.shade700,
                       ),
                       ...matches.map(
                         (m) => _nameCell(
@@ -254,8 +254,8 @@ class ScoreTableCard extends StatelessWidget {
               top: 40,
               child: Container(
                 color: isDark
-                    ? Colors.black.withValues(alpha: 0.3)
-                    : Colors.white.withValues(alpha: 0.6),
+                    ? AppKendoColors.pureBlack.withValues(alpha: 0.3)
+                    : AppKendoColors.pureWhite.withValues(alpha: 0.6),
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -263,14 +263,18 @@ class ScoreTableCard extends StatelessWidget {
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.black87 : Colors.white,
+                      color: isDark
+                          ? AppKendoColors.pureBlack
+                          : AppKendoColors.pureWhite,
                       borderRadius: AppRadius.small,
                       border: Border.all(
                         color: context.appColors.separatorColor,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: AppKendoColors.pureBlack.withValues(
+                            alpha: 0.1,
+                          ),
                           blurRadius: 4,
                         ),
                       ],
@@ -282,8 +286,8 @@ class ScoreTableCard extends StatelessWidget {
                         fontSize: AppFontSize.bodySmall,
                         fontWeight: AppFontWeight.bold,
                         color: isDark
-                            ? Colors.grey.shade300
-                            : Colors.grey.shade700,
+                            ? AppKendoColors.grey.shade300
+                            : AppKendoColors.grey.shade700,
                       ),
                     ),
                   ),
@@ -350,8 +354,8 @@ class ScoreTableCard extends StatelessWidget {
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'white'
                               ? (isDark
-                                    ? Colors.blue.shade400
-                                    : Colors.blue.shade600)
+                                    ? AppKendoColors.blue.shade400
+                                    : AppKendoColors.blue.shade600)
                               : textColor,
                         ),
                       ),
@@ -393,7 +397,7 @@ class ScoreTableCard extends StatelessWidget {
             ? (isDark
                   ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
                   : AppKendoColors.hansokuRed)
-            : Colors.transparent,
+            : AppKendoColors.transparent,
       );
     }
 
@@ -407,7 +411,7 @@ class ScoreTableCard extends StatelessWidget {
           ? (isDark
                 ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
                 : AppKendoColors.hansokuRed)
-          : Colors.transparent,
+          : AppKendoColors.transparent,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(

@@ -24,16 +24,22 @@ class TournamentHeaderCard extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
+    final borderColor = isDark
+        ? const Color(0xFF38383A)
+        : AppKendoColors.grey.shade200;
     final textColor = context.appColors.textColor;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : Colors.grey.shade700;
+        : AppKendoColors.grey.shade700;
     final iconBgColor = isDark
         ? AppKendoColors.ipponGold.withValues(alpha: 0.3)
         : AppKendoColors.ipponGold;
-    final popupIconColor = isDark ? Colors.grey.shade400 : Colors.grey.shade500;
-    final noteBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
+    final popupIconColor = isDark
+        ? AppKendoColors.grey.shade400
+        : AppKendoColors.grey.shade500;
+    final noteBgColor = isDark
+        ? const Color(0xFF2C2C2E)
+        : AppKendoColors.grey.shade50;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -103,7 +109,7 @@ class TournamentHeaderCard extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.calendar_today,
-                  color: Colors.grey.shade500,
+                  color: AppKendoColors.grey.shade500,
                   size: 16,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -115,7 +121,11 @@ class TournamentHeaderCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.lg),
-                Icon(Icons.location_on, color: Colors.grey.shade500, size: 16),
+                Icon(
+                  Icons.location_on,
+                  color: AppKendoColors.grey.shade500,
+                  size: 16,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -168,7 +178,7 @@ class TournamentHeaderCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xlargeValue),
           ),
@@ -182,7 +192,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                 width: 48,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
+                  color: AppKendoColors.grey.shade400,
                   borderRadius: AppRadius.medium,
                 ),
               ),
@@ -190,8 +200,8 @@ class TournamentHeaderCard extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             ListTile(
               leading: CircleAvatar(
-                backgroundColor: Colors.indigo.withValues(alpha: 0.1),
-                child: const Icon(Icons.edit, color: Colors.indigo),
+                backgroundColor: AppKendoColors.indigo.withValues(alpha: 0.1),
+                child: const Icon(Icons.edit, color: AppKendoColors.indigo),
               ),
               title: Text(
                 '大会情報の編集',
@@ -204,7 +214,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                 '大会名や会場、日付を変更します',
                 style: TextStyle(
                   fontSize: AppFontSize.small,
-                  color: Colors.grey,
+                  color: AppKendoColors.grey,
                 ),
               ),
               onTap: () {
@@ -227,13 +237,13 @@ class TournamentHeaderCard extends ConsumerWidget {
               ),
               ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.red.withValues(alpha: 0.1),
-                  child: const Icon(Icons.delete, color: Colors.red),
+                  backgroundColor: AppKendoColors.red.withValues(alpha: 0.1),
+                  child: const Icon(Icons.delete, color: AppKendoColors.red),
                 ),
                 title: const Text(
                   'この大会を削除',
                   style: TextStyle(
-                    color: Colors.red,
+                    color: AppKendoColors.red,
                     fontWeight: AppFontWeight.bold,
                   ),
                 ),
@@ -241,7 +251,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                   '関連するすべての試合も完全に削除されます',
                   style: TextStyle(
                     fontSize: AppFontSize.small,
-                    color: Colors.grey,
+                    color: AppKendoColors.grey,
                   ),
                 ),
                 onTap: () {
@@ -309,8 +319,8 @@ class TournamentHeaderCard extends ConsumerWidget {
                         builder: (context, child) => Theme(
                           data: Theme.of(context).copyWith(
                             colorScheme: ColorScheme.light(
-                              primary: Colors.indigo,
-                              onPrimary: Colors.white,
+                              primary: AppKendoColors.indigo,
+                              onPrimary: AppKendoColors.pureWhite,
                               onSurface: context.appColors.textColor,
                             ),
                             dialogTheme: DialogThemeData(
@@ -343,8 +353,8 @@ class TournamentHeaderCard extends ConsumerWidget {
                             Icons.calendar_today,
                             size: 20,
                             color: isDark
-                                ? Colors.indigo.shade400
-                                : Colors.indigo.shade600,
+                                ? AppKendoColors.indigo.shade400
+                                : AppKendoColors.indigo.shade600,
                           ),
                         ],
                       ),
@@ -383,13 +393,13 @@ class TournamentHeaderCard extends ConsumerWidget {
                 onPressed: () => Navigator.pop(ctx),
                 child: const Text(
                   'キャンセル',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: AppKendoColors.grey),
                 ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo.shade600,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppKendoColors.indigo.shade600,
+                  foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),
@@ -428,7 +438,7 @@ class TournamentHeaderCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => AppDialog(
         titleIcon: Icons.warning_amber_rounded,
-        iconColor: Colors.red,
+        iconColor: AppKendoColors.red,
         title: '大会削除の確認',
         content: Text(
           'この大会を削除しますか？\n（取り消しはできません）',
@@ -437,12 +447,15 @@ class TournamentHeaderCard extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: AppKendoColors.grey),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: AppKendoColors.red,
+              foregroundColor: AppKendoColors.pureWhite,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
             ),

@@ -317,7 +317,7 @@ void main() {
                   const Text(
                     '⚠️ UIレンダリング・エラー発生',
                     style: TextStyle(
-                      color: Colors.red,
+                      color: AppKendoColors.red,
                       fontWeight: AppFontWeight.bold,
                       fontSize: AppFontSize.headline,
                     ),
@@ -325,7 +325,7 @@ void main() {
                   Text(
                     details.exceptionAsString(),
                     style: const TextStyle(
-                      color: Colors.black,
+                      color: AppKendoColors.pureBlack,
                       fontWeight: AppFontWeight.bold,
                       fontSize: AppFontSize.body,
                     ),
@@ -372,7 +372,7 @@ void main() {
                                     PlatformDispatcher.instance.views.first,
                                   ),
                                   child: Material(
-                                    color: Colors.transparent,
+                                    color: AppKendoColors.transparent,
                                     child: Container(
                                       width: double.infinity,
                                       color: AppKendoColors.ipponGold,
@@ -387,14 +387,14 @@ void main() {
                                         children: [
                                           Icon(
                                             Icons.wifi_off_rounded,
-                                            color: Colors.white,
+                                            color: AppKendoColors.pureWhite,
                                             size: 18,
                                           ),
                                           SizedBox(width: AppSpacing.sm),
                                           Text(
                                             '⚠️ 体育館オフライン運営モード：ローカルキャッシュへ即時保存中',
                                             style: TextStyle(
-                                              color: Colors.white,
+                                              color: AppKendoColors.pureWhite,
                                               fontWeight: AppFontWeight.bold,
                                               fontSize: AppFontSize.bodySmall,
                                               decoration: TextDecoration.none,
@@ -786,8 +786,8 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
     final darkThemeBase = ThemeData(
       brightness: Brightness.dark,
       useMaterial3: true,
-      scaffoldBackgroundColor: Colors.black,
-      canvasColor: Colors.black,
+      scaffoldBackgroundColor: AppKendoColors.pureBlack,
+      canvasColor: AppKendoColors.pureBlack,
       dialogTheme: commonDialogTheme,
       bottomSheetTheme: commonBottomSheetTheme,
       textTheme: GoogleFonts.notoSansJpTextTheme(ThemeData.dark().textTheme),
@@ -830,7 +830,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
 
             return Scaffold(
               backgroundColor: isDark
-                  ? Colors.black
+                  ? AppKendoColors.pureBlack
                   : const Color(0xFFF2F2F7), // テーマ対応ベースカラー
               body: Column(
                 children: [
@@ -851,7 +851,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                         children: [
                           const Icon(
                             Icons.wifi_off_rounded,
-                            color: Colors.white,
+                            color: AppKendoColors.pureWhite,
                             size: 18,
                           ),
                           const SizedBox(width: AppSpacing.sm),
@@ -861,7 +861,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                                   ? '⚠️ 体育館オフライン運営モード：ブラウザキャッシュへ即時保存中'
                                   : '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppKendoColors.pureWhite,
                                 fontWeight: AppFontWeight.bold,
                                 fontSize: AppFontSize.bodySmall,
                                 decoration: TextDecoration.none,

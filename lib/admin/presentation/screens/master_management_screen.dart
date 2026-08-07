@@ -96,13 +96,13 @@ class _MasterManagementScreenState
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
 
     final Color primaryColor = isDark
-        ? Colors.purpleAccent
-        : Colors.purple.shade700;
+        ? AppKendoColors.purpleAccent
+        : AppKendoColors.purple.shade700;
     final Color textColor = context.appColors.textColor;
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
           leading: _isSelectionMode
               ? IconButton(
@@ -119,13 +119,13 @@ class _MasterManagementScreenState
               ? '${_selectedPlayerIds.length}人選択中'
               : '選手マスタ管理',
           backgroundColor: enableLiquidGlass
-              ? Colors.transparent
+              ? AppKendoColors.transparent
               : themeColors.cardBackground,
           actions: _isSelectionMode
               ? [
                   if (!isReadOnly && canManageMaster)
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: const Icon(Icons.delete, color: AppKendoColors.red),
                       tooltip: '選択した選手を削除',
                       onPressed: _selectedPlayerIds.isEmpty
                           ? null
@@ -166,7 +166,7 @@ class _MasterManagementScreenState
                       'assets/kendo_icon.png',
                       width: 80,
                       height: 80,
-                      color: Colors.grey.shade300,
+                      color: AppKendoColors.grey.shade300,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     Text(
@@ -182,7 +182,7 @@ class _MasterManagementScreenState
                       '選手を追加する前に、まずはあなたたちの道場名・学校名を登録することから始めましょう！',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.grey,
+                        color: AppKendoColors.grey,
                         height: 1.5,
                         fontSize: AppFontSize.body,
                       ),
@@ -275,7 +275,7 @@ class _MasterManagementScreenState
                         IconButton(
                           icon: Icon(
                             Icons.edit_note,
-                            color: Colors.grey.shade400,
+                            color: AppKendoColors.grey.shade400,
                           ),
                           tooltip: '道場名・学校名を一括変更',
                           onPressed: () => _showEditOrgBottomSheet(
@@ -308,8 +308,10 @@ class _MasterManagementScreenState
                     },
                     style: SegmentedButton.styleFrom(
                       selectedBackgroundColor: isDark
-                          ? Colors.purple.shade900.withValues(alpha: 0.4)
-                          : Colors.purple.shade50,
+                          ? AppKendoColors.purple.shade900.withValues(
+                              alpha: 0.4,
+                            )
+                          : AppKendoColors.purple.shade50,
                       selectedForegroundColor: primaryColor,
                       side: BorderSide(color: context.appColors.separatorColor),
                     ),
@@ -341,8 +343,8 @@ class _MasterManagementScreenState
                                 fontSize: AppFontSize.bodySmall,
                                 fontWeight: AppFontWeight.semiBold,
                                 color: isDark
-                                    ? Colors.grey.shade500
-                                    : Colors.grey.shade600,
+                                    ? AppKendoColors.grey.shade500
+                                    : AppKendoColors.grey.shade600,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -412,7 +414,7 @@ class _MasterManagementScreenState
                   }
                 },
                 backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
+                foregroundColor: AppKendoColors.pureWhite,
                 elevation: 4,
                 icon: const Icon(Icons.person_add),
                 label: const Text(
@@ -446,25 +448,27 @@ class _MasterManagementScreenState
     final isMale = player.gender == '男子';
 
     final genderColor = isMale
-        ? (isDark ? Colors.blue.shade300 : Colors.blue.shade600)
-        : (isDark ? Colors.pink.shade300 : Colors.pink.shade600);
+        ? (isDark ? AppKendoColors.blue.shade300 : AppKendoColors.blue.shade600)
+        : (isDark
+              ? AppKendoColors.pink.shade300
+              : AppKendoColors.pink.shade600);
     final bgColor = isMale
         ? (isDark
-              ? Colors.blue.withValues(alpha: 0.25)
-              : Colors.blue.withValues(alpha: 0.1))
+              ? AppKendoColors.blue.withValues(alpha: 0.25)
+              : AppKendoColors.blue.withValues(alpha: 0.1))
         : (isDark
-              ? Colors.pink.withValues(alpha: 0.25)
-              : Colors.pink.withValues(alpha: 0.1));
+              ? AppKendoColors.pink.withValues(alpha: 0.25)
+              : AppKendoColors.pink.withValues(alpha: 0.1));
 
     final bool isSelected = _selectedPlayerIds.contains(player.id);
     final selectedColor = isDark
-        ? Colors.purple.withValues(alpha: 0.2)
-        : Colors.purple.shade50;
+        ? AppKendoColors.purple.withValues(alpha: 0.2)
+        : AppKendoColors.purple.shade50;
 
     final tile = Material(
       color: _isSelectionMode && isSelected
           ? selectedColor
-          : Colors.transparent,
+          : AppKendoColors.transparent,
       child: InkWell(
         onTap: _isSelectionMode
             ? () {
@@ -499,8 +503,8 @@ class _MasterManagementScreenState
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.circle_outlined,
                     color: isSelected
-                        ? Colors.purple.shade700
-                        : Colors.grey.shade400,
+                        ? AppKendoColors.purple.shade700
+                        : AppKendoColors.grey.shade400,
                     size: 22,
                   ),
                 ),
@@ -544,17 +548,21 @@ class _MasterManagementScreenState
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.green.shade600,
+                              color: AppKendoColors.green.shade600,
                               borderRadius: AppRadius.tiny,
                             ),
                             child: const Row(
                               children: [
-                                Icon(Icons.eco, size: 10, color: Colors.white),
+                                Icon(
+                                  Icons.eco,
+                                  size: 10,
+                                  color: AppKendoColors.pureWhite,
+                                ),
                                 SizedBox(width: 2),
                                 Text(
                                   '初心者',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: AppKendoColors.pureWhite,
                                     fontSize: AppFontSize.nano,
                                     fontWeight: AppFontWeight.bold,
                                   ),
@@ -573,8 +581,8 @@ class _MasterManagementScreenState
                             '${player.nameKana} ',
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.grey.shade500
-                                  : Colors.grey.shade400,
+                                  ? AppKendoColors.grey.shade500
+                                  : AppKendoColors.grey.shade400,
                               fontSize: AppFontSize.caption,
                             ),
                           ),
@@ -582,8 +590,8 @@ class _MasterManagementScreenState
                           '${player.gradeName} / ${player.gender}',
                           style: TextStyle(
                             color: isDark
-                                ? Colors.grey.shade400
-                                : Colors.grey.shade500,
+                                ? AppKendoColors.grey.shade400
+                                : AppKendoColors.grey.shade500,
                             fontSize: AppFontSize.caption,
                           ),
                         ),
@@ -614,15 +622,15 @@ class _MasterManagementScreenState
               player: player,
               cloudDojoName: player.organization,
             ),
-            backgroundColor: Colors.blueAccent,
-            foregroundColor: Colors.white,
+            backgroundColor: AppKendoColors.blueAccent,
+            foregroundColor: AppKendoColors.pureWhite,
             icon: Icons.edit,
             label: '編集',
           ),
           SlidableAction(
             onPressed: (context) => _confirmSingleDelete(context, ref, player),
-            backgroundColor: Colors.redAccent,
-            foregroundColor: Colors.white,
+            backgroundColor: AppKendoColors.redAccent,
+            foregroundColor: AppKendoColors.pureWhite,
             icon: Icons.delete,
             label: '削除',
           ),
@@ -806,8 +814,8 @@ class _MasterManagementScreenState
                       height: 5,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.grey.shade700
-                            : Colors.grey.shade300,
+                            ? AppKendoColors.grey.shade700
+                            : AppKendoColors.grey.shade300,
                         borderRadius: AppRadius.medium,
                       ),
                     ),
@@ -833,12 +841,14 @@ class _MasterManagementScreenState
                           style: TextStyle(
                             fontSize: AppFontSize.small,
                             fontWeight: AppFontWeight.bold,
-                            color: isBeginner ? Colors.green : Colors.grey,
+                            color: isBeginner
+                                ? AppKendoColors.green
+                                : AppKendoColors.grey,
                           ),
                         ),
                         Switch(
                           value: isBeginner,
-                          activeThumbColor: Colors.green,
+                          activeThumbColor: AppKendoColors.green,
                           onChanged: (val) => setState(() => isBeginner = val),
                         ),
                       ],
@@ -861,7 +871,7 @@ class _MasterManagementScreenState
                           labelText: 'よみがな (せい)',
                           labelStyle: const TextStyle(
                             fontSize: AppFontSize.badge,
-                            color: Colors.grey,
+                            color: AppKendoColors.grey,
                           ),
                           isDense: true,
                           contentPadding: isKeyboardVisible
@@ -893,7 +903,7 @@ class _MasterManagementScreenState
                           labelText: 'よみがな (めい)',
                           labelStyle: const TextStyle(
                             fontSize: AppFontSize.badge,
-                            color: Colors.grey,
+                            color: AppKendoColors.grey,
                           ),
                           isDense: true,
                           contentPadding: isKeyboardVisible
@@ -935,8 +945,8 @@ class _MasterManagementScreenState
                               : Icon(
                                   Icons.person,
                                   color: isDark
-                                      ? Colors.grey.shade400
-                                      : Colors.grey,
+                                      ? AppKendoColors.grey.shade400
+                                      : AppKendoColors.grey,
                                 ),
                           isDense: isKeyboardVisible,
                           contentPadding: isKeyboardVisible
@@ -988,7 +998,9 @@ class _MasterManagementScreenState
                   style: TextStyle(
                     fontSize: AppFontSize.bodySmall,
                     fontWeight: AppFontWeight.bold,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey,
+                    color: isDark
+                        ? AppKendoColors.grey.shade400
+                        : AppKendoColors.grey,
                   ),
                 ),
                 SizedBox(height: gapSmall),
@@ -1000,7 +1012,7 @@ class _MasterManagementScreenState
                         setState,
                         '男子',
                         Icons.man,
-                        Colors.blue,
+                        AppKendoColors.blue,
                         selectedGender == '男子',
                         isDark,
                         () => setState(() => selectedGender = '男子'),
@@ -1013,7 +1025,7 @@ class _MasterManagementScreenState
                         setState,
                         '女子',
                         Icons.woman,
-                        Colors.pink,
+                        AppKendoColors.pink,
                         selectedGender == '女子',
                         isDark,
                         () => setState(() => selectedGender = '女子'),
@@ -1028,7 +1040,9 @@ class _MasterManagementScreenState
                     labelText: '学年・カテゴリ',
                     prefixIcon: Icon(
                       Icons.school,
-                      color: isDark ? Colors.grey.shade400 : Colors.grey,
+                      color: isDark
+                          ? AppKendoColors.grey.shade400
+                          : AppKendoColors.grey,
                     ),
                     border: OutlineInputBorder(borderRadius: AppRadius.medium),
                     filled: true,
@@ -1062,7 +1076,9 @@ class _MasterManagementScreenState
                       child: Text(
                         'キャンセル',
                         style: TextStyle(
-                          color: isDark ? Colors.grey.shade400 : Colors.grey,
+                          color: isDark
+                              ? AppKendoColors.grey.shade400
+                              : AppKendoColors.grey,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -1108,17 +1124,20 @@ class _MasterManagementScreenState
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppKendoColors.pureWhite,
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.xl,
                           vertical: AppSpacing.lg,
                         ),
                       ),
-                      icon: const Icon(Icons.save, color: Colors.white),
+                      icon: const Icon(
+                        Icons.save,
+                        color: AppKendoColors.pureWhite,
+                      ),
                       label: const Text(
                         '保存して登録',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppKendoColors.pureWhite,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -1155,9 +1174,15 @@ class _MasterManagementScreenState
   // ★ 初期道場名入力専用ボトムシート
   void _showInitialOrgBottomSheet(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
-    final dialogBgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-    final inputBgColor = isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade50;
+    final primaryColor = isDark
+        ? AppKendoColors.purpleAccent
+        : AppKendoColors.purple.shade700;
+    final dialogBgColor = isDark
+        ? const Color(0xFF1E1E1E)
+        : AppKendoColors.pureWhite;
+    final inputBgColor = isDark
+        ? const Color(0xFF2C2C2C)
+        : AppKendoColors.grey.shade50;
     final textColor = context.appColors.textColor;
 
     final initialName = ref.read(currentDojoNameProvider).value ?? '';
@@ -1204,8 +1229,8 @@ class _MasterManagementScreenState
                       height: 5,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.grey.shade700
-                            : Colors.grey.shade300,
+                            ? AppKendoColors.grey.shade700
+                            : AppKendoColors.grey.shade300,
                         borderRadius: AppRadius.medium,
                       ),
                     ),
@@ -1216,8 +1241,8 @@ class _MasterManagementScreenState
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
                       color: isDark
-                          ? Colors.purpleAccent
-                          : Colors.purple.shade800,
+                          ? AppKendoColors.purpleAccent
+                          : AppKendoColors.purple.shade800,
                       fontSize: AppFontSize.header,
                     ),
                   ),
@@ -1226,7 +1251,7 @@ class _MasterManagementScreenState
                     '選手を追加する前に、道場名または学校名を入力してください。',
                     style: TextStyle(
                       fontSize: AppFontSize.bodySmall,
-                      color: Colors.grey,
+                      color: AppKendoColors.grey,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
@@ -1238,7 +1263,9 @@ class _MasterManagementScreenState
                       labelText: '道場名・学校名',
                       prefixIcon: Icon(
                         Icons.account_balance,
-                        color: isDark ? Colors.grey.shade400 : Colors.grey,
+                        color: isDark
+                            ? AppKendoColors.grey.shade400
+                            : AppKendoColors.grey,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: AppRadius.medium,
@@ -1256,7 +1283,9 @@ class _MasterManagementScreenState
                         child: Text(
                           'キャンセル',
                           style: TextStyle(
-                            color: isDark ? Colors.grey.shade400 : Colors.grey,
+                            color: isDark
+                                ? AppKendoColors.grey.shade400
+                                : AppKendoColors.grey,
                             fontWeight: AppFontWeight.bold,
                           ),
                         ),
@@ -1265,7 +1294,7 @@ class _MasterManagementScreenState
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppKendoColors.pureWhite,
                           shape: RoundedRectangleBorder(
                             borderRadius: AppRadius.medium,
                           ),
@@ -1313,13 +1342,15 @@ class _MasterManagementScreenState
   // ★ 先行入力強制ダイアログ
   void _showMustRegisterOrgDialog(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
+    final primaryColor = isDark
+        ? AppKendoColors.purpleAccent
+        : AppKendoColors.purple.shade700;
 
     showAppDialog(
       context: context,
       builder: (ctx) => AppDialog(
         titleIcon: Icons.warning_amber_rounded,
-        iconColor: Colors.orange.shade700,
+        iconColor: AppKendoColors.orange.shade700,
         title: '道場名の登録が必要です',
         content: const Text(
           '選手を登録する前に、まずは道場名・学校名を登録してください。',
@@ -1328,7 +1359,10 @@ class _MasterManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: AppKendoColors.grey),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1337,7 +1371,7 @@ class _MasterManagementScreenState
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
+              foregroundColor: AppKendoColors.pureWhite,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
               elevation: 0,
             ),
@@ -1368,11 +1402,13 @@ class _MasterManagementScreenState
       style: OutlinedButton.styleFrom(
         backgroundColor: isSel
             ? color.withValues(alpha: isDark ? 0.2 : 0.1)
-            : (isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade50),
+            : (isDark ? const Color(0xFF2C2C2C) : AppKendoColors.grey.shade50),
         side: BorderSide(
           color: isSel
               ? color
-              : (isDark ? Colors.grey.shade700 : Colors.grey.shade300),
+              : (isDark
+                    ? AppKendoColors.grey.shade700
+                    : AppKendoColors.grey.shade300),
           width: isSel ? 2 : 1,
         ),
         shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
@@ -1410,7 +1446,7 @@ class _MasterManagementScreenState
           ),
         ),
         child: Material(
-          color: Colors.transparent,
+          color: AppKendoColors.transparent,
           child: Padding(
             padding: const EdgeInsets.only(
               top: AppSpacing.lg,
@@ -1424,7 +1460,7 @@ class _MasterManagementScreenState
                     width: 48,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
+                      color: AppKendoColors.grey.shade400,
                       borderRadius: AppRadius.medium,
                     ),
                   ),
@@ -1432,10 +1468,12 @@ class _MasterManagementScreenState
                 const SizedBox(height: AppSpacing.lg),
                 ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.purple.withValues(alpha: 0.1),
+                    backgroundColor: AppKendoColors.purple.withValues(
+                      alpha: 0.1,
+                    ),
                     child: Icon(
                       Icons.cleaning_services,
-                      color: Colors.purple.shade700,
+                      color: AppKendoColors.purple.shade700,
                     ),
                   ),
                   title: Text(
@@ -1449,7 +1487,7 @@ class _MasterManagementScreenState
                     'キャッシュクリアやデータのエクスポート・整理を行います',
                     style: TextStyle(
                       fontSize: AppFontSize.small,
-                      color: Colors.grey,
+                      color: AppKendoColors.grey,
                     ),
                   ),
                   onTap: () {
@@ -1465,13 +1503,18 @@ class _MasterManagementScreenState
                     height: 1,
                     color: isDark
                         ? const Color(0xFF38383A)
-                        : Colors.grey.shade300,
+                        : AppKendoColors.grey.shade300,
                   ),
                 ),
                 ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.indigo.withValues(alpha: 0.1),
-                    child: Icon(Icons.school, color: Colors.indigo.shade700),
+                    backgroundColor: AppKendoColors.indigo.withValues(
+                      alpha: 0.1,
+                    ),
+                    child: Icon(
+                      Icons.school,
+                      color: AppKendoColors.indigo.shade700,
+                    ),
                   ),
                   title: Text(
                     '新年度の一括進級',
@@ -1484,7 +1527,7 @@ class _MasterManagementScreenState
                     'すべての選手の学年を1つ繰り上げます',
                     style: TextStyle(
                       fontSize: AppFontSize.small,
-                      color: Colors.grey,
+                      color: AppKendoColors.grey,
                     ),
                   ),
                   onTap: () {
@@ -1505,7 +1548,7 @@ class _MasterManagementScreenState
       context: context,
       builder: (ctx) => AppDialog(
         titleIcon: Icons.school,
-        iconColor: Colors.purple.shade700,
+        iconColor: AppKendoColors.purple.shade700,
         title: '新年度の一括進級',
         content: const Text(
           'すべての選手の学年を1つ繰り上げます。\n（例：小学6年 ➔ 中学1年）\n\n※この操作は取り消せません。本当によろしいですか？',
@@ -1514,13 +1557,16 @@ class _MasterManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: AppKendoColors.grey),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple.shade700,
-              foregroundColor: Colors.white,
+              backgroundColor: AppKendoColors.purple.shade700,
+              foregroundColor: AppKendoColors.pureWhite,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
               elevation: 0,
             ),
@@ -1584,7 +1630,7 @@ class _MasterManagementScreenState
             child: const Text(
               '削除',
               style: TextStyle(
-                color: Colors.red,
+                color: AppKendoColors.red,
                 fontWeight: AppFontWeight.bold,
               ),
             ),
@@ -1637,7 +1683,7 @@ class _MasterManagementScreenState
             child: const Text(
               'すべて削除',
               style: TextStyle(
-                color: Colors.red,
+                color: AppKendoColors.red,
                 fontWeight: AppFontWeight.bold,
               ),
             ),
@@ -1655,7 +1701,7 @@ class _MasterManagementScreenState
     List<PlayerModel> players,
   ) {
     final controller = TextEditingController(text: currentOrg);
-    final primaryColor = Colors.purple.shade700;
+    final primaryColor = AppKendoColors.purple.shade700;
 
     showAppBottomSheet(
       context: context,
@@ -1676,7 +1722,7 @@ class _MasterManagementScreenState
           return Container(
             constraints: BoxConstraints(maxHeight: maxSheetHeight),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: AppKendoColors.pureWhite,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(AppRadius.xlargeValue),
               ),
@@ -1698,7 +1744,7 @@ class _MasterManagementScreenState
                       width: 48,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color: AppKendoColors.grey.shade300,
                         borderRadius: AppRadius.medium,
                       ),
                     ),
@@ -1709,7 +1755,7 @@ class _MasterManagementScreenState
                     '所属名の変更',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      color: Colors.purple.shade800,
+                      color: AppKendoColors.purple.shade800,
                       fontSize: AppFontSize.header,
                     ),
                   ),
@@ -1718,7 +1764,7 @@ class _MasterManagementScreenState
                     '登録されている全選手の所属名を一括で書き換えます。',
                     style: TextStyle(
                       fontSize: AppFontSize.bodySmall,
-                      color: Colors.grey,
+                      color: AppKendoColors.grey,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
@@ -1729,13 +1775,13 @@ class _MasterManagementScreenState
                       labelText: '新しい道場名・学校名',
                       prefixIcon: const Icon(
                         Icons.account_balance,
-                        color: Colors.grey,
+                        color: AppKendoColors.grey,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: AppRadius.medium,
                       ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: AppKendoColors.grey.shade50,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xxl),
@@ -1748,7 +1794,7 @@ class _MasterManagementScreenState
                         child: const Text(
                           'キャンセル',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: AppKendoColors.grey,
                             fontWeight: AppFontWeight.bold,
                           ),
                         ),
@@ -1757,7 +1803,7 @@ class _MasterManagementScreenState
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppKendoColors.pureWhite,
                           shape: RoundedRectangleBorder(
                             borderRadius: AppRadius.medium,
                           ),
@@ -1851,7 +1897,7 @@ class _MasterManagementScreenState
       context: context,
       builder: (ctx) => AppDialog(
         titleIcon: Icons.cleaning_services,
-        iconColor: Colors.purple.shade700,
+        iconColor: AppKendoColors.purple.shade700,
         title: 'データとストレージ管理',
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1861,7 +1907,7 @@ class _MasterManagementScreenState
               'アプリの動作が重い場合や、ストレージ容量を空けたい場合に実行してください。',
               style: TextStyle(
                 fontSize: AppFontSize.bodySmall,
-                color: Colors.grey,
+                color: AppKendoColors.grey,
                 height: 1.4,
               ),
             ),
@@ -1871,8 +1917,11 @@ class _MasterManagementScreenState
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: CircleAvatar(
-                backgroundColor: Colors.purple.shade50,
-                child: Icon(Icons.cached, color: Colors.purple.shade700),
+                backgroundColor: AppKendoColors.purple.shade50,
+                child: Icon(
+                  Icons.cached,
+                  color: AppKendoColors.purple.shade700,
+                ),
               ),
               title: const Text(
                 '一時キャッシュをクリア',
@@ -1891,8 +1940,8 @@ class _MasterManagementScreenState
                   AppSnackBar.showSuccess(context, 'キャッシュをクリアし、メモリを解放しました ✨');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple.shade50,
-                  foregroundColor: Colors.purple.shade800,
+                  backgroundColor: AppKendoColors.purple.shade50,
+                  foregroundColor: AppKendoColors.purple.shade800,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),
@@ -1908,8 +1957,11 @@ class _MasterManagementScreenState
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: CircleAvatar(
-                backgroundColor: Colors.blue.shade50,
-                child: Icon(Icons.download, color: Colors.blue.shade700),
+                backgroundColor: AppKendoColors.blue.shade50,
+                child: Icon(
+                  Icons.download,
+                  color: AppKendoColors.blue.shade700,
+                ),
               ),
               title: const Text(
                 '全データをJSONでバックアップ',
@@ -1964,8 +2016,8 @@ class _MasterManagementScreenState
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade50,
-                  foregroundColor: Colors.blue.shade800,
+                  backgroundColor: AppKendoColors.blue.shade50,
+                  foregroundColor: AppKendoColors.blue.shade800,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),
@@ -1985,7 +2037,10 @@ class _MasterManagementScreenState
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
                   backgroundColor: AppKendoColors.hansokuRed,
-                  child: const Icon(Icons.delete_sweep, color: Colors.red),
+                  child: const Icon(
+                    Icons.delete_sweep,
+                    color: AppKendoColors.red,
+                  ),
                 ),
                 title: const Text(
                   '1年以上前の大会を削除',
@@ -2005,7 +2060,7 @@ class _MasterManagementScreenState
                       context: context,
                       builder: (c) => AppDialog(
                         titleIcon: Icons.warning_amber_rounded,
-                        iconColor: Colors.red,
+                        iconColor: AppKendoColors.red,
                         title: '警告',
                         content: const Text(
                           '1年以上前の「大会」と「試合データ」をすべて完全に削除します。\nこの操作は元に戻せません。実行しますか？',
@@ -2016,13 +2071,13 @@ class _MasterManagementScreenState
                             onPressed: () => Navigator.pop(c, false),
                             child: const Text(
                               'キャンセル',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: AppKendoColors.grey),
                             ),
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppKendoColors.red,
+                              foregroundColor: AppKendoColors.pureWhite,
                               shape: RoundedRectangleBorder(
                                 borderRadius: AppRadius.medium,
                               ),
@@ -2076,7 +2131,10 @@ class _MasterManagementScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('閉じる', style: TextStyle(color: Colors.grey)),
+            child: const Text(
+              '閉じる',
+              style: TextStyle(color: AppKendoColors.grey),
+            ),
           ),
         ],
       ),
@@ -2091,7 +2149,9 @@ class _MasterManagementScreenState
   ) {
     final nameController = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
+    final primaryColor = isDark
+        ? AppKendoColors.purpleAccent
+        : AppKendoColors.purple.shade700;
 
     showAppBottomSheet(
       context: context,
@@ -2129,7 +2189,7 @@ class _MasterManagementScreenState
                     width: 48,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: AppKendoColors.grey.shade300,
                       borderRadius: AppRadius.medium,
                     ),
                   ),
@@ -2147,7 +2207,7 @@ class _MasterManagementScreenState
                   '試合作成時にボタンで選べる「自チーム名」を登録します。',
                   style: TextStyle(
                     fontSize: AppFontSize.small,
-                    color: Colors.grey,
+                    color: AppKendoColors.grey,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
@@ -2164,7 +2224,7 @@ class _MasterManagementScreenState
                           filled: true,
                           fillColor: isDark
                               ? const Color(0xFF2C2C2E)
-                              : Colors.grey.shade50,
+                              : AppKendoColors.grey.shade50,
                           border: OutlineInputBorder(
                             borderRadius: AppRadius.medium,
                             borderSide: BorderSide.none,
@@ -2186,7 +2246,7 @@ class _MasterManagementScreenState
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppKendoColors.pureWhite,
                         shape: RoundedRectangleBorder(
                           borderRadius: AppRadius.medium,
                         ),
@@ -2212,7 +2272,7 @@ class _MasterManagementScreenState
                             child: Text(
                               '登録されたチーム名はありません',
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: AppKendoColors.grey,
                                 fontSize: AppFontSize.bodySmall,
                               ),
                             ),
@@ -2227,7 +2287,7 @@ class _MasterManagementScreenState
                           elevation: 0,
                           color: isDark
                               ? const Color(0xFF2C2C2E)
-                              : Colors.grey.shade50,
+                              : AppKendoColors.grey.shade50,
                           margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                           child: ListTile(
                             title: Text(
@@ -2245,7 +2305,7 @@ class _MasterManagementScreenState
                                 ? IconButton(
                                     icon: const Icon(
                                       Icons.delete_outline,
-                                      color: Colors.redAccent,
+                                      color: AppKendoColors.redAccent,
                                       size: 20,
                                     ),
                                     onPressed: () => ref

@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,14 +30,14 @@ class RoleSelectScreen extends ConsumerWidget {
     // ★ アプリ全体と統一した iOS 風 (Liquid Glass) のガラス背景
     final cardBgColor = isDark
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-        : Colors.white.withValues(alpha: 0.6);
+        : AppKendoColors.pureWhite.withValues(alpha: 0.6);
 
     final textColor = context.appColors.textColor;
     final subTextColor = context.appColors.subTextColor;
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent, // 背景のオーブを透かす
+        backgroundColor: AppKendoColors.transparent, // 背景のオーブを透かす
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -45,7 +47,9 @@ class RoleSelectScreen extends ConsumerWidget {
                   borderRadius: AppRadius.huge,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                      color: AppKendoColors.pureBlack.withValues(
+                        alpha: isDark ? 0.3 : 0.1,
+                      ),
                       blurRadius: 25,
                       offset: const Offset(0, 12),
                     ),
@@ -64,8 +68,8 @@ class RoleSelectScreen extends ConsumerWidget {
                         color: cardBgColor,
                         border: Border.all(
                           color: isDark
-                              ? Colors.white.withValues(alpha: 0.2)
-                              : Colors.white.withValues(alpha: 0.7),
+                              ? AppKendoColors.pureWhite.withValues(alpha: 0.2)
+                              : AppKendoColors.pureWhite.withValues(alpha: 0.7),
                           width: 1.5,
                         ),
                       ),
@@ -126,17 +130,17 @@ class RoleSelectScreen extends ConsumerWidget {
                                     ),
                                     decoration: BoxDecoration(
                                       color: isDark
-                                          ? Colors.white.withValues(alpha: 0.08)
+                                          ? AppKendoColors.pureWhite.withValues(
+                                              alpha: 0.08,
+                                            )
                                           : const Color(0xFFF2F3F7),
                                       borderRadius: AppRadius.round,
                                       border: Border.all(
                                         color: isDark
-                                            ? Colors.white.withValues(
-                                                alpha: 0.15,
-                                              )
-                                            : Colors.black.withValues(
-                                                alpha: 0.08,
-                                              ),
+                                            ? AppKendoColors.pureWhite
+                                                  .withValues(alpha: 0.15)
+                                            : AppKendoColors.pureBlack
+                                                  .withValues(alpha: 0.08),
                                       ),
                                     ),
                                     child: Row(
@@ -149,19 +153,19 @@ class RoleSelectScreen extends ConsumerWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: isDark
-                                                ? Colors.tealAccent.withValues(
-                                                    alpha: 0.15,
-                                                  )
-                                                : Colors.indigo.withValues(
-                                                    alpha: 0.08,
-                                                  ),
+                                                ? AppKendoColors.tealAccent
+                                                      .withValues(alpha: 0.15)
+                                                : AppKendoColors.indigo
+                                                      .withValues(alpha: 0.08),
                                             shape: BoxShape.circle,
                                           ),
                                           child: Icon(
                                             Icons.shield_outlined,
                                             color: isDark
-                                                ? Colors.tealAccent
-                                                : Colors.indigo.shade700,
+                                                ? AppKendoColors.tealAccent
+                                                : AppKendoColors
+                                                      .indigo
+                                                      .shade700,
                                             size: 20,
                                           ),
                                         ),
@@ -191,8 +195,10 @@ class RoleSelectScreen extends ConsumerWidget {
                                                   fontWeight:
                                                       AppFontWeight.bold,
                                                   color: isDark
-                                                      ? Colors.white
-                                                      : Colors.indigo.shade900,
+                                                      ? AppKendoColors.pureWhite
+                                                      : AppKendoColors
+                                                            .indigo
+                                                            .shade900,
                                                   letterSpacing: 0.8,
                                                 ),
                                                 overflow: TextOverflow.ellipsis,
@@ -208,15 +214,16 @@ class RoleSelectScreen extends ConsumerWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: isDark
-                                                ? Colors.white.withValues(
-                                                    alpha: 0.12,
-                                                  )
-                                                : Colors.white,
+                                                ? AppKendoColors.pureWhite
+                                                      .withValues(alpha: 0.12)
+                                                : AppKendoColors.pureWhite,
                                             borderRadius: AppRadius.medium,
                                             border: Border.all(
                                               color: isDark
-                                                  ? Colors.transparent
-                                                  : Colors.grey.shade300,
+                                                  ? AppKendoColors.transparent
+                                                  : AppKendoColors
+                                                        .grey
+                                                        .shade300,
                                             ),
                                           ),
                                           child: Row(
@@ -229,8 +236,11 @@ class RoleSelectScreen extends ConsumerWidget {
                                                   fontWeight:
                                                       AppFontWeight.bold,
                                                   color: isDark
-                                                      ? Colors.tealAccent
-                                                      : Colors.indigo.shade700,
+                                                      ? AppKendoColors
+                                                            .tealAccent
+                                                      : AppKendoColors
+                                                            .indigo
+                                                            .shade700,
                                                 ),
                                               ),
                                               const SizedBox(width: 2),
@@ -238,8 +248,10 @@ class RoleSelectScreen extends ConsumerWidget {
                                                 Icons.edit,
                                                 size: 13,
                                                 color: isDark
-                                                    ? Colors.tealAccent
-                                                    : Colors.indigo.shade700,
+                                                    ? AppKendoColors.tealAccent
+                                                    : AppKendoColors
+                                                          .indigo
+                                                          .shade700,
                                               ),
                                             ],
                                           ),
@@ -257,7 +269,7 @@ class RoleSelectScreen extends ConsumerWidget {
                             ref,
                             '最高管理者 (Admin)',
                             UserRole.admin,
-                            Colors.purple,
+                            AppKendoColors.purple,
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           _buildRoleRow(
@@ -265,7 +277,7 @@ class RoleSelectScreen extends ConsumerWidget {
                             ref,
                             '大会運営者 (Operator)',
                             UserRole.operator,
-                            Colors.teal,
+                            AppKendoColors.teal,
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           _buildRoleRow(
@@ -273,7 +285,7 @@ class RoleSelectScreen extends ConsumerWidget {
                             ref,
                             '試合記録者 (Recorder)',
                             UserRole.recorder,
-                            Colors.indigo,
+                            AppKendoColors.indigo,
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           _buildRoleRow(
@@ -281,7 +293,7 @@ class RoleSelectScreen extends ConsumerWidget {
                             ref,
                             '一般観客席 (Viewer) [PIN不要]',
                             UserRole.viewer,
-                            Colors.blueGrey,
+                            AppKendoColors.blueGrey,
                           ),
                         ],
                       ),
@@ -333,7 +345,7 @@ class RoleSelectScreen extends ConsumerWidget {
         child: Text(
           title,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppKendoColors.pureWhite,
             fontWeight: AppFontWeight.bold,
             fontSize: AppFontSize.subhead,
           ),

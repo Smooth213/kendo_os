@@ -52,11 +52,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return LiquidBackground(
       // ★ 全体をLiquidBackgroundでラップ
       child: Scaffold(
-        backgroundColor: Colors.transparent, // ★ 背景を透明にして下の光のオーブを透かす
+        backgroundColor: AppKendoColors.transparent, // ★ 背景を透明にして下の光のオーブを透かす
         appBar: AppHeader(
           title: 'システム設定',
           backgroundColor: enableLiquidGlass
-              ? Colors.transparent
+              ? AppKendoColors.transparent
               : _themeColors.cardBackground,
           actions: const [
             // ★ パスコード復旧手順などが載っている「設定マニュアル」へ直行
@@ -82,7 +82,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context,
                       title: 'ダークモード対応',
                       icon: Icons.dark_mode,
-                      iconBgColor: Colors.blue,
+                      iconBgColor: AppKendoColors.blue,
                       trailing: DropdownButton<String>(
                         value: settings.themeMode,
                         underline: const SizedBox(),
@@ -122,7 +122,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       settings.sleepPrevent,
                       (val) => notifier.updateField(sleepPrevent: val),
                       icon: Icons.lightbulb,
-                      iconBgColor: Colors.orange,
+                      iconBgColor: AppKendoColors.orange,
                     ),
                     _buildSwitchTile(
                       context,
@@ -130,7 +130,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       !settings.enableLiquidGlass,
                       (val) => notifier.updateField(enableLiquidGlass: !val),
                       icon: Icons.eco,
-                      iconBgColor: Colors.green,
+                      iconBgColor: AppKendoColors.green,
                     ),
                   ]),
                   _buildSectionFooter(
@@ -148,7 +148,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context,
                       title: '音声・サウンド設定',
                       icon: Icons.volume_up,
-                      iconBgColor: Colors.pinkAccent,
+                      iconBgColor: AppKendoColors.pinkAccent,
                       trailing: DropdownButton<String>(
                         value: settings.audioFeedbackMode,
                         underline: const SizedBox(),
@@ -181,7 +181,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         settings.ignoreMannerMode,
                         (val) => notifier.updateField(ignoreMannerMode: val),
                         icon: Icons.volume_off,
-                        iconBgColor: Colors.pink,
+                        iconBgColor: AppKendoColors.pink,
                       ),
                     _buildSwitchTile(
                       context,
@@ -189,7 +189,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       settings.haptic,
                       (val) => notifier.updateField(haptic: val),
                       icon: Icons.vibration,
-                      iconBgColor: Colors.purpleAccent,
+                      iconBgColor: AppKendoColors.purpleAccent,
                     ),
                     _buildSwitchTile(
                       context,
@@ -197,7 +197,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       settings.strikeVib,
                       (val) => notifier.updateField(strikeVib: val),
                       icon: Icons.sports_martial_arts,
-                      iconBgColor: Colors.deepPurple,
+                      iconBgColor: AppKendoColors.deepPurple,
                     ),
                   ]),
                   _buildSectionFooter(context, 'ポイント入力時や試合終了時に音や振動で知らせます。'),
@@ -224,7 +224,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       },
                       icon: Icons.emergency_share,
-                      iconBgColor: Colors.red,
+                      iconBgColor: AppKendoColors.red,
                     ),
                     _buildSwitchTile(
                       context,
@@ -242,7 +242,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       },
                       icon: Icons.add_alert,
-                      iconBgColor: Colors.indigo,
+                      iconBgColor: AppKendoColors.indigo,
                     ),
                     _buildSwitchTile(
                       context,
@@ -260,7 +260,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       },
                       icon: Icons.play_circle_outline,
-                      iconBgColor: Colors.green,
+                      iconBgColor: AppKendoColors.green,
                     ),
                     _buildSwitchTile(
                       context,
@@ -298,7 +298,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       settings.isLocked,
                       (val) => notifier.updateField(isLocked: val),
                       icon: Icons.lock,
-                      iconBgColor: Colors.redAccent,
+                      iconBgColor: AppKendoColors.redAccent,
                     ),
                   ]),
                   _buildSectionFooter(
@@ -315,7 +315,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context,
                       title: 'ログアウト',
                       icon: Icons.logout,
-                      iconBgColor: Colors.redAccent,
+                      iconBgColor: AppKendoColors.redAccent,
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _showLogoutConfirmation(context, ref),
                     ),
@@ -357,14 +357,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   boxShadow: enableLiquidGlass
                       ? [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
+                            color: AppKendoColors.pureBlack.withValues(
+                              alpha: 0.1,
+                            ),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
                         ]
                       : [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: AppKendoColors.pureBlack.withValues(
+                              alpha: 0.05,
+                            ),
                             blurRadius: 10,
                             offset: const Offset(0, -4),
                           ),
@@ -447,7 +451,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 child: Text(
                                   'テスト用：試合終了ボタン',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: AppKendoColors.pureWhite,
                                     fontSize: AppFontSize.subhead,
                                     fontWeight: AppFontWeight.bold,
                                     letterSpacing: 1.1,
@@ -481,10 +485,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     String? customAsset,
   }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color dynamicTextColor = isDark ? Colors.white : textIndigo;
+    final Color dynamicTextColor = isDark
+        ? AppKendoColors.pureWhite
+        : textIndigo;
     final Color dynamicCardColor = isDark
         ? const Color(0xFF161B22)
-        : Colors.white;
+        : AppKendoColors.pureWhite;
 
     return Expanded(
       child: GestureDetector(
@@ -502,14 +508,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 : dynamicCardColor,
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isActive ? accentPink : Colors.transparent,
+              color: isActive ? accentPink : AppKendoColors.transparent,
               width: 2,
             ),
             boxShadow: isActive
                 ? []
                 : [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
+                      color: AppKendoColors.pureBlack.withValues(alpha: 0.03),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -524,13 +530,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     customAsset,
                     width: 34,
                     height: 34,
-                    color: isActive ? dynamicTextColor : Colors.grey.shade400,
+                    color: isActive
+                        ? dynamicTextColor
+                        : AppKendoColors.grey.shade400,
                   ),
                 )
               else if (icon != null)
                 Icon(
                   icon,
-                  color: isActive ? dynamicTextColor : Colors.grey.shade400,
+                  color: isActive
+                      ? dynamicTextColor
+                      : AppKendoColors.grey.shade400,
                   size: 28,
                 ),
 
@@ -538,7 +548,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text(
                 title,
                 style: TextStyle(
-                  color: isActive ? dynamicTextColor : Colors.grey.shade600,
+                  color: isActive
+                      ? dynamicTextColor
+                      : AppKendoColors.grey.shade600,
                   fontSize: AppFontSize.small,
                   fontWeight: AppFontWeight.bold,
                 ),
@@ -563,7 +575,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-          color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
+          color: isDark
+              ? AppKendoColors.grey.shade500
+              : AppKendoColors.grey.shade600,
           fontSize: AppFontSize.bodySmall,
           fontWeight: AppFontWeight.semiBold,
           letterSpacing: 0.5,
@@ -585,7 +599,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     Widget blockContent = Material(
-      color: Colors.transparent,
+      color: AppKendoColors.transparent,
       child: Column(children: spacedChildren),
     );
 
@@ -629,7 +643,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: Text(
         text,
         style: TextStyle(
-          color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
+          color: isDark
+              ? AppKendoColors.grey.shade500
+              : AppKendoColors.grey.shade600,
           fontSize: AppFontSize.small,
           height: 1.4,
         ),
@@ -659,7 +675,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           color: iconBgColor,
           borderRadius: AppRadius.small,
         ),
-        child: Icon(icon, color: Colors.white, size: 20),
+        child: Icon(icon, color: AppKendoColors.pureWhite, size: 20),
       ),
       title: Text(
         title,
@@ -698,9 +714,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       },
       trailing: Switch(
         value: value,
-        activeThumbColor: Colors.white,
-        activeTrackColor: Colors.green, // iOS風の緑
-        inactiveThumbColor: Colors.white,
+        activeThumbColor: AppKendoColors.pureWhite,
+        activeTrackColor: AppKendoColors.green, // iOS風の緑
+        inactiveThumbColor: AppKendoColors.pureWhite,
         inactiveTrackColor: isDark
             ? const Color(0xFF38383A)
             : const Color(0xFFE9E9EA),
@@ -746,7 +762,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: const Text(
               'ログアウト',
               style: TextStyle(
-                color: Colors.red,
+                color: AppKendoColors.red,
                 fontWeight: AppFontWeight.bold,
               ),
             ),
@@ -781,7 +797,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 AppSnackBar.show(context, 'Stage2 β版では設定固定されています');
               },
               icon: Icons.smart_toy,
-              iconBgColor: Colors.deepPurple,
+              iconBgColor: AppKendoColors.deepPurple,
             ),
           if (FeatureGate.canAccessMetrics(currentRole))
             _buildSwitchTile(
@@ -792,7 +808,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 AppSnackBar.show(context, 'Stage2 β版では設定固定されています');
               },
               icon: Icons.analytics,
-              iconBgColor: Colors.blueGrey,
+              iconBgColor: AppKendoColors.blueGrey,
             ),
         ]),
         _buildSectionFooter(

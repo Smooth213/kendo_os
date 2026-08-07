@@ -143,11 +143,13 @@ class ViewerMatchScreen extends ConsumerWidget {
     MatchModel? activeMatch,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = isDark ? Colors.white : Colors.indigo.shade900;
+    final iconColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.indigo.shade900;
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
           title: '試合状況 (観戦)',
           leading: context.canPop()
@@ -230,7 +232,7 @@ class ViewerMatchScreen extends ConsumerWidget {
   ) {
     return Container(
       width: double.infinity,
-      color: Colors.blueGrey.shade700,
+      color: AppKendoColors.blueGrey.shade700,
       padding: const EdgeInsets.symmetric(
         vertical: AppSpacing.xs,
         horizontal: AppSpacing.lg,
@@ -240,12 +242,12 @@ class ViewerMatchScreen extends ConsumerWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.visibility, color: Colors.white, size: 16),
+              Icon(Icons.visibility, color: AppKendoColors.pureWhite, size: 16),
               SizedBox(width: 6),
               Text(
                 '閲覧モード',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppKendoColors.pureWhite,
                   fontWeight: AppFontWeight.bold,
                   fontSize: AppFontSize.small,
                 ),
@@ -256,8 +258,8 @@ class ViewerMatchScreen extends ConsumerWidget {
           Expanded(
             child: Text(
               '${p.statusText} | 直前: ${p.lastEventText}',
-              style: const TextStyle(
-                color: Colors.white70,
+              style: TextStyle(
+                color: AppKendoColors.pureWhite.withValues(alpha: 0.7),
                 fontSize: AppFontSize.caption,
                 fontWeight: AppFontWeight.bold,
               ),
@@ -300,7 +302,7 @@ class ViewerMatchScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               Container(
                 padding: const EdgeInsets.all(AppSpacing.sm),
-                color: Colors.white,
+                color: AppKendoColors.pureWhite,
                 child: QrImageView(
                   data: shareUrl,
                   version: QrVersions.auto,
@@ -320,8 +322,8 @@ class ViewerMatchScreen extends ConsumerWidget {
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey.shade700,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppKendoColors.blueGrey.shade700,
+                  foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                 ),
               ),
@@ -479,10 +481,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isWhiteWinner,
               cardColor: isDark
                   ? const Color(0xFF1C2430)
-                  : Colors.blueGrey.shade50,
+                  : AppKendoColors.blueGrey.shade50,
               textColor: isDark
-                  ? Colors.grey.shade300
-                  : Colors.blueGrey.shade800,
+                  ? AppKendoColors.grey.shade300
+                  : AppKendoColors.blueGrey.shade800,
             ),
           ),
         ],
@@ -538,10 +540,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isWhiteWinner,
               cardColor: isDark
                   ? const Color(0xFF1C2430)
-                  : Colors.blueGrey.shade50,
+                  : AppKendoColors.blueGrey.shade50,
               textColor: isDark
-                  ? Colors.grey.shade300
-                  : Colors.blueGrey.shade800,
+                  ? AppKendoColors.grey.shade300
+                  : AppKendoColors.blueGrey.shade800,
             ),
           ),
         ],
@@ -567,7 +569,9 @@ class LargeViewerScoreboard extends StatelessWidget {
         border: Border.all(
           color: isWinner
               ? AppKendoColors.ipponGold
-              : (isDark ? Colors.white10 : Colors.black12),
+              : (isDark
+                    ? AppKendoColors.pureWhite.withValues(alpha: 0.10)
+                    : AppKendoColors.pureBlack.withValues(alpha: 0.12)),
           width: isWinner ? 4.0 : 1.0,
         ),
         boxShadow: isWinner
@@ -655,7 +659,9 @@ class LargeViewerScoreboard extends StatelessWidget {
   ) {
     final color = side == Side.red
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade800);
+        : (isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.blueGrey.shade800);
 
     return SizedBox(
       width: 120,
@@ -748,8 +754,10 @@ class LargeViewerScoreboard extends StatelessWidget {
 
     // タイマーのテキストカラー
     final timerColor = isTimerRunning
-        ? Colors.orangeAccent
-        : (isDark ? Colors.white70 : Colors.black87);
+        ? AppKendoColors.orangeAccent
+        : (isDark
+              ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
+              : AppKendoColors.pureBlack);
 
     final content = Container(
       padding: const EdgeInsets.symmetric(
@@ -757,10 +765,12 @@ class LargeViewerScoreboard extends StatelessWidget {
         horizontal: AppSpacing.xl,
       ),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E24) : Colors.grey.shade200,
+        color: isDark ? const Color(0xFF1E1E24) : AppKendoColors.grey.shade200,
         borderRadius: AppRadius.large,
         border: Border.all(
-          color: isTimerRunning ? Colors.orangeAccent : Colors.transparent,
+          color: isTimerRunning
+              ? AppKendoColors.orangeAccent
+              : AppKendoColors.transparent,
           width: 1.5,
         ),
       ),
@@ -788,7 +798,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: Colors.indigo.shade600,
+                color: AppKendoColors.indigo.shade600,
                 borderRadius: AppRadius.small,
               ),
               child: Text(
@@ -796,7 +806,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: AppFontSize.display,
                   fontWeight: AppFontWeight.bold,
-                  color: Colors.white,
+                  color: AppKendoColors.pureWhite,
                 ),
               ),
             ),

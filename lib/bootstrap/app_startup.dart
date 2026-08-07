@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -165,7 +167,7 @@ class AppStartup {
                 const Text(
                   '⚠️ UIレンダリング・エラー発生',
                   style: TextStyle(
-                    color: Colors.red,
+                    color: AppKendoColors.red,
                     fontWeight: AppFontWeight.bold,
                     fontSize: AppFontSize.headline,
                   ),
@@ -174,7 +176,7 @@ class AppStartup {
                 const Text(
                   '以下のログを開発者へ共有してください：',
                   style: TextStyle(
-                    color: Colors.black87,
+                    color: AppKendoColors.pureBlack,
                     fontSize: AppFontSize.small,
                   ),
                 ),
@@ -182,7 +184,7 @@ class AppStartup {
                 Text(
                   details.exceptionAsString(),
                   style: const TextStyle(
-                    color: Colors.black,
+                    color: AppKendoColors.pureBlack,
                     fontWeight: AppFontWeight.bold,
                     fontSize: AppFontSize.body,
                   ),
@@ -191,7 +193,7 @@ class AppStartup {
                 Text(
                   details.stack?.toString() ?? 'スタックトレースなし',
                   style: const TextStyle(
-                    color: Colors.grey,
+                    color: AppKendoColors.grey,
                     fontSize: AppFontSize.badge,
                   ),
                 ),
@@ -238,7 +240,7 @@ class AppStartup {
                 displayMessage,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.red,
+                  color: AppKendoColors.red,
                   fontWeight: AppFontWeight.bold,
                 ),
               ),

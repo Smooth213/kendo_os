@@ -41,7 +41,9 @@ class TimerWidget extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = context.appColors.textColor;
     final inputBgColor = context.appColors.inputBackground;
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+    final borderColor = isDark
+        ? const Color(0xFF38383A)
+        : AppKendoColors.grey.shade300;
 
     showAppDialog(
       context: context,
@@ -69,7 +71,7 @@ class TimerWidget extends ConsumerWidget {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: AppRadius.medium,
                     borderSide: BorderSide(
-                      color: Colors.indigo.shade400,
+                      color: AppKendoColors.indigo.shade400,
                       width: 2,
                     ),
                   ),
@@ -108,7 +110,7 @@ class TimerWidget extends ConsumerWidget {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: AppRadius.medium,
                     borderSide: BorderSide(
-                      color: Colors.indigo.shade400,
+                      color: AppKendoColors.indigo.shade400,
                       width: 2,
                     ),
                   ),
@@ -121,7 +123,10 @@ class TimerWidget extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル', style: TextStyle(color: Colors.grey)),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: AppKendoColors.grey),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -132,8 +137,10 @@ class TimerWidget extends ConsumerWidget {
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDark ? Colors.indigo.shade600 : Colors.indigo,
-              foregroundColor: Colors.white,
+              backgroundColor: isDark
+                  ? AppKendoColors.indigo.shade600
+                  : AppKendoColors.indigo,
+              foregroundColor: AppKendoColors.pureWhite,
               shape: const RoundedRectangleBorder(
                 borderRadius: AppRadius.small,
               ),
@@ -181,10 +188,10 @@ class TimerWidget extends ConsumerWidget {
         ? (isDark
               ? AppKendoColors.hansokuRed.withValues(alpha: 0.4)
               : AppKendoColors.hansokuRed)
-        : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+        : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite);
     final timerBorderColor = isRunning
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? const Color(0xFF38383A) : Colors.indigo.shade200);
+        : (isDark ? const Color(0xFF38383A) : AppKendoColors.indigo.shade200);
     final timerTextColor = isRunning
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (context.appColors.textColor);
@@ -214,7 +221,7 @@ class TimerWidget extends ConsumerWidget {
           // ★ 修正：ロック時はボーダーを薄いグレーにし、太さも細く(1)固定する
           border: Border.all(
             color: isInputLocked
-                ? Colors.grey.withValues(alpha: 0.3)
+                ? AppKendoColors.grey.withValues(alpha: 0.3)
                 : timerBorderColor,
             width: (isRunning && !isInputLocked) ? 4 : 1,
           ),
@@ -228,14 +235,14 @@ class TimerWidget extends ConsumerWidget {
                   ? Icons.lock_outline
                   : (isRunning ? Icons.pause_circle : Icons.play_circle),
               color: isInputLocked
-                  ? Colors.grey.shade400
+                  ? AppKendoColors.grey.shade400
                   : (isRunning
                         ? (isDark
                               ? AppKendoColors.hansokuRed
                               : AppKendoColors.hansokuRed)
                         : (isDark
-                              ? Colors.indigo.shade300
-                              : Colors.indigo.shade500)),
+                              ? AppKendoColors.indigo.shade300
+                              : AppKendoColors.indigo.shade500)),
               size: 28,
             ),
             const SizedBox(width: AppSpacing.md),
@@ -253,7 +260,7 @@ class TimerWidget extends ConsumerWidget {
                     height: 1.1,
                     // ★ 修正：ロック時はテキストもグレーアウトして「非アクティブ」を強調
                     color: isInputLocked
-                        ? Colors.grey.shade500
+                        ? AppKendoColors.grey.shade500
                         : timerTextColor,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),

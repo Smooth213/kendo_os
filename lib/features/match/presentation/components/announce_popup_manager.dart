@@ -1,6 +1,8 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -73,7 +75,9 @@ void _showAnnounceDialog(
           style: TextStyle(
             fontSize: AppFontSize.body,
             height: 1.5,
-            color: isDark ? Colors.grey.shade300 : const Color(0xFF2C3E50),
+            color: isDark
+                ? AppKendoColors.grey.shade300
+                : const Color(0xFF2C3E50),
           ),
         ),
         actions: [
@@ -83,7 +87,7 @@ void _showAnnounceDialog(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00796B), // 引き締めTealグリーン
-                foregroundColor: Colors.white,
+                foregroundColor: AppKendoColors.pureWhite,
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 elevation: 0,
               ),

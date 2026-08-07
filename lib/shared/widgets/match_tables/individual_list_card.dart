@@ -121,7 +121,7 @@ class IndividualListCard extends StatelessWidget {
                         m.note.isNotEmpty ? m.note : '第${index + 1}試合',
                         style: TextStyle(
                           fontSize: AppFontSize.badge,
-                          color: Colors.grey.shade500,
+                          color: AppKendoColors.grey.shade500,
                           fontWeight: AppFontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -136,7 +136,7 @@ class IndividualListCard extends StatelessWidget {
                               m.redTeam,
                               style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: Colors.grey.shade500,
+                                color: AppKendoColors.grey.shade500,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -169,7 +169,7 @@ class IndividualListCard extends StatelessWidget {
                       child: Text(
                         m.isDraw ? '✕' : '-',
                         style: TextStyle(
-                          color: Colors.grey.shade400,
+                          color: AppKendoColors.grey.shade400,
                           fontWeight: AppFontWeight.light,
                           fontSize: AppFontSize.subhead,
                         ),
@@ -191,7 +191,7 @@ class IndividualListCard extends StatelessWidget {
                               m.whiteTeam,
                               style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: Colors.grey.shade500,
+                                color: AppKendoColors.grey.shade500,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -221,8 +221,8 @@ class IndividualListCard extends StatelessWidget {
               if (m.isSummary && !m.hasOwnTeam) {
                 return Container(
                   color: isDark
-                      ? Colors.black.withValues(alpha: 0.2)
-                      : Colors.grey.withValues(alpha: 0.05),
+                      ? AppKendoColors.pureBlack.withValues(alpha: 0.2)
+                      : AppKendoColors.grey.withValues(alpha: 0.05),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -235,15 +235,17 @@ class IndividualListCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: isDark
                               ? const Color(0xFF1C1C1E)
-                              : Colors.white,
+                              : AppKendoColors.pureWhite,
                           borderRadius: AppRadius.small,
                           border: Border.all(
-                            color: Colors.grey.shade400,
+                            color: AppKendoColors.grey.shade400,
                             width: 0.5,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
+                              color: AppKendoColors.pureBlack.withValues(
+                                alpha: 0.1,
+                              ),
                               blurRadius: 4,
                             ),
                           ],
@@ -255,8 +257,8 @@ class IndividualListCard extends StatelessWidget {
                             fontSize: AppFontSize.caption,
                             fontWeight: AppFontWeight.bold,
                             color: isDark
-                                ? Colors.grey.shade400
-                                : Colors.grey.shade700,
+                                ? AppKendoColors.grey.shade400
+                                : AppKendoColors.grey.shade700,
                           ),
                         ),
                       ),

@@ -161,7 +161,9 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
 
     final decodedGroupName = safeDecodeComponent(groupName);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerColor = isDark ? Colors.white : Colors.indigo.shade900;
+    final headerColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.indigo.shade900;
 
     String? tournamentId;
 
@@ -289,7 +291,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
 
         return LiquidBackground(
           child: Scaffold(
-            backgroundColor: Colors.transparent,
+            backgroundColor: AppKendoColors.transparent,
             appBar: AppHeader(
               leading: IconButton(
                 icon: Icon(
@@ -339,13 +341,15 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                       ),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.indigo.shade900.withValues(alpha: 0.2)
-                            : Colors.indigo.shade50,
+                            ? AppKendoColors.indigo.shade900.withValues(
+                                alpha: 0.2,
+                              )
+                            : AppKendoColors.indigo.shade50,
                         borderRadius: AppRadius.medium,
                         border: Border.all(
                           color: isDark
-                              ? Colors.indigo.shade800
-                              : Colors.indigo.shade100,
+                              ? AppKendoColors.indigo.shade800
+                              : AppKendoColors.indigo.shade100,
                         ),
                       ),
                       child: Text(
@@ -354,8 +358,8 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                           fontSize: AppFontSize.bodyMedium,
                           fontWeight: AppFontWeight.bold,
                           color: isDark
-                              ? Colors.indigo.shade100
-                              : Colors.indigo.shade900,
+                              ? AppKendoColors.indigo.shade100
+                              : AppKendoColors.indigo.shade900,
                         ),
                       ),
                     ),
@@ -432,8 +436,12 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
   }
 
   TableRow _buildHeaderRow(String r, String w, bool isDark) {
-    final headerBg = isDark ? const Color(0xFF2C2C2E) : Colors.indigo.shade50;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final headerBg = isDark
+        ? const Color(0xFF2C2C2E)
+        : AppKendoColors.indigo.shade50;
+    final textColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.pureBlack;
     return TableRow(
       decoration: BoxDecoration(color: headerBg),
       children: [
@@ -453,13 +461,17 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '白',
           isH: true,
-          color: isDark ? Colors.grey.shade300 : Colors.blueGrey.shade700,
+          color: isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.blueGrey.shade700,
           fs: 14,
         ),
         _cell(
           w,
           isH: true,
-          color: isDark ? Colors.grey.shade300 : Colors.blueGrey.shade700,
+          color: isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.blueGrey.shade700,
           fs: 16,
         ),
       ],
@@ -473,8 +485,10 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
   ) {
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : Colors.grey.shade600;
-    final textColor = isDark ? Colors.white : Colors.black87;
+        : AppKendoColors.grey.shade600;
+    final textColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.pureBlack;
 
     if (rawName.contains('欠員')) {
       return _cell(
@@ -547,7 +561,9 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         : AppKendoColors.hansokuRed;
     final matchTypeColor = isDaihyo
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.grey.shade300 : Colors.grey.shade800);
+        : (isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.grey.shade800);
 
     return TableRow(
       decoration: isDaihyo ? BoxDecoration(color: daihyoBgColor) : null,
@@ -610,7 +626,9 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
   ) {
     final color = isRed
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade700);
+        : (isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.blueGrey.shade700);
 
     final isFusen = pts.contains('◯');
     final isThisSideFirst = firstSide == (isRed ? 'red' : 'white');
@@ -758,7 +776,9 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
 
   TableRow _buildTotalRow(TeamMatchResult result, bool isDark) {
     final bg = isDark ? const Color(0xFF3A2E12) : AppKendoColors.ipponGold;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.pureBlack;
     final isTeamTie = (result.teamWinner == 'draw');
 
     return TableRow(
@@ -800,7 +820,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                       result.teamWinner == 'red' ? '勝' : '負',
                       isH: true,
                       color: result.teamWinner == 'red'
-                          ? Colors.red
+                          ? AppKendoColors.red
                           : textColor,
                       fs: 20,
                     ),
@@ -820,7 +840,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                       result.teamWinner == 'white' ? '勝' : '負',
                       isH: true,
                       color: result.teamWinner == 'white'
-                          ? Colors.red
+                          ? AppKendoColors.red
                           : textColor,
                       fs: 20,
                     )
@@ -832,7 +852,9 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '${result.whiteWins} / ${result.whitePoints}',
           isH: true,
-          color: isDark ? Colors.grey.shade400 : Colors.blueGrey.shade800,
+          color: isDark
+              ? AppKendoColors.grey.shade400
+              : AppKendoColors.blueGrey.shade800,
           fs: 18,
         ),
       ],

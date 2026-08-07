@@ -118,10 +118,10 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: const AppHeader(
           title: '新規試合作成・自動生成',
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppKendoColors.transparent,
         ),
         body: Center(
           child: ConstrainedBox(
@@ -170,7 +170,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       value: _countForStandings,
                       onChanged: (val) =>
                           setState(() => _countForStandings = val),
-                      activeThumbColor: Colors.indigo,
+                      activeThumbColor: AppKendoColors.indigo,
                     ),
                     const Divider(height: 32),
 
@@ -195,7 +195,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     ] else if (_creationMode == 'リーグ戦自動生成') ...[
                       const Text(
                         '参加チーム（選手）をカンマ( , )区切りで入力してください\n例: Aチーム, Bチーム, C道場, D剣友会',
-                        style: TextStyle(color: Colors.blueGrey),
+                        style: TextStyle(color: AppKendoColors.blueGrey),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       TextField(
@@ -214,7 +214,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           if (orgs.isEmpty) {
                             return const Text(
                               'マスタ管理で組織とチームを登録してください',
-                              style: TextStyle(color: Colors.red),
+                              style: TextStyle(color: AppKendoColors.red),
                             );
                           }
                           return Column(
@@ -236,7 +236,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         '登録済み部門',
                         style: TextStyle(
                           fontSize: AppFontSize.small,
-                          color: Colors.grey,
+                          color: AppKendoColors.grey,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -280,16 +280,20 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                        color: isDark
+                            ? const Color(0xFF2C2C2E)
+                            : AppKendoColors.pureWhite,
                         borderRadius: AppRadius.large,
                         border: Border.all(
                           color: isDark
                               ? const Color(0xFF38383A)
-                              : Colors.grey.shade300,
+                              : AppKendoColors.grey.shade300,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withAlpha(isDark ? 30 : 10),
+                            color: AppKendoColors.pureBlack.withAlpha(
+                              isDark ? 30 : 10,
+                            ),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -304,8 +308,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 Icons.stadium,
                                 size: 18,
                                 color: isDark
-                                    ? Colors.cyanAccent
-                                    : Colors.indigo,
+                                    ? AppKendoColors.cyanAccent
+                                    : AppKendoColors.indigo,
                               ),
                               const SizedBox(width: AppSpacing.sm),
                               Text(
@@ -364,7 +368,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 borderSide: BorderSide(
                                   color: isDark
                                       ? const Color(0xFF38383A)
-                                      : Colors.grey.shade300,
+                                      : AppKendoColors.grey.shade300,
                                 ),
                               ),
                             ),
@@ -376,8 +380,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 Icons.info_outline,
                                 size: 13,
                                 color: isDark
-                                    ? Colors.grey.shade400
-                                    : Colors.grey.shade600,
+                                    ? AppKendoColors.grey.shade400
+                                    : AppKendoColors.grey.shade600,
                               ),
                               const SizedBox(width: AppSpacing.xs),
                               Expanded(
@@ -386,8 +390,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                   style: TextStyle(
                                     fontSize: AppFontSize.caption,
                                     color: isDark
-                                        ? Colors.grey.shade400
-                                        : Colors.grey.shade600,
+                                        ? AppKendoColors.grey.shade400
+                                        : AppKendoColors.grey.shade600,
                                   ),
                                 ),
                               ),
@@ -400,8 +404,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                               fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
-                                  ? Colors.grey.shade300
-                                  : Colors.grey.shade700,
+                                  ? AppKendoColors.grey.shade300
+                                  : AppKendoColors.grey.shade700,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -436,8 +440,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                               fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
-                                  ? Colors.grey.shade300
-                                  : Colors.grey.shade700,
+                                  ? AppKendoColors.grey.shade300
+                                  : AppKendoColors.grey.shade700,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -490,7 +494,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 borderSide: BorderSide(
                                   color: isDark
                                       ? const Color(0xFF38383A)
-                                      : Colors.grey.shade300,
+                                      : AppKendoColors.grey.shade300,
                                 ),
                               ),
                             ),
@@ -503,7 +507,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     // 4. 実行（生成）ボタン
                     GlassButton(
                       onPressed: _submit,
-                      color: Colors.redAccent,
+                      color: AppKendoColors.redAccent,
                       icon: Icons.flash_on,
                       label: '$_creationMode を実行',
                       padding: const EdgeInsets.symmetric(
@@ -529,7 +533,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final currentTeam = isRed ? _redTeam : _whiteTeam;
 
     return Card(
-      color: isRed ? AppKendoColors.hansokuRed : Colors.grey.shade100,
+      color: isRed ? AppKendoColors.hansokuRed : AppKendoColors.grey.shade100,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
@@ -539,7 +543,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
               '$colorLabelチーム選択',
               style: TextStyle(
                 fontWeight: AppFontWeight.bold,
-                color: isRed ? Colors.red : Colors.black87,
+                color: isRed ? AppKendoColors.red : AppKendoColors.pureBlack,
               ),
             ),
             DropdownButton<Organization>(
@@ -653,11 +657,11 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     labelText: labelText,
                     prefixIcon: const Icon(
                       Icons.person,
-                      color: Colors.blueGrey,
+                      color: AppKendoColors.blueGrey,
                     ),
                     suffixIcon: const Icon(
                       Icons.arrow_drop_down,
-                      color: Colors.grey,
+                      color: AppKendoColors.grey,
                     ),
                     border: OutlineInputBorder(borderRadius: AppRadius.small),
                     enabledBorder: OutlineInputBorder(
@@ -665,15 +669,17 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
-                            : Colors.grey.shade400,
+                            : AppKendoColors.grey.shade400,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: AppRadius.small,
-                      borderSide: BorderSide(color: Colors.redAccent),
+                      borderSide: BorderSide(color: AppKendoColors.redAccent),
                     ),
                     filled: true,
-                    fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                    fillColor: isDark
+                        ? const Color(0xFF1C1C1E)
+                        : AppKendoColors.pureWhite,
                   ),
                 );
               },
@@ -683,7 +689,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
               child: Material(
                 elevation: 8.0,
                 borderRadius: AppRadius.medium,
-                color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                color: isDark
+                    ? const Color(0xFF2C2C2E)
+                    : AppKendoColors.pureWhite,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: 250,
@@ -708,7 +716,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         ),
                         trailing: const Icon(
                           Icons.add_circle_outline,
-                          color: Colors.redAccent,
+                          color: AppKendoColors.redAccent,
                           size: 18,
                         ),
                         onTap: () {
@@ -844,7 +852,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
               '現在適用するルール（タップして選択）',
               style: TextStyle(
                 fontSize: AppFontSize.bodySmall,
-                color: Colors.grey,
+                color: AppKendoColors.grey,
                 fontWeight: AppFontWeight.bold,
               ),
             ),
@@ -855,15 +863,15 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   vertical: 2,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.indigo.shade50,
+                  color: AppKendoColors.indigo.shade50,
                   borderRadius: AppRadius.medium,
-                  border: Border.all(color: Colors.indigo.shade200),
+                  border: Border.all(color: AppKendoColors.indigo.shade200),
                 ),
                 child: Text(
                   '部門ルール適用中: $cleanCategory',
                   style: TextStyle(
                     fontSize: AppFontSize.caption,
-                    color: Colors.indigo.shade800,
+                    color: AppKendoColors.indigo.shade800,
                     fontWeight: AppFontWeight.bold,
                   ),
                 ),
@@ -878,7 +886,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             title: '⚔️ 錬成会ルール（午前・練習試合）',
             subText:
                 '時間: ${ruleSet.renseikaiRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.renseikaiRule.isRunningTime ? '流し' : '正式'}) / 引き分け: ${ruleSet.renseikaiRule.hasHantei ? 'あり' : 'なし'} / ${ruleSet.renseikaiRule.renseikaiType}',
-            accentColor: Colors.amber,
+            accentColor: AppKendoColors.amber,
             isDark: isDark,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -887,7 +895,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             title: '🏆 本戦ルール（午後・トーナメント）',
             subText:
                 '時間: ${ruleSet.normalRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.normalRule.isRunningTime ? '流し' : '正式'}) / 延長: ${ruleSet.normalRule.isEnchoUnlimited ? '無制限' : (ruleSet.normalRule.enchoCount > 0 ? 'あり' : 'なし')}',
-            accentColor: Colors.indigo,
+            accentColor: AppKendoColors.indigo,
             isDark: isDark,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -896,7 +904,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             title: '🤝 申し合わせルール（終了後・自由戦）',
             subText:
                 '時間: ${ruleSet.moushiawaseRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.moushiawaseRule.isRunningTime ? '流し' : '正式'}) / 引き分け: ${ruleSet.moushiawaseRule.hasHantei ? 'あり' : 'なし'}',
-            accentColor: Colors.teal,
+            accentColor: AppKendoColors.teal,
             isDark: isDark,
           ),
         ] else if (ruleSet != null) ...[
@@ -905,7 +913,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             title: '🏆 本戦（通常戦）ルール',
             subText:
                 '時間: ${ruleSet.normalRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.normalRule.isRunningTime ? '流し' : '正式'}) / 延長: ${ruleSet.normalRule.isEnchoUnlimited ? '無制限' : (ruleSet.normalRule.enchoCount > 0 ? 'あり' : 'なし')}',
-            accentColor: Colors.indigo,
+            accentColor: AppKendoColors.indigo,
             isDark: isDark,
           ),
         ] else ...[
@@ -913,7 +921,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             sceneId: 'renseikai',
             title: '⚔️ 錬成会（練習試合）',
             subText: '2分流し / 引き分けあり',
-            accentColor: Colors.amber,
+            accentColor: AppKendoColors.amber,
             isDark: isDark,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -921,7 +929,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             sceneId: 'honsen',
             title: '🏆 本戦（通常戦）',
             subText: '3分正式 / 代表戦・勝敗重視',
-            accentColor: Colors.indigo,
+            accentColor: AppKendoColors.indigo,
             isDark: isDark,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -929,7 +937,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             sceneId: 'moushiawase',
             title: '🤝 申し合わせ（自由対戦）',
             subText: '2分流し / 引き分けあり',
-            accentColor: Colors.teal,
+            accentColor: AppKendoColors.teal,
             isDark: isDark,
           ),
         ],
@@ -947,7 +955,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final isSelected = _selectedScene == sceneId;
 
     return Material(
-      color: Colors.transparent,
+      color: AppKendoColors.transparent,
       child: InkWell(
         onTap: () {
           setState(() {
@@ -966,12 +974,14 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 ? (isDark
                       ? accentColor.shade900.withValues(alpha: 0.4)
                       : accentColor.shade50)
-                : (isDark ? const Color(0xFF2C2C2E) : Colors.white),
+                : (isDark ? const Color(0xFF2C2C2E) : AppKendoColors.pureWhite),
             borderRadius: AppRadius.medium,
             border: Border.all(
               color: isSelected
                   ? (isDark ? accentColor.shade300 : accentColor.shade700)
-                  : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300),
+                  : (isDark
+                        ? const Color(0xFF38383A)
+                        : AppKendoColors.grey.shade300),
               width: isSelected ? 2.0 : 1.0,
             ),
             boxShadow: isSelected
@@ -990,7 +1000,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
                 color: isSelected
                     ? (isDark ? accentColor.shade300 : accentColor.shade700)
-                    : Colors.grey,
+                    : AppKendoColors.grey,
                 size: 22,
               ),
               const SizedBox(width: AppSpacing.md),
@@ -1004,7 +1014,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         fontSize: AppFontSize.body,
                         fontWeight: AppFontWeight.bold,
                         color: isSelected
-                            ? (isDark ? Colors.white : accentColor.shade900)
+                            ? (isDark
+                                  ? AppKendoColors.pureWhite
+                                  : accentColor.shade900)
                             : (context.appColors.subTextColor),
                       ),
                     ),
@@ -1014,8 +1026,12 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       style: TextStyle(
                         fontSize: AppFontSize.small,
                         color: isSelected
-                            ? (isDark ? Colors.white70 : accentColor.shade800)
-                            : Colors.grey.shade600,
+                            ? (isDark
+                                  ? AppKendoColors.pureWhite.withValues(
+                                      alpha: 0.7,
+                                    )
+                                  : accentColor.shade800)
+                            : AppKendoColors.grey.shade600,
                       ),
                     ),
                   ],

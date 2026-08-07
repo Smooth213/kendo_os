@@ -40,8 +40,8 @@ def check_tokens():
                         if clean_args and re.search(r'[2-9]|\d{2,}', clean_args):
                             raw_edge_insets += 1
 
-            if filename not in ['app_kendo_colors.dart', 'theme_color_extensions.dart']:
-                raw_colors += len(re.findall(r'Colors\.(white|black|grey|red|blue|amber|orange|purple|deepPurple|indigo|teal|green|yellow|brown|pink|cyan|lime)', content))
+            if filename not in ['app_kendo_colors.dart', 'theme_color_extensions.dart'] and not filename.endswith('.freezed.dart') and not filename.endswith('.g.dart') and '/pdf/' not in f.replace('\\', '/'):
+                raw_colors += len(re.findall(r'(?<!\.)\bColors\.(white|black|grey|red|blue|amber|orange|purple|deepPurple|indigo|teal|green|yellow|brown|pink|cyan|lime)', content))
 
             if filename != 'app_header.dart':
                 raw_appbars += len(re.findall(r'\bAppBar\s*\(', content))

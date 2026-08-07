@@ -21,7 +21,7 @@ class CorruptedMatchBanner extends ConsumerWidget {
         children: [
           const Icon(
             Icons.error_outline_rounded,
-            color: Colors.white,
+            color: AppKendoColors.pureWhite,
             size: 20,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -32,7 +32,7 @@ class CorruptedMatchBanner extends ConsumerWidget {
             child: Text(
               'データに問題が発生しました',
               style: TextStyle(
-                color: Colors.white,
+                color: AppKendoColors.pureWhite,
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.bodySmall,
               ),

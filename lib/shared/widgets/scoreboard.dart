@@ -162,7 +162,9 @@ class MatchScoreboard extends ConsumerWidget {
 
     final nameColor = side == Side.red
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade800);
+        : (isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.blueGrey.shade800);
 
     return SizedBox(
       width: 380, // 左右均等な幅を明示的に確保
@@ -182,7 +184,9 @@ class MatchScoreboard extends ConsumerWidget {
                   : Alignment.centerLeft, // 白側は左寄せで中央に対比
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
+                color: isDark
+                    ? const Color(0xFF1C1C1E)
+                    : AppKendoColors.grey.shade100,
                 borderRadius: AppRadius.small,
               ),
               child: FittedBox(
@@ -391,14 +395,16 @@ class MatchScoreboard extends ConsumerWidget {
         horizontal: AppSpacing.giant,
       ), // ★ 横幅にゆとりを持たせる
       decoration: BoxDecoration(
-        color: isDark ? Colors.indigo.shade900 : Colors.indigo.shade700,
+        color: isDark
+            ? AppKendoColors.indigo.shade900
+            : AppKendoColors.indigo.shade700,
         borderRadius: AppRadius.full, // ★ 角丸を調整
         border: isDark
-            ? Border.all(color: Colors.indigo.shade400, width: 1.5)
+            ? Border.all(color: AppKendoColors.indigo.shade400, width: 1.5)
             : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: AppKendoColors.pureBlack.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -409,7 +415,7 @@ class MatchScoreboard extends ConsumerWidget {
         child: Text(
           resultText,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppKendoColors.pureWhite,
             fontWeight: AppFontWeight.bold,
             fontSize: AppFontSize.hero, // ★ 堂々とした28pt特大サイズへ拡大
             letterSpacing: 1.5,

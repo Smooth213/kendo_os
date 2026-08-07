@@ -136,7 +136,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             onPressed: () => Navigator.pop(context, manualName),
             style: ElevatedButton.styleFrom(
               backgroundColor: _themeColors.primaryAccent,
-              foregroundColor: Colors.white,
+              foregroundColor: AppKendoColors.pureWhite,
             ),
             child: const Text('決定'),
           ),
@@ -147,7 +147,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
   Future<void> _selectPlayer(int index, List<PlayerModel> masterPlayers) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.pureBlack;
 
     String searchText = '';
     String selectedFilter = 'すべて';
@@ -214,8 +216,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             style: TextStyle(fontWeight: AppFontWeight.bold),
                           ),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.grey.shade700,
-                            side: BorderSide(color: Colors.grey.shade300),
+                            foregroundColor: AppKendoColors.grey.shade700,
+                            side: BorderSide(
+                              color: AppKendoColors.grey.shade300,
+                            ),
                             padding: const EdgeInsets.symmetric(
                               vertical: AppSpacing.compact,
                             ),
@@ -278,8 +282,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       prefixIcon: const Icon(Icons.search),
                       filled: true,
                       fillColor: isDark
-                          ? Colors.grey.shade900
-                          : Colors.grey.shade100,
+                          ? AppKendoColors.grey.shade900
+                          : AppKendoColors.grey.shade100,
                       border: OutlineInputBorder(
                         borderRadius: AppRadius.small,
                         borderSide: BorderSide.none,
@@ -339,7 +343,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               borderRadius: AppRadius.medium,
                               side: BorderSide(
                                 color: isDark
-                                    ? Colors.transparent
+                                    ? AppKendoColors.transparent
                                     : _themeColors.softAccent,
                               ),
                             ),
@@ -347,7 +351,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               leading: CircleAvatar(
                                 backgroundColor: isDark
                                     ? const Color(0xFF2C2C2E)
-                                    : Colors.white,
+                                    : AppKendoColors.pureWhite,
                                 child: Text(
                                   p.name.substring(0, 1),
                                   style: TextStyle(
@@ -437,14 +441,16 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       controller: controllers[i],
                       autofocus: i == 0,
                       style: TextStyle(
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: isDark
+                            ? AppKendoColors.pureWhite
+                            : AppKendoColors.pureBlack,
                       ),
                       decoration: InputDecoration(
                         labelText: positions[i],
                         filled: true,
                         fillColor: isDark
                             ? const Color(0xFF2C2C2E)
-                            : Colors.grey.shade50,
+                            : AppKendoColors.grey.shade50,
                         border: OutlineInputBorder(
                           borderRadius: AppRadius.small,
                         ),
@@ -465,7 +471,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _themeColors.primaryAccent,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppKendoColors.pureWhite,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.lg,
                     ),
@@ -503,13 +509,17 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
               TextField(
                 controller: nameController,
                 autofocus: true,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                style: TextStyle(
+                  color: isDark
+                      ? AppKendoColors.pureWhite
+                      : AppKendoColors.pureBlack,
+                ),
                 decoration: InputDecoration(
                   labelText: '選手名（例：田中太郎）',
                   filled: true,
                   fillColor: isDark
                       ? const Color(0xFF2C2C2E)
-                      : Colors.grey.shade50,
+                      : AppKendoColors.grey.shade50,
                   border: OutlineInputBorder(borderRadius: AppRadius.small),
                 ),
               ),
@@ -523,7 +533,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _themeColors.primaryAccent,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppKendoColors.pureWhite,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.lg,
                     ),
@@ -578,7 +588,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             style: TextStyle(
               fontSize: AppFontSize.display,
               fontWeight: AppFontWeight.bold,
-              color: Colors.white,
+              color: AppKendoColors.pureWhite,
               letterSpacing: 1.0,
             ),
           ),
@@ -587,15 +597,17 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             '対戦相手と出場選手を決定し、\n試合枠を生成します',
             style: TextStyle(
               fontSize: AppFontSize.bodySmall,
-              color: Colors.white.withValues(alpha: 0.9),
+              color: AppKendoColors.pureWhite.withValues(alpha: 0.9),
               fontWeight: AppFontWeight.medium,
             ),
           ),
           const SizedBox(height: 20),
           LinearProgressIndicator(
             value: 1.0,
-            backgroundColor: Colors.white.withValues(alpha: 0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            backgroundColor: AppKendoColors.pureWhite.withValues(alpha: 0.3),
+            valueColor: const AlwaysStoppedAnimation<Color>(
+              AppKendoColors.pureWhite,
+            ),
             minHeight: 6,
             borderRadius: AppRadius.tiny,
           ),
@@ -621,17 +633,19 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final inputBgColor = themeColors.cardBackground;
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
+    final borderColor = isDark
+        ? const Color(0xFF38383A)
+        : AppKendoColors.grey.shade300;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : Colors.grey.shade600;
+        : AppKendoColors.grey.shade600;
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: const AppHeader(
           title: 'オーダー編成',
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppKendoColors.transparent,
           actions: [
             ManualHelpButton(
               manualPath: 'docs/manuals/operator/team_registration.md',
@@ -705,7 +719,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               hintText: '入力または履歴から選択',
                               fillColor: isDark
                                   ? const Color(0xFF1C1C1E)
-                                  : Colors.white,
+                                  : AppKendoColors.pureWhite,
                               borderColor: borderColor,
                               textColor: textColor,
                               subTextColor: subTextColor,
@@ -785,7 +799,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _themeColors.primaryAccent,
-                                  foregroundColor: Colors.white,
+                                  foregroundColor: AppKendoColors.pureWhite,
                                 ),
                               ),
                             ),
@@ -797,12 +811,12 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF1C1C1E)
-                                    : Colors.white,
+                                    : AppKendoColors.pureWhite,
                                 borderRadius: AppRadius.large,
                                 border: Border.all(color: borderColor),
                               ),
                               child: Material(
-                                color: Colors.transparent,
+                                color: AppKendoColors.transparent,
                                 child: ReorderableListView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
@@ -827,7 +841,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                             name.contains('自チーム') ||
                                                 name == rule.teamName
                                             ? _themeColors.softAccent
-                                            : Colors.grey.shade200,
+                                            : AppKendoColors.grey.shade200,
                                         child: Text(
                                           '${index + 1}',
                                           style: TextStyle(
@@ -845,7 +859,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       ),
                                       trailing: const Icon(
                                         Icons.drag_handle,
-                                        color: Colors.grey,
+                                        color: AppKendoColors.grey,
                                       ),
                                       onLongPress:
                                           () {}, // ReorderableListViewのトリガー用
@@ -911,7 +925,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               '※数字の小さい方または上・左のチーム（選手）が赤になります',
                               style: TextStyle(
                                 fontSize: AppFontSize.small,
-                                color: Colors.red,
+                                color: AppKendoColors.red,
                                 fontWeight: AppFontWeight.bold,
                               ),
                             ),
@@ -921,7 +935,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF1C1C1E)
-                                    : Colors.grey.shade200,
+                                    : AppKendoColors.grey.shade200,
                                 borderRadius: AppRadius.medium,
                               ),
                               padding: const EdgeInsets.all(AppSpacing.xs),
@@ -940,13 +954,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                           color: _isOwnTeamRed
                                               ? (isDark
                                                     ? const Color(0xFF2C2C2E)
-                                                    : Colors.white)
-                                              : Colors.transparent,
+                                                    : AppKendoColors.pureWhite)
+                                              : AppKendoColors.transparent,
                                           borderRadius: AppRadius.small,
                                           boxShadow: (_isOwnTeamRed && !isDark)
                                               ? [
                                                   BoxShadow(
-                                                    color: Colors.black
+                                                    color: AppKendoColors
+                                                        .pureBlack
                                                         .withValues(alpha: 0.1),
                                                     blurRadius: 4,
                                                     offset: const Offset(0, 2),
@@ -964,8 +979,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                               color: _isOwnTeamRed
                                                   ? AppKendoColors.hansokuRed
                                                   : (isDark
-                                                        ? Colors.grey.shade600
-                                                        : Colors.grey),
+                                                        ? AppKendoColors
+                                                              .grey
+                                                              .shade600
+                                                        : AppKendoColors.grey),
                                             ),
                                             const SizedBox(
                                               width: AppSpacing.sm,
@@ -997,13 +1014,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                           color: !_isOwnTeamRed
                                               ? (isDark
                                                     ? const Color(0xFF2C2C2E)
-                                                    : Colors.white)
-                                              : Colors.transparent,
+                                                    : AppKendoColors.pureWhite)
+                                              : AppKendoColors.transparent,
                                           borderRadius: AppRadius.small,
                                           boxShadow: (!_isOwnTeamRed && !isDark)
                                               ? [
                                                   BoxShadow(
-                                                    color: Colors.black
+                                                    color: AppKendoColors
+                                                        .pureBlack
                                                         .withValues(alpha: 0.1),
                                                     blurRadius: 4,
                                                     offset: const Offset(0, 2),
@@ -1027,8 +1045,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                                               .blueGrey
                                                               .shade700)
                                                   : (isDark
-                                                        ? Colors.grey.shade600
-                                                        : Colors.grey),
+                                                        ? AppKendoColors
+                                                              .grey
+                                                              .shade600
+                                                        : AppKendoColors.grey),
                                             ),
                                             const SizedBox(
                                               width: AppSpacing.sm,
@@ -1039,7 +1059,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                               style: TextStyle(
                                                 color: !_isOwnTeamRed
                                                     ? (isDark
-                                                          ? Colors.white
+                                                          ? AppKendoColors
+                                                                .pureWhite
                                                           : Colors
                                                                 .blueGrey
                                                                 .shade700)
@@ -1062,7 +1083,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF1C1C1E)
-                                    : Colors.grey.shade100, // 背景を少し落とす
+                                    : AppKendoColors.grey.shade100, // 背景を少し落とす
                                 borderRadius: AppRadius.large,
                                 border: Border.all(
                                   color: borderColor,
@@ -1078,8 +1099,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       Icon(
                                         Icons.shield,
                                         color: isDark
-                                            ? Colors.blueGrey.shade400
-                                            : Colors.blueGrey.shade600,
+                                            ? AppKendoColors.blueGrey.shade400
+                                            : AppKendoColors.blueGrey.shade600,
                                         size: 18,
                                       ),
                                       const SizedBox(width: AppSpacing.sm),
@@ -1088,8 +1109,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                         style: TextStyle(
                                           fontWeight: AppFontWeight.bold,
                                           color: isDark
-                                              ? Colors.blueGrey.shade300
-                                              : Colors.blueGrey.shade800,
+                                              ? AppKendoColors.blueGrey.shade300
+                                              : AppKendoColors
+                                                    .blueGrey
+                                                    .shade800,
                                         ),
                                       ),
                                     ],
@@ -1106,7 +1129,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     hintText: 'タップして登録済みリストから選択',
                                     fillColor: isDark
                                         ? const Color(0xFF2C2C2E)
-                                        : Colors.white,
+                                        : AppKendoColors.pureWhite,
                                     borderColor: borderColor,
                                     textColor: textColor,
                                     subTextColor: subTextColor,
@@ -1290,7 +1313,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                             ? _themeColors.softAccent
                                             : (isDark
                                                   ? const Color(0xFF2C2C2E)
-                                                  : Colors.grey.shade200),
+                                                  : AppKendoColors
+                                                        .grey
+                                                        .shade200),
                                         child: Text(
                                           posName.substring(0, 1),
                                           style: TextStyle(
@@ -1341,7 +1366,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                               ? _themeColors.softAccent
                                               : (isDark
                                                     ? const Color(0xFF2C2C2E)
-                                                    : Colors.grey.shade100),
+                                                    : AppKendoColors
+                                                          .grey
+                                                          .shade100),
                                           borderRadius: AppRadius.round,
                                         ),
                                         child: Text(
@@ -1383,13 +1410,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                   endIndent: 16,
                                   color: isDark
                                       ? const Color(0xFF38383A)
-                                      : Colors.grey.shade200,
+                                      : AppKendoColors.grey.shade200,
                                 ),
                                 Container(
                                   decoration: BoxDecoration(
                                     color: isDark
                                         ? const Color(0xFF1E1E1E)
-                                        : Colors.grey.shade50,
+                                        : AppKendoColors.grey.shade50,
                                     borderRadius: const BorderRadius.vertical(
                                       bottom: Radius.circular(
                                         AppRadius.mediumValue,
@@ -1417,7 +1444,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       prefixIcon: const Icon(
                                         Icons.person_outline,
                                         size: 20,
-                                        color: Colors.blueGrey,
+                                        color: AppKendoColors.blueGrey,
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: AppRadius.small,
@@ -1439,7 +1466,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       ),
                                       fillColor: isDark
                                           ? const Color(0xFF2C2C2E)
-                                          : Colors.white,
+                                          : AppKendoColors.pureWhite,
                                       filled: true,
                                       suffixIcon: Padding(
                                         padding: const EdgeInsets.only(
@@ -1459,13 +1486,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                           ),
                                           icon: const Icon(
                                             Icons.block,
-                                            color: Colors.redAccent,
+                                            color: AppKendoColors.redAccent,
                                             size: 14,
                                           ),
                                           label: const Text(
                                             '欠員',
                                             style: TextStyle(
-                                              color: Colors.redAccent,
+                                              color: AppKendoColors.redAccent,
                                               fontWeight: AppFontWeight.bold,
                                               fontSize: AppFontSize.small,
                                             ),
@@ -1502,10 +1529,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                 bottom: MediaQuery.of(context).padding.bottom + 24,
               ),
               decoration: BoxDecoration(
-                color: enableLiquidGlass ? Colors.transparent : inputBgColor,
+                color: enableLiquidGlass
+                    ? AppKendoColors.transparent
+                    : inputBgColor,
                 border: Border(
                   top: BorderSide(
-                    color: enableLiquidGlass ? Colors.transparent : borderColor,
+                    color: enableLiquidGlass
+                        ? AppKendoColors.transparent
+                        : borderColor,
                     width: 0.5,
                   ),
                 ),
@@ -1545,14 +1576,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 onPressed: () => Navigator.pop(context, false),
                                 child: const Text(
                                   '後で（リストに保存）',
-                                  style: TextStyle(color: Colors.grey),
+                                  style: TextStyle(color: AppKendoColors.grey),
                                 ),
                               ),
                               ElevatedButton(
                                 onPressed: () => Navigator.pop(context, true),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _themeColors.primaryAccent,
-                                  foregroundColor: Colors.white,
+                                  foregroundColor: AppKendoColors.pureWhite,
                                   elevation: 0,
                                 ),
                                 child: const Text(
@@ -1970,12 +2001,12 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                 prefixIcon: Icon(
                   Icons.shield_outlined,
                   color: isDark
-                      ? Colors.blueGrey.shade400
-                      : Colors.blueGrey.shade400,
+                      ? AppKendoColors.blueGrey.shade400
+                      : AppKendoColors.blueGrey.shade400,
                 ),
                 suffixIcon: const Icon(
                   Icons.arrow_drop_down,
-                  color: Colors.grey,
+                  color: AppKendoColors.grey,
                 ), // ▼アイコン
                 fillColor: fillColor,
                 filled: true,
@@ -1990,7 +2021,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
           child: Material(
             elevation: 8.0,
             borderRadius: AppRadius.medium,
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+            color: isDark ? const Color(0xFF2C2C2E) : AppKendoColors.pureWhite,
             child: ConstrainedBox(
               // 幅を画面に合わせる
               constraints: BoxConstraints(

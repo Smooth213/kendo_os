@@ -115,15 +115,15 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final cardBgColor = isDark
             ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-            : Colors.white.withValues(alpha: 0.6);
+            : AppKendoColors.pureWhite.withValues(alpha: 0.6);
         final textColor = context.appColors.textColor;
         final subTextColor = context.appColors.subTextColor;
         final borderColor = isDark
-            ? Colors.white.withValues(alpha: 0.2)
-            : Colors.white.withValues(alpha: 0.7);
+            ? AppKendoColors.pureWhite.withValues(alpha: 0.2)
+            : AppKendoColors.pureWhite.withValues(alpha: 0.7);
 
         return Dialog(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppKendoColors.transparent,
           elevation: 0,
           child: ClipRRect(
             borderRadius: AppRadius.xlarge,
@@ -181,14 +181,14 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                           child: const Text(
                             'キャンセル（変更する）',
                             style: TextStyle(
-                              color: Colors.grey,
+                              color: AppKendoColors.grey,
                               fontWeight: AppFontWeight.bold,
                             ),
                           ),
                         ),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
+                            backgroundColor: AppKendoColors.teal,
                             elevation: 0,
                           ),
                           onPressed: () {
@@ -198,7 +198,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                           child: const Text(
                             'このまま接続',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppKendoColors.pureWhite,
                               fontWeight: AppFontWeight.bold,
                             ),
                           ),
@@ -236,18 +236,18 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBgColor = isDark
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-        : Colors.white.withValues(alpha: 0.6);
+        : AppKendoColors.pureWhite.withValues(alpha: 0.6);
     final textColor = context.appColors.textColor;
     final subTextColor = context.appColors.subTextColor;
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.2)
-        : Colors.white.withValues(alpha: 0.7);
+        ? AppKendoColors.pureWhite.withValues(alpha: 0.2)
+        : AppKendoColors.pureWhite.withValues(alpha: 0.7);
     final inputBgColor = isDark
-        ? Colors.white.withValues(alpha: 0.05)
-        : Colors.black.withValues(alpha: 0.05);
+        ? AppKendoColors.pureWhite.withValues(alpha: 0.05)
+        : AppKendoColors.pureBlack.withValues(alpha: 0.05);
 
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppKendoColors.transparent,
       elevation: 0,
       child: ClipRRect(
         borderRadius: AppRadius.xlarge,
@@ -280,7 +280,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                     width: 130,
                     height: 130,
                     decoration: const BoxDecoration(
-                      color: Colors.white,
+                      color: AppKendoColors.pureWhite,
                       borderRadius: AppRadius.large,
                     ),
                     child: const Icon(
@@ -333,7 +333,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                   fillColor: inputBgColor,
                                   errorText: _errorMessage,
                                   errorStyle: const TextStyle(
-                                    color: Colors.orangeAccent,
+                                    color: AppKendoColors.orangeAccent,
                                     fontWeight: AppFontWeight.bold,
                                   ),
                                   prefixIcon: Icon(
@@ -346,7 +346,9 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                   ),
                                   focusedBorder: const OutlineInputBorder(
                                     borderRadius: AppRadius.medium,
-                                    borderSide: BorderSide(color: Colors.teal),
+                                    borderSide: BorderSide(
+                                      color: AppKendoColors.teal,
+                                    ),
                                   ),
                                 ),
                                 onSubmitted: _handleJoin,
@@ -360,7 +362,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                               borderRadius: AppRadius.medium,
                               color: isDark
                                   ? const Color(0xFF2C2C2E)
-                                  : Colors.white,
+                                  : AppKendoColors.pureWhite,
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
                                   maxHeight: 200,
@@ -388,7 +390,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                       trailing: IconButton(
                                         icon: const Icon(
                                           Icons.close,
-                                          color: Colors.grey,
+                                          color: AppKendoColors.grey,
                                           size: 18,
                                         ),
                                         onPressed: () {
@@ -447,11 +449,13 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                         ),
                       ),
                       _isLoading
-                          ? const CircularProgressIndicator(color: Colors.teal)
+                          ? const CircularProgressIndicator(
+                              color: AppKendoColors.teal,
+                            )
                           : ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal,
-                                foregroundColor: Colors.white,
+                                backgroundColor: AppKendoColors.teal,
+                                foregroundColor: AppKendoColors.pureWhite,
                                 elevation: 0,
                                 shape: const RoundedRectangleBorder(
                                   borderRadius: AppRadius.medium,

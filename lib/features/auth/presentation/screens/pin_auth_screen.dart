@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +28,7 @@ class PinAuthScreen extends ConsumerWidget {
     // ★ アプリ全体と統一した iOS 風 (Liquid Glass) のガラス背景
     final cardBgColor = isDark
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-        : Colors.white.withValues(alpha: 0.6);
+        : AppKendoColors.pureWhite.withValues(alpha: 0.6);
 
     final textColor = context.appColors.textColor;
     final subTextColor = context.appColors.subTextColor;
@@ -35,22 +37,22 @@ class PinAuthScreen extends ConsumerWidget {
     Color roleColor;
     switch (role) {
       case UserRole.admin:
-        roleColor = Colors.purple;
+        roleColor = AppKendoColors.purple;
         break;
       case UserRole.operator:
-        roleColor = Colors.teal;
+        roleColor = AppKendoColors.teal;
         break;
       case UserRole.recorder:
-        roleColor = Colors.indigo;
+        roleColor = AppKendoColors.indigo;
         break;
       default:
-        roleColor = Colors.blueGrey;
+        roleColor = AppKendoColors.blueGrey;
     }
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: const AppHeader(backgroundColor: Colors.transparent),
+        backgroundColor: AppKendoColors.transparent,
+        appBar: const AppHeader(backgroundColor: AppKendoColors.transparent),
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -60,7 +62,9 @@ class PinAuthScreen extends ConsumerWidget {
                   borderRadius: AppRadius.huge,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                      color: AppKendoColors.pureBlack.withValues(
+                        alpha: isDark ? 0.3 : 0.1,
+                      ),
                       blurRadius: 25,
                       offset: const Offset(0, 12),
                     ),
@@ -79,8 +83,8 @@ class PinAuthScreen extends ConsumerWidget {
                         color: cardBgColor,
                         border: Border.all(
                           color: isDark
-                              ? Colors.white.withValues(alpha: 0.2)
-                              : Colors.white.withValues(alpha: 0.7),
+                              ? AppKendoColors.pureWhite.withValues(alpha: 0.2)
+                              : AppKendoColors.pureWhite.withValues(alpha: 0.7),
                           width: 1.5,
                         ),
                       ),
@@ -123,11 +127,21 @@ class PinAuthScreen extends ConsumerWidget {
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: isDark
-                                  ? Colors.white.withValues(alpha: 0.1)
-                                  : Colors.white.withValues(alpha: 0.5),
+                                  ? AppKendoColors.pureWhite.withValues(
+                                      alpha: 0.1,
+                                    )
+                                  : AppKendoColors.pureWhite.withValues(
+                                      alpha: 0.5,
+                                    ),
                               hintText: '••••',
                               hintStyle: TextStyle(
-                                color: isDark ? Colors.white30 : Colors.black26,
+                                color: isDark
+                                    ? AppKendoColors.pureWhite.withValues(
+                                        alpha: 0.3,
+                                      )
+                                    : AppKendoColors.pureBlack.withValues(
+                                        alpha: 0.26,
+                                      ),
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: AppRadius.large,
@@ -144,7 +158,7 @@ class PinAuthScreen extends ConsumerWidget {
                                 backgroundColor: roleColor.withValues(
                                   alpha: 0.85,
                                 ),
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppKendoColors.pureWhite,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: AppRadius.large,

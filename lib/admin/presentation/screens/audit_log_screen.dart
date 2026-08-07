@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,7 +40,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: const AppHeader(
           title: 'システム監査ログ',
           actions: [
@@ -58,7 +60,9 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                   labelText: '試合IDで絞り込み (フィルタ)',
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                  fillColor: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : AppKendoColors.pureWhite,
                   border: OutlineInputBorder(
                     borderRadius: AppRadius.medium,
                     borderSide: BorderSide.none,
@@ -85,7 +89,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                     return const Center(
                       child: Text(
                         'ログが見つかりません',
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: AppKendoColors.grey),
                       ),
                     );
                   }
@@ -114,13 +118,13 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                           : '不明な日時';
 
                       // アクションの重要度によってアイコンの色を変える
-                      Color actionColor = Colors.blue;
+                      Color actionColor = AppKendoColors.blue;
                       if (action == 'undo' || action == 'rebuild') {
-                        actionColor = Colors.orange;
+                        actionColor = AppKendoColors.orange;
                       }
                       if (action == 'manual_update' ||
                           action == 'force_claim') {
-                        actionColor = Colors.red;
+                        actionColor = AppKendoColors.red;
                       }
 
                       return Card(
@@ -158,8 +162,8 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                                 '詳細: $details',
                                 style: TextStyle(
                                   color: isDark
-                                      ? Colors.grey.shade300
-                                      : Colors.black87,
+                                      ? AppKendoColors.grey.shade300
+                                      : AppKendoColors.pureBlack,
                                   fontSize: AppFontSize.bodySmall,
                                 ),
                               ),
@@ -167,7 +171,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                               Text(
                                 '試合ID: $matchId\n操作者: $userId',
                                 style: const TextStyle(
-                                  color: Colors.grey,
+                                  color: AppKendoColors.grey,
                                   fontSize: AppFontSize.caption,
                                 ),
                               ),
@@ -176,7 +180,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                           trailing: Text(
                             timeStr,
                             style: const TextStyle(
-                              color: Colors.grey,
+                              color: AppKendoColors.grey,
                               fontSize: AppFontSize.caption,
                             ),
                           ),
@@ -189,7 +193,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                 error: (e, st) => Center(
                   child: Text(
                     'エラー: $e',
-                    style: const TextStyle(color: Colors.red),
+                    style: const TextStyle(color: AppKendoColors.red),
                   ),
                 ),
               ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'smart_player_input.dart';
@@ -132,8 +134,8 @@ class _MultiPlayerSelectInputState
                             'キャンセル',
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade600,
+                                  ? AppKendoColors.grey.shade400
+                                  : AppKendoColors.grey.shade600,
                             ),
                           ),
                         ),
@@ -283,14 +285,16 @@ class _MultiPlayerSelectInputState
                               '出稽古・ゲスト',
                               style: TextStyle(
                                 fontSize: AppFontSize.small,
-                                color: Colors.grey,
+                                color: AppKendoColors.grey,
                               ),
                             ),
                             secondary: CircleAvatar(
-                              backgroundColor: Colors.grey.withAlpha(26),
+                              backgroundColor: AppKendoColors.grey.withAlpha(
+                                26,
+                              ),
                               child: const Icon(
                                 Icons.person_outline,
-                                color: Colors.grey,
+                                color: AppKendoColors.grey,
                                 size: 20,
                               ),
                             ),
@@ -315,7 +319,7 @@ class _MultiPlayerSelectInputState
                               p.gradeName,
                               style: const TextStyle(
                                 fontSize: AppFontSize.small,
-                                color: Colors.grey,
+                                color: AppKendoColors.grey,
                               ),
                             ),
                             secondary: CircleAvatar(
@@ -373,13 +377,17 @@ class _MultiPlayerSelectInputState
         border: OutlineInputBorder(
           borderRadius: AppRadius.small,
           borderSide: BorderSide(
-            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+            color: isDark
+                ? AppKendoColors.grey.shade700
+                : AppKendoColors.grey.shade400,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.small,
           borderSide: BorderSide(
-            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+            color: isDark
+                ? AppKendoColors.grey.shade700
+                : AppKendoColors.grey.shade400,
           ),
         ),
         focusedBorder: OutlineInputBorder(

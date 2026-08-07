@@ -22,8 +22,8 @@ class OperatorActionButtons extends ConsumerWidget {
 
     final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
     final MaterialColor viewerThemeColor = isBunaiksen
-        ? Colors.purple
-        : Colors.blueGrey;
+        ? AppKendoColors.purple
+        : AppKendoColors.blueGrey;
 
     return Column(
       children: [
@@ -33,7 +33,7 @@ class OperatorActionButtons extends ConsumerWidget {
             enableLiquidGlass,
             Icons.edit_note,
             '試合開始（新しく作成）',
-            Colors.indigo,
+            AppKendoColors.indigo,
             () => context.push('/setup-match/$tournamentId'),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -42,7 +42,7 @@ class OperatorActionButtons extends ConsumerWidget {
             enableLiquidGlass,
             Icons.gavel,
             '部門別ルール設定',
-            Colors.teal,
+            AppKendoColors.teal,
             () => context.push('/tournament/$tournamentId/category-rules'),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -67,7 +67,7 @@ class OperatorActionButtons extends ConsumerWidget {
           enableLiquidGlass,
           Icons.print,
           '公式記録の確認・PDF印刷',
-          Colors.blueGrey,
+          AppKendoColors.blueGrey,
           () => context.push('/official-record/$tournamentId'),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -83,7 +83,7 @@ class OperatorActionButtons extends ConsumerWidget {
               Icons.picture_as_pdf,
               size: 20,
               color: isDark
-                  ? Colors.redAccent.shade100
+                  ? AppKendoColors.red.shade100
                   : AppKendoColors.hansokuRed,
             ),
             label: Text(
@@ -91,14 +91,20 @@ class OperatorActionButtons extends ConsumerWidget {
               style: TextStyle(
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.body,
-                color: isDark ? Colors.white : Colors.grey.shade800,
+                color: isDark
+                    ? AppKendoColors.pureWhite
+                    : AppKendoColors.grey.shade800,
               ),
             ),
             style: OutlinedButton.styleFrom(
               side: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
+                color: isDark
+                    ? const Color(0xFF38383A)
+                    : AppKendoColors.grey.shade300,
               ),
-              backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              backgroundColor: isDark
+                  ? const Color(0xFF1C1C1E)
+                  : AppKendoColors.pureWhite,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
             ),
           ),
@@ -127,7 +133,7 @@ class OperatorActionButtons extends ConsumerWidget {
         size: 14,
         color: enableLiquidGlass
             ? (isDark ? color.shade500 : color.shade300)
-            : Colors.white70,
+            : AppKendoColors.pureWhite.withValues(alpha: 0.7),
       ),
     );
   }

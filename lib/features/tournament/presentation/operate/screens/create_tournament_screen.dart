@@ -109,11 +109,15 @@ class _CreateTournamentScreenState
         final t = (_currentProgress / 1).clamp(0.0, 1.0);
 
         // iOS Native: ダークモード時は彩度を抑えた深みのあるTealへ
-        final color1 = isDark ? Colors.indigo.shade800 : Colors.indigo.shade400;
-        final color2 = isDark ? Colors.indigo.shade900 : Colors.indigo.shade700;
+        final color1 = isDark
+            ? AppKendoColors.indigo.shade800
+            : AppKendoColors.indigo.shade400;
+        final color2 = isDark
+            ? AppKendoColors.indigo.shade900
+            : AppKendoColors.indigo.shade700;
         final endColor = isDark
-            ? Colors.indigo.shade800
-            : Colors.indigo.shade300;
+            ? AppKendoColors.indigo.shade800
+            : AppKendoColors.indigo.shade300;
         final gradientColor = Color.lerp(color1, color2, t)!;
 
         return Container(
@@ -140,7 +144,7 @@ class _CreateTournamentScreenState
                 style: TextStyle(
                   fontSize: AppFontSize.hero,
                   fontWeight: AppFontWeight.bold,
-                  color: Colors.white,
+                  color: AppKendoColors.pureWhite,
                   letterSpacing: 1.0,
                 ),
               ),
@@ -149,15 +153,19 @@ class _CreateTournamentScreenState
                 '魔法のウィザードに従って、\n2つのステップで設定を完了しましょう',
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: AppKendoColors.pureWhite.withValues(alpha: 0.9),
                   fontWeight: AppFontWeight.medium,
                 ),
               ),
               const SizedBox(height: 20),
               LinearProgressIndicator(
                 value: (_currentProgress + 1) / 2,
-                backgroundColor: Colors.white.withValues(alpha: 0.3),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                backgroundColor: AppKendoColors.pureWhite.withValues(
+                  alpha: 0.3,
+                ),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppKendoColors.pureWhite,
+                ),
                 minHeight: 6,
                 borderRadius: AppRadius.tiny,
               ),
@@ -175,10 +183,10 @@ class _CreateTournamentScreenState
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: const AppHeader(
           title: '大会の新規作成',
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppKendoColors.transparent,
           actions: [
             ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
             SizedBox(width: AppSpacing.sm),
@@ -227,11 +235,13 @@ class _CreateTournamentScreenState
 
   Widget _buildPage1() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final Color inputBgColor = isDark
+        ? const Color(0xFF1C1C1E)
+        : AppKendoColors.pureWhite;
     final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
-        : Colors.grey.shade400;
+        : AppKendoColors.grey.shade400;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -251,7 +261,7 @@ class _CreateTournamentScreenState
           style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
           decoration: InputDecoration(
             labelText: '大会名',
-            labelStyle: const TextStyle(color: Colors.grey),
+            labelStyle: const TextStyle(color: AppKendoColors.grey),
             hintText: '例：第1回 〇〇剣道大会',
             hintStyle: TextStyle(
               color: hintColor,
@@ -264,13 +274,18 @@ class _CreateTournamentScreenState
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
+                color: isDark
+                    ? const Color(0xFF38383A)
+                    : AppKendoColors.grey.shade200,
                 width: 1.0,
               ), // iOS Border
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
-              borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
+              borderSide: BorderSide(
+                color: AppKendoColors.indigo.shade500,
+                width: 2.0,
+              ),
             ),
             filled: true,
             fillColor: inputBgColor,
@@ -281,7 +296,10 @@ class _CreateTournamentScreenState
         ListTile(
           title: const Text(
             '開催年月日',
-            style: TextStyle(color: Colors.grey, fontSize: AppFontSize.small),
+            style: TextStyle(
+              color: AppKendoColors.grey,
+              fontSize: AppFontSize.small,
+            ),
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: AppSpacing.xs),
@@ -294,10 +312,15 @@ class _CreateTournamentScreenState
               ),
             ),
           ),
-          trailing: const Icon(Icons.calendar_today, color: Colors.indigo),
+          trailing: const Icon(
+            Icons.calendar_today,
+            color: AppKendoColors.indigo,
+          ),
           shape: RoundedRectangleBorder(
             side: BorderSide(
-              color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
+              color: isDark
+                  ? const Color(0xFF38383A)
+                  : AppKendoColors.grey.shade200,
               width: 1.0,
             ),
             borderRadius: AppRadius.medium,
@@ -315,11 +338,13 @@ class _CreateTournamentScreenState
 
   Widget _buildPage2() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color inputBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final Color inputBgColor = isDark
+        ? const Color(0xFF1C1C1E)
+        : AppKendoColors.pureWhite;
     final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
-        : Colors.grey.shade400;
+        : AppKendoColors.grey.shade400;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -339,28 +364,36 @@ class _CreateTournamentScreenState
           style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
           decoration: InputDecoration(
             labelText: '会場・住所',
-            labelStyle: const TextStyle(color: Colors.grey),
+            labelStyle: const TextStyle(color: AppKendoColors.grey),
             hintText: '例：〇〇県立武道館',
             hintStyle: TextStyle(
               color: hintColor,
               fontSize: AppFontSize.bodySmall,
             ),
-            prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
+            prefixIcon: const Icon(
+              Icons.location_on,
+              color: AppKendoColors.blue,
+            ),
             suffixIcon: IconButton(
-              icon: const Icon(Icons.map, color: Colors.blue),
+              icon: const Icon(Icons.map, color: AppKendoColors.blue),
               onPressed: _openMap,
               tooltip: '地図で場所を確認',
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
+                color: isDark
+                    ? const Color(0xFF38383A)
+                    : AppKendoColors.grey.shade200,
                 width: 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
-              borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
+              borderSide: BorderSide(
+                color: AppKendoColors.indigo.shade500,
+                width: 2.0,
+              ),
             ),
             filled: true,
             fillColor: inputBgColor,
@@ -374,23 +407,28 @@ class _CreateTournamentScreenState
           style: TextStyle(color: textColor),
           decoration: InputDecoration(
             labelText: '大会メモ（任意）',
-            labelStyle: const TextStyle(color: Colors.grey),
+            labelStyle: const TextStyle(color: AppKendoColors.grey),
             hintText: '例：駐車場は第2駐車場を利用。\n開場は8:30〜。',
             hintStyle: TextStyle(
               color: hintColor,
               fontSize: AppFontSize.bodySmall,
             ),
-            prefixIcon: const Icon(Icons.note_alt, color: Colors.grey),
+            prefixIcon: const Icon(Icons.note_alt, color: AppKendoColors.grey),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
-                color: isDark ? const Color(0xFF38383A) : Colors.grey.shade200,
+                color: isDark
+                    ? const Color(0xFF38383A)
+                    : AppKendoColors.grey.shade200,
                 width: 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
-              borderSide: BorderSide(color: Colors.indigo.shade500, width: 2.0),
+              borderSide: BorderSide(
+                color: AppKendoColors.indigo.shade500,
+                width: 2.0,
+              ),
             ),
             filled: true,
             fillColor: inputBgColor,
@@ -405,11 +443,11 @@ class _CreateTournamentScreenState
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isLastPage = _currentPage == 1;
     final Color bottomBarColor = enableLiquidGlass
-        ? Colors.transparent
-        : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+        ? AppKendoColors.transparent
+        : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite);
     final Color separatorColor = enableLiquidGlass
-        ? Colors.transparent
-        : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300);
+        ? AppKendoColors.transparent
+        : (isDark ? const Color(0xFF38383A) : AppKendoColors.grey.shade300);
 
     return Container(
       padding: EdgeInsets.only(
@@ -441,7 +479,7 @@ class _CreateTournamentScreenState
                 child: Icon(
                   Icons.arrow_back_ios_new,
                   size: 20,
-                  color: Colors.indigo.shade500,
+                  color: AppKendoColors.indigo.shade500,
                 ), // ダークでも見やすいIndigo
               ),
             ),
@@ -496,7 +534,7 @@ class _CreateTournamentScreenState
                   }
                 }
               },
-              color: Colors.indigo,
+              color: AppKendoColors.indigo,
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               icon: isLastPage ? Icons.check_circle : Icons.navigate_next,
               label: isLastPage ? '保存してチーム登録へ' : '次へ進む',

@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -301,7 +303,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+              color: isDark
+                  ? AppKendoColors.grey.shade700
+                  : AppKendoColors.grey.shade300,
               borderRadius: AppRadius.micro,
             ),
           ),
@@ -344,8 +348,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             indicatorColor: widget.themeColors.primaryAccent,
             labelColor: widget.themeColors.primaryAccent,
             unselectedLabelColor: isDark
-                ? Colors.grey.shade400
-                : Colors.grey.shade600,
+                ? AppKendoColors.grey.shade400
+                : AppKendoColors.grey.shade600,
             labelPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.xxs,
             ),
@@ -393,7 +397,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 color: backgroundColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(isDark ? 50 : 20),
+                    color: AppKendoColors.pureBlack.withAlpha(isDark ? 50 : 20),
                     blurRadius: 10,
                     offset: const Offset(0, -4),
                   ),
@@ -403,13 +407,16 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.check, color: Colors.white),
+                  icon: const Icon(
+                    Icons.check,
+                    color: AppKendoColors.pureWhite,
+                  ),
                   label: Text(
                     _isDantai ? '団体戦全体を一括保存' : '変更内容を保存',
                     style: const TextStyle(
                       fontSize: AppFontSize.subhead,
                       fontWeight: AppFontWeight.bold,
-                      color: Colors.white,
+                      color: AppKendoColors.pureWhite,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -436,10 +443,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+            color: isDark
+                ? const Color(0xFF2C2C2E)
+                : AppKendoColors.grey.shade100,
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+              color: isDark
+                  ? AppKendoColors.grey.shade700
+                  : AppKendoColors.grey.shade300,
             ),
           ),
           child: Column(
@@ -462,7 +473,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       label: '赤（RED）チーム名',
                       hint: '赤チーム名を入力',
                       isDark: isDark,
-                      textColor: Colors.red,
+                      textColor: AppKendoColors.red,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -480,14 +491,17 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               const SizedBox(height: AppSpacing.md),
               Center(
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.swap_horiz, color: Colors.white),
+                  icon: const Icon(
+                    Icons.swap_horiz,
+                    color: AppKendoColors.pureWhite,
+                  ),
                   label: Text(
                     _isDantai ? 'チーム丸ごと赤と白を入れ替える ⇄' : '赤と白を入れ替える ⇄',
                     style: const TextStyle(fontWeight: AppFontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppKendoColors.blueAccent,
+                    foregroundColor: AppKendoColors.pureWhite,
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.round,
                     ),
@@ -517,7 +531,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             margin: const EdgeInsets.only(bottom: AppSpacing.md),
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF252527) : Colors.white,
+              color: isDark
+                  ? const Color(0xFF252527)
+                  : AppKendoColors.pureWhite,
               borderRadius: AppRadius.medium,
               border: Border.all(color: context.appColors.separatorColor),
             ),
@@ -539,13 +555,15 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       child: TextField(
                         controller: _redPlayerControllers[index],
                         style: const TextStyle(
-                          color: Colors.red,
+                          color: AppKendoColors.red,
                           fontSize: AppFontSize.bodySmall,
                         ),
                         decoration: InputDecoration(
                           hintText: '赤 選手名',
                           filled: true,
-                          fillColor: Colors.red.withAlpha(isDark ? 25 : 12),
+                          fillColor: AppKendoColors.red.withAlpha(
+                            isDark ? 25 : 12,
+                          ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: AppSpacing.sm,
@@ -559,7 +577,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                      child: Text('vs', style: TextStyle(color: Colors.grey)),
+                      child: Text(
+                        'vs',
+                        style: TextStyle(color: AppKendoColors.grey),
+                      ),
                     ),
                     Expanded(
                       child: TextField(
@@ -572,8 +593,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                           hintText: '白 選手名',
                           filled: true,
                           fillColor: isDark
-                              ? Colors.white.withAlpha(15)
-                              : Colors.grey.shade100,
+                              ? AppKendoColors.pureWhite.withAlpha(15)
+                              : AppKendoColors.grey.shade100,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: AppSpacing.sm,
@@ -702,7 +723,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   Icon(
                     Icons.info_outline,
                     size: 13,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    color: isDark
+                        ? AppKendoColors.grey.shade400
+                        : AppKendoColors.grey.shade600,
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
@@ -711,8 +734,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       style: TextStyle(
                         fontSize: AppFontSize.caption,
                         color: isDark
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade600,
+                            ? AppKendoColors.grey.shade400
+                            : AppKendoColors.grey.shade600,
                       ),
                     ),
                   ),
@@ -724,7 +747,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 style: TextStyle(
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,
-                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                  color: isDark
+                      ? AppKendoColors.grey.shade300
+                      : AppKendoColors.grey.shade700,
                 ),
               ),
               const SizedBox(height: 6),
@@ -751,7 +776,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 style: TextStyle(
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,
-                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                  color: isDark
+                      ? AppKendoColors.grey.shade300
+                      : AppKendoColors.grey.shade700,
                 ),
               ),
               const SizedBox(height: 6),
@@ -924,10 +951,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           margin: const EdgeInsets.only(bottom: AppSpacing.lg),
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF232326) : Colors.blue.shade50,
+            color: isDark
+                ? const Color(0xFF232326)
+                : AppKendoColors.blue.shade50,
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isDark ? Colors.blue.shade800 : Colors.blue.shade200,
+              color: isDark
+                  ? AppKendoColors.blue.shade800
+                  : AppKendoColors.blue.shade200,
             ),
           ),
           child: Column(
@@ -935,7 +966,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             children: [
               Row(
                 children: [
-                  const Icon(Icons.verified, size: 18, color: Colors.blue),
+                  const Icon(
+                    Icons.verified,
+                    size: 18,
+                    color: AppKendoColors.blue,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     '🛡️ 適用されるルールの全内訳 (リアルタイム同期)',
@@ -943,8 +978,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       fontSize: AppFontSize.bodySmall,
                       fontWeight: AppFontWeight.bold,
                       color: isDark
-                          ? Colors.blue.shade200
-                          : Colors.blue.shade900,
+                          ? AppKendoColors.blue.shade200
+                          : AppKendoColors.blue.shade900,
                     ),
                   ),
                 ],
@@ -995,10 +1030,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+            color: isDark
+                ? const Color(0xFF2C2C2E)
+                : AppKendoColors.grey.shade100,
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+              color: isDark
+                  ? AppKendoColors.grey.shade700
+                  : AppKendoColors.grey.shade300,
             ),
           ),
           child: Column(
@@ -1042,7 +1081,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               ),
               const Divider(),
               Material(
-                color: Colors.transparent,
+                color: AppKendoColors.transparent,
                 child: SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('一本勝負にする'),
@@ -1060,7 +1099,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               ),
               const Divider(),
               Material(
-                color: Colors.transparent,
+                color: AppKendoColors.transparent,
                 child: SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
@@ -1070,7 +1109,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                           currentRule.isRenseikai ||
                               currentRule.matchScene == 'renseikai' ||
                               currentRule.matchScene == 'moushiawase'
-                          ? Colors.grey
+                          ? AppKendoColors.grey
                           : textColor,
                     ),
                   ),
@@ -1082,7 +1121,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                           '※錬成会・申し合わせルールのため強制OFFに固定されています',
                           style: TextStyle(
                             fontSize: AppFontSize.badge,
-                            color: Colors.orange,
+                            color: AppKendoColors.orange,
                           ),
                         )
                       : null,
@@ -1142,7 +1181,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           style: TextStyle(
             fontSize: AppFontSize.small,
             fontWeight: AppFontWeight.bold,
-            color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+            color: isDark
+                ? AppKendoColors.grey.shade400
+                : AppKendoColors.grey.shade700,
           ),
         ),
         const SizedBox(height: 6),
@@ -1153,10 +1194,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              color: isDark
+                  ? AppKendoColors.grey.shade600
+                  : AppKendoColors.grey.shade400,
             ),
             filled: true,
-            fillColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            fillColor: isDark
+                ? const Color(0xFF1C1C1E)
+                : AppKendoColors.pureWhite,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
               vertical: 10,
@@ -1164,13 +1209,17 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             border: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
-                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                color: isDark
+                    ? AppKendoColors.grey.shade700
+                    : AppKendoColors.grey.shade300,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
-                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                color: isDark
+                    ? AppKendoColors.grey.shade700
+                    : AppKendoColors.grey.shade300,
               ),
             ),
           ),

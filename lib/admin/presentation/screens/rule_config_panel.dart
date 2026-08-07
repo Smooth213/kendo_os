@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/match/domain/rules/rule_preset.dart'; // ★ プリセットをインポート
@@ -23,14 +25,14 @@ class RuleConfigPanel extends ConsumerWidget {
     final rule = ref.watch(matchRuleProvider);
     final summary = ref.watch(ruleSummaryProvider);
     final notifier = ref.read(matchRuleProvider.notifier);
-    final primaryColor = Colors.purple.shade700;
+    final primaryColor = AppKendoColors.purple.shade700;
 
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: AppKendoColors.pureWhite,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.large,
-        side: BorderSide(color: Colors.grey.shade300),
+        side: BorderSide(color: AppKendoColors.grey.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -62,7 +64,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   children: RulePreset.officials.map((preset) {
                     return AppActionChip(
                       label: Text(preset.name),
-                      backgroundColor: Colors.purple.shade50,
+                      backgroundColor: AppKendoColors.purple.shade50,
                       onPressed: () => notifier.applyPreset(preset),
                     );
                   }).toList(),
@@ -77,13 +79,13 @@ class RuleConfigPanel extends ConsumerWidget {
               horizontal: AppSpacing.lg,
               vertical: AppSpacing.md,
             ),
-            color: Colors.blueGrey.shade50,
+            color: AppKendoColors.blueGrey.shade50,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(
                   Icons.info_outline,
-                  color: Colors.blueGrey,
+                  color: AppKendoColors.blueGrey,
                   size: 20,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -92,7 +94,7 @@ class RuleConfigPanel extends ConsumerWidget {
                     summary,
                     style: TextStyle(
                       fontSize: AppFontSize.body,
-                      color: Colors.blueGrey.shade800,
+                      color: AppKendoColors.blueGrey.shade800,
                       height: 1.4,
                     ),
                   ),
@@ -110,7 +112,7 @@ class RuleConfigPanel extends ConsumerWidget {
                 fontSize: AppFontSize.body,
               ),
             ),
-            collapsedBackgroundColor: Colors.grey.shade50,
+            collapsedBackgroundColor: AppKendoColors.grey.shade50,
             childrenPadding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               // 1. 規定本数の切り替え
@@ -120,7 +122,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   '規定本数（勝敗ライン）',
                   style: TextStyle(
                     fontSize: AppFontSize.small,
-                    color: Colors.grey.shade600,
+                    color: AppKendoColors.grey.shade600,
                   ),
                 ),
               ),
@@ -149,7 +151,7 @@ class RuleConfigPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: AppFontSize.body,
                       fontWeight: AppFontWeight.bold,
-                      color: Colors.grey.shade800,
+                      color: AppKendoColors.grey.shade800,
                     ),
                   ),
                   Switch(
@@ -181,7 +183,7 @@ class RuleConfigPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: AppFontSize.body,
                       fontWeight: AppFontWeight.bold,
-                      color: Colors.grey.shade800,
+                      color: AppKendoColors.grey.shade800,
                     ),
                   ),
                   Switch(

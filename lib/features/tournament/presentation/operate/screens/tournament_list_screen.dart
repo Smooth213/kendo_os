@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -46,14 +48,16 @@ class TournamentListScreen extends ConsumerWidget {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: accentColor, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           title: isArchive ? '過去の大会 (アーカイブ)' : '最近の大会',
-          backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
+          backgroundColor: enableLiquidGlass
+              ? AppKendoColors.transparent
+              : cardColor,
           actions: const [
             ManualHelpButton(manualPath: 'docs/manuals/manual_index.md'),
             SizedBox(width: AppSpacing.sm),
@@ -90,7 +94,7 @@ class TournamentListScreen extends ConsumerWidget {
                       height: 80,
                       color: isDark
                           ? const Color(0xFF38383A)
-                          : Colors.grey.shade300,
+                          : AppKendoColors.grey.shade300,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     Text(
@@ -158,8 +162,12 @@ class TournamentListScreen extends ConsumerWidget {
                       side: enableLiquidGlass
                           ? BorderSide(
                               color: isDark
-                                  ? Colors.white.withValues(alpha: 0.15)
-                                  : Colors.black.withValues(alpha: 0.08),
+                                  ? AppKendoColors.pureWhite.withValues(
+                                      alpha: 0.15,
+                                    )
+                                  : AppKendoColors.pureBlack.withValues(
+                                      alpha: 0.08,
+                                    ),
                               width: 0.5,
                             )
                           : (isDark
@@ -275,7 +283,9 @@ class TournamentListScreen extends ConsumerWidget {
                           fontWeight: AppFontWeight.bold,
                           color: isDark
                               ? accentColor
-                              : Colors.grey.shade500, // ★ ダーク時はアイコンと同じ色で光らせる
+                              : AppKendoColors
+                                    .grey
+                                    .shade500, // ★ ダーク時はアイコンと同じ色で光らせる
                           letterSpacing: 1.5,
                         ),
                       ),

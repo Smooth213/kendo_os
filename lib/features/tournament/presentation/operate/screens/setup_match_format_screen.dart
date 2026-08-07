@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
@@ -282,7 +284,7 @@ class _SetupMatchFormatScreenState
 
           return Dialog(
             shape: RoundedRectangleBorder(borderRadius: AppRadius.xlarge),
-            backgroundColor: Colors.white,
+            backgroundColor: AppKendoColors.pureWhite,
             clipBehavior: Clip.antiAlias,
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -309,9 +311,14 @@ class _SetupMatchFormatScreenState
                     ),
                     child: Row(
                       children: [
-                        const CircleAvatar(
-                          backgroundColor: Colors.white24,
-                          child: Icon(Icons.shield, color: Colors.white),
+                        CircleAvatar(
+                          backgroundColor: AppKendoColors.pureWhite.withValues(
+                            alpha: 0.24,
+                          ),
+                          child: Icon(
+                            Icons.shield,
+                            color: AppKendoColors.pureWhite,
+                          ),
                         ),
                         const SizedBox(width: AppSpacing.lg),
                         Expanded(
@@ -321,7 +328,7 @@ class _SetupMatchFormatScreenState
                               Text(
                                 team.teamName,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppKendoColors.pureWhite,
                                   fontSize: AppFontSize.header,
                                   fontWeight: AppFontWeight.bold,
                                 ),
@@ -329,8 +336,10 @@ class _SetupMatchFormatScreenState
                               const SizedBox(height: AppSpacing.xs),
                               Text(
                                 '${team.category} / ${team.matchType}',
-                                style: const TextStyle(
-                                  color: Colors.white70,
+                                style: TextStyle(
+                                  color: AppKendoColors.pureWhite.withValues(
+                                    alpha: 0.7,
+                                  ),
                                   fontSize: AppFontSize.small,
                                 ),
                               ),
@@ -352,7 +361,7 @@ class _SetupMatchFormatScreenState
                         style: TextStyle(
                           fontSize: AppFontSize.small,
                           fontWeight: AppFontWeight.bold,
-                          color: Colors.grey,
+                          color: AppKendoColors.grey,
                         ),
                       ),
                     ),
@@ -392,13 +401,13 @@ class _SetupMatchFormatScreenState
                           leading: CircleAvatar(
                             radius: 18,
                             backgroundColor: isSub
-                                ? Colors.orange.shade50
+                                ? AppKendoColors.orange.shade50
                                 : _themeColors.softAccent,
                             child: Text(
                               isSub ? '補' : posName.substring(0, 1),
                               style: TextStyle(
                                 color: isSub
-                                    ? Colors.orange.shade700
+                                    ? AppKendoColors.orange.shade700
                                     : _themeColors.primaryAccent,
                                 fontWeight: AppFontWeight.bold,
                                 fontSize: AppFontSize.bodySmall,
@@ -410,22 +419,22 @@ class _SetupMatchFormatScreenState
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,
                               color: name == '未設定'
-                                  ? Colors.grey
-                                  : Colors.black87,
+                                  ? AppKendoColors.grey
+                                  : AppKendoColors.pureBlack,
                             ),
                           ),
                           subtitle: Text(
                             posName,
                             style: TextStyle(
                               color: isSub
-                                  ? Colors.orange.shade600
+                                  ? AppKendoColors.orange.shade600
                                   : _themeColors.primaryAccent,
                               fontSize: AppFontSize.caption,
                             ),
                           ),
                           trailing: const Icon(
                             Icons.swap_vert,
-                            color: Colors.grey,
+                            color: AppKendoColors.grey,
                             size: 20,
                           ),
                         );
@@ -490,13 +499,13 @@ class _SetupMatchFormatScreenState
                     '手入力選手から選ぶ',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      color: Colors.orange,
+                      color: AppKendoColors.orange,
                     ),
                   ),
                 ),
                 ...helperEntries.map(
                   (entry) => Card(
-                    color: Colors.orange.shade50,
+                    color: AppKendoColors.orange.shade50,
                     child: ListTile(
                       title: Text(
                         entry.value,
@@ -506,7 +515,7 @@ class _SetupMatchFormatScreenState
                         '${entry.key < posNames.length ? posNames[entry.key] : "補欠"}と入替',
                         style: const TextStyle(
                           fontSize: AppFontSize.caption,
-                          color: Colors.orange,
+                          color: AppKendoColors.orange,
                         ),
                       ),
                       onTap: () => Navigator.pop(ctx, entry.value),
@@ -534,7 +543,7 @@ class _SetupMatchFormatScreenState
                           '${usedIdx < posNames.length ? posNames[usedIdx] : "補欠"}と入替',
                           style: const TextStyle(
                             fontSize: AppFontSize.caption,
-                            color: Colors.orange,
+                            color: AppKendoColors.orange,
                           ),
                         )
                       : null,
@@ -605,7 +614,7 @@ class _SetupMatchFormatScreenState
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
-        color: Colors.transparent,
+        color: AppKendoColors.transparent,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
@@ -721,7 +730,7 @@ class _SetupMatchFormatScreenState
                 style: TextStyle(
                   fontSize: AppFontSize.heroLarge,
                   fontWeight: AppFontWeight.bold,
-                  color: Colors.white,
+                  color: AppKendoColors.pureWhite,
                   letterSpacing: 1.0,
                 ),
               ),
@@ -730,15 +739,19 @@ class _SetupMatchFormatScreenState
                 '魔法のウィザードに従って、\n2つのステップで条件を設定しましょう',
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: AppKendoColors.pureWhite.withValues(alpha: 0.9),
                   fontWeight: AppFontWeight.medium,
                 ),
               ),
               const SizedBox(height: 20),
               LinearProgressIndicator(
                 value: (_currentPage + 1) / 2,
-                backgroundColor: Colors.white.withValues(alpha: 0.3),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                backgroundColor: AppKendoColors.pureWhite.withValues(
+                  alpha: 0.3,
+                ),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppKendoColors.pureWhite,
+                ),
                 minHeight: 6,
                 borderRadius: AppRadius.tiny,
               ),
@@ -793,7 +806,9 @@ class _SetupMatchFormatScreenState
               style: TextStyle(
                 fontWeight: AppFontWeight.semiBold,
                 fontSize: AppFontSize.bodySmall,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                color: isDark
+                    ? AppKendoColors.grey.shade400
+                    : AppKendoColors.grey.shade600,
               ),
             ),
           ),
@@ -807,12 +822,12 @@ class _SetupMatchFormatScreenState
                 ),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
+                      ? AppKendoColors.pureWhite.withValues(alpha: 0.08)
                       : _themeColors.softAccent,
                   borderRadius: AppRadius.small,
                   border: Border.all(
                     color: isDark
-                        ? Colors.white12
+                        ? AppKendoColors.pureWhite.withValues(alpha: 0.12)
                         : _themeColors.primaryAccent.withValues(alpha: 0.15),
                   ),
                 ),
@@ -821,7 +836,9 @@ class _SetupMatchFormatScreenState
                   style: TextStyle(
                     fontSize: AppFontSize.bodySmall,
                     fontWeight: AppFontWeight.bold,
-                    color: isDark ? Colors.white : _themeColors.textColor,
+                    color: isDark
+                        ? AppKendoColors.pureWhite
+                        : _themeColors.textColor,
                   ),
                 ),
               ),
@@ -1071,12 +1088,12 @@ class _SetupMatchFormatScreenState
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
           title: '対戦フォーマット設定',
           backgroundColor:
               ref.watch(settingsProvider.select((s) => s.enableLiquidGlass))
-              ? Colors.transparent
+              ? AppKendoColors.transparent
               : _themeColors.cardBackground,
           foregroundColor: _themeColors.textColor,
           actions: const [
@@ -1288,12 +1305,12 @@ class _SetupMatchFormatScreenState
                       // ★ 修正：赤系の警告色を完全に廃止し、iOS風の上品なEmpty State（空状態）デザインへ
                       color: isDark
                           ? const Color(0xFF2C2C2E)
-                          : Colors.grey.shade50,
+                          : AppKendoColors.grey.shade50,
                       borderRadius: AppRadius.large,
                       border: Border.all(
                         color: isDark
                             ? const Color(0xFF38383A)
-                            : Colors.grey.shade200,
+                            : AppKendoColors.grey.shade200,
                         width: 1.5,
                       ),
                     ),
@@ -1302,8 +1319,8 @@ class _SetupMatchFormatScreenState
                         Icon(
                           Icons.group_off_outlined,
                           color: isDark
-                              ? Colors.grey.shade500
-                              : Colors.grey.shade400,
+                              ? AppKendoColors.grey.shade500
+                              : AppKendoColors.grey.shade400,
                           size: 40,
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -1312,8 +1329,8 @@ class _SetupMatchFormatScreenState
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: isDark
-                                ? Colors.grey.shade300
-                                : Colors.grey.shade600,
+                                ? AppKendoColors.grey.shade300
+                                : AppKendoColors.grey.shade600,
                             fontSize: AppFontSize.bodySmall,
                             fontWeight: AppFontWeight.bold,
                             height: 1.5,
@@ -1340,7 +1357,7 @@ class _SetupMatchFormatScreenState
                               ? _themeColors.primaryAccent
                               : (isDark
                                     ? const Color(0xFF38383A)
-                                    : Colors.grey.shade200),
+                                    : AppKendoColors.grey.shade200),
                           width: isSelected ? 2 : 1.5,
                         ),
                       ),
@@ -1363,14 +1380,14 @@ class _SetupMatchFormatScreenState
                                   ? _themeColors.softAccent
                                   : (isDark
                                         ? const Color(0xFF2C2C2E)
-                                        : Colors.grey.shade100),
+                                        : AppKendoColors.grey.shade100),
                               child: Icon(
                                 Icons.shield,
                                 color: isSelected
                                     ? _themeColors.primaryAccent
                                     : (isDark
-                                          ? Colors.grey.shade600
-                                          : Colors.grey.shade400),
+                                          ? AppKendoColors.grey.shade600
+                                          : AppKendoColors.grey.shade400),
                                 size: 24,
                               ),
                             ),
@@ -1397,8 +1414,8 @@ class _SetupMatchFormatScreenState
                                           alpha: 0.8,
                                         )
                                       : (isDark
-                                            ? Colors.grey.shade500
-                                            : Colors.grey.shade600),
+                                            ? AppKendoColors.grey.shade500
+                                            : AppKendoColors.grey.shade600),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1411,8 +1428,8 @@ class _SetupMatchFormatScreenState
                               color: isSelected
                                   ? _themeColors.primaryAccent
                                   : (isDark
-                                        ? Colors.grey.shade600
-                                        : Colors.grey.shade300),
+                                        ? AppKendoColors.grey.shade600
+                                        : AppKendoColors.grey.shade300),
                               size: 28,
                             ),
                           ),
@@ -1445,7 +1462,7 @@ class _SetupMatchFormatScreenState
                                     style: OutlinedButton.styleFrom(
                                       backgroundColor: isDark
                                           ? const Color(0xFF1C1C1E)
-                                          : Colors.white,
+                                          : AppKendoColors.pureWhite,
                                       side: BorderSide(
                                         color: _themeColors.primaryAccent,
                                         width: 1.5,
@@ -1509,7 +1526,9 @@ class _SetupMatchFormatScreenState
       return 'あり ($extTimeStr / $extCountStr)';
     }
 
-    final headerColor = isAdvanced ? Colors.teal : _themeColors.primaryAccent;
+    final headerColor = isAdvanced
+        ? AppKendoColors.teal
+        : _themeColors.primaryAccent;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1534,7 +1553,7 @@ class _SetupMatchFormatScreenState
               style: const TextStyle(
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.bodySmall,
-                color: Colors.grey,
+                color: AppKendoColors.grey,
               ),
             ),
           ),
@@ -1600,7 +1619,7 @@ class _SetupMatchFormatScreenState
         _buildDynamicSectionBox(
           title: '現在適用中のルール: $displayRuleName',
           icon: isAdvanced ? Icons.stars : Icons.gavel,
-          color: isAdvanced ? Colors.teal : _themeColors.primaryAccent,
+          color: isAdvanced ? AppKendoColors.teal : _themeColors.primaryAccent,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1682,7 +1701,7 @@ class _SetupMatchFormatScreenState
 
               // ─── リーグ戦設定 ───
               if (_matchType.contains('リーグ')) ...[
-                _buildSectionHeader('リーグ戦設定', Colors.orange),
+                _buildSectionHeader('リーグ戦設定', AppKendoColors.orange),
                 _buildReadOnlyRuleRow(
                   '勝ち点',
                   '勝: ${double.tryParse(_winPointController.text) ?? 0}点 / '
@@ -1747,7 +1766,7 @@ class _SetupMatchFormatScreenState
                       style: TextStyle(
                         fontWeight: AppFontWeight.bold,
                         fontSize: AppFontSize.bodySmall,
-                        color: Colors.grey,
+                        color: AppKendoColors.grey,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -1761,19 +1780,21 @@ class _SetupMatchFormatScreenState
                                   ? _themeColors.primaryAccent
                                   : (isDark
                                         ? const Color(0xFF2C2C2E)
-                                        : Colors.grey.shade100),
+                                        : AppKendoColors.grey.shade100),
                               foregroundColor: !isAdvanced
-                                  ? Colors.white
-                                  : (isDark ? Colors.white60 : Colors.black87),
+                                  ? AppKendoColors.pureWhite
+                                  : (isDark
+                                        ? AppKendoColors.white60
+                                        : AppKendoColors.pureBlack),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: AppRadius.medium,
                                 side: BorderSide(
                                   color: !isAdvanced
-                                      ? Colors.transparent
+                                      ? AppKendoColors.transparent
                                       : (isDark
                                             ? const Color(0xFF38383A)
-                                            : Colors.grey.shade300),
+                                            : AppKendoColors.grey.shade300),
                                 ),
                               ),
                             ),
@@ -1791,22 +1812,24 @@ class _SetupMatchFormatScreenState
                             onPressed: () => _setManualRoundType('advanced'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isAdvanced
-                                  ? Colors.teal
+                                  ? AppKendoColors.teal
                                   : (isDark
                                         ? const Color(0xFF2C2C2E)
-                                        : Colors.grey.shade100),
+                                        : AppKendoColors.grey.shade100),
                               foregroundColor: isAdvanced
-                                  ? Colors.white
-                                  : (isDark ? Colors.white60 : Colors.black87),
+                                  ? AppKendoColors.pureWhite
+                                  : (isDark
+                                        ? AppKendoColors.white60
+                                        : AppKendoColors.pureBlack),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: AppRadius.medium,
                                 side: BorderSide(
                                   color: isAdvanced
-                                      ? Colors.transparent
+                                      ? AppKendoColors.transparent
                                       : (isDark
                                             ? const Color(0xFF38383A)
-                                            : Colors.grey.shade300),
+                                            : AppKendoColors.grey.shade300),
                                 ),
                               ),
                             ),
@@ -1843,7 +1866,9 @@ class _SetupMatchFormatScreenState
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                color: AppKendoColors.pureBlack.withValues(
+                  alpha: isDark ? 0.2 : 0.04,
+                ),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -1963,7 +1988,7 @@ class _SetupMatchFormatScreenState
                         fontWeight: AppFontWeight.bold,
                         color: isSelected
                             ? (isDark
-                                  ? Colors.white
+                                  ? AppKendoColors.pureWhite
                                   : _themeColors.primaryAccent)
                             : (isDark
                                   ? _themeColors.textColor
@@ -2013,7 +2038,7 @@ class _SetupMatchFormatScreenState
                             fontWeight: AppFontWeight.bold,
                             color: isSelected
                                 ? (isDark
-                                      ? Colors.white
+                                      ? AppKendoColors.pureWhite
                                       : _themeColors.primaryAccent)
                                 : (isDark
                                       ? _themeColors.textColor
@@ -2059,11 +2084,11 @@ class _SetupMatchFormatScreenState
 
     // iOS Native: ボトムバーの色と区切り線
     final bottomColor = enableLiquidGlass
-        ? Colors.transparent
-        : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+        ? AppKendoColors.transparent
+        : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite);
     final borderColor = enableLiquidGlass
-        ? Colors.transparent
-        : (isDark ? const Color(0xFF38383A) : Colors.grey.shade300);
+        ? AppKendoColors.transparent
+        : (isDark ? const Color(0xFF38383A) : AppKendoColors.grey.shade300);
 
     return Container(
       padding: EdgeInsets.only(

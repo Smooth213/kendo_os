@@ -72,7 +72,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
                 asyncMatches.valueOrNull!.isEmpty)) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
-            backgroundColor: isDark ? Colors.black : Colors.white,
+            backgroundColor: isDark
+                ? AppKendoColors.pureBlack
+                : AppKendoColors.pureWhite,
             appBar: const AppHeader(title: 'スコアボード'),
             body: const Center(child: CircularProgressIndicator()),
           );
@@ -111,13 +113,17 @@ class TeamScoreboardScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
-    final headerColor = isDark ? Colors.white : Colors.indigo.shade900;
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
+    final headerColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.indigo.shade900;
+    final borderColor = isDark
+        ? const Color(0xFF38383A)
+        : AppKendoColors.grey.shade200;
 
     if (teamMatches.isEmpty) {
       return LiquidBackground(
         child: Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppKendoColors.transparent,
           appBar: AppHeader(
             leading: IconButton(
               icon: Icon(
@@ -134,7 +140,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
               },
             ),
             title: 'スコアボード',
-            backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
+            backgroundColor: enableLiquidGlass
+                ? AppKendoColors.transparent
+                : cardColor,
             elevation: 0,
           ),
           body: Center(
@@ -166,7 +174,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
@@ -182,7 +190,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
             },
           ),
           title: '団体戦 スコアボード',
-          backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
+          backgroundColor: enableLiquidGlass
+              ? AppKendoColors.transparent
+              : cardColor,
           elevation: 0,
         ),
         body: SingleChildScrollView(
@@ -203,13 +213,13 @@ class TeamScoreboardScreen extends ConsumerWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? Colors.indigo.shade900.withValues(alpha: 0.2)
-                        : Colors.indigo.shade50,
+                        ? AppKendoColors.indigo.shade900.withValues(alpha: 0.2)
+                        : AppKendoColors.indigo.shade50,
                     borderRadius: AppRadius.medium,
                     border: Border.all(
                       color: isDark
-                          ? Colors.indigo.shade800
-                          : Colors.indigo.shade100,
+                          ? AppKendoColors.indigo.shade800
+                          : AppKendoColors.indigo.shade100,
                     ),
                   ),
                   child: Row(
@@ -221,8 +231,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                             fontSize: AppFontSize.bodyMedium,
                             fontWeight: AppFontWeight.bold,
                             color: isDark
-                                ? Colors.indigo.shade100
-                                : Colors.indigo.shade900,
+                                ? AppKendoColors.indigo.shade100
+                                : AppKendoColors.indigo.shade900,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -293,8 +303,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
                             top: 40,
                             child: Container(
                               color: isDark
-                                  ? Colors.black.withValues(alpha: 0.3)
-                                  : Colors.white.withValues(alpha: 0.6),
+                                  ? AppKendoColors.pureBlack.withValues(
+                                      alpha: 0.3,
+                                    )
+                                  : AppKendoColors.pureWhite.withValues(
+                                      alpha: 0.6,
+                                    ),
                               child: Center(
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
@@ -303,17 +317,16 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                   ),
                                   decoration: BoxDecoration(
                                     color: isDark
-                                        ? Colors.black87
-                                        : Colors.white,
+                                        ? AppKendoColors.pureBlack
+                                        : AppKendoColors.pureWhite,
                                     borderRadius: AppRadius.small,
                                     border: Border.all(
                                       color: context.appColors.separatorColor,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.1,
-                                        ),
+                                        color: AppKendoColors.pureBlack
+                                            .withValues(alpha: 0.1),
                                         blurRadius: 4,
                                       ),
                                     ],
@@ -325,8 +338,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                       fontSize: AppFontSize.bodySmall,
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
-                                          ? Colors.grey.shade300
-                                          : Colors.grey.shade700,
+                                          ? AppKendoColors.grey.shade300
+                                          : AppKendoColors.grey.shade700,
                                     ),
                                   ),
                                 ),
@@ -398,11 +411,13 @@ class TeamScoreboardScreen extends ConsumerWidget {
                         showAppDialog(
                           context: context,
                           barrierDismissible: false,
-                          barrierColor: Colors.black.withValues(alpha: 0.4),
+                          barrierColor: AppKendoColors.pureBlack.withValues(
+                            alpha: 0.4,
+                          ),
                           builder: (ctx) => Dialog(
                             backgroundColor: isDark
                                 ? const Color(0xFF2C2C2E)
-                                : Colors.white,
+                                : AppKendoColors.pureWhite,
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.round,
                             ),
@@ -422,14 +437,14 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                       AppSpacing.lg,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.green.withValues(
+                                      color: AppKendoColors.green.withValues(
                                         alpha: 0.1,
                                       ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
                                       Icons.check,
-                                      color: Colors.green,
+                                      color: AppKendoColors.green,
                                       size: 36,
                                     ),
                                   ),
@@ -448,8 +463,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                     style: TextStyle(
                                       fontSize: AppFontSize.body,
                                       color: isDark
-                                          ? Colors.grey.shade400
-                                          : Colors.grey.shade500,
+                                          ? AppKendoColors.grey.shade400
+                                          : AppKendoColors.grey.shade500,
                                     ),
                                   ),
                                 ],
@@ -465,7 +480,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                         context.push('/match/$nextMatchId'); // 試合入力画面へ自動遷移
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppKendoColors.red,
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.lg,
                         ),
@@ -483,8 +498,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
 
   // ★ 修正：ヘッダーのチーム名もサイズアップ
   TableRow _buildHeaderRow(String r, String w, bool isDark) {
-    final headerBg = isDark ? const Color(0xFF2C2C2E) : Colors.indigo.shade50;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final headerBg = isDark
+        ? const Color(0xFF2C2C2E)
+        : AppKendoColors.indigo.shade50;
+    final textColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.pureBlack;
     return TableRow(
       decoration: BoxDecoration(color: headerBg),
       children: [
@@ -504,13 +523,17 @@ class TeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '白',
           isH: true,
-          color: isDark ? Colors.grey.shade300 : Colors.blueGrey.shade700,
+          color: isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.blueGrey.shade700,
           fs: 14,
         ),
         _cell(
           w,
           isH: true,
-          color: isDark ? Colors.grey.shade300 : Colors.blueGrey.shade700,
+          color: isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.blueGrey.shade700,
           fs: 16,
         ), // 13→16
       ],
@@ -525,8 +548,10 @@ class TeamScoreboardScreen extends ConsumerWidget {
   ) {
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : Colors.grey.shade600;
-    final textColor = isDark ? Colors.white : Colors.black87;
+        : AppKendoColors.grey.shade600;
+    final textColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.pureBlack;
 
     if (rawName.contains('欠員')) {
       return _cell(
@@ -601,7 +626,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
         : AppKendoColors.hansokuRed;
     final matchTypeColor = isDaihyo
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.grey.shade300 : Colors.grey.shade800);
+        : (isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.grey.shade800);
 
     return TableRow(
       decoration: isDaihyo ? BoxDecoration(color: daihyoBgColor) : null,
@@ -650,7 +677,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
   ) {
     final color = isRed
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade700);
+        : (isDark
+              ? AppKendoColors.grey.shade300
+              : AppKendoColors.blueGrey.shade700);
 
     final isFusen = pts.any((p) => p.mark == '◯');
 
@@ -804,7 +833,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
   // ★ Phase 7: UI内での勝敗計算を削除し、引数を Result オブジェクトに統一
   TableRow _buildTotalRow(TeamMatchResult result, bool isDark) {
     final bg = isDark ? const Color(0xFF3A2E12) : AppKendoColors.ipponGold;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final textColor = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.pureBlack;
     final isTeamTie = (result.teamWinner == 'draw');
 
     return TableRow(
@@ -846,7 +877,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                       result.teamWinner == 'red' ? '勝' : '負',
                       isH: true,
                       color: result.teamWinner == 'red'
-                          ? Colors.red
+                          ? AppKendoColors.red
                           : textColor,
                       fs: 20,
                     ),
@@ -866,7 +897,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                       result.teamWinner == 'white' ? '勝' : '負',
                       isH: true,
                       color: result.teamWinner == 'white'
-                          ? Colors.red
+                          ? AppKendoColors.red
                           : textColor,
                       fs: 20,
                     )
@@ -878,7 +909,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '${result.whitePoints} / ${result.whiteWins}',
           isH: true,
-          color: isDark ? Colors.grey.shade400 : Colors.blueGrey.shade800,
+          color: isDark
+              ? AppKendoColors.grey.shade400
+              : AppKendoColors.blueGrey.shade800,
           fs: 18,
         ),
       ],
