@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -88,7 +90,7 @@ class PointBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isRed
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.blue.shade400 : Colors.blue.shade700);
+        : (context.appColors.infoColor);
 
     return SizedBox(
       width: 36,

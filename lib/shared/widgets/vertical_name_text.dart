@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 class VerticalNameText extends StatelessWidget {
@@ -18,7 +20,7 @@ class VerticalNameText extends StatelessWidget {
     final style = TextStyle(
       fontSize: AppFontSize.caption,
       fontWeight: AppFontWeight.bold,
-      color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
+      color: context.appColors.subTextColor,
     );
 
     Widget nameCol = Column(
@@ -47,7 +49,7 @@ class VerticalNameText extends StatelessWidget {
             initial,
             style: style.copyWith(
               fontSize: AppFontSize.micro,
-              color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
+              color: context.appColors.subTextColor,
             ),
           ),
         ),

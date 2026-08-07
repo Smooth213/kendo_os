@@ -175,9 +175,7 @@ class _MultiPlayerSelectInputState
                         hintText: '名前で検索、または出稽古を追加',
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: isDark
-                            ? Colors.grey.shade900
-                            : Colors.grey.shade100,
+                        fillColor: context.appColors.inputBackground,
                         border: const OutlineInputBorder(
                           borderRadius: AppRadius.small,
                           borderSide: BorderSide.none,
@@ -368,7 +366,7 @@ class _MultiPlayerSelectInputState
         labelText: widget.label,
         hintText: 'タップしてメンバーを選択...',
         filled: true,
-        fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
+        fillColor: context.appColors.inputBackground,
         floatingLabelStyle: TextStyle(color: _accentColor),
         prefixIcon: Icon(Icons.group_add, color: _accentColor),
         suffixIcon: const Icon(Icons.touch_app),

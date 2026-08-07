@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -75,7 +77,7 @@ class GlassButton extends ConsumerWidget {
 
     // 文字色: Liquid Glass 無効時は白文字
     final textColor = enableLiquidGlass
-        ? (isDark ? Colors.white : Colors.black87)
+        ? (context.appColors.textColor)
         : Colors.white;
 
     // アイコンの色はベースカラーから少し明度を調整して視認性を高める

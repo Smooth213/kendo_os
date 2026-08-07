@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
@@ -37,10 +39,8 @@ class TimerWidget extends ConsumerWidget {
 
     // iOS Native カラー
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
-    final inputBgColor = isDark
-        ? const Color(0xFF2C2C2E)
-        : Colors.grey.shade100;
+    final textColor = context.appColors.textColor;
+    final inputBgColor = context.appColors.inputBackground;
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
 
     showAppDialog(
@@ -187,7 +187,7 @@ class TimerWidget extends ConsumerWidget {
         : (isDark ? const Color(0xFF38383A) : Colors.indigo.shade200);
     final timerTextColor = isRunning
         ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? Colors.white : Colors.black87);
+        : (context.appColors.textColor);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque, // ★ 修正：透明な余白部分のタップ漏れを完全に防ぐ魔法のコード

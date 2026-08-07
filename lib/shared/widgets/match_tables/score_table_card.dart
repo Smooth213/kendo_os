@@ -149,9 +149,7 @@ class ScoreTableCard extends StatelessWidget {
                                       ? (isDark
                                             ? AppKendoColors.hansokuRed
                                             : AppKendoColors.hansokuRed)
-                                      : (isDark
-                                            ? Colors.grey.shade300
-                                            : Colors.grey.shade800),
+                                      : (context.appColors.separatorColor),
                                 ),
                               ),
                             ),
@@ -268,9 +266,7 @@ class ScoreTableCard extends StatelessWidget {
                       color: isDark ? Colors.black87 : Colors.white,
                       borderRadius: AppRadius.small,
                       border: Border.all(
-                        color: isDark
-                            ? Colors.grey.shade800
-                            : Colors.grey.shade300,
+                        color: context.appColors.separatorColor,
                       ),
                       boxShadow: [
                         BoxShadow(

@@ -44,7 +44,6 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
   Future<void> _showPlayerSelectSheet() async {
     final masterPlayers = ref.read(bunaiksenPlayerMasterProvider).value ?? [];
     final guestPlayers = ref.watch(bunaiksenGuestProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     String searchText = '';
     String selectedFilter = 'すべて';
@@ -142,9 +141,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                         hintText: '名前で検索、または出稽古を追加',
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: isDark
-                            ? Colors.grey.shade900
-                            : Colors.grey.shade100,
+                        fillColor: context.appColors.inputBackground,
                         border: const OutlineInputBorder(
                           borderRadius: AppRadius.small,
                           borderSide: BorderSide.none,

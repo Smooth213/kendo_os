@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -114,8 +116,8 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
         final cardBgColor = isDark
             ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
             : Colors.white.withValues(alpha: 0.6);
-        final textColor = isDark ? Colors.white : const Color(0xFF1A237E);
-        final subTextColor = isDark ? Colors.white70 : Colors.black87;
+        final textColor = context.appColors.textColor;
+        final subTextColor = context.appColors.subTextColor;
         final borderColor = isDark
             ? Colors.white.withValues(alpha: 0.2)
             : Colors.white.withValues(alpha: 0.7);
@@ -235,8 +237,8 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     final cardBgColor = isDark
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
         : Colors.white.withValues(alpha: 0.6);
-    final textColor = isDark ? Colors.white : const Color(0xFF1A237E);
-    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final textColor = context.appColors.textColor;
+    final subTextColor = context.appColors.subTextColor;
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.2)
         : Colors.white.withValues(alpha: 0.7);
