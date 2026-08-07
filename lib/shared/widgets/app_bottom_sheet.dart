@@ -94,7 +94,7 @@ class AppBottomSheetContent extends StatelessWidget {
                         size: 20,
                         color: themeColors.primaryAccent,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                     ],
                     Expanded(
                       child: Text(

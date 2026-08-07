@@ -13,6 +13,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 class TeamPointDisplay {
   final String mark;
@@ -68,9 +69,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
             backgroundColor: isDark ? Colors.black : Colors.white,
-            appBar: AppBar(
-              title: const Text('スコアボード', style: TextStyle(fontSize: 16)),
-            ),
+            appBar: const AppHeader(title: 'スコアボード'),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -112,7 +111,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
       return LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
+          appBar: AppHeader(
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back_ios_new,
@@ -127,14 +126,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                 }
               },
             ),
-            title: Text(
-              'スコアボード',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: headerColor,
-                fontSize: 16,
-              ),
-            ),
+            title: 'スコアボード',
             backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
             elevation: 0,
           ),
@@ -168,7 +160,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
+        appBar: AppHeader(
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
             onPressed: () {
@@ -182,14 +174,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
               }
             },
           ),
-          title: Text(
-            '団体戦 スコアボード',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: headerColor,
-              fontSize: 16,
-            ),
-          ),
+          title: '団体戦 スコアボード',
           backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
           elevation: 0,
         ),

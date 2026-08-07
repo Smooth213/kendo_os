@@ -251,15 +251,8 @@ class TournamentHeaderCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: cardColor,
-            title: Text(
-              '大会情報の編集',
-              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+          return AppDialog(
+            title: '大会情報の編集',
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -405,19 +398,10 @@ class TournamentHeaderCard extends ConsumerWidget {
   ) async {
     final confirm = await showAppDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red),
-            SizedBox(width: 8),
-            Text(
-              '大会の削除',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
+      builder: (ctx) => AppDialog(
+        titleIcon: Icons.warning_amber_rounded,
+        iconColor: Colors.red,
+        title: '大会削除の確認',
         content: Text(
           'この大会を削除しますか？\n（取り消しはできません）',
           style: TextStyle(color: textColor, height: 1.5),

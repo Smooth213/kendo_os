@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/vertical_name_text.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
@@ -58,11 +59,13 @@ class LeagueGridCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (teams.isEmpty) return const SizedBox();
 
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade400;
-    final headerColor = isDark
-        ? const Color(0xFF2C2C2E)
-        : Colors.indigo.shade50;
-    final blankColor = isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade200;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
+    final borderColor = themeColors.separatorColor;
+    final headerColor = themeColors.softAccent;
+    final blankColor = themeColors.cardBackground;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -100,11 +103,11 @@ class LeagueGridCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                _buildHeaderCell('勝数', isDark),
-                _buildHeaderCell('勝者', isDark),
-                _buildHeaderCell('本数', isDark),
-                if (hasMatchPoints) _buildHeaderCell('勝点', isDark),
-                _buildHeaderCell('順位', isDark),
+                _buildHeaderCell(context, '勝数', isDark),
+                _buildHeaderCell(context, '勝者', isDark),
+                _buildHeaderCell(context, '本数', isDark),
+                if (hasMatchPoints) _buildHeaderCell(context, '勝点', isDark),
+                _buildHeaderCell(context, '順位', isDark),
               ],
             ),
             ...teams.map((rowTeam) {
@@ -121,7 +124,7 @@ class LeagueGridCard extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 11,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: themeColors.textColor,
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 2,
@@ -156,7 +159,7 @@ class LeagueGridCard extends StatelessWidget {
                           : Colors.indigo.shade700;
                     }
 
-                    final textColor = isDark ? Colors.white : Colors.black87;
+                    final textColor = themeColors.textColor;
 
                     Widget cellContent = Container(
                       height: 65,
@@ -245,12 +248,12 @@ class LeagueGridCard extends StatelessWidget {
 
                     return cellContent;
                   }),
-                  _buildStatCell(rowTeam.matchWins, isDark),
-                  _buildStatCell(rowTeam.individualWinners, isDark),
-                  _buildStatCell(rowTeam.totalPoints, isDark),
+                  _buildStatCell(context, rowTeam.matchWins, isDark),
+                  _buildStatCell(context, rowTeam.individualWinners, isDark),
+                  _buildStatCell(context, rowTeam.totalPoints, isDark),
                   if (hasMatchPoints)
-                    _buildStatCell(rowTeam.customPoints ?? '', isDark),
-                  _buildStatCell(rowTeam.rank, isDark, isRank: true),
+                    _buildStatCell(context, rowTeam.customPoints ?? '', isDark),
+                  _buildStatCell(context, rowTeam.rank, isDark, isRank: true),
                 ],
               );
             }),
@@ -260,22 +263,32 @@ class LeagueGridCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderCell(String text, bool isDark) {
+  Widget _buildHeaderCell(BuildContext context, String text, bool isDark) {
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Text(
           text,
-          style: TextStyle(
-            fontSize: 10,
-            color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 10, color: themeColors.subTextColor),
         ),
       ),
     );
   }
 
-  Widget _buildStatCell(String text, bool isDark, {bool isRank = false}) {
+  Widget _buildStatCell(
+    BuildContext context,
+    String text,
+    bool isDark, {
+    bool isRank = false,
+  }) {
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
     return Container(
       height: 65,
       alignment: Alignment.center,
@@ -289,9 +302,7 @@ class LeagueGridCard extends StatelessWidget {
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: isRank ? 16 : 13,
-          color: isRank
-              ? Colors.orange.shade800
-              : (isDark ? Colors.white : Colors.black87),
+          color: isRank ? Colors.orange.shade800 : themeColors.textColor,
         ),
       ),
     );

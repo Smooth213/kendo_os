@@ -23,6 +23,8 @@ import 'package:kendo_os/features/match/application/usecases/match_application_s
 // ★ 追加：マスタとチーム情報を参照するためのインポート
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
@@ -168,17 +170,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         ? match.whiteName.split(':').last.trim()
         : match.whiteName;
 
-    return await showDialog<String>(
+    return await showAppDialog<String>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          '勝敗の判定',
-          style: TextStyle(fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
+      builder: (ctx) => AppDialog(
+        title: '勝敗の判定',
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -285,20 +281,13 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   // ★ Phase 6: 危険操作ガード（確認ダイアログ）
   Future<bool> _showConfirmDialog(String title, String content) async {
     HapticFeedback.heavyImpact(); // 警告の意味を込めた強い振動
-    return await showDialog<bool>(
+    return await showAppDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.red,
-              ),
-            ),
+          builder: (ctx) => AppDialog(
+            titleIcon: Icons.warning_amber_rounded,
+            iconColor: Colors.red,
+            title: title,
             content: Text(content),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
@@ -457,13 +446,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         ).copyWith(padding: MediaQuery.of(context).padding.copyWith(top: 0)),
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            primary: true,
+          appBar: AppHeader(
             centerTitle: true,
-            // ★ 変更: 背景色を下部の「終了ボタン」と全く同じインディゴに設定
             backgroundColor: Colors.indigo.shade600,
-            iconTheme: const IconThemeData(color: Colors.white),
-            title: Column(
+            foregroundColor: Colors.white,
+            titleWidget: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
@@ -3742,22 +3729,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     MatchModel? nextCardMatch,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
+    showAppDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          '対戦終了',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.teal.shade300 : Colors.teal.shade800,
-          ),
-        ),
+      builder: (ctx) => AppDialog(
+        title: '対戦終了',
         content: const Text('対戦がすべて終了しました。\n次のアクションを選択してください。'),
-        actionsAlignment: MainAxisAlignment.center,
-        actionsOverflowDirection: VerticalDirection.down,
         actions: [
           // ★ 錬成会・申し合わせ時の爆速「次の対戦を設定」アクションボタン
           if (match.matchScene == 'renseikai' ||
@@ -4209,14 +4186,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final engine = KendoRuleEngine();
     final validEvents = engine.filterActiveEvents(match.events);
 
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        title: const Text(
-          '操作履歴と取り消し',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+      builder: (ctx) => AppDialog(
+        title: '操作履歴と取り消し',
         content: SizedBox(
           width: double.maxFinite,
           child: validEvents.isEmpty
@@ -4352,12 +4325,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       final streaks = ref.read(bunaiksenInfiniteStreakProvider);
       final winnerStreak = streaks[nextMatch.redName] ?? 0;
 
-      showDialog(
+      showAppDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext dialogContext) {
-          return AlertDialog(
-            title: const Text('無限稽古: 次の試合'),
+          return AppDialog(
+            title: '無限稽古: 次の試合',
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,

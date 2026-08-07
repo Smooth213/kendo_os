@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -51,13 +52,10 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       return LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
+          appBar: AppHeader(
             backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
             foregroundColor: headerTextColor,
-            title: const Text(
-              '成績一覧',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+            title: '成績一覧',
             elevation: 0,
             centerTitle: true,
           ),
@@ -78,13 +76,10 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       child: LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
+          appBar: AppHeader(
             backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
             foregroundColor: headerTextColor,
-            title: Text(
-              '${DateFormat('yyyy/MM/dd').format(viewDate)} 成績',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+            title: '${DateFormat('yyyy/MM/dd').format(viewDate)} 成績',
             elevation: 0,
             centerTitle: true,
             bottom: TabBar(

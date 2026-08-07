@@ -20,6 +20,7 @@ Future<T?> showAppDialog<T>({
 /// アプリ共通のダイアログ枠コンポーネント（統一 Radius: 16px, テーマ背景・ヘッダー・標準ボタン）
 class AppDialog extends StatelessWidget {
   final String? title;
+  final Widget? titleWidget;
   final IconData? titleIcon;
   final Color? iconColor;
   final Widget? content;
@@ -28,10 +29,13 @@ class AppDialog extends StatelessWidget {
   final Clip clipBehavior;
   final EdgeInsetsGeometry? padding;
   final double radius;
+  final Color? backgroundColor;
+  final ShapeBorder? shape;
 
   const AppDialog({
     super.key,
     this.title,
+    this.titleWidget,
     this.titleIcon,
     this.iconColor,
     this.content,
@@ -40,6 +44,8 @@ class AppDialog extends StatelessWidget {
     this.clipBehavior = Clip.none,
     this.padding,
     this.radius = AppRadius.largeValue,
+    this.backgroundColor,
+    this.shape,
   });
 
   @override
@@ -49,41 +55,61 @@ class AppDialog extends StatelessWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(radius),
-      ),
-      backgroundColor: themeColors.cardBackground,
-      surfaceTintColor: Colors.transparent,
-      clipBehavior: clipBehavior,
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-      contentPadding:
-          contentPadding ?? const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      title: title != null
-          ? Row(
-              children: [
-                if (titleIcon != null) ...[
-                  Icon(
-                    titleIcon,
-                    size: 22,
-                    color: iconColor ?? themeColors.primaryAccent,
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                Expanded(
-                  child: Text(
-                    title!,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: AppFontWeight.semiBold,
-                      color: themeColors.textColor,
+    final effectiveTitle =
+        titleWidget ??
+        (title != null
+            ? Row(
+                children: [
+                  if (titleIcon != null) ...[
+                    Icon(
+                      titleIcon,
+                      size: 22,
+                      color: iconColor ?? themeColors.primaryAccent,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                  ],
+                  Expanded(
+                    child: Text(
+                      title!,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: AppFontWeight.semiBold,
+                        color: themeColors.textColor,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            )
-          : null,
+                ],
+              )
+            : null);
+
+    return AlertDialog(
+      shape:
+          shape ??
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+      backgroundColor: backgroundColor ?? themeColors.cardBackground,
+      surfaceTintColor: Colors.transparent,
+      clipBehavior: clipBehavior,
+      titlePadding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.md,
+      ),
+      contentPadding:
+          contentPadding ??
+          const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
+      actionsPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
+      title: effectiveTitle,
       content: content,
       actions: actions,
     );

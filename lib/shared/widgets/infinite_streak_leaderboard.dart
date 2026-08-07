@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class InfiniteStreakLeaderboard extends ConsumerWidget {
   const InfiniteStreakLeaderboard({super.key});
@@ -9,11 +10,17 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final streaks = ref.watch(bunaiksenInfiniteStreakProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
     if (streaks.isEmpty || !streaks.values.any((v) => v > 0)) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.0),
-        child: Text('まだ連勝記録はありません', style: TextStyle(color: Colors.grey)),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
+          'まだ連勝記録はありません',
+          style: TextStyle(color: themeColors.hintColor),
+        ),
       );
     }
 
@@ -23,31 +30,30 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
     final top = sorted.where((e) => e.value > 0).take(3).toList();
 
     return Column(
-      children: top.map((e) {
-        final isTop = e.key == top.first.key && e.value > 0;
+      children: top.asMap().entries.map((entry) {
+        final index = entry.key;
+        final e = entry.value;
+        final isTop = index == 0;
+
         return ListTile(
           dense: true,
           contentPadding: EdgeInsets.zero,
           leading: Icon(
             Icons.military_tech,
-            color: isTop
-                ? Colors.amber
-                : (isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+            color: isTop ? Colors.amber : themeColors.subTextColor,
           ),
           title: Text(
             e.key,
             style: TextStyle(
               fontWeight: isTop ? FontWeight.bold : FontWeight.normal,
-              color: isDark ? Colors.white : Colors.black87,
+              color: themeColors.textColor,
             ),
           ),
           trailing: Text(
             '${e.value} 連勝',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: isTop
-                  ? Colors.red.shade600
-                  : (isDark ? Colors.grey.shade300 : Colors.black87),
+              color: isTop ? Colors.red.shade600 : themeColors.textColor,
               fontSize: 15,
             ),
           ),

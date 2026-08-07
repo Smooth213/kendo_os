@@ -22,6 +22,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 import '../components/bulk_rule_edit_sheet.dart';
 import '../components/home/match_edit_sheet.dart';
 
@@ -161,20 +162,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
+        appBar: AppHeader(
           backgroundColor: enableLiquidGlass
               ? Colors.transparent
               : themeColors.cardBackground,
           foregroundColor: isDark ? Colors.white : themeColors.primaryAccent,
-          // ★ 修正：タイトルはシンプルにテキストのみ表示
-          title: Text(
-            isToday ? '今日の部内戦' : '$dateDisplay の記録',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: themeColors.textColor,
-            ),
-          ),
+          title: isToday ? '今日の部内戦' : '$dateDisplay の記録',
           elevation: 0,
           centerTitle: true,
           actions: [

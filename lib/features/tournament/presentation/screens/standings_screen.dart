@@ -5,6 +5,7 @@ import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -85,7 +86,7 @@ class StandingsScreen extends ConsumerWidget {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
+        appBar: AppHeader(
           leading: IconButton(
             icon: Icon(
               Icons.arrow_back_ios_new,
@@ -94,13 +95,7 @@ class StandingsScreen extends ConsumerWidget {
             ),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text(
-            '成績・順位表',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: headerTextColor,
-            ),
-          ),
+          title: '成績・順位表',
           backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
           elevation: 0,
         ),

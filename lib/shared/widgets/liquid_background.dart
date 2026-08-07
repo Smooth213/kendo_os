@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import 'dart:math' as math;
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class LiquidBackground extends ConsumerStatefulWidget {
   final Widget child;
@@ -36,6 +37,9 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
   Widget build(BuildContext context) {
     final isEcoMode = ref.watch(isEcoModeProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
     if (isEcoMode) {
       // 🔋 エコモード時はアニメーションのTickerを完全に停止し、再描画処理コストを0にする
@@ -44,7 +48,7 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
       }
       return Stack(
         children: [
-          Container(color: isDark ? Colors.black : const Color(0xFFF2F2F7)),
+          Container(color: themeColors.scaffoldBackground),
           widget.child,
           // 🔋 エコモード表示インジケーター（タッチ操作を遮断しないように IgnorePointer で保護）
           Positioned(
@@ -58,8 +62,7 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: (isDark ? const Color(0xFF1C1C1E) : Colors.white)
-                        .withValues(alpha: 0.85),
+                    color: themeColors.cardBackground.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: Colors.green.withValues(alpha: 0.4),
@@ -81,7 +84,7 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                       Text(
                         'エコモード',
                         style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.black87,
+                          color: themeColors.textColor.withValues(alpha: 0.87),
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -125,9 +128,7 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
         return Stack(
           children: [
             // ベース背景色
-            Container(
-              color: isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF2F2F7),
-            ),
+            Container(color: themeColors.scaffoldBackground),
             // オーブ1: 左上 (テーマカラー: インディゴ)
             Positioned(
               top: -100 + dy1,

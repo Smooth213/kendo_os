@@ -17,6 +17,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
@@ -89,14 +90,10 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
       text: ((currentTime % 1) * 60).toInt().toString(),
     );
 
-    return showDialog<double>(
+    return showAppDialog<double>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        title: const Text(
-          '任意の試合時間',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+      builder: (ctx) => AppDialog(
+        title: '任意の試合時間',
         content: Row(
           children: [
             Expanded(

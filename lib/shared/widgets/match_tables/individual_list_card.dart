@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 class IndividualMatchItem {
@@ -57,11 +58,13 @@ class IndividualListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
-    final headerBgColor = isDark
-        ? const Color(0xFF2C2C2E)
-        : Colors.grey.shade50;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
+    final borderColor = themeColors.separatorColor;
+    final headerBgColor = themeColors.inputBackground;
+    final textColor = themeColors.textColor;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -80,10 +83,7 @@ class IndividualListCard extends StatelessWidget {
             width: double.infinity,
             child: Text(
               headerTitle,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
             ),
           ),
           ListView.separated(

@@ -14,6 +14,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 class OfficialPointDisplay {
   final String mark;
@@ -64,14 +65,10 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
       return LiquidBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
+          appBar: AppHeader(
             backgroundColor: enableLiquidGlass ? Colors.transparent : cardColor,
             foregroundColor: headerTextColor,
-            title: const Text(
-              '成績一覧 (観戦)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+            title: '成績一覧 (観戦)',
             elevation: 0,
             centerTitle: true,
             leading: GoRouter.of(context).canPop()
@@ -100,19 +97,12 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         child: LiquidBackground(
           child: Scaffold(
             backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
+            appBar: AppHeader(
               backgroundColor: enableLiquidGlass
                   ? Colors.transparent
                   : cardColor,
               foregroundColor: headerTextColor,
-              title: Text(
-                '$dateDisplay 成績 (観戦)',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
+              title: '$dateDisplay 成績 (観戦)',
               elevation: 0,
               centerTitle: true,
               leading: GoRouter.of(context).canPop()

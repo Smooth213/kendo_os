@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 // ============================================================================
 // 🛡️ DESIGN SYSTEM GOVERNANCE FORTRESS TEST
@@ -100,25 +102,18 @@ void main() {
       },
     );
 
-    test('4. AppBar: 主要画面での生の AppBar 直書きが 0 件であり AppHeader に統一されていること', () {
-      final targetFiles = [
-        'lib/features/tournament/presentation/operate/screens/tournament_list_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/create_tournament_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/new_match_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/category_rules_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/program_viewer_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/setup_match_format_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/bunaiksen_setup_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/order_setup_screen.dart',
-      ];
-
+    test('4. AppBar: アプリ全体での生の AppBar 直書きが 0 件であり AppHeader に統一されていること', () {
       final violations = <String>[];
-      for (final path in targetFiles) {
-        final file = File(path);
-        if (!file.existsSync()) continue;
+
+      for (final file in dartFiles) {
+        // AppHeader の基盤定義ファイル自身は除外
+        if (file.path.contains('lib/shared/widgets/app_header.dart')) {
+          continue;
+        }
+
         final content = file.readAsStringSync();
         if (RegExp(r'\bAppBar\s*\(').hasMatch(content)) {
-          violations.add(path);
+          violations.add(file.path);
         }
       }
 
@@ -131,32 +126,49 @@ void main() {
       );
     });
 
-    test('5. AlertDialog: 主要画面での生の AlertDialog 直書きが 0 件であり AppDialog に統一されていること', () {
-      final targetFiles = [
-        'lib/features/tournament/presentation/operate/screens/home_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/program_management_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/order_setup_screen.dart',
-        'lib/features/tournament/presentation/operate/screens/category_rules_screen.dart',
-      ];
+    test(
+      '5. AlertDialog: アプリ全体での生の AlertDialog 直書きが 0 件であり AppDialog に統一されていること',
+      () {
+        final violations = <String>[];
 
-      final violations = <String>[];
-      for (final path in targetFiles) {
-        final file = File(path);
-        if (!file.existsSync()) continue;
-        final content = file.readAsStringSync();
-        if (RegExp(r'\bAlertDialog\s*\(').hasMatch(content)) {
-          violations.add(path);
+        for (final file in dartFiles) {
+          // AppDialog の基盤定義ファイルおよび共通ガードは除外
+          if (file.path.contains('lib/shared/widgets/app_dialog.dart') ||
+              file.path.contains(
+                'lib/shared/widgets/critical_action_guard.dart',
+              )) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+          if (RegExp(r'\bAlertDialog\s*\(').hasMatch(content)) {
+            violations.add(file.path);
+          }
         }
-      }
 
-      expect(
-        violations,
-        isEmpty,
-        reason:
-            '主要画面で生の AlertDialog インスタンス化が検出されました。AppDialog(...) を使用してください。\n'
-            '違反ファイル:\n${violations.join('\n')}',
-      );
-    });
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              '主要画面で生の AlertDialog インスタンス化が検出されました。AppDialog(...) を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '6. AppTokens: デザインシステム装飾トークン (AppRadius, AppSpacing, AppFontWeight) が整合していること',
+      () {
+        expect(AppRadius.smallValue, equals(8.0));
+        expect(AppRadius.mediumValue, equals(12.0));
+        expect(AppRadius.largeValue, equals(16.0));
+        expect(AppSpacing.sm, equals(8.0));
+        expect(AppSpacing.md, equals(12.0));
+        expect(AppSpacing.lg, equals(16.0));
+        expect(AppFontWeight.regular, equals(FontWeight.w400));
+        expect(AppFontWeight.semiBold, equals(FontWeight.w600));
+        expect(AppFontWeight.bold, equals(FontWeight.w700));
+      },
+    );
   });
 }

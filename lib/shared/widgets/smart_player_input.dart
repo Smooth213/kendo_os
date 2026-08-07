@@ -297,6 +297,9 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
     return TextField(
       controller: widget.controller,
@@ -305,20 +308,16 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
       decoration: InputDecoration(
         labelText: widget.label,
         filled: true,
-        fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
+        fillColor: themeColors.inputBackground,
         floatingLabelStyle: TextStyle(color: _accentColor),
         suffixIcon: const Icon(Icons.arrow_drop_down), // ボトムシートが開くことを示唆するアイコン
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
-          ),
+          borderSide: BorderSide(color: themeColors.separatorColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
-          ),
+          borderSide: BorderSide(color: themeColors.separatorColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

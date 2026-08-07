@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 class ViewerKachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;
@@ -16,7 +17,7 @@ class ViewerKachinukiScoreboardScreen extends ConsumerWidget {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
+        appBar: AppHeader(
           leading: IconButton(
             icon: Icon(
               Icons.arrow_back_ios_new,
@@ -25,15 +26,7 @@ class ViewerKachinukiScoreboardScreen extends ConsumerWidget {
             ),
             onPressed: () => context.canPop() ? context.pop() : context.go('/'),
           ),
-          title: Text(
-            '勝ち抜き戦 記録 (観戦)',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: headerTextColor,
-              fontSize: 16,
-            ),
-          ),
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          title: '勝ち抜き戦 記録 (観戦)',
           elevation: 0,
         ),
         // 既存の勝ち抜き戦スコアボードをそのまま再利用

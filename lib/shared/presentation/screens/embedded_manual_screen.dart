@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/infrastructure/services/manual_download_service.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 // ============================================================================
 // Phase 5 & 6: Embedded Documentation Viewer (Upgraded for Smart Print & Help Hub)
@@ -1065,7 +1066,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           (_selectedTabIndex == 2 && _forceMarkdownFallback && !isWideScreen)
           ? Drawer(child: buildIndexPane())
           : null,
-      appBar: AppBar(
+      appBar: AppHeader(
         leading:
             (_selectedTabIndex == 2 &&
                 (kIsWeb || (_isPdfDownloaded && !_forceMarkdownFallback)) &&
@@ -1088,7 +1089,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 tooltip: '検索を終了',
               )
             : null,
-        title: _buildAppBarTitle(),
+        titleWidget: _buildAppBarTitle(),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

@@ -23,6 +23,7 @@ import 'package:flutter_slidable/flutter_slidable.dart'; // ★ iPhoneライク�
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -1300,24 +1301,12 @@ class _MasterManagementScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark ? Colors.purpleAccent : Colors.purple.shade700;
 
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700),
-            const SizedBox(width: 8),
-            Text(
-              '道場名の登録が必要です',
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-          ],
-        ),
+      builder: (ctx) => AppDialog(
+        titleIcon: Icons.warning_amber_rounded,
+        iconColor: Colors.orange.shade700,
+        title: '道場名の登録が必要です',
         content: const Text(
           '選手を登録する前に、まずは道場名・学校名を登録してください。',
           style: TextStyle(height: 1.5),
@@ -1492,26 +1481,12 @@ class _MasterManagementScreenState
   }
 
   void _showPromoteConfirmDialog(BuildContext context, WidgetRef ref) async {
-    final confirm = await showDialog<bool>(
+    final confirm = await showAppDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ), // ★ フェーズ2：角丸の統一
-        title: Row(
-          children: [
-            Icon(Icons.school, color: Colors.purple.shade700),
-            const SizedBox(width: 8),
-            Text(
-              '新年度の一括進級',
-              style: TextStyle(
-                color: Colors.purple.shade800,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-          ],
-        ),
+      builder: (ctx) => AppDialog(
+        titleIcon: Icons.school,
+        iconColor: Colors.purple.shade700,
+        title: '新年度の一括進級',
         content: const Text(
           'すべての選手の学年を1つ繰り上げます。\n（例：小学6年 ➔ 中学1年）\n\n※この操作は取り消せません。本当によろしいですか？',
           style: TextStyle(height: 1.5),
@@ -1565,10 +1540,10 @@ class _MasterManagementScreenState
     WidgetRef ref,
     PlayerModel player,
   ) {
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('削除の確認'),
+      builder: (ctx) => AppDialog(
+        title: '削除の確認',
         content: const Text('選手データを完全に削除します。この操作は取り消せません。よろしいですか？'),
         actions: [
           TextButton(
@@ -1600,10 +1575,10 @@ class _MasterManagementScreenState
 
   // ★ 追加：選択された複数選手の一括削除処理
   void _confirmBulkDelete(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('一括削除の確認'),
+      builder: (ctx) => AppDialog(
+        title: '一括削除の確認',
         content: Text(
           '${_selectedPlayerIds.length}人の選手データを完全に削除します。この操作は取り消せません。よろしいですか？',
         ),
@@ -1843,22 +1818,12 @@ class _MasterManagementScreenState
 
   // ★ 追加：アプリを永続的に軽く保つための「データ管理・クリーンアップ」ダイアログ
   void _showDataCleanupDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ), // ★ フェーズ2：角丸の統一
-        title: Row(
-          children: [
-            Icon(Icons.cleaning_services, color: Colors.purple.shade700),
-            const SizedBox(width: 8),
-            const Text(
-              'データとストレージ管理',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ],
-        ),
+      builder: (ctx) => AppDialog(
+        titleIcon: Icons.cleaning_services,
+        iconColor: Colors.purple.shade700,
+        title: 'データとストレージ管理',
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1998,28 +1963,12 @@ class _MasterManagementScreenState
                 trailing: ElevatedButton(
                   onPressed: () async {
                     Navigator.pop(ctx);
-                    final confirm = await showDialog<bool>(
+                    final confirm = await showAppDialog<bool>(
                       context: context,
-                      builder: (c) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        title: const Row(
-                          children: [
-                            Icon(
-                              Icons.warning_amber_rounded,
-                              color: Colors.red,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              '警告',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                      builder: (c) => AppDialog(
+                        titleIcon: Icons.warning_amber_rounded,
+                        iconColor: Colors.red,
+                        title: '警告',
                         content: const Text(
                           '1年以上前の「大会」と「試合データ」をすべて完全に削除します。\nこの操作は元に戻せません。実行しますか？',
                           style: TextStyle(height: 1.5),

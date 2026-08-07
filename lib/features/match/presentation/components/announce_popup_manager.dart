@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 // 🛡️ アクティブなストリームサブスクリプションを追跡（画面再構築時の重複購読を完全に防止）
 final Map<String, StreamSubscription> _activeSubscriptions = {};
@@ -53,42 +54,19 @@ void _showAnnounceDialog(
   _shownAnnounceIds.add(announce.id);
   _isAnnounceDialogShowing = true;
 
-  showDialog(
+  showAppDialog(
     context: context,
     barrierDismissible: false,
     builder: (ctx) {
       final isDark = Theme.of(ctx).brightness == Brightness.dark;
       final bool isStaffOnlyNotice = target == 'staff';
 
-      return AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(
-              Icons.campaign,
-              color: Color(0xFFFF69B4), // 🌟 差し色：サクラピンク
-              size: 28,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                isStaffOnlyNotice
-                    ? '【スタッフ限定業務連絡】'
-                    : (announce.title.isNotEmpty
-                          ? announce.title
-                          : '大会本部からのお知らせ'),
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: isStaffOnlyNotice
-                      ? Colors.deepOrange
-                      : (isDark ? Colors.white : const Color(0xFF2C3E50)),
-                ),
-              ),
-            ),
-          ],
-        ),
+      return AppDialog(
+        titleIcon: Icons.campaign,
+        iconColor: const Color(0xFFFF69B4),
+        title: isStaffOnlyNotice
+            ? '【スタッフ限定業務連絡】'
+            : (announce.title.isNotEmpty ? announce.title : '大会本部からのお知らせ'),
         content: Text(
           announce.body,
           style: TextStyle(

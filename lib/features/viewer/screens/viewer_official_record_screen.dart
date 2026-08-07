@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -42,7 +43,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     return asyncProj.when(
       loading: () => Scaffold(
         backgroundColor: bgColor,
-        appBar: AppBar(
+        appBar: AppHeader(
           leading: IconButton(
             icon: Icon(
               Icons.arrow_back_ios_new,
@@ -51,22 +52,14 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
             ),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text(
-            screenTitle,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: headerTextColor,
-              fontSize: 16,
-            ),
-          ),
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          title: screenTitle,
           elevation: 0,
         ),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (err, stack) => Scaffold(
         backgroundColor: bgColor,
-        appBar: AppBar(
+        appBar: AppHeader(
           leading: IconButton(
             icon: Icon(
               Icons.arrow_back_ios_new,
@@ -75,15 +68,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
             ),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text(
-            screenTitle,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: headerTextColor,
-              fontSize: 16,
-            ),
-          ),
-          backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          title: screenTitle,
           elevation: 0,
         ),
         body: Center(child: Text('エラーが発生しました: $err')),
@@ -93,7 +78,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
           return LiquidBackground(
             child: Scaffold(
               backgroundColor: Colors.transparent,
-              appBar: AppBar(
+              appBar: AppHeader(
                 leading: IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios_new,
@@ -102,17 +87,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
-                title: Text(
-                  screenTitle,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: headerTextColor,
-                    fontSize: 16,
-                  ),
-                ),
-                backgroundColor: isDark
-                    ? const Color(0xFF1C1C1E)
-                    : Colors.white,
+                title: screenTitle,
                 elevation: 0,
               ),
               body: Center(
@@ -132,7 +107,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
           child: LiquidBackground(
             child: Scaffold(
               backgroundColor: Colors.transparent,
-              appBar: AppBar(
+              appBar: AppHeader(
                 leading: IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios_new,
@@ -141,17 +116,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
-                title: Text(
-                  screenTitle,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: headerTextColor,
-                    fontSize: 16,
-                  ),
-                ),
-                backgroundColor: isDark
-                    ? const Color(0xFF1C1C1E)
-                    : Colors.white,
+                title: screenTitle,
                 elevation: 0,
                 bottom: TabBar(
                   isScrollable: true,

@@ -24,6 +24,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart'; // ★ 追加
@@ -956,13 +957,13 @@ class MatchTimelineList extends ConsumerWidget {
                                                   onPressed: (context) async {
                                                     final confirm = await showDialog<bool>(
                                                       context: context,
-                                                      builder: (ctx) => AlertDialog(
+                                                      builder: (ctx) => AppDialog(
                                                         backgroundColor: isDark
                                                             ? const Color(
                                                                 0xFF1C1C1E,
                                                               )
                                                             : Colors.white,
-                                                        title: Text(
+                                                        titleWidget: Text(
                                                           '見出しの削除',
                                                           style: TextStyle(
                                                             fontWeight:
@@ -1171,7 +1172,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                         onPressed: (context) async {
                                                           final confirm = await showDialog<bool>(
                                                             context: context,
-                                                            builder: (ctx) => AlertDialog(
+                                                            builder: (ctx) => AppDialog(
                                                               backgroundColor:
                                                                   isDark
                                                                   ? const Color(
@@ -1179,7 +1180,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                     )
                                                                   : Colors
                                                                         .white,
-                                                              title: Text(
+                                                              titleWidget: Text(
                                                                 '試合グループの削除',
                                                                 style: TextStyle(
                                                                   fontWeight:
@@ -3782,13 +3783,13 @@ void _showTieBreakDialog(
   dynamic baseRule,
 ) {
   String? selectedMode;
-  showDialog(
+  showAppDialog(
     context: parentContext,
     builder: (ctx) => StatefulBuilder(
       builder: (context, setState) {
         if (selectedMode == null) {
-          return AlertDialog(
-            title: const Text(
+          return AppDialog(
+            titleWidget: const Text(
               '決定戦の形式を選択',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -3858,8 +3859,8 @@ void _showTieBreakDialog(
           );
         } else {
           final modeText = selectedMode == 'daihyo' ? '代表戦' : 'チーム再試合';
-          return AlertDialog(
-            title: Text(
+          return AppDialog(
+            titleWidget: Text(
               '$modeTextの作成',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -4076,7 +4077,7 @@ void _showSummaryInputDialog(
   final rTeam = normalMatches.first.redName.split(':').first.trim();
   final wTeam = normalMatches.first.whiteName.split(':').first.trim();
 
-  showDialog(
+  showAppDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (context, setState) {
@@ -4143,12 +4144,12 @@ void _showSummaryInputDialog(
           errorMsg = '白の本数が多すぎます';
         }
 
-        return AlertDialog(
+        return AppDialog(
           backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text(
+          titleWidget: const Text(
             '他コートの簡易入力',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
@@ -4255,13 +4256,13 @@ void _showSummaryInputDialog(
             ElevatedButton(
               onPressed: () async {
                 if (!isValid) {
-                  showDialog(
+                  showAppDialog(
                     context: context,
-                    builder: (dialogCtx) => AlertDialog(
+                    builder: (dialogCtx) => AppDialog(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      title: const Row(
+                      titleWidget: const Row(
                         children: [
                           Icon(
                             Icons.warning_amber_rounded,
@@ -4286,7 +4287,7 @@ void _showSummaryInputDialog(
                   return;
                 }
                 Navigator.pop(ctx);
-                showDialog(
+                showAppDialog(
                   context: context,
                   barrierDismissible: false,
                   builder: (_) =>
@@ -4522,19 +4523,19 @@ void showUnifiedAnnounceDialog(
   final bodyController = TextEditingController();
   String selectedTarget = 'all'; // デフォルトは全員向け
 
-  showDialog(
+  showAppDialog(
     context: context,
     builder: (dialogCtx) {
       return StatefulBuilder(
         builder: (context, setDialogState) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
 
-          return AlertDialog(
+          return AppDialog(
             backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: Row(
+            titleWidget: Row(
               children: [
                 const Icon(
                   Icons.add_alert,
@@ -4774,11 +4775,11 @@ void _showEditCommentDialog(
 ) {
   final controller = TextEditingController(text: comment.text);
   final isDark = Theme.of(context).brightness == Brightness.dark;
-  showDialog(
+  showAppDialog(
     context: context,
-    builder: (ctx) => AlertDialog(
+    builder: (ctx) => AppDialog(
       backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      title: Text(
+      titleWidget: Text(
         '見出し（コメント）の編集',
         style: TextStyle(
           fontWeight: FontWeight.bold,
@@ -4923,11 +4924,11 @@ Widget _buildInnerCommentWidget(
             onPressed: (context) async {
               final confirm = await showDialog<bool>(
                 context: context,
-                builder: (ctx) => AlertDialog(
+                builder: (ctx) => AppDialog(
                   backgroundColor: isDark
                       ? const Color(0xFF1C1C1E)
                       : Colors.white,
-                  title: Text(
+                  titleWidget: Text(
                     '内部見出しの削除',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -5546,11 +5547,11 @@ class MatchListTileCard extends ConsumerWidget {
             onPressed: (context) async {
               final confirm = await showDialog<bool>(
                 context: context,
-                builder: (ctx) => AlertDialog(
+                builder: (ctx) => AppDialog(
                   backgroundColor: isDark
                       ? const Color(0xFF1C1C1E)
                       : Colors.white,
-                  title: Text(
+                  titleWidget: Text(
                     '試合の削除',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -6138,8 +6139,8 @@ class _AddReservePlayerDialogState extends State<_AddReservePlayerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('控え選手の追加'),
+    return AppDialog(
+      titleWidget: const Text('控え選手の追加'),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(

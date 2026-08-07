@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/admin/providers/metrics_provider.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 class ObservabilityDashboardScreen extends ConsumerWidget {
   const ObservabilityDashboardScreen({super.key});
@@ -15,11 +16,8 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            '運用ダッシュボード (Observability)',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+        appBar: AppHeader(
+          title: '運用ダッシュボード (Observability)',
           actions: const [
             // ★ 異常時なので「復旧ガイド（トラブルシューティング）」へ直行
             ManualHelpButton(

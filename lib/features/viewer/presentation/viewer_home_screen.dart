@@ -23,6 +23,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
@@ -3190,14 +3191,10 @@ void _showShareDialog(
   final String shareUrl =
       'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
 
-  showDialog(
+  showAppDialog(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text(
-        '大会観戦リンク',
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
+    builder: (ctx) => AppDialog(
+      title: '大会観戦リンク',
       content: SizedBox(
         width: 300,
         child: Column(

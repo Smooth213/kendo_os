@@ -18,6 +18,8 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 // ★ Phase 10: 運営モードへの最速復帰用プロバイダーとロール定義のインポート
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 
@@ -138,17 +140,12 @@ class ViewerMatchScreen extends ConsumerWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final iconColor = isDark ? Colors.white : Colors.indigo.shade900;
-    final textColor = isDark ? Colors.white : Colors.black;
 
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(
-            '試合状況 (観戦)',
-            style: TextStyle(fontSize: 14, color: textColor),
-          ),
+        appBar: AppHeader(
+          title: '試合状況 (観戦)',
           leading: context.canPop()
               ? IconButton(
                   icon: Icon(Icons.arrow_back_ios, color: iconColor, size: 20),
@@ -279,14 +276,10 @@ class ViewerMatchScreen extends ConsumerWidget {
         ? 'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId'
         : 'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
 
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          isBunaiksen ? '部内戦観戦リンク' : '大会観戦リンク',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
+      builder: (ctx) => AppDialog(
+        title: isBunaiksen ? '部内戦観戦リンク' : '大会観戦リンク',
         content: SizedBox(
           width: 300,
           child: Column(

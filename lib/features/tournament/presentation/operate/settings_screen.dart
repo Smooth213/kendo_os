@@ -13,6 +13,7 @@ import 'package:kendo_os/shared/infrastructure/services/web_notification_helper.
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -706,10 +707,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // ログアウト確認ダイアログ
   // ignore: unused_element
   void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('ログアウトしますか？'),
+      builder: (ctx) => AppDialog(
+        title: 'ログアウトしますか？',
         content: const Text('ログアウトすると、次回の利用時に再度ログインが必要になります。'),
         actions: [
           TextButton(

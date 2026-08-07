@@ -18,6 +18,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   final String tournamentId;
@@ -575,14 +576,10 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
     final String shareUrl =
         'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
 
-    showDialog(
+    showAppDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          '$dateDisplay 観戦リンク',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
+      builder: (ctx) => AppDialog(
+        title: '$dateDisplay 観戦リンク',
         content: SizedBox(
           width: 300,
           child: Column(

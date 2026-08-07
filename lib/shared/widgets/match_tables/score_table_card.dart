@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/widgets/vertical_name_text.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
@@ -77,13 +78,13 @@ class ScoreTableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
-    final headerBgColor = isDark
-        ? const Color(0xFF2C2C2E)
-        : Colors.grey.shade50;
-    final headerTextColor = isDark
-        ? Colors.grey.shade400
-        : Colors.grey.shade700;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
+    final borderColor = themeColors.separatorColor;
+    final headerBgColor = themeColors.inputBackground;
+    final headerTextColor = themeColors.subTextColor;
     final daihyoBgColor = isDark
         ? Colors.red.shade900.withValues(alpha: 0.15)
         : Colors.red.shade50;
@@ -103,13 +104,13 @@ class ScoreTableCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
+                color: themeColors.inputBackground,
                 width: double.infinity,
                 child: Text(
                   info.headerTitle,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                    color: themeColors.textColor,
                   ),
                 ),
               ),
@@ -186,7 +187,12 @@ class ScoreTableCard extends StatelessWidget {
                           onTap: m.onTap,
                         ),
                       ),
-                      _summaryCell(info.redWins, info.redTotalPoints, isDark),
+                      _summaryCell(
+                        context,
+                        info.redWins,
+                        info.redTotalPoints,
+                        isDark,
+                      ),
                     ],
                   ),
                   TableRow(
@@ -196,6 +202,7 @@ class ScoreTableCard extends StatelessWidget {
                         (m) => _scoreCell(m, isDark, info.isSummary),
                       ),
                       _teamResultCell(
+                        context,
                         info.teamWinner,
                         isDark,
                         info.allFinished,
@@ -226,6 +233,7 @@ class ScoreTableCard extends StatelessWidget {
                         ),
                       ),
                       _summaryCell(
+                        context,
                         info.whiteWins,
                         info.whiteTotalPoints,
                         isDark,
@@ -284,11 +292,18 @@ class ScoreTableCard extends StatelessWidget {
     );
   }
 
-  Widget _teamResultCell(String winner, bool isDark, bool allFinished) {
-    final textColor = isDark ? Colors.white : Colors.black;
-    final dividerColor = isDark
-        ? const Color(0xFF38383A)
-        : Colors.grey.shade300;
+  Widget _teamResultCell(
+    BuildContext context,
+    String winner,
+    bool isDark,
+    bool allFinished,
+  ) {
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
+    final textColor = themeColors.textColor;
+    final dividerColor = themeColors.separatorColor;
 
     return Container(
       height: 70,
@@ -414,88 +429,103 @@ class ScoreTableCard extends StatelessWidget {
     return Container(
       height: 70,
       alignment: Alignment.center,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Divider(
-            color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
-            thickness: 1,
-            height: 0,
-          ),
-          if (m.isFinished && m.redScore == m.whiteScore)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-              child: Text(
-                '✕',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
-                ),
+      child: Builder(
+        builder: (context) {
+          final themeColors =
+              Theme.of(context).extension<AppThemeColors>() ??
+              AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              Divider(
+                color: themeColors.separatorColor,
+                thickness: 1,
+                height: 0,
               ),
-            )
-          else if (m.isEncho)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '延',
+              if (m.isFinished && m.redScore == m.whiteScore)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  color: themeColors.cardBackground,
+                  child: Text(
+                    '✕',
                     style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      height: 1.0,
-                      color: isDark ? Colors.grey.shade300 : Colors.black87,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: themeColors.hintColor,
                     ),
                   ),
-                  Text(
-                    '長',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      height: 1.0,
-                      color: isDark ? Colors.grey.shade300 : Colors.black87,
+                )
+              else if (m.isEncho)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 2,
+                    vertical: 1,
+                  ),
+                  color: themeColors.cardBackground,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '延',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          height: 1.0,
+                          color: themeColors.textColor,
+                        ),
+                      ),
+                      Text(
+                        '長',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          height: 1.0,
+                          color: themeColors.textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Column(
+                children: [
+                  Expanded(
+                    child: PointBox(
+                      points: m.redPoints,
+                      isWinner: m.isFinished && m.redScore > m.whiteScore,
+                      isRed: true,
+                      isDark: isDark,
+                    ),
+                  ),
+                  Expanded(
+                    child: PointBox(
+                      points: m.whitePoints,
+                      isWinner: m.isFinished && m.whiteScore > m.redScore,
+                      isRed: false,
+                      isDark: isDark,
                     ),
                   ),
                 ],
               ),
-            ),
-          Column(
-            children: [
-              Expanded(
-                child: PointBox(
-                  points: m.redPoints,
-                  isWinner: m.isFinished && m.redScore > m.whiteScore,
-                  isRed: true,
-                  isDark: isDark,
-                ),
-              ),
-              Expanded(
-                child: PointBox(
-                  points: m.whitePoints,
-                  isWinner: m.isFinished && m.whiteScore > m.redScore,
-                  isRed: false,
-                  isDark: isDark,
-                ),
-              ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _summaryCell(int wins, int pts, bool isDark) {
+  Widget _summaryCell(BuildContext context, int wins, int pts, bool isDark) {
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
     return Center(
       child: Text(
         '$pts\n--\n$wins',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 12,
-          color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
+          color: themeColors.subTextColor,
         ),
         textAlign: TextAlign.center,
       ),

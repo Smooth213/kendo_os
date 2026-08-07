@@ -10,6 +10,7 @@ import 'package:kendo_os/features/match/domain/services/team_match_calculator.da
 import 'viewer_kachinuki_scoreboard_screen.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイル上部
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 
@@ -115,7 +116,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     String? tournamentId,
   ) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppHeader(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
           onPressed: () {
@@ -135,14 +136,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
             }
           },
         ),
-        title: Text(
-          '団体戦 スコア (観戦)',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: headerColor,
-            fontSize: 16,
-          ),
-        ),
+        title: '団体戦 スコア (観戦)',
         backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         elevation: 0,
       ),
@@ -292,7 +286,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         return LiquidBackground(
           child: Scaffold(
             backgroundColor: Colors.transparent,
-            appBar: AppBar(
+            appBar: AppHeader(
               leading: IconButton(
                 icon: Icon(
                   Icons.arrow_back_ios_new,
@@ -314,14 +308,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                   }
                 },
               ),
-              title: Text(
-                '団体戦 スコア (観戦)',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: headerColor,
-                  fontSize: 16,
-                ),
-              ),
+              title: '団体戦 スコア (観戦)',
               backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
               elevation: 0,
               actions: const [

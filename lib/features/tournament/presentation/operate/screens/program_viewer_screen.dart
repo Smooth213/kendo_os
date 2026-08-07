@@ -14,6 +14,7 @@ import '../providers/permission_provider.dart'; // ★ 追加: 閲覧専用権�
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
@@ -715,15 +716,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             tooltip: 'すべて消す',
                             onPressed: () async {
                               // ★ いきなり消さず、まずダイアログを表示して「はい/いいえ」を聞く
-                              final shouldDelete = await showDialog<bool>(
+                              final shouldDelete = await showAppDialog<bool>(
                                 context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text(
-                                    '全消去の確認',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                builder: (context) => AppDialog(
+                                  title: '全消去の確認',
                                   content: Text.rich(
                                     TextSpan(
                                       children: [
