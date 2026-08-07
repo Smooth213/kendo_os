@@ -236,7 +236,7 @@ class _AnnounceHistoryBottomSheetState
             }
           },
           child: Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(AppSpacing.modernValue),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF8F9FA),
               borderRadius: AppRadius.medium,

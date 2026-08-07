@@ -385,7 +385,9 @@ class MatchScoreboard extends ConsumerWidget {
     return Container(
       height: 60, // ★ 二段配置になったため、重なりを気にせず視認性の高い60pxまで拡大
       alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 40), // ★ 横幅にゆとりを持たせる
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.giant,
+      ), // ★ 横幅にゆとりを持たせる
       decoration: BoxDecoration(
         color: isDark ? Colors.indigo.shade900 : Colors.indigo.shade700,
         borderRadius: AppRadius.full, // ★ 角丸を調整

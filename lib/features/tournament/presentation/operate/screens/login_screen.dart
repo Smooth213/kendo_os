@@ -115,7 +115,7 @@ class LoginScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(AppSpacing.compact),
                       decoration: BoxDecoration(
                         color: buttonColor.withValues(alpha: 0.15),
                         shape: BoxShape.circle,

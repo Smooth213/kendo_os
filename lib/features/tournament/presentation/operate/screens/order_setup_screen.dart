@@ -214,7 +214,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.grey.shade700,
                             side: BorderSide(color: Colors.grey.shade300),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpacing.compact,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.compact,
                             ),
@@ -233,7 +235,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red.shade600,
                             side: BorderSide(color: Colors.red.shade200),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpacing.compact,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.compact,
                             ),
@@ -884,7 +888,12 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       )
                     else
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          AppSpacing.lg,
+                          AppSpacing.lg,
+                          0,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1212,7 +1221,12 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        0,
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                      ),
                       itemCount: _positions.length,
                       onReorderItem: (oldIndex, newIndex) {
                         setState(() {
@@ -1317,8 +1331,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 6,
+                                          horizontal: AppSpacing.modernValue,
+                                          vertical: AppSpacing.subValue,
                                         ),
                                         decoration: BoxDecoration(
                                           color: isSelected

@@ -53,7 +53,7 @@ class PointMarkBadge extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
       child: Text(
         displayMark,
         style: TextStyle(

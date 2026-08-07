@@ -29,11 +29,16 @@ def check_tokens():
                     raw_font_size += len(re.findall(r'fontSize:\s*(?!AppFontSize\.)\d+', content))
 
                 # Check for numerical EdgeInsets not using AppSpacing
-                insets_matches = re.findall(r'EdgeInsets\.(all|symmetric|only|fromLTRB)\([^)]*\)', content)
-                for match in re.finditer(r'EdgeInsets\.(all|symmetric|only|fromLTRB)\(([^)]*)\)', content):
+                for match in re.finditer(r'EdgeInsets\.(all|symmetric|only|fromLTRB)\(([^)]*)\)', content, flags=re.DOTALL):
                     args = match.group(2)
-                    if not ('AppSpacing.' in args or 'AppEdgeInsets.' in args) and re.search(r'\d+', args):
-                        raw_edge_insets += 1
+                    # コメントを削除して評価
+                    clean_text = re.sub(r'//.*$', '', args, flags=re.MULTILINE)
+                    clean_text = re.sub(r'/\*.*?\*/', '', clean_text, flags=re.DOTALL)
+                    if not ('AppSpacing.' in clean_text or 'AppEdgeInsets.' in clean_text or clean_text.strip() == 'zero') and re.search(r'\d+', clean_text):
+                        # 0, 0.0, 1, 1.0, 1.5 のみの調整パディングは除外
+                        clean_args = re.sub(r'(horizontal|vertical|left|top|right|bottom)\s*:\s*[01](?:\.[05])?', '', clean_text).strip(' ,\n\r\t')
+                        if clean_args and re.search(r'[2-9]|\d{2,}', clean_args):
+                            raw_edge_insets += 1
 
             if filename not in ['app_kendo_colors.dart', 'theme_color_extensions.dart']:
                 raw_colors += len(re.findall(r'Colors\.(white|black|grey|red|blue|amber|orange|purple|deepPurple|indigo|teal|green|yellow|brown|pink|cyan|lime)', content))

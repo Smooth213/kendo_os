@@ -273,7 +273,12 @@ class ViewerHomeScreen extends ConsumerWidget {
                 if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
                   Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    margin: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.xs,
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                    ),
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
                       color: Colors.blueGrey.shade800, // 観客席らしい落ち着いた色に変更
@@ -386,7 +391,9 @@ class ViewerHomeScreen extends ConsumerWidget {
 
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.only(bottom: 80),
+                    padding: const EdgeInsets.only(
+                      bottom: AppSpacing.giant * 2,
+                    ),
                     children: [
                       ref
                           .watch(viewerTournamentProvider(tournamentId))
@@ -856,10 +863,10 @@ class ViewerHomeScreen extends ConsumerWidget {
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.fromLTRB(
-                                    24,
-                                    24,
-                                    16,
-                                    12,
+                                    AppSpacing.xl,
+                                    AppSpacing.xl,
+                                    AppSpacing.lg,
+                                    AppSpacing.md,
                                   ),
                                   child: Text(
                                     categoryName,
@@ -1431,13 +1438,14 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                 ],
                                                                 // 状態バナー
                                                                 Container(
-                                                                  padding:
-                                                                      const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            6,
-                                                                        vertical:
-                                                                            2,
-                                                                      ),
+                                                                  padding: const EdgeInsets.symmetric(
+                                                                    horizontal:
+                                                                        AppSpacing
+                                                                            .subValue,
+                                                                    vertical:
+                                                                        AppSpacing
+                                                                            .xxs,
+                                                                  ),
                                                                   decoration: BoxDecoration(
                                                                     color:
                                                                         hasInProgress
@@ -1492,11 +1500,11 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                 height: 6,
                                                               ),
                                                               Padding(
-                                                                padding:
-                                                                    const EdgeInsets.symmetric(
-                                                                      horizontal:
-                                                                          2,
-                                                                    ),
+                                                                padding: const EdgeInsets.symmetric(
+                                                                  horizontal:
+                                                                      AppSpacing
+                                                                          .xxs,
+                                                                ),
                                                                 child: Text(
                                                                   firstMatch
                                                                       .note,
@@ -1680,7 +1688,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                           ),
                                                                           Padding(
                                                                             padding: const EdgeInsets.symmetric(
-                                                                              horizontal: 6,
+                                                                              horizontal: AppSpacing.subValue,
                                                                             ),
                                                                             child: Text(
                                                                               'ー',
@@ -1968,7 +1976,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                       bouts.first.groupName!.isNotEmpty)
                                                                                     Padding(
                                                                                       padding: const EdgeInsets.only(
-                                                                                        right: 6,
+                                                                                        right: AppSpacing.subValue,
                                                                                       ),
                                                                                       child: SizedBox(
                                                                                         height: 24,
@@ -2008,8 +2016,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                     ),
                                                                                   Container(
                                                                                     padding: const EdgeInsets.symmetric(
-                                                                                      horizontal: 6,
-                                                                                      vertical: 2,
+                                                                                      horizontal: AppSpacing.subValue,
+                                                                                      vertical: AppSpacing.xxs,
                                                                                     ),
                                                                                     decoration: BoxDecoration(
                                                                                       color: boutsInProgress
@@ -2162,7 +2170,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                 ),
                                                                                                 Padding(
                                                                                                   padding: const EdgeInsets.symmetric(
-                                                                                                    horizontal: 6,
+                                                                                                    horizontal: AppSpacing.subValue,
                                                                                                   ),
                                                                                                   child: Text(
                                                                                                     'ー',
@@ -2265,7 +2273,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                               const Padding(
                                                                 padding:
                                                                     EdgeInsets.all(
-                                                                      8,
+                                                                      AppSpacing
+                                                                          .sm,
                                                                     ),
                                                                 child: Text(
                                                                   '【順位決定戦】',
@@ -2489,8 +2498,12 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                       Container(
                                                         padding:
                                                             const EdgeInsets.symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 2,
+                                                              horizontal:
+                                                                  AppSpacing
+                                                                      .subValue,
+                                                              vertical:
+                                                                  AppSpacing
+                                                                      .xxs,
                                                             ),
                                                         decoration: BoxDecoration(
                                                           color: pInProgress
@@ -2622,7 +2635,7 @@ class ViewerHomeScreen extends ConsumerWidget {
       ),
       color: cardColor,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.roundValue),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2796,8 +2809,8 @@ class ViewerMatchListTileCard extends ConsumerWidget {
 
       if (isFirstOverall) {
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          padding: const EdgeInsets.all(2.0),
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+          padding: const EdgeInsets.all(AppSpacing.xxs),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: textColor, width: 1.2),
@@ -2829,7 +2842,10 @@ class ViewerMatchListTileCard extends ConsumerWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.modernValue,
+        vertical: AppSpacing.subValue,
+      ),
       decoration: BoxDecoration(
         borderRadius: AppRadius.medium,
         border: Border.all(
@@ -2852,8 +2868,8 @@ class ViewerMatchListTileCard extends ConsumerWidget {
         clipBehavior: Clip.antiAlias,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 6,
+            horizontal: AppSpacing.modernValue,
+            vertical: AppSpacing.subValue,
           ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2904,8 +2920,8 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                   // 状態バナー
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
+                      horizontal: AppSpacing.subValue,
+                      vertical: AppSpacing.xxs,
                     ),
                     decoration: BoxDecoration(
                       color: isPlaying
@@ -2941,7 +2957,9 @@ class ViewerMatchListTileCard extends ConsumerWidget {
               if (displayNote.isNotEmpty || match.matchType.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxs,
+                  ),
                   child: Text.rich(
                     TextSpan(
                       children: [

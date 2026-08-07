@@ -88,7 +88,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.roundValue),
         child: Row(
           children: [
             Icon(icon, size: 36, color: color),

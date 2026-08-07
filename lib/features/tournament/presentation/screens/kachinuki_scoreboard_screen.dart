@@ -120,7 +120,12 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             top: Radius.circular(AppRadius.xlargeValue),
           ),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.md,
+          AppSpacing.xl,
+          AppSpacing.xl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +293,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.sm,
           ),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSpacing.roundValue),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
             borderRadius: AppRadius.xlarge,
@@ -485,7 +490,10 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               WidgetSpan(
                 alignment: PlaceholderAlignment.bottom,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 2, bottom: 1),
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.xxs,
+                    bottom: 1,
+                  ),
                   child: Text(
                     parsed['first']!.substring(0, 1),
                     style: TextStyle(
@@ -815,7 +823,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             : color;
         if (p.isFirstMatchPoint && p.mark != '◯') {
           return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 2),
+            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
             width: 24,
             height: 24,
             alignment: Alignment.center,
@@ -834,7 +842,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           );
         }
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
           child: Text(
             p.mark,
             style: TextStyle(

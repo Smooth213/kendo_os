@@ -453,7 +453,9 @@ class ScoreTableCard extends StatelessWidget {
               ),
               if (m.isFinished && m.redScore == m.whiteScore)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxs,
+                  ),
                   color: themeColors.cardBackground,
                   child: Text(
                     '✕',
@@ -467,7 +469,7 @@ class ScoreTableCard extends StatelessWidget {
               else if (m.isEncho)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 2,
+                    horizontal: AppSpacing.xxs,
                     vertical: 1,
                   ),
                   color: themeColors.cardBackground,

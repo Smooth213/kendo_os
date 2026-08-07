@@ -191,7 +191,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
               if (matchNote.isNotEmpty)
                 Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  margin: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    0,
+                  ),
                   padding: const EdgeInsets.symmetric(
                     vertical: AppSpacing.md,
                     horizontal: 20,
@@ -406,10 +411,10 @@ class TeamScoreboardScreen extends ConsumerWidget {
                             elevation: 0,
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(
-                                24,
-                                32,
-                                24,
-                                32,
+                                AppSpacing.xl,
+                                AppSpacing.xxl,
+                                AppSpacing.xl,
+                                AppSpacing.xxl,
                               ),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -556,7 +561,10 @@ class TeamScoreboardScreen extends ConsumerWidget {
               WidgetSpan(
                 alignment: PlaceholderAlignment.bottom,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 2, bottom: 2),
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.xxs,
+                    bottom: AppSpacing.xxs,
+                  ),
                   child: Text(
                     parsed['first']!.substring(0, 1),
                     style: TextStyle(
@@ -741,8 +749,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
   Widget _ptMark(TeamPointDisplay p, Color color, bool isDark) {
     if (p.isFirstMatchPoint && p.mark != '◯') {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        padding: const EdgeInsets.all(2),
+        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+        padding: const EdgeInsets.all(AppSpacing.xxs),
         // ★ 修正：ダークモード時は丸の枠線を半透明(alpha: 0.4)にして、発光現象（白浮き）を抑える
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -762,7 +770,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
       );
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
       child: Text(
         p.mark,
         style: TextStyle(

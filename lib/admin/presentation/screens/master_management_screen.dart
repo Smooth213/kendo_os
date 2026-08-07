@@ -320,7 +320,9 @@ class _MasterManagementScreenState
 
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 100),
+                    padding: const EdgeInsets.only(
+                      bottom: AppSpacing.giant * 2.5,
+                    ),
                     itemCount: groupKeys.length,
                     itemBuilder: (context, index) {
                       final groupName = groupKeys[index];
@@ -542,8 +544,8 @@ class _MasterManagementScreenState
                           const SizedBox(width: AppSpacing.sm),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
+                              horizontal: AppSpacing.subValue,
+                              vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.green.shade600,
@@ -868,8 +870,8 @@ class _MasterManagementScreenState
                           isDense: true,
                           contentPadding: isKeyboardVisible
                               ? const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
+                                  horizontal: AppSpacing.compact,
+                                  vertical: AppSpacing.subValue,
                                 )
                               : const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.md,
@@ -900,8 +902,8 @@ class _MasterManagementScreenState
                           isDense: true,
                           contentPadding: isKeyboardVisible
                               ? const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
+                                  horizontal: AppSpacing.compact,
+                                  vertical: AppSpacing.subValue,
                                 )
                               : const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.md,

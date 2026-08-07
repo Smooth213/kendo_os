@@ -68,7 +68,11 @@ class AppChoiceChip extends StatelessWidget {
       ),
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
       padding:
-          padding ?? const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding ??
+          const EdgeInsets.symmetric(
+            horizontal: AppSpacing.compact,
+            vertical: AppSpacing.subValue,
+          ),
       showCheckmark: false,
     );
   }
@@ -121,7 +125,11 @@ class AppActionChip extends StatelessWidget {
       side: BorderSide(color: themeColors.separatorColor, width: 1),
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
       padding:
-          padding ?? const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding ??
+          const EdgeInsets.symmetric(
+            horizontal: AppSpacing.compact,
+            vertical: AppSpacing.subValue,
+          ),
     );
   }
 }
@@ -184,7 +192,11 @@ class AppFilterChip extends StatelessWidget {
       ),
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
       padding:
-          padding ?? const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding ??
+          const EdgeInsets.symmetric(
+            horizontal: AppSpacing.compact,
+            vertical: AppSpacing.subValue,
+          ),
       showCheckmark: false,
     );
   }

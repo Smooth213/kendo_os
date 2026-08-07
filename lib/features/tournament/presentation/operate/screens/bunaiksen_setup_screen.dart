@@ -538,7 +538,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
   // 🔴 タブ1：個人戦（即スタート）
   Widget _buildIndividualTab(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0, 8.0, 24.0, 24.0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.sm,
+        AppSpacing.xl,
+        AppSpacing.xl,
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -707,7 +712,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
 
     return Padding(
       // ★ 修正1：上部の余白(Top)を 0 にして上に詰める
-      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0.0,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       child: Column(
         children: [
           // ★ 参加者プールヘッダー（折りたたみトグル付き）
@@ -1017,7 +1027,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
   Widget _buildLeagueTab(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       child: Column(
         children: [
           // ★ 修正：リーグ戦も一気に複数選択できるように置き換え
@@ -1163,7 +1178,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       child: Column(
         children: [
           // ★ 修正：1人ずつの追加と「＋」ボタンを廃止し、ボトムシートから複数選択できるように変更

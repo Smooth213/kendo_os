@@ -187,7 +187,7 @@ class MatchTimelineList extends ConsumerWidget {
     final allMatches = timelineResult.entries.expand((e) => e.value).toList();
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 80),
+      padding: const EdgeInsets.only(bottom: AppSpacing.giant * 2),
       children: [
         // ============================================================
         // ★ 移設: 大会ヘッダー（HomeScreen から移動。リストと一緒にスクロールさせる）
@@ -348,7 +348,7 @@ class MatchTimelineList extends ConsumerWidget {
                                     : Colors.indigo.shade200,
                               ),
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
+                                horizontal: AppSpacing.compact,
                                 vertical: 0,
                               ),
                               minimumSize: const Size(0, 32),
@@ -451,7 +451,7 @@ class MatchTimelineList extends ConsumerWidget {
             sanitizedQuery.isEmpty &&
             !timelineResult.hasError)
           Padding(
-            padding: const EdgeInsets.all(48.0),
+            padding: const EdgeInsets.all(AppSpacing.giant),
             child: Center(
               child: Text(
                 'まだ試合がありません\n（またはクラウド同期待ちです）',
@@ -573,7 +573,12 @@ class MatchTimelineList extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl,
+                    AppSpacing.xl,
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                  ),
                   child: Text(
                     categoryName,
                     style: TextStyle(
@@ -1446,7 +1451,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         style: OutlinedButton.styleFrom(
                                                                           padding: const EdgeInsets.symmetric(
                                                                             horizontal:
-                                                                                6,
+                                                                                AppSpacing.subValue,
                                                                           ),
                                                                           side: BorderSide(
                                                                             color: titleColor.withValues(
@@ -1467,11 +1472,10 @@ class MatchTimelineList extends ConsumerWidget {
                                                                   // ℹ️詳細マーク
                                                                   if (!allFinished)
                                                                     Padding(
-                                                                      padding:
-                                                                          const EdgeInsets.only(
-                                                                            right:
-                                                                                6,
-                                                                          ),
+                                                                      padding: const EdgeInsets.only(
+                                                                        right: AppSpacing
+                                                                            .subValue,
+                                                                      ),
                                                                       child: InkWell(
                                                                         onTap: () => _showRuleInfoSheet(
                                                                           context,
@@ -1481,7 +1485,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             AppRadius.medium,
                                                                         child: Padding(
                                                                           padding: const EdgeInsets.all(
-                                                                            4.0,
+                                                                            AppSpacing.xs,
                                                                           ),
                                                                           child: Icon(
                                                                             Icons.info_outline,
@@ -1598,9 +1602,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                                   Container(
                                                                     padding: const EdgeInsets.symmetric(
                                                                       horizontal:
-                                                                          6,
+                                                                          AppSpacing
+                                                                              .subValue,
                                                                       vertical:
-                                                                          2,
+                                                                          AppSpacing
+                                                                              .xxs,
                                                                     ),
                                                                     decoration: BoxDecoration(
                                                                       color:
@@ -1652,11 +1658,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                                   height: 6,
                                                                 ),
                                                                 Padding(
-                                                                  padding:
-                                                                      const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            2,
-                                                                      ),
+                                                                  padding: const EdgeInsets.symmetric(
+                                                                    horizontal:
+                                                                        AppSpacing
+                                                                            .xxs,
+                                                                  ),
                                                                   child: Text(
                                                                     firstMatch
                                                                         .note,
@@ -1846,7 +1852,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               ),
                                                                               Padding(
                                                                                 padding: const EdgeInsets.symmetric(
-                                                                                  horizontal: 6,
+                                                                                  horizontal: AppSpacing.subValue,
                                                                                 ),
                                                                                 child: Text(
                                                                                   'ー',
@@ -2035,14 +2041,14 @@ class MatchTimelineList extends ConsumerWidget {
                                                                     .isNotEmpty) {
                                                                   childrenWidgets.add(
                                                                     Container(
-                                                                      margin:
-                                                                          const EdgeInsets.all(
-                                                                            12,
-                                                                          ),
-                                                                      padding:
-                                                                          const EdgeInsets.all(
-                                                                            12,
-                                                                          ),
+                                                                      margin: const EdgeInsets.all(
+                                                                        AppSpacing
+                                                                            .md,
+                                                                      ),
+                                                                      padding: const EdgeInsets.all(
+                                                                        AppSpacing
+                                                                            .md,
+                                                                      ),
                                                                       decoration: BoxDecoration(
                                                                         color:
                                                                             isDark
@@ -2439,7 +2445,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       ))) {
                                                                                                 return Padding(
                                                                                                   padding: const EdgeInsets.only(
-                                                                                                    right: 6,
+                                                                                                    right: AppSpacing.subValue,
                                                                                                   ),
                                                                                                   child: SizedBox(
                                                                                                     height: 24,
@@ -2464,7 +2470,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       ),
                                                                                                       style: OutlinedButton.styleFrom(
                                                                                                         padding: const EdgeInsets.symmetric(
-                                                                                                          horizontal: 6,
+                                                                                                          horizontal: AppSpacing.subValue,
                                                                                                         ),
                                                                                                         side: BorderSide(
                                                                                                           color: mTitleColor.withValues(
@@ -2485,7 +2491,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                       // スコアボタン
                                                                                       Padding(
                                                                                         padding: const EdgeInsets.only(
-                                                                                          right: 6,
+                                                                                          right: AppSpacing.subValue,
                                                                                         ),
                                                                                         child: SizedBox(
                                                                                           height: 24,
@@ -2534,8 +2540,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                       // 状態バナー
                                                                                       Container(
                                                                                         padding: const EdgeInsets.symmetric(
-                                                                                          horizontal: 6,
-                                                                                          vertical: 2,
+                                                                                          horizontal: AppSpacing.subValue,
+                                                                                          vertical: AppSpacing.xxs,
                                                                                         ),
                                                                                         decoration: BoxDecoration(
                                                                                           color: boutsInProgress
@@ -2683,7 +2689,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                     ),
                                                                                                     Padding(
                                                                                                       padding: const EdgeInsets.symmetric(
-                                                                                                        horizontal: 6,
+                                                                                                        horizontal: AppSpacing.subValue,
                                                                                                       ),
                                                                                                       child: Text(
                                                                                                         'ー',
@@ -2874,7 +2880,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                 const Padding(
                                                                   padding:
                                                                       EdgeInsets.all(
-                                                                        8,
+                                                                        AppSpacing
+                                                                            .sm,
                                                                       ),
                                                                   child: Text(
                                                                     '【順位決定戦】',
@@ -3196,8 +3203,8 @@ class MatchTimelineList extends ConsumerWidget {
                                         const SizedBox(width: AppSpacing.sm),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
+                                            horizontal: AppSpacing.subValue,
+                                            vertical: AppSpacing.xxs,
                                           ),
                                           decoration: BoxDecoration(
                                             color: pInProgress
@@ -3545,7 +3552,12 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
           top: Radius.circular(AppRadius.xlargeValue),
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.md,
+        AppSpacing.xl,
+        AppSpacing.xl,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3725,7 +3737,9 @@ void _showRuleInfoSheet(BuildContext context, MatchModel match) {
                 foregroundColor: isDark ? Colors.white : Colors.black87,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.modernValue,
+                ),
               ),
               child: const Text(
                 '閉じる',
@@ -5073,7 +5087,10 @@ class MatchListTileCard extends ConsumerWidget {
 
     // 🛡️ 補正④: 細線独立カードモデリング化の意匠を適用
     final tile = Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.modernValue,
+        vertical: AppSpacing.subValue,
+      ),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: AppRadius.medium,
@@ -5097,8 +5114,8 @@ class MatchListTileCard extends ConsumerWidget {
         child: ListTile(
           key: Key('viewer_match_card_${match.id}'),
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 6,
+            horizontal: AppSpacing.modernValue,
+            vertical: AppSpacing.subValue,
           ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -5123,7 +5140,9 @@ class MatchListTileCard extends ConsumerWidget {
                               match.whiteName.contains('自チーム')) &&
                           isIndividual) {
                         return Padding(
-                          padding: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.only(
+                            right: AppSpacing.subValue,
+                          ),
                           child: SizedBox(
                             height: 26,
                             child: OutlinedButton.icon(
@@ -5147,7 +5166,7 @@ class MatchListTileCard extends ConsumerWidget {
                               ),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
+                                  horizontal: AppSpacing.subValue,
                                 ),
                                 side: BorderSide(
                                   color: textC.withValues(alpha: 0.2),
@@ -5166,7 +5185,9 @@ class MatchListTileCard extends ConsumerWidget {
                   // ℹ️詳細マーク
                   if (isIndividual)
                     Padding(
-                      padding: const EdgeInsets.only(right: 6),
+                      padding: const EdgeInsets.only(
+                        right: AppSpacing.subValue,
+                      ),
                       child: InkWell(
                         onTap: () => _showRuleInfoSheet(context, match),
                         borderRadius: AppRadius.medium,
@@ -5228,8 +5249,8 @@ class MatchListTileCard extends ConsumerWidget {
                   // 状態バナー
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
+                      horizontal: AppSpacing.subValue,
+                      vertical: AppSpacing.xxs,
                     ),
                     decoration: BoxDecoration(
                       color: isPlaying
@@ -5265,7 +5286,9 @@ class MatchListTileCard extends ConsumerWidget {
               if (displayNote.isNotEmpty || match.matchType.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxs,
+                  ),
                   child: Text.rich(
                     TextSpan(
                       children: [
@@ -5347,8 +5370,10 @@ class MatchListTileCard extends ConsumerWidget {
 
                     if (isFirstOverall) {
                       return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        padding: const EdgeInsets.all(2.0),
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs,
+                        ),
+                        padding: const EdgeInsets.all(AppSpacing.xxs),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: textColor, width: 1.2),

@@ -337,7 +337,9 @@ class StandingsScreen extends ConsumerWidget {
                             ],
                           ),
                           subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 6),
+                            padding: const EdgeInsets.only(
+                              top: AppSpacing.subValue,
+                            ),
                             child: Text(
                               '${stat.matches}試合: ${stat.wins}勝 ${stat.losses}敗 ${stat.draws}分 / 取得: ${stat.pointsScored}本',
                               style: TextStyle(

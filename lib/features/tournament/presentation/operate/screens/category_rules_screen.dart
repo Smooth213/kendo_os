@@ -956,7 +956,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.modernValue,
+        vertical: AppSpacing.compact,
+      ),
       decoration: BoxDecoration(
         color: isDark
             ? Colors.white.withValues(alpha: 0.05)
@@ -1016,7 +1019,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.remove, size: 18),
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(AppSpacing.subValue),
                   constraints: const BoxConstraints(
                     minWidth: 36,
                     minHeight: 36,
@@ -1049,7 +1052,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.add, size: 18),
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(AppSpacing.subValue),
                   constraints: const BoxConstraints(
                     minWidth: 36,
                     minHeight: 36,
@@ -1088,7 +1091,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.roundValue),
             children: [
               Container(
                 padding: const EdgeInsets.all(AppSpacing.lg),
@@ -1454,7 +1457,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     });
                   },
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.modernValue,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.medium,
                     ),
@@ -1470,7 +1475,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 child: GlassButton(
                   onPressed: () => _saveCategoryRules(tournament),
                   color: Colors.indigo,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.modernValue,
+                  ),
                   label: '設定を保存',
                   icon: Icons.save,
                   expandContent: false,
@@ -2798,7 +2805,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           builder: (context, scrollController) {
             return SingleChildScrollView(
               controller: scrollController,
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.sm,
+                AppSpacing.xl,
+                AppSpacing.xl,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -2806,7 +2818,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     child: Container(
                       width: 48,
                       height: 5,
-                      margin: const EdgeInsets.only(bottom: 20),
+                      margin: const EdgeInsets.only(
+                        bottom: AppSpacing.roundValue,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade400,
                         borderRadius: AppRadius.medium,
@@ -2894,7 +2908,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
   Widget _buildDetailRow(String label, String value, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.subValue),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

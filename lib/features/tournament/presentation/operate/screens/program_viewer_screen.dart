@@ -682,7 +682,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               minWidth: 36,
                               minHeight: 36,
                             ),
-                            padding: const EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(AppSpacing.subValue),
                             iconSize: 20,
                             icon: Icon(
                               Icons.undo,
@@ -710,7 +710,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               minWidth: 36,
                               minHeight: 36,
                             ),
-                            padding: const EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(AppSpacing.subValue),
                             iconSize: 20,
                             icon: Icon(
                               Icons.delete_sweep,
@@ -1311,9 +1311,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         return SafeArea(
           child: Padding(
             padding: EdgeInsets.only(
-              top: 20.0,
-              left: 20.0,
-              right: 20.0,
+              top: AppSpacing.roundValue,
+              left: AppSpacing.roundValue,
+              right: AppSpacing.roundValue,
               bottom: MediaQuery.of(context).viewInsets.bottom + 20.0,
             ),
             child: SingleChildScrollView(
@@ -1393,7 +1393,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           Navigator.pop(context);
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 15),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           decoration: BoxDecoration(
             color: isSelected ? color.withAlpha(26) : Colors.transparent,
             borderRadius: AppRadius.medium,

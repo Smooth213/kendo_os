@@ -1027,8 +1027,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     insetPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 40,
+                      horizontal: AppSpacing.roundValue,
+                      vertical: AppSpacing.giant,
                     ),
                     child: Container(
                       constraints: const BoxConstraints(maxWidth: 550),
@@ -1043,7 +1043,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(AppSpacing.roundValue),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [

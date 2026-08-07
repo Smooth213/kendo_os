@@ -438,8 +438,8 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                         const Spacer(),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
+                                            horizontal: AppSpacing.subValue,
+                                            vertical: AppSpacing.xxs,
                                           ),
                                           margin: const EdgeInsets.only(
                                             right: AppSpacing.sm,

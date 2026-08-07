@@ -88,7 +88,7 @@ class PdfLeagueTable {
             ...teamList.map(
               (t) => pw.Center(
                 child: pw.Padding(
-                  padding: const pw.EdgeInsets.all(2),
+                  padding: const pw.EdgeInsets.all(AppSpacing.xxs),
                   child: pw.Text(
                     t,
                     style: pw.TextStyle(font: ttfBold, fontSize: 7),
@@ -121,7 +121,7 @@ class PdfLeagueTable {
               alignment: pw.Alignment.center,
               decoration: const pw.BoxDecoration(color: PdfColors.grey100),
               child: pw.Padding(
-                padding: const pw.EdgeInsets.all(2),
+                padding: const pw.EdgeInsets.all(AppSpacing.xxs),
                 child: pw.Text(
                   rowTeam,
                   style: pw.TextStyle(font: ttfBold, fontSize: 7),

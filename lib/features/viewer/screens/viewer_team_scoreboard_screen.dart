@@ -329,7 +329,12 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                   if (teamProj.note.isNotEmpty)
                     Container(
                       width: double.infinity,
-                      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      margin: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.sm,
+                        AppSpacing.lg,
+                        0,
+                      ),
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.md,
                         horizontal: 20,
@@ -502,7 +507,10 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
               WidgetSpan(
                 alignment: PlaceholderAlignment.bottom,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 2, bottom: 2),
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.xxs,
+                    bottom: AppSpacing.xxs,
+                  ),
                   child: Text(
                     parsed['first']!.substring(0, 1),
                     style: TextStyle(
@@ -695,8 +703,8 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
   Widget _ptMark(String mark, bool isFirstOverall, Color color, bool isDark) {
     if (isFirstOverall && mark != '◯') {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        padding: const EdgeInsets.all(2),
+        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+        padding: const EdgeInsets.all(AppSpacing.xxs),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
@@ -715,7 +723,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
       );
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
       child: Text(
         mark,
         style: TextStyle(

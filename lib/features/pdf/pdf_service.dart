@@ -135,7 +135,7 @@ class PdfService {
         footer: (pw.Context context) {
           return pw.Container(
             alignment: pw.Alignment.centerRight,
-            margin: const pw.EdgeInsets.only(top: 10),
+            margin: const pw.EdgeInsets.only(top: AppSpacing.compact),
             child: pw.Text(
               '${context.pageNumber} / ${context.pagesCount}',
               style: const pw.TextStyle(fontSize: AppFontSize.small),

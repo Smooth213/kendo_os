@@ -111,7 +111,7 @@ class RoleSelectScreen extends ConsumerWidget {
 
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
+                                  vertical: AppSpacing.compact,
                                 ),
                                 child: InkWell(
                                   onTap: () => RoomJoinQrDialog.show(context),
@@ -119,8 +119,8 @@ class RoleSelectScreen extends ConsumerWidget {
                                   child: Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 18,
-                                      vertical: 14,
+                                      horizontal: AppSpacing.mediumLg,
+                                      vertical: AppSpacing.modernValue,
                                     ),
                                     decoration: BoxDecoration(
                                       color: isDark
@@ -142,7 +142,9 @@ class RoleSelectScreen extends ConsumerWidget {
                                           CrossAxisAlignment.center,
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.all(9),
+                                          padding: const EdgeInsets.all(
+                                            AppSpacing.nano,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: isDark
                                                 ? Colors.tealAccent.withValues(
@@ -199,8 +201,8 @@ class RoleSelectScreen extends ConsumerWidget {
                                         const SizedBox(width: 10),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 6,
+                                            horizontal: AppSpacing.compact,
+                                            vertical: AppSpacing.subValue,
                                           ),
                                           decoration: BoxDecoration(
                                             color: isDark

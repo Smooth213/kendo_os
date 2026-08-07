@@ -118,7 +118,7 @@ class PdfTeamTable {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Container(
-            padding: const pw.EdgeInsets.all(6),
+            padding: const pw.EdgeInsets.all(AppSpacing.subValue),
             color: PdfColors.grey200,
             width: double.infinity,
             child: pw.Text(
@@ -265,7 +265,7 @@ class PdfTeamTable {
     pw.Font fontBold,
   ) => pw.Center(
     child: pw.Padding(
-      padding: const pw.EdgeInsets.all(6),
+      padding: const pw.EdgeInsets.all(AppSpacing.subValue),
       child: pw.Text(
         name,
         style: pw.TextStyle(
@@ -353,7 +353,9 @@ class PdfTeamTable {
           pw.Divider(color: PdfColors.black, thickness: 1, height: 0),
           if (isDone && rScore == wScore)
             pw.Container(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 2),
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: AppSpacing.xxs,
+              ),
               color: PdfColors.white,
               child: pw.Text(
                 '×',
@@ -367,7 +369,7 @@ class PdfTeamTable {
           else if (isEncho)
             pw.Container(
               padding: const pw.EdgeInsets.symmetric(
-                horizontal: 2,
+                horizontal: AppSpacing.xxs,
                 vertical: 1,
               ),
               color: PdfColors.white,

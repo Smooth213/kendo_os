@@ -309,7 +309,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.roundValue,
+            ),
             child: Row(
               children: [
                 Icon(
@@ -344,7 +346,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             unselectedLabelColor: isDark
                 ? Colors.grey.shade400
                 : Colors.grey.shade600,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+            labelPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xxs,
+            ),
             labelStyle: const TextStyle(
               fontSize: AppFontSize.small,
               fontWeight: AppFontWeight.bold,
@@ -427,7 +431,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   // --- Tab 1: チーム・選手情報 ---
   Widget _buildTeamAndPlayersTab(bool isDark, Color textColor) {
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.roundValue),
       children: [
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -633,7 +637,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     ];
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.roundValue),
       children: [
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -871,12 +875,12 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     final currentRule = _selectedPresetRule ?? const MatchRule();
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.roundValue),
       children: [
         // 部門別ルールからのワンタップ選択エリア
         if (categoryPresetChips.isNotEmpty) ...[
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(AppSpacing.modernValue),
             margin: const EdgeInsets.only(bottom: AppSpacing.lg),
             decoration: BoxDecoration(
               color: widget.themeColors.primaryAccent.withAlpha(

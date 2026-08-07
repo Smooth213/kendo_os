@@ -19,7 +19,11 @@ class AppSnackBar {
 
   static const _defaultDuration = Duration(seconds: 3);
   static const _errorDuration = Duration(seconds: 4);
-  static const _margin = EdgeInsets.only(bottom: 20, left: 16, right: 16);
+  static const _margin = EdgeInsets.only(
+    bottom: AppSpacing.roundValue,
+    left: AppSpacing.lg,
+    right: AppSpacing.lg,
+  );
   static const _shape = RoundedRectangleBorder(borderRadius: AppRadius.medium);
 
   static AppThemeColors _colors(BuildContext context) {

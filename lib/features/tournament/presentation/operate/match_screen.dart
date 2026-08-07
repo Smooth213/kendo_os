@@ -1169,9 +1169,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         ? const Color(0xFF1C1C1E)
                                         : Colors.grey.shade100,
                                     padding: const EdgeInsets.fromLTRB(
-                                      16,
+                                      AppSpacing.lg,
                                       0,
-                                      16,
+                                      AppSpacing.lg,
                                       0,
                                     ), // ★ 最下部の余白もゼロに
                                     child: Consumer(
@@ -1921,7 +1921,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     color: Colors.indigo,
                                     label: '代表者を選択する',
                                     padding: const EdgeInsets.symmetric(
-                                      vertical: 20,
+                                      vertical: AppSpacing.roundValue,
                                     ),
                                   ),
                                 ),
@@ -2211,7 +2211,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             }
 
             return Card(
-              margin: const EdgeInsets.only(bottom: 6),
+              margin: const EdgeInsets.only(bottom: AppSpacing.subValue),
               elevation: 0,
               color: cardColor,
               shape: RoundedRectangleBorder(
@@ -2444,7 +2444,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red.shade400,
                           side: BorderSide(color: Colors.red.shade400),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.compact,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: AppRadius.compact,
                           ),
@@ -4010,7 +4012,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             top: Radius.circular(AppRadius.xlargeValue),
           ),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.md,
+          AppSpacing.xl,
+          AppSpacing.xl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -4203,7 +4210,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   foregroundColor: isDark ? Colors.white : Colors.black87,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.modernValue,
+                  ),
                 ),
                 child: const Text(
                   '閉じる',

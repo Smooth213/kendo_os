@@ -349,7 +349,12 @@ class HomeScreen extends ConsumerWidget {
 
                           if (enableLiquidGlass) {
                             return Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.lg,
+                                AppSpacing.xs,
+                                AppSpacing.lg,
+                                AppSpacing.md,
+                              ),
                               child: ClipRRect(
                                 borderRadius: AppRadius.large,
                                 child: BackdropFilter(
@@ -373,7 +378,12 @@ class HomeScreen extends ConsumerWidget {
 
                           return Container(
                             width: double.infinity,
-                            margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                            margin: const EdgeInsets.fromLTRB(
+                              AppSpacing.lg,
+                              AppSpacing.xs,
+                              AppSpacing.lg,
+                              AppSpacing.md,
+                            ),
                             padding: const EdgeInsets.all(AppSpacing.lg),
                             decoration: bannerDecoration,
                             child: bannerContent,
@@ -628,7 +638,12 @@ class HomeScreen extends ConsumerWidget {
 
     if (enableLiquidGlass) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.lg,
+          AppSpacing.sm,
+        ),
         child: ClipRRect(
           borderRadius: AppRadius.large,
           child: BackdropFilter(
@@ -650,7 +665,12 @@ class HomeScreen extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: cardBgColor,

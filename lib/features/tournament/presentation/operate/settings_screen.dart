@@ -334,7 +334,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               top: false,
               child: Container(
                 margin: enableLiquidGlass
-                    ? const EdgeInsets.fromLTRB(16, 0, 16, 16)
+                    ? const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        0,
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                      )
                     : EdgeInsets.zero,
                 decoration: BoxDecoration(
                   color: _themeColors.cardBackground,
@@ -648,7 +653,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         vertical: AppSpacing.xs,
       ),
       leading: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(AppSpacing.subValue),
         decoration: BoxDecoration(
           color: iconBgColor,
           borderRadius: AppRadius.small,

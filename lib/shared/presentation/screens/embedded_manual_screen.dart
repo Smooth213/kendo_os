@@ -771,7 +771,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
 
       return Container(
         height: 40,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.compact),
         decoration: BoxDecoration(
           color: isDark ? Colors.black26 : Colors.white,
           borderRadius: AppRadius.medium,

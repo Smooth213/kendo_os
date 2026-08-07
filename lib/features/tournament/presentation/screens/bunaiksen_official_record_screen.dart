@@ -833,7 +833,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
           ),
           if (isDone && rScore == wScore)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
               color: cardColor,
               child: Text(
                 '✕',
@@ -1291,8 +1291,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                 backgroundColor: Colors.transparent,
                                 elevation: 0,
                                 insetPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 40,
+                                  horizontal: AppSpacing.roundValue,
+                                  vertical: AppSpacing.giant,
                                 ),
                                 child: Container(
                                   constraints: const BoxConstraints(
@@ -1313,7 +1313,9 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                       ),
                                     ],
                                   ),
-                                  padding: const EdgeInsets.all(20),
+                                  padding: const EdgeInsets.all(
+                                    AppSpacing.roundValue,
+                                  ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -1405,7 +1407,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                     width: 18,
                                     color: textColor.withValues(alpha: 0.5),
                                     margin: const EdgeInsets.symmetric(
-                                      vertical: 2,
+                                      vertical: AppSpacing.xxs,
                                     ),
                                   ),
                                   techs.length > 1
@@ -1431,7 +1433,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                     width: 18,
                                     color: textColor.withValues(alpha: 0.5),
                                     margin: const EdgeInsets.symmetric(
-                                      vertical: 2,
+                                      vertical: AppSpacing.xxs,
                                     ),
                                   ),
                                   Text(

@@ -1105,8 +1105,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     insetPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 40,
+                      horizontal: AppSpacing.roundValue,
+                      vertical: AppSpacing.giant,
                     ),
                     child: Container(
                       constraints: const BoxConstraints(maxWidth: 550),
@@ -1121,7 +1121,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                           ),
                         ],
                       ),
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(AppSpacing.roundValue),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -1695,8 +1695,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               if (teamsList.length > 1)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 2,
+                    horizontal: AppSpacing.compact,
+                    vertical: AppSpacing.xxs,
                   ),
                   decoration: BoxDecoration(
                     color: isDark

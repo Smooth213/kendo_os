@@ -540,8 +540,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                         const Spacer(),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
+                                            horizontal: AppSpacing.subValue,
+                                            vertical: AppSpacing.xxs,
                                           ),
                                           margin: const EdgeInsets.only(
                                             right: AppSpacing.sm,
@@ -1057,7 +1057,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               // 試合時間＆勝負設定
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(AppSpacing.modernValue),
                 decoration: BoxDecoration(
                   color: isDark
                       ? const Color(0xFF2C2C2E)
@@ -1201,8 +1201,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               borderRadius: AppRadius.large,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 6,
+                                  horizontal: AppSpacing.modernValue,
+                                  vertical: AppSpacing.subValue,
                                 ),
                                 decoration: BoxDecoration(
                                   color: !selectedIsIpponShobu
@@ -1240,8 +1240,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               borderRadius: AppRadius.large,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 6,
+                                  horizontal: AppSpacing.modernValue,
+                                  vertical: AppSpacing.subValue,
                                 ),
                                 decoration: BoxDecoration(
                                   color: selectedIsIpponShobu
@@ -1332,7 +1332,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: themeColors.primaryAccent,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.modernValue,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.large,
                     ),
@@ -1471,7 +1473,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             ].map((filterName) {
                               final isSel = selectedFilter == filterName;
                               return Padding(
-                                padding: const EdgeInsets.only(right: 6),
+                                padding: const EdgeInsets.only(
+                                  right: AppSpacing.subValue,
+                                ),
                                 child: AppChoiceChip(
                                   label: Text(filterName),
                                   selected: isSel,

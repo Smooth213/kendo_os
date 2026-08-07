@@ -61,11 +61,15 @@ class AppSpacing {
 
   static const double xxs = 2.0;
   static const double xs = 4.0;
+  static const double subValue = 6.0;
   static const double sm = 8.0;
+  static const double nano = 9.0;
   static const double compact = 10.0;
   static const double md = 12.0;
+  static const double modernValue = 14.0;
   static const double lg = 16.0;
   static const double mediumLg = 18.0;
+  static const double roundValue = 20.0;
   static const double xl = 24.0;
   static const double xxl = 32.0;
   static const double giant = 40.0;

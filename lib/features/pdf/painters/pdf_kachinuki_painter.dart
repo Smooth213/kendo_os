@@ -357,7 +357,7 @@ class PdfKachinukiPainter {
       if (p.isFirstOverall && p.mark != '◯') {
         return pw.Container(
           margin: const pw.EdgeInsets.symmetric(vertical: 1),
-          padding: const pw.EdgeInsets.all(2),
+          padding: const pw.EdgeInsets.all(AppSpacing.xxs),
           decoration: pw.BoxDecoration(
             shape: pw.BoxShape.circle,
             border: pw.Border.all(color: color, width: 1),
@@ -366,7 +366,7 @@ class PdfKachinukiPainter {
         );
       }
       return pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: 2),
+        padding: const pw.EdgeInsets.symmetric(vertical: AppSpacing.xxs),
         child: text,
       );
     }).toList();

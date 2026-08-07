@@ -156,7 +156,9 @@ class TimerWidget extends ConsumerWidget {
 
     return RepaintBoundary(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2), // ★ 画面の圧迫を防ぐため余白をスリム化
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.xxs,
+        ), // ★ 画面の圧迫を防ぐため余白をスリム化
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: _buildTimerContent(context, ref),

@@ -796,8 +796,8 @@ class LargeViewerScoreboard extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.symmetric(
-        vertical: isPortrait ? 16.0 : 0.0,
-        horizontal: isPortrait ? 0.0 : 16.0,
+        vertical: isPortrait ? AppSpacing.lg : 0.0,
+        horizontal: isPortrait ? 0.0 : AppSpacing.lg,
       ),
       child: Center(child: content),
     );

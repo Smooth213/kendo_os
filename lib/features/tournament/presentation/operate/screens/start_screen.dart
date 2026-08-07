@@ -326,7 +326,10 @@ class StartScreen extends ConsumerWidget {
                       hasScrollBody: false,
                       fillOverscroll: true,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 32, bottom: 48),
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.xxl,
+                          bottom: AppSpacing.giant,
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

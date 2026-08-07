@@ -45,7 +45,7 @@ class TournamentHeaderCard extends ConsumerWidget {
       ),
       color: cardColor,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.roundValue),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

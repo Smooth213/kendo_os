@@ -128,7 +128,9 @@ class PdfIndividualList {
               pw.SizedBox(width: 8),
               PdfTeamTable.pdfPointBox(ptsMap['red']!, rWin, true, ttfBold),
               pw.Padding(
-                padding: const pw.EdgeInsets.symmetric(horizontal: 6),
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: AppSpacing.subValue,
+                ),
                 child: pw.Text(
                   isDraw ? '×' : (isEncho ? '延長' : '-'),
                   style: pw.TextStyle(
@@ -184,7 +186,7 @@ class PdfIndividualList {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Container(
-            padding: const pw.EdgeInsets.all(6),
+            padding: const pw.EdgeInsets.all(AppSpacing.subValue),
             color: PdfColors.grey200,
             width: double.infinity,
             child: pw.Text(

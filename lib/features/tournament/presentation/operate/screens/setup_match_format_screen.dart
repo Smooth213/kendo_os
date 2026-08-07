@@ -360,7 +360,7 @@ class _SetupMatchFormatScreenState
                   Flexible(
                     child: ListView.separated(
                       shrinkWrap: true,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(AppSpacing.roundValue),
                       itemCount: team.playerNames.length,
                       separatorBuilder: (_, _) => const Divider(height: 1),
                       itemBuilder: (context, i) {
@@ -751,7 +751,10 @@ class _SetupMatchFormatScreenState
 
   Widget _buildSectionHeader(String title, Color accentColor) {
     return Padding(
-      padding: const EdgeInsets.only(top: 14, bottom: 6),
+      padding: const EdgeInsets.only(
+        top: AppSpacing.modernValue,
+        bottom: AppSpacing.subValue,
+      ),
       child: Row(
         children: [
           Container(
@@ -1525,7 +1528,7 @@ class _SetupMatchFormatScreenState
         // ★ 部門設定ルールのシーン切り替えUI
         if (ruleSet != null) ...[
           Padding(
-            padding: const EdgeInsets.only(bottom: 6.0),
+            padding: const EdgeInsets.only(bottom: AppSpacing.subValue),
             child: Text(
               'この部門（$categoryName）に設定されているルールを選択:',
               style: const TextStyle(

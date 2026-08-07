@@ -29,7 +29,10 @@ class ScoreActionPanel extends ConsumerWidget {
     return Expanded(
       child: Padding(
         // ★ 左右の余白を完全にゼロ化し、縦のクッションをタイトに締める
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 0,
+          vertical: AppSpacing.xxs,
+        ),
         child: Column(
           children: [
             Expanded(
@@ -109,7 +112,10 @@ class ScoreActionPanel extends ConsumerWidget {
     return Expanded(
       child: Padding(
         // ★ 左右の隙間を1.0に詰め、ボタン自体の横幅を最大化
-        padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 1.0,
+          vertical: AppSpacing.xxs,
+        ),
         child: HoldConfirmButton(
           label: label,
           color: color,
@@ -132,7 +138,10 @@ class ScoreActionPanel extends ConsumerWidget {
     return Expanded(
       child: Padding(
         // ★ 反則ボタンの横隙間も完全にフィットさせる
-        padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 1.0,
+          vertical: AppSpacing.xxs,
+        ),
         child: HoldConfirmButton(
           label: label,
           color: Colors.amber.shade600,

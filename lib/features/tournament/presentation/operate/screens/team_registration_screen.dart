@@ -961,7 +961,12 @@ class _TeamRegistrationScreenState
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.xxl,
+      ),
       children: [
         Text(
           'チーム名とオーダーを\n入力してください',

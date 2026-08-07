@@ -495,7 +495,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
 
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.roundValue),
               children: [
                 // STEP 1. 対象選択
                 _buildSectionHeader('STEP 1: 変更対象の試合を選択'),

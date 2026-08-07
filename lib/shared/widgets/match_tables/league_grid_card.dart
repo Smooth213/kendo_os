@@ -191,7 +191,7 @@ class LeagueGridCard extends StatelessWidget {
                                   width: 18,
                                   color: textColor.withValues(alpha: 0.5),
                                   margin: const EdgeInsets.symmetric(
-                                    vertical: 2,
+                                    vertical: AppSpacing.xxs,
                                   ),
                                 ),
                                 cellData.techMarks.length > 1
@@ -221,7 +221,7 @@ class LeagueGridCard extends StatelessWidget {
                                   width: 18,
                                   color: textColor.withValues(alpha: 0.5),
                                   margin: const EdgeInsets.symmetric(
-                                    vertical: 2,
+                                    vertical: AppSpacing.xxs,
                                   ),
                                 ),
                                 Text(
