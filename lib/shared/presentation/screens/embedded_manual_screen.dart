@@ -284,7 +284,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.lg),
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.5)
@@ -304,8 +304,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     backgroundColor: Colors.grey.shade800,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 8,
+                      vertical: AppSpacing.md,
+                      horizontal: AppSpacing.sm,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.medium,
@@ -316,7 +316,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     'A4印刷',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 13,
+                      fontSize: AppFontSize.bodySmall,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -351,8 +351,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     backgroundColor: const Color(0xFF06C755),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 8,
+                      vertical: AppSpacing.md,
+                      horizontal: AppSpacing.sm,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.medium,
@@ -363,7 +363,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     '共有/保存',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 13,
+                      fontSize: AppFontSize.bodySmall,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -413,7 +413,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.lg),
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.5)
@@ -433,8 +433,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     backgroundColor: Colors.grey.shade800,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 8,
+                      vertical: AppSpacing.md,
+                      horizontal: AppSpacing.sm,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.medium,
@@ -445,7 +445,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     'PDF版をブラウザで開く',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 13,
+                      fontSize: AppFontSize.bodySmall,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -472,8 +472,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     backgroundColor: const Color(0xFF06C755),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 8,
+                      vertical: AppSpacing.md,
+                      horizontal: AppSpacing.sm,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.medium,
@@ -484,7 +484,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     '共有する',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 13,
+                      fontSize: AppFontSize.bodySmall,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -516,9 +516,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           },
         ),
         Positioned(
-          bottom: 24,
-          left: 24,
-          right: 24,
+          bottom: AppSpacing.xl,
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
           child: _buildFloatingActionBar(
             isAsset: true,
             assetPath: assetPath,
@@ -543,9 +543,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
             ],
           ),
           Positioned(
-            bottom: 24,
-            left: 24,
-            right: 24,
+            bottom: AppSpacing.xl,
+            left: AppSpacing.xl,
+            right: AppSpacing.xl,
             child: _buildFloatingActionBarForWeb(),
           ),
         ],
@@ -557,7 +557,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       return Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.lg),
             color: Colors.teal.withValues(alpha: 0.1),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -613,7 +613,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               const SizedBox(height: AppSpacing.xl),
               const Text(
                 'マニュアルをロード中...',
-                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 16),
+                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.subhead),
               ),
               const SizedBox(height: AppSpacing.md),
               LinearProgressIndicator(value: _downloadProgress),
@@ -622,7 +622,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 '${(_downloadProgress * 100).toStringAsFixed(0)}%',
                 style: const TextStyle(
                   fontWeight: AppFontWeight.bold,
-                  fontSize: 14,
+                  fontSize: AppFontSize.body,
                 ),
               ),
             ],
@@ -671,14 +671,14 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 const SizedBox(height: AppSpacing.md),
                 const Text(
                   '印刷や文字検索、高倍率ズームが可能な公式PDF版マニュアルをダウンロードできます。一度保存すると、オフラインでも閲覧可能です。',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(fontSize: AppFontSize.body, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 const Text(
                   'ファイルサイズ: 約 2.6 MB',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     fontWeight: AppFontWeight.bold,
                     color: Colors.blueAccent,
                   ),
@@ -699,7 +699,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     label: const Text(
                       'PDF版をダウンロード (無料)',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),
@@ -728,9 +728,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       children: [
         SfPdfViewer.file(_localPdfFile!, controller: _pdfViewerController),
         Positioned(
-          bottom: 24,
-          left: 24,
-          right: 24,
+          bottom: AppSpacing.xl,
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
           child: _buildFloatingActionBar(
             isAsset: false,
             file: _localPdfFile,
@@ -782,7 +782,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 autofocus: true,
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 14,
+                  fontSize: AppFontSize.body,
                   fontWeight: FontWeight.w500,
                 ),
                 decoration: InputDecoration(
@@ -817,7 +817,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
         ),
       );
     }
-    return const Text('ヘルプ・マニュアル', style: TextStyle(fontSize: 16));
+    return const Text('ヘルプ・マニュアル', style: TextStyle(fontSize: AppFontSize.subhead));
   }
 
   // 検索用 AppBar アクションボタン
@@ -979,7 +979,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                                 (results[i]['headings'] as List)
                                     .take(2)
                                     .join(' / '),
-                                style: const TextStyle(fontSize: 10),
+                                style: const TextStyle(fontSize: AppFontSize.badge),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               )
@@ -1049,7 +1049,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               },
               styleSheet: md.MarkdownStyleSheet(
                 h1: const TextStyle(
-                  fontSize: 28,
+                  fontSize: AppFontSize.hero,
                   fontWeight: AppFontWeight.bold,
                   color: Colors.blueAccent,
                 ),
@@ -1059,7 +1059,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                   color: Colors.teal,
                   decoration: TextDecoration.underline,
                 ),
-                p: const TextStyle(fontSize: 16, height: 1.7),
+                p: const TextStyle(fontSize: AppFontSize.subhead, height: 1.7),
                 code: TextStyle(
                   backgroundColor: isDark ? Colors.white10 : Colors.black12,
                 ),

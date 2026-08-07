@@ -107,10 +107,10 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               ),
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Text(
                 ':',
-                style: TextStyle(fontSize: 24, fontWeight: AppFontWeight.bold),
+                style: TextStyle(fontSize: AppFontSize.display, fontWeight: AppFontWeight.bold),
               ),
             ),
             Expanded(
@@ -277,7 +277,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 // ★ 修正: 小数点や1本勝負の表示に対応
                 '⚙️ 試合ルール: ${rule.matchTimeMinutes == rule.matchTimeMinutes.toInt() ? rule.matchTimeMinutes.toInt() : rule.matchTimeMinutes.toStringAsFixed(1)}分 / ${(rule.isIpponShobu) ? '1' : '3'}本勝負 / 延長${(rule.enchoTimeMinutes > 0 || rule.isEnchoUnlimited) ? 'あり' : 'なし'}',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: AppFontSize.body,
                   fontWeight: AppFontWeight.bold,
                   color: isDark ? Colors.white70 : Colors.black87,
                 ),
@@ -288,8 +288,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0,
-                    vertical: 16.0,
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.lg,
                   ),
                   child: Column(
                     children: [
@@ -305,7 +305,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             child: Text(
                               '💡 設定したルールは、試合を追加したあとでも「一括ルール変更」からいつでも変更できます。',
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: AppFontSize.caption,
                                 color: isDark ? Colors.white60 : Colors.black54,
                               ),
                             ),
@@ -551,11 +551,11 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
                   'VS',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: AppFontSize.display,
                     fontWeight: AppFontWeight.bold,
                     color: Colors.grey.shade500,
                   ),
@@ -579,7 +579,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               icon: Icons.flash_on,
               label: '試合開始',
               color: _themeColors.primaryAccent,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               expandContent: false,
               onPressed: () async {
                 final redName = _redPlayerController.text.trim();
@@ -665,7 +665,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 '$count',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 10,
+                  fontSize: AppFontSize.badge,
                   fontWeight: AppFontWeight.bold,
                 ),
               ),
@@ -709,7 +709,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
         children: [
           // ★ 参加者プールヘッダー（折りたたみトグル付き）
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -717,7 +717,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   '参加者プール (${_poolPlayers.length}名)',
                   style: const TextStyle(
                     fontWeight: AppFontWeight.bold,
-                    fontSize: 13,
+                    fontSize: AppFontSize.bodySmall,
                     color: Colors.grey,
                   ),
                 ),
@@ -759,7 +759,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                     _redTeam.contains(name) || _whiteTeam.contains(name);
 
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: Draggable<String>(
                     data: name,
                     // ★ 修正2：縦に引っ張った時だけドラッグを開始する。これで横スクロールが完璧に動く！
@@ -810,7 +810,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                     '$_teamSize 対 $_teamSize',
                     style: const TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 16,
+                      fontSize: AppFontSize.subhead,
                     ),
                   ),
                   IconButton(
@@ -873,7 +873,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                   currentPositions[index].substring(0, 1),
                                   style: TextStyle(
                                     color: Colors.red.shade800,
-                                    fontSize: 10,
+                                    fontSize: AppFontSize.badge,
                                     fontWeight: AppFontWeight.bold,
                                   ),
                                 ),
@@ -928,7 +928,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                   currentPositions[index].substring(0, 1),
                                   style: TextStyle(
                                     color: Colors.blueGrey.shade800,
-                                    fontSize: 10,
+                                    fontSize: AppFontSize.badge,
                                     fontWeight: AppFontWeight.bold,
                                   ),
                                 ),
@@ -963,7 +963,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               icon: Icons.check_circle,
               label: '確定して対戦表を作成',
               color: _themeColors.primaryAccent,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               expandContent: false,
               onPressed: () async {
                 final rule = ref.read(bunaiksenRuleProvider);
@@ -1067,7 +1067,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 '${index + 1}',
                                 style: TextStyle(
                                   color: _themeColors.primaryAccent,
-                                  fontSize: 12,
+                                  fontSize: AppFontSize.small,
                                   fontWeight: AppFontWeight.bold,
                                 ),
                               ),
@@ -1091,7 +1091,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               icon: Icons.grid_on,
               label: '総当たり対戦表を作成（${_leagueParticipants.length}人）',
               color: _themeColors.primaryAccent,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               expandContent: false,
               onPressed: _leagueParticipants.length < 2
                   ? null
@@ -1229,7 +1229,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                   color: index < 2
                                       ? Colors.red.shade800
                                       : Colors.grey.shade700,
-                                  fontSize: 12,
+                                  fontSize: AppFontSize.small,
                                   fontWeight: AppFontWeight.bold,
                                 ),
                               ),
@@ -1246,7 +1246,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 ? const Text(
                                     '最初の赤選手',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: AppFontSize.badge,
                                       color: Colors.red,
                                     ),
                                   )
@@ -1254,7 +1254,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 ? const Text(
                                     '最初の白選手',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: AppFontSize.badge,
                                       color: Colors.blueGrey,
                                     ),
                                   )
@@ -1278,7 +1278,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               icon: Icons.local_fire_department,
               label: '無限稽古スタート',
               color: _themeColors.primaryAccent,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               expandContent: false,
               onPressed: queue.length < 2
                   ? null

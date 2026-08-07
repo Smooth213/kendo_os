@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -55,7 +56,7 @@ class TimerWidget extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: textColor,
-                  fontSize: 24,
+                  fontSize: AppFontSize.display,
                   fontWeight: AppFontWeight.bold,
                 ),
                 decoration: InputDecoration(
@@ -77,11 +78,11 @@ class TimerWidget extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Text(
                 ':',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: AppFontSize.display,
                   fontWeight: AppFontWeight.bold,
                   color: textColor,
                 ),
@@ -94,7 +95,7 @@ class TimerWidget extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: textColor,
-                  fontSize: 24,
+                  fontSize: AppFontSize.display,
                   fontWeight: AppFontWeight.bold,
                 ),
                 decoration: InputDecoration(
@@ -176,14 +177,14 @@ class TimerWidget extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final timerBgColor = isRunning
         ? (isDark
-              ? Colors.red.shade900.withValues(alpha: 0.4)
+              ? AppKendoColors.hansokuRed.withValues(alpha: 0.4)
               : Colors.red.shade50)
         : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
     final timerBorderColor = isRunning
         ? (isDark ? Colors.red.shade400 : Colors.red.shade500)
         : (isDark ? const Color(0xFF38383A) : Colors.indigo.shade200);
     final timerTextColor = isRunning
-        ? (isDark ? Colors.red.shade300 : Colors.red.shade900)
+        ? (isDark ? Colors.red.shade300 : AppKendoColors.hansokuRed)
         : (isDark ? Colors.white : Colors.black87);
 
     return GestureDetector(
@@ -201,7 +202,7 @@ class TimerWidget extends ConsumerWidget {
               _showTimerEditDialog(context, ref, match);
             },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xs),
         decoration: BoxDecoration(
           color: timerBgColor,
           borderRadius: AppRadius.full,

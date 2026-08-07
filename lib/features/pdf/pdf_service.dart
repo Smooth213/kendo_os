@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:io' as io;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -44,7 +45,7 @@ class PdfService {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
+        margin: const pw.EdgeInsets.all(AppSpacing.xxl),
         theme: pw.ThemeData.withFont(base: ttf, bold: ttfBold),
 
         header: (pw.Context context) {
@@ -61,7 +62,7 @@ class PdfService {
                       pw.Text(
                         '公式記録',
                         style: pw.TextStyle(
-                          fontSize: 18,
+                          fontSize: AppFontSize.headline,
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
@@ -71,7 +72,7 @@ class PdfService {
                         pw.Text(
                           tournamentName,
                           style: pw.TextStyle(
-                            fontSize: 14,
+                            fontSize: AppFontSize.body,
                             fontWeight: pw.FontWeight.bold,
                           ),
                         ),
@@ -81,7 +82,7 @@ class PdfService {
                   pw.Text(
                     DateFormat('yyyy/MM/dd HH:mm 出力').format(outputTime),
                     style: const pw.TextStyle(
-                      fontSize: 10,
+                      fontSize: AppFontSize.badge,
                       color: PdfColors.grey700,
                     ),
                   ),
@@ -96,7 +97,7 @@ class PdfService {
                       pw.Text(
                         '開催日: $tournamentDate',
                         style: const pw.TextStyle(
-                          fontSize: 11,
+                          fontSize: AppFontSize.caption,
                           color: PdfColors.grey800,
                         ),
                       ),
@@ -109,7 +110,7 @@ class PdfService {
                       pw.Text(
                         '場所: $tournamentVenue',
                         style: const pw.TextStyle(
-                          fontSize: 11,
+                          fontSize: AppFontSize.caption,
                           color: PdfColors.grey800,
                         ),
                       ),
@@ -120,7 +121,7 @@ class PdfService {
               pw.Text(
                 'カテゴリ: $categoryName',
                 style: pw.TextStyle(
-                  fontSize: 14,
+                  fontSize: AppFontSize.body,
                   color: PdfColors.indigo900,
                   fontWeight: pw.FontWeight.bold,
                 ),
@@ -137,7 +138,7 @@ class PdfService {
             margin: const pw.EdgeInsets.only(top: 10),
             child: pw.Text(
               '${context.pageNumber} / ${context.pagesCount}',
-              style: const pw.TextStyle(fontSize: 12),
+              style: const pw.TextStyle(fontSize: AppFontSize.small),
             ),
           );
         },
@@ -198,7 +199,7 @@ class PdfService {
                 contentWidgets.add(
                   pw.Text(
                     '【リーグ表】 $statusText',
-                    style: pw.TextStyle(font: ttfBold, fontSize: 14),
+                    style: pw.TextStyle(font: ttfBold, fontSize: AppFontSize.body),
                   ),
                 );
                 contentWidgets.add(pw.SizedBox(height: 10));
@@ -215,7 +216,7 @@ class PdfService {
                 contentWidgets.add(
                   pw.Text(
                     '【対戦詳細スコア】',
-                    style: pw.TextStyle(font: ttfBold, fontSize: 12),
+                    style: pw.TextStyle(font: ttfBold, fontSize: AppFontSize.small),
                   ),
                 );
                 contentWidgets.add(pw.SizedBox(height: 10));
@@ -293,7 +294,7 @@ class PdfService {
                     '▼ 順位決定戦',
                     style: pw.TextStyle(
                       font: ttfBold,
-                      fontSize: 12,
+                      fontSize: AppFontSize.small,
                       color: PdfColors.orange700,
                     ),
                   ),

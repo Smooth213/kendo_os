@@ -50,7 +50,7 @@ class SyncStatusBar extends ConsumerWidget {
         width: double.infinity,
         padding: EdgeInsets.only(
           top: MediaQuery.of(context).padding.top,
-          bottom: 4,
+          bottom: AppSpacing.xs,
         ),
         color: barColor,
         child: Padding(
@@ -66,7 +66,7 @@ class SyncStatusBar extends ConsumerWidget {
                 '【${mode.label}：${activeRole.label}】',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 10,
+                  fontSize: AppFontSize.badge,
                   fontWeight: AppFontWeight.bold,
                 ),
               ),
@@ -85,7 +85,7 @@ class SyncStatusBar extends ConsumerWidget {
                       'オフライン',
                       style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 10,
+                        fontSize: AppFontSize.badge,
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),
@@ -103,7 +103,7 @@ class SyncStatusBar extends ConsumerWidget {
                             Text(
                               deadLetterCount > 0 ? '再接続中' : '同期中',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: AppFontSize.badge,
                                 fontWeight: AppFontWeight.bold,
                                 color: deadLetterCount > 0
                                     ? Colors.yellowAccent
@@ -115,7 +115,7 @@ class SyncStatusBar extends ConsumerWidget {
                               Text(
                                 '($deadLetterCount)',
                                 style: const TextStyle(
-                                  fontSize: 10,
+                                  fontSize: AppFontSize.badge,
                                   color: Colors.yellowAccent,
                                 ),
                               ),
@@ -136,7 +136,7 @@ class SyncStatusBar extends ConsumerWidget {
                       '保存済み',
                       style: TextStyle(
                         color: Colors.greenAccent,
-                        fontSize: 10,
+                        fontSize: AppFontSize.badge,
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),
@@ -193,7 +193,7 @@ class SyncStatusBar extends ConsumerWidget {
                     const Text(
                       '☁️ クラウド同期ステータス',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: AppFontSize.headline,
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),
@@ -261,7 +261,7 @@ class SyncStatusBar extends ConsumerWidget {
                             const Expanded(
                               child: Text(
                                 '電波のズレ等により一時的に保留された操作があります。右側のボタンで「再送」を押すか、お急ぎの場合は「データ更新」マニュアルをご確認ください。',
-                                style: TextStyle(fontSize: 11, height: 1.3),
+                                style: TextStyle(fontSize: AppFontSize.caption, height: 1.3),
                               ),
                             ),
                           ],
@@ -291,13 +291,13 @@ class SyncStatusBar extends ConsumerWidget {
                                 '[$time] $typeStr',
                                 style: const TextStyle(
                                   fontWeight: AppFontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: AppFontSize.body,
                                 ),
                               ),
                               subtitle: Text(
                                 'ID: ${cmd.payload['matchId'] ?? cmd.id}',
                                 style: const TextStyle(
-                                  fontSize: 10,
+                                  fontSize: AppFontSize.badge,
                                   color: Colors.grey,
                                 ),
                               ),

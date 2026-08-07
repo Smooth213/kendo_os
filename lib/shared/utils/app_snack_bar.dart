@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 /// アプリ全体で統一された SnackBar を表示するユーティリティ。
 ///
@@ -21,19 +22,30 @@ class AppSnackBar {
   static const _margin = EdgeInsets.only(bottom: 20, left: 16, right: 16);
   static const _shape = RoundedRectangleBorder(borderRadius: AppRadius.medium);
 
-  /// 通常のインフォメーションSnackBar（グレー背景）
+  static AppThemeColors _colors(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+  }
+
+  /// 通常のインフォメーションSnackBar
   static void show(
     BuildContext context,
     String message, {
     Duration duration = _defaultDuration,
   }) {
     if (!context.mounted) return;
+    final themeColors = _colors(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(fontWeight: AppFontWeight.semiBold),
+          style: TextStyle(
+            color: themeColors.textColor,
+            fontWeight: AppFontWeight.semiBold,
+          ),
         ),
+        backgroundColor: themeColors.cardBackground,
         behavior: SnackBarBehavior.floating,
         shape: _shape,
         margin: _margin,
@@ -42,13 +54,14 @@ class AppSnackBar {
     );
   }
 
-  /// エラーSnackBar（赤背景・白字・4秒）
+  /// エラーSnackBar（テーマエラーカラー背景）
   static void showError(
     BuildContext context,
     String message, {
     Duration duration = _errorDuration,
   }) {
     if (!context.mounted) return;
+    final themeColors = _colors(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -58,7 +71,7 @@ class AppSnackBar {
             fontWeight: AppFontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.red.shade800,
+        backgroundColor: themeColors.errorColor,
         behavior: SnackBarBehavior.floating,
         shape: _shape,
         margin: _margin,
@@ -67,13 +80,14 @@ class AppSnackBar {
     );
   }
 
-  /// 成功SnackBar（緑背景・白字）
+  /// 成功SnackBar（テーマ成功カラー背景）
   static void showSuccess(
     BuildContext context,
     String message, {
     Duration duration = _defaultDuration,
   }) {
     if (!context.mounted) return;
+    final themeColors = _colors(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -83,7 +97,7 @@ class AppSnackBar {
             fontWeight: AppFontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.green.shade800,
+        backgroundColor: themeColors.successColor,
         behavior: SnackBarBehavior.floating,
         shape: _shape,
         margin: _margin,

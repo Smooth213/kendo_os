@@ -71,7 +71,7 @@ class PinAuthScreen extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: 40,
-                        horizontal: 24,
+                        horizontal: AppSpacing.xl,
                       ),
                       decoration: BoxDecoration(
                         color: cardBgColor,
@@ -94,7 +94,7 @@ class PinAuthScreen extends ConsumerWidget {
                           Text(
                             '${role.name.toUpperCase()} 認証ゲート',
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: AppFontSize.display,
                               fontWeight: AppFontWeight.bold,
                               color: textColor,
                             ),
@@ -102,7 +102,7 @@ class PinAuthScreen extends ConsumerWidget {
                           const SizedBox(height: AppSpacing.sm),
                           Text(
                             '誤操作防止のため、指定のPINコードを入力してください。',
-                            style: TextStyle(color: subTextColor, fontSize: 12),
+                            style: TextStyle(color: subTextColor, fontSize: AppFontSize.small),
                           ),
                           const SizedBox(height: AppSpacing.xxl),
                           TextField(
@@ -111,7 +111,7 @@ class PinAuthScreen extends ConsumerWidget {
                             obscureText: true,
                             style: TextStyle(
                               color: textColor,
-                              fontSize: 20,
+                              fontSize: AppFontSize.header,
                               fontWeight: AppFontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
@@ -167,7 +167,7 @@ class PinAuthScreen extends ConsumerWidget {
                                 '認証して進入',
                                 style: TextStyle(
                                   fontWeight: AppFontWeight.bold,
-                                  fontSize: 16,
+                                  fontSize: AppFontSize.subhead,
                                 ),
                               ),
                             ),

@@ -86,7 +86,7 @@ class OperatorActionButtons extends ConsumerWidget {
               '大会プログラムの管理・追加',
               style: TextStyle(
                 fontWeight: AppFontWeight.bold,
-                fontSize: 14,
+                fontSize: AppFontSize.body,
                 color: isDark ? Colors.white : Colors.grey.shade800,
               ),
             ),

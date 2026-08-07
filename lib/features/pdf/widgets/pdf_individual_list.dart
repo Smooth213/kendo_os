@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/pdf/models/pdf_view_model.dart';
@@ -73,7 +74,7 @@ class PdfIndividualList {
       // ページの境界ボックスを突き破って pdf レンダラが無限ループ（Cannot fit some widgets）を起こすのを100%防止します。
       rows.add(
         pw.Container(
-          padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          padding: const pw.EdgeInsets.symmetric(vertical: AppSpacing.xs, horizontal: AppSpacing.xs),
           decoration: const pw.BoxDecoration(
             border: pw.Border(
               bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
@@ -87,7 +88,7 @@ class PdfIndividualList {
                   m.note.isNotEmpty ? m.note : '第${i + 1}試合',
                   style: pw.TextStyle(
                     font: ttfBold,
-                    fontSize: 8,
+                    fontSize: AppFontSize.micro,
                     color: PdfColors.grey600,
                   ),
                   textAlign: pw.TextAlign.center,
@@ -112,7 +113,7 @@ class PdfIndividualList {
                       rName,
                       style: pw.TextStyle(
                         font: ttfBold,
-                        fontSize: 10,
+                        fontSize: AppFontSize.badge,
                         color: rWin ? PdfColors.red700 : PdfColors.black,
                       ),
                       maxLines: 1,
@@ -155,7 +156,7 @@ class PdfIndividualList {
                       wName,
                       style: pw.TextStyle(
                         font: ttfBold,
-                        fontSize: 10,
+                        fontSize: AppFontSize.badge,
                         color: wWin ? PdfColors.red700 : PdfColors.black,
                       ),
                       maxLines: 1,
@@ -172,7 +173,7 @@ class PdfIndividualList {
 
     // 個人戦の1ブロックを安全な外枠コンテナとしてラップして返却します
     return pw.Container(
-      margin: const pw.EdgeInsets.symmetric(vertical: 4),
+      margin: const pw.EdgeInsets.symmetric(vertical: AppSpacing.xs),
       decoration: pw.BoxDecoration(
         border: pw.Border.all(color: PdfColors.grey500, width: 0.5),
       ),
@@ -185,7 +186,7 @@ class PdfIndividualList {
             width: double.infinity,
             child: pw.Text(
               headerTitle,
-              style: pw.TextStyle(font: ttfBold, fontSize: 10),
+              style: pw.TextStyle(font: ttfBold, fontSize: AppFontSize.badge),
             ),
           ),
           ...rows,

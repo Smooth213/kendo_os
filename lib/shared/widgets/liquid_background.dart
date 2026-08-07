@@ -86,7 +86,7 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                         'エコモード',
                         style: TextStyle(
                           color: themeColors.textColor.withValues(alpha: 0.87),
-                          fontSize: 10,
+                          fontSize: AppFontSize.badge,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),

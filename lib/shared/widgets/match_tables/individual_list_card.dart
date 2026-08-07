@@ -68,7 +68,7 @@ class IndividualListCard extends StatelessWidget {
     final textColor = themeColors.textColor;
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
@@ -105,8 +105,8 @@ class IndividualListCard extends StatelessWidget {
 
               Widget rowContent = Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 12,
+                  vertical: AppSpacing.md,
+                  horizontal: AppSpacing.md,
                 ),
                 child: Row(
                   children: [
@@ -115,7 +115,7 @@ class IndividualListCard extends StatelessWidget {
                       child: Text(
                         m.note.isNotEmpty ? m.note : '第${index + 1}試合',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: AppFontSize.badge,
                           color: Colors.grey.shade500,
                           fontWeight: AppFontWeight.bold,
                         ),
@@ -156,13 +156,13 @@ class IndividualListCard extends StatelessWidget {
                       isDark: isDark,
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                       child: Text(
                         m.isDraw ? '✕' : '-',
                         style: TextStyle(
                           color: Colors.grey.shade400,
                           fontWeight: FontWeight.w300,
-                          fontSize: 16,
+                          fontSize: AppFontSize.subhead,
                         ),
                       ),
                     ),
@@ -218,7 +218,7 @@ class IndividualListCard extends StatelessWidget {
                       Opacity(opacity: 0.2, child: rowContent),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
+                          horizontal: AppSpacing.md,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
@@ -241,7 +241,7 @@ class IndividualListCard extends StatelessWidget {
                           '※簡易入力された結果です\n（詳細スコアはありません）',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: AppFontSize.caption,
                             fontWeight: AppFontWeight.bold,
                             color: isDark
                                 ? Colors.grey.shade400

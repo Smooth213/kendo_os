@@ -47,7 +47,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               ? Text(
                   title!,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: AppFontSize.headline,
                     fontWeight: AppFontWeight.semiBold,
                     color: effectiveFgColor,
                   ),

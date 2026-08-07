@@ -43,7 +43,7 @@ class PointMarkBadge extends StatelessWidget {
         child: Text(
           displayMark,
           style: TextStyle(
-            fontSize: 8,
+            fontSize: AppFontSize.micro,
             color: color,
             fontWeight: AppFontWeight.bold,
             height: 1.1,
@@ -57,7 +57,7 @@ class PointMarkBadge extends StatelessWidget {
       child: Text(
         displayMark,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: AppFontSize.badge,
           color: color,
           fontWeight: AppFontWeight.bold,
           height: 1.1,
@@ -108,7 +108,7 @@ class PointBox extends StatelessWidget {
             ),
           if (points.isNotEmpty)
             Positioned(
-              top: 4,
+              top: AppSpacing.xs,
               left: 6,
               child: PointMarkBadge(
                 point: points[0],
@@ -118,7 +118,7 @@ class PointBox extends StatelessWidget {
             ),
           if (points.length > 1)
             Positioned(
-              bottom: 4,
+              bottom: AppSpacing.xs,
               right: 6,
               child: PointMarkBadge(
                 point: points[1],

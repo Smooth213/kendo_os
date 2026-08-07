@@ -231,7 +231,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       const Text(
                         '登録済み部門',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: AppFontSize.small,
                           color: Colors.grey,
                           fontWeight: AppFontWeight.bold,
                         ),
@@ -317,11 +317,11 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                   icon: const Icon(Icons.clear, size: 14),
                                   label: const Text(
                                     'クリア',
-                                    style: TextStyle(fontSize: 11),
+                                    style: TextStyle(fontSize: AppFontSize.caption),
                                   ),
                                   style: TextButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
+                                      horizontal: AppSpacing.sm,
                                     ),
                                     visualDensity: VisualDensity.compact,
                                   ),
@@ -339,17 +339,17 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 13,
+                              fontSize: AppFontSize.bodySmall,
                               fontWeight: AppFontWeight.semiBold,
                             ),
                             decoration: InputDecoration(
                               labelText: '試合場・進行の見出し',
                               hintText: '例: 準決勝, 第1試合場, 23試合目',
-                              hintStyle: const TextStyle(fontSize: 12.5),
+                              hintStyle: const TextStyle(fontSize: AppFontSize.bodyMedium),
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.md,
                               ),
                               border: const OutlineInputBorder(),
                               enabledBorder: OutlineInputBorder(
@@ -376,7 +376,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 child: Text(
                                   '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
                                   style: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: AppFontSize.caption,
                                     color: isDark
                                         ? Colors.grey.shade400
                                         : Colors.grey.shade600,
@@ -389,7 +389,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           Text(
                             '🏟️ 試合場（コート）を選択',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
                                   ? Colors.grey.shade300
@@ -410,7 +410,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                   selected: isSelected,
                                   label: Text(
                                     preset,
-                                    style: const TextStyle(fontSize: 11),
+                                    style: const TextStyle(fontSize: AppFontSize.caption),
                                   ),
                                   onSelected: (_) {
                                     _toggleHeadingPreset(preset);
@@ -423,7 +423,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           Text(
                             '🏆 回戦・ラウンド・試合順を選択',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
                                   ? Colors.grey.shade300
@@ -453,7 +453,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                     selected: isSelected,
                                     label: Text(
                                       preset,
-                                      style: const TextStyle(fontSize: 11),
+                                      style: const TextStyle(fontSize: AppFontSize.caption),
                                     ),
                                     onSelected: (_) {
                                       _toggleHeadingPreset(preset);
@@ -494,7 +494,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       color: Colors.redAccent,
                       icon: Icons.flash_on,
                       label: '$_creationMode を実行',
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                     ),
                   ],
                 ),
@@ -831,14 +831,14 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             const Text(
               '現在適用するルール（タップして選択）',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: AppFontSize.bodySmall,
                 color: Colors.grey,
                 fontWeight: AppFontWeight.bold,
               ),
             ),
             if (ruleSet != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.indigo.shade50,
                   borderRadius: AppRadius.medium,
@@ -847,7 +847,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 child: Text(
                   '部門ルール適用中: $cleanCategory',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: AppFontSize.caption,
                     color: Colors.indigo.shade800,
                     fontWeight: AppFontWeight.bold,
                   ),
@@ -942,7 +942,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         borderRadius: AppRadius.medium,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark
@@ -983,7 +983,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: AppFontSize.body,
                         fontWeight: AppFontWeight.bold,
                         color: isSelected
                             ? (isDark ? Colors.white : accentColor.shade900)
@@ -994,7 +994,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     Text(
                       subText,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: AppFontSize.small,
                         color: isSelected
                             ? (isDark ? Colors.white70 : accentColor.shade800)
                             : Colors.grey.shade600,

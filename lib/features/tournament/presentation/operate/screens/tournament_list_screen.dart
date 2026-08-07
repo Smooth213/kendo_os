@@ -96,7 +96,7 @@ class TournamentListScreen extends ConsumerWidget {
                     Text(
                       isArchive ? '過去の大会記録はありません' : '今日の大会はまだありません',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: AppFontSize.headline,
                         fontWeight: AppFontWeight.bold,
                         color: accentColor,
                       ),
@@ -109,7 +109,7 @@ class TournamentListScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: subTextColor,
-                        fontSize: 14,
+                        fontSize: AppFontSize.body,
                         height: 1.5,
                       ),
                     ),
@@ -125,8 +125,8 @@ class TournamentListScreen extends ConsumerWidget {
               },
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+                  horizontal: AppSpacing.xl,
+                  vertical: AppSpacing.md,
                 ), // 余白の統一
                 // ★ 最適化: 3画面分先読みキャッシュでスクロール時のレイアウト計算コストを削減
                 // ignore: deprecated_member_use
@@ -173,7 +173,7 @@ class TournamentListScreen extends ConsumerWidget {
                     );
 
                     final cardChild = Card(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       elevation: 0,
                       color: effectiveCardColor,
                       shape: cardShape,
@@ -264,14 +264,14 @@ class TournamentListScreen extends ConsumerWidget {
                   if (showHeader) {
                     header = Padding(
                       padding: const EdgeInsets.only(
-                        top: 24,
-                        bottom: 12,
-                        left: 4,
+                        top: AppSpacing.xl,
+                        bottom: AppSpacing.md,
+                        left: AppSpacing.xs,
                       ),
                       child: Text(
                         currentMonth,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: AppFontSize.body,
                           fontWeight: AppFontWeight.bold,
                           color: isDark
                               ? accentColor

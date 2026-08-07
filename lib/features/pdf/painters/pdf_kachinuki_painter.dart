@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/pdf/models/pdf_point_data.dart';
@@ -317,7 +318,7 @@ class PdfKachinukiPainter {
           style: pw.TextStyle(
             fontWeight: pw.FontWeight.bold,
             font: ttfBold,
-            fontSize: 12,
+            fontSize: AppFontSize.small,
           ),
         ),
         pw.SizedBox(height: 8),

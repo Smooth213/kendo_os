@@ -317,7 +317,7 @@ void main() {
                     style: TextStyle(
                       color: Colors.red,
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 18,
+                      fontSize: AppFontSize.headline,
                     ),
                   ),
                   Text(
@@ -325,7 +325,7 @@ void main() {
                     style: const TextStyle(
                       color: Colors.black,
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 14,
+                      fontSize: AppFontSize.body,
                     ),
                   ),
                 ],
@@ -376,7 +376,7 @@ void main() {
                                       color: Colors.amber.shade900,
                                       padding: const EdgeInsets.only(
                                         top: 34,
-                                        bottom: 8,
+                                        bottom: AppSpacing.sm,
                                       ),
                                       alignment: Alignment.center,
                                       child: const Row(
@@ -394,7 +394,7 @@ void main() {
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontWeight: AppFontWeight.bold,
-                                              fontSize: 13,
+                                              fontSize: AppFontSize.bodySmall,
                                               decoration: TextDecoration.none,
                                             ),
                                           ),
@@ -839,9 +839,9 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                       color: Colors.amber.shade900,
                       padding: EdgeInsets.only(
                         top: MediaQuery.of(context).padding.top + 8,
-                        bottom: 8,
-                        left: 16,
-                        right: 16,
+                        bottom: AppSpacing.sm,
+                        left: AppSpacing.lg,
+                        right: AppSpacing.lg,
                       ),
                       alignment: Alignment.center,
                       child: Row(
@@ -861,7 +861,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: AppFontWeight.bold,
-                                fontSize: 13,
+                                fontSize: AppFontSize.bodySmall,
                                 decoration: TextDecoration.none,
                               ),
                             ),

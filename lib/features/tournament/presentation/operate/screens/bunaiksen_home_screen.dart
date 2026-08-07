@@ -50,7 +50,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     // 完全無得点の引き分け
     if (match.redScore == 0 && match.whiteScore == 0) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: Icon(Icons.close, size: 18, color: iconColor), // 完璧な中央揃えの「✕」アイコン
       );
     }
@@ -98,14 +98,14 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         Text(
           rMarksStr,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: AppFontSize.header,
             fontWeight: AppFontWeight.bold,
             color: textColor,
             height: 1.1,
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           // 引き分けなら「✕（close）」、勝敗がついていれば「-（remove）」のアイコンを表示
           child: Icon(
             isDraw ? Icons.close : Icons.remove,
@@ -116,7 +116,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         Text(
           wMarksStr,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: AppFontSize.header,
             fontWeight: AppFontWeight.bold,
             color: textColor,
             height: 1.1,
@@ -283,8 +283,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           backgroundColor: themeColors.primaryAccent,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
+                            horizontal: AppSpacing.xl,
+                            vertical: AppSpacing.md,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: AppRadius.large,
@@ -294,7 +294,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           'クイック対戦を始める',
                           style: TextStyle(
                             fontWeight: AppFontWeight.bold,
-                            fontSize: 14,
+                            fontSize: AppFontSize.body,
                           ),
                         ),
                       ),
@@ -329,7 +329,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                     Text(
                                       '無限勝ち抜き 連勝ランキング',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: AppFontSize.subhead,
                                         fontWeight: AppFontWeight.bold,
                                         color: isDark
                                             ? Colors.white
@@ -350,7 +350,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   SliverToBoxAdapter(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
+                        horizontal: AppSpacing.lg,
                         vertical: 6.0,
                       ),
                       color: themeColors.softAccent, // ★ 修正
@@ -375,7 +375,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
+                                    horizontal: AppSpacing.md,
                                     vertical: 6,
                                   ),
                                   shape: RoundedRectangleBorder(
@@ -386,7 +386,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                   'クイック対戦',
                                   style: TextStyle(
                                     fontWeight: AppFontWeight.bold,
-                                    fontSize: 11,
+                                    fontSize: AppFontSize.caption,
                                   ),
                                 ),
                               ),
@@ -408,7 +408,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                     'ルール一括変更',
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.bold,
-                                      fontSize: 11,
+                                      fontSize: AppFontSize.caption,
                                       color: themeColors.primaryAccent,
                                     ),
                                   ),
@@ -419,7 +419,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                           .withValues(alpha: 0.5),
                                     ),
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
+                                      horizontal: AppSpacing.sm,
                                       vertical: 6,
                                     ),
                                     shape: RoundedRectangleBorder(
@@ -467,8 +467,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       // ★ 修正：一体化のため、外側のPaddingでリストの余白を管理
                       return Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 4.0,
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.xs,
                         ),
                         child: Slidable(
                           key: ValueKey(match.id),
@@ -530,7 +530,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                                 ? match.note
                                                 : '部内稽古',
                                             style: TextStyle(
-                                              fontSize: 11,
+                                              fontSize: AppFontSize.caption,
                                               color: noteC,
                                               fontWeight: AppFontWeight.bold,
                                             ),
@@ -544,7 +544,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                             vertical: 2,
                                           ),
                                           margin: const EdgeInsets.only(
-                                            right: 8,
+                                            right: AppSpacing.sm,
                                           ),
                                           decoration: BoxDecoration(
                                             color: isPlaying
@@ -573,7 +573,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                                 ? '進行中'
                                                 : (isFinished ? '終了' : '待機中'),
                                             style: TextStyle(
-                                              fontSize: 10,
+                                              fontSize: AppFontSize.badge,
                                               fontWeight: AppFontWeight.bold,
                                               color: isPlaying
                                                   ? Colors.white
@@ -598,7 +598,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                         Text(
                                           '第${index + 1}試合',
                                           style: TextStyle(
-                                            fontSize: 11,
+                                            fontSize: AppFontSize.caption,
                                             color: noteC,
                                           ),
                                         ),
@@ -611,7 +611,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                           child: Text(
                                             match.redName,
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: AppFontSize.subhead,
                                               fontWeight: AppFontWeight.bold,
                                               color: textC,
                                             ),
@@ -621,7 +621,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 16.0,
+                                            horizontal: AppSpacing.lg,
                                           ),
                                           child: isFinished
                                               ? _buildScoreMarks(
@@ -632,7 +632,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                               : Text(
                                                   'VS',
                                                   style: TextStyle(
-                                                    fontSize: 16,
+                                                    fontSize: AppFontSize.subhead,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: textC,
@@ -643,7 +643,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                           child: Text(
                                             match.whiteName,
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: AppFontSize.subhead,
                                               fontWeight: AppFontWeight.bold,
                                               color: textC,
                                             ),
@@ -672,7 +672,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 label: const Text(
                   '試合作成',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: AppFontSize.subhead,
                     fontWeight: AppFontWeight.bold,
                   ),
                 ),
@@ -764,7 +764,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               const Text(
                 'この部内戦の全試合・スコアを\n観客用に安全に共有できます。',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: AppFontSize.bodySmall),
               ),
               const SizedBox(height: AppSpacing.lg),
               Container(
@@ -834,7 +834,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         builder: (sheetContext, setStateSheet) => Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
-            top: 16,
+            top: AppSpacing.lg,
             left: 20,
             right: 20,
           ),
@@ -846,14 +846,14 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: AppRadius.micro,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
                 'クイック対戦',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: AppFontSize.headline,
                   fontWeight: AppFontWeight.bold,
                   color: themeColors.textColor,
                 ),
@@ -862,7 +862,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               Text(
                 '赤・白の選手を選択して「試合スタート」を押すとすぐに計測が始まります',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: AppFontSize.small,
                   color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                 ),
                 textAlign: TextAlign.center,
@@ -889,7 +889,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           Text(
                             '赤',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: AppFontSize.body,
                               fontWeight: AppFontWeight.bold,
                               color: Colors.red.shade600,
                             ),
@@ -910,7 +910,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             borderRadius: AppRadius.small,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
+                                horizontal: AppSpacing.md,
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
@@ -932,7 +932,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                     child: Text(
                                       redPlayer,
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: AppFontSize.subhead,
                                         fontWeight: AppFontWeight.bold,
                                         color: themeColors.textColor,
                                       ),
@@ -952,12 +952,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     child: Text(
                       'VS',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: 16,
+                        fontSize: AppFontSize.subhead,
                         color: Colors.grey,
                       ),
                     ),
@@ -983,7 +983,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           Text(
                             '白',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: AppFontSize.body,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
                                   ? Colors.white70
@@ -1008,7 +1008,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             borderRadius: AppRadius.small,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
+                                horizontal: AppSpacing.md,
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
@@ -1032,7 +1032,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                     child: Text(
                                       whitePlayer,
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: AppFontSize.subhead,
                                         fontWeight: AppFontWeight.bold,
                                         color: themeColors.textColor,
                                       ),
@@ -1085,7 +1085,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             Text(
                               '試合時間',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: AppFontSize.bodySmall,
                                 fontWeight: AppFontWeight.bold,
                                 color: themeColors.textColor,
                               ),
@@ -1098,7 +1098,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             color: isDark
                                 ? const Color(0xFF3A3A3C)
                                 : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: AppRadius.round,
                             border: Border.all(
                               color: themeColors.primaryAccent.withValues(
                                 alpha: 0.5,
@@ -1137,7 +1137,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       : '$selectedMatchTime分',
                                   style: TextStyle(
                                     fontWeight: AppFontWeight.bold,
-                                    fontSize: 14,
+                                    fontSize: AppFontSize.body,
                                     color: themeColors.textColor,
                                   ),
                                 ),
@@ -1185,7 +1185,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             Text(
                               '勝負形式',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: AppFontSize.bodySmall,
                                 fontWeight: AppFontWeight.bold,
                                 color: themeColors.textColor,
                               ),
@@ -1221,7 +1221,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 child: Text(
                                   '3本勝負',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: AppFontSize.small,
                                     fontWeight: !selectedIsIpponShobu
                                         ? AppFontWeight.bold
                                         : FontWeight.normal,
@@ -1260,7 +1260,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 child: Text(
                                   '1本勝負',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: AppFontSize.small,
                                     fontWeight: selectedIsIpponShobu
                                         ? AppFontWeight.bold
                                         : FontWeight.normal,
@@ -1326,7 +1326,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                   label: const Text(
                     '試合スタート',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: AppFontSize.subhead,
                       fontWeight: AppFontWeight.bold,
                     ),
                   ),
@@ -1399,7 +1399,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             return AppBottomSheetContent(
               title: '$sideName の選手を選択',
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1411,7 +1411,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         Text(
                           '$sideNameの選手を選択',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: AppFontSize.headline,
                             fontWeight: AppFontWeight.bold,
                             color: isDark ? Colors.white : Colors.black87,
                           ),
@@ -1443,8 +1443,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.md,
                         ),
                       ),
                       onChanged: (val) => setModalState(() => searchText = val),
@@ -1510,7 +1510,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               itemBuilder: (itemCtx, index) {
                                 final p = filtered[index];
                                 return Card(
-                                  margin: const EdgeInsets.only(bottom: 8),
+                                  margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                                   color: isDark
                                       ? const Color(0xFF2C2C2E)
                                       : Colors.grey.shade50,
@@ -1545,7 +1545,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       p.gradeName,
                                       style: TextStyle(
                                         color: accentColor,
-                                        fontSize: 12,
+                                        fontSize: AppFontSize.small,
                                       ),
                                     ),
                                     trailing: Icon(

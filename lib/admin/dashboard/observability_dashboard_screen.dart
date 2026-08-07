@@ -32,10 +32,10 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
           child: ListView(
             children: [
               const Padding(
-                padding: EdgeInsets.only(bottom: 24.0),
+                padding: EdgeInsets.only(bottom: AppSpacing.xl),
                 child: Text(
                   'リアルタイムのシステム健康状態（メトリクス）を表示しています。異常値が検出された場合、自動でCRITICALアラートが発行されます。',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                  style: TextStyle(fontSize: AppFontSize.bodySmall, color: Colors.grey),
                 ),
               ),
               _buildMetricCard(
@@ -82,7 +82,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
   ) {
     return Card(
       color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -96,7 +96,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     color: Colors.grey,
                     fontWeight: AppFontWeight.bold,
                   ),
@@ -105,7 +105,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: AppFontSize.display,
                     fontWeight: AppFontWeight.bold,
                     color: color,
                   ),

@@ -71,7 +71,7 @@ void _showAnnounceDialog(
         content: Text(
           announce.body,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: AppFontSize.body,
             height: 1.5,
             color: isDark ? Colors.grey.shade300 : const Color(0xFF2C3E50),
           ),
@@ -96,7 +96,7 @@ void _showAnnounceDialog(
               },
               child: const Text(
                 '内容を確認しました',
-                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 13),
+                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.bodySmall),
               ),
             ),
           ),

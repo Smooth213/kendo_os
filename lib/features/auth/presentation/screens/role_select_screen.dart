@@ -56,7 +56,7 @@ class RoleSelectScreen extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: 40,
-                        horizontal: 24,
+                        horizontal: AppSpacing.xl,
                       ),
                       decoration: BoxDecoration(
                         color: cardBgColor,
@@ -80,7 +80,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           Text(
                             'Kendo Sync',
                             style: TextStyle(
-                              fontSize: 32,
+                              fontSize: AppFontSize.jumbo,
                               fontWeight: AppFontWeight.bold,
                               color: textColor,
                               letterSpacing: 1.5,
@@ -90,7 +90,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           Text(
                             'Stage2 β：利用権限を選択してください',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: AppFontSize.bodySmall,
                               color: subTextColor,
                               fontWeight: AppFontWeight.bold,
                               letterSpacing: 0.5,
@@ -115,7 +115,7 @@ class RoleSelectScreen extends ConsumerWidget {
                                 ),
                                 child: InkWell(
                                   onTap: () => RoomJoinQrDialog.show(context),
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: AppRadius.round,
                                   child: Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric(
@@ -126,7 +126,7 @@ class RoleSelectScreen extends ConsumerWidget {
                                       color: isDark
                                           ? Colors.white.withValues(alpha: 0.08)
                                           : const Color(0xFFF2F3F7),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: AppRadius.round,
                                       border: Border.all(
                                         color: isDark
                                             ? Colors.white.withValues(
@@ -170,7 +170,7 @@ class RoleSelectScreen extends ConsumerWidget {
                                               Text(
                                                 '接続中の道場ID (ルーム)',
                                                 style: TextStyle(
-                                                  fontSize: 11,
+                                                  fontSize: AppFontSize.caption,
                                                   fontWeight:
                                                       AppFontWeight.bold,
                                                   color: isDark
@@ -183,7 +183,7 @@ class RoleSelectScreen extends ConsumerWidget {
                                               Text(
                                                 displayDojoId,
                                                 style: TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: AppFontSize.subhead,
                                                   fontWeight:
                                                       AppFontWeight.bold,
                                                   color: isDark
@@ -223,7 +223,7 @@ class RoleSelectScreen extends ConsumerWidget {
                                               Text(
                                                 '変更',
                                                 style: TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize: AppFontSize.small,
                                                   fontWeight:
                                                       AppFontWeight.bold,
                                                   color: isDark
@@ -333,7 +333,7 @@ class RoleSelectScreen extends ConsumerWidget {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: AppFontWeight.bold,
-            fontSize: 16,
+            fontSize: AppFontSize.subhead,
           ),
         ),
       ),

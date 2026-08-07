@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,7 +89,7 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: AppFontWeight.bold,
-                            fontSize: 16,
+                            fontSize: AppFontSize.subhead,
                           ),
                         );
                       },
@@ -113,7 +114,7 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
                   isApproved ? '記録確定済み' : (isAllDone ? '全試合終了' : '試合進行中'),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     fontWeight: AppFontWeight.bold,
                   ),
                 ),
@@ -158,7 +159,7 @@ class _MasterTimerBanner extends ConsumerWidget {
 
     final bgColor = isTimeUp
         ? (isDark
-              ? Colors.red.shade900.withValues(alpha: 0.3)
+              ? AppKendoColors.hansokuRed.withValues(alpha: 0.3)
               : Colors.red.shade50)
         : (isDark
               ? Colors.indigo.shade900.withValues(alpha: 0.3)
@@ -167,12 +168,12 @@ class _MasterTimerBanner extends ConsumerWidget {
     return Container(
       width: double.infinity,
       color: bgColor,
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Center(
         child: Text(
           isTimeUp ? '錬成会 終了時間！' : '全体の残り時間: $displayTime',
           style: TextStyle(
-            fontSize: 13,
+            fontSize: AppFontSize.bodySmall,
             fontWeight: AppFontWeight.bold,
             color: isTimeUp
                 ? Colors.red

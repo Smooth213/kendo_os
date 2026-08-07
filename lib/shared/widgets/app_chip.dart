@@ -50,7 +50,7 @@ class AppChoiceChip extends StatelessWidget {
           : null,
       label: DefaultTextStyle.merge(
         style: TextStyle(
-          fontSize: 13,
+          fontSize: AppFontSize.bodySmall,
           fontWeight: selected ? AppFontWeight.semiBold : AppFontWeight.regular,
           color: effectiveTextColor,
         ),
@@ -110,7 +110,7 @@ class AppActionChip extends StatelessWidget {
           : null,
       label: DefaultTextStyle.merge(
         style: TextStyle(
-          fontSize: 13,
+          fontSize: AppFontSize.bodySmall,
           fontWeight: AppFontWeight.regular,
           color: themeColors.subTextColor,
         ),
@@ -166,7 +166,7 @@ class AppFilterChip extends StatelessWidget {
           : null,
       label: DefaultTextStyle.merge(
         style: TextStyle(
-          fontSize: 13,
+          fontSize: AppFontSize.bodySmall,
           fontWeight: selected ? AppFontWeight.semiBold : AppFontWeight.regular,
           color: effectiveTextColor,
         ),

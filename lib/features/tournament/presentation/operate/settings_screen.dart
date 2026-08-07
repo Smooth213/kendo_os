@@ -67,8 +67,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 24,
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.xl,
                 ),
                 children: [
                   // ==========================================
@@ -92,7 +92,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         style: TextStyle(
                           color: dynamicTextColor,
                           fontWeight: AppFontWeight.bold,
-                          fontSize: 14,
+                          fontSize: AppFontSize.body,
                         ),
                         items: const [
                           DropdownMenuItem(
@@ -158,7 +158,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         style: TextStyle(
                           color: dynamicTextColor,
                           fontWeight: AppFontWeight.bold,
-                          fontSize: 14,
+                          fontSize: AppFontSize.body,
                         ),
                         items: const [
                           DropdownMenuItem(value: 'off', child: Text('OFF')),
@@ -380,7 +380,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             style: TextStyle(
                               color: dynamicTextColor,
                               fontWeight: AppFontWeight.bold,
-                              fontSize: 13,
+                              fontSize: AppFontSize.bodySmall,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.lg),
@@ -441,7 +441,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   'テスト用：試合終了ボタン',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 16,
+                                    fontSize: AppFontSize.subhead,
                                     fontWeight: AppFontWeight.bold,
                                     letterSpacing: 1.1,
                                   ),
@@ -488,7 +488,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           decoration: BoxDecoration(
             color: isActive
                 ? accentPink.withValues(alpha: 0.15)
@@ -532,7 +532,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title,
                 style: TextStyle(
                   color: isActive ? dynamicTextColor : Colors.grey.shade600,
-                  fontSize: 12,
+                  fontSize: AppFontSize.small,
                   fontWeight: AppFontWeight.bold,
                 ),
                 maxLines: 1,
@@ -548,12 +548,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildSectionHeader(BuildContext context, String title) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(left: 16, bottom: 8, top: 12),
+      padding: const EdgeInsets.only(left: AppSpacing.lg, bottom: AppSpacing.sm, top: AppSpacing.md),
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
           color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
-          fontSize: 13,
+          fontSize: AppFontSize.bodySmall,
           fontWeight: AppFontWeight.semiBold,
           letterSpacing: 0.5,
         ),
@@ -609,12 +609,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildSectionFooter(BuildContext context, String text) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8),
+      padding: const EdgeInsets.only(left: AppSpacing.lg, right: AppSpacing.lg, top: AppSpacing.sm, bottom: AppSpacing.sm),
       child: Text(
         text,
         style: TextStyle(
           color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
-          fontSize: 12,
+          fontSize: AppFontSize.small,
           height: 1.4,
         ),
       ),
@@ -634,7 +634,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final Color dynamicTextColor = isDark ? Colors.white : Colors.black;
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
       leading: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
@@ -647,12 +647,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title,
         style: TextStyle(
           color: dynamicTextColor,
-          fontSize: 15,
+          fontSize: AppFontSize.bodyMedium,
           fontWeight: FontWeight.w500,
         ),
       ),
       subtitle: subtitle != null
-          ? Text(subtitle, style: const TextStyle(fontSize: 12))
+          ? Text(subtitle, style: const TextStyle(fontSize: AppFontSize.small))
           : null,
       trailing: trailing,
       onTap: onTap,

@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -87,11 +88,11 @@ class ScoreTableCard extends StatelessWidget {
     final headerBgColor = themeColors.inputBackground;
     final headerTextColor = themeColors.subTextColor;
     final daihyoBgColor = isDark
-        ? Colors.red.shade900.withValues(alpha: 0.15)
+        ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
         : Colors.red.shade50;
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
@@ -139,12 +140,12 @@ class ScoreTableCard extends StatelessWidget {
                               child: Text(
                                 m.matchType,
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: AppFontSize.badge,
                                   fontWeight: AppFontWeight.bold,
                                   color: m.matchType == '代表戦'
                                       ? (isDark
                                             ? Colors.red.shade400
-                                            : Colors.red.shade900)
+                                            : AppKendoColors.hansokuRed)
                                       : (isDark
                                             ? Colors.grey.shade300
                                             : Colors.grey.shade800),
@@ -160,7 +161,7 @@ class ScoreTableCard extends StatelessWidget {
                           child: Text(
                             '本/勝',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: AppFontSize.badge,
                               color: headerTextColor,
                             ),
                           ),
@@ -255,8 +256,8 @@ class ScoreTableCard extends StatelessWidget {
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
                       color: isDark ? Colors.black87 : Colors.white,
@@ -277,7 +278,7 @@ class ScoreTableCard extends StatelessWidget {
                       '※簡易入力された結果です\n（詳細スコアはありません）',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: AppFontSize.bodySmall,
                         fontWeight: AppFontWeight.bold,
                         color: isDark
                             ? Colors.grey.shade300
@@ -328,7 +329,7 @@ class ScoreTableCard extends StatelessWidget {
                       child: Text(
                         winner == 'red' ? '勝' : '負',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: AppFontSize.body,
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'red'
                               ? (isDark
@@ -344,7 +345,7 @@ class ScoreTableCard extends StatelessWidget {
                       child: Text(
                         winner == 'white' ? '勝' : '負',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: AppFontSize.body,
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'white'
                               ? (isDark
@@ -372,7 +373,7 @@ class ScoreTableCard extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontWeight: AppFontWeight.bold,
-          fontSize: 11,
+          fontSize: AppFontSize.caption,
         ),
       ),
     ),
@@ -389,7 +390,7 @@ class ScoreTableCard extends StatelessWidget {
       return Container(
         color: isDaihyo
             ? (isDark
-                  ? Colors.red.shade900.withValues(alpha: 0.15)
+                  ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
                   : Colors.red.shade50)
             : Colors.transparent,
       );
@@ -403,12 +404,12 @@ class ScoreTableCard extends StatelessWidget {
     final cell = Container(
       color: isDaihyo
           ? (isDark
-                ? Colors.red.shade900.withValues(alpha: 0.15)
+                ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
                 : Colors.red.shade50)
           : Colors.transparent,
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xs),
           child: VerticalNameText(
             text: parsed['last']!,
             initial: showInitial ? parsed['first']!.substring(0, 1) : '',
@@ -451,7 +452,7 @@ class ScoreTableCard extends StatelessWidget {
                   child: Text(
                     '✕',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: AppFontSize.subhead,
                       fontWeight: AppFontWeight.bold,
                       color: themeColors.hintColor,
                     ),
@@ -470,7 +471,7 @@ class ScoreTableCard extends StatelessWidget {
                       Text(
                         '延',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: AppFontSize.badge,
                           fontWeight: AppFontWeight.bold,
                           height: 1.0,
                           color: themeColors.textColor,
@@ -479,7 +480,7 @@ class ScoreTableCard extends StatelessWidget {
                       Text(
                         '長',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: AppFontSize.badge,
                           fontWeight: AppFontWeight.bold,
                           height: 1.0,
                           color: themeColors.textColor,
@@ -525,7 +526,7 @@ class ScoreTableCard extends StatelessWidget {
         '$pts\n--\n$wins',
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
-          fontSize: 12,
+          fontSize: AppFontSize.small,
           color: themeColors.subTextColor,
         ),
         textAlign: TextAlign.center,

@@ -66,7 +66,7 @@ class _ProgramManagementScreenState
                   'プログラムの追加',
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
-                    fontSize: 16,
+                    fontSize: AppFontSize.subhead,
                   ),
                 ),
               ),
@@ -275,7 +275,7 @@ class _ProgramManagementScreenState
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   color: Colors.white70,
-                                                  fontSize: 12,
+                                                  fontSize: AppFontSize.small,
                                                 ),
                                               ),
                                             ],
@@ -308,7 +308,7 @@ class _ProgramManagementScreenState
                             // 左右のナビゲーション補助
                             if (orderedFiles.length > 1) ...[
                               Positioned(
-                                left: 8,
+                                left: AppSpacing.sm,
                                 top: 0,
                                 bottom: 0,
                                 child: Icon(
@@ -318,7 +318,7 @@ class _ProgramManagementScreenState
                                 ),
                               ),
                               Positioned(
-                                right: 8,
+                                right: AppSpacing.sm,
                                 top: 0,
                                 bottom: 0,
                                 child: Icon(
@@ -349,7 +349,7 @@ class _ProgramManagementScreenState
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,
                               color: Colors.indigo,
-                              fontSize: 13,
+                              fontSize: AppFontSize.bodySmall,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
@@ -372,8 +372,8 @@ class _ProgramManagementScreenState
                                   ? const Color(0xFF2C2C3E)
                                   : Colors.white,
                               contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.md,
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: AppRadius.small,
@@ -406,14 +406,14 @@ class _ProgramManagementScreenState
                               duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.only(
                                 top: 6,
-                                left: 4,
-                                right: 4,
-                                bottom: 4,
+                                left: AppSpacing.xs,
+                                right: AppSpacing.xs,
+                                bottom: AppSpacing.xs,
                               ),
                               decoration: showValidationHighlight
                                   ? BoxDecoration(
                                       color: Colors.red.shade50,
-                                      borderRadius: BorderRadius.circular(6),
+                                      borderRadius: AppRadius.sub,
                                       border: Border.all(
                                         color: Colors.red.shade300,
                                         width: 1.2,
@@ -435,7 +435,7 @@ class _ProgramManagementScreenState
                                   Text(
                                     'タイトルは必須です（入力しないと保存できません）',
                                     style: TextStyle(
-                                      fontSize: 11,
+                                      fontSize: AppFontSize.caption,
                                       color: showValidationHighlight
                                           ? Colors.red.shade700
                                           : Colors.orange.shade700,
@@ -452,7 +452,7 @@ class _ProgramManagementScreenState
                             const SizedBox(height: AppSpacing.md),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
+                                horizontal: AppSpacing.md,
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
@@ -483,7 +483,7 @@ class _ProgramManagementScreenState
                                       '• 下のリストをドラッグして並び順を変更できます。\n'
                                       '• 保存時、自動的に「[入力タイトル] (1/${orderedFiles.length})」のように連番が付与されて保存されます。',
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: AppFontSize.small,
                                         fontWeight: AppFontWeight.semiBold,
                                         // ★ ダークモード対応: ダーク時は明るい色
                                         color: isDark
@@ -512,7 +512,7 @@ class _ProgramManagementScreenState
                               : Colors.white,
                         ),
                         child: ReorderableListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                           itemCount: orderedFiles.length,
                           onReorderItem: (oldIndex, newIndex) {
                             setState(() {
@@ -547,14 +547,14 @@ class _ProgramManagementScreenState
                                   '${index + 1}',
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 11,
+                                    fontSize: AppFontSize.caption,
                                   ),
                                 ),
                               ),
                               title: Text(
                                 file.name,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: AppFontSize.small,
                                   fontWeight: isSelected
                                       ? AppFontWeight.bold
                                       : FontWeight.normal,
@@ -626,7 +626,7 @@ class _ProgramManagementScreenState
                     Expanded(
                       child: Text(
                         message,
-                        style: const TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: AppFontSize.body),
                       ),
                     ),
                   ],
@@ -792,7 +792,7 @@ class _ProgramManagementScreenState
                   child: Container(
                     color: Colors.black.withAlpha(153),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: AppSpacing.sm,
                       vertical: 6,
                     ),
                     child: Row(
@@ -802,7 +802,7 @@ class _ProgramManagementScreenState
                             program.title,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: AppFontSize.small,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),

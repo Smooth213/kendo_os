@@ -139,7 +139,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 color: headerTextColor,
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.sm),
                 child: ElevatedButton.icon(
                   onPressed: () => context.go('/'),
 
@@ -153,7 +153,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     style: TextStyle(
                       color: isDark ? Colors.white : Colors.indigo.shade700,
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 12,
+                      fontSize: AppFontSize.small,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -161,9 +161,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                         ? Colors.white.withValues(alpha: 0.15)
                         : Colors.indigo.shade50,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: AppRadius.round,
                     ),
                   ),
                 ),
@@ -284,8 +284,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
                     ),
                     decoration: BoxDecoration(
                       color: cardColor,
@@ -418,8 +418,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
                           return Card(
                             margin: const EdgeInsets.symmetric(
-                              vertical: 8,
-                              horizontal: 4,
+                              vertical: AppSpacing.sm,
+                              horizontal: AppSpacing.xs,
                             ),
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -541,16 +541,16 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(
-                                  top: 24,
-                                  bottom: 12,
-                                  left: 8,
+                                  top: AppSpacing.xl,
+                                  bottom: AppSpacing.md,
+                                  left: AppSpacing.sm,
                                 ),
                                 child: Text(
                                   '【リーグ戦】 $leagueTitle',
                                   style: TextStyle(
                                     fontWeight: AppFontWeight.bold,
                                     color: textColor,
-                                    fontSize: 16,
+                                    fontSize: AppFontSize.subhead,
                                   ),
                                 ),
                               ),
@@ -567,12 +567,12 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
                               const SizedBox(height: AppSpacing.xxl),
                               const Padding(
-                                padding: EdgeInsets.only(left: 8, bottom: 12),
+                                padding: EdgeInsets.only(left: AppSpacing.sm, bottom: AppSpacing.md),
                                 child: Text(
                                   '▼ 対戦カード別 スコア詳細',
                                   style: TextStyle(
                                     fontWeight: AppFontWeight.bold,
-                                    fontSize: 14,
+                                    fontSize: AppFontSize.body,
                                     color: Colors.grey,
                                   ),
                                 ),
@@ -581,7 +581,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                               // 2. 詳細スコアの表示（個人戦なら中枠なしの一括リスト）
                               if (isIndiv)
                                 Padding(
-                                  padding: const EdgeInsets.only(bottom: 24),
+                                  padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                                   child: _buildIndividualMatchesList(
                                     '対戦スコア詳細',
                                     normalMatches,
@@ -595,7 +595,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 ...matchupOrder.map((matchupName) {
                                   final bouts = boutsByMatchup[matchupName]!;
                                   return Padding(
-                                    padding: const EdgeInsets.only(bottom: 24),
+                                    padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                                     child: _buildScoreTable(
                                       matchupName,
                                       bouts,
@@ -609,19 +609,19 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                               if (tieBouts.isNotEmpty) ...[
                                 const SizedBox(height: AppSpacing.lg),
                                 const Padding(
-                                  padding: EdgeInsets.only(left: 8, bottom: 8),
+                                  padding: EdgeInsets.only(left: AppSpacing.sm, bottom: AppSpacing.sm),
                                   child: Text(
                                     '▼ 順位決定戦',
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.bold,
-                                      fontSize: 14,
+                                      fontSize: AppFontSize.body,
                                       color: Colors.orange,
                                     ),
                                   ),
                                 ),
                                 if (isIndiv)
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
+                                    padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                                     child: _buildIndividualMatchesList(
                                       '順位決定戦',
                                       tieBouts,
@@ -639,7 +639,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                         tieBoutsByMatchup[matchupName]!;
                                     return Padding(
                                       padding: const EdgeInsets.only(
-                                        bottom: 16,
+                                        bottom: AppSpacing.lg,
                                       ),
                                       child: _buildScoreTable(
                                         matchupName,
@@ -717,12 +717,12 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         icon: Icon(icon, size: 16),
         label: Text(
           label,
-          style: const TextStyle(fontWeight: AppFontWeight.bold, fontSize: 12),
+          style: const TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.small),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
         ),
@@ -1092,7 +1092,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                       constraints: const BoxConstraints(maxWidth: 550),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: AppRadius.round,
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.3),
@@ -1135,7 +1135,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                               shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 40,
-                                vertical: 12,
+                                vertical: AppSpacing.md,
                               ),
                               elevation: 0,
                             ),
@@ -1633,7 +1633,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
@@ -1664,7 +1664,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     '🏆 遠征成績サマリー',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 15,
+                      fontSize: AppFontSize.bodyMedium,
                     ),
                   ),
                 ],
@@ -1679,7 +1679,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     color: isDark
                         ? Colors.indigo.shade900.withValues(alpha: 0.5)
                         : Colors.indigo.shade50,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: AppRadius.round,
                     border: Border.all(color: Colors.indigo.shade200),
                   ),
                   child: DropdownButtonHideUnderline(
@@ -1695,7 +1695,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                       ),
                       style: TextStyle(
                         fontWeight: AppFontWeight.bold,
-                        fontSize: 13,
+                        fontSize: AppFontSize.bodySmall,
                         color: isDark ? Colors.white : Colors.indigo.shade900,
                       ),
                       items: ['全体', ...teamsList].map((t) {
@@ -1749,7 +1749,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               '👤 個人戦・選手別成績',
               style: TextStyle(
                 fontWeight: AppFontWeight.bold,
-                fontSize: 13,
+                fontSize: AppFontSize.bodySmall,
                 color: Colors.grey,
               ),
             ),
@@ -1763,7 +1763,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 return Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 4,
+                    vertical: AppSpacing.xs,
                   ),
                   decoration: BoxDecoration(
                     color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
@@ -1777,7 +1777,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   child: Text(
                     '$pName: ${st.win}勝${st.loss}敗${st.draw > 0 ? "${st.draw}分" : ""}',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: AppFontSize.small,
                       fontWeight: AppFontWeight.bold,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
@@ -1805,7 +1805,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           title,
           style: TextStyle(
             fontWeight: AppFontWeight.bold,
-            fontSize: 13,
+            fontSize: AppFontSize.bodySmall,
             color: color,
           ),
         ),
@@ -1813,14 +1813,14 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         Text(
           total > 0 ? '$win勝 $loss敗 ${draw > 0 ? "$draw分" : ""}' : '未実施',
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: AppFontSize.body,
             fontWeight: AppFontWeight.semiBold,
           ),
         ),
         if (total > 0)
           Text(
             '（計$total試合）',
-            style: const TextStyle(fontSize: 11, color: Colors.grey),
+            style: const TextStyle(fontSize: AppFontSize.caption, color: Colors.grey),
           ),
       ],
     );

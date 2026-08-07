@@ -124,16 +124,16 @@ class _AnnounceHistoryBottomSheetState
               Container(
                 width: 40,
                 height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                margin: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 decoration: BoxDecoration(
                   color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: AppRadius.micro,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 8,
+                  vertical: AppSpacing.sm,
                 ),
                 child: Row(
                   children: [
@@ -146,7 +146,7 @@ class _AnnounceHistoryBottomSheetState
                       child: Text(
                         widget.isStaffRoom ? '新着通知一覧 (スタッフ専用)' : '新着通知一覧',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: AppFontSize.bodyMedium,
                           fontWeight: AppFontWeight.bold,
                           color: isDark
                               ? Colors.white
@@ -160,8 +160,8 @@ class _AnnounceHistoryBottomSheetState
                       TextButton.icon(
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.xs,
                           ),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           foregroundColor: const Color(0xFFFF69B4),
@@ -175,7 +175,7 @@ class _AnnounceHistoryBottomSheetState
                         label: const Text(
                           'すべて既読',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: AppFontSize.small,
                             fontWeight: AppFontWeight.bold,
                           ),
                         ),
@@ -253,7 +253,7 @@ class _AnnounceHistoryBottomSheetState
                 // 🌟 サクラピンク差し色ハック：未読の通知の左端にだけ「●ドット」を鮮やかに点火
                 if (!isRead)
                   Padding(
-                    padding: const EdgeInsets.only(top: 4, right: 8),
+                    padding: const EdgeInsets.only(top: AppSpacing.xs, right: AppSpacing.sm),
                     child: Container(
                       width: 8,
                       height: 8,
@@ -274,7 +274,7 @@ class _AnnounceHistoryBottomSheetState
                             child: Text(
                               isStaffOnly ? '【スタッフ限定】' : announce.title,
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: AppFontSize.body,
                                 fontWeight: !isRead
                                     ? FontWeight.w900
                                     : AppFontWeight.bold,
@@ -288,7 +288,7 @@ class _AnnounceHistoryBottomSheetState
                           Text(
                             DateFormat('HH:mm').format(announce.timestamp),
                             style: const TextStyle(
-                              fontSize: 11,
+                              fontSize: AppFontSize.caption,
                               color: Colors.grey,
                             ),
                           ),
@@ -298,7 +298,7 @@ class _AnnounceHistoryBottomSheetState
                       Text(
                         announce.body,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: AppFontSize.bodySmall,
                           height: 1.4,
                           color: isDark
                               ? Colors.grey.shade400

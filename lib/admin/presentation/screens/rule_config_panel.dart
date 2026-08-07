@@ -49,7 +49,7 @@ class RuleConfigPanel extends ConsumerWidget {
                       '1. 大会プリセットを選択 (Basic)',
                       style: TextStyle(
                         fontWeight: AppFontWeight.bold,
-                        fontSize: 16,
+                        fontSize: AppFontSize.subhead,
                         color: primaryColor,
                       ),
                     ),
@@ -74,8 +74,8 @@ class RuleConfigPanel extends ConsumerWidget {
           // --- Real-time Summary Section ---
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 12.0,
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
             ),
             color: Colors.blueGrey.shade50,
             child: Row(
@@ -91,7 +91,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   child: Text(
                     summary,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: AppFontSize.body,
                       color: Colors.blueGrey.shade800,
                       height: 1.4,
                     ),
@@ -105,7 +105,7 @@ class RuleConfigPanel extends ConsumerWidget {
           ExpansionTile(
             title: const Text(
               '2. 詳細設定をカスタマイズ (Advanced)',
-              style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 14),
+              style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.body),
             ),
             collapsedBackgroundColor: Colors.grey.shade50,
             childrenPadding: const EdgeInsets.all(AppSpacing.lg),
@@ -115,7 +115,7 @@ class RuleConfigPanel extends ConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   '規定本数（勝敗ライン）',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: AppFontSize.small, color: Colors.grey.shade600),
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -141,7 +141,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   Text(
                     '延長戦の有無',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: AppFontSize.body,
                       fontWeight: AppFontWeight.bold,
                       color: Colors.grey.shade800,
                     ),
@@ -173,7 +173,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   Text(
                     '判定 (引き分け時に旗で決着)',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: AppFontSize.body,
                       fontWeight: AppFontWeight.bold,
                       color: Colors.grey.shade800,
                     ),

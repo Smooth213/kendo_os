@@ -228,7 +228,7 @@ class ViewerMatchScreen extends ConsumerWidget {
     return Container(
       width: double.infinity,
       color: Colors.blueGrey.shade700,
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs, horizontal: AppSpacing.lg),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -241,7 +241,7 @@ class ViewerMatchScreen extends ConsumerWidget {
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: AppFontWeight.bold,
-                  fontSize: 12,
+                  fontSize: AppFontSize.small,
                 ),
               ),
             ],
@@ -252,7 +252,7 @@ class ViewerMatchScreen extends ConsumerWidget {
               '${p.statusText} | 直前: ${p.lastEventText}',
               style: const TextStyle(
                 color: Colors.white70,
-                fontSize: 11,
+                fontSize: AppFontSize.caption,
                 fontWeight: AppFontWeight.bold,
               ),
               textAlign: TextAlign.right,
@@ -289,7 +289,7 @@ class ViewerMatchScreen extends ConsumerWidget {
               const Text(
                 'このリンクを共有すると、\nリアルタイムで観戦できます。',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: AppFontSize.bodySmall),
               ),
               const SizedBox(height: AppSpacing.lg),
               Container(
@@ -575,7 +575,7 @@ class LargeViewerScoreboard extends StatelessWidget {
             // 勝者インジケーター
             if (isWinner)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -588,7 +588,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                     Text(
                       '勝者',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
                         color: Colors.amber.shade600,
                         letterSpacing: 2,
@@ -602,7 +602,7 @@ class LargeViewerScoreboard extends StatelessWidget {
             Text(
               name,
               style: TextStyle(
-                fontSize: 48, // 🌟 視認性を高める48pt
+                fontSize: AppFontSize.scoreboardTimer, // 🌟 視認性を高める48pt
                 fontWeight: AppFontWeight.bold,
                 color: textColor,
                 letterSpacing: 1.5,
@@ -622,7 +622,7 @@ class LargeViewerScoreboard extends StatelessWidget {
               Text(
                 List.filled(foulCount, '▲').join(''),
                 style: const TextStyle(
-                  fontSize: 28, // 反則マークも特大表示
+                  fontSize: AppFontSize.hero, // 反則マークも特大表示
                   color: Colors.amber,
                   fontWeight: AppFontWeight.bold,
                   letterSpacing: 4,
@@ -667,7 +667,7 @@ class LargeViewerScoreboard extends StatelessWidget {
           if (displays.isNotEmpty)
             Positioned(
               top: 14,
-              left: 16,
+              left: AppSpacing.lg,
               child: _buildPointBadge(displays[0], color),
             ),
 
@@ -675,7 +675,7 @@ class LargeViewerScoreboard extends StatelessWidget {
           if (displays.length > 1)
             Positioned(
               bottom: 14,
-              right: 16,
+              right: AppSpacing.lg,
               child: _buildPointBadge(displays[1], color),
             ),
         ],
@@ -738,7 +738,7 @@ class LargeViewerScoreboard extends StatelessWidget {
         : (isDark ? Colors.white70 : Colors.black87);
 
     final content = Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xl),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E24) : Colors.grey.shade200,
         borderRadius: AppRadius.large,
@@ -757,7 +757,7 @@ class LargeViewerScoreboard extends StatelessWidget {
             Text(
               timerText,
               style: TextStyle(
-                fontSize: 32, // 🌟 タイマーも特大表示
+                fontSize: AppFontSize.jumbo, // 🌟 タイマーも特大表示
                 fontWeight: AppFontWeight.bold,
                 fontFamily: 'monospace',
                 color: timerColor,
@@ -777,7 +777,7 @@ class LargeViewerScoreboard extends StatelessWidget {
               child: Text(
                 '${projection.redScore} - ${projection.whiteScore}',
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: AppFontSize.display,
                   fontWeight: AppFontWeight.bold,
                   color: Colors.white,
                 ),

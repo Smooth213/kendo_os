@@ -72,7 +72,7 @@ class AppDialog extends StatelessWidget {
                     child: Text(
                       title!,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: AppFontSize.title,
                         fontWeight: AppFontWeight.semiBold,
                         color: themeColors.textColor,
                       ),

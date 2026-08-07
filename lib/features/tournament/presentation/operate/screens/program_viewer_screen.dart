@@ -419,7 +419,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   '${currentProgram.title} (${safeIndex + 1}/${displayPrograms.length})',
                   style: const TextStyle(
                     fontWeight: AppFontWeight.bold,
-                    fontSize: 16,
+                    fontSize: AppFontSize.subhead,
                   ),
                 ),
           actions: [
@@ -455,7 +455,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       ? '文字検索の準備完了'
                       : '画像解析の準備中',
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     child: Icon(
                       Icons.bolt,
                       color: (currentProgram.isOcrProcessed ?? false)
@@ -476,7 +476,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
             // ★ 修正: 閲覧専用権限（保護者）の時は、ボタンを物理的に非表示にして「書けない・見るだけ」を徹底保証
             if (!permissions.isReadOnly)
               Padding(
-                padding: const EdgeInsets.only(right: 8.0),
+                padding: const EdgeInsets.only(right: AppSpacing.sm),
                 // ★ はみ出しエラー修正: 検索モード中や画面幅が狭い場合(600px未満)は、ラベルなしのアイコンボタンに変形してAppBarのパンクを完全防御します
                 child: MediaQuery.of(context).size.width < 600 || _isSearchMode
                     ? IconButton(
@@ -521,8 +521,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -546,7 +546,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                           borderRadius: AppRadius.small,
                         ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
+                          horizontal: AppSpacing.xs,
                           vertical: 2,
                         ),
                         child: Row(
@@ -562,8 +562,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 8,
-                                    horizontal: 12,
+                                    vertical: AppSpacing.sm,
+                                    horizontal: AppSpacing.md,
                                   ),
                                   decoration: BoxDecoration(
                                     color: activePenColor.withAlpha(26),
@@ -593,7 +593,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                           style: TextStyle(
                                             color: activePenColor,
                                             fontWeight: AppFontWeight.bold,
-                                            fontSize: 14,
+                                            fontSize: AppFontSize.body,
                                           ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -647,7 +647,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         ),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
+                        horizontal: AppSpacing.xs,
                         vertical: 2,
                       ),
                       child: Row(
@@ -669,7 +669,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             color: isDark
                                 ? Colors.grey.shade700
                                 : Colors.blueGrey.shade200,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                           ),
 
                           // 1つ戻る (Undo)
@@ -837,7 +837,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             Text(
                               program.title,
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: AppFontSize.subhead,
                                 fontWeight: AppFontWeight.bold,
                               ),
                               textAlign: TextAlign.center,
@@ -846,7 +846,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             Text(
                               '【材料データ同期済み】\nオフラインファースト最適化の規約に基づき、通信帯域を圧迫する実ファイル（バイナリ）の自動ロードは行われません。プログラムの構成情報は安全に保護されています。',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: AppFontSize.small,
                                 color: isDark ? Colors.white70 : Colors.black54,
                                 height: 1.5,
                               ),
@@ -1252,14 +1252,14 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
       message: tooltip,
       child: InkWell(
         onTap: () => setState(() => _selectedTool = tool),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.sub,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark ? Colors.grey.shade800 : Colors.white)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: AppRadius.sub,
             boxShadow: isSelected
                 ? [
                     BoxShadow(
@@ -1318,7 +1318,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   const Text(
                     'ペンの選択',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: AppFontSize.headline,
                       fontWeight: AppFontWeight.bold,
                     ),
                   ),
@@ -1327,7 +1327,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     const Text(
                       '📢 共有ペン (全員の画面に反映されます)',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: AppFontSize.bodySmall,
                         color: Colors.black87,
                         fontWeight: AppFontWeight.bold,
                       ),
@@ -1349,7 +1349,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   const Text(
                     '📝 個人ペン (自分だけのメモです)',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: AppFontSize.bodySmall,
                       color: Colors.black87,
                       fontWeight: AppFontWeight.bold,
                     ),
@@ -1409,7 +1409,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     fontWeight: isSelected
                         ? AppFontWeight.bold
                         : FontWeight.normal,
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                   ),
                 ),
               ),

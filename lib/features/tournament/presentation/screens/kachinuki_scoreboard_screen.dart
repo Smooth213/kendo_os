@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -151,7 +152,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
 
   Widget _buildRuleRow(String label, String value, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -161,7 +162,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               label,
               style: TextStyle(
                 color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                fontSize: 13,
+                fontSize: AppFontSize.bodySmall,
               ),
             ),
           ),
@@ -171,7 +172,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black87,
                 fontWeight: AppFontWeight.bold,
-                fontSize: 14,
+                fontSize: AppFontSize.body,
               ),
             ),
           ),
@@ -281,7 +282,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     return Column(
       children: [
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
@@ -295,7 +296,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               Text(
                 'チーム生存状況（残機）',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: AppFontSize.small,
                   fontWeight: AppFontWeight.bold,
                   color: isDark ? Colors.grey.shade400 : Colors.grey,
                   letterSpacing: 2,
@@ -317,7 +318,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                             color: isDark
                                 ? Colors.red.shade400
                                 : Colors.red.shade700,
-                            fontSize: 16,
+                            fontSize: AppFontSize.subhead,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.md),
@@ -342,14 +343,14 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
                     ),
                     child: Text(
                       'VS',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontSize: 24,
+                        fontSize: AppFontSize.display,
                         color: isDark ? Colors.white10 : Colors.black12,
                         fontStyle: FontStyle.italic,
                       ),
@@ -366,7 +367,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                             color: isDark
                                 ? Colors.blueGrey.shade300
                                 : Colors.blueGrey.shade800,
-                            fontSize: 16,
+                            fontSize: AppFontSize.subhead,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.md),
@@ -400,7 +401,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         const SizedBox(height: AppSpacing.sm),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
             itemCount: uiStates.length,
             itemBuilder: (context, index) => _buildCenterBattleCard(
               ref,
@@ -450,7 +451,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           '(欠員)',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: AppFontSize.subhead,
             fontWeight: AppFontWeight.bold,
             color: Colors.grey.shade500,
           ),
@@ -466,7 +467,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         textAlign: TextAlign.center,
         text: TextSpan(
           style: TextStyle(
-            fontSize: 16,
+            fontSize: AppFontSize.subhead,
             fontWeight: isWin ? FontWeight.w900 : AppFontWeight.bold,
             color: isFaded ? Colors.grey.shade600 : winColor,
           ),
@@ -480,7 +481,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                   child: Text(
                     parsed['first']!.substring(0, 1),
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: AppFontSize.badge,
                       fontWeight: AppFontWeight.bold,
                       color: isFaded
                           ? Colors.grey.shade500
@@ -495,13 +496,13 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Column(
         children: [
           Text(
             '$matchNumber試合目',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: AppFontSize.caption,
               fontWeight: AppFontWeight.bold,
               color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
             ),
@@ -512,13 +513,13 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 8,
+                    vertical: AppSpacing.lg,
+                    horizontal: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
                     color: rWin
                         ? (isDark
-                              ? Colors.red.shade900.withValues(alpha: 0.15)
+                              ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
                               : Colors.red.shade50)
                         : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
                     borderRadius: const BorderRadius.horizontal(
@@ -526,7 +527,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                     ),
                     border: Border.all(
                       color: rWin
-                          ? (isDark ? Colors.red.shade900 : Colors.red.shade200)
+                          ? (isDark ? AppKendoColors.hansokuRed : Colors.red.shade200)
                           : (isDark
                                 ? const Color(0xFF38383A)
                                 : Colors.grey.shade200),
@@ -545,7 +546,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: AppSpacing.sm,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
@@ -560,7 +561,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               color: isDark
                                   ? Colors.amber.shade400
                                   : Colors.amber.shade900,
-                              fontSize: 10,
+                              fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                             ),
                           ),
@@ -569,7 +570,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: AppSpacing.sm,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
@@ -589,7 +590,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               color: isDark
                                   ? Colors.amber.shade500
                                   : Colors.amber.shade800,
-                              fontSize: 10,
+                              fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                             ),
                           ),
@@ -601,7 +602,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               ),
               Container(
                 width: 90,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 decoration: BoxDecoration(
                   color: isDone
                       ? (isDark
@@ -633,7 +634,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                             isDark,
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                             child: Text(
                               '-',
                               style: TextStyle(
@@ -667,8 +668,8 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 8,
+                    vertical: AppSpacing.lg,
+                    horizontal: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
                     color: wWin
@@ -704,7 +705,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: AppSpacing.sm,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
@@ -719,7 +720,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               color: isDark
                                   ? Colors.amber.shade400
                                   : Colors.amber.shade900,
-                              fontSize: 10,
+                              fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                             ),
                           ),
@@ -728,7 +729,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: AppSpacing.sm,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
@@ -748,7 +749,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               color: isDark
                                   ? Colors.amber.shade500
                                   : Colors.amber.shade800,
-                              fontSize: 10,
+                              fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                             ),
                           ),
@@ -762,8 +763,8 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           ),
           if (isDraw)
             Container(
-              margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              margin: const EdgeInsets.only(top: AppSpacing.xs),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 2),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF38383A) : Colors.grey.shade300,
                 borderRadius: AppRadius.medium,
@@ -771,7 +772,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               child: Text(
                 '引き分け',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: AppFontSize.badge,
                   fontWeight: AppFontWeight.bold,
                   color: isDark ? Colors.grey.shade400 : Colors.black54,
                 ),
@@ -808,7 +809,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             child: Text(
               p.mark,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: AppFontSize.small,
                 fontWeight: AppFontWeight.bold,
                 color: textColor,
               ),
@@ -820,7 +821,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           child: Text(
             p.mark,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: AppFontSize.subhead,
               fontWeight: FontWeight.w900,
               color: textColor,
             ),
@@ -1308,7 +1309,7 @@ class KachinukiBracketPainter extends CustomPainter {
           text: '(欠員)',
           style: TextStyle(
             color: Colors.grey.shade500,
-            fontSize: 13,
+            fontSize: AppFontSize.bodySmall,
             fontWeight: AppFontWeight.bold,
           ),
         ),
@@ -1391,7 +1392,7 @@ class KachinukiBracketPainter extends CustomPainter {
 
     final textStyle = TextStyle(
       color: color,
-      fontSize: 15,
+      fontSize: AppFontSize.bodyMedium,
       fontWeight: FontWeight.w900,
     );
     final circlePaint = Paint()

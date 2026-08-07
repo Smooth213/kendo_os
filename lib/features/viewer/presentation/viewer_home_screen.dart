@@ -297,7 +297,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                         if (uniqueInProgress.isNotEmpty &&
                             uniqueWaiting.isNotEmpty)
                           const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
+                            padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                             child: Divider(color: Colors.white24, height: 1),
                           ),
                         if (uniqueWaiting.isNotEmpty)
@@ -312,8 +312,8 @@ class ViewerHomeScreen extends ConsumerWidget {
 
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 4.0,
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.xs,
                   ),
                   child: Column(
                     children: [
@@ -356,7 +356,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                             '大会プログラムを見る（閲覧専用）',
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,
-                              fontSize: 14,
+                              fontSize: AppFontSize.body,
                               color: isDark
                                   ? Colors.white
                                   : Colors.grey.shade800,
@@ -433,7 +433,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                         '原因候補: 道場IDが一致しない、または大会が他パスに存在します。管理者に確認してください。',
                                         style: TextStyle(
                                           color: Colors.grey,
-                                          fontSize: 12,
+                                          fontSize: AppFontSize.small,
                                         ),
                                       ),
                                     ],
@@ -482,8 +482,8 @@ class ViewerHomeScreen extends ConsumerWidget {
 
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 8,
+                          horizontal: AppSpacing.xl,
+                          vertical: AppSpacing.sm,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -492,7 +492,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                               Text(
                                 '試合リスト',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: AppFontSize.subhead,
                                   fontWeight: AppFontWeight.bold,
                                   color: isDark
                                       ? Colors.grey.shade400
@@ -503,13 +503,13 @@ class ViewerHomeScreen extends ConsumerWidget {
                             if (ref.watch(isSearchVisibleProvider))
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
+                                  padding: const EdgeInsets.only(right: AppSpacing.sm),
                                   child: SizedBox(
                                     height: 32,
                                     child: TextField(
                                       autofocus: true,
                                       style: TextStyle(
-                                        fontSize: 13,
+                                        fontSize: AppFontSize.bodySmall,
                                         color: isDark
                                             ? Colors.white
                                             : Colors.black87,
@@ -517,14 +517,14 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       decoration: InputDecoration(
                                         hintText: '選手名・チーム名で検索...',
                                         hintStyle: TextStyle(
-                                          fontSize: 12,
+                                          fontSize: AppFontSize.small,
                                           color: isDark
                                               ? Colors.grey.shade500
                                               : Colors.grey.shade400,
                                         ),
                                         contentPadding:
                                             const EdgeInsets.symmetric(
-                                              horizontal: 12,
+                                              horizontal: AppSpacing.md,
                                               vertical: 0,
                                             ),
                                         filled: true,
@@ -630,7 +630,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                     : 'カテゴリ降順',
                                 style: const TextStyle(
                                   fontWeight: AppFontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: AppFontSize.small,
                                 ),
                               ),
                               style: OutlinedButton.styleFrom(
@@ -643,7 +643,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       : Colors.blueGrey.shade200,
                                 ),
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: AppSpacing.md,
                                   vertical: 0,
                                 ),
                                 minimumSize: const Size(0, 32),
@@ -683,7 +683,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       '通信状況を確認してください',
                                   style: const TextStyle(
                                     color: Colors.grey,
-                                    fontSize: 12,
+                                    fontSize: AppFontSize.small,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -864,7 +864,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   child: Text(
                                     categoryName,
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: AppFontSize.subhead,
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
                                           ? Colors.blueGrey.shade300
@@ -1086,9 +1086,9 @@ class ViewerHomeScreen extends ConsumerWidget {
 
                                   return Container(
                                     margin: const EdgeInsets.only(
-                                      left: 12,
-                                      right: 12,
-                                      bottom: 24,
+                                      left: AppSpacing.md,
+                                      right: AppSpacing.md,
+                                      bottom: AppSpacing.xl,
                                     ),
                                     decoration: BoxDecoration(
                                       color: isDark
@@ -1120,8 +1120,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                         Container(
                                           width: double.infinity,
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
+                                            horizontal: AppSpacing.lg,
+                                            vertical: AppSpacing.md,
                                           ),
                                           decoration: BoxDecoration(
                                             color: isDark
@@ -1156,7 +1156,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                 child: Text(
                                                   teamName,
                                                   style: TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: AppFontSize.headline,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: isDark
@@ -1188,9 +1188,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                             if (label != lastGroupLabel) {
                                               headerWidget = Padding(
                                                 padding: const EdgeInsets.only(
-                                                  left: 16,
-                                                  top: 12,
-                                                  bottom: 4,
+                                                  left: AppSpacing.lg,
+                                                  top: AppSpacing.md,
+                                                  bottom: AppSpacing.xs,
                                                 ),
                                                 child: Row(
                                                   children: [
@@ -1211,7 +1211,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                     Text(
                                                       label,
                                                       style: TextStyle(
-                                                        fontSize: 13,
+                                                        fontSize: AppFontSize.bodySmall,
                                                         fontWeight:
                                                             AppFontWeight.bold,
                                                         color: isDark
@@ -1308,7 +1308,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                   child: Container(
                                                     margin:
                                                         const EdgeInsets.symmetric(
-                                                          horizontal: 12,
+                                                          horizontal: AppSpacing.md,
                                                           vertical: 6,
                                                         ),
                                                     decoration: BoxDecoration(
@@ -1397,8 +1397,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       },
                                                                       style: OutlinedButton.styleFrom(
                                                                         padding: const EdgeInsets.symmetric(
-                                                                          horizontal:
-                                                                              8,
+                                                                          horizontal: AppSpacing.sm,
                                                                         ),
                                                                         side: BorderSide(
                                                                           color: titleColor.withValues(
@@ -1416,8 +1415,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       child: Text(
                                                                         'スコア',
                                                                         style: TextStyle(
-                                                                          fontSize:
-                                                                              10,
+                                                                          fontSize: AppFontSize.badge,
                                                                           fontWeight:
                                                                               AppFontWeight.bold,
                                                                           color:
@@ -1466,8 +1464,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               ? '終了'
                                                                               : '待機中'),
                                                                     style: TextStyle(
-                                                                      fontSize:
-                                                                          10,
+                                                                      fontSize: AppFontSize.badge,
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold,
@@ -1502,8 +1499,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                   firstMatch
                                                                       .note,
                                                                   style: TextStyle(
-                                                                    fontSize:
-                                                                        11,
+                                                                    fontSize: AppFontSize.caption,
                                                                     color:
                                                                         subTitleColor,
                                                                     fontWeight:
@@ -1532,8 +1528,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             ownTeams,
                                                                           ),
                                                                           style: TextStyle(
-                                                                            fontSize:
-                                                                                13,
+                                                                            fontSize: AppFontSize.bodySmall,
                                                                             fontWeight:
                                                                                 AppFontWeight.bold,
                                                                             color:
@@ -1633,8 +1628,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       child: Text(
                                                                         showLeftTeam,
                                                                         style: TextStyle(
-                                                                          fontSize:
-                                                                              15,
+                                                                          fontSize: AppFontSize.bodyMedium,
                                                                           fontWeight:
                                                                               showLeftOwn
                                                                               ? FontWeight.w900
@@ -1652,8 +1646,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     ),
                                                                     Padding(
                                                                       padding: const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            16,
+                                                                        horizontal: AppSpacing.lg,
                                                                       ),
                                                                       child: Row(
                                                                         mainAxisSize:
@@ -1662,7 +1655,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                           Text(
                                                                             '$showLeftWins',
                                                                             style: TextStyle(
-                                                                              fontSize: 16,
+                                                                              fontSize: AppFontSize.subhead,
                                                                               fontWeight: AppFontWeight.bold,
                                                                               color: isDark
                                                                                   ? Colors.red.shade300
@@ -1672,7 +1665,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                           Text(
                                                                             '($showLeftPts)',
                                                                             style: TextStyle(
-                                                                              fontSize: 11,
+                                                                              fontSize: AppFontSize.caption,
                                                                               color: isDark
                                                                                   ? Colors.grey.shade400
                                                                                   : Colors.grey.shade600,
@@ -1685,7 +1678,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             child: Text(
                                                                               'ー',
                                                                               style: TextStyle(
-                                                                                fontSize: 14,
+                                                                                fontSize: AppFontSize.body,
                                                                                 color: Colors.grey.shade400,
                                                                                 fontWeight: AppFontWeight.bold,
                                                                               ),
@@ -1694,7 +1687,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                           Text(
                                                                             '$showRightWins',
                                                                             style: TextStyle(
-                                                                              fontSize: 16,
+                                                                              fontSize: AppFontSize.subhead,
                                                                               fontWeight: AppFontWeight.bold,
                                                                               color: isDark
                                                                                   ? Colors.white
@@ -1704,7 +1697,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                           Text(
                                                                             '($showRightPts)',
                                                                             style: TextStyle(
-                                                                              fontSize: 11,
+                                                                              fontSize: AppFontSize.caption,
                                                                               color: isDark
                                                                                   ? Colors.grey.shade400
                                                                                   : Colors.grey.shade600,
@@ -1717,8 +1710,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       child: Text(
                                                                         showRightTeam,
                                                                         style: TextStyle(
-                                                                          fontSize:
-                                                                              15,
+                                                                          fontSize: AppFontSize.bodyMedium,
                                                                           fontWeight:
                                                                               showRightOwn
                                                                               ? FontWeight.w900
@@ -1745,7 +1737,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                           style: TextStyle(
                                                             color:
                                                                 subTitleColor,
-                                                            fontSize: 12,
+                                                            fontSize: AppFontSize.small,
                                                           ),
                                                         ),
                                                         children: (() {
@@ -1892,10 +1884,8 @@ class ViewerHomeScreen extends ConsumerWidget {
 
                                                                   return Container(
                                                                     margin: const EdgeInsets.symmetric(
-                                                                      horizontal:
-                                                                          8,
-                                                                      vertical:
-                                                                          4,
+                                                                      horizontal: AppSpacing.sm,
+                                                                      vertical: AppSpacing.xs,
                                                                     ),
                                                                     decoration: BoxDecoration(
                                                                       borderRadius:
@@ -1954,7 +1944,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                   Text(
                                                                                     '${bouts.length}ポジション',
                                                                                     style: const TextStyle(
-                                                                                      fontSize: 11,
+                                                                                      fontSize: AppFontSize.caption,
                                                                                       color: Colors.grey,
                                                                                       fontWeight: AppFontWeight.bold,
                                                                                     ),
@@ -1982,7 +1972,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                           },
                                                                                           style: OutlinedButton.styleFrom(
                                                                                             padding: const EdgeInsets.symmetric(
-                                                                                              horizontal: 8,
+                                                                                              horizontal: AppSpacing.sm,
                                                                                             ),
                                                                                             side: BorderSide(
                                                                                               color: mTitleColor.withValues(
@@ -1998,7 +1988,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                           child: Text(
                                                                                             'スコア',
                                                                                             style: TextStyle(
-                                                                                              fontSize: 10,
+                                                                                              fontSize: AppFontSize.badge,
                                                                                               fontWeight: AppFontWeight.bold,
                                                                                               color: mTitleColor,
                                                                                             ),
@@ -2034,7 +2024,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                 ? '終了'
                                                                                                 : '待機中'),
                                                                                       style: TextStyle(
-                                                                                        fontSize: 10,
+                                                                                        fontSize: AppFontSize.badge,
                                                                                         fontWeight: AppFontWeight.bold,
                                                                                         color: boutsInProgress
                                                                                             ? Colors.white
@@ -2124,7 +2114,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                             child: Text(
                                                                                               showLeftTeam,
                                                                                               style: TextStyle(
-                                                                                                fontSize: 14,
+                                                                                                fontSize: AppFontSize.body,
                                                                                                 fontWeight: showLeftOwn
                                                                                                     ? FontWeight.w900
                                                                                                     : AppFontWeight.bold,
@@ -2138,7 +2128,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                           ),
                                                                                           Padding(
                                                                                             padding: const EdgeInsets.symmetric(
-                                                                                              horizontal: 12,
+                                                                                              horizontal: AppSpacing.md,
                                                                                             ),
                                                                                             child: Row(
                                                                                               mainAxisSize: MainAxisSize.min,
@@ -2146,7 +2136,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                 Text(
                                                                                                   '$showLeftWins',
                                                                                                   style: TextStyle(
-                                                                                                    fontSize: 15,
+                                                                                                    fontSize: AppFontSize.bodyMedium,
                                                                                                     fontWeight: AppFontWeight.bold,
                                                                                                     color: isDark
                                                                                                         ? Colors.red.shade300
@@ -2156,7 +2146,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                 Text(
                                                                                                   '($showLeftPts)',
                                                                                                   style: TextStyle(
-                                                                                                    fontSize: 10,
+                                                                                                    fontSize: AppFontSize.badge,
                                                                                                     color: isDark
                                                                                                         ? Colors.grey.shade400
                                                                                                         : Colors.grey.shade500,
@@ -2169,7 +2159,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                   child: Text(
                                                                                                     'ー',
                                                                                                     style: TextStyle(
-                                                                                                      fontSize: 13,
+                                                                                                      fontSize: AppFontSize.bodySmall,
                                                                                                       color: Colors.grey.shade400,
                                                                                                       fontWeight: AppFontWeight.bold,
                                                                                                     ),
@@ -2178,7 +2168,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                 Text(
                                                                                                   '$showRightWins',
                                                                                                   style: TextStyle(
-                                                                                                    fontSize: 15,
+                                                                                                    fontSize: AppFontSize.bodyMedium,
                                                                                                     fontWeight: AppFontWeight.bold,
                                                                                                     color: isDark
                                                                                                         ? Colors.white
@@ -2188,7 +2178,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                 Text(
                                                                                                   '($showRightPts)',
                                                                                                   style: TextStyle(
-                                                                                                    fontSize: 10,
+                                                                                                    fontSize: AppFontSize.badge,
                                                                                                     color: isDark
                                                                                                         ? Colors.grey.shade400
                                                                                                         : Colors.grey.shade500,
@@ -2201,7 +2191,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                             child: Text(
                                                                                               showRightTeam,
                                                                                               style: TextStyle(
-                                                                                                fontSize: 14,
+                                                                                                fontSize: AppFontSize.body,
                                                                                                 fontWeight: showRightOwn
                                                                                                     ? FontWeight.w900
                                                                                                     : AppFontWeight.bold,
@@ -2275,8 +2265,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold,
-                                                                    fontSize:
-                                                                        12,
+                                                                    fontSize: AppFontSize.small,
                                                                     color: Colors
                                                                         .orange,
                                                                   ),
@@ -2313,9 +2302,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                         if (sortedPlayers.isNotEmpty) ...[
                                           Padding(
                                             padding: const EdgeInsets.only(
-                                              left: 16,
-                                              top: 4,
-                                              bottom: 8,
+                                              left: AppSpacing.lg,
+                                              top: AppSpacing.xs,
+                                              bottom: AppSpacing.sm,
                                             ),
                                             child: Row(
                                               children: [
@@ -2334,7 +2323,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                       ? '抽出された個別試合'
                                                       : '個人戦',
                                                   style: TextStyle(
-                                                    fontSize: 13,
+                                                    fontSize: AppFontSize.bodySmall,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color:
@@ -2394,8 +2383,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                             return Container(
                                               margin:
                                                   const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 4,
+                                                    horizontal: AppSpacing.md,
+                                                    vertical: AppSpacing.xs,
                                                   ),
                                               decoration: BoxDecoration(
                                                 // ★ 修正: color: pCardBg, を削除
@@ -2457,7 +2446,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                             : Colors
                                                                   .orange
                                                                   .shade800,
-                                                        fontSize: 12,
+                                                        fontSize: AppFontSize.small,
                                                         fontWeight:
                                                             AppFontWeight.bold,
                                                       ),
@@ -2468,7 +2457,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                     style: TextStyle(
                                                       fontWeight:
                                                           AppFontWeight.bold,
-                                                      fontSize: 15,
+                                                      fontSize: AppFontSize.bodyMedium,
                                                       color: pTitleColor,
                                                     ),
                                                   ),
@@ -2477,7 +2466,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                       Text(
                                                         '$label • ${playerMatches.length}試合',
                                                         style: TextStyle(
-                                                          fontSize: 12,
+                                                          fontSize: AppFontSize.small,
                                                           color: pSubTitleColor,
                                                         ),
                                                       ),
@@ -2516,7 +2505,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     ? '終了'
                                                                     : '待機中'),
                                                           style: TextStyle(
-                                                            fontSize: 10,
+                                                            fontSize: AppFontSize.badge,
                                                             fontWeight:
                                                                 AppFontWeight
                                                                     .bold,
@@ -2609,7 +2598,7 @@ class ViewerHomeScreen extends ConsumerWidget {
     final noteBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.medium,
@@ -2640,7 +2629,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                   child: Text(
                     tournament.name,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: AppFontSize.headline,
                       fontWeight: AppFontWeight.bold,
                       color: textColor,
                     ),
@@ -2650,7 +2639,7 @@ class ViewerHomeScreen extends ConsumerWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
               child: Divider(height: 1, color: borderColor),
             ),
             Row(
@@ -2663,7 +2652,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   DateFormat('yyyy年MM月dd日').format(tournament.date),
-                  style: TextStyle(color: subTextColor, fontSize: 13),
+                  style: TextStyle(color: subTextColor, fontSize: AppFontSize.bodySmall),
                 ),
                 const SizedBox(width: AppSpacing.lg),
                 Icon(Icons.location_on, color: Colors.grey.shade500, size: 16),
@@ -2671,7 +2660,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     tournament.venue,
-                    style: TextStyle(color: subTextColor, fontSize: 13),
+                    style: TextStyle(color: subTextColor, fontSize: AppFontSize.bodySmall),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -2688,7 +2677,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                 ),
                 child: Text(
                   tournament.notes,
-                  style: TextStyle(color: textColor, fontSize: 13),
+                  style: TextStyle(color: textColor, fontSize: AppFontSize.bodySmall),
                 ),
               ),
             ],
@@ -2768,11 +2757,11 @@ class ViewerMatchListTileCard extends ConsumerWidget {
 
       if (mark == '◯' || mark == '×') {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
           child: Text(
             mark,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: AppFontSize.body,
               fontWeight: AppFontWeight.bold,
               color: textColor,
             ),
@@ -2792,7 +2781,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
           child: Text(
             mark,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: AppFontSize.badge,
               fontWeight: AppFontWeight.bold,
               color: textColor,
               height: 1.1,
@@ -2802,11 +2791,11 @@ class ViewerMatchListTileCard extends ConsumerWidget {
       }
 
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         child: Text(
           mark,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: AppFontSize.body,
             fontWeight: AppFontWeight.bold,
             color: textColor,
           ),
@@ -2855,7 +2844,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                       match.groupName != null &&
                       match.groupName!.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(right: AppSpacing.sm),
                       child: SizedBox(
                         height: 26,
                         child: OutlinedButton(
@@ -2866,18 +2855,18 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                             context.push('/viewer-team/$encodedGroupName');
                           },
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                             side: BorderSide(
                               color: textC.withValues(alpha: 0.2),
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: AppRadius.sub,
                             ),
                           ),
                           child: Text(
                             'スコア',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                               color: textC,
                             ),
@@ -2901,12 +2890,12 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                 : (isDark
                                       ? const Color(0xFF2C2C2E)
                                       : Colors.grey.shade200)),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.tiny,
                     ),
                     child: Text(
                       isPlaying ? '進行中' : (isFinished ? '終了' : '待機中'),
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: AppFontSize.badge,
                         fontWeight: AppFontWeight.bold,
                         color: isPlaying
                             ? Colors.white
@@ -2940,7 +2929,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                       ],
                     ),
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: AppFontSize.caption,
                       color: noteC,
                       fontWeight: AppFontWeight.bold,
                     ),
@@ -2990,7 +2979,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                             child: Text(
                               rTeam.isNotEmpty ? rTeam : '（個人エントリー）',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: AppFontSize.badge,
                                 color: isDark
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade500,
@@ -3005,7 +2994,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                             child: Text(
                               wTeam.isNotEmpty ? wTeam : '（個人エントリー）',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: AppFontSize.badge,
                                 color: isDark
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade500,
@@ -3026,7 +3015,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                             child: Text(
                               rName,
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: AppFontSize.body,
                                 fontWeight: isRedOwn
                                     ? FontWeight.w900
                                     : AppFontWeight.bold,
@@ -3040,13 +3029,13 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                           ),
                           if (!hasValidPoints)
                             const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                               child: SizedBox(width: AppSpacing.md),
                             )
                           else
                             Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
+                                horizontal: AppSpacing.md,
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -3066,7 +3055,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
+                                      horizontal: AppSpacing.sm,
                                     ),
                                     child: Text(
                                       isFinished &&
@@ -3074,7 +3063,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                           ? '×'
                                           : 'ー',
                                       style: TextStyle(
-                                        fontSize: 13,
+                                        fontSize: AppFontSize.bodySmall,
                                         color: Colors.grey.shade400,
                                         fontWeight: AppFontWeight.bold,
                                       ),
@@ -3100,7 +3089,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                             child: Text(
                               wName,
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: AppFontSize.body,
                                 fontWeight: isWhiteOwn
                                     ? FontWeight.w900
                                     : AppFontWeight.bold,
@@ -3139,7 +3128,7 @@ Widget _buildCallRow(String label, dynamic match, Color textColor) {
           match.note,
           style: TextStyle(
             color: textColor.withValues(alpha: 0.7),
-            fontSize: 12,
+            fontSize: AppFontSize.small,
             fontWeight: AppFontWeight.bold,
           ),
         ),
@@ -3156,7 +3145,7 @@ Widget _buildCallRow(String label, dynamic match, Color textColor) {
               _getMatchTitle(match),
               style: TextStyle(
                 color: textColor,
-                fontSize: 18,
+                fontSize: AppFontSize.headline,
                 fontWeight: AppFontWeight.bold,
               ),
               overflow: TextOverflow.ellipsis,
@@ -3219,7 +3208,7 @@ void _showShareDialog(
             const Text(
               'この大会の全試合・スコアを\n観客用に安全に共有できます。',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13),
+              style: TextStyle(fontSize: AppFontSize.bodySmall),
             ),
             const SizedBox(height: AppSpacing.lg),
             Container(
@@ -3475,7 +3464,7 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
     final notifier = ref.read(settingsProvider.notifier);
 
     return Container(
-      padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 32),
+      padding: const EdgeInsets.only(top: AppSpacing.sm, left: AppSpacing.xl, right: AppSpacing.xl, bottom: 32),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -3490,10 +3479,10 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
                 child: Container(
                   width: 40,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 24),
+                  margin: const EdgeInsets.only(bottom: AppSpacing.xl),
                   decoration: BoxDecoration(
                     color: Colors.grey.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: AppRadius.micro,
                   ),
                 ),
               ),
@@ -3521,8 +3510,8 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
               const SizedBox(height: AppSpacing.md),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),

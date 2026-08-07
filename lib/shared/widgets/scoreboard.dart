@@ -178,7 +178,7 @@ class MatchScoreboard extends ConsumerWidget {
                   ? Alignment
                         .centerRight // 赤側は右寄せで中央に対比
                   : Alignment.centerLeft, // 白側は左寄せで中央に対比
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
                 borderRadius: AppRadius.small,
@@ -293,10 +293,10 @@ class MatchScoreboard extends ConsumerWidget {
               return Container(
                 height: 36,
                 alignment: Alignment.center,
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: AppSpacing.sm),
                 child: Text(
                   List.filled(hansokuCount, '▲').join(''),
-                  style: const TextStyle(fontSize: 24, color: Colors.amber),
+                  style: const TextStyle(fontSize: AppFontSize.display, color: Colors.amber),
                 ),
               );
             },
@@ -403,7 +403,7 @@ class MatchScoreboard extends ConsumerWidget {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: AppFontWeight.bold,
-            fontSize: 28, // ★ 堂々とした28pt特大サイズへ拡大
+            fontSize: AppFontSize.hero, // ★ 堂々とした28pt特大サイズへ拡大
             letterSpacing: 1.5,
           ),
         ),

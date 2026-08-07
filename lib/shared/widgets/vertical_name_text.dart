@@ -16,7 +16,7 @@ class VerticalNameText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = TextStyle(
-      fontSize: 11,
+      fontSize: AppFontSize.caption,
       fontWeight: AppFontWeight.bold,
       color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
     );
@@ -46,7 +46,7 @@ class VerticalNameText extends StatelessWidget {
           child: Text(
             initial,
             style: style.copyWith(
-              fontSize: 8,
+              fontSize: AppFontSize.micro,
               color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
             ),
           ),

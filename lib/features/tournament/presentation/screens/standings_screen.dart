@@ -195,7 +195,7 @@ class StandingsScreen extends ConsumerWidget {
                     Text(
                       'まだ承認済みの試合結果がありません',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
                         color: subTextColor,
                       ),
@@ -280,7 +280,7 @@ class StandingsScreen extends ConsumerWidget {
                       }
 
                       return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
                         elevation: 0,
                         color: cardColor,
                         shape: RoundedRectangleBorder(
@@ -291,8 +291,8 @@ class StandingsScreen extends ConsumerWidget {
                         ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                            horizontal: AppSpacing.lg,
+                            vertical: AppSpacing.sm,
                           ),
                           leading: CircleAvatar(
                             backgroundColor: avatarColor,
@@ -308,7 +308,7 @@ class StandingsScreen extends ConsumerWidget {
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.bold,
                                       color: iconColor,
-                                      fontSize: 18,
+                                      fontSize: AppFontSize.headline,
                                     ),
                                   ),
                           ),
@@ -319,7 +319,7 @@ class StandingsScreen extends ConsumerWidget {
                                   stat.name,
                                   style: TextStyle(
                                     fontWeight: AppFontWeight.bold,
-                                    fontSize: 18,
+                                    fontSize: AppFontSize.headline,
                                     color: textColor,
                                   ),
                                 ),
@@ -331,7 +331,7 @@ class StandingsScreen extends ConsumerWidget {
                                   color: isDark
                                       ? Colors.indigo.shade300
                                       : Colors.indigo.shade600,
-                                  fontSize: 15,
+                                  fontSize: AppFontSize.bodyMedium,
                                 ),
                               ),
                             ],
@@ -342,7 +342,7 @@ class StandingsScreen extends ConsumerWidget {
                               '${stat.matches}試合: ${stat.wins}勝 ${stat.losses}敗 ${stat.draws}分 / 取得: ${stat.pointsScored}本',
                               style: TextStyle(
                                 color: subTextColor,
-                                fontSize: 13,
+                                fontSize: AppFontSize.bodySmall,
                               ),
                             ),
                           ),

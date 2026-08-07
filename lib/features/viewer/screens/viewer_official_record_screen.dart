@@ -160,8 +160,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.md,
                         ),
                         decoration: BoxDecoration(
                           color: cardColor,
@@ -275,7 +275,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   backgroundColor: Colors.grey.shade800,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
+                                    vertical: AppSpacing.md,
                                   ),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
@@ -360,7 +360,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   backgroundColor: const Color(0xFF06C755),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
+                                    vertical: AppSpacing.md,
                                   ),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
@@ -426,8 +426,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                 onTap: () {}, // Widget Test のタップイベント吸収用ダミー
                                 child: Card(
                                   margin: const EdgeInsets.symmetric(
-                                    vertical: 8,
-                                    horizontal: 4,
+                                    vertical: AppSpacing.sm,
+                                    horizontal: AppSpacing.xs,
                                   ),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
@@ -559,16 +559,16 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.only(
-                                      top: 24,
-                                      bottom: 12,
-                                      left: 8,
+                                      top: AppSpacing.xl,
+                                      bottom: AppSpacing.md,
+                                      left: AppSpacing.sm,
                                     ),
                                     child: Text(
                                       '【リーグ戦】 $leagueTitle',
                                       style: TextStyle(
                                         fontWeight: AppFontWeight.bold,
                                         color: textColor,
-                                        fontSize: 16,
+                                        fontSize: AppFontSize.subhead,
                                       ),
                                     ),
                                   ),
@@ -586,14 +586,14 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   const SizedBox(height: AppSpacing.xxl),
                                   const Padding(
                                     padding: EdgeInsets.only(
-                                      left: 8,
-                                      bottom: 12,
+                                      left: AppSpacing.sm,
+                                      bottom: AppSpacing.md,
                                     ),
                                     child: Text(
                                       '▼ 対戦カード別 スコア詳細',
                                       style: TextStyle(
                                         fontWeight: AppFontWeight.bold,
-                                        fontSize: 14,
+                                        fontSize: AppFontSize.body,
                                         color: Colors.grey,
                                       ),
                                     ),
@@ -603,7 +603,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   if (isIndiv)
                                     Padding(
                                       padding: const EdgeInsets.only(
-                                        bottom: 24,
+                                        bottom: AppSpacing.xl,
                                       ),
                                       child: _buildIndividualMatchesListViewer(
                                         '対戦スコア詳細',
@@ -619,7 +619,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                           boutsByMatchup[matchupName]!;
                                       return Padding(
                                         padding: const EdgeInsets.only(
-                                          bottom: 24,
+                                          bottom: AppSpacing.xl,
                                         ),
                                         child: _buildScoreTableViewer(
                                           matchupName,
@@ -634,14 +634,14 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     const SizedBox(height: AppSpacing.lg),
                                     const Padding(
                                       padding: EdgeInsets.only(
-                                        left: 8,
-                                        bottom: 8,
+                                        left: AppSpacing.sm,
+                                        bottom: AppSpacing.sm,
                                       ),
                                       child: Text(
                                         '▼ 順位決定戦',
                                         style: TextStyle(
                                           fontWeight: AppFontWeight.bold,
-                                          fontSize: 14,
+                                          fontSize: AppFontSize.body,
                                           color: Colors.orange,
                                         ),
                                       ),
@@ -649,7 +649,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                     if (isIndiv)
                                       Padding(
                                         padding: const EdgeInsets.only(
-                                          bottom: 16,
+                                          bottom: AppSpacing.lg,
                                         ),
                                         child:
                                             _buildIndividualMatchesListViewer(
@@ -670,7 +670,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                             tieBoutsByMatchup[matchupName]!;
                                         return Padding(
                                           padding: const EdgeInsets.only(
-                                            bottom: 16,
+                                            bottom: AppSpacing.lg,
                                           ),
                                           child: _buildScoreTableViewer(
                                             matchupName,
@@ -1034,7 +1034,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       constraints: const BoxConstraints(maxWidth: 550),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: AppRadius.round,
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.3),
@@ -1076,7 +1076,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                               shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 40,
-                                vertical: 12,
+                                vertical: AppSpacing.md,
                               ),
                               elevation: 0,
                             ),

@@ -35,7 +35,7 @@ class StartScreen extends ConsumerWidget {
       surfaceColor: Colors.white,
       glassAlpha: isDark ? 0.08 : 0.5,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl, horizontal: AppSpacing.md),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -52,7 +52,7 @@ class StartScreen extends ConsumerWidget {
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: AppFontSize.bodyMedium,
                 fontWeight: AppFontWeight.bold,
                 color: textColor,
                 height: 1.3,
@@ -63,7 +63,7 @@ class StartScreen extends ConsumerWidget {
               subtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: AppFontSize.caption,
                 color: subTextColor,
                 fontWeight: AppFontWeight.bold,
               ),
@@ -122,8 +122,8 @@ class StartScreen extends ConsumerWidget {
               padding: EdgeInsets.only(
                 top: MediaQuery.of(context).padding.top + 32,
                 bottom: 48,
-                left: 24,
-                right: 24,
+                left: AppSpacing.xl,
+                right: AppSpacing.xl,
               ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -192,7 +192,7 @@ class StartScreen extends ConsumerWidget {
                   Text(
                     '現在の権限: $roleDisplayName',
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: AppFontSize.small,
                       color: Colors.orangeAccent,
                       fontWeight: AppFontWeight.bold,
                     ),
@@ -222,11 +222,11 @@ class StartScreen extends ConsumerWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: AppFontWeight.bold,
-                          fontSize: 15,
+                          fontSize: AppFontSize.bodyMedium,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                         side: const BorderSide(color: Colors.white, width: 1.5),
                         backgroundColor: Colors.white.withValues(alpha: 0.15),
                         shape: RoundedRectangleBorder(
@@ -246,7 +246,7 @@ class StartScreen extends ConsumerWidget {
                 child: CustomScrollView(
                   slivers: [
                     SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                       sliver: SliverList(
                         delegate: SliverChildListDelegate([
                           Row(
@@ -336,7 +336,7 @@ class StartScreen extends ConsumerWidget {
                               'Kendo Sync v1.0.0',
                               style: TextStyle(
                                 color: Colors.grey.shade400,
-                                fontSize: 12,
+                                fontSize: AppFontSize.small,
                                 fontWeight: AppFontWeight.bold,
                                 letterSpacing: 1.5,
                               ),

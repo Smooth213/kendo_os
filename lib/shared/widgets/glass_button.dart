@@ -27,7 +27,7 @@ class GlassButton extends ConsumerWidget {
     this.label,
     this.trailing,
     this.expandContent = true,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    this.padding = const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
     this.glassAlpha,
     this.surfaceColor,
   }) : child = null;
@@ -133,7 +133,7 @@ class GlassButton extends ConsumerWidget {
               child: Text(
                 label!,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: AppFontSize.subhead,
                   fontWeight: AppFontWeight.bold,
                   color: textColor,
                 ),
@@ -143,7 +143,7 @@ class GlassButton extends ConsumerWidget {
             Text(
               label!,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: AppFontSize.subhead,
                 fontWeight: AppFontWeight.bold,
                 color: textColor,
               ),

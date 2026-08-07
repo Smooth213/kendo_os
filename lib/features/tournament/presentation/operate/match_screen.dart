@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
@@ -196,7 +197,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red.shade600,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                       shape: RoundedRectangleBorder(
                         borderRadius: AppRadius.medium,
                       ),
@@ -223,7 +224,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           ? const Color(0xFF38383A)
                           : Colors.grey.shade300,
                       foregroundColor: isDark ? Colors.white : Colors.black87,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                       shape: RoundedRectangleBorder(
                         borderRadius: AppRadius.medium,
                       ),
@@ -249,7 +250,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               child: OutlinedButton(
                 onPressed: () => Navigator.pop(ctx, 'draw'),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                   side: BorderSide(
                     color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                   ),
@@ -459,7 +460,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       : match.matchType,
                   // ★ 変更: タイトルを白抜き
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: AppFontSize.body,
                     fontWeight: AppFontWeight.bold,
                     color: Colors.white,
                   ),
@@ -469,7 +470,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   '${match.redName} vs ${match.whiteName}',
                   // ★ 変更: サブタイトルは少し透過した白
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
                   ),
@@ -566,12 +567,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                           !permissions.isReadOnly)
                                       ? Container(
                                           width: double.infinity,
-                                          color: Colors.red.shade900.withValues(
+                                          color: AppKendoColors.hansokuRed.withValues(
                                             alpha: 0.9,
                                           ),
                                           padding: const EdgeInsets.symmetric(
-                                            vertical: 8,
-                                            horizontal: 16,
+                                            vertical: AppSpacing.sm,
+                                            horizontal: AppSpacing.lg,
                                           ),
                                           child: Row(
                                             children: [
@@ -590,7 +591,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                     color: Colors.white,
                                                     fontWeight:
                                                         AppFontWeight.bold,
-                                                    fontSize: 13,
+                                                    fontSize: AppFontSize.bodySmall,
                                                   ),
                                                 ),
                                               ),
@@ -618,7 +619,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                   foregroundColor: Colors.white,
                                                   padding:
                                                       const EdgeInsets.symmetric(
-                                                        horizontal: 12,
+                                                        horizontal: AppSpacing.md,
                                                         vertical: 0,
                                                       ),
                                                   minimumSize: const Size(
@@ -629,7 +630,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                 child: const Text(
                                                   '自分に切り替える',
                                                   style: TextStyle(
-                                                    fontSize: 11,
+                                                    fontSize: AppFontSize.caption,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                   ),
@@ -659,7 +660,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         ),
                                         padding: const EdgeInsets.symmetric(
                                           vertical: 2,
-                                          horizontal: 8,
+                                          horizontal: AppSpacing.sm,
                                         ),
                                         decoration: BoxDecoration(
                                           color: isDark
@@ -701,7 +702,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                           '${validEvents.indexOf(e) + 1}.',
                                                           style:
                                                               const TextStyle(
-                                                                fontSize: 10,
+                                                                fontSize: AppFontSize.badge,
                                                                 color:
                                                                     Colors.grey,
                                                                 fontWeight:
@@ -742,7 +743,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                               ? '反則'
                                                               : '判定',
                                                           style: TextStyle(
-                                                            fontSize: 12,
+                                                            fontSize: AppFontSize.small,
                                                             fontWeight: isLast
                                                                 ? FontWeight
                                                                       .w900
@@ -764,7 +765,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                           ).format(e.timestamp),
                                                           style:
                                                               const TextStyle(
-                                                                fontSize: 10,
+                                                                fontSize: AppFontSize.badge,
                                                                 color:
                                                                     Colors.grey,
                                                               ),
@@ -779,7 +780,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                   '操作履歴',
                                                   style: TextStyle(
                                                     color: Colors.grey,
-                                                    fontSize: 10,
+                                                    fontSize: AppFontSize.badge,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     letterSpacing: 2,
@@ -857,7 +858,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                       ? '１つ前の操作を取り消す'
                                                       : '操作履歴なし',
                                                   style: TextStyle(
-                                                    fontSize: 14,
+                                                    fontSize: AppFontSize.body,
                                                     fontWeight: FontWeight.w900,
                                                     color: canUndoReal
                                                         ? (isDark
@@ -885,7 +886,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                       ? Padding(
                                           padding: const EdgeInsets.symmetric(
                                             vertical: 2,
-                                            horizontal: 16,
+                                            horizontal: AppSpacing.lg,
                                           ),
                                           child: Row(
                                             mainAxisAlignment:
@@ -929,8 +930,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   final groupButtonPart = Padding(
                                     padding: const EdgeInsets.only(
                                       bottom: 0,
-                                      left: 8,
-                                      right: 8,
+                                      left: AppSpacing.sm,
+                                      right: AppSpacing.sm,
                                     ),
                                     child: Column(
                                       children: [
@@ -949,7 +950,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                 label: const Text(
                                                   '観戦URLを共有',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: AppFontSize.small,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                   ),
@@ -983,7 +984,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                 label: const Text(
                                                   '履歴から復元',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: AppFontSize.small,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                   ),
@@ -1022,7 +1023,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                 label: const Text(
                                                   'スコアを確認',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: AppFontSize.small,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                   ),
@@ -1053,7 +1054,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                 label: const Text(
                                                   'ルールを確認',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: AppFontSize.small,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                   ),
@@ -1433,7 +1434,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                                 : '確定・大会ホームへ')
                                                           : '確定・次へ'),
                                                 style: const TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: AppFontSize.subhead,
                                                   fontWeight:
                                                       AppFontWeight.bold,
                                                 ),
@@ -1740,7 +1741,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                       : const Text(
                                                           'この試合を終了する',
                                                           style: TextStyle(
-                                                            fontSize: 16,
+                                                            fontSize: AppFontSize.subhead,
                                                             fontWeight:
                                                                 AppFontWeight
                                                                     .bold,
@@ -1819,7 +1820,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         timerPart,
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
+                                            horizontal: AppSpacing.sm,
                                             vertical: 0,
                                           ),
                                           child: groupButtonPart,
@@ -1889,7 +1890,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   '代表戦の選手が未設定です',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 20,
+                                    fontSize: AppFontSize.header,
                                     fontWeight: AppFontWeight.bold,
                                   ),
                                 ),
@@ -2202,7 +2203,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               child: ListTile(
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                  horizontal: AppSpacing.md,
                   vertical: 0,
                 ),
                 leading: CircleAvatar(
@@ -2219,7 +2220,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           ? (isDark ? Colors.white : Colors.teal.shade800)
                           : (isDark ? Colors.white : Colors.orange.shade800),
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 12,
+                      fontSize: AppFontSize.small,
                     ),
                   ),
                 ),
@@ -2228,7 +2229,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
                     color: textColor,
-                    fontSize: 14,
+                    fontSize: AppFontSize.body,
                   ),
                 ),
                 subtitle: Text(
@@ -2241,7 +2242,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         : (isDark
                               ? Colors.orange.shade300
                               : Colors.orange.shade600),
-                    fontSize: 11,
+                    fontSize: AppFontSize.caption,
                     fontWeight: currentPosition != null
                         ? AppFontWeight.bold
                         : FontWeight.normal,
@@ -2313,7 +2314,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(ctx).size.height * 0.85,
                 ),
-                padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+                padding: const EdgeInsets.only(top: AppSpacing.lg, left: AppSpacing.xl, right: AppSpacing.xl),
                 child: Column(
                   children: [
                     Container(
@@ -2328,7 +2329,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     Text(
                       '選手名の変更',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: AppFontSize.header,
                         fontWeight: AppFontWeight.bold,
                         color: textColor,
                       ),
@@ -2339,7 +2340,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         teamName,
                         style: TextStyle(
                           color: Colors.grey.shade500,
-                          fontSize: 14,
+                          fontSize: AppFontSize.body,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -2390,7 +2391,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
-                              vertical: 16,
+                              vertical: AppSpacing.lg,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.medium,
@@ -2436,7 +2437,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         child: Text(
                           '補欠登録の選手（タップで交代）',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: AppFontSize.small,
                             fontWeight: AppFontWeight.bold,
                             color: isDark
                                 ? Colors.teal.shade300
@@ -2486,7 +2487,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         child: Text(
                           '道場の名簿から選ぶ (${match.category ?? "カテゴリ指定なし"})',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: AppFontSize.body,
                             fontWeight: AppFontWeight.bold,
                             color: isDark
                                 ? Colors.indigo.shade300
@@ -2504,16 +2505,16 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 ),
                               )
                             : ListView(
-                                padding: const EdgeInsets.only(bottom: 24),
+                                padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                                 children: [
                                   // 1. 出場中の選手
                                   if (sameCatActive.isNotEmpty) ...[
                                     Padding(
-                                      padding: const EdgeInsets.only(bottom: 8),
+                                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                                       child: Text(
                                         '出場中の選手 (交代・スワップ)',
                                         style: TextStyle(
-                                          fontSize: 12,
+                                          fontSize: AppFontSize.small,
                                           fontWeight: AppFontWeight.bold,
                                           color: isDark
                                               ? Colors.orange.shade300
@@ -2529,11 +2530,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
                                   if (dojoListSubstitutes.isNotEmpty) ...[
                                     Padding(
-                                      padding: const EdgeInsets.only(bottom: 8),
+                                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                                       child: Text(
                                         '同カテゴリの控え選手',
                                         style: TextStyle(
-                                          fontSize: 12,
+                                          fontSize: AppFontSize.small,
                                           fontWeight: AppFontWeight.bold,
                                           color: isDark
                                               ? Colors.teal.shade300
@@ -2559,7 +2560,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                       title: Text(
                                         '他のカテゴリの選手を表示',
                                         style: TextStyle(
-                                          fontSize: 13,
+                                          fontSize: AppFontSize.bodySmall,
                                           fontWeight: AppFontWeight.bold,
                                           color: isDark
                                               ? Colors.indigo.shade300
@@ -2572,7 +2573,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         if (otherCategoryPlayers.isEmpty)
                                           const Padding(
                                             padding: EdgeInsets.symmetric(
-                                              vertical: 16,
+                                              vertical: AppSpacing.lg,
                                             ),
                                             child: Center(
                                               child: Text(
@@ -2692,7 +2693,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   top: Radius.circular(24),
                 ),
               ),
-              padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+              padding: const EdgeInsets.only(top: AppSpacing.lg, left: AppSpacing.xl, right: AppSpacing.xl),
               child: Column(
                 children: [
                   Container(
@@ -2707,7 +2708,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   Text(
                     '代表戦の準備',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: AppFontSize.header,
                       fontWeight: AppFontWeight.bold,
                       color: textColor,
                     ),
@@ -2716,7 +2717,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   Text(
                     '代表戦を戦う選手を選んでください。\n決定するとタイマーが0:00にリセットされます。',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: AppFontSize.bodySmall, color: Colors.grey.shade500),
                   ),
                   const SizedBox(height: AppSpacing.xl),
 
@@ -2727,12 +2728,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           padding: const EdgeInsets.all(AppSpacing.lg),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.red.shade900.withValues(alpha: 0.15)
+                                ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
                                 : Colors.red.shade50,
                             borderRadius: AppRadius.large,
                             border: Border.all(
                               color: isDark
-                                  ? Colors.red.shade900
+                                  ? AppKendoColors.hansokuRed
                                   : Colors.red.shade100,
                             ),
                           ),
@@ -2756,7 +2757,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                       color: isDark
                                           ? Colors.red.shade300
                                           : Colors.red.shade800,
-                                      fontSize: 16,
+                                      fontSize: AppFontSize.subhead,
                                     ),
                                   ),
                                 ],
@@ -2781,7 +2782,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                             color: redCtrl.text == p
                                                 ? (isDark
                                                       ? Colors.white
-                                                      : Colors.red.shade900)
+                                                      : AppKendoColors.hansokuRed)
                                                 : textColor,
                                             fontWeight: AppFontWeight.bold,
                                           ),
@@ -2850,7 +2851,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                       color: isDark
                                           ? Colors.grey.shade300
                                           : Colors.grey.shade800,
-                                      fontSize: 16,
+                                      fontSize: AppFontSize.subhead,
                                     ),
                                   ),
                                 ],
@@ -2916,7 +2917,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   SafeArea(
                     top: false,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 24),
+                      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.xl),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.indigo.shade600,
@@ -2956,7 +2957,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         child: const Text(
                           '決定して準備完了',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: AppFontSize.subhead,
                             fontWeight: AppFontWeight.bold,
                           ),
                         ),
@@ -3022,7 +3023,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 icon: Icons.autorenew,
                 label: '追加して継続',
                 expandContent: false,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -3051,7 +3052,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: AppFontSize.bodyMedium,
                       fontWeight: AppFontWeight.bold,
                     ),
                   ),
@@ -3372,7 +3373,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       top: Radius.circular(24),
                     ),
                   ),
-                  padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
+                  padding: const EdgeInsets.only(top: AppSpacing.lg, left: AppSpacing.xl, right: AppSpacing.xl),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -3388,7 +3389,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       Text(
                         '次の試合を追加 (錬成会)',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: AppFontSize.header,
                           fontWeight: AppFontWeight.bold,
                           color: textColor,
                         ),
@@ -3398,14 +3399,14 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         '次の試合に出場する選手を入力または選択してください。',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: AppFontSize.bodySmall,
                           color: Colors.grey.shade500,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       Expanded(
                         child: ListView(
-                          padding: const EdgeInsets.only(bottom: 24),
+                          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                           children: [
                             const SizedBox(height: AppSpacing.md),
                             // --- Red Team Player Selection ---
@@ -3413,7 +3414,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               Text(
                                 '$rTeam の選手を選択:',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: AppFontSize.bodySmall,
                                   color: isDark
                                       ? Colors.teal.shade300
                                       : Colors.teal.shade700,
@@ -3490,8 +3491,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 filled: true,
                                 fillColor: inputBgColor,
                                 contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 16,
+                                  vertical: AppSpacing.lg,
+                                  horizontal: AppSpacing.lg,
                                 ),
                                 prefixIcon: const Icon(
                                   Icons.person_outline,
@@ -3517,7 +3518,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               Text(
                                 '$wTeam の選手を選択:',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: AppFontSize.bodySmall,
                                   color: isDark
                                       ? Colors.teal.shade300
                                       : Colors.teal.shade700,
@@ -3594,8 +3595,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 filled: true,
                                 fillColor: inputBgColor,
                                 contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 16,
+                                  vertical: AppSpacing.lg,
+                                  horizontal: AppSpacing.lg,
                                 ),
                                 prefixIcon: const Icon(
                                   Icons.person_outline,
@@ -3621,7 +3622,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       SafeArea(
                         top: false,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 16, bottom: 24),
+                          padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.xl),
                           child: Row(
                             children: [
                               Expanded(
@@ -3732,7 +3733,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 15,
+                                      fontSize: AppFontSize.bodyMedium,
                                       fontWeight: AppFontWeight.bold,
                                     ),
                                   ),
@@ -3788,7 +3789,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.amber.shade700,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
                 ),
@@ -3814,7 +3815,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal.shade600,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
                 ),
@@ -3842,7 +3843,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 style: const TextStyle(fontWeight: AppFontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 side: BorderSide(
                   color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                 ),
@@ -3873,7 +3874,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   style: TextStyle(fontWeight: AppFontWeight.bold),
                 ),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 ),
               ),
             ),
@@ -3986,7 +3987,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 Text(
                   '試合レギュレーション',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: AppFontSize.headline,
                     fontWeight: AppFontWeight.bold,
                     color: isDark ? Colors.white : Colors.black87,
                   ),
@@ -3997,7 +3998,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
             if (rule == null)
               Container(
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: AppSpacing.lg),
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: Colors.orange.withValues(alpha: 0.1),
@@ -4017,7 +4018,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         'この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。',
                         style: TextStyle(
                           color: Colors.orange.shade800,
-                          fontSize: 12,
+                          fontSize: AppFontSize.small,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -4031,11 +4032,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
             if (rule?.isRenseikai ?? false) ...[
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Text(
                   '錬成会設定',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     fontWeight: AppFontWeight.bold,
                     color: Colors.teal,
                   ),
@@ -4051,11 +4052,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
             if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Text(
                   '勝ち抜き戦設定',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     fontWeight: AppFontWeight.bold,
                     color: Colors.teal,
                   ),
@@ -4076,11 +4077,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 !(rule?.isKachinuki ?? false) &&
                 !isLeague) ...[
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Text(
                   '団体戦・チーム設定',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     fontWeight: AppFontWeight.bold,
                     color: Colors.teal,
                   ),
@@ -4096,11 +4097,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 rule != null &&
                 rule.positions.isNotEmpty) ...[
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Text(
                   'ポジション設定',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     fontWeight: AppFontWeight.bold,
                     color: Colors.teal,
                   ),
@@ -4111,11 +4112,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
             if (rule != null && rule.isLeague) ...[
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Text(
                   'リーグ戦設定',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.small,
                     fontWeight: AppFontWeight.bold,
                     color: Colors.orange,
                   ),
@@ -4169,7 +4170,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   Widget _buildRuleRow(String label, String value, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -4179,7 +4180,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               label,
               style: TextStyle(
                 color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                fontSize: 13,
+                fontSize: AppFontSize.bodySmall,
               ),
             ),
           ),
@@ -4189,7 +4190,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black87,
                 fontWeight: AppFontWeight.bold,
-                fontSize: 14,
+                fontSize: AppFontSize.body,
               ),
             ),
           ),
@@ -4276,7 +4277,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       trailing: Text(
                         '${eventIndex + 1}本目まで戻る',
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: AppFontSize.small,
                           color: Colors.blue,
                         ),
                       ),
@@ -4488,7 +4489,7 @@ class _RenseikaiMasterTimerWidget extends ConsumerWidget {
                     .toggleTimer();
               },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xs),
           decoration: BoxDecoration(
             color: timerBgColor,
             borderRadius: BorderRadius.circular(32),
@@ -4523,7 +4524,7 @@ class _RenseikaiMasterTimerWidget extends ConsumerWidget {
                   Text(
                     'トータル',
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: AppFontSize.badge,
                       fontWeight: AppFontWeight.bold,
                       color: isTimeUp
                           ? Colors.red

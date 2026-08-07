@@ -155,7 +155,7 @@ class HomeScreen extends ConsumerWidget {
                     color: Colors.amber.shade900,
                     padding: const EdgeInsets.symmetric(
                       vertical: 6,
-                      horizontal: 16,
+                      horizontal: AppSpacing.lg,
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +172,7 @@ class HomeScreen extends ConsumerWidget {
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: AppFontWeight.bold,
-                              fontSize: 13,
+                              fontSize: AppFontSize.bodySmall,
                             ),
                           ),
                         ),
@@ -198,8 +198,8 @@ class HomeScreen extends ConsumerWidget {
                     if (!isReadOnly)
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 8,
+                          vertical: AppSpacing.sm,
+                          horizontal: AppSpacing.sm,
                         ),
                         child: ElevatedButton.icon(
                           onPressed: () => context.go('/'),
@@ -225,7 +225,7 @@ class HomeScreen extends ConsumerWidget {
                                 ? Colors.white.withValues(alpha: 0.1)
                                 : themeColors.softAccent,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.medium,
                             ),
@@ -313,7 +313,7 @@ class HomeScreen extends ConsumerWidget {
                               if (uniqueInProgress.isNotEmpty &&
                                   uniqueWaiting.isNotEmpty)
                                 const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                                   child: Divider(
                                     color: Colors.white24,
                                     height: 1,
@@ -328,12 +328,12 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                               if (uniqueWaiting.length > 1)
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.only(top: AppSpacing.sm),
                                   child: Text(
                                     '次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}',
                                     style: const TextStyle(
                                       color: Colors.white70,
-                                      fontSize: 12,
+                                      fontSize: AppFontSize.small,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -377,7 +377,7 @@ class HomeScreen extends ConsumerWidget {
                     if (!isReadOnly)
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
+                          horizontal: AppSpacing.lg,
                           vertical: 2.0,
                         ),
                         child: OperatorActionButtons(
@@ -417,7 +417,7 @@ class HomeScreen extends ConsumerWidget {
               const Text(
                 '離れた場所にいる保護者や仲間も、\n試合状況をリアルタイムで安心して見守れます。',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: AppFontSize.bodySmall),
               ),
               const SizedBox(height: AppSpacing.lg),
               Container(
@@ -565,7 +565,7 @@ class HomeScreen extends ConsumerWidget {
               child: Text(
                 '大会準備ステップ',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: AppFontSize.subhead,
                   fontWeight: AppFontWeight.bold,
                   color: themeColors.textColor,
                 ),
@@ -574,7 +574,7 @@ class HomeScreen extends ConsumerWidget {
             Text(
               '${(progress * 100).toInt()}% 完了',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: AppFontSize.bodySmall,
                 fontWeight: AppFontWeight.bold,
                 color: themeColors.primaryAccent,
               ),
@@ -678,7 +678,7 @@ class HomeScreen extends ConsumerWidget {
         onTap: onTap,
         borderRadius: AppRadius.small,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
           child: Row(
             children: [
               Icon(
@@ -691,7 +691,7 @@ class HomeScreen extends ConsumerWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: AppFontSize.body,
                     fontWeight: isCompleted
                         ? FontWeight.w500
                         : AppFontWeight.bold,

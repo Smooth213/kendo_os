@@ -114,7 +114,7 @@ class _CreateTournamentScreenState
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [gradientColor, endColor],
@@ -131,7 +131,7 @@ class _CreateTournamentScreenState
               const Text(
                 '大会を新規作成',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: AppFontSize.hero,
                   fontWeight: AppFontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 1.0,
@@ -141,7 +141,7 @@ class _CreateTournamentScreenState
               Text(
                 '魔法のウィザードに従って、\n2つのステップで設定を完了しましょう',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: AppFontSize.bodySmall,
                   color: Colors.white.withValues(alpha: 0.9),
                   fontWeight: FontWeight.w500,
                 ),
@@ -232,7 +232,7 @@ class _CreateTournamentScreenState
         Text(
           '大会の名前と日付を\n教えてください',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: AppFontSize.display,
             fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
@@ -246,7 +246,7 @@ class _CreateTournamentScreenState
             labelText: '大会名',
             labelStyle: const TextStyle(color: Colors.grey),
             hintText: '例：第1回 〇〇剣道大会',
-            hintStyle: TextStyle(color: hintColor, fontSize: 13),
+            hintStyle: TextStyle(color: hintColor, fontSize: AppFontSize.bodySmall),
             prefixIcon: const Icon(Icons.emoji_events, color: Colors.amber),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
@@ -268,14 +268,14 @@ class _CreateTournamentScreenState
         ListTile(
           title: const Text(
             '開催年月日',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(color: Colors.grey, fontSize: AppFontSize.small),
           ),
           subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: Text(
               DateFormat('yyyy年MM月dd日').format(_selectedDate),
               style: TextStyle(
-                fontSize: 20,
+                fontSize: AppFontSize.header,
                 fontWeight: AppFontWeight.bold,
                 color: textColor,
               ),
@@ -291,8 +291,8 @@ class _CreateTournamentScreenState
           ),
           tileColor: inputBgColor,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.sm,
           ),
           onTap: _pickDate,
         ),
@@ -314,7 +314,7 @@ class _CreateTournamentScreenState
         Text(
           '開催場所とメモを\n入力してください',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: AppFontSize.display,
             fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
@@ -328,7 +328,7 @@ class _CreateTournamentScreenState
             labelText: '会場・住所',
             labelStyle: const TextStyle(color: Colors.grey),
             hintText: '例：〇〇県立武道館',
-            hintStyle: TextStyle(color: hintColor, fontSize: 13),
+            hintStyle: TextStyle(color: hintColor, fontSize: AppFontSize.bodySmall),
             prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
             suffixIcon: IconButton(
               icon: const Icon(Icons.map, color: Colors.blue),
@@ -360,7 +360,7 @@ class _CreateTournamentScreenState
             labelText: '大会メモ（任意）',
             labelStyle: const TextStyle(color: Colors.grey),
             hintText: '例：駐車場は第2駐車場を利用。\n開場は8:30〜。',
-            hintStyle: TextStyle(color: hintColor, fontSize: 13),
+            hintStyle: TextStyle(color: hintColor, fontSize: AppFontSize.bodySmall),
             prefixIcon: const Icon(Icons.note_alt, color: Colors.grey),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
@@ -394,9 +394,9 @@ class _CreateTournamentScreenState
 
     return Container(
       padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
+        top: AppSpacing.xl,
         bottom: MediaQuery.of(context).padding.bottom + 24,
       ),
       decoration: BoxDecoration(
@@ -408,7 +408,7 @@ class _CreateTournamentScreenState
         children: [
           if (_currentPage > 0)
             Padding(
-              padding: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.only(right: AppSpacing.lg),
               child: OutlinedButton(
                 onPressed: () => _pageController.previousPage(
                   duration: const Duration(milliseconds: 300),
@@ -478,7 +478,7 @@ class _CreateTournamentScreenState
                 }
               },
               color: Colors.indigo,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               icon: isLastPage ? Icons.check_circle : Icons.navigate_next,
               label: isLastPage ? '保存してチーム登録へ' : '次へ進む',
               expandContent: false,

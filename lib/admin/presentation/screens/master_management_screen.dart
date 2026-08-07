@@ -170,7 +170,7 @@ class _MasterManagementScreenState
                     Text(
                       'まだ選手が登録されていません',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: AppFontSize.headline,
                         fontWeight: AppFontWeight.bold,
                         color: primaryColor,
                       ),
@@ -182,7 +182,7 @@ class _MasterManagementScreenState
                       style: TextStyle(
                         color: Colors.grey,
                         height: 1.5,
-                        fontSize: 14,
+                        fontSize: AppFontSize.body,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xxl),
@@ -195,8 +195,8 @@ class _MasterManagementScreenState
                           icon: Icons.account_balance,
                           label: '道場名を登録する',
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
+                            horizontal: AppSpacing.xl,
+                            vertical: AppSpacing.lg,
                           ),
                         ),
                       ),
@@ -229,10 +229,10 @@ class _MasterManagementScreenState
               children: [
                 Padding(
                   padding: const EdgeInsets.only(
-                    top: 16,
+                    top: AppSpacing.lg,
                     left: 32,
                     right: 32,
-                    bottom: 8,
+                    bottom: AppSpacing.sm,
                   ),
                   child: Row(
                     children: [
@@ -246,7 +246,7 @@ class _MasterManagementScreenState
                         child: Text(
                           orgName,
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: AppFontSize.headline,
                             fontWeight: AppFontWeight.bold,
                             color: textColor,
                           ),
@@ -292,8 +292,8 @@ class _MasterManagementScreenState
 
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.sm,
                   ),
                   child: SegmentedButton<int>(
                     segments: const [
@@ -331,14 +331,14 @@ class _MasterManagementScreenState
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(
-                              top: 24,
-                              bottom: 8,
+                              top: AppSpacing.xl,
+                              bottom: AppSpacing.sm,
                               left: 32,
                             ),
                             child: Text(
                               groupName.toUpperCase(),
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: AppFontSize.bodySmall,
                                 fontWeight: AppFontWeight.semiBold,
                                 color: isDark
                                     ? Colors.grey.shade500
@@ -348,7 +348,7 @@ class _MasterManagementScreenState
                             ),
                           ),
                           Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                             decoration: BoxDecoration(
                               color: isDark
                                   ? const Color(0xFF1C1C1E)
@@ -487,12 +487,12 @@ class _MasterManagementScreenState
           }
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 10),
           child: Row(
             children: [
               if (_isSelectionMode)
                 Padding(
-                  padding: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.only(right: AppSpacing.md),
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.circle_outlined,
                     color: isSelected
@@ -511,7 +511,7 @@ class _MasterManagementScreenState
                       : '',
                   style: const TextStyle(
                     fontWeight: AppFontWeight.bold,
-                    fontSize: 14,
+                    fontSize: AppFontSize.body,
                   ),
                 ),
               ),
@@ -527,7 +527,7 @@ class _MasterManagementScreenState
                             player.name,
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: AppFontSize.subhead,
                               color: isDark ? Colors.white : Colors.black87,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -542,7 +542,7 @@ class _MasterManagementScreenState
                             ),
                             decoration: BoxDecoration(
                               color: Colors.green.shade600,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: AppRadius.tiny,
                             ),
                             child: const Row(
                               children: [
@@ -572,7 +572,7 @@ class _MasterManagementScreenState
                               color: isDark
                                   ? Colors.grey.shade500
                                   : Colors.grey.shade400,
-                              fontSize: 11,
+                              fontSize: AppFontSize.caption,
                             ),
                           ),
                         Text(
@@ -581,7 +581,7 @@ class _MasterManagementScreenState
                             color: isDark
                                 ? Colors.grey.shade400
                                 : Colors.grey.shade500,
-                            fontSize: 11,
+                            fontSize: AppFontSize.caption,
                           ),
                         ),
                       ],
@@ -819,7 +819,7 @@ class _MasterManagementScreenState
                       style: TextStyle(
                         fontWeight: AppFontWeight.bold,
                         color: primaryColor,
-                        fontSize: 20,
+                        fontSize: AppFontSize.header,
                       ),
                     ),
                     // ★ 修正：初心者トグルスイッチ
@@ -828,7 +828,7 @@ class _MasterManagementScreenState
                         Text(
                           '🔰 初心者',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: AppFontSize.small,
                             fontWeight: AppFontWeight.bold,
                             color: isBeginner ? Colors.green : Colors.grey,
                           ),
@@ -850,11 +850,11 @@ class _MasterManagementScreenState
                     Expanded(
                       child: TextField(
                         controller: lastNameKanaController,
-                        style: TextStyle(color: textColor, fontSize: 12),
+                        style: TextStyle(color: textColor, fontSize: AppFontSize.small),
                         decoration: InputDecoration(
                           labelText: 'よみがな (せい)',
                           labelStyle: const TextStyle(
-                            fontSize: 10,
+                            fontSize: AppFontSize.badge,
                             color: Colors.grey,
                           ),
                           isDense: true,
@@ -864,7 +864,7 @@ class _MasterManagementScreenState
                                   vertical: 6,
                                 )
                               : const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: AppSpacing.md,
                                   vertical: 10,
                                 ),
                           filled: true,
@@ -879,11 +879,11 @@ class _MasterManagementScreenState
                     Expanded(
                       child: TextField(
                         controller: firstNameKanaController,
-                        style: TextStyle(color: textColor, fontSize: 12),
+                        style: TextStyle(color: textColor, fontSize: AppFontSize.small),
                         decoration: InputDecoration(
                           labelText: 'よみがな (めい)',
                           labelStyle: const TextStyle(
-                            fontSize: 10,
+                            fontSize: AppFontSize.badge,
                             color: Colors.grey,
                           ),
                           isDense: true,
@@ -893,7 +893,7 @@ class _MasterManagementScreenState
                                   vertical: 6,
                                 )
                               : const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: AppSpacing.md,
                                   vertical: 10,
                                 ),
                           filled: true,
@@ -932,7 +932,7 @@ class _MasterManagementScreenState
                           isDense: isKeyboardVisible,
                           contentPadding: isKeyboardVisible
                               ? const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: AppSpacing.md,
                                   vertical: 10,
                                 )
                               : null,
@@ -958,7 +958,7 @@ class _MasterManagementScreenState
                           isDense: isKeyboardVisible,
                           contentPadding: isKeyboardVisible
                               ? const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: AppSpacing.md,
                                   vertical: 10,
                                 )
                               : null,
@@ -977,7 +977,7 @@ class _MasterManagementScreenState
                 Text(
                   '性別',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: AppFontSize.bodySmall,
                     fontWeight: AppFontWeight.bold,
                     color: isDark ? Colors.grey.shade400 : Colors.grey,
                   ),
@@ -1026,7 +1026,7 @@ class _MasterManagementScreenState
                     fillColor: inputBgColor,
                   ),
                   dropdownColor: dialogBgColor,
-                  style: TextStyle(color: textColor, fontSize: 16),
+                  style: TextStyle(color: textColor, fontSize: AppFontSize.subhead),
                   initialValue: selectedGrade,
                   items: gradeOptions.entries
                       .map(
@@ -1098,8 +1098,8 @@ class _MasterManagementScreenState
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
+                          horizontal: AppSpacing.xl,
+                          vertical: AppSpacing.lg,
                         ),
                       ),
                       icon: const Icon(Icons.save, color: Colors.white),
@@ -1127,10 +1127,10 @@ class _MasterManagementScreenState
                 ),
               ),
               padding: const EdgeInsets.only(
-                top: 16,
-                left: 24,
-                right: 24,
-                bottom: 24,
+                top: AppSpacing.lg,
+                left: AppSpacing.xl,
+                right: AppSpacing.xl,
+                bottom: AppSpacing.xl,
               ),
               child: SingleChildScrollView(child: innerForm),
             );
@@ -1176,10 +1176,10 @@ class _MasterManagementScreenState
               ),
             ),
             padding: const EdgeInsets.only(
-              top: 16,
-              left: 24,
-              right: 24,
-              bottom: 24,
+              top: AppSpacing.lg,
+              left: AppSpacing.xl,
+              right: AppSpacing.xl,
+              bottom: AppSpacing.xl,
             ),
             child: SingleChildScrollView(
               child: Column(
@@ -1206,13 +1206,13 @@ class _MasterManagementScreenState
                       color: isDark
                           ? Colors.purpleAccent
                           : Colors.purple.shade800,
-                      fontSize: 20,
+                      fontSize: AppFontSize.header,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   const Text(
                     '選手を追加する前に、道場名または学校名を入力してください。',
-                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                    style: TextStyle(fontSize: AppFontSize.bodySmall, color: Colors.grey),
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   TextField(
@@ -1256,8 +1256,8 @@ class _MasterManagementScreenState
                           ),
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
+                            horizontal: AppSpacing.xl,
+                            vertical: AppSpacing.lg,
                           ),
                         ),
                         icon: const Icon(Icons.check),
@@ -1363,7 +1363,7 @@ class _MasterManagementScreenState
           width: isSel ? 2 : 1,
         ),
         shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
       ),
       child: Column(
         children: [
@@ -1372,7 +1372,7 @@ class _MasterManagementScreenState
           Text(
             title,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: AppFontSize.body,
               fontWeight: AppFontWeight.bold,
               color: finalColor,
             ),
@@ -1398,7 +1398,7 @@ class _MasterManagementScreenState
           color: Colors.transparent,
           child: Padding(
             padding: const EdgeInsets.only(
-              top: 16,
+              top: AppSpacing.lg,
               bottom: 56,
             ), // 下部の余白を増やして角丸との干渉を防ぐ
             child: Column(
@@ -1432,7 +1432,7 @@ class _MasterManagementScreenState
                   ),
                   subtitle: const Text(
                     'キャッシュクリアやデータのエクスポート・整理を行います',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: AppFontSize.small, color: Colors.grey),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -1440,7 +1440,7 @@ class _MasterManagementScreenState
                   },
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   child: Divider(
                     height: 1,
                     color: isDark
@@ -1462,7 +1462,7 @@ class _MasterManagementScreenState
                   ),
                   subtitle: const Text(
                     'すべての選手の学年を1つ繰り上げます',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: AppFontSize.small, color: Colors.grey),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -1657,10 +1657,10 @@ class _MasterManagementScreenState
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             padding: const EdgeInsets.only(
-              top: 16,
-              left: 24,
-              right: 24,
-              bottom: 24,
+              top: AppSpacing.lg,
+              left: AppSpacing.xl,
+              right: AppSpacing.xl,
+              bottom: AppSpacing.xl,
             ),
             child: SingleChildScrollView(
               child: Column(
@@ -1685,13 +1685,13 @@ class _MasterManagementScreenState
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
                       color: Colors.purple.shade800,
-                      fontSize: 20,
+                      fontSize: AppFontSize.header,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   const Text(
                     '登録されている全選手の所属名を一括で書き換えます。',
-                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                    style: TextStyle(fontSize: AppFontSize.bodySmall, color: Colors.grey),
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   TextField(
@@ -1735,8 +1735,8 @@ class _MasterManagementScreenState
                           ),
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
+                            horizontal: AppSpacing.xl,
+                            vertical: AppSpacing.lg,
                           ),
                         ),
                         icon: const Icon(Icons.check),
@@ -1831,7 +1831,7 @@ class _MasterManagementScreenState
           children: [
             const Text(
               'アプリの動作が重い場合や、ストレージ容量を空けたい場合に実行してください。',
-              style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
+              style: TextStyle(fontSize: AppFontSize.bodySmall, color: Colors.grey, height: 1.4),
             ),
             const SizedBox(height: AppSpacing.xl),
 
@@ -1844,11 +1844,11 @@ class _MasterManagementScreenState
               ),
               title: const Text(
                 '一時キャッシュをクリア',
-                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 14),
+                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.body),
               ),
               subtitle: const Text(
                 '表示を軽くします（データは消えません）',
-                style: TextStyle(fontSize: 12),
+                style: TextStyle(fontSize: AppFontSize.small),
               ),
               trailing: ElevatedButton(
                 onPressed: () {
@@ -1878,11 +1878,11 @@ class _MasterManagementScreenState
               ),
               title: const Text(
                 '全データをJSONでバックアップ',
-                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: 14),
+                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.body),
               ),
               subtitle: const Text(
                 '端末内に完全な状態のファイルを書き出します',
-                style: TextStyle(fontSize: 12),
+                style: TextStyle(fontSize: AppFontSize.small),
               ),
               trailing: ElevatedButton(
                 onPressed: () async {
@@ -1953,12 +1953,12 @@ class _MasterManagementScreenState
                   '1年以上前の大会を削除',
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
-                    fontSize: 14,
+                    fontSize: AppFontSize.body,
                   ),
                 ),
                 subtitle: const Text(
                   '古いデータを完全に消去し容量を空けます',
-                  style: TextStyle(fontSize: 12),
+                  style: TextStyle(fontSize: AppFontSize.small),
                 ),
                 trailing: ElevatedButton(
                   onPressed: () async {
@@ -2077,10 +2077,10 @@ class _MasterManagementScreenState
               ),
             ),
             padding: const EdgeInsets.only(
-              top: 16,
-              left: 24,
-              right: 24,
-              bottom: 24,
+              top: AppSpacing.lg,
+              left: AppSpacing.xl,
+              right: AppSpacing.xl,
+              bottom: AppSpacing.xl,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2102,12 +2102,12 @@ class _MasterManagementScreenState
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
                     color: primaryColor,
-                    fontSize: 20,
+                    fontSize: AppFontSize.header,
                   ),
                 ),
                 const Text(
                   '試合作成時にボタンで選べる「自チーム名」を登録します。',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: AppFontSize.small, color: Colors.grey),
                 ),
                 const SizedBox(height: AppSpacing.xl),
 
@@ -2165,12 +2165,12 @@ class _MasterManagementScreenState
                       if (names.isEmpty) {
                         return const Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
+                            padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
                             child: Text(
                               '登録されたチーム名はありません',
                               style: TextStyle(
                                 color: Colors.grey,
-                                fontSize: 13,
+                                fontSize: AppFontSize.bodySmall,
                               ),
                             ),
                           ),
@@ -2185,13 +2185,13 @@ class _MasterManagementScreenState
                           color: isDark
                               ? const Color(0xFF2C2C2E)
                               : Colors.grey.shade50,
-                          margin: const EdgeInsets.only(bottom: 8),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                           child: ListTile(
                             title: Text(
                               names[index],
                               style: const TextStyle(
                                 fontWeight: AppFontWeight.bold,
-                                fontSize: 14,
+                                fontSize: AppFontSize.body,
                               ),
                             ),
                             trailing:

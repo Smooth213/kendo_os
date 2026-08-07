@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -11,7 +12,7 @@ class CorruptedMatchBanner extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: double.infinity,
-      color: Colors.red.shade900,
+      color: AppKendoColors.hansokuRed,
       padding: const EdgeInsets.symmetric(
         vertical: AppSpacing.sm,
         horizontal: AppSpacing.lg,
@@ -33,7 +34,7 @@ class CorruptedMatchBanner extends ConsumerWidget {
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: AppFontWeight.bold,
-                fontSize: 13,
+                fontSize: AppFontSize.bodySmall,
               ),
             ),
           ),

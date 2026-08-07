@@ -167,13 +167,13 @@ class AppStartup {
                   style: TextStyle(
                     color: Colors.red,
                     fontWeight: AppFontWeight.bold,
-                    fontSize: 18,
+                    fontSize: AppFontSize.headline,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 const Text(
                   '以下のログを開発者へ共有してください：',
-                  style: TextStyle(color: Colors.black87, fontSize: 12),
+                  style: TextStyle(color: Colors.black87, fontSize: AppFontSize.small),
                 ),
                 const Divider(),
                 Text(
@@ -181,13 +181,13 @@ class AppStartup {
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: AppFontWeight.bold,
-                    fontSize: 14,
+                    fontSize: AppFontSize.body,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   details.stack?.toString() ?? 'スタックトレースなし',
-                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  style: const TextStyle(color: Colors.grey, fontSize: AppFontSize.badge),
                 ),
               ],
             ),

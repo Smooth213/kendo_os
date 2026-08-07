@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/foundation.dart';
@@ -330,7 +331,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                       width: double.infinity,
                       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                       padding: const EdgeInsets.symmetric(
-                        vertical: 12,
+                        vertical: AppSpacing.md,
                         horizontal: 20,
                       ),
                       decoration: BoxDecoration(
@@ -347,7 +348,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                       child: Text(
                         teamProj.note,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: AppFontSize.bodyMedium,
                           fontWeight: AppFontWeight.bold,
                           color: isDark
                               ? Colors.indigo.shade100
@@ -486,12 +487,12 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     final showInitial = count > 1 && parsed['first']!.isNotEmpty;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
       child: RichText(
         textAlign: TextAlign.center,
         text: TextSpan(
           style: TextStyle(
-            fontSize: 17,
+            fontSize: AppFontSize.title,
             fontWeight: AppFontWeight.bold,
             color: textColor,
           ),
@@ -505,7 +506,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                   child: Text(
                     parsed['first']!.substring(0, 1),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: AppFontSize.small,
                       fontWeight: AppFontWeight.bold,
                       color: subTextColor,
                     ),
@@ -536,7 +537,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
 
     final isDaihyo = m.matchType == '代表戦';
     final daihyoBgColor = isDark
-        ? Colors.red.shade900.withValues(alpha: 0.15)
+        ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
         : Colors.red.shade50;
     final matchTypeColor = isDaihyo
         ? (isDark ? Colors.red.shade400 : Colors.red.shade800)
@@ -667,9 +668,9 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
               child: Text(
                 '✕',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: AppFontSize.hero,
                   color: isDark
-                      ? Colors.red.shade900.withValues(alpha: 0.6)
+                      ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
                       : Colors.red.shade300,
                   fontWeight: FontWeight.w300,
                 ),
@@ -706,7 +707,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         child: Text(
           mark,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: AppFontSize.badge,
             color: color,
             fontWeight: AppFontWeight.bold,
           ),
@@ -718,7 +719,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
       child: Text(
         mark,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: AppFontSize.body,
           color: color,
           fontWeight: AppFontWeight.bold,
         ),
@@ -734,7 +735,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     FontWeight? fontWeight,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
       child: Text(
         txt,
         textAlign: TextAlign.center,
@@ -781,7 +782,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                         '引き分け',
                         style: TextStyle(
                           fontWeight: AppFontWeight.bold,
-                          fontSize: 18,
+                          fontSize: AppFontSize.headline,
                           color: isDark
                               ? Colors.amber.shade200
                               : Colors.amber.shade900,

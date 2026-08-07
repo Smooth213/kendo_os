@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
@@ -192,7 +193,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                   width: double.infinity,
                   margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   padding: const EdgeInsets.symmetric(
-                    vertical: 12,
+                    vertical: AppSpacing.md,
                     horizontal: 20,
                   ),
                   decoration: BoxDecoration(
@@ -212,7 +213,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                         child: Text(
                           matchNote,
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: AppFontSize.bodyMedium,
                             fontWeight: AppFontWeight.bold,
                             color: isDark
                                 ? Colors.indigo.shade100
@@ -292,8 +293,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                               child: Center(
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
+                                    horizontal: AppSpacing.lg,
+                                    vertical: AppSpacing.sm,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isDark
@@ -318,7 +319,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                     '※簡易入力された結果です\n（詳細スコアはありません）',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      fontSize: 13,
+                                      fontSize: AppFontSize.bodySmall,
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
                                           ? Colors.grey.shade300
@@ -400,7 +401,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                 ? const Color(0xFF2C2C2E)
                                 : Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: AppRadius.round,
                             ),
                             elevation: 0,
                             child: Padding(
@@ -434,7 +435,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                     '代表戦を追加しました',
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.bold,
-                                      fontSize: 17,
+                                      fontSize: AppFontSize.title,
                                       color: isDark
                                           ? Colors.white
                                           : Colors.black87,
@@ -444,7 +445,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                   Text(
                                     '試合画面へ移動します...',
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: AppFontSize.body,
                                       color: isDark
                                           ? Colors.grey.shade400
                                           : Colors.grey.shade500,
@@ -464,7 +465,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                       ),
                       icon: const Icon(Icons.add_circle),
                       label: const Text('同点のため、代表戦を追加する'),
@@ -538,12 +539,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
     final showInitial = count > 1 && parsed['first']!.isNotEmpty;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
       child: RichText(
         textAlign: TextAlign.center,
         text: TextSpan(
           style: TextStyle(
-            fontSize: 17,
+            fontSize: AppFontSize.title,
             fontWeight: AppFontWeight.bold,
             color: textColor,
           ),
@@ -557,7 +558,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                   child: Text(
                     parsed['first']!.substring(0, 1),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: AppFontSize.small,
                       fontWeight: AppFontWeight.bold,
                       color: subTextColor,
                     ),
@@ -590,7 +591,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
     // ★ Phase 8: 代表戦の行をうっすら赤くし、文字も赤くハイライトする
     final isDaihyo = m.matchType == '代表戦';
     final daihyoBgColor = isDark
-        ? Colors.red.shade900.withValues(alpha: 0.15)
+        ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
         : Colors.red.shade50;
     final matchTypeColor = isDaihyo
         ? (isDark ? Colors.red.shade400 : Colors.red.shade800)
@@ -710,9 +711,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
               child: Text(
                 '✕',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: AppFontSize.hero,
                   color: isDark
-                      ? Colors.red.shade900.withValues(alpha: 0.6)
+                      ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
                       : Colors.red.shade300,
                   fontWeight: FontWeight.w300,
                 ),
@@ -751,7 +752,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         child: Text(
           p.mark,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: AppFontSize.badge,
             color: color,
             fontWeight: AppFontWeight.bold,
           ),
@@ -763,7 +764,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
       child: Text(
         p.mark,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: AppFontSize.body,
           color: color,
           fontWeight: AppFontWeight.bold,
         ),
@@ -779,7 +780,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
     FontWeight? fontWeight,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
       child: Text(
         txt,
         textAlign: TextAlign.center,
@@ -827,7 +828,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                         '引き分け',
                         style: TextStyle(
                           fontWeight: AppFontWeight.bold,
-                          fontSize: 18,
+                          fontSize: AppFontSize.headline,
                           color: isDark
                               ? Colors.amber.shade200
                               : Colors.amber.shade900,

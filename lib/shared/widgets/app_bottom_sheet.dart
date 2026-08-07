@@ -72,7 +72,7 @@ class AppBottomSheetContent extends StatelessWidget {
                 child: Container(
                   width: 36,
                   height: 4,
-                  margin: const EdgeInsets.only(top: 10, bottom: 8),
+                  margin: const EdgeInsets.only(top: 10, bottom: AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: themeColors.separatorColor,
                     borderRadius: AppRadius.small,
@@ -84,7 +84,7 @@ class AppBottomSheetContent extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 8,
+                  vertical: AppSpacing.sm,
                 ),
                 child: Row(
                   children: [
@@ -100,7 +100,7 @@ class AppBottomSheetContent extends StatelessWidget {
                       child: Text(
                         title!,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: AppFontSize.subhead,
                           fontWeight: AppFontWeight.semiBold,
                           color: themeColors.textColor,
                         ),

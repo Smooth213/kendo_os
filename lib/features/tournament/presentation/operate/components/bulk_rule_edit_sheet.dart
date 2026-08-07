@@ -479,7 +479,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 Text(
                   '⚙️ 試合ルールの一括変更',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: AppFontSize.headline,
                     fontWeight: AppFontWeight.bold,
                     color: textColor,
                   ),
@@ -564,12 +564,12 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                                   controlAffinity:
                                       ListTileControlAffinity.leading,
                                   contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
+                                    horizontal: AppSpacing.sm,
                                   ),
                                   title: Text(
                                     unit.displayName,
                                     style: TextStyle(
-                                      fontSize: 13,
+                                      fontSize: AppFontSize.bodySmall,
                                       color: textColor,
                                     ),
                                   ),
@@ -604,7 +604,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                     Text(
                       '現在 $selectedUnitsCount 件を選択中 / 全 ${currentFilteredUnits.length} 件中',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: AppFontSize.small,
                         fontWeight: AppFontWeight.bold,
                         color: widget.themeColors.primaryAccent,
                       ),
@@ -669,7 +669,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
 
                   return [
                     Container(
-                      margin: const EdgeInsets.only(bottom: 16),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
                         color: widget.themeColors.primaryAccent.withAlpha(
@@ -696,7 +696,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                               Text(
                                 '部門別ルールから一括セット',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: AppFontSize.bodySmall,
                                   fontWeight: AppFontWeight.bold,
                                   color: textColor,
                                 ),
@@ -715,7 +715,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                                 final isSel =
                                     _selectedCategoryRuleName == catName;
                                 return Padding(
-                                  padding: const EdgeInsets.only(right: 8),
+                                  padding: const EdgeInsets.only(right: AppSpacing.sm),
                                   child: AppChoiceChip(
                                     label: Text(catName),
                                     selected: isSel,
@@ -744,7 +744,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                             Text(
                               '試合シーン・ルール用途を選択:',
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: AppFontSize.caption,
                                 color: isDark
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade600,
@@ -811,8 +811,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 if (_hasDifferingRules()) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.amber.withAlpha(isDark ? 30 : 15),
@@ -833,7 +833,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                           child: Text(
                             '選択した対戦の中に、設定が異なる試合が含まれています（先頭の試合のルールを表示中）',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: AppFontSize.small,
                               color: isDark
                                   ? Colors.amber.shade300
                                   : Colors.amber.shade800,
@@ -862,11 +862,11 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       contentPadding: EdgeInsets.zero,
                       title: const Text(
                         '一本勝負形式にする',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: AppFontSize.body),
                       ),
                       subtitle: const Text(
                         '先に1本取った側を勝者とします',
-                        style: TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: AppFontSize.caption),
                       ),
                       value: _isIpponShobu,
                       activeTrackColor: widget.themeColors.primaryAccent,
@@ -884,7 +884,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       contentPadding: EdgeInsets.zero,
                       title: const Text(
                         '通常試合の延長戦を行う',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: AppFontSize.body),
                       ),
                       value: _hasExtension,
                       activeTrackColor: widget.themeColors.primaryAccent,
@@ -905,7 +905,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                         contentPadding: EdgeInsets.zero,
                         title: const Text(
                           '時間無制限とする（サドンデス）',
-                          style: TextStyle(fontSize: 14),
+                          style: TextStyle(fontSize: AppFontSize.body),
                         ),
                         value: _isEnchoUnlimited,
                         activeTrackColor: widget.themeColors.primaryAccent,
@@ -934,11 +934,11 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       contentPadding: EdgeInsets.zero,
                       title: const Text(
                         '判定（ハンテイ）の適用',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: AppFontSize.body),
                       ),
                       subtitle: const Text(
                         '延長時間終了時、または引き分け時に判定を行います',
-                        style: TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: AppFontSize.caption),
                       ),
                       value: _hasHantei,
                       activeTrackColor: widget.themeColors.primaryAccent,
@@ -956,11 +956,11 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       contentPadding: EdgeInsets.zero,
                       title: const Text(
                         '代表戦の適用',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: AppFontSize.body),
                       ),
                       subtitle: const Text(
                         'チーム引き分け時の決定戦を有効にします',
-                        style: TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: AppFontSize.caption),
                       ),
                       value: _hasRepresentativeMatch,
                       activeTrackColor: widget.themeColors.primaryAccent,
@@ -973,7 +973,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                         contentPadding: EdgeInsets.zero,
                         title: const Text(
                           '代表戦は一本勝負',
-                          style: TextStyle(fontSize: 14),
+                          style: TextStyle(fontSize: AppFontSize.body),
                         ),
                         value: _isDaihyoIpponShobu,
                         activeTrackColor: widget.themeColors.primaryAccent,
@@ -982,7 +982,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       ),
                       const Divider(height: 20),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                         child: Row(
                           children: [
                             const Icon(
@@ -995,7 +995,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                               child: Text(
                                 '代表戦の延長戦は、自動的に「時間無制限・一本勝負（サドンデス）」として行われます。',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: AppFontSize.caption,
                                   color: isDark
                                       ? Colors.blue.shade300
                                       : Colors.blue.shade700,
@@ -1018,7 +1018,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       contentPadding: EdgeInsets.zero,
                       title: const Text(
                         '錬成会モードを有効化',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: AppFontSize.body),
                       ),
                       value: _isRenseikai,
                       activeTrackColor: widget.themeColors.primaryAccent,
@@ -1039,7 +1039,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                         children: [
                           const Text(
                             '総試合時間（分）',
-                            style: TextStyle(fontSize: 14),
+                            style: TextStyle(fontSize: AppFontSize.body),
                           ),
                           SizedBox(
                             width: 100,
@@ -1053,8 +1053,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                               decoration: const InputDecoration(
                                 suffixText: '分',
                                 contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: AppSpacing.sm,
+                                  vertical: AppSpacing.xs,
                                 ),
                               ),
                             ),
@@ -1136,7 +1136,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       : '選択した $totalSelectedUnitsCount 件にルールを適用する',
                   style: const TextStyle(
                     fontWeight: AppFontWeight.bold,
-                    fontSize: 16,
+                    fontSize: AppFontSize.subhead,
                   ),
                 ),
               ),
@@ -1152,7 +1152,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     return Text(
       title,
       style: TextStyle(
-        fontSize: 14,
+        fontSize: AppFontSize.body,
         fontWeight: AppFontWeight.bold,
         color: widget.themeColors.primaryAccent,
       ),
@@ -1186,7 +1186,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 title,
                 style: const TextStyle(
                   fontWeight: AppFontWeight.bold,
-                  fontSize: 13,
+                  fontSize: AppFontSize.bodySmall,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -1217,10 +1217,10 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: AppFontWeight.bold),
+          style: const TextStyle(fontSize: AppFontSize.body, fontWeight: AppFontWeight.bold),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
             borderRadius: AppRadius.medium,
@@ -1228,7 +1228,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
           child: DropdownButton<String>(
             value: value,
             underline: const SizedBox(),
-            style: TextStyle(color: textColor, fontSize: 14),
+            style: TextStyle(color: textColor, fontSize: AppFontSize.body),
             onChanged: onChanged,
             items: resolvedOptions.map((opt) {
               return DropdownMenuItem(
@@ -1258,9 +1258,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14)),
+        Text(label, style: const TextStyle(fontSize: AppFontSize.body)),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
             borderRadius: AppRadius.medium,
@@ -1268,7 +1268,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
           child: DropdownButton<T>(
             value: value,
             underline: const SizedBox(),
-            style: TextStyle(color: textColor, fontSize: 14),
+            style: TextStyle(color: textColor, fontSize: AppFontSize.body),
             onChanged: onChanged,
             items: resolvedItems.map((item) {
               return DropdownMenuItem<T>(

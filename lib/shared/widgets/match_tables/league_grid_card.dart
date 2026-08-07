@@ -71,7 +71,7 @@ class LeagueGridCard extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         elevation: 0,
         color: cardColor,
         shape: RoundedRectangleBorder(
@@ -124,7 +124,7 @@ class LeagueGridCard extends StatelessWidget {
                         rowTeam.teamName,
                         style: TextStyle(
                           fontWeight: AppFontWeight.bold,
-                          fontSize: 11,
+                          fontSize: AppFontSize.caption,
                           color: themeColors.textColor,
                         ),
                         textAlign: TextAlign.center,
@@ -210,7 +210,7 @@ class LeagueGridCard extends StatelessWidget {
                                 Text(
                                   '${cellData.rPoints}',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: AppFontSize.small,
                                     fontWeight: AppFontWeight.bold,
                                     height: 1.1,
                                     color: textColor,
@@ -227,7 +227,7 @@ class LeagueGridCard extends StatelessWidget {
                                 Text(
                                   '${cellData.rWinners}',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: AppFontSize.small,
                                     fontWeight: AppFontWeight.bold,
                                     height: 1.1,
                                     color: textColor,
@@ -271,10 +271,10 @@ class LeagueGridCard extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Text(
           text,
-          style: TextStyle(fontSize: 10, color: themeColors.subTextColor),
+          style: TextStyle(fontSize: AppFontSize.badge, color: themeColors.subTextColor),
         ),
       ),
     );

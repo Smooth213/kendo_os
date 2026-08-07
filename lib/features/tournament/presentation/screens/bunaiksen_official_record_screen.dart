@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -136,8 +137,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                   // 共有・印刷アクションバー
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
                     ),
                     decoration: BoxDecoration(
                       color: cardColor,
@@ -276,13 +277,13 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       icon: Icon(icon, size: 18),
       label: Text(
         label,
-        style: const TextStyle(fontWeight: AppFontWeight.bold, fontSize: 13),
+        style: const TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.bodySmall),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         elevation: 0,
       ),
     );
@@ -307,7 +308,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     }).toList();
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.large,
@@ -432,7 +433,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         ? Colors.grey.shade400
         : Colors.grey.shade700;
     final daihyoBgColor = isDark
-        ? Colors.red.shade900.withValues(alpha: 0.15)
+        ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
         : Colors.red.shade50;
 
     // ★ 修正：スコアが入力されている試合は、ステータスに関わらず「完了」として扱う
@@ -484,7 +485,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
@@ -538,12 +539,12 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                               child: Text(
                                 m.matchType,
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: AppFontSize.badge,
                                   fontWeight: AppFontWeight.bold,
                                   color: m.matchType == '代表戦'
                                       ? (isDark
                                             ? Colors.red.shade400
-                                            : Colors.red.shade900)
+                                            : AppKendoColors.hansokuRed)
                                       : (isDark
                                             ? Colors.grey.shade300
                                             : Colors.grey.shade800),
@@ -559,7 +560,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                           child: Text(
                             '本/勝',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: AppFontSize.badge,
                               color: headerTextColor,
                             ),
                           ),
@@ -592,8 +593,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
                       color: isDark ? Colors.black87 : Colors.white,
@@ -614,7 +615,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       '※簡易入力された結果です\n（詳細スコアはありません）',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: AppFontSize.bodySmall,
                         fontWeight: AppFontWeight.bold,
                         color: isDark
                             ? Colors.grey.shade300
@@ -658,7 +659,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       child: Text(
                         winner == 'red' ? '勝' : '負',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: AppFontSize.body,
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'red'
                               ? (isDark
@@ -674,7 +675,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       child: Text(
                         winner == 'white' ? '勝' : '負',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: AppFontSize.body,
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'white'
                               ? (isDark
@@ -711,7 +712,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                     ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
                     : (isDark ? Colors.blue.shade400 : Colors.blue.shade700),
                 fontWeight: AppFontWeight.bold,
-                fontSize: 11,
+                fontSize: AppFontSize.caption,
               ),
             ),
           ),
@@ -748,7 +749,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       return Container(
         color: isDaihyo
             ? (isDark
-                  ? Colors.red.shade900.withValues(alpha: 0.15)
+                  ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
                   : Colors.red.shade50)
             : Colors.transparent,
       );
@@ -762,12 +763,12 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     return Container(
       color: isDaihyo
           ? (isDark
-                ? Colors.red.shade900.withValues(alpha: 0.15)
+                ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
                 : Colors.red.shade50)
           : Colors.transparent,
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xs),
           child: _buildVerticalName(
             parsed['last']!,
             showInitial ? parsed['first']!.substring(0, 1) : '',
@@ -825,7 +826,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               child: Text(
                 '✕',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: AppFontSize.subhead,
                   fontWeight: FontWeight.w900,
                   color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
                 ),
@@ -885,9 +886,9 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               ),
             ),
           if (pts.isNotEmpty)
-            Positioned(top: 4, left: 6, child: _renderMark(pts[0], color)),
+            Positioned(top: AppSpacing.xs, left: 6, child: _renderMark(pts[0], color)),
           if (pts.length > 1)
-            Positioned(bottom: 4, right: 6, child: _renderMark(pts[1], color)),
+            Positioned(bottom: AppSpacing.xs, right: 6, child: _renderMark(pts[1], color)),
         ],
       ),
     );
@@ -907,7 +908,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         child: Text(
           displayMark,
           style: TextStyle(
-            fontSize: 8,
+            fontSize: AppFontSize.micro,
             color: color,
             fontWeight: AppFontWeight.bold,
             height: 1.1,
@@ -918,7 +919,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     return Text(
       displayMark,
       style: TextStyle(
-        fontSize: 10,
+        fontSize: AppFontSize.badge,
         color: color,
         fontWeight: AppFontWeight.bold,
         height: 1.1,
@@ -930,7 +931,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
   Widget _buildVerticalName(String text, String initial, bool isDark) {
     final style = TextStyle(
-      fontSize: 11,
+      fontSize: AppFontSize.caption,
       fontWeight: AppFontWeight.bold,
       color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
     );
@@ -960,7 +961,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
           child: Text(
             initial,
             style: style.copyWith(
-              fontSize: 8,
+              fontSize: AppFontSize.micro,
               color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
             ),
           ),
@@ -987,7 +988,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         '$pts\n--\n$wins',
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
-          fontSize: 12,
+          fontSize: AppFontSize.small,
           color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
         ),
         textAlign: TextAlign.center,
@@ -1058,7 +1059,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         elevation: 0,
         color: cardColor,
         shape: RoundedRectangleBorder(
@@ -1129,7 +1130,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                         rowTeam,
                         style: TextStyle(
                           fontWeight: AppFontWeight.bold,
-                          fontSize: 11,
+                          fontSize: AppFontSize.caption,
                           color: isDark ? Colors.white : Colors.black87,
                         ),
                         textAlign: TextAlign.center,
@@ -1281,7 +1282,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                     color: isDark
                                         ? const Color(0xFF1C1C1E)
                                         : Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: AppRadius.round,
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withValues(
@@ -1325,7 +1326,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                           shape: const StadiumBorder(),
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 40,
-                                            vertical: 12,
+                                            vertical: AppSpacing.md,
                                           ),
                                           elevation: 0,
                                         ),
@@ -1399,7 +1400,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                   Text(
                                     '$rPoints',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: AppFontSize.small,
                                       fontWeight: AppFontWeight.bold,
                                       height: 1.1,
                                       color: textColor,
@@ -1416,7 +1417,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                   Text(
                                     '$rWinners',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: AppFontSize.small,
                                       fontWeight: AppFontWeight.bold,
                                       height: 1.1,
                                       color: textColor,
@@ -1448,11 +1449,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   Widget _buildHeaderCell(String text, bool isDark) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Text(
           text,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: AppFontSize.badge,
             color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
           ),
         ),
@@ -1515,7 +1516,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     // ★note抽出ロジックは削除完了
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
@@ -1597,8 +1598,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 12,
+                  vertical: AppSpacing.md,
+                  horizontal: AppSpacing.md,
                 ),
                 child: Row(
                   children: [
@@ -1607,7 +1608,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       child: Text(
                         m.note.isNotEmpty ? m.note : '第${index + 1}試合',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: AppFontSize.badge,
                           color: Colors.grey.shade500,
                           fontWeight: AppFontWeight.bold,
                         ),
@@ -1643,13 +1644,13 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                     const SizedBox(width: AppSpacing.md),
                     _buildPointBox(redPts, rWin, true, isDark),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                       child: Text(
                         isDraw ? '✕' : '-',
                         style: TextStyle(
                           color: Colors.grey.shade400,
                           fontWeight: FontWeight.w300,
-                          fontSize: 16,
+                          fontSize: AppFontSize.subhead,
                         ),
                       ),
                     ),
@@ -1769,7 +1770,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         child: Text(
           displayTech,
           style: TextStyle(
-            fontSize: 8,
+            fontSize: AppFontSize.micro,
             color: color,
             fontWeight: AppFontWeight.bold,
             height: 1.1,
@@ -1780,7 +1781,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     return Text(
       displayTech,
       style: TextStyle(
-        fontSize: 10,
+        fontSize: AppFontSize.badge,
         color: color,
         fontWeight: AppFontWeight.bold,
         height: 1.1,

@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/pdf/models/pdf_point_data.dart';
@@ -140,7 +141,7 @@ class PdfTeamTable {
                   ...matches.map(
                     (m) => pw.Center(
                       child: pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
+                        padding: const pw.EdgeInsets.all(AppSpacing.xs),
                         child: pw.Text(
                           m.matchType,
                           style: pw.TextStyle(
@@ -154,7 +155,7 @@ class PdfTeamTable {
                   ),
                   pw.Center(
                     child: pw.Padding(
-                      padding: const pw.EdgeInsets.all(4),
+                      padding: const pw.EdgeInsets.all(AppSpacing.xs),
                       child: pw.Text(
                         '本/勝',
                         style: pw.TextStyle(
@@ -229,7 +230,7 @@ class PdfTeamTable {
                       winner == 'red' ? '勝' : '負',
                       style: pw.TextStyle(
                         font: fontBold,
-                        fontSize: 11,
+                        fontSize: AppFontSize.caption,
                         color: winner == 'red'
                             ? PdfColors.red
                             : PdfColors.black,
@@ -243,7 +244,7 @@ class PdfTeamTable {
                       winner == 'white' ? '勝' : '負',
                       style: pw.TextStyle(
                         font: fontBold,
-                        fontSize: 11,
+                        fontSize: AppFontSize.caption,
                         color: winner == 'white'
                             ? PdfColors.red
                             : PdfColors.black,
@@ -271,7 +272,7 @@ class PdfTeamTable {
           color: color,
           fontWeight: pw.FontWeight.bold,
           font: fontBold,
-          fontSize: 10,
+          fontSize: AppFontSize.badge,
         ),
       ),
     ),
@@ -294,7 +295,7 @@ class PdfTeamTable {
         firstName.isNotEmpty;
     return pw.Center(
       child: pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        padding: const pw.EdgeInsets.symmetric(vertical: AppSpacing.xs, horizontal: 2),
         child: pw.Row(
           mainAxisSize: pw.MainAxisSize.min,
           crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -354,7 +355,7 @@ class PdfTeamTable {
               child: pw.Text(
                 '×',
                 style: pw.TextStyle(
-                  fontSize: 16,
+                  fontSize: AppFontSize.subhead,
                   color: PdfColors.grey600,
                   font: fontBold,
                 ),
@@ -373,7 +374,7 @@ class PdfTeamTable {
                   pw.Text(
                     '延',
                     style: pw.TextStyle(
-                      fontSize: 8,
+                      fontSize: AppFontSize.micro,
                       font: fontBold,
                       color: PdfColors.black,
                     ),
@@ -381,7 +382,7 @@ class PdfTeamTable {
                   pw.Text(
                     '長',
                     style: pw.TextStyle(
-                      fontSize: 8,
+                      fontSize: AppFontSize.micro,
                       font: fontBold,
                       color: PdfColors.black,
                     ),
@@ -441,7 +442,7 @@ class PdfTeamTable {
               ),
             pw.Text(
               '×',
-              style: pw.TextStyle(font: fontBold, fontSize: 10, color: color),
+              style: pw.TextStyle(font: fontBold, fontSize: AppFontSize.badge, color: color),
             ),
           ],
         ),
@@ -466,13 +467,13 @@ class PdfTeamTable {
             children: [
               if (pts.isNotEmpty)
                 pw.Positioned(
-                  top: 4,
+                  top: AppSpacing.xs,
                   left: 5,
                   child: _pdfSingleMark(pts[0], color, fontBold),
                 ),
               if (pts.length > 1)
                 pw.Positioned(
-                  bottom: 4,
+                  bottom: AppSpacing.xs,
                   right: 5,
                   child: _pdfSingleMark(pts[1], color, fontBold),
                 ),
@@ -504,7 +505,7 @@ class PdfTeamTable {
           )
         : pw.Text(
             p.mark,
-            style: pw.TextStyle(font: fontBold, fontSize: 8, color: color),
+            style: pw.TextStyle(font: fontBold, fontSize: AppFontSize.micro, color: color),
           );
   }
 
@@ -528,7 +529,7 @@ class PdfTeamTable {
         style: pw.TextStyle(
           fontWeight: pw.FontWeight.bold,
           font: fontBold,
-          fontSize: 10,
+          fontSize: AppFontSize.badge,
         ),
         textAlign: pw.TextAlign.center,
       ),

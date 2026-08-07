@@ -80,7 +80,7 @@ class LoginScreen extends ConsumerWidget {
               Text(
                 '次世代の剣道スコア入力システム',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: AppFontSize.body,
                   fontWeight: AppFontWeight.bold,
                   color: secondaryText,
                   letterSpacing: 1.5,
@@ -90,10 +90,10 @@ class LoginScreen extends ConsumerWidget {
 
               // 🏢 現在の接続先 道場ID 表示カード（ひと目で認識できる洗練されたデザイン）
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 32),
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 16,
+                  vertical: AppSpacing.lg,
                 ),
                 decoration: BoxDecoration(
                   color: cardColor,
@@ -134,7 +134,7 @@ class LoginScreen extends ConsumerWidget {
                           Text(
                             '接続中の道場ID',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: secondaryText,
                               letterSpacing: 0.8,
@@ -144,7 +144,7 @@ class LoginScreen extends ConsumerWidget {
                           Text(
                             displayDojoId,
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: AppFontSize.title,
                               fontWeight: FontWeight.w800,
                               color: primaryText,
                               letterSpacing: 1.1,
@@ -157,7 +157,7 @@ class LoginScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
-                        vertical: 4,
+                        vertical: AppSpacing.xs,
                       ),
                       decoration: BoxDecoration(
                         color: isDark
@@ -181,7 +181,7 @@ class LoginScreen extends ConsumerWidget {
                           Text(
                             '選択中',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: secondaryText,
                             ),
@@ -197,7 +197,7 @@ class LoginScreen extends ConsumerWidget {
 
               // ★ プレミアムなログインボタン（他画面のボタンと同等のクオリティ）
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 child: ElevatedButton.icon(
                   icon: const Icon(
                     Icons.login,
@@ -207,7 +207,7 @@ class LoginScreen extends ConsumerWidget {
                   label: const Text(
                     'Googleでログイン',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: AppFontSize.subhead,
                       fontWeight: AppFontWeight.bold,
                       color: buttonTextColor,
                       letterSpacing: 1.1,

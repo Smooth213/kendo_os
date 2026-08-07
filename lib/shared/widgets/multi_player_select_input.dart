@@ -113,14 +113,14 @@ class _MultiPlayerSelectInputState
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
-                top: 16,
+                top: AppSpacing.lg,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // ヘッダー（確定ボタン付き）
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -139,7 +139,7 @@ class _MultiPlayerSelectInputState
                           '${tempSelected.length}名 選択中',
                           style: TextStyle(
                             fontWeight: AppFontWeight.bold,
-                            fontSize: 16,
+                            fontSize: AppFontSize.subhead,
                             color: _accentColor,
                           ),
                         ),
@@ -153,7 +153,7 @@ class _MultiPlayerSelectInputState
                             '確定',
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,
-                              fontSize: 16,
+                              fontSize: AppFontSize.subhead,
                               color: _accentColor,
                             ),
                           ),
@@ -164,7 +164,7 @@ class _MultiPlayerSelectInputState
                   const SizedBox(height: AppSpacing.sm),
                   // 検索窓
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: TextField(
                       autofocus: true,
                       decoration: InputDecoration(
@@ -198,7 +198,7 @@ class _MultiPlayerSelectInputState
                   // ★ カテゴリフィルターチップ（横スクロール）
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: Row(
                       children:
                           [
@@ -215,7 +215,7 @@ class _MultiPlayerSelectInputState
                             final isSelected = selectedFilter == filterName;
                             final activeColor = _accentColor;
                             return Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.only(right: AppSpacing.sm),
                               child: AppChoiceChip(
                                 label: Text(filterName),
                                 selected: isSelected,
@@ -276,7 +276,7 @@ class _MultiPlayerSelectInputState
                             subtitle: const Text(
                               '出稽古・ゲスト',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: AppFontSize.small,
                                 color: Colors.grey,
                               ),
                             ),
@@ -308,7 +308,7 @@ class _MultiPlayerSelectInputState
                             subtitle: Text(
                               p.gradeName,
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: AppFontSize.small,
                                 color: Colors.grey,
                               ),
                             ),

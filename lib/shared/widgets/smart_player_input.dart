@@ -118,7 +118,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom, // キーボードを避ける
-                top: 16,
+                top: AppSpacing.lg,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -127,13 +127,13 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                     '選手を選択',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      fontSize: 16,
+                      fontSize: AppFontSize.subhead,
                       color: _accentColor,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: TextField(
                       autofocus: true, // 開いた瞬間にキーボードを出す
                       decoration: InputDecoration(
@@ -169,7 +169,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                   // ★ カテゴリフィルターチップ（横スクロール）
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: Row(
                       children:
                           [
@@ -186,7 +186,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                             final isSelected = selectedFilter == filterName;
                             final activeColor = _accentColor;
                             return Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.only(right: AppSpacing.sm),
                               child: AppChoiceChip(
                                 label: Text(filterName),
                                 selected: isSelected,
@@ -249,7 +249,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                             subtitle: const Text(
                               '出稽古・ゲスト',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: AppFontSize.small,
                                 color: Colors.grey,
                               ),
                             ),
@@ -273,7 +273,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                             subtitle: Text(
                               p.gradeName,
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: AppFontSize.small,
                                 color: Colors.grey,
                               ),
                             ), // ★ 修正：マスタの学年を表示

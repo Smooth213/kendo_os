@@ -123,8 +123,8 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
 
                       return Card(
                         margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.xs,
                         ),
                         color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                         elevation: 0,
@@ -145,7 +145,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,
                               color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 14,
+                              fontSize: AppFontSize.body,
                             ),
                           ),
                           subtitle: Column(
@@ -158,7 +158,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                                   color: isDark
                                       ? Colors.grey.shade300
                                       : Colors.black87,
-                                  fontSize: 13,
+                                  fontSize: AppFontSize.bodySmall,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -166,7 +166,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                                 '試合ID: $matchId\n操作者: $userId',
                                 style: const TextStyle(
                                   color: Colors.grey,
-                                  fontSize: 11,
+                                  fontSize: AppFontSize.caption,
                                 ),
                               ),
                             ],
@@ -175,7 +175,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                             timeStr,
                             style: const TextStyle(
                               color: Colors.grey,
-                              fontSize: 11,
+                              fontSize: AppFontSize.caption,
                             ),
                           ),
                         ),

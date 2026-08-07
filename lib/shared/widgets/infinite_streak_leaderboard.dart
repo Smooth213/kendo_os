@@ -17,7 +17,7 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
 
     if (streaks.isEmpty || !streaks.values.any((v) => v > 0)) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Text(
           'まだ連勝記録はありません',
           style: TextStyle(color: themeColors.hintColor),
@@ -55,7 +55,7 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
             style: TextStyle(
               fontWeight: AppFontWeight.bold,
               color: isTop ? Colors.red.shade600 : themeColors.textColor,
-              fontSize: 15,
+              fontSize: AppFontSize.bodyMedium,
             ),
           ),
         );

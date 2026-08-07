@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
@@ -199,12 +200,12 @@ class PdfLeagueTable {
   static pw.Widget _pdfHeaderCell(String text, pw.Font font) {
     return pw.Center(
       child: pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: 8),
+        padding: const pw.EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: pw.Text(
           text,
           style: pw.TextStyle(
             font: font,
-            fontSize: 8,
+            fontSize: AppFontSize.micro,
             color: PdfColors.grey700,
           ),
         ),
@@ -367,7 +368,7 @@ class PdfLeagueTable {
       }
       return pw.Text(
         displayTech,
-        style: pw.TextStyle(font: ttfBold, fontSize: 8, color: PdfColors.black),
+        style: pw.TextStyle(font: ttfBold, fontSize: AppFontSize.micro, color: PdfColors.black),
       );
     }
 
