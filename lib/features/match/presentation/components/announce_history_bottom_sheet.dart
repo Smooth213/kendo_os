@@ -279,7 +279,7 @@ class _AnnounceHistoryBottomSheetState
                               style: TextStyle(
                                 fontSize: AppFontSize.body,
                                 fontWeight: !isRead
-                                    ? FontWeight.w900
+                                    ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isStaffOnly
                                     ? Colors.deepOrange

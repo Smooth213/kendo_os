@@ -193,7 +193,8 @@ class MatchScoreboard extends ConsumerWidget {
                       ? viewState.redCleanName
                       : viewState.whiteCleanName,
                   style: TextStyle(
-                    fontSize: 40, // 🌟 視認性をさらに高める40ptへサイズアップ
+                    fontSize: AppFontSize
+                        .scoreboardMedium, // 🌟 視認性をさらに高める40ptへサイズアップ
                     fontWeight: AppFontWeight.bold, // 力強い超太字 (w900)
                     color: nameColor,
                     height: 1.2,

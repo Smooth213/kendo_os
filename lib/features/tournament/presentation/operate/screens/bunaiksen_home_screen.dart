@@ -957,7 +957,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                     child: Text(
                       'VS',
                       style: TextStyle(
-                        fontWeight: FontWeight.w900,
+                        fontWeight: AppFontWeight.black,
                         fontSize: AppFontSize.subhead,
                         color: Colors.grey,
                       ),

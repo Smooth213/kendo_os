@@ -1442,7 +1442,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                           '簡易入力',
                                                                           style: TextStyle(
                                                                             fontSize:
-                                                                                9,
+                                                                                AppFontSize.nano,
                                                                             fontWeight:
                                                                                 AppFontWeight.bold,
                                                                             color:
@@ -1814,7 +1814,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             style: TextStyle(
                                                                               fontSize: AppFontSize.bodyMedium,
                                                                               fontWeight: showLeftOwn
-                                                                                  ? FontWeight.w900
+                                                                                  ? AppFontWeight.black
                                                                                   : AppFontWeight.bold,
                                                                               color: showLeftOwn
                                                                                   ? Colors.amber.shade600
@@ -1897,7 +1897,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             style: TextStyle(
                                                                               fontSize: AppFontSize.bodyMedium,
                                                                               fontWeight: showRightOwn
-                                                                                  ? FontWeight.w900
+                                                                                  ? AppFontWeight.black
                                                                                   : AppFontWeight.bold,
                                                                               color: showRightOwn
                                                                                   ? Colors.amber.shade600
@@ -2474,7 +2474,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       label: Text(
                                                                                                         '簡易入力',
                                                                                                         style: TextStyle(
-                                                                                                          fontSize: 9,
+                                                                                                          fontSize: AppFontSize.nano,
                                                                                                           fontWeight: AppFontWeight.bold,
                                                                                                           color: mTitleColor,
                                                                                                         ),
@@ -2670,7 +2670,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                   style: TextStyle(
                                                                                                     fontSize: AppFontSize.body,
                                                                                                     fontWeight: showLeftOwn
-                                                                                                        ? FontWeight.w900
+                                                                                                        ? AppFontWeight.black
                                                                                                         : AppFontWeight.bold,
                                                                                                     color: showLeftOwn
                                                                                                         ? Colors.amber.shade600
@@ -2743,7 +2743,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                   style: TextStyle(
                                                                                                     fontSize: AppFontSize.body,
                                                                                                     fontWeight: showRightOwn
-                                                                                                        ? FontWeight.w900
+                                                                                                        ? AppFontWeight.black
                                                                                                         : AppFontWeight.bold,
                                                                                                     color: showRightOwn
                                                                                                         ? Colors.amber.shade600
@@ -5161,7 +5161,7 @@ class MatchListTileCard extends ConsumerWidget {
                               label: Text(
                                 '簡易',
                                 style: TextStyle(
-                                  fontSize: 9,
+                                  fontSize: AppFontSize.nano,
                                   fontWeight: AppFontWeight.bold,
                                   color: textC,
                                 ),
@@ -5423,7 +5423,7 @@ class MatchListTileCard extends ConsumerWidget {
                                 color: isDark
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade500,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: AppFontWeight.medium,
                               ),
                               textAlign: TextAlign.start,
                               overflow: TextOverflow.ellipsis,
@@ -5438,7 +5438,7 @@ class MatchListTileCard extends ConsumerWidget {
                                 color: isDark
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade500,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: AppFontWeight.medium,
                               ),
                               textAlign: TextAlign.end,
                               overflow: TextOverflow.ellipsis,
@@ -5458,7 +5458,7 @@ class MatchListTileCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.body,
                                 fontWeight: isRedOwn
-                                    ? FontWeight.w900
+                                    ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isRedOwn
                                     ? Colors.amber.shade600
@@ -5533,7 +5533,7 @@ class MatchListTileCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.body,
                                 fontWeight: isWhiteOwn
-                                    ? FontWeight.w900
+                                    ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isWhiteOwn
                                     ? Colors.amber.shade600

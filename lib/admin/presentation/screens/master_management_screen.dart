@@ -531,7 +531,7 @@ class _MasterManagementScreenState
                           child: Text(
                             player.name,
                             style: TextStyle(
-                              fontWeight: FontWeight.w500,
+                              fontWeight: AppFontWeight.medium,
                               fontSize: AppFontSize.subhead,
                               color: isDark ? Colors.white : Colors.black87,
                             ),
@@ -557,7 +557,7 @@ class _MasterManagementScreenState
                                   '初心者',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 9,
+                                    fontSize: AppFontSize.nano,
                                     fontWeight: AppFontWeight.bold,
                                   ),
                                 ),

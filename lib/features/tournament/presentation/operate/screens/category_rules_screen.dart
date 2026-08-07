@@ -2915,7 +2915,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               style: TextStyle(
                 fontSize: AppFontSize.bodySmall,
                 color: isDark ? Colors.white70 : Colors.black87,
-                fontWeight: FontWeight.w500,
+                fontWeight: AppFontWeight.medium,
               ),
             ),
           ),

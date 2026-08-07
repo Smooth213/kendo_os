@@ -223,7 +223,7 @@ class _TeamRegistrationScreenState
               const Text(
                 'チームとオーダー登録',
                 style: TextStyle(
-                  fontSize: 26,
+                  fontSize: AppFontSize.heroLarge,
                   fontWeight: AppFontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 1.0,
@@ -235,7 +235,7 @@ class _TeamRegistrationScreenState
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
                   color: Colors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w500,
+                  fontWeight: AppFontWeight.medium,
                 ),
               ),
               const SizedBox(height: 20),
@@ -782,7 +782,7 @@ class _TeamRegistrationScreenState
         Text(
           '出場するカテゴリと\n試合形式を選んでください',
           style: TextStyle(
-            fontSize: 22,
+            fontSize: AppFontSize.titleLarge,
             fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,
@@ -1186,7 +1186,7 @@ class _TeamRegistrationScreenState
         Text(
           '登録内容の確認と\n登録済みの一覧です',
           style: TextStyle(
-            fontSize: 22,
+            fontSize: AppFontSize.titleLarge,
             fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,

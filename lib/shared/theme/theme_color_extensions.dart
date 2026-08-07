@@ -208,3 +208,13 @@ class AppThemeModeWrapper extends StatelessWidget {
     );
   }
 }
+
+/// BuildContext 経由で AppThemeColors へ即座にアクセスできる便利な拡張
+extension AppContextThemeX on BuildContext {
+  AppThemeColors get appColors =>
+      Theme.of(this).extension<AppThemeColors>() ??
+      AppThemeColors.ofMode(
+        isDark: Theme.of(this).brightness == Brightness.dark,
+        mode: 'normal',
+      );
+}

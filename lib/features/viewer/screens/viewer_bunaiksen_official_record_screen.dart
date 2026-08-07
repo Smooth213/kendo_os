@@ -843,7 +843,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                 '✕',
                 style: TextStyle(
                   fontSize: AppFontSize.subhead,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: AppFontWeight.black,
                   color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
                 ),
               ),
@@ -1640,7 +1640,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                             Text(
                               rTeam,
                               style: TextStyle(
-                                fontSize: 9,
+                                fontSize: AppFontSize.nano,
                                 color: Colors.grey.shade500,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -1649,7 +1649,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                             rName,
                             style: TextStyle(
                               fontWeight: rWin
-                                  ? FontWeight.w900
+                                  ? AppFontWeight.black
                                   : AppFontWeight.bold,
                               color: rWin ? Colors.red.shade700 : textColor,
                             ),
@@ -1668,7 +1668,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                         isDraw ? '✕' : '-',
                         style: TextStyle(
                           color: Colors.grey.shade400,
-                          fontWeight: FontWeight.w300,
+                          fontWeight: AppFontWeight.light,
                           fontSize: AppFontSize.subhead,
                         ),
                       ),
@@ -1683,7 +1683,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                             Text(
                               wTeam,
                               style: TextStyle(
-                                fontSize: 9,
+                                fontSize: AppFontSize.nano,
                                 color: Colors.grey.shade500,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -1692,7 +1692,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                             wName,
                             style: TextStyle(
                               fontWeight: wWin
-                                  ? FontWeight.w900
+                                  ? AppFontWeight.black
                                   : AppFontWeight.bold,
                               color: wWin ? Colors.red.shade700 : textColor,
                             ),

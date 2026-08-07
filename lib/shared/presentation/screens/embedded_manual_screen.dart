@@ -675,7 +675,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 const Text(
                   'Kendo Sync 総合取扱説明書',
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: AppFontSize.titleLarge,
                     fontWeight: AppFontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -798,7 +798,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black87,
                   fontSize: AppFontSize.body,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: AppFontWeight.medium,
                 ),
                 decoration: InputDecoration(
                   hintText: 'マニュアル内を検索...',
@@ -1074,7 +1074,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                   color: Colors.blueAccent,
                 ),
                 h2: const TextStyle(
-                  fontSize: 22,
+                  fontSize: AppFontSize.titleLarge,
                   fontWeight: AppFontWeight.bold,
                   color: Colors.teal,
                   decoration: TextDecoration.underline,

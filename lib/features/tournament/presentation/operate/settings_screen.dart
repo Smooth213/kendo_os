@@ -660,7 +660,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         style: TextStyle(
           color: dynamicTextColor,
           fontSize: AppFontSize.bodyMedium,
-          fontWeight: FontWeight.w500,
+          fontWeight: AppFontWeight.medium,
         ),
       ),
       subtitle: subtitle != null

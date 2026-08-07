@@ -702,7 +702,7 @@ class HomeScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: AppFontSize.body,
                     fontWeight: isCompleted
-                        ? FontWeight.w500
+                        ? AppFontWeight.medium
                         : AppFontWeight.bold,
                     color: isCompleted ? inactiveTextColor : activeTextColor,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,

@@ -1646,7 +1646,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               AppFontSize.bodyMedium,
                                                                           fontWeight:
                                                                               showLeftOwn
-                                                                              ? FontWeight.w900
+                                                                              ? AppFontWeight.black
                                                                               : AppFontWeight.bold,
                                                                           color:
                                                                               showLeftOwn
@@ -1730,7 +1730,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               AppFontSize.bodyMedium,
                                                                           fontWeight:
                                                                               showRightOwn
-                                                                              ? FontWeight.w900
+                                                                              ? AppFontWeight.black
                                                                               : AppFontWeight.bold,
                                                                           color:
                                                                               showRightOwn
@@ -2139,7 +2139,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                               style: TextStyle(
                                                                                                 fontSize: AppFontSize.body,
                                                                                                 fontWeight: showLeftOwn
-                                                                                                    ? FontWeight.w900
+                                                                                                    ? AppFontWeight.black
                                                                                                     : AppFontWeight.bold,
                                                                                                 color: showLeftOwn
                                                                                                     ? Colors.amber.shade600
@@ -2216,7 +2216,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                               style: TextStyle(
                                                                                                 fontSize: AppFontSize.body,
                                                                                                 fontWeight: showRightOwn
-                                                                                                    ? FontWeight.w900
+                                                                                                    ? AppFontWeight.black
                                                                                                     : AppFontWeight.bold,
                                                                                                 color: showRightOwn
                                                                                                     ? Colors.amber.shade600
@@ -3028,7 +3028,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                 color: isDark
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade500,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: AppFontWeight.medium,
                               ),
                               textAlign: TextAlign.start,
                               overflow: TextOverflow.ellipsis,
@@ -3043,7 +3043,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                 color: isDark
                                     ? Colors.grey.shade400
                                     : Colors.grey.shade500,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: AppFontWeight.medium,
                               ),
                               textAlign: TextAlign.end,
                               overflow: TextOverflow.ellipsis,
@@ -3062,7 +3062,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.body,
                                 fontWeight: isRedOwn
-                                    ? FontWeight.w900
+                                    ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isRedOwn
                                     ? Colors.amber.shade600
@@ -3138,7 +3138,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.body,
                                 fontWeight: isWhiteOwn
-                                    ? FontWeight.w900
+                                    ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isWhiteOwn
                                     ? Colors.amber.shade600

@@ -70,8 +70,8 @@ class LoginScreen extends ConsumerWidget {
               Text(
                 'Kendo Sync',
                 style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w900,
+                  fontSize: AppFontSize.scoreboardMedium,
+                  fontWeight: AppFontWeight.black,
                   color: primaryText, // ★ メインテキスト色を使用
                   letterSpacing: 2.5,
                 ),

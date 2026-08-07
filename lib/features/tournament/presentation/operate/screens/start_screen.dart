@@ -156,7 +156,7 @@ class StartScreen extends ConsumerWidget {
                       const Text(
                         'Kendo Sync',
                         style: TextStyle(
-                          fontSize: 36,
+                          fontSize: AppFontSize.heroXxl,
                           fontWeight: AppFontWeight.bold,
                           color: Colors.white,
                           letterSpacing: 1.0,

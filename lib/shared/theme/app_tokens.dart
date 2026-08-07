@@ -8,10 +8,15 @@ class AppRadius {
   static const double tinyValue = 4.0;
   static const double subValue = 6.0;
   static const double smallValue = 8.0;
+  static const double compactValue = 10.0;
+  static const double smoothValue = 11.0;
   static const double mediumValue = 12.0;
+  static const double modernValue = 14.0;
   static const double largeValue = 16.0;
   static const double roundValue = 20.0;
   static const double xlargeValue = 24.0;
+  static const double hugeValue = 28.0;
+  static const double giantValue = 32.0;
   static const double fullValue = 999.0;
 
   static const BorderRadius micro = BorderRadius.all(
@@ -22,8 +27,17 @@ class AppRadius {
   static const BorderRadius small = BorderRadius.all(
     Radius.circular(smallValue),
   );
+  static const BorderRadius compact = BorderRadius.all(
+    Radius.circular(compactValue),
+  );
+  static const BorderRadius smooth = BorderRadius.all(
+    Radius.circular(smoothValue),
+  );
   static const BorderRadius medium = BorderRadius.all(
     Radius.circular(mediumValue),
+  );
+  static const BorderRadius modern = BorderRadius.all(
+    Radius.circular(modernValue),
   );
   static const BorderRadius large = BorderRadius.all(
     Radius.circular(largeValue),
@@ -34,6 +48,10 @@ class AppRadius {
   static const BorderRadius xlarge = BorderRadius.all(
     Radius.circular(xlargeValue),
   );
+  static const BorderRadius huge = BorderRadius.all(Radius.circular(hugeValue));
+  static const BorderRadius giant = BorderRadius.all(
+    Radius.circular(giantValue),
+  );
   static const BorderRadius full = BorderRadius.all(Radius.circular(fullValue));
 }
 
@@ -41,12 +59,16 @@ class AppRadius {
 class AppSpacing {
   AppSpacing._();
 
+  static const double xxs = 2.0;
   static const double xs = 4.0;
   static const double sm = 8.0;
+  static const double compact = 10.0;
   static const double md = 12.0;
   static const double lg = 16.0;
+  static const double mediumLg = 18.0;
   static const double xl = 24.0;
   static const double xxl = 32.0;
+  static const double giant = 40.0;
 }
 
 /// kendo OS デザインシステムにおける統一フォントウェイト (FontWeight) トークン
@@ -66,6 +88,7 @@ class AppFontSize {
   AppFontSize._();
 
   static const double micro = 8.0;
+  static const double nano = 9.0;
   static const double badge = 10.0;
   static const double caption = 11.0;
   static const double small = 12.0;
@@ -76,9 +99,15 @@ class AppFontSize {
   static const double title = 17.0;
   static const double headline = 18.0;
   static const double header = 20.0;
+  static const double titleLarge = 22.0;
   static const double display = 24.0;
+  static const double heroLarge = 26.0;
   static const double hero = 28.0;
   static const double jumbo = 32.0;
+  static const double heroXl = 34.0;
+  static const double heroXxl = 36.0;
+  static const double scoreboardMedium = 40.0;
+  static const double scoreboardLarge = 46.0;
   static const double scoreboardTimer = 48.0;
   static const double scoreboardJumbo = 56.0;
 }

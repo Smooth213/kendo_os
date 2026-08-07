@@ -672,7 +672,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                   color: isDark
                       ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
                       : Colors.red.shade300,
-                  fontWeight: FontWeight.w300,
+                  fontWeight: AppFontWeight.light,
                 ),
               ),
             ),

@@ -580,7 +580,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             style: TextStyle(
               fontSize: AppFontSize.bodySmall,
               color: Colors.white.withValues(alpha: 0.9),
-              fontWeight: FontWeight.w500,
+              fontWeight: AppFontWeight.medium,
             ),
           ),
           const SizedBox(height: 20),

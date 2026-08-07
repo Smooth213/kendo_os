@@ -133,7 +133,7 @@ class IndividualListCard extends StatelessWidget {
                             Text(
                               m.redTeam,
                               style: TextStyle(
-                                fontSize: 9,
+                                fontSize: AppFontSize.nano,
                                 color: Colors.grey.shade500,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -166,7 +166,7 @@ class IndividualListCard extends StatelessWidget {
                         m.isDraw ? '✕' : '-',
                         style: TextStyle(
                           color: Colors.grey.shade400,
-                          fontWeight: FontWeight.w300,
+                          fontWeight: AppFontWeight.light,
                           fontSize: AppFontSize.subhead,
                         ),
                       ),
@@ -186,7 +186,7 @@ class IndividualListCard extends StatelessWidget {
                             Text(
                               m.whiteTeam,
                               style: TextStyle(
-                                fontSize: 9,
+                                fontSize: AppFontSize.nano,
                                 color: Colors.grey.shade500,
                               ),
                               overflow: TextOverflow.ellipsis,

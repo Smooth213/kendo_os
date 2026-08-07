@@ -719,7 +719,7 @@ class _SetupMatchFormatScreenState
               const Text(
                 '試合ルールの設定',
                 style: TextStyle(
-                  fontSize: 26,
+                  fontSize: AppFontSize.heroLarge,
                   fontWeight: AppFontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 1.0,
@@ -731,7 +731,7 @@ class _SetupMatchFormatScreenState
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
                   color: Colors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w500,
+                  fontWeight: AppFontWeight.medium,
                 ),
               ),
               const SizedBox(height: 20),
@@ -1514,7 +1514,7 @@ class _SetupMatchFormatScreenState
         Text(
           '適用ルールの確認と\n詳細情報の入力',
           style: TextStyle(
-            fontSize: 22,
+            fontSize: AppFontSize.titleLarge,
             fontWeight: AppFontWeight.bold,
             height: 1.4,
             color: textColor,

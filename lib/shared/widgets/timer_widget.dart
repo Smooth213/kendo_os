@@ -243,7 +243,7 @@ class TimerWidget extends ConsumerWidget {
                 return Text(
                   _formatTime(seconds),
                   style: TextStyle(
-                    fontSize: 46,
+                    fontSize: AppFontSize.scoreboardLarge,
                     fontWeight: AppFontWeight.bold,
                     // fontFamily: 'Courier',
                     height: 1.1,

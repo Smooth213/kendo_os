@@ -210,7 +210,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         '赤の判定勝ち\n($rName)',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 40.0,
+                          fontSize: AppFontSize.scoreboardMedium,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -239,7 +239,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         '白の判定勝ち\n($wName)',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 40.0,
+                          fontSize: AppFontSize.scoreboardMedium,
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
@@ -476,7 +476,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   style: const TextStyle(
                     fontSize: AppFontSize.small,
                     color: Colors.white70,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: AppFontWeight.medium,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -871,7 +871,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                       : '操作履歴なし',
                                                   style: TextStyle(
                                                     fontSize: AppFontSize.body,
-                                                    fontWeight: FontWeight.w900,
+                                                    fontWeight:
+                                                        AppFontWeight.black,
                                                     color: canUndoReal
                                                         ? (isDark
                                                               ? Colors.white
@@ -4583,8 +4584,8 @@ class _RenseikaiMasterTimerWidget extends ConsumerWidget {
                   Text(
                     _formatTime(masterTime),
                     style: TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
+                      fontSize: AppFontSize.heroXl,
+                      fontWeight: AppFontWeight.black,
                       height: 1.1,
                       color: isTimeUp ? Colors.red : timerTextColor,
                       fontFeatures: const [FontFeature.tabularFigures()],

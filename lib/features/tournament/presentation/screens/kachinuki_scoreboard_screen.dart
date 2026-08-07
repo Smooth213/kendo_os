@@ -317,7 +317,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         Text(
                           rTeam,
                           style: TextStyle(
-                            fontWeight: FontWeight.w900,
+                            fontWeight: AppFontWeight.black,
                             color: isDark
                                 ? Colors.red.shade400
                                 : Colors.red.shade700,
@@ -352,7 +352,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                     child: Text(
                       'VS',
                       style: TextStyle(
-                        fontWeight: FontWeight.w900,
+                        fontWeight: AppFontWeight.black,
                         fontSize: AppFontSize.display,
                         color: isDark ? Colors.white10 : Colors.black12,
                         fontStyle: FontStyle.italic,
@@ -366,7 +366,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         Text(
                           wTeam,
                           style: TextStyle(
-                            fontWeight: FontWeight.w900,
+                            fontWeight: AppFontWeight.black,
                             color: isDark
                                 ? Colors.blueGrey.shade300
                                 : Colors.blueGrey.shade800,
@@ -474,7 +474,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         text: TextSpan(
           style: TextStyle(
             fontSize: AppFontSize.subhead,
-            fontWeight: isWin ? FontWeight.w900 : AppFontWeight.bold,
+            fontWeight: isWin ? AppFontWeight.black : AppFontWeight.bold,
             color: isFaded ? Colors.grey.shade600 : winColor,
           ),
           children: [
@@ -671,7 +671,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         child: Text(
                           'VS',
                           style: TextStyle(
-                            fontWeight: FontWeight.w900,
+                            fontWeight: AppFontWeight.black,
                             color: isDark ? Colors.teal.shade400 : Colors.teal,
                           ),
                         ),
@@ -837,7 +837,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             p.mark,
             style: TextStyle(
               fontSize: AppFontSize.subhead,
-              fontWeight: FontWeight.w900,
+              fontWeight: AppFontWeight.black,
               color: textColor,
             ),
           ),
@@ -1283,7 +1283,7 @@ class KachinukiBracketPainter extends CustomPainter {
 
     final textStyle = TextStyle(
       color: isDark ? Colors.grey.shade200 : Colors.black87,
-      fontSize: 9.0,
+      fontSize: AppFontSize.nano,
       fontWeight: AppFontWeight.bold,
       fontFamily: 'Noto Sans JP',
     );
@@ -1347,7 +1347,7 @@ class KachinukiBracketPainter extends CustomPainter {
     final textStyle = TextStyle(
       color: textColor,
       fontSize: fontSize,
-      fontWeight: isTeamName ? FontWeight.w900 : AppFontWeight.bold,
+      fontWeight: isTeamName ? AppFontWeight.black : AppFontWeight.bold,
       fontFamily: 'Noto Sans JP',
     );
 
@@ -1408,7 +1408,7 @@ class KachinukiBracketPainter extends CustomPainter {
     final textStyle = TextStyle(
       color: color,
       fontSize: AppFontSize.bodyMedium,
-      fontWeight: FontWeight.w900,
+      fontWeight: AppFontWeight.black,
     );
     final circlePaint = Paint()
       ..color = color

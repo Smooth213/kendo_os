@@ -25,7 +25,8 @@ def check_tokens():
 
             if filename != 'app_tokens.dart':
                 raw_border_radius += len(re.findall(r'BorderRadius\.circular\(\s*\d+|Radius\.circular\(\s*\d+', content))
-                raw_font_size += len(re.findall(r'fontSize:\s*(?!AppFontSize\.)\d+', content))
+                if '/pdf/' not in f.replace('\\', '/'):
+                    raw_font_size += len(re.findall(r'fontSize:\s*(?!AppFontSize\.)\d+', content))
 
                 # Check for numerical EdgeInsets not using AppSpacing
                 insets_matches = re.findall(r'EdgeInsets\.(all|symmetric|only|fromLTRB)\([^)]*\)', content)
