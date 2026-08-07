@@ -461,7 +461,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         : Colors.grey.shade700;
     final daihyoBgColor = isDark
         ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-        : Colors.red.shade50;
+        : AppKendoColors.hansokuRed;
 
     bool allFinished = matches.every((m) {
       final hasScore =
@@ -572,7 +572,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                                   fontWeight: AppFontWeight.bold,
                                   color: m.matchType == '代表戦'
                                       ? (isDark
-                                            ? Colors.red.shade400
+                                            ? AppKendoColors.hansokuRed
                                             : AppKendoColors.hansokuRed)
                                       : (isDark
                                             ? Colors.grey.shade300
@@ -688,8 +688,8 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'red'
                               ? (isDark
-                                    ? Colors.red.shade400
-                                    : Colors.red.shade600)
+                                    ? AppKendoColors.hansokuRed
+                                    : AppKendoColors.hansokuRed)
                               : textColor,
                         ),
                       ),
@@ -734,7 +734,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
               teamName,
               style: TextStyle(
                 color: isRed
-                    ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
+                    ? (isDark
+                          ? AppKendoColors.hansokuRed
+                          : AppKendoColors.hansokuRed)
                     : (isDark ? Colors.blue.shade400 : Colors.blue.shade700),
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.caption,
@@ -751,7 +753,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
               color: isDaihyo
                   ? (isDark
                         ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                        : Colors.red.shade50)
+                        : AppKendoColors.hansokuRed)
                   : Colors.transparent,
             );
           }
@@ -773,7 +775,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
             color: isDaihyo
                 ? (isDark
                       ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                      : Colors.red.shade50)
+                      : AppKendoColors.hansokuRed)
                 : Colors.transparent,
             child: Center(
               child: Padding(
@@ -880,7 +882,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     bool isDark,
   ) {
     final color = isRed
-        ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
+        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (isDark ? Colors.blue.shade400 : Colors.blue.shade700);
     return SizedBox(
       width: 36,
@@ -1240,13 +1242,13 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
 
                     String result = 'draw';
                     Color symbolColor = isDark
-                        ? Colors.amber.shade300
-                        : Colors.amber.shade700;
+                        ? AppKendoColors.ipponGold
+                        : AppKendoColors.ipponGold;
                     if (rWins > cWins) {
                       result = 'win';
                       symbolColor = isDark
-                          ? Colors.red.shade300
-                          : Colors.red.shade700;
+                          ? AppKendoColors.hansokuRed
+                          : AppKendoColors.hansokuRed;
                     } else if (cWins > rWins) {
                       result = 'loss';
                       symbolColor = isDark
@@ -1256,8 +1258,8 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                       if (rPoints > cPoints) {
                         result = 'win';
                         symbolColor = isDark
-                            ? Colors.red.shade300
-                            : Colors.red.shade700;
+                            ? AppKendoColors.hansokuRed
+                            : AppKendoColors.hansokuRed;
                       } else {
                         result = 'loss';
                         symbolColor = isDark
@@ -1653,7 +1655,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                               fontWeight: rWin
                                   ? AppFontWeight.black
                                   : AppFontWeight.bold,
-                              color: rWin ? Colors.red.shade700 : textColor,
+                              color: rWin
+                                  ? AppKendoColors.hansokuRed
+                                  : textColor,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1696,7 +1700,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                               fontWeight: wWin
                                   ? AppFontWeight.black
                                   : AppFontWeight.bold,
-                              color: wWin ? Colors.red.shade700 : textColor,
+                              color: wWin
+                                  ? AppKendoColors.hansokuRed
+                                  : textColor,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),

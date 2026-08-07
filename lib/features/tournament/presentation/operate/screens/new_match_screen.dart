@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -525,7 +527,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final currentTeam = isRed ? _redTeam : _whiteTeam;
 
     return Card(
-      color: isRed ? Colors.red.shade50 : Colors.grey.shade100,
+      color: isRed ? AppKendoColors.hansokuRed : Colors.grey.shade100,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(

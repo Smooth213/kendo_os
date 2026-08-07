@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -563,7 +565,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
+              backgroundColor: AppKendoColors.hansokuRed,
               foregroundColor: Colors.white,
             ),
             child: const Text(
@@ -1184,7 +1186,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   'ONにすると、1つの部門に「錬成会」「本戦」「申し合わせ」の各ルールを個別に定義できます。',
                 ),
                 value: _isMultiScene,
-                activeThumbColor: Colors.amber.shade700,
+                activeThumbColor: AppKendoColors.ipponGold,
                 onChanged: (val) {
                   setState(() {
                     _isMultiScene = val;
@@ -1219,10 +1221,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.1),
+                    color: AppKendoColors.ipponGold.withValues(alpha: 0.1),
                     borderRadius: AppRadius.medium,
                     border: Border.all(
-                      color: Colors.amber.withValues(alpha: 0.3),
+                      color: AppKendoColors.ipponGold.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -1233,7 +1235,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         style: TextStyle(
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.bodySmall,
-                          color: Colors.amber,
+                          color: AppKendoColors.ipponGold,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -2980,7 +2982,11 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              buildChip('⚔️ 錬成会', Colors.amber.shade100, Colors.amber.shade900),
+              buildChip(
+                '⚔️ 錬成会',
+                AppKendoColors.ipponGold,
+                AppKendoColors.ipponGold,
+              ),
               buildChip(
                 _formatMinutes(ruleSet.renseikaiRule.matchTimeMinutes),
                 Colors.grey.shade200,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb用
@@ -159,7 +161,7 @@ class MatchScoreboard extends ConsumerWidget {
     final isFinished = match.status == 'approved' || match.status == 'finished';
 
     final nameColor = side == Side.red
-        ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
+        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade800);
 
     return SizedBox(
@@ -299,7 +301,7 @@ class MatchScoreboard extends ConsumerWidget {
                   List.filled(hansokuCount, '▲').join(''),
                   style: const TextStyle(
                     fontSize: AppFontSize.display,
-                    color: Colors.amber,
+                    color: AppKendoColors.ipponGold,
                   ),
                 ),
               );

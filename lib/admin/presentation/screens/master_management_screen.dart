@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -1990,7 +1992,7 @@ class _MasterManagementScreenState
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
-                  backgroundColor: Colors.red.shade50,
+                  backgroundColor: AppKendoColors.hansokuRed,
                   child: const Icon(Icons.delete_sweep, color: Colors.red),
                 ),
                 title: const Text(
@@ -2064,8 +2066,8 @@ class _MasterManagementScreenState
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade50,
-                    foregroundColor: Colors.red.shade700,
+                    backgroundColor: AppKendoColors.hansokuRed,
+                    foregroundColor: AppKendoColors.hansokuRed,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.small,

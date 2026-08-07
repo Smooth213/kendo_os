@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -817,17 +819,21 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withAlpha(isDark ? 30 : 15),
+                      color: AppKendoColors.ipponGold.withAlpha(
+                        isDark ? 30 : 15,
+                      ),
                       borderRadius: AppRadius.small,
                       border: Border.all(
-                        color: Colors.amber.withAlpha(isDark ? 60 : 30),
+                        color: AppKendoColors.ipponGold.withAlpha(
+                          isDark ? 60 : 30,
+                        ),
                       ),
                     ),
                     child: Row(
                       children: [
                         const Icon(
                           Icons.info_outline,
-                          color: Colors.amber,
+                          color: AppKendoColors.ipponGold,
                           size: 18,
                         ),
                         const SizedBox(width: AppSpacing.sm),
@@ -837,8 +843,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                             style: TextStyle(
                               fontSize: AppFontSize.small,
                               color: isDark
-                                  ? Colors.amber.shade300
-                                  : Colors.amber.shade800,
+                                  ? AppKendoColors.ipponGold
+                                  : AppKendoColors.ipponGold,
                             ),
                           ),
                         ),

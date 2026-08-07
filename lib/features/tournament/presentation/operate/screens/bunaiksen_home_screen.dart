@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -879,7 +881,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         ),
                         borderRadius: AppRadius.large,
                         border: Border.all(
-                          color: Colors.red.shade400.withValues(alpha: 0.5),
+                          color: AppKendoColors.hansokuRed.withValues(
+                            alpha: 0.5,
+                          ),
                           width: 1.5,
                         ),
                       ),
@@ -890,7 +894,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: AppFontSize.body,
                               fontWeight: AppFontWeight.bold,
-                              color: Colors.red.shade600,
+                              color: AppKendoColors.hansokuRed,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
@@ -900,7 +904,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 context,
                                 ref,
                                 '赤',
-                                Colors.red.shade700,
+                                AppKendoColors.hansokuRed,
                               );
                               if (picked != null) {
                                 setStateSheet(() => redPlayer = picked);
@@ -918,7 +922,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                     : Colors.white,
                                 borderRadius: AppRadius.small,
                                 border: Border.all(
-                                  color: Colors.red.shade300.withValues(
+                                  color: AppKendoColors.hansokuRed.withValues(
                                     alpha: 0.5,
                                   ),
                                 ),
@@ -940,7 +944,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                   ),
                                   Icon(
                                     Icons.arrow_drop_down,
-                                    color: Colors.red.shade600,
+                                    color: AppKendoColors.hansokuRed,
                                   ),
                                 ],
                               ),

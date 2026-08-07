@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -233,8 +235,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                             style: TextStyle(fontWeight: AppFontWeight.bold),
                           ),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red.shade600,
-                            side: BorderSide(color: Colors.red.shade200),
+                            foregroundColor: AppKendoColors.hansokuRed,
+                            side: BorderSide(color: AppKendoColors.hansokuRed),
                             padding: const EdgeInsets.symmetric(
                               vertical: AppSpacing.compact,
                             ),
@@ -960,7 +962,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                               Icons.looks_one,
                                               size: 18,
                                               color: _isOwnTeamRed
-                                                  ? Colors.red.shade700
+                                                  ? AppKendoColors.hansokuRed
                                                   : (isDark
                                                         ? Colors.grey.shade600
                                                         : Colors.grey),
@@ -972,7 +974,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                               '赤 (左側)',
                                               style: TextStyle(
                                                 color: _isOwnTeamRed
-                                                    ? Colors.red.shade700
+                                                    ? AppKendoColors.hansokuRed
                                                     : subTextColor,
                                                 fontWeight: AppFontWeight.bold,
                                                 fontSize: AppFontSize.body,
@@ -1449,7 +1451,8 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                               horizontal: AppSpacing.sm,
                                             ),
                                             minimumSize: Size.zero,
-                                            backgroundColor: Colors.red.shade50,
+                                            backgroundColor:
+                                                AppKendoColors.hansokuRed,
                                             shape: RoundedRectangleBorder(
                                               borderRadius: AppRadius.sub,
                                             ),

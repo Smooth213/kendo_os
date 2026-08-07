@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -453,8 +455,12 @@ class LargeViewerScoreboard extends StatelessWidget {
               displays: projection.redDisplays,
               foulCount: redFouls,
               isWinner: isRedWinner,
-              cardColor: isDark ? const Color(0xFF2C1616) : Colors.red.shade50,
-              textColor: isDark ? Colors.red.shade300 : Colors.red.shade800,
+              cardColor: isDark
+                  ? const Color(0xFF2C1616)
+                  : AppKendoColors.hansokuRed,
+              textColor: isDark
+                  ? AppKendoColors.hansokuRed
+                  : AppKendoColors.hansokuRed,
             ),
           ),
 
@@ -508,8 +514,12 @@ class LargeViewerScoreboard extends StatelessWidget {
               displays: projection.redDisplays,
               foulCount: redFouls,
               isWinner: isRedWinner,
-              cardColor: isDark ? const Color(0xFF2C1616) : Colors.red.shade50,
-              textColor: isDark ? Colors.red.shade300 : Colors.red.shade800,
+              cardColor: isDark
+                  ? const Color(0xFF2C1616)
+                  : AppKendoColors.hansokuRed,
+              textColor: isDark
+                  ? AppKendoColors.hansokuRed
+                  : AppKendoColors.hansokuRed,
             ),
           ),
 
@@ -555,14 +565,14 @@ class LargeViewerScoreboard extends StatelessWidget {
         borderRadius: AppRadius.xlarge,
         border: Border.all(
           color: isWinner
-              ? Colors.amber.shade600
+              ? AppKendoColors.ipponGold
               : (isDark ? Colors.white10 : Colors.black12),
           width: isWinner ? 4.0 : 1.0,
         ),
         boxShadow: isWinner
             ? [
                 BoxShadow(
-                  color: Colors.amber.withValues(alpha: 0.3),
+                  color: AppKendoColors.ipponGold.withValues(alpha: 0.3),
                   blurRadius: 15,
                   spreadRadius: 2,
                 ),
@@ -584,7 +594,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.emoji_events,
-                      color: Colors.amber.shade600,
+                      color: AppKendoColors.ipponGold,
                       size: 28,
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -593,7 +603,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
-                        color: Colors.amber.shade600,
+                        color: AppKendoColors.ipponGold,
                         letterSpacing: 2,
                       ),
                     ),
@@ -626,7 +636,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                 List.filled(foulCount, '▲').join(''),
                 style: const TextStyle(
                   fontSize: AppFontSize.hero, // 反則マークも特大表示
-                  color: Colors.amber,
+                  color: AppKendoColors.ipponGold,
                   fontWeight: AppFontWeight.bold,
                   letterSpacing: 4,
                 ),
@@ -643,7 +653,7 @@ class LargeViewerScoreboard extends StatelessWidget {
     Side side,
   ) {
     final color = side == Side.red
-        ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
+        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade800);
 
     return SizedBox(

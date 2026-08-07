@@ -160,7 +160,7 @@ class _MasterTimerBanner extends ConsumerWidget {
     final bgColor = isTimeUp
         ? (isDark
               ? AppKendoColors.hansokuRed.withValues(alpha: 0.3)
-              : Colors.red.shade50)
+              : AppKendoColors.hansokuRed)
         : (isDark
               ? Colors.indigo.shade900.withValues(alpha: 0.3)
               : Colors.indigo.shade50);

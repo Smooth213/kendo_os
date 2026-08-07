@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/vertical_name_text.dart';
@@ -148,12 +150,12 @@ class LeagueGridCard extends StatelessWidget {
                     if (cellData == null) return const SizedBox(height: 65);
 
                     Color symbolColor = isDark
-                        ? Colors.amber.shade300
-                        : Colors.amber.shade700;
+                        ? AppKendoColors.ipponGold
+                        : AppKendoColors.ipponGold;
                     if (cellData.result == 'win') {
                       symbolColor = isDark
-                          ? Colors.red.shade300
-                          : Colors.red.shade700;
+                          ? AppKendoColors.hansokuRed
+                          : AppKendoColors.hansokuRed;
                     } else if (cellData.result == 'loss') {
                       symbolColor = isDark
                           ? Colors.blue.shade300

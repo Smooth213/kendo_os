@@ -180,13 +180,13 @@ class TimerWidget extends ConsumerWidget {
     final timerBgColor = isRunning
         ? (isDark
               ? AppKendoColors.hansokuRed.withValues(alpha: 0.4)
-              : Colors.red.shade50)
+              : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
     final timerBorderColor = isRunning
-        ? (isDark ? Colors.red.shade400 : Colors.red.shade500)
+        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFF38383A) : Colors.indigo.shade200);
     final timerTextColor = isRunning
-        ? (isDark ? Colors.red.shade300 : AppKendoColors.hansokuRed)
+        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (isDark ? Colors.white : Colors.black87);
 
     return GestureDetector(
@@ -230,7 +230,9 @@ class TimerWidget extends ConsumerWidget {
               color: isInputLocked
                   ? Colors.grey.shade400
                   : (isRunning
-                        ? (isDark ? Colors.red.shade400 : Colors.red.shade600)
+                        ? (isDark
+                              ? AppKendoColors.hansokuRed
+                              : AppKendoColors.hansokuRed)
                         : (isDark
                               ? Colors.indigo.shade300
                               : Colors.indigo.shade500)),

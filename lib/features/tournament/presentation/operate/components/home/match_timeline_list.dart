@@ -416,7 +416,7 @@ class MatchTimelineList extends ConsumerWidget {
                   Text(
                     'データの取得に失敗しました',
                     style: TextStyle(
-                      color: isDark ? Colors.red.shade300 : Colors.red,
+                      color: isDark ? AppKendoColors.hansokuRed : Colors.red,
                       fontWeight: AppFontWeight.bold,
                     ),
                   ),
@@ -1812,7 +1812,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? AppFontWeight.black
                                                                                   : AppFontWeight.bold,
                                                                               color: showLeftOwn
-                                                                                  ? Colors.amber.shade600
+                                                                                  ? AppKendoColors.ipponGold
                                                                                   : titleColor,
                                                                             ),
                                                                             textAlign:
@@ -1837,8 +1837,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   fontSize: AppFontSize.subhead,
                                                                                   fontWeight: AppFontWeight.bold,
                                                                                   color: isDark
-                                                                                      ? Colors.red.shade300
-                                                                                      : Colors.red.shade700,
+                                                                                      ? AppKendoColors.hansokuRed
+                                                                                      : AppKendoColors.hansokuRed,
                                                                                 ),
                                                                               ),
                                                                               Text(
@@ -1895,7 +1895,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? AppFontWeight.black
                                                                                   : AppFontWeight.bold,
                                                                               color: showRightOwn
-                                                                                  ? Colors.amber.shade600
+                                                                                  ? AppKendoColors.ipponGold
                                                                                   : titleColor,
                                                                             ),
                                                                             textAlign:
@@ -2458,7 +2458,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       icon: Icon(
                                                                                                         Icons.flash_on,
                                                                                                         size: 11,
-                                                                                                        color: Colors.amber.shade700,
+                                                                                                        color: AppKendoColors.ipponGold,
                                                                                                       ),
                                                                                                       label: Text(
                                                                                                         '簡易入力',
@@ -2656,7 +2656,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         ? AppFontWeight.black
                                                                                                         : AppFontWeight.bold,
                                                                                                     color: showLeftOwn
-                                                                                                        ? Colors.amber.shade600
+                                                                                                        ? AppKendoColors.ipponGold
                                                                                                         : mTitleColor,
                                                                                                   ),
                                                                                                   textAlign: TextAlign.end,
@@ -2676,8 +2676,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         fontSize: AppFontSize.bodyMedium,
                                                                                                         fontWeight: AppFontWeight.bold,
                                                                                                         color: isDark
-                                                                                                            ? Colors.red.shade300
-                                                                                                            : Colors.red.shade700,
+                                                                                                            ? AppKendoColors.hansokuRed
+                                                                                                            : AppKendoColors.hansokuRed,
                                                                                                       ),
                                                                                                     ),
                                                                                                     Text(
@@ -2729,7 +2729,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         ? AppFontWeight.black
                                                                                                         : AppFontWeight.bold,
                                                                                                     color: showRightOwn
-                                                                                                        ? Colors.amber.shade600
+                                                                                                        ? AppKendoColors.ipponGold
                                                                                                         : mTitleColor,
                                                                                                   ),
                                                                                                   textAlign: TextAlign.start,
@@ -4181,9 +4181,9 @@ void _showSummaryInputDialog(
                   decoration: BoxDecoration(
                     color: isDark
                         ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                        : Colors.red.shade50,
+                        : AppKendoColors.hansokuRed,
                     borderRadius: AppRadius.medium,
-                    border: Border.all(color: Colors.red.shade200),
+                    border: Border.all(color: AppKendoColors.hansokuRed),
                   ),
                   child: Column(
                     children: [
@@ -4191,8 +4191,8 @@ void _showSummaryInputDialog(
                         rTeam,
                         style: TextStyle(
                           color: isDark
-                              ? Colors.red.shade400
-                              : Colors.red.shade700,
+                              ? AppKendoColors.hansokuRed
+                              : AppKendoColors.hansokuRed,
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.subhead,
                         ),
@@ -5154,7 +5154,7 @@ class MatchListTileCard extends ConsumerWidget {
                               icon: Icon(
                                 Icons.flash_on,
                                 size: 11,
-                                color: Colors.amber.shade700,
+                                color: AppKendoColors.ipponGold,
                               ),
                               label: Text(
                                 '簡易',
@@ -5465,7 +5465,7 @@ class MatchListTileCard extends ConsumerWidget {
                                     ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isRedOwn
-                                    ? Colors.amber.shade600
+                                    ? AppKendoColors.ipponGold
                                     : (isDark ? Colors.white : Colors.black87),
                               ),
                               textAlign: TextAlign.start,
@@ -5495,8 +5495,8 @@ class MatchListTileCard extends ConsumerWidget {
                                           (p) => buildMarkItem(
                                             p,
                                             isDark
-                                                ? Colors.red.shade300
-                                                : Colors.red.shade700,
+                                                ? AppKendoColors.hansokuRed
+                                                : AppKendoColors.hansokuRed,
                                           ),
                                         )
                                         .toList(),
@@ -5540,7 +5540,7 @@ class MatchListTileCard extends ConsumerWidget {
                                     ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isWhiteOwn
-                                    ? Colors.amber.shade600
+                                    ? AppKendoColors.ipponGold
                                     : (isDark ? Colors.white : Colors.black87),
                               ),
                               textAlign: TextAlign.end,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -373,7 +375,7 @@ void main() {
                                     color: Colors.transparent,
                                     child: Container(
                                       width: double.infinity,
-                                      color: Colors.amber.shade900,
+                                      color: AppKendoColors.ipponGold,
                                       padding: const EdgeInsets.only(
                                         top: 34,
                                         bottom: AppSpacing.sm,
@@ -836,7 +838,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                   if (isOffline)
                     Container(
                       width: double.infinity,
-                      color: Colors.amber.shade900,
+                      color: AppKendoColors.ipponGold,
                       padding: EdgeInsets.only(
                         top: MediaQuery.of(context).padding.top + 8,
                         bottom: AppSpacing.sm,

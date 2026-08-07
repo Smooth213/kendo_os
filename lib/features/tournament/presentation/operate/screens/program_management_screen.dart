@@ -2,6 +2,8 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
@@ -412,10 +414,10 @@ class _ProgramManagementScreenState
                               ),
                               decoration: showValidationHighlight
                                   ? BoxDecoration(
-                                      color: Colors.red.shade50,
+                                      color: AppKendoColors.hansokuRed,
                                       borderRadius: AppRadius.sub,
                                       border: Border.all(
-                                        color: Colors.red.shade300,
+                                        color: AppKendoColors.hansokuRed,
                                         width: 1.2,
                                       ),
                                     )
@@ -428,7 +430,7 @@ class _ProgramManagementScreenState
                                         : Icons.info_outline,
                                     size: 13,
                                     color: showValidationHighlight
-                                        ? Colors.red.shade700
+                                        ? AppKendoColors.hansokuRed
                                         : Colors.orange.shade700,
                                   ),
                                   const SizedBox(width: AppSpacing.xs),
@@ -437,7 +439,7 @@ class _ProgramManagementScreenState
                                     style: TextStyle(
                                       fontSize: AppFontSize.caption,
                                       color: showValidationHighlight
-                                          ? Colors.red.shade700
+                                          ? AppKendoColors.hansokuRed
                                           : Colors.orange.shade700,
                                       fontWeight: showValidationHighlight
                                           ? AppFontWeight.bold

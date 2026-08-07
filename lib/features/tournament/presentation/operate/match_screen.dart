@@ -195,7 +195,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(ctx, 'red'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade600,
+                      backgroundColor: AppKendoColors.hansokuRed,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.lg,
@@ -303,7 +303,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade600,
+                  backgroundColor: AppKendoColors.hansokuRed,
                   foregroundColor: Colors.white,
                   elevation: 0,
                 ),
@@ -692,7 +692,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                   final isLast = entry.key == 0;
                                                   final sideColor =
                                                       e.side == Side.red
-                                                      ? Colors.red.shade600
+                                                      ? AppKendoColors
+                                                            .hansokuRed
                                                       : (e.side == Side.white
                                                             ? (isDark
                                                                   ? Colors.white
@@ -1139,7 +1140,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         final redPanel = ScoreActionPanel(
                                           matchId: match.id,
                                           side: Side.red,
-                                          color: Colors.red.shade600,
+                                          color: AppKendoColors.hansokuRed,
                                           isLocked: isInputLocked,
                                         );
                                         final whitePanel = ScoreActionPanel(
@@ -1458,7 +1459,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                               ),
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: isTie
-                                                    ? Colors.red.shade700
+                                                    ? AppKendoColors.hansokuRed
                                                     : (isAllDone
                                                           ? Colors
                                                                 .indigo
@@ -2442,8 +2443,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           style: TextStyle(fontWeight: AppFontWeight.bold),
                         ),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red.shade400,
-                          side: BorderSide(color: Colors.red.shade400),
+                          foregroundColor: AppKendoColors.hansokuRed,
+                          side: BorderSide(color: AppKendoColors.hansokuRed),
                           padding: const EdgeInsets.symmetric(
                             vertical: AppSpacing.compact,
                           ),
@@ -2768,12 +2769,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 ? AppKendoColors.hansokuRed.withValues(
                                     alpha: 0.15,
                                   )
-                                : Colors.red.shade50,
+                                : AppKendoColors.hansokuRed,
                             borderRadius: AppRadius.large,
                             border: Border.all(
                               color: isDark
                                   ? AppKendoColors.hansokuRed
-                                  : Colors.red.shade100,
+                                  : AppKendoColors.hansokuRed,
                             ),
                           ),
                           child: Column(
@@ -2784,7 +2785,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   Icon(
                                     Icons.shield,
                                     color: isDark
-                                        ? Colors.red.shade400
+                                        ? AppKendoColors.hansokuRed
                                         : Colors.red,
                                     size: 18,
                                   ),
@@ -2794,8 +2795,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
-                                          ? Colors.red.shade300
-                                          : Colors.red.shade800,
+                                          ? AppKendoColors.hansokuRed
+                                          : AppKendoColors.hansokuRed,
                                       fontSize: AppFontSize.subhead,
                                     ),
                                   ),
@@ -2812,8 +2813,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                           label: Text(p),
                                           selected: redCtrl.text == p,
                                           selectedColor: isDark
-                                              ? Colors.red.shade700
-                                              : Colors.red.shade200,
+                                              ? AppKendoColors.hansokuRed
+                                              : AppKendoColors.hansokuRed,
                                           backgroundColor: isDark
                                               ? const Color(0xFF2C2C2E)
                                               : Colors.white,
@@ -3837,7 +3838,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   style: TextStyle(fontWeight: AppFontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber.shade700,
+                  backgroundColor: AppKendoColors.ipponGold,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   elevation: 0,
@@ -4447,7 +4448,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   context.pop();
                 },
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.red.shade600,
+                  foregroundColor: AppKendoColors.hansokuRed,
                 ),
                 child: const Text('無限稽古を終了'),
               ),

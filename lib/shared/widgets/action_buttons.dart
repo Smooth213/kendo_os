@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -144,7 +146,7 @@ class ScoreActionPanel extends ConsumerWidget {
         ),
         child: HoldConfirmButton(
           label: label,
-          color: Colors.amber.shade600,
+          color: AppKendoColors.ipponGold,
           textColor: Colors.black87,
           disabled: effectiveLocked,
           isFoul: true,

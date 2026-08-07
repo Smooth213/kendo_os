@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
@@ -80,7 +82,9 @@ class OperatorActionButtons extends ConsumerWidget {
             icon: Icon(
               Icons.picture_as_pdf,
               size: 20,
-              color: isDark ? Colors.redAccent.shade100 : Colors.red.shade600,
+              color: isDark
+                  ? Colors.redAccent.shade100
+                  : AppKendoColors.hansokuRed,
             ),
             label: Text(
               '大会プログラムの管理・追加',

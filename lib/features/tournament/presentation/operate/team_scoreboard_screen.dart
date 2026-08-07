@@ -496,13 +496,13 @@ class TeamScoreboardScreen extends ConsumerWidget {
         _cell(
           r,
           isH: true,
-          color: isDark ? Colors.red.shade300 : Colors.red.shade700,
+          color: isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed,
           fs: 16,
         ), // 13→16
         _cell(
           '赤',
           isH: true,
-          color: isDark ? Colors.red.shade300 : Colors.red.shade700,
+          color: isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed,
           fs: 14,
         ),
         _cell(
@@ -602,9 +602,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
     final isDaihyo = m.matchType == '代表戦';
     final daihyoBgColor = isDark
         ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-        : Colors.red.shade50;
+        : AppKendoColors.hansokuRed;
     final matchTypeColor = isDaihyo
-        ? (isDark ? Colors.red.shade400 : Colors.red.shade800)
+        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (isDark ? Colors.grey.shade300 : Colors.grey.shade800);
 
     return TableRow(
@@ -653,7 +653,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
     bool isDark,
   ) {
     final color = isRed
-        ? (isDark ? Colors.red.shade300 : Colors.red.shade700)
+        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (isDark ? Colors.grey.shade300 : Colors.blueGrey.shade700);
 
     final isFusen = pts.any((p) => p.mark == '◯');
@@ -724,7 +724,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                   fontSize: AppFontSize.hero,
                   color: isDark
                       ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
-                      : Colors.red.shade300,
+                      : AppKendoColors.hansokuRed,
                   fontWeight: AppFontWeight.light,
                 ),
               ),
@@ -807,7 +807,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
 
   // ★ Phase 7: UI内での勝敗計算を削除し、引数を Result オブジェクトに統一
   TableRow _buildTotalRow(TeamMatchResult result, bool isDark) {
-    final bg = isDark ? const Color(0xFF3A2E12) : Colors.amber.shade50;
+    final bg = isDark ? const Color(0xFF3A2E12) : AppKendoColors.ipponGold;
     final textColor = isDark ? Colors.white : Colors.black87;
     final isTeamTie = (result.teamWinner == 'draw');
 
@@ -818,7 +818,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '${result.redPoints} / ${result.redWins}',
           isH: true,
-          color: isDark ? Colors.red.shade400 : Colors.red.shade700,
+          color: isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed,
           fs: 18,
         ),
 
@@ -840,8 +840,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.headline,
                           color: isDark
-                              ? Colors.amber.shade200
-                              : Colors.amber.shade900,
+                              ? AppKendoColors.ipponGold
+                              : AppKendoColors.ipponGold,
                         ),
                       ),
                     )

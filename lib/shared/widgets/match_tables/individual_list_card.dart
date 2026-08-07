@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
@@ -144,7 +146,9 @@ class IndividualListCard extends StatelessWidget {
                               fontWeight: m.rWin
                                   ? AppFontWeight.bold
                                   : AppFontWeight.bold,
-                              color: m.rWin ? Colors.red.shade700 : textColor,
+                              color: m.rWin
+                                  ? AppKendoColors.hansokuRed
+                                  : textColor,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -197,7 +201,9 @@ class IndividualListCard extends StatelessWidget {
                               fontWeight: m.wWin
                                   ? AppFontWeight.bold
                                   : AppFontWeight.bold,
-                              color: m.wWin ? Colors.red.shade700 : textColor,
+                              color: m.wWin
+                                  ? AppKendoColors.hansokuRed
+                                  : textColor,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),

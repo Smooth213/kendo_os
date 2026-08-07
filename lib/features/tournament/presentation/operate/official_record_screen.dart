@@ -1,6 +1,8 @@
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -1748,7 +1750,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 renseikaiWin,
                 renseikaiLoss,
                 renseikaiDraw,
-                Colors.amber.shade900,
+                AppKendoColors.ipponGold,
               ),
               _buildSummaryItem(
                 '🏆 本戦',

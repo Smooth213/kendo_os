@@ -1,6 +1,8 @@
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -28,8 +30,8 @@ class TournamentHeaderCard extends ConsumerWidget {
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade700;
     final iconBgColor = isDark
-        ? Colors.amber.shade900.withValues(alpha: 0.3)
-        : Colors.amber.shade50;
+        ? AppKendoColors.ipponGold.withValues(alpha: 0.3)
+        : AppKendoColors.ipponGold;
     final popupIconColor = isDark ? Colors.grey.shade400 : Colors.grey.shade500;
     final noteBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
 
@@ -59,7 +61,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                   ),
                   child: const Icon(
                     Icons.emoji_events,
-                    color: Colors.amber,
+                    color: AppKendoColors.ipponGold,
                     size: 24,
                   ),
                 ),

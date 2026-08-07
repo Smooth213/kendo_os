@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -357,7 +359,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                             size: 20,
                             color: isDark
                                 ? Colors.redAccent.shade100
-                                : Colors.red.shade600,
+                                : AppKendoColors.hansokuRed,
                           ),
                           label: Text(
                             '大会プログラムを見る（閲覧専用）',
@@ -679,7 +681,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   'データの取得に失敗しました',
                                   style: TextStyle(
                                     color: isDark
-                                        ? Colors.red.shade300
+                                        ? AppKendoColors.hansokuRed
                                         : Colors.red,
                                     fontWeight: AppFontWeight.bold,
                                   ),
@@ -1673,8 +1675,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               fontSize: AppFontSize.subhead,
                                                                               fontWeight: AppFontWeight.bold,
                                                                               color: isDark
-                                                                                  ? Colors.red.shade300
-                                                                                  : Colors.red.shade700,
+                                                                                  ? AppKendoColors.hansokuRed
+                                                                                  : AppKendoColors.hansokuRed,
                                                                             ),
                                                                           ),
                                                                           Text(
@@ -2155,8 +2157,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                     fontSize: AppFontSize.bodyMedium,
                                                                                                     fontWeight: AppFontWeight.bold,
                                                                                                     color: isDark
-                                                                                                        ? Colors.red.shade300
-                                                                                                        : Colors.red.shade700,
+                                                                                                        ? AppKendoColors.hansokuRed
+                                                                                                        : AppKendoColors.hansokuRed,
                                                                                                   ),
                                                                                                 ),
                                                                                                 Text(
@@ -2619,8 +2621,8 @@ class ViewerHomeScreen extends ConsumerWidget {
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade700;
     final iconBgColor = isDark
-        ? Colors.amber.shade900.withValues(alpha: 0.3)
-        : Colors.amber.shade50;
+        ? Colors.amber.shade600.withValues(alpha: 0.3)
+        : Colors.amber;
     final noteBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
 
     return Card(
@@ -3094,8 +3096,8 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                           (p) => buildMarkItem(
                                             p,
                                             isDark
-                                                ? Colors.red.shade300
-                                                : Colors.red.shade700,
+                                                ? AppKendoColors.hansokuRed
+                                                : AppKendoColors.hansokuRed,
                                           ),
                                         )
                                         .toList(),

@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -41,7 +43,7 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
           contentPadding: EdgeInsets.zero,
           leading: Icon(
             Icons.military_tech,
-            color: isTop ? Colors.amber : themeColors.subTextColor,
+            color: isTop ? AppKendoColors.ipponGold : themeColors.subTextColor,
           ),
           title: Text(
             e.key,
@@ -54,7 +56,7 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
             '${e.value} 連勝',
             style: TextStyle(
               fontWeight: AppFontWeight.bold,
-              color: isTop ? Colors.red.shade600 : themeColors.textColor,
+              color: isTop ? AppKendoColors.hansokuRed : themeColors.textColor,
               fontSize: AppFontSize.bodyMedium,
             ),
           ),

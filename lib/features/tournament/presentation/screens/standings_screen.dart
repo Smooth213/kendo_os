@@ -1,6 +1,8 @@
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
@@ -258,11 +260,11 @@ class StandingsScreen extends ConsumerWidget {
 
                       if (index == 0) {
                         avatarColor = isDark
-                            ? Colors.amber.shade900.withValues(alpha: 0.3)
-                            : Colors.amber.shade100;
+                            ? AppKendoColors.ipponGold.withValues(alpha: 0.3)
+                            : AppKendoColors.ipponGold;
                         iconColor = isDark
-                            ? Colors.amber.shade400
-                            : Colors.amber.shade600;
+                            ? AppKendoColors.ipponGold
+                            : AppKendoColors.ipponGold;
                       } else if (index == 1) {
                         avatarColor = isDark
                             ? Colors.grey.shade800

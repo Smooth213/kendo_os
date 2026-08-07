@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -276,7 +278,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       },
                       icon: Icons.emoji_events,
-                      iconBgColor: Colors.amber,
+                      iconBgColor: AppKendoColors.ipponGold,
                     ),
                   ]),
                   _buildSectionFooter(

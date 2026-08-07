@@ -89,7 +89,7 @@ class ScoreTableCard extends StatelessWidget {
     final headerTextColor = themeColors.subTextColor;
     final daihyoBgColor = isDark
         ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-        : Colors.red.shade50;
+        : AppKendoColors.hansokuRed;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -147,7 +147,7 @@ class ScoreTableCard extends StatelessWidget {
                                   fontWeight: AppFontWeight.bold,
                                   color: m.matchType == '代表戦'
                                       ? (isDark
-                                            ? Colors.red.shade400
+                                            ? AppKendoColors.hansokuRed
                                             : AppKendoColors.hansokuRed)
                                       : (isDark
                                             ? Colors.grey.shade300
@@ -176,7 +176,9 @@ class ScoreTableCard extends StatelessWidget {
                     children: [
                       _teamCell(
                         info.sideLabelRed,
-                        isDark ? Colors.red.shade400 : Colors.red.shade700,
+                        isDark
+                            ? AppKendoColors.hansokuRed
+                            : AppKendoColors.hansokuRed,
                       ),
                       ...matches.map(
                         (m) => _nameCell(
@@ -336,8 +338,8 @@ class ScoreTableCard extends StatelessWidget {
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'red'
                               ? (isDark
-                                    ? Colors.red.shade400
-                                    : Colors.red.shade600)
+                                    ? AppKendoColors.hansokuRed
+                                    : AppKendoColors.hansokuRed)
                               : textColor,
                         ),
                       ),
@@ -394,7 +396,7 @@ class ScoreTableCard extends StatelessWidget {
         color: isDaihyo
             ? (isDark
                   ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                  : Colors.red.shade50)
+                  : AppKendoColors.hansokuRed)
             : Colors.transparent,
       );
     }
@@ -408,7 +410,7 @@ class ScoreTableCard extends StatelessWidget {
       color: isDaihyo
           ? (isDark
                 ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                : Colors.red.shade50)
+                : AppKendoColors.hansokuRed)
           : Colors.transparent,
       child: Center(
         child: Padding(

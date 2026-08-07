@@ -326,8 +326,8 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontWeight: AppFontWeight.black,
                             color: isDark
-                                ? Colors.red.shade400
-                                : Colors.red.shade700,
+                                ? AppKendoColors.hansokuRed
+                                : AppKendoColors.hansokuRed,
                             fontSize: AppFontSize.subhead,
                           ),
                         ),
@@ -340,7 +340,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                             (i) => Icon(
                               Icons.shield,
                               color: i >= redDead
-                                  ? Colors.red.shade500
+                                  ? AppKendoColors.hansokuRed
                                   : (isDark
                                         ? const Color(0xFF2C2C2E)
                                         : Colors.grey.shade200),
@@ -538,7 +538,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               ? AppKendoColors.hansokuRed.withValues(
                                   alpha: 0.15,
                                 )
-                              : Colors.red.shade50)
+                              : AppKendoColors.hansokuRed)
                         : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
                     borderRadius: const BorderRadius.horizontal(
                       left: Radius.circular(AppRadius.largeValue),
@@ -547,7 +547,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                       color: rWin
                           ? (isDark
                                 ? AppKendoColors.hansokuRed
-                                : Colors.red.shade200)
+                                : AppKendoColors.hansokuRed)
                           : (isDark
                                 ? const Color(0xFF38383A)
                                 : Colors.grey.shade200),
@@ -560,7 +560,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         rLasts,
                         rWin,
                         isDraw || wWin,
-                        isDark ? Colors.red.shade400 : Colors.red.shade700,
+                        isDark
+                            ? AppKendoColors.hansokuRed
+                            : AppKendoColors.hansokuRed,
                       ),
                       if (rWin && rStreak >= 2) ...[
                         const SizedBox(height: 6),
@@ -571,16 +573,18 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.amber.shade900.withValues(alpha: 0.3)
-                                : Colors.amber.shade100,
+                                ? AppKendoColors.ipponGold.withValues(
+                                    alpha: 0.3,
+                                  )
+                                : AppKendoColors.ipponGold,
                             borderRadius: AppRadius.small,
                           ),
                           child: Text(
                             '🔥 $rStreak人抜き',
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.amber.shade400
-                                  : Colors.amber.shade900,
+                                  ? AppKendoColors.ipponGold
+                                  : AppKendoColors.ipponGold,
                               fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                             ),
@@ -595,21 +599,23 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.amber.shade900.withValues(alpha: 0.1)
-                                : Colors.amber.shade50,
+                                ? AppKendoColors.ipponGold.withValues(
+                                    alpha: 0.1,
+                                  )
+                                : AppKendoColors.ipponGold,
                             borderRadius: AppRadius.small,
                             border: Border.all(
                               color: isDark
-                                  ? Colors.amber.shade900
-                                  : Colors.amber.shade200,
+                                  ? AppKendoColors.ipponGold
+                                  : AppKendoColors.ipponGold,
                             ),
                           ),
                           child: Text(
                             '🔥 $rStreak人抜き中',
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.amber.shade500
-                                  : Colors.amber.shade800,
+                                  ? AppKendoColors.ipponGold
+                                  : AppKendoColors.ipponGold,
                               fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                             ),
@@ -649,7 +655,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                         children: [
                           _buildScoreMarks(
                             match.redDisplays,
-                            isDark ? Colors.red.shade400 : Colors.red.shade700,
+                            isDark
+                                ? AppKendoColors.hansokuRed
+                                : AppKendoColors.hansokuRed,
                             isDraw || wWin,
                             isDark,
                           ),
@@ -732,16 +740,18 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.amber.shade900.withValues(alpha: 0.3)
-                                : Colors.amber.shade100,
+                                ? AppKendoColors.ipponGold.withValues(
+                                    alpha: 0.3,
+                                  )
+                                : AppKendoColors.ipponGold,
                             borderRadius: AppRadius.small,
                           ),
                           child: Text(
                             '🔥 $wStreak人抜き',
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.amber.shade400
-                                  : Colors.amber.shade900,
+                                  ? AppKendoColors.ipponGold
+                                  : AppKendoColors.ipponGold,
                               fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                             ),
@@ -756,21 +766,23 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.amber.shade900.withValues(alpha: 0.1)
-                                : Colors.amber.shade50,
+                                ? AppKendoColors.ipponGold.withValues(
+                                    alpha: 0.1,
+                                  )
+                                : AppKendoColors.ipponGold,
                             borderRadius: AppRadius.small,
                             border: Border.all(
                               color: isDark
-                                  ? Colors.amber.shade900
-                                  : Colors.amber.shade200,
+                                  ? AppKendoColors.ipponGold
+                                  : AppKendoColors.ipponGold,
                             ),
                           ),
                           child: Text(
                             '🔥 $wStreak人抜き中',
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.amber.shade500
-                                  : Colors.amber.shade800,
+                                  ? AppKendoColors.ipponGold
+                                  : AppKendoColors.ipponGold,
                               fontSize: AppFontSize.badge,
                               fontWeight: AppFontWeight.bold,
                             ),
@@ -960,8 +972,8 @@ class KachinukiBracketPainter extends CustomPainter {
 
     // --- 🎨 カラーパレット定義 ---
     final Color redWinColor = isDark
-        ? Colors.red.shade400
-        : Colors.red.shade700;
+        ? AppKendoColors.hansokuRed
+        : AppKendoColors.hansokuRed;
     final Color whiteWinColor = isDark
         ? Colors.indigo.shade300
         : Colors.indigo.shade800;
@@ -976,8 +988,8 @@ class KachinukiBracketPainter extends CustomPainter {
         ? Colors.grey.shade500
         : Colors.grey.shade500;
     final Color drawCrossColor = isDark
-        ? Colors.amber.shade300
-        : Colors.amber.shade700;
+        ? AppKendoColors.ipponGold
+        : AppKendoColors.ipponGold;
 
     final redBgPaint = Paint()
       ..color = isDark
@@ -1412,7 +1424,7 @@ class KachinukiBracketPainter extends CustomPainter {
     double y = isRed ? baseAnchor.dy : baseAnchor.dy - (pts.length * 24.0);
     // 技の色を統一（Red700 / Indigo800）
     final Color color = isRed
-        ? (isDark ? Colors.red.shade400 : Colors.red.shade700)
+        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
         : (isDark ? Colors.indigo.shade300 : Colors.indigo.shade800);
 
     final textStyle = TextStyle(

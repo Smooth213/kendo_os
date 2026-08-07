@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
@@ -139,7 +141,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                       children: [
                         const Icon(
                           Icons.report_problem_rounded,
-                          color: Colors.amber,
+                          color: AppKendoColors.ipponGold,
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(

@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -253,7 +255,10 @@ class _CreateTournamentScreenState
               color: hintColor,
               fontSize: AppFontSize.bodySmall,
             ),
-            prefixIcon: const Icon(Icons.emoji_events, color: Colors.amber),
+            prefixIcon: const Icon(
+              Icons.emoji_events,
+              color: AppKendoColors.ipponGold,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(

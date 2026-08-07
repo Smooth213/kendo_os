@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -842,7 +844,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 icon: const Icon(Icons.auto_awesome),
                 label: const Text('学年順 自動振り分け'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber.shade700,
+                  backgroundColor: AppKendoColors.ipponGold,
                   foregroundColor: Colors.black,
                 ),
                 onPressed: () => _autoAssignByGrade(masterPlayers),
@@ -866,13 +868,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                         builder: (context, candidateData, rejectedData) {
                           return Card(
                             color: candidateData.isNotEmpty
-                                ? Colors.red.shade100
+                                ? AppKendoColors.hansokuRed
                                 : (isDark
                                       ? Colors.grey.shade900
                                       : Colors.white),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(
-                                color: Colors.red.shade300,
+                                color: AppKendoColors.hansokuRed,
                                 width: candidateData.isNotEmpty ? 2 : 1,
                               ),
                               borderRadius: AppRadius.large,
@@ -880,12 +882,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             child: ListTile(
                               dense: true, // 少しコンパクトに
                               leading: CircleAvatar(
-                                backgroundColor: Colors.red.shade100,
+                                backgroundColor: AppKendoColors.hansokuRed,
                                 radius: 14,
                                 child: Text(
                                   currentPositions[index].substring(0, 1),
                                   style: TextStyle(
-                                    color: Colors.red.shade800,
+                                    color: AppKendoColors.hansokuRed,
                                     fontSize: AppFontSize.badge,
                                     fontWeight: AppFontWeight.bold,
                                   ),
@@ -1244,13 +1246,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             key: ValueKey(p),
                             leading: CircleAvatar(
                               backgroundColor: index < 2
-                                  ? Colors.red.shade100
+                                  ? AppKendoColors.hansokuRed
                                   : Colors.grey.shade300,
                               child: Text(
                                 '${index + 1}',
                                 style: TextStyle(
                                   color: index < 2
-                                      ? Colors.red.shade800
+                                      ? AppKendoColors.hansokuRed
                                       : Colors.grey.shade700,
                                   fontSize: AppFontSize.small,
                                   fontWeight: AppFontWeight.bold,

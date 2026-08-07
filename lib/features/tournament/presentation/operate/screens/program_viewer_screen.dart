@@ -2,6 +2,8 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
@@ -1044,7 +1046,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                                   return const Center(
                                                     child:
                                                         CircularProgressIndicator(
-                                                          color: Colors.amber,
+                                                          color: AppKendoColors
+                                                              .ipponGold,
                                                         ),
                                                   );
                                                 }

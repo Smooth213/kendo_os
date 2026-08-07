@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
@@ -42,7 +44,7 @@ class SyncStatusBar extends ConsumerWidget {
 
     // エラーがある場合はバー全体を赤みがかった警告色にする
     if (deadLetterCount > 0) {
-      barColor = Colors.red.shade700;
+      barColor = AppKendoColors.hansokuRed;
     }
 
     return Material(
@@ -227,7 +229,7 @@ class SyncStatusBar extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          color: Colors.red.shade50,
+                          color: AppKendoColors.hansokuRed,
                           borderRadius: AppRadius.small,
                         ),
                         child: Row(

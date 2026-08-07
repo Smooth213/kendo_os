@@ -1,5 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -152,7 +154,7 @@ class HomeScreen extends ConsumerWidget {
                   bottom: false,
                   child: Container(
                     width: double.infinity,
-                    color: Colors.amber.shade900,
+                    color: AppKendoColors.ipponGold,
                     padding: const EdgeInsets.symmetric(
                       vertical: 6,
                       horizontal: AppSpacing.lg,
