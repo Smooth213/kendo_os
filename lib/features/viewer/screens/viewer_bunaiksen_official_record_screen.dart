@@ -175,9 +175,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                         color: cardColor,
                         border: Border(
                           bottom: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF38383A)
-                                : Colors.grey.shade200,
+                            color: context.appColors.separatorColor,
                           ),
                         ),
                       ),
@@ -458,7 +456,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade300;
     final headerTextColor = isDark
         ? Colors.grey.shade400
-        : Colors.grey.shade700;
+        : Colors.grey.shade600;
     final daihyoBgColor = isDark
         ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
         : AppKendoColors.hansokuRed;
@@ -536,7 +534,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                       : '$headerRed vs $headerWhite',
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
-                    color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
                   ),
                 ),
               ),
@@ -628,7 +626,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                       borderRadius: AppRadius.small,
                       border: Border.all(
                         color: isDark
-                            ? Colors.grey.shade800
+                            ? const Color(0xFF38383A)
                             : Colors.grey.shade300,
                       ),
                       boxShadow: [
@@ -659,7 +657,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
   }
 
   Widget _teamResultCell(String winner, bool isDark, bool allFinished) {
-    final textColor = isDark ? Colors.white : Colors.black;
+    final textColor = isDark ? Colors.white : Colors.black87;
     final dividerColor = isDark
         ? const Color(0xFF38383A)
         : Colors.grey.shade300;
@@ -956,7 +954,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     final style = TextStyle(
       fontSize: AppFontSize.caption,
       fontWeight: AppFontWeight.bold,
-      color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
+      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
     );
 
     Widget nameCol = Column(
@@ -1012,7 +1010,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
           fontSize: AppFontSize.small,
-          color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
+          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
         ),
         textAlign: TextAlign.center,
       ),
@@ -1299,9 +1297,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                                     maxWidth: 550,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF1C1C1E)
-                                        : Colors.white,
+                                    color: context.appColors.cardBackground,
                                     borderRadius: AppRadius.round,
                                     boxShadow: [
                                       BoxShadow(
@@ -1338,9 +1334,8 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                                       ElevatedButton(
                                         onPressed: () => Navigator.pop(ctx),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: isDark
-                                              ? Colors.grey.shade800
-                                              : Colors.grey.shade200,
+                                          backgroundColor:
+                                              context.appColors.separatorColor,
                                           foregroundColor: isDark
                                               ? Colors.white
                                               : Colors.black87,
@@ -1554,7 +1549,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
               headerTitle,
               style: TextStyle(
                 fontWeight: AppFontWeight.bold,
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade800,
               ),
             ),
           ),

@@ -324,9 +324,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                         style: TextStyle(
                                           fontSize: AppFontSize.subhead,
                                           fontWeight: AppFontWeight.bold,
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black87,
+                                          color: context.appColors.textColor,
                                         ),
                                       ),
                                     ],
@@ -375,12 +373,12 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                             ? (isDark
                                   ? const Color(0xFF161618)
                                   : Colors.grey.shade50)
-                            : (isDark ? const Color(0xFF1C1C1E) : Colors.white);
+                            : (context.appColors.cardBackground);
                         final Color textC = isFinished
                             ? (isDark
                                   ? Colors.grey.shade600
                                   : Colors.grey.shade500)
-                            : (isDark ? Colors.white : Colors.black87);
+                            : (context.appColors.textColor);
                         final Color noteC = isFinished
                             ? (isDark
                                   ? Colors.grey.shade700

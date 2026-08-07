@@ -234,7 +234,7 @@ class ViewerHomeScreen extends ConsumerWidget {
               title: '大会ホーム (観客席)',
               backgroundColor: enableLiquidGlass
                   ? Colors.transparent
-                  : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+                  : (context.appColors.cardBackground),
               actions: [
                 NotificationBellButton(
                   tournamentId: tournamentId,
@@ -377,9 +377,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   ? const Color(0xFF38383A)
                                   : Colors.grey.shade300,
                             ),
-                            backgroundColor: isDark
-                                ? const Color(0xFF1C1C1E)
-                                : Colors.white,
+                            backgroundColor: context.appColors.cardBackground,
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.medium,
                             ),
@@ -505,9 +503,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: AppFontSize.subhead,
                                   fontWeight: AppFontWeight.bold,
-                                  color: isDark
-                                      ? Colors.grey.shade400
-                                      : Colors.grey.shade700,
+                                  color: context.appColors.subTextColor,
                                 ),
                               ),
 
@@ -523,9 +519,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                       autofocus: true,
                                       style: TextStyle(
                                         fontSize: AppFontSize.bodySmall,
-                                        color: isDark
-                                            ? Colors.white
-                                            : Colors.black87,
+                                        color: context.appColors.textColor,
                                       ),
                                       decoration: InputDecoration(
                                         hintText: '選手名・チーム名で検索...',
@@ -601,9 +595,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                               IconButton(
                                 icon: Icon(
                                   Icons.search,
-                                  color: isDark
-                                      ? Colors.blueGrey.shade300
-                                      : Colors.blueGrey.shade700,
+                                  color: context.appColors.primaryAccent,
                                   size: 22,
                                 ),
                                 padding: EdgeInsets.zero,
@@ -643,9 +635,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                 ),
                               ),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: isDark
-                                    ? Colors.blueGrey.shade300
-                                    : Colors.blueGrey.shade700,
+                                foregroundColor:
+                                    context.appColors.primaryAccent,
                                 side: BorderSide(
                                   color: isDark
                                       ? const Color(0xFF38383A)
@@ -1155,9 +1146,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                             children: [
                                               Icon(
                                                 Icons.business,
-                                                color: isDark
-                                                    ? Colors.blueGrey.shade300
-                                                    : Colors.blueGrey.shade700,
+                                                color: context
+                                                    .appColors
+                                                    .primaryAccent,
                                                 size: 20,
                                               ),
                                               const SizedBox(
@@ -1272,17 +1263,15 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                 ? (isDark
                                                       ? const Color(0xFF161618)
                                                       : Colors.grey.shade100)
-                                                : (isDark
-                                                      ? const Color(0xFF1C1C1E)
-                                                      : Colors.white);
+                                                : (context
+                                                      .appColors
+                                                      .cardBackground);
 
                                             final Color titleColor = allFinished
                                                 ? (isDark
                                                       ? Colors.grey.shade600
                                                       : Colors.grey.shade500)
-                                                : (isDark
-                                                      ? Colors.white
-                                                      : Colors.black87);
+                                                : (context.appColors.textColor);
 
                                             final Color subTitleColor =
                                                 allFinished
@@ -1455,9 +1444,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               .blueGrey
                                                                               .shade600
                                                                         : (allFinished
-                                                                              ? (isDark
-                                                                                    ? Colors.grey.shade800
-                                                                                    : Colors.grey.shade300)
+                                                                              ? (context.appColors.separatorColor)
                                                                               : (isDark
                                                                                     ? const Color(
                                                                                         0xFF2C2C2E,
@@ -1487,9 +1474,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                 ? (isDark
                                                                                       ? Colors.grey.shade400
                                                                                       : Colors.grey.shade600)
-                                                                                : (isDark
-                                                                                      ? Colors.grey.shade400
-                                                                                      : Colors.grey.shade700)),
+                                                                                : (context.appColors.subTextColor)),
                                                                     ),
                                                                   ),
                                                                 ),
@@ -1706,9 +1691,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             style: TextStyle(
                                                                               fontSize: AppFontSize.subhead,
                                                                               fontWeight: AppFontWeight.bold,
-                                                                              color: isDark
-                                                                                  ? Colors.white
-                                                                                  : Colors.black87,
+                                                                              color: context.appColors.textColor,
                                                                             ),
                                                                           ),
                                                                           Text(
@@ -1898,9 +1881,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       ? (isDark
                                                                             ? Colors.grey.shade600
                                                                             : Colors.grey.shade50)
-                                                                      : (isDark
-                                                                            ? Colors.white
-                                                                            : Colors.black87);
+                                                                      : (context
+                                                                            .appColors
+                                                                            .textColor);
 
                                                                   return Container(
                                                                     margin: const EdgeInsets.symmetric(
@@ -2025,9 +2008,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                       color: boutsInProgress
                                                                                           ? Colors.blueGrey.shade600
                                                                                           : (boutsAllFinished
-                                                                                                ? (isDark
-                                                                                                      ? Colors.grey.shade800
-                                                                                                      : Colors.grey.shade300)
+                                                                                                ? (context.appColors.separatorColor)
                                                                                                 : (isDark
                                                                                                       ? const Color(
                                                                                                           0xFF2C2C2E,
@@ -2050,9 +2031,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                   ? (isDark
                                                                                                         ? Colors.grey.shade400
                                                                                                         : Colors.grey.shade600)
-                                                                                                  : (isDark
-                                                                                                        ? Colors.grey.shade400
-                                                                                                        : Colors.grey.shade700)),
+                                                                                                  : (context.appColors.subTextColor)),
                                                                                       ),
                                                                                     ),
                                                                                   ),
@@ -2165,9 +2144,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                   '($showLeftPts)',
                                                                                                   style: TextStyle(
                                                                                                     fontSize: AppFontSize.badge,
-                                                                                                    color: isDark
-                                                                                                        ? Colors.grey.shade400
-                                                                                                        : Colors.grey.shade500,
+                                                                                                    color: context.appColors.subTextColor,
                                                                                                   ),
                                                                                                 ),
                                                                                                 Padding(
@@ -2188,18 +2165,14 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                                                   style: TextStyle(
                                                                                                     fontSize: AppFontSize.bodyMedium,
                                                                                                     fontWeight: AppFontWeight.bold,
-                                                                                                    color: isDark
-                                                                                                        ? Colors.white
-                                                                                                        : Colors.black87,
+                                                                                                    color: context.appColors.textColor,
                                                                                                   ),
                                                                                                 ),
                                                                                                 Text(
                                                                                                   '($showRightPts)',
                                                                                                   style: TextStyle(
                                                                                                     fontSize: AppFontSize.badge,
-                                                                                                    color: isDark
-                                                                                                        ? Colors.grey.shade400
-                                                                                                        : Colors.grey.shade500,
+                                                                                                    color: context.appColors.subTextColor,
                                                                                                   ),
                                                                                                 ),
                                                                                               ],
@@ -2381,18 +2354,16 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                 ? (isDark
                                                       ? const Color(0xFF161618)
                                                       : Colors.grey.shade100)
-                                                : (isDark
-                                                      ? const Color(0xFF1C1C1E)
-                                                      : Colors.white);
+                                                : (context
+                                                      .appColors
+                                                      .cardBackground);
 
                                             final Color pTitleColor =
                                                 pAllFinished
                                                 ? (isDark
                                                       ? Colors.grey.shade600
                                                       : Colors.grey.shade500)
-                                                : (isDark
-                                                      ? Colors.white
-                                                      : Colors.black87);
+                                                : (context.appColors.textColor);
                                             final Color pSubTitleColor =
                                                 pAllFinished
                                                 ? (isDark
@@ -2513,9 +2484,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     .blueGrey
                                                                     .shade600
                                                               : (pAllFinished
-                                                                    ? (isDark
-                                                                          ? Colors.grey.shade800
-                                                                          : Colors.grey.shade300)
+                                                                    ? (context
+                                                                          .appColors
+                                                                          .separatorColor)
                                                                     : (isDark
                                                                           ? const Color(
                                                                               0xFF2C2C2E,
@@ -2543,9 +2514,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       ? (isDark
                                                                             ? Colors.grey.shade400
                                                                             : Colors.grey.shade600)
-                                                                      : (isDark
-                                                                            ? Colors.grey.shade400
-                                                                            : Colors.grey.shade700)),
+                                                                      : (context
+                                                                            .appColors
+                                                                            .subTextColor)),
                                                           ),
                                                         ),
                                                       ),
@@ -2615,8 +2586,8 @@ class ViewerHomeScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
-    final borderColor = isDark ? const Color(0xFF38383A) : Colors.grey.shade200;
-    final textColor = isDark ? Colors.white : Colors.black87;
+    final borderColor = context.appColors.separatorColor;
+    final textColor = context.appColors.textColor;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
         : Colors.grey.shade700;
@@ -2786,7 +2757,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
         : (isDark ? const Color(0xFF1E1E20) : Colors.white);
     final Color textC = isFinished
         ? (isDark ? Colors.grey.shade600 : Colors.grey.shade500)
-        : (isDark ? Colors.white : Colors.black87);
+        : (context.appColors.textColor);
     final Color noteC = isFinished
         ? (isDark ? Colors.grey.shade700 : Colors.grey.shade500)
         : Colors.grey.shade600;
@@ -2929,9 +2900,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                       color: isPlaying
                           ? Colors.blueGrey.shade600
                           : (isFinished
-                                ? (isDark
-                                      ? Colors.grey.shade800
-                                      : Colors.grey.shade300)
+                                ? (context.appColors.separatorColor)
                                 : (isDark
                                       ? const Color(0xFF2C2C2E)
                                       : Colors.grey.shade200)),
@@ -2948,9 +2917,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                   ? (isDark
                                         ? Colors.grey.shade400
                                         : Colors.grey.shade600)
-                                  : (isDark
-                                        ? Colors.grey.shade400
-                                        : Colors.grey.shade700)),
+                                  : (context.appColors.subTextColor)),
                       ),
                     ),
                   ),
@@ -3027,9 +2994,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                               rTeam.isNotEmpty ? rTeam : '（個人エントリー）',
                               style: TextStyle(
                                 fontSize: AppFontSize.badge,
-                                color: isDark
-                                    ? Colors.grey.shade400
-                                    : Colors.grey.shade500,
+                                color: context.appColors.subTextColor,
                                 fontWeight: AppFontWeight.medium,
                               ),
                               textAlign: TextAlign.start,
@@ -3042,9 +3007,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                               wTeam.isNotEmpty ? wTeam : '（個人エントリー）',
                               style: TextStyle(
                                 fontSize: AppFontSize.badge,
-                                color: isDark
-                                    ? Colors.grey.shade400
-                                    : Colors.grey.shade500,
+                                color: context.appColors.subTextColor,
                                 fontWeight: AppFontWeight.medium,
                               ),
                               textAlign: TextAlign.end,
@@ -3068,7 +3031,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                     : AppFontWeight.bold,
                                 color: isRedOwn
                                     ? Colors.amber.shade600
-                                    : (isDark ? Colors.white : Colors.black87),
+                                    : (context.appColors.textColor),
                               ),
                               textAlign: TextAlign.start,
                               overflow: TextOverflow.ellipsis,
@@ -3124,9 +3087,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                         .map(
                                           (p) => buildMarkItem(
                                             p,
-                                            isDark
-                                                ? Colors.white
-                                                : Colors.black87,
+                                            context.appColors.textColor,
                                           ),
                                         )
                                         .toList(),
@@ -3144,7 +3105,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                                     : AppFontWeight.bold,
                                 color: isWhiteOwn
                                     ? Colors.amber.shade600
-                                    : (isDark ? Colors.white : Colors.black87),
+                                    : (context.appColors.textColor),
                               ),
                               textAlign: TextAlign.end,
                               overflow: TextOverflow.ellipsis,

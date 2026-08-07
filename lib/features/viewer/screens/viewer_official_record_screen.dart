@@ -99,7 +99,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
               body: Center(
                 child: Text(
                   '記録データがありません',
-                  style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                  style: TextStyle(color: context.appColors.textColor),
                 ),
               ),
             ),
@@ -167,9 +167,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                           color: cardColor,
                           border: Border(
                             bottom: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF38383A)
-                                  : Colors.grey.shade200,
+                              color: context.appColors.separatorColor,
                             ),
                           ),
                         ),
@@ -1033,7 +1031,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                     child: Container(
                       constraints: const BoxConstraints(maxWidth: 550),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                        color: context.appColors.cardBackground,
                         borderRadius: AppRadius.round,
                         boxShadow: [
                           BoxShadow(
@@ -1067,12 +1065,8 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                           ElevatedButton(
                             onPressed: () => Navigator.pop(ctx),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isDark
-                                  ? Colors.grey.shade800
-                                  : Colors.grey.shade200,
-                              foregroundColor: isDark
-                                  ? Colors.white
-                                  : Colors.black87,
+                              backgroundColor: context.appColors.separatorColor,
+                              foregroundColor: context.appColors.textColor,
                               shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 40,

@@ -140,7 +140,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
           },
         ),
         title: '団体戦 スコア (観戦)',
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        backgroundColor: context.appColors.cardBackground,
         elevation: 0,
       ),
       body: body,
@@ -285,9 +285,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
             Theme.of(context).extension<AppThemeColors>() ??
             AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
         final cardColor = themeColors.cardBackground;
-        final borderColor = isDark
-            ? const Color(0xFF38383A)
-            : Colors.grey.shade200;
+        final borderColor = context.appColors.separatorColor;
 
         return LiquidBackground(
           child: Scaffold(
@@ -315,7 +313,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                 },
               ),
               title: '団体戦 スコア (観戦)',
-              backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+              backgroundColor: context.appColors.cardBackground,
               elevation: 0,
               actions: const [
                 // 観客向けのFAQ（点数や勝敗の見方）へ
