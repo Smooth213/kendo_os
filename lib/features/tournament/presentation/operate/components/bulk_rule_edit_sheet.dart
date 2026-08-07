@@ -715,7 +715,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                                 final isSel =
                                     _selectedCategoryRuleName == catName;
                                 return Padding(
-                                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                                  padding: const EdgeInsets.only(
+                                    right: AppSpacing.sm,
+                                  ),
                                   child: AppChoiceChip(
                                     label: Text(catName),
                                     selected: isSel,
@@ -982,7 +984,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       ),
                       const Divider(height: 20),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs,
+                        ),
                         child: Row(
                           children: [
                             const Icon(
@@ -1217,7 +1221,10 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: AppFontSize.body, fontWeight: AppFontWeight.bold),
+          style: const TextStyle(
+            fontSize: AppFontSize.body,
+            fontWeight: AppFontWeight.bold,
+          ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),

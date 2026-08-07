@@ -92,7 +92,10 @@ class ScoreTableCard extends StatelessWidget {
         : Colors.red.shade50;
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+      margin: const EdgeInsets.symmetric(
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.xs,
+      ),
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
@@ -409,7 +412,10 @@ class ScoreTableCard extends StatelessWidget {
           : Colors.transparent,
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.md,
+            horizontal: AppSpacing.xs,
+          ),
           child: VerticalNameText(
             text: parsed['last']!,
             initial: showInitial ? parsed['first']!.substring(0, 1) : '',

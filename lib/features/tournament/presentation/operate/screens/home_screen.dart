@@ -225,7 +225,9 @@ class HomeScreen extends ConsumerWidget {
                                 ? Colors.white.withValues(alpha: 0.1)
                                 : themeColors.softAccent,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.medium,
                             ),
@@ -313,7 +315,9 @@ class HomeScreen extends ConsumerWidget {
                               if (uniqueInProgress.isNotEmpty &&
                                   uniqueWaiting.isNotEmpty)
                                 const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: AppSpacing.sm,
+                                  ),
                                   child: Divider(
                                     color: Colors.white24,
                                     height: 1,
@@ -328,7 +332,9 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                               if (uniqueWaiting.length > 1)
                                 Padding(
-                                  padding: const EdgeInsets.only(top: AppSpacing.sm),
+                                  padding: const EdgeInsets.only(
+                                    top: AppSpacing.sm,
+                                  ),
                                   child: Text(
                                     '次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}',
                                     style: const TextStyle(
@@ -678,7 +684,10 @@ class HomeScreen extends ConsumerWidget {
         onTap: onTap,
         borderRadius: AppRadius.small,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm,
+            horizontal: AppSpacing.xs,
+          ),
           child: Row(
             children: [
               Icon(

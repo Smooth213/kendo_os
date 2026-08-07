@@ -105,7 +105,10 @@ class RuleConfigPanel extends ConsumerWidget {
           ExpansionTile(
             title: const Text(
               '2. 詳細設定をカスタマイズ (Advanced)',
-              style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.body),
+              style: TextStyle(
+                fontWeight: AppFontWeight.bold,
+                fontSize: AppFontSize.body,
+              ),
             ),
             collapsedBackgroundColor: Colors.grey.shade50,
             childrenPadding: const EdgeInsets.all(AppSpacing.lg),
@@ -115,7 +118,10 @@ class RuleConfigPanel extends ConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   '規定本数（勝敗ライン）',
-                  style: TextStyle(fontSize: AppFontSize.small, color: Colors.grey.shade600),
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),

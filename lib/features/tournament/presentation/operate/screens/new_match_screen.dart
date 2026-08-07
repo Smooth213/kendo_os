@@ -317,7 +317,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                   icon: const Icon(Icons.clear, size: 14),
                                   label: const Text(
                                     'クリア',
-                                    style: TextStyle(fontSize: AppFontSize.caption),
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.caption,
+                                    ),
                                   ),
                                   style: TextButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
@@ -345,7 +347,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                             decoration: InputDecoration(
                               labelText: '試合場・進行の見出し',
                               hintText: '例: 準決勝, 第1試合場, 23試合目',
-                              hintStyle: const TextStyle(fontSize: AppFontSize.bodyMedium),
+                              hintStyle: const TextStyle(
+                                fontSize: AppFontSize.bodyMedium,
+                              ),
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.md,
@@ -410,7 +414,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                   selected: isSelected,
                                   label: Text(
                                     preset,
-                                    style: const TextStyle(fontSize: AppFontSize.caption),
+                                    style: const TextStyle(
+                                      fontSize: AppFontSize.caption,
+                                    ),
                                   ),
                                   onSelected: (_) {
                                     _toggleHeadingPreset(preset);
@@ -453,7 +459,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                     selected: isSelected,
                                     label: Text(
                                       preset,
-                                      style: const TextStyle(fontSize: AppFontSize.caption),
+                                      style: const TextStyle(
+                                        fontSize: AppFontSize.caption,
+                                      ),
                                     ),
                                     onSelected: (_) {
                                       _toggleHeadingPreset(preset);
@@ -494,7 +502,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       color: Colors.redAccent,
                       icon: Icons.flash_on,
                       label: '$_creationMode を実行',
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.lg,
+                      ),
                     ),
                   ],
                 ),
@@ -838,7 +848,10 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             ),
             if (ruleSet != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.indigo.shade50,
                   borderRadius: AppRadius.medium,
@@ -942,7 +955,10 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         borderRadius: AppRadius.medium,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark

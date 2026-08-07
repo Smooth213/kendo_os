@@ -120,7 +120,9 @@ class _MultiPlayerSelectInputState
                 children: [
                   // ヘッダー（確定ボタン付き）
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -164,7 +166,9 @@ class _MultiPlayerSelectInputState
                   const SizedBox(height: AppSpacing.sm),
                   // 検索窓
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
                     child: TextField(
                       autofocus: true,
                       decoration: InputDecoration(
@@ -198,7 +202,9 @@ class _MultiPlayerSelectInputState
                   // ★ カテゴリフィルターチップ（横スクロール）
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
                     child: Row(
                       children:
                           [
@@ -215,7 +221,9 @@ class _MultiPlayerSelectInputState
                             final isSelected = selectedFilter == filterName;
                             final activeColor = _accentColor;
                             return Padding(
-                              padding: const EdgeInsets.only(right: AppSpacing.sm),
+                              padding: const EdgeInsets.only(
+                                right: AppSpacing.sm,
+                              ),
                               child: AppChoiceChip(
                                 label: Text(filterName),
                                 selected: isSelected,

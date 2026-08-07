@@ -284,7 +284,10 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm,
+            horizontal: AppSpacing.lg,
+          ),
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.5)
@@ -413,7 +416,10 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm,
+            horizontal: AppSpacing.lg,
+          ),
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.5)
@@ -557,7 +563,10 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       return Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.sm,
+              horizontal: AppSpacing.lg,
+            ),
             color: Colors.teal.withValues(alpha: 0.1),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -613,7 +622,10 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               const SizedBox(height: AppSpacing.xl),
               const Text(
                 'マニュアルをロード中...',
-                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.subhead),
+                style: TextStyle(
+                  fontWeight: AppFontWeight.bold,
+                  fontSize: AppFontSize.subhead,
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               LinearProgressIndicator(value: _downloadProgress),
@@ -671,7 +683,10 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 const SizedBox(height: AppSpacing.md),
                 const Text(
                   '印刷や文字検索、高倍率ズームが可能な公式PDF版マニュアルをダウンロードできます。一度保存すると、オフラインでも閲覧可能です。',
-                  style: TextStyle(fontSize: AppFontSize.body, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: AppFontSize.body,
+                    color: Colors.grey,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -817,7 +832,10 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
         ),
       );
     }
-    return const Text('ヘルプ・マニュアル', style: TextStyle(fontSize: AppFontSize.subhead));
+    return const Text(
+      'ヘルプ・マニュアル',
+      style: TextStyle(fontSize: AppFontSize.subhead),
+    );
   }
 
   // 検索用 AppBar アクションボタン
@@ -979,7 +997,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                                 (results[i]['headings'] as List)
                                     .take(2)
                                     .join(' / '),
-                                style: const TextStyle(fontSize: AppFontSize.badge),
+                                style: const TextStyle(
+                                  fontSize: AppFontSize.badge,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               )

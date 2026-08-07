@@ -173,7 +173,10 @@ class AppStartup {
                 const SizedBox(height: AppSpacing.md),
                 const Text(
                   '以下のログを開発者へ共有してください：',
-                  style: TextStyle(color: Colors.black87, fontSize: AppFontSize.small),
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: AppFontSize.small,
+                  ),
                 ),
                 const Divider(),
                 Text(
@@ -187,7 +190,10 @@ class AppStartup {
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   details.stack?.toString() ?? 'スタックトレースなし',
-                  style: const TextStyle(color: Colors.grey, fontSize: AppFontSize.badge),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: AppFontSize.badge,
+                  ),
                 ),
               ],
             ),

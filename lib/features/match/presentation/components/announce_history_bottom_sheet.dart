@@ -253,7 +253,10 @@ class _AnnounceHistoryBottomSheetState
                 // 🌟 サクラピンク差し色ハック：未読の通知の左端にだけ「●ドット」を鮮やかに点火
                 if (!isRead)
                   Padding(
-                    padding: const EdgeInsets.only(top: AppSpacing.xs, right: AppSpacing.sm),
+                    padding: const EdgeInsets.only(
+                      top: AppSpacing.xs,
+                      right: AppSpacing.sm,
+                    ),
                     child: Container(
                       width: 8,
                       height: 8,

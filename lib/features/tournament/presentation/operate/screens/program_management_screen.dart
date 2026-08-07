@@ -512,7 +512,9 @@ class _ProgramManagementScreenState
                               : Colors.white,
                         ),
                         child: ReorderableListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                          ),
                           itemCount: orderedFiles.length,
                           onReorderItem: (oldIndex, newIndex) {
                             setState(() {

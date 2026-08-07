@@ -530,7 +530,8 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                               : Text(
                                                   'VS',
                                                   style: TextStyle(
-                                                    fontSize: AppFontSize.subhead,
+                                                    fontSize:
+                                                        AppFontSize.subhead,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: textC,

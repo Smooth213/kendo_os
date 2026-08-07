@@ -199,7 +199,10 @@ class PdfService {
                 contentWidgets.add(
                   pw.Text(
                     '【リーグ表】 $statusText',
-                    style: pw.TextStyle(font: ttfBold, fontSize: AppFontSize.body),
+                    style: pw.TextStyle(
+                      font: ttfBold,
+                      fontSize: AppFontSize.body,
+                    ),
                   ),
                 );
                 contentWidgets.add(pw.SizedBox(height: 10));
@@ -216,7 +219,10 @@ class PdfService {
                 contentWidgets.add(
                   pw.Text(
                     '【対戦詳細スコア】',
-                    style: pw.TextStyle(font: ttfBold, fontSize: AppFontSize.small),
+                    style: pw.TextStyle(
+                      font: ttfBold,
+                      fontSize: AppFontSize.small,
+                    ),
                   ),
                 );
                 contentWidgets.add(pw.SizedBox(height: 10));

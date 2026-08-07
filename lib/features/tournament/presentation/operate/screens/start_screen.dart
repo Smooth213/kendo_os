@@ -35,7 +35,10 @@ class StartScreen extends ConsumerWidget {
       surfaceColor: Colors.white,
       glassAlpha: isDark ? 0.08 : 0.5,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl, horizontal: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.xl,
+          horizontal: AppSpacing.md,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -226,7 +229,9 @@ class StartScreen extends ConsumerWidget {
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.lg,
+                        ),
                         side: const BorderSide(color: Colors.white, width: 1.5),
                         backgroundColor: Colors.white.withValues(alpha: 0.15),
                         shape: RoundedRectangleBorder(
@@ -246,7 +251,9 @@ class StartScreen extends ConsumerWidget {
                 child: CustomScrollView(
                   slivers: [
                     SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xl,
+                      ),
                       sliver: SliverList(
                         delegate: SliverChildListDelegate([
                           Row(

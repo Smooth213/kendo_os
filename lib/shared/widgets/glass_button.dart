@@ -27,7 +27,10 @@ class GlassButton extends ConsumerWidget {
     this.label,
     this.trailing,
     this.expandContent = true,
-    this.padding = const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+    this.padding = const EdgeInsets.symmetric(
+      horizontal: AppSpacing.lg,
+      vertical: AppSpacing.md,
+    ),
     this.glassAlpha,
     this.surfaceColor,
   }) : child = null;

@@ -68,7 +68,10 @@ class IndividualListCard extends StatelessWidget {
     final textColor = themeColors.textColor;
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+      margin: const EdgeInsets.symmetric(
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.xs,
+      ),
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
@@ -156,7 +159,9 @@ class IndividualListCard extends StatelessWidget {
                       isDark: isDark,
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                      ),
                       child: Text(
                         m.isDraw ? '✕' : '-',
                         style: TextStyle(

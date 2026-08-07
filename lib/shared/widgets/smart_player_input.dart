@@ -133,7 +133,9 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
                     child: TextField(
                       autofocus: true, // 開いた瞬間にキーボードを出す
                       decoration: InputDecoration(
@@ -169,7 +171,9 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                   // ★ カテゴリフィルターチップ（横スクロール）
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
                     child: Row(
                       children:
                           [
@@ -186,7 +190,9 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                             final isSelected = selectedFilter == filterName;
                             final activeColor = _accentColor;
                             return Padding(
-                              padding: const EdgeInsets.only(right: AppSpacing.sm),
+                              padding: const EdgeInsets.only(
+                                right: AppSpacing.sm,
+                              ),
                               child: AppChoiceChip(
                                 label: Text(filterName),
                                 selected: isSelected,

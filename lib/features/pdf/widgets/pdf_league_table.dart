@@ -368,7 +368,11 @@ class PdfLeagueTable {
       }
       return pw.Text(
         displayTech,
-        style: pw.TextStyle(font: ttfBold, fontSize: AppFontSize.micro, color: PdfColors.black),
+        style: pw.TextStyle(
+          font: ttfBold,
+          fontSize: AppFontSize.micro,
+          color: PdfColors.black,
+        ),
       );
     }
 

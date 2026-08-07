@@ -102,7 +102,10 @@ class PinAuthScreen extends ConsumerWidget {
                           const SizedBox(height: AppSpacing.sm),
                           Text(
                             '誤操作防止のため、指定のPINコードを入力してください。',
-                            style: TextStyle(color: subTextColor, fontSize: AppFontSize.small),
+                            style: TextStyle(
+                              color: subTextColor,
+                              fontSize: AppFontSize.small,
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.xxl),
                           TextField(

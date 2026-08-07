@@ -250,7 +250,10 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: 18),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xl,
+              vertical: 18,
+            ),
             decoration: BoxDecoration(
               color: cardBgColor,
               borderRadius: AppRadius.xlarge,
@@ -286,7 +289,10 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                   Text(
                     '会場のQRコードをスキャンするか\n「道場ルームコード」を入力してください',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: AppFontSize.small, color: subTextColor),
+                    style: TextStyle(
+                      fontSize: AppFontSize.small,
+                      color: subTextColor,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   LayoutBuilder(
@@ -413,7 +419,10 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                   const SizedBox(height: 6),
                   Text(
                     '※ 使用可能な文字: 半角英数字、ハイフン(-)、アンダーバー(_)',
-                    style: TextStyle(fontSize: AppFontSize.caption, color: subTextColor),
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      color: subTextColor,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Wrap(

@@ -296,7 +296,10 @@ class MatchScoreboard extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: AppSpacing.sm),
                 child: Text(
                   List.filled(hansokuCount, '▲').join(''),
-                  style: const TextStyle(fontSize: AppFontSize.display, color: Colors.amber),
+                  style: const TextStyle(
+                    fontSize: AppFontSize.display,
+                    color: Colors.amber,
+                  ),
                 ),
               );
             },

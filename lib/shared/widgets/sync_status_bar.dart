@@ -261,7 +261,10 @@ class SyncStatusBar extends ConsumerWidget {
                             const Expanded(
                               child: Text(
                                 '電波のズレ等により一時的に保留された操作があります。右側のボタンで「再送」を押すか、お急ぎの場合は「データ更新」マニュアルをご確認ください。',
-                                style: TextStyle(fontSize: AppFontSize.caption, height: 1.3),
+                                style: TextStyle(
+                                  fontSize: AppFontSize.caption,
+                                  height: 1.3,
+                                ),
                               ),
                             ),
                           ],

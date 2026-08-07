@@ -96,7 +96,10 @@ void _showAnnounceDialog(
               },
               child: const Text(
                 '内容を確認しました',
-                style: TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.bodySmall),
+                style: TextStyle(
+                  fontWeight: AppFontWeight.bold,
+                  fontSize: AppFontSize.bodySmall,
+                ),
               ),
             ),
           ),

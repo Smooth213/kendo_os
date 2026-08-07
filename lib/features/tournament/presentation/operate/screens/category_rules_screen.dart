@@ -793,7 +793,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     children: _presetCategories
                         .map(
                           (name) => Padding(
-                            padding: const EdgeInsets.only(right: AppSpacing.sm),
+                            padding: const EdgeInsets.only(
+                              right: AppSpacing.sm,
+                            ),
                             child: AppActionChip(
                               label: Text(name),
                               onPressed: () =>
@@ -1033,7 +1035,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 Container(
                   constraints: const BoxConstraints(minWidth: 68),
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs,
+                  ),
                   child: Text(
                     _formatMinutes(value),
                     style: TextStyle(
@@ -1620,7 +1624,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           const SizedBox(height: AppSpacing.md),
           const Text(
             '進行形式',
-            style: TextStyle(fontWeight: AppFontWeight.semiBold, fontSize: AppFontSize.body),
+            style: TextStyle(
+              fontWeight: AppFontWeight.semiBold,
+              fontSize: AppFontSize.body,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
@@ -1674,7 +1681,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           const SizedBox(height: AppSpacing.md),
           const Text(
             '大将 VS 大将 のときの挙動',
-            style: TextStyle(fontWeight: AppFontWeight.semiBold, fontSize: AppFontSize.body),
+            style: TextStyle(
+              fontWeight: AppFontWeight.semiBold,
+              fontSize: AppFontSize.body,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
@@ -1721,7 +1731,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           const SizedBox(height: AppSpacing.lg),
           const Text(
             '大将対他のポジション（大将以外）の挙動',
-            style: TextStyle(fontWeight: AppFontWeight.semiBold, fontSize: AppFontSize.body),
+            style: TextStyle(
+              fontWeight: AppFontWeight.semiBold,
+              fontSize: AppFontSize.body,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
@@ -2062,7 +2075,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.lg, top: AppSpacing.xs),
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.lg,
+                  top: AppSpacing.xs,
+                ),
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -2524,7 +2540,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs, horizontal: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.xs,
+        horizontal: AppSpacing.sm,
+      ),
       decoration: const BoxDecoration(
         border: Border(left: BorderSide(color: Colors.indigo, width: 4)),
       ),
@@ -2851,7 +2870,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                             : Colors.grey.shade200,
                         foregroundColor: isDark ? Colors.white : Colors.black87,
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.lg,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: AppRadius.medium,
                         ),
@@ -2921,7 +2942,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     Widget buildChip(String label, Color bg, Color text) {
       return Container(
         margin: const EdgeInsets.only(right: 6, top: AppSpacing.xs),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 3),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: 3,
+        ),
         decoration: BoxDecoration(color: bg, borderRadius: AppRadius.small),
         child: Text(
           label,
@@ -3081,7 +3105,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         const SizedBox(height: AppSpacing.sm),
         const Text(
           '錬成形式（試合方式）',
-          style: TextStyle(fontWeight: AppFontWeight.semiBold, fontSize: AppFontSize.bodySmall),
+          style: TextStyle(
+            fontWeight: AppFontWeight.semiBold,
+            fontSize: AppFontSize.bodySmall,
+          ),
         ),
         const SizedBox(height: 6),
         Row(

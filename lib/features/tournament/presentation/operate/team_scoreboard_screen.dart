@@ -465,7 +465,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.lg,
+                        ),
                       ),
                       icon: const Icon(Icons.add_circle),
                       label: const Text('同点のため、代表戦を追加する'),

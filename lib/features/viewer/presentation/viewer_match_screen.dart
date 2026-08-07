@@ -228,7 +228,10 @@ class ViewerMatchScreen extends ConsumerWidget {
     return Container(
       width: double.infinity,
       color: Colors.blueGrey.shade700,
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs, horizontal: AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.xs,
+        horizontal: AppSpacing.lg,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -738,7 +741,10 @@ class LargeViewerScoreboard extends StatelessWidget {
         : (isDark ? Colors.white70 : Colors.black87);
 
     final content = Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xl),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.md,
+        horizontal: AppSpacing.xl,
+      ),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E24) : Colors.grey.shade200,
         borderRadius: AppRadius.large,

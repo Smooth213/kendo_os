@@ -295,7 +295,10 @@ class PdfTeamTable {
         firstName.isNotEmpty;
     return pw.Center(
       child: pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: AppSpacing.xs, horizontal: 2),
+        padding: const pw.EdgeInsets.symmetric(
+          vertical: AppSpacing.xs,
+          horizontal: 2,
+        ),
         child: pw.Row(
           mainAxisSize: pw.MainAxisSize.min,
           crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -442,7 +445,11 @@ class PdfTeamTable {
               ),
             pw.Text(
               '×',
-              style: pw.TextStyle(font: fontBold, fontSize: AppFontSize.badge, color: color),
+              style: pw.TextStyle(
+                font: fontBold,
+                fontSize: AppFontSize.badge,
+                color: color,
+              ),
             ),
           ],
         ),
@@ -505,7 +512,11 @@ class PdfTeamTable {
           )
         : pw.Text(
             p.mark,
-            style: pw.TextStyle(font: fontBold, fontSize: AppFontSize.micro, color: color),
+            style: pw.TextStyle(
+              font: fontBold,
+              fontSize: AppFontSize.micro,
+              color: color,
+            ),
           );
   }
 

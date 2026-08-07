@@ -36,7 +36,10 @@ class CriticalActionGuard {
                 children: [
                   Text(
                     message,
-                    style: const TextStyle(color: Colors.white70, fontSize: AppFontSize.bodySmall),
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: AppFontSize.bodySmall,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   TextField(

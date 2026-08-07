@@ -163,7 +163,12 @@ class _TeamRegistrationScreenState
   Widget _buildImmersiveAppBar(BuildContext context) {
     return Container(
       // SafeArea や Scaffold が既にパディングを処理するため、ここでは最小限の余白のみ設定
-      padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.sm, left: AppSpacing.lg, right: AppSpacing.lg),
+      padding: const EdgeInsets.only(
+        top: AppSpacing.sm,
+        bottom: AppSpacing.sm,
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -198,7 +203,10 @@ class _TeamRegistrationScreenState
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: 20),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: 20,
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [gradientColor, _themeColors.softAccent],
@@ -403,7 +411,9 @@ class _TeamRegistrationScreenState
                       children: [
                         if (helperEntries.isNotEmpty) ...[
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpacing.sm,
+                            ),
                             child: Text(
                               '現在チームにいる手入力選手',
                               style: TextStyle(
@@ -431,7 +441,9 @@ class _TeamRegistrationScreenState
                         ],
 
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.sm,
+                          ),
                           child: Text(
                             showAllPlayers ? '名簿の全選手' : 'おすすめの選手',
                             style: TextStyle(
@@ -612,7 +624,10 @@ class _TeamRegistrationScreenState
         ),
         trailing: (isHelper || isUsed)
             ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.orange.shade50,
                   borderRadius: AppRadius.small,

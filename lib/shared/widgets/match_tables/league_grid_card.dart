@@ -274,7 +274,10 @@ class LeagueGridCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Text(
           text,
-          style: TextStyle(fontSize: AppFontSize.badge, color: themeColors.subTextColor),
+          style: TextStyle(
+            fontSize: AppFontSize.badge,
+            color: themeColors.subTextColor,
+          ),
         ),
       ),
     );

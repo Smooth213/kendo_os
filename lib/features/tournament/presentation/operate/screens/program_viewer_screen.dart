@@ -455,7 +455,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       ? '文字検索の準備完了'
                       : '画像解析の準備中',
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                    ),
                     child: Icon(
                       Icons.bolt,
                       color: (currentProgram.isOcrProcessed ?? false)
@@ -669,7 +671,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             color: isDark
                                 ? Colors.grey.shade700
                                 : Colors.blueGrey.shade200,
-                            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.xs,
+                            ),
                           ),
 
                           // 1つ戻る (Undo)
@@ -1254,7 +1258,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         onTap: () => setState(() => _selectedTool = tool),
         borderRadius: AppRadius.sub,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: 6,
+          ),
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark ? Colors.grey.shade800 : Colors.white)

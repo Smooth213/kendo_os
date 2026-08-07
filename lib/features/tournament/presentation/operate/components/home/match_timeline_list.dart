@@ -208,7 +208,10 @@ class MatchTimelineList extends ConsumerWidget {
             ),
 
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.sm,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -420,7 +423,10 @@ class MatchTimelineList extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     timelineResult.errorMessage ?? '通信状況を確認してください',
-                    style: const TextStyle(color: Colors.grey, fontSize: AppFontSize.small),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: AppFontSize.small,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -919,7 +925,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                 child: Text(
                                                   c.text,
                                                   style: TextStyle(
-                                                    fontSize: AppFontSize.bodySmall,
+                                                    fontSize:
+                                                        AppFontSize.bodySmall,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: isDark
@@ -1086,7 +1093,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                 Text(
                                                   label,
                                                   style: TextStyle(
-                                                    fontSize: AppFontSize.bodySmall,
+                                                    fontSize:
+                                                        AppFontSize.bodySmall,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: isDark
@@ -1359,7 +1367,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                               EdgeInsets.zero,
                                                           tilePadding:
                                                               const EdgeInsets.symmetric(
-                                                                horizontal: AppSpacing.lg,
+                                                                horizontal:
+                                                                    AppSpacing
+                                                                        .lg,
                                                               ),
                                                           title: Column(
                                                             crossAxisAlignment:
@@ -1563,7 +1573,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         },
                                                                         style: OutlinedButton.styleFrom(
                                                                           padding: const EdgeInsets.symmetric(
-                                                                            horizontal: AppSpacing.sm,
+                                                                            horizontal:
+                                                                                AppSpacing.sm,
                                                                           ),
                                                                           side: BorderSide(
                                                                             color: titleColor.withValues(
@@ -1579,7 +1590,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         child: Text(
                                                                           'スコア',
                                                                           style: TextStyle(
-                                                                            fontSize: AppFontSize.badge,
+                                                                            fontSize:
+                                                                                AppFontSize.badge,
                                                                             fontWeight:
                                                                                 AppFontWeight.bold,
                                                                             color:
@@ -1625,7 +1637,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 ? '終了'
                                                                                 : '待機中'),
                                                                       style: TextStyle(
-                                                                        fontSize: AppFontSize.badge,
+                                                                        fontSize:
+                                                                            AppFontSize.badge,
                                                                         fontWeight:
                                                                             AppFontWeight.bold,
                                                                         color:
@@ -1659,7 +1672,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                     firstMatch
                                                                         .note,
                                                                     style: TextStyle(
-                                                                      fontSize: AppFontSize.caption,
+                                                                      fontSize:
+                                                                          AppFontSize
+                                                                              .caption,
                                                                       color:
                                                                           subTitleColor,
                                                                       fontWeight:
@@ -1814,7 +1829,8 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         // 中央合計スコア掲示（例: 3(5) - 1(2)）
                                                                         Padding(
                                                                           padding: const EdgeInsets.symmetric(
-                                                                            horizontal: AppSpacing.lg,
+                                                                            horizontal:
+                                                                                AppSpacing.lg,
                                                                           ),
                                                                           child: Row(
                                                                             mainAxisSize:
@@ -2290,8 +2306,10 @@ class MatchTimelineList extends ConsumerWidget {
                                                                           'league_team_$name',
                                                                         ),
                                                                         margin: const EdgeInsets.symmetric(
-                                                                          horizontal: AppSpacing.sm,
-                                                                          vertical: AppSpacing.xs,
+                                                                          horizontal:
+                                                                              AppSpacing.sm,
+                                                                          vertical:
+                                                                              AppSpacing.xs,
                                                                         ),
                                                                         decoration: BoxDecoration(
                                                                           borderRadius:
@@ -2887,7 +2905,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold,
-                                                                      fontSize: AppFontSize.small,
+                                                                      fontSize:
+                                                                          AppFontSize
+                                                                              .small,
                                                                       color: Colors
                                                                           .orange,
                                                                     ),
@@ -4157,7 +4177,10 @@ void _showSummaryInputDialog(
               children: [
                 const Text(
                   '他チームの試合結果（勝者数と本数）だけを素早く記録します。',
-                  style: TextStyle(fontSize: AppFontSize.small, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    color: Colors.grey,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Container(
@@ -4863,7 +4886,10 @@ Widget _buildInnerCommentWidget(
   bool isDark,
 ) {
   final commentWidget = Container(
-    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.lg,
+      vertical: AppSpacing.sm,
+    ),
     decoration: BoxDecoration(
       color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
       borderRadius: AppRadius.small,
@@ -4895,13 +4921,19 @@ Widget _buildInnerCommentWidget(
 
   if (!permissions.canManageTournament) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xs,
+      ),
       child: commentWidget,
     );
   }
 
   return Container(
-    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+    margin: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.lg,
+      vertical: AppSpacing.xs,
+    ),
     child: Slidable(
       key: ValueKey('slidable_inner_comment_${c.id}'),
       endActionPane: ActionPane(
@@ -5193,7 +5225,9 @@ class MatchListTileCard extends ConsumerWidget {
                             );
                           },
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                            ),
                             side: BorderSide(
                               color: textC.withValues(alpha: 0.2),
                             ),
@@ -5318,7 +5352,9 @@ class MatchListTileCard extends ConsumerWidget {
 
                     if (mark == '◯' || mark == '×') {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs,
+                        ),
                         child: Text(
                           mark,
                           style: TextStyle(
@@ -5352,7 +5388,9 @@ class MatchListTileCard extends ConsumerWidget {
                     }
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xs,
+                      ),
                       child: Text(
                         mark,
                         style: TextStyle(
@@ -5433,7 +5471,9 @@ class MatchListTileCard extends ConsumerWidget {
                           // 中央スコアマーク（スコアなし時は完全空欄）
                           if (!hasValidPoints)
                             const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.lg,
+                              ),
                               child: SizedBox(width: AppSpacing.md),
                             )
                           else
@@ -6008,7 +6048,10 @@ class _OrderReorderBottomSheetState
                         padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
                         child: Text(
                           '右側の三本線を長押し・ドラッグして並び替えます。上の5枠が出場選手になります。',
-                          style: TextStyle(fontSize: AppFontSize.caption, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -6028,7 +6071,9 @@ class _OrderReorderBottomSheetState
 
                             return Card(
                               key: ValueKey('unified_item_$id'),
-                              margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                              margin: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.xs,
+                              ),
                               color: isPosition
                                   ? (isDark
                                         ? const Color(0xFF2C2C2E)
@@ -6190,7 +6235,10 @@ class _AddReservePlayerDialogState extends State<_AddReservePlayerDialog> {
                 padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 child: Text(
                   '未出場の所属選手はいません。',
-                  style: TextStyle(color: Colors.grey, fontSize: AppFontSize.bodySmall),
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: AppFontSize.bodySmall,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               )

@@ -534,7 +534,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     Expanded(
                       child: TextField(
                         controller: _redPlayerControllers[index],
-                        style: const TextStyle(color: Colors.red, fontSize: AppFontSize.bodySmall),
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: AppFontSize.bodySmall,
+                        ),
                         decoration: InputDecoration(
                           hintText: '赤 選手名',
                           filled: true,
@@ -557,7 +560,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     Expanded(
                       child: TextField(
                         controller: _whitePlayerControllers[index],
-                        style: TextStyle(color: textColor, fontSize: AppFontSize.bodySmall),
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: AppFontSize.bodySmall,
+                        ),
                         decoration: InputDecoration(
                           hintText: '白 選手名',
                           filled: true,
@@ -660,9 +666,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   if (_courtController.text.isNotEmpty)
                     TextButton.icon(
                       icon: const Icon(Icons.clear, size: 14),
-                      label: const Text('クリア', style: TextStyle(fontSize: AppFontSize.caption)),
+                      label: const Text(
+                        'クリア',
+                        style: TextStyle(fontSize: AppFontSize.caption),
+                      ),
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                        ),
                         visualDensity: VisualDensity.compact,
                       ),
                       onPressed: () {
@@ -1065,7 +1076,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                           currentRule.matchScene == 'moushiawase'
                       ? const Text(
                           '※錬成会・申し合わせルールのため強制OFFに固定されています',
-                          style: TextStyle(fontSize: AppFontSize.badge, color: Colors.orange),
+                          style: TextStyle(
+                            fontSize: AppFontSize.badge,
+                            color: Colors.orange,
+                          ),
                         )
                       : null,
                   value: _hasHantei,

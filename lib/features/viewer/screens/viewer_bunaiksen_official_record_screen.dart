@@ -306,7 +306,10 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
       icon: Icon(icon, size: 18),
       label: Text(
         label,
-        style: const TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.bodySmall),
+        style: const TextStyle(
+          fontWeight: AppFontWeight.bold,
+          fontSize: AppFontSize.bodySmall,
+        ),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
@@ -339,7 +342,10 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     }).toList();
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+      margin: const EdgeInsets.symmetric(
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.xs,
+      ),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.large,
@@ -505,7 +511,10 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+      margin: const EdgeInsets.symmetric(
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.xs,
+      ),
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
@@ -892,9 +901,17 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
               ),
             ),
           if (pts.isNotEmpty)
-            Positioned(top: AppSpacing.xs, left: 6, child: _renderMark(pts[0], color)),
+            Positioned(
+              top: AppSpacing.xs,
+              left: 6,
+              child: _renderMark(pts[0], color),
+            ),
           if (pts.length > 1)
-            Positioned(bottom: AppSpacing.xs, right: 6, child: _renderMark(pts[1], color)),
+            Positioned(
+              bottom: AppSpacing.xs,
+              right: 6,
+              child: _renderMark(pts[1], color),
+            ),
         ],
       ),
     );
@@ -1512,7 +1529,10 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     // ★note抽出ロジックは削除完了
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+      margin: const EdgeInsets.symmetric(
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.xs,
+      ),
       elevation: 0,
       color: cardColor,
       shape: RoundedRectangleBorder(
@@ -1641,7 +1661,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                     const SizedBox(width: AppSpacing.md),
                     _buildPointBox(redPts, rWin, true, isDark),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                      ),
                       child: Text(
                         isDraw ? '✕' : '-',
                         style: TextStyle(

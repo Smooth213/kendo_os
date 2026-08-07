@@ -139,7 +139,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 color: headerTextColor,
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.sm),
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.sm,
+                  horizontal: AppSpacing.sm,
+                ),
                 child: ElevatedButton.icon(
                   onPressed: () => context.go('/'),
 
@@ -161,7 +164,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                         ? Colors.white.withValues(alpha: 0.15)
                         : Colors.indigo.shade50,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: AppRadius.round,
                     ),
@@ -567,7 +572,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
                               const SizedBox(height: AppSpacing.xxl),
                               const Padding(
-                                padding: EdgeInsets.only(left: AppSpacing.sm, bottom: AppSpacing.md),
+                                padding: EdgeInsets.only(
+                                  left: AppSpacing.sm,
+                                  bottom: AppSpacing.md,
+                                ),
                                 child: Text(
                                   '▼ 対戦カード別 スコア詳細',
                                   style: TextStyle(
@@ -581,7 +589,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                               // 2. 詳細スコアの表示（個人戦なら中枠なしの一括リスト）
                               if (isIndiv)
                                 Padding(
-                                  padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+                                  padding: const EdgeInsets.only(
+                                    bottom: AppSpacing.xl,
+                                  ),
                                   child: _buildIndividualMatchesList(
                                     '対戦スコア詳細',
                                     normalMatches,
@@ -595,7 +605,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 ...matchupOrder.map((matchupName) {
                                   final bouts = boutsByMatchup[matchupName]!;
                                   return Padding(
-                                    padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+                                    padding: const EdgeInsets.only(
+                                      bottom: AppSpacing.xl,
+                                    ),
                                     child: _buildScoreTable(
                                       matchupName,
                                       bouts,
@@ -609,7 +621,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                               if (tieBouts.isNotEmpty) ...[
                                 const SizedBox(height: AppSpacing.lg),
                                 const Padding(
-                                  padding: EdgeInsets.only(left: AppSpacing.sm, bottom: AppSpacing.sm),
+                                  padding: EdgeInsets.only(
+                                    left: AppSpacing.sm,
+                                    bottom: AppSpacing.sm,
+                                  ),
                                   child: Text(
                                     '▼ 順位決定戦',
                                     style: TextStyle(
@@ -621,7 +636,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 ),
                                 if (isIndiv)
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                                    padding: const EdgeInsets.only(
+                                      bottom: AppSpacing.lg,
+                                    ),
                                     child: _buildIndividualMatchesList(
                                       '順位決定戦',
                                       tieBouts,
@@ -717,7 +734,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         icon: Icon(icon, size: 16),
         label: Text(
           label,
-          style: const TextStyle(fontWeight: AppFontWeight.bold, fontSize: AppFontSize.small),
+          style: const TextStyle(
+            fontWeight: AppFontWeight.bold,
+            fontSize: AppFontSize.small,
+          ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
@@ -1633,7 +1653,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
@@ -1820,7 +1843,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         if (total > 0)
           Text(
             '（計$total試合）',
-            style: const TextStyle(fontSize: AppFontSize.caption, color: Colors.grey),
+            style: const TextStyle(
+              fontSize: AppFontSize.caption,
+              color: Colors.grey,
+            ),
           ),
       ],
     );

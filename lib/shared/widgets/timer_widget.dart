@@ -202,7 +202,10 @@ class TimerWidget extends ConsumerWidget {
               _showTimerEditDialog(context, ref, match);
             },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xs),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl,
+          vertical: AppSpacing.xs,
+        ),
         decoration: BoxDecoration(
           color: timerBgColor,
           borderRadius: AppRadius.full,

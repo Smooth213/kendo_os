@@ -74,7 +74,10 @@ class PdfIndividualList {
       // ページの境界ボックスを突き破って pdf レンダラが無限ループ（Cannot fit some widgets）を起こすのを100%防止します。
       rows.add(
         pw.Container(
-          padding: const pw.EdgeInsets.symmetric(vertical: AppSpacing.xs, horizontal: AppSpacing.xs),
+          padding: const pw.EdgeInsets.symmetric(
+            vertical: AppSpacing.xs,
+            horizontal: AppSpacing.xs,
+          ),
           decoration: const pw.BoxDecoration(
             border: pw.Border(
               bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5),

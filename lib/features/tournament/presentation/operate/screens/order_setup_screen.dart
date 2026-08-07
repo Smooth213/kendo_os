@@ -300,7 +300,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           ].map((filterName) {
                             final isSelected = selectedFilter == filterName;
                             return Padding(
-                              padding: const EdgeInsets.only(right: AppSpacing.sm),
+                              padding: const EdgeInsets.only(
+                                right: AppSpacing.sm,
+                              ),
                               child: AppChoiceChip(
                                 label: Text(filterName),
                                 selected: isSelected,
@@ -322,7 +324,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       children: [
                         ...filteredMaster.map(
                           (p) => Card(
-                            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            margin: const EdgeInsets.only(
+                              bottom: AppSpacing.sm,
+                            ),
                             elevation: 0,
                             color: _themeColors.softAccent,
                             shape: RoundedRectangleBorder(
@@ -456,7 +460,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _themeColors.primaryAccent,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.lg,
+                    ),
                   ),
                   child: const Text(
                     '決定して追加',
@@ -512,7 +518,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _themeColors.primaryAccent,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.lg,
+                    ),
                   ),
                   child: const Text(
                     '決定して追加',
@@ -542,7 +550,10 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: 20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: 20,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [color1, endColor],
@@ -1428,8 +1439,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                             minimumSize: Size.zero,
                                             backgroundColor: Colors.red.shade50,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  AppRadius.sub,
+                                              borderRadius: AppRadius.sub,
                                             ),
                                           ),
                                           icon: const Icon(
@@ -1863,7 +1873,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                         }
                       },
                       color: _themeColors.primaryAccent,
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.lg,
+                      ),
                       icon: Icons.check_circle,
                       label: 'このオーダーで確定して進む',
                       expandContent: false,

@@ -297,7 +297,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                         if (uniqueInProgress.isNotEmpty &&
                             uniqueWaiting.isNotEmpty)
                           const Padding(
-                            padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                            padding: EdgeInsets.symmetric(
+                              vertical: AppSpacing.sm,
+                            ),
                             child: Divider(color: Colors.white24, height: 1),
                           ),
                         if (uniqueWaiting.isNotEmpty)
@@ -503,7 +505,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                             if (ref.watch(isSearchVisibleProvider))
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                                  padding: const EdgeInsets.only(
+                                    right: AppSpacing.sm,
+                                  ),
                                   child: SizedBox(
                                     height: 32,
                                     child: TextField(
@@ -1156,7 +1160,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                 child: Text(
                                                   teamName,
                                                   style: TextStyle(
-                                                    fontSize: AppFontSize.headline,
+                                                    fontSize:
+                                                        AppFontSize.headline,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: isDark
@@ -1211,7 +1216,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                     Text(
                                                       label,
                                                       style: TextStyle(
-                                                        fontSize: AppFontSize.bodySmall,
+                                                        fontSize: AppFontSize
+                                                            .bodySmall,
                                                         fontWeight:
                                                             AppFontWeight.bold,
                                                         color: isDark
@@ -1308,7 +1314,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                   child: Container(
                                                     margin:
                                                         const EdgeInsets.symmetric(
-                                                          horizontal: AppSpacing.md,
+                                                          horizontal:
+                                                              AppSpacing.md,
                                                           vertical: 6,
                                                         ),
                                                     decoration: BoxDecoration(
@@ -1397,7 +1404,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       },
                                                                       style: OutlinedButton.styleFrom(
                                                                         padding: const EdgeInsets.symmetric(
-                                                                          horizontal: AppSpacing.sm,
+                                                                          horizontal:
+                                                                              AppSpacing.sm,
                                                                         ),
                                                                         side: BorderSide(
                                                                           color: titleColor.withValues(
@@ -1415,7 +1423,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       child: Text(
                                                                         'スコア',
                                                                         style: TextStyle(
-                                                                          fontSize: AppFontSize.badge,
+                                                                          fontSize:
+                                                                              AppFontSize.badge,
                                                                           fontWeight:
                                                                               AppFontWeight.bold,
                                                                           color:
@@ -1464,7 +1473,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                               ? '終了'
                                                                               : '待機中'),
                                                                     style: TextStyle(
-                                                                      fontSize: AppFontSize.badge,
+                                                                      fontSize:
+                                                                          AppFontSize
+                                                                              .badge,
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold,
@@ -1499,7 +1510,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                   firstMatch
                                                                       .note,
                                                                   style: TextStyle(
-                                                                    fontSize: AppFontSize.caption,
+                                                                    fontSize:
+                                                                        AppFontSize
+                                                                            .caption,
                                                                     color:
                                                                         subTitleColor,
                                                                     fontWeight:
@@ -1528,7 +1541,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                             ownTeams,
                                                                           ),
                                                                           style: TextStyle(
-                                                                            fontSize: AppFontSize.bodySmall,
+                                                                            fontSize:
+                                                                                AppFontSize.bodySmall,
                                                                             fontWeight:
                                                                                 AppFontWeight.bold,
                                                                             color:
@@ -1628,7 +1642,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       child: Text(
                                                                         showLeftTeam,
                                                                         style: TextStyle(
-                                                                          fontSize: AppFontSize.bodyMedium,
+                                                                          fontSize:
+                                                                              AppFontSize.bodyMedium,
                                                                           fontWeight:
                                                                               showLeftOwn
                                                                               ? FontWeight.w900
@@ -1646,7 +1661,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     ),
                                                                     Padding(
                                                                       padding: const EdgeInsets.symmetric(
-                                                                        horizontal: AppSpacing.lg,
+                                                                        horizontal:
+                                                                            AppSpacing.lg,
                                                                       ),
                                                                       child: Row(
                                                                         mainAxisSize:
@@ -1710,7 +1726,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       child: Text(
                                                                         showRightTeam,
                                                                         style: TextStyle(
-                                                                          fontSize: AppFontSize.bodyMedium,
+                                                                          fontSize:
+                                                                              AppFontSize.bodyMedium,
                                                                           fontWeight:
                                                                               showRightOwn
                                                                               ? FontWeight.w900
@@ -1737,7 +1754,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                           style: TextStyle(
                                                             color:
                                                                 subTitleColor,
-                                                            fontSize: AppFontSize.small,
+                                                            fontSize:
+                                                                AppFontSize
+                                                                    .small,
                                                           ),
                                                         ),
                                                         children: (() {
@@ -1884,8 +1903,12 @@ class ViewerHomeScreen extends ConsumerWidget {
 
                                                                   return Container(
                                                                     margin: const EdgeInsets.symmetric(
-                                                                      horizontal: AppSpacing.sm,
-                                                                      vertical: AppSpacing.xs,
+                                                                      horizontal:
+                                                                          AppSpacing
+                                                                              .sm,
+                                                                      vertical:
+                                                                          AppSpacing
+                                                                              .xs,
                                                                     ),
                                                                     decoration: BoxDecoration(
                                                                       borderRadius:
@@ -2265,7 +2288,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold,
-                                                                    fontSize: AppFontSize.small,
+                                                                    fontSize:
+                                                                        AppFontSize
+                                                                            .small,
                                                                     color: Colors
                                                                         .orange,
                                                                   ),
@@ -2323,7 +2348,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                       ? '抽出された個別試合'
                                                       : '個人戦',
                                                   style: TextStyle(
-                                                    fontSize: AppFontSize.bodySmall,
+                                                    fontSize:
+                                                        AppFontSize.bodySmall,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color:
@@ -2446,7 +2472,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                             : Colors
                                                                   .orange
                                                                   .shade800,
-                                                        fontSize: AppFontSize.small,
+                                                        fontSize:
+                                                            AppFontSize.small,
                                                         fontWeight:
                                                             AppFontWeight.bold,
                                                       ),
@@ -2457,7 +2484,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                     style: TextStyle(
                                                       fontWeight:
                                                           AppFontWeight.bold,
-                                                      fontSize: AppFontSize.bodyMedium,
+                                                      fontSize: AppFontSize
+                                                          .bodyMedium,
                                                       color: pTitleColor,
                                                     ),
                                                   ),
@@ -2466,7 +2494,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                       Text(
                                                         '$label • ${playerMatches.length}試合',
                                                         style: TextStyle(
-                                                          fontSize: AppFontSize.small,
+                                                          fontSize:
+                                                              AppFontSize.small,
                                                           color: pSubTitleColor,
                                                         ),
                                                       ),
@@ -2505,7 +2534,9 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                     ? '終了'
                                                                     : '待機中'),
                                                           style: TextStyle(
-                                                            fontSize: AppFontSize.badge,
+                                                            fontSize:
+                                                                AppFontSize
+                                                                    .badge,
                                                             fontWeight:
                                                                 AppFontWeight
                                                                     .bold,
@@ -2598,7 +2629,10 @@ class ViewerHomeScreen extends ConsumerWidget {
     final noteBgColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade50;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.medium,
@@ -2652,7 +2686,10 @@ class ViewerHomeScreen extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   DateFormat('yyyy年MM月dd日').format(tournament.date),
-                  style: TextStyle(color: subTextColor, fontSize: AppFontSize.bodySmall),
+                  style: TextStyle(
+                    color: subTextColor,
+                    fontSize: AppFontSize.bodySmall,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.lg),
                 Icon(Icons.location_on, color: Colors.grey.shade500, size: 16),
@@ -2660,7 +2697,10 @@ class ViewerHomeScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     tournament.venue,
-                    style: TextStyle(color: subTextColor, fontSize: AppFontSize.bodySmall),
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: AppFontSize.bodySmall,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -2677,7 +2717,10 @@ class ViewerHomeScreen extends ConsumerWidget {
                 ),
                 child: Text(
                   tournament.notes,
-                  style: TextStyle(color: textColor, fontSize: AppFontSize.bodySmall),
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: AppFontSize.bodySmall,
+                  ),
                 ),
               ),
             ],
@@ -2855,7 +2898,9 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                             context.push('/viewer-team/$encodedGroupName');
                           },
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                            ),
                             side: BorderSide(
                               color: textC.withValues(alpha: 0.2),
                             ),
@@ -3029,7 +3074,9 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                           ),
                           if (!hasValidPoints)
                             const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppSpacing.lg,
+                              ),
                               child: SizedBox(width: AppSpacing.md),
                             )
                           else
@@ -3464,7 +3511,12 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
     final notifier = ref.read(settingsProvider.notifier);
 
     return Container(
-      padding: const EdgeInsets.only(top: AppSpacing.sm, left: AppSpacing.xl, right: AppSpacing.xl, bottom: 32),
+      padding: const EdgeInsets.only(
+        top: AppSpacing.sm,
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
+        bottom: 32,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),

@@ -632,7 +632,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                               : Text(
                                                   'VS',
                                                   style: TextStyle(
-                                                    fontSize: AppFontSize.subhead,
+                                                    fontSize:
+                                                        AppFontSize.subhead,
                                                     fontWeight:
                                                         AppFontWeight.bold,
                                                     color: textC,
@@ -1510,7 +1511,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               itemBuilder: (itemCtx, index) {
                                 final p = filtered[index];
                                 return Card(
-                                  margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                                  margin: const EdgeInsets.only(
+                                    bottom: AppSpacing.sm,
+                                  ),
                                   color: isDark
                                       ? const Color(0xFF2C2C2E)
                                       : Colors.grey.shade50,

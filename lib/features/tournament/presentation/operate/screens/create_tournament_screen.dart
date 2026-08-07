@@ -114,7 +114,10 @@ class _CreateTournamentScreenState
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: 20),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: 20,
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [gradientColor, endColor],
@@ -246,7 +249,10 @@ class _CreateTournamentScreenState
             labelText: '大会名',
             labelStyle: const TextStyle(color: Colors.grey),
             hintText: '例：第1回 〇〇剣道大会',
-            hintStyle: TextStyle(color: hintColor, fontSize: AppFontSize.bodySmall),
+            hintStyle: TextStyle(
+              color: hintColor,
+              fontSize: AppFontSize.bodySmall,
+            ),
             prefixIcon: const Icon(Icons.emoji_events, color: Colors.amber),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
@@ -328,7 +334,10 @@ class _CreateTournamentScreenState
             labelText: '会場・住所',
             labelStyle: const TextStyle(color: Colors.grey),
             hintText: '例：〇〇県立武道館',
-            hintStyle: TextStyle(color: hintColor, fontSize: AppFontSize.bodySmall),
+            hintStyle: TextStyle(
+              color: hintColor,
+              fontSize: AppFontSize.bodySmall,
+            ),
             prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
             suffixIcon: IconButton(
               icon: const Icon(Icons.map, color: Colors.blue),
@@ -360,7 +369,10 @@ class _CreateTournamentScreenState
             labelText: '大会メモ（任意）',
             labelStyle: const TextStyle(color: Colors.grey),
             hintText: '例：駐車場は第2駐車場を利用。\n開場は8:30〜。',
-            hintStyle: TextStyle(color: hintColor, fontSize: AppFontSize.bodySmall),
+            hintStyle: TextStyle(
+              color: hintColor,
+              fontSize: AppFontSize.bodySmall,
+            ),
             prefixIcon: const Icon(Icons.note_alt, color: Colors.grey),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,

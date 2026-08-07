@@ -110,7 +110,10 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Text(
                 ':',
-                style: TextStyle(fontSize: AppFontSize.display, fontWeight: AppFontWeight.bold),
+                style: TextStyle(
+                  fontSize: AppFontSize.display,
+                  fontWeight: AppFontWeight.bold,
+                ),
               ),
             ),
             Expanded(

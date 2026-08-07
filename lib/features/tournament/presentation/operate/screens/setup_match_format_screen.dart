@@ -341,7 +341,10 @@ class _SetupMatchFormatScreenState
                     ),
                   ),
                   const Padding(
-                    padding: EdgeInsets.only(top: AppSpacing.lg, left: AppSpacing.xl),
+                    padding: EdgeInsets.only(
+                      top: AppSpacing.lg,
+                      left: AppSpacing.xl,
+                    ),
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -643,14 +646,23 @@ class _SetupMatchFormatScreenState
   }) {
     return InputDecoration(
       labelText: labelText,
-      labelStyle: TextStyle(color: _themeColors.subTextColor, fontSize: AppFontSize.bodySmall),
+      labelStyle: TextStyle(
+        color: _themeColors.subTextColor,
+        fontSize: AppFontSize.bodySmall,
+      ),
       hintText: hintText,
-      hintStyle: TextStyle(color: _themeColors.hintColor, fontSize: AppFontSize.bodyMedium),
+      hintStyle: TextStyle(
+        color: _themeColors.hintColor,
+        fontSize: AppFontSize.bodyMedium,
+      ),
       suffixText: suffixText,
       suffixStyle: TextStyle(color: _themeColors.subTextColor),
       prefixIcon: prefixIcon,
       isDense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
       filled: true,
       fillColor: _themeColors.inputBackground,
       border: OutlineInputBorder(borderRadius: AppRadius.medium),
@@ -687,7 +699,10 @@ class _SetupMatchFormatScreenState
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: 20),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: 20,
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [gradientColor, endColor],
@@ -1112,7 +1127,10 @@ class _SetupMatchFormatScreenState
 
     return ListView(
       // ★ Phase 8-2: 余白のないページ（2ページ目以降）に合わせるため、パディングを調整
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xl),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xl,
+      ),
       children: [
         Text(
           '対象のカテゴリと\n自チームを選んでください',
@@ -1240,7 +1258,9 @@ class _SetupMatchFormatScreenState
                 ),
                 style: TextButton.styleFrom(
                   foregroundColor: _themeColors.primaryAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                  ),
                 ),
               ),
             ),
@@ -1362,7 +1382,9 @@ class _SetupMatchFormatScreenState
                               ),
                             ),
                             subtitle: Padding(
-                              padding: const EdgeInsets.only(top: AppSpacing.xs),
+                              padding: const EdgeInsets.only(
+                                top: AppSpacing.xs,
+                              ),
                               child: Text(
                                 '${team.matchType} / 選手: ${team.playerNames.where((n) => n.isNotEmpty).join(", ")}',
                                 style: TextStyle(
@@ -1860,7 +1882,9 @@ class _SetupMatchFormatScreenState
                         ),
                       ),
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                        ),
                         visualDensity: VisualDensity.compact,
                       ),
                       onPressed: () {

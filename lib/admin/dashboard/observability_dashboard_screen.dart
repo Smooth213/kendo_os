@@ -35,7 +35,10 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                 padding: EdgeInsets.only(bottom: AppSpacing.xl),
                 child: Text(
                   'リアルタイムのシステム健康状態（メトリクス）を表示しています。異常値が検出された場合、自動でCRITICALアラートが発行されます。',
-                  style: TextStyle(fontSize: AppFontSize.bodySmall, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: AppFontSize.bodySmall,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
               _buildMetricCard(

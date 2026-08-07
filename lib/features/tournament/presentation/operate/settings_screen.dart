@@ -548,7 +548,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildSectionHeader(BuildContext context, String title) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(left: AppSpacing.lg, bottom: AppSpacing.sm, top: AppSpacing.md),
+      padding: const EdgeInsets.only(
+        left: AppSpacing.lg,
+        bottom: AppSpacing.sm,
+        top: AppSpacing.md,
+      ),
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
@@ -609,7 +613,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildSectionFooter(BuildContext context, String text) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(left: AppSpacing.lg, right: AppSpacing.lg, top: AppSpacing.sm, bottom: AppSpacing.sm),
+      padding: const EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.sm,
+        bottom: AppSpacing.sm,
+      ),
       child: Text(
         text,
         style: TextStyle(
@@ -634,7 +643,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final Color dynamicTextColor = isDark ? Colors.white : Colors.black;
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xs,
+      ),
       leading: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
