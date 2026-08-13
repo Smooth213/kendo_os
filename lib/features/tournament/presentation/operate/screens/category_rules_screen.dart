@@ -791,11 +791,11 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '💡 定番の部門をワンタップで追加',
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
-                    color: AppKendoColors.grey,
+                    color: context.appColors.subTextColor,
                     fontSize: AppFontSize.small,
                   ),
                 ),
@@ -919,7 +919,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                                       ).withValues(alpha: 0.65))
                               : (isDark
                                     ? const Color(0xFF1C1C1E)
-                                    : context.appColors.textColor),
+                                    : context.appColors.cardBackground),
                           child: ListTile(
                             onTap: () => _showRuleDetailBottomSheet(
                               context,
@@ -1029,7 +1029,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0xFF2C2C2E)
-                  : context.appColors.textColor,
+                  : context.appColors.inputBackground,
               borderRadius: AppRadius.xlarge,
               border: Border.all(
                 color: isDark
@@ -1272,7 +1272,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         style: TextStyle(
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.bodySmall,
-                          color: AppKendoColors.ipponGold,
+                          color: Color(0xFFD97706),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -1619,7 +1619,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             style: TextStyle(
               fontSize: AppFontSize.caption,
               fontWeight: AppFontWeight.bold,
-              color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
             ),
           ),
         ),
@@ -3005,6 +3005,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
   }
 
   Widget _buildRuleChips(CategoryRuleSet ruleSet) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final timeChipBg = isDark
+        ? const Color(0x33FFFFFF)
+        : const Color(0x1F000000);
+    final timeChipText = isDark
+        ? AppKendoColors.pureWhite
+        : AppKendoColors.pureBlack;
+
     Widget buildChip(String label, Color bg, Color text) {
       return Container(
         margin: const EdgeInsets.only(right: 6, top: AppSpacing.xs),
@@ -3035,24 +3043,24 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               buildChip(
                 '⚔️ 錬成会',
                 AppKendoColors.ipponGold,
-                AppKendoColors.ipponGold,
+                AppKendoColors.pureBlack,
               ),
               buildChip(
                 _formatMinutes(ruleSet.renseikaiRule.matchTimeMinutes),
-                const Color(0x33000000),
-                AppKendoColors.pureBlack,
+                timeChipBg,
+                timeChipText,
               ),
               if (ruleSet.renseikaiRule.isRunningTime)
                 buildChip(
                   '流し',
                   const Color(0xFF2196F3),
-                  const Color(0xFF2196F3),
+                  AppKendoColors.pureWhite,
                 ),
               if (ruleSet.renseikaiRule.hasHantei)
                 buildChip(
                   '引分有',
                   AppKendoColors.successGreen,
-                  AppKendoColors.successGreen,
+                  AppKendoColors.pureWhite,
                 ),
             ],
           ),
@@ -3063,19 +3071,19 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               buildChip(
                 '🏆 本戦',
                 const Color(0xFF3F51B5),
-                const Color(0xFF3F51B5),
+                AppKendoColors.pureWhite,
               ),
               buildChip(
                 _formatMinutes(ruleSet.normalRule.matchTimeMinutes),
-                const Color(0x33000000),
-                AppKendoColors.pureBlack,
+                timeChipBg,
+                timeChipText,
               ),
               if (ruleSet.normalRule.isEnchoUnlimited ||
                   ruleSet.normalRule.enchoCount > 0)
                 buildChip(
                   '代表戦/延長有',
                   const Color(0xFF9C27B0),
-                  const Color(0xFF9C27B0),
+                  AppKendoColors.pureWhite,
                 ),
             ],
           ),
@@ -3086,18 +3094,18 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               buildChip(
                 '🤝 申し合わせ',
                 const Color(0xFF009688),
-                const Color(0xFF009688),
+                AppKendoColors.pureWhite,
               ),
               buildChip(
                 _formatMinutes(ruleSet.moushiawaseRule.matchTimeMinutes),
-                const Color(0x33000000),
-                AppKendoColors.pureBlack,
+                timeChipBg,
+                timeChipText,
               ),
               if (ruleSet.moushiawaseRule.hasHantei)
                 buildChip(
                   '引分有',
                   AppKendoColors.successGreen,
-                  AppKendoColors.successGreen,
+                  AppKendoColors.pureWhite,
                 ),
             ],
           ),
@@ -3115,25 +3123,25 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             buildChip(
               '標準ルール',
               const Color(0xFF2196F3),
-              const Color(0xFF2196F3),
+              AppKendoColors.pureWhite,
             ),
             buildChip(
               _formatMinutes(ruleSet.normalRule.matchTimeMinutes),
-              const Color(0x33000000),
-              AppKendoColors.pureBlack,
+              timeChipBg,
+              timeChipText,
             ),
             buildChip(
               ruleSet.normalRule.enchoCount > 0
                   ? "延長${ruleSet.normalRule.enchoCount}回"
                   : (ruleSet.normalRule.isEnchoUnlimited ? "延長無制限" : "延長なし"),
               const Color(0xFF9C27B0),
-              const Color(0xFF9C27B0),
+              AppKendoColors.pureWhite,
             ),
             if (ruleSet.normalRule.hasHantei)
               buildChip(
                 '判定あり',
                 AppKendoColors.successGreen,
-                AppKendoColors.successGreen,
+                AppKendoColors.pureWhite,
               ),
           ],
         ),
@@ -3146,12 +3154,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 buildChip(
                   '上位戦',
                   const Color(0xFFFF5722),
-                  const Color(0xFFFF5722),
+                  AppKendoColors.pureWhite,
                 ),
                 buildChip(
                   _formatMinutes(ruleSet.advancedRule.matchTimeMinutes),
-                  const Color(0x33000000),
-                  AppKendoColors.pureBlack,
+                  timeChipBg,
+                  timeChipText,
                 ),
                 buildChip(
                   ruleSet.advancedRule.enchoCount > 0

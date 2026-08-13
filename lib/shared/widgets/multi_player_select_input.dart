@@ -379,14 +379,14 @@ class _MultiPlayerSelectInputState
           borderRadius: AppRadius.small,
           borderSide: BorderSide(
             color: isDark
-                ? context.appColors.textColor
+                ? const Color(0xFFFFFFFF)
                 : context.appColors.subTextColor,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.small,
           borderSide: BorderSide(
-            color: isDark ? const Color(0xDE000000) : const Color(0x8A000000),
+            color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
           ),
         ),
         focusedBorder: OutlineInputBorder(

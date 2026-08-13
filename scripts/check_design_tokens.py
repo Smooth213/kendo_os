@@ -22,6 +22,7 @@ def check_tokens():
     raw_textfields = 0
     raw_font_weights = 0
     raw_isdark_branches = 0
+    raw_contrast_issues = 0
 
     for f in files:
         with open(f, 'r', encoding='utf-8') as file:
@@ -69,9 +70,14 @@ def check_tokens():
             if filename != 'app_tokens.dart' and '/pdf/' not in rel_path:
                 raw_font_weights += len(re.findall(r'(?<!App)FontWeight\.(bold|normal|w\d{3})', content))
 
-            # 11. Manual isDark color branches (bypassing AppThemeColors)
+            # 11. Manual isDark color branches for theme colors (bypassing AppThemeColors)
             if filename != 'theme_color_extensions.dart':
-                raw_isdark_branches += len(re.findall(r'isDark\s*\?\s*[^;\n]*AppKendoColors[^;\n]*:', content))
+                raw_isdark_branches += len(re.findall(r'color\s*:\s*isDark\s*\?\s*AppKendoColors\.[^;\n]*:', content))
+
+            # 12. Contrast & inverted background color issues (using textColor as background color)
+            if '/pdf/' not in rel_path:
+                # Find lines where card/button/container background is assigned textColor instead of cardBackground/inputBackground
+                raw_contrast_issues += len(re.findall(r'(backgroundColor|fillColor|surfaceTintColor|cardColor)\s*:\s*[^;\n]*isDark\s*\?\s*[^;\n]+\s*:\s*(context\.appColors\.)?textColor\b', content))
 
     print("==================================================")
     print(" 📊 kendo OS デザインシステム 監査レポート")
@@ -87,10 +93,11 @@ def check_tokens():
     print(f" 9. 生 TextField 呼び出し件数: {raw_textfields} 件")
     print(f"10. 生 FontWeight 参照件数: {raw_font_weights} 件")
     print(f"11. 手動 isDark 色分岐件数: {raw_isdark_branches} 件")
+    print(f"12. 背景色テキスト色反転・破綻件数: {raw_contrast_issues} 件")
     total_issues = (raw_appbars + raw_snackbars_colors + raw_border_radius + 
                     raw_edge_insets + raw_font_size + raw_colors + 
                     raw_kendo_shades + raw_direct_show_dialog + raw_textfields + 
-                    raw_font_weights + raw_isdark_branches)
+                    raw_font_weights + raw_isdark_branches + raw_contrast_issues)
     print("--------------------------------------------------")
     print(f" 🔴 残存問題 総数: {total_issues} 件")
     print("==================================================")

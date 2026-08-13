@@ -342,7 +342,7 @@ class _MasterManagementScreenState
                                 fontSize: AppFontSize.bodySmall,
                                 fontWeight: AppFontWeight.semiBold,
                                 color: isDark
-                                    ? const Color(0x8A000000)
+                                    ? const Color(0xFFFFFFFF)
                                     : const Color(0x8A000000),
                                 letterSpacing: 0.5,
                               ),
@@ -580,7 +580,7 @@ class _MasterManagementScreenState
                             '${player.nameKana} ',
                             style: TextStyle(
                               color: isDark
-                                  ? const Color(0x8A000000)
+                                  ? const Color(0xFFFFFFFF)
                                   : const Color(0x8A000000),
                               fontSize: AppFontSize.caption,
                             ),
@@ -589,7 +589,7 @@ class _MasterManagementScreenState
                           '${player.gradeName} / ${player.gender}',
                           style: TextStyle(
                             color: isDark
-                                ? const Color(0x8A000000)
+                                ? const Color(0xFFFFFFFF)
                                 : const Color(0x8A000000),
                             fontSize: AppFontSize.caption,
                           ),
@@ -813,7 +813,7 @@ class _MasterManagementScreenState
                       height: 5,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xDE000000)
+                            ? const Color(0xFFFFFFFF)
                             : const Color(0x33000000),
                         borderRadius: AppRadius.medium,
                       ),
@@ -944,7 +944,7 @@ class _MasterManagementScreenState
                               : Icon(
                                   Icons.person,
                                   color: isDark
-                                      ? const Color(0x8A000000)
+                                      ? const Color(0xFFFFFFFF)
                                       : AppKendoColors.grey,
                                 ),
                           isDense: isKeyboardVisible,
@@ -998,7 +998,7 @@ class _MasterManagementScreenState
                     fontSize: AppFontSize.bodySmall,
                     fontWeight: AppFontWeight.bold,
                     color: isDark
-                        ? const Color(0x8A000000)
+                        ? const Color(0xFFFFFFFF)
                         : AppKendoColors.grey,
                   ),
                 ),
@@ -1040,7 +1040,7 @@ class _MasterManagementScreenState
                     prefixIcon: Icon(
                       Icons.school,
                       color: isDark
-                          ? const Color(0x8A000000)
+                          ? const Color(0xFFFFFFFF)
                           : AppKendoColors.grey,
                     ),
                     border: OutlineInputBorder(borderRadius: AppRadius.medium),
@@ -1228,7 +1228,7 @@ class _MasterManagementScreenState
                       height: 5,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xDE000000)
+                            ? const Color(0xFFFFFFFF)
                             : const Color(0x33000000),
                         borderRadius: AppRadius.medium,
                       ),
@@ -1263,7 +1263,7 @@ class _MasterManagementScreenState
                       prefixIcon: Icon(
                         Icons.account_balance,
                         color: isDark
-                            ? const Color(0x8A000000)
+                            ? const Color(0xFFFFFFFF)
                             : AppKendoColors.grey,
                       ),
                       border: OutlineInputBorder(
@@ -1406,7 +1406,7 @@ class _MasterManagementScreenState
           color: isSel
               ? color
               : (isDark
-                    ? context.appColors.textColor
+                    ? const Color(0xFFFFFFFF)
                     : context.appColors.separatorColor),
           width: isSel ? 2 : 1,
         ),

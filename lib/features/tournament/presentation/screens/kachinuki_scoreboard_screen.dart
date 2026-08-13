@@ -170,7 +170,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               label,
               style: TextStyle(
                 color: isDark
-                    ? const Color(0x8A000000)
+                    ? const Color(0xFFFFFFFF)
                     : const Color(0x8A000000),
                 fontSize: AppFontSize.bodySmall,
               ),
@@ -313,7 +313,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: AppFontSize.small,
                   fontWeight: AppFontWeight.bold,
-                  color: isDark ? const Color(0x8A000000) : AppKendoColors.grey,
+                  color: isDark ? const Color(0xFFFFFFFF) : AppKendoColors.grey,
                   letterSpacing: 2,
                 ),
               ),
@@ -527,7 +527,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
             style: TextStyle(
               fontSize: AppFontSize.caption,
               fontWeight: AppFontWeight.bold,
-              color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -672,7 +672,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                               '-',
                               style: TextStyle(
                                 color: isDark
-                                    ? const Color(0x8A000000)
+                                    ? const Color(0xFFFFFFFF)
                                     : AppKendoColors.grey,
                                 fontWeight: AppFontWeight.bold,
                               ),
@@ -817,7 +817,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
                   fontSize: AppFontSize.badge,
                   fontWeight: AppFontWeight.bold,
                   color: isDark
-                      ? const Color(0x8A000000)
+                      ? const Color(0xFFFFFFFF)
                       : const Color(0xFF000000).withValues(alpha: 0.54),
                 ),
               ),
@@ -838,7 +838,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: pts.map((p) {
         final textColor = isFaded
-            ? (isDark ? const Color(0xDE000000) : const Color(0x8A000000))
+            ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
             : color;
         if (p.isFirstMatchPoint && p.mark != '◯') {
           return Container(
@@ -988,11 +988,11 @@ class KachinukiBracketPainter extends CustomPainter {
         ? const Color(0xFF3F51B5)
         : const Color(0xFF3F51B5);
     final Color baseLineColor = isDark
-        ? const Color(0xDE000000)
+        ? const Color(0xFFFFFFFF)
         : const Color(0x33000000);
     // ★ 修正2：引き分けの対戦線を濃いグレーに
     final Color drawLineColor = isDark
-        ? const Color(0x8A000000)
+        ? const Color(0xFFFFFFFF)
         : const Color(0x8A000000);
     final Color drawCrossColor = isDark
         ? const Color(0xFFD4AF37)
@@ -1296,7 +1296,7 @@ class KachinukiBracketPainter extends CustomPainter {
     final bgPaint = Paint()
       ..color = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF);
     final borderPaint = Paint()
-      ..color = isDark ? const Color(0xDE000000) : const Color(0x8A000000)
+      ..color = isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
@@ -1311,7 +1311,7 @@ class KachinukiBracketPainter extends CustomPainter {
     );
 
     final textStyle = TextStyle(
-      color: isDark ? const Color(0x33000000) : const Color(0xFF000000),
+      color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
       fontSize: AppFontSize.nano,
       fontWeight: AppFontWeight.bold,
       fontFamily: 'Noto Sans JP',
@@ -1397,7 +1397,7 @@ class KachinukiBracketPainter extends CustomPainter {
           text: span.initial,
           style: textStyle.copyWith(
             fontSize: fontSize * 0.65,
-            color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+            color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
           ),
         ),
         textDirection: TextDirection.ltr,

@@ -162,7 +162,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     final decodedGroupName = safeDecodeComponent(groupName);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
 
     String? tournamentId;
@@ -457,13 +457,13 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '白',
           isH: true,
-          color: isDark ? const Color(0x33000000) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
           fs: 14,
         ),
         _cell(
           w,
           isH: true,
-          color: isDark ? const Color(0x33000000) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
           fs: 16,
         ),
       ],
@@ -553,7 +553,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         : const Color(0xFFE53935);
     final matchTypeColor = isDaihyo
         ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
-        : (isDark ? const Color(0x33000000) : const Color(0xDE000000));
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xDE000000));
 
     return TableRow(
       decoration: isDaihyo ? BoxDecoration(color: daihyoBgColor) : null,
@@ -616,7 +616,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
   ) {
     final color = isRed
         ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
-        : (isDark ? const Color(0x33000000) : const Color(0xFF607D8B));
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
 
     final isFusen = pts.contains('◯');
     final isThisSideFirst = firstSide == (isRed ? 'red' : 'white');
@@ -840,7 +840,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '${result.whiteWins} / ${result.whitePoints}',
           isH: true,
-          color: isDark ? const Color(0x8A000000) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
           fs: 18,
         ),
       ],

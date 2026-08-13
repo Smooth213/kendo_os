@@ -1076,7 +1076,7 @@ class _TeamRegistrationScreenState
                           fontWeight: AppFontWeight.bold,
                           color: _tempSelectedPlayers[index] == null
                               ? (isDark
-                                    ? const Color(0x8A000000)
+                                    ? const Color(0xFFFFFFFF)
                                     : const Color(0x8A000000))
                               : textColor,
                         ),
@@ -1239,7 +1239,7 @@ class _TeamRegistrationScreenState
                 style: TextStyle(
                   height: 1.5,
                   color: isDark
-                      ? const Color(0x33000000)
+                      ? const Color(0xFFFFFFFF)
                       : const Color(0xDE000000),
                 ),
               ),
@@ -1279,7 +1279,7 @@ class _TeamRegistrationScreenState
                           '${t.matchType} / 選手: ${t.playerNames.where((n) => n.isNotEmpty).join(", ")}',
                           style: TextStyle(
                             color: isDark
-                                ? const Color(0x8A000000)
+                                ? const Color(0xFFFFFFFF)
                                 : const Color(0x8A000000),
                           ),
                         ),

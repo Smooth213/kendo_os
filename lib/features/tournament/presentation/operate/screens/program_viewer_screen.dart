@@ -380,7 +380,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         appBar: AppHeader(
           backgroundColor: isDark
               ? const Color(0xFF1C1C1E)
-              : context.appColors.textColor,
+              : context.appColors.cardBackground,
           foregroundColor: context.appColors.textColor,
           elevation: _isDrawingMode ? 0 : 1,
           titleWidget: _isSearchMode
@@ -678,7 +678,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             height: 20,
                             width: 1,
                             color: isDark
-                                ? const Color(0xDE000000)
+                                ? const Color(0xFFFFFFFF)
                                 : const Color(0xFF607D8B),
                             margin: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.xs,
@@ -726,7 +726,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             icon: Icon(
                               Icons.delete_sweep,
                               color: isDark
-                                  ? const Color(0x8A000000)
+                                  ? const Color(0xFFFFFFFF)
                                   : const Color(0xFF607D8B),
                             ),
                             tooltip: 'すべて消す',
@@ -1287,8 +1287,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isDark ? const Color(0xDE000000) : const Color(0xFFFFFFFF))
-                : Colors.transparent,
+                ? (isDark ? const Color(0xFFFFFFFF) : const Color(0xFFFFFFFF))
+                : AppKendoColors.transparent,
             borderRadius: AppRadius.sub,
             boxShadow: isSelected
                 ? [

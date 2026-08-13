@@ -38,7 +38,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
     final headerTextColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
 
     // ★ 運営側プロバイダ（tournamentProvider）への依存を完全に遮断し、安全なフォールバック値を適用

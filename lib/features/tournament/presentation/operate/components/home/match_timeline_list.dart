@@ -223,7 +223,7 @@ class MatchTimelineList extends ConsumerWidget {
                     fontSize: AppFontSize.subhead,
                     fontWeight: AppFontWeight.bold,
                     color: isDark
-                        ? const Color(0x8A000000)
+                        ? const Color(0xFFFFFFFF)
                         : const Color(0xDE000000),
                   ),
                 ),
@@ -255,7 +255,7 @@ class MatchTimelineList extends ConsumerWidget {
                           filled: true,
                           fillColor: isDark
                               ? const Color(0xFF2C2C2E)
-                              : context.appColors.textColor,
+                              : context.appColors.inputBackground,
                           border: OutlineInputBorder(
                             borderRadius: AppRadius.small,
                             borderSide: BorderSide(
@@ -467,7 +467,7 @@ class MatchTimelineList extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isDark
-                      ? const Color(0x8A000000)
+                      ? const Color(0xFFFFFFFF)
                       : const Color(0x8A000000),
                   fontWeight: AppFontWeight.bold,
                   height: 1.5,
@@ -1185,7 +1185,7 @@ class MatchTimelineList extends ConsumerWidget {
                                             : (context.appColors.textColor);
                                         final Color subTitleColor = allFinished
                                             ? (isDark
-                                                  ? context.appColors.textColor
+                                                  ? const Color(0xFFFFFFFF)
                                                   : AppKendoColors
                                                         .grey
                                                         .shade500)
@@ -3205,7 +3205,7 @@ class MatchTimelineList extends ConsumerWidget {
                                 : (context.appColors.textColor);
                             final Color pSubTitleColor = pAllFinished
                                 ? (isDark
-                                      ? context.appColors.textColor
+                                      ? const Color(0xFFFFFFFF)
                                       : context.appColors.subTextColor)
                                 : (isDark
                                       ? context.appColors.subTextColor
@@ -3873,7 +3873,7 @@ Widget _buildRuleRow(String label, String value, bool isDark) {
           child: Text(
             label,
             style: TextStyle(
-              color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
               fontSize: AppFontSize.bodySmall,
             ),
           ),
@@ -4658,7 +4658,7 @@ void showUnifiedAnnounceDialog(
           return AppDialog(
             backgroundColor: isDark
                 ? const Color(0xFF1C1C1E)
-                : context.appColors.textColor,
+                : context.appColors.inputBackground,
             shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
             titleWidget: Row(
               children: [
@@ -4898,7 +4898,7 @@ void _showEditCommentDialog(
     builder: (ctx) => AppDialog(
       backgroundColor: isDark
           ? const Color(0xFF1C1C1E)
-          : context.appColors.textColor,
+          : context.appColors.inputBackground,
       titleWidget: Text(
         '見出し（コメント）の編集',
         style: TextStyle(
@@ -5009,7 +5009,7 @@ Widget _buildInnerCommentWidget(
       children: [
         Icon(
           Icons.label_outline,
-          color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
           size: 16,
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -5019,7 +5019,7 @@ Widget _buildInnerCommentWidget(
             style: TextStyle(
               fontSize: AppFontSize.bodySmall,
               fontWeight: AppFontWeight.bold,
-              color: isDark ? const Color(0x33000000) : const Color(0xDE000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0xDE000000),
             ),
           ),
         ),
@@ -5061,7 +5061,7 @@ Widget _buildInnerCommentWidget(
                 builder: (ctx) => AppDialog(
                   backgroundColor: isDark
                       ? const Color(0xFF1C1C1E)
-                      : context.appColors.textColor,
+                      : context.appColors.inputBackground,
                   titleWidget: Text(
                     '内部見出しの削除',
                     style: TextStyle(
@@ -5197,9 +5197,7 @@ class MatchListTileCard extends ConsumerWidget {
               : context.appColors.subTextColor)
         : (context.appColors.textColor);
     final Color noteC = isFinished
-        ? (isDark
-              ? context.appColors.textColor
-              : context.appColors.subTextColor)
+        ? (isDark ? const Color(0xFFFFFFFF) : context.appColors.subTextColor)
         : context.appColors.subTextColor;
 
     // 🛡️ 補正④: 細線独立カードモデリング化の意匠を適用
@@ -5391,7 +5389,7 @@ class MatchListTileCard extends ConsumerWidget {
                                         ? context.appColors.subTextColor
                                         : const Color(0x8A000000))
                                   : (isDark
-                                        ? const Color(0x8A000000)
+                                        ? const Color(0xFFFFFFFF)
                                         : const Color(0xDE000000))),
                       ),
                     ),
@@ -5540,7 +5538,7 @@ class MatchListTileCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.badge,
                                 color: isDark
-                                    ? const Color(0x8A000000)
+                                    ? const Color(0xFFFFFFFF)
                                     : const Color(0x8A000000),
                                 fontWeight: AppFontWeight.medium,
                               ),
@@ -5555,7 +5553,7 @@ class MatchListTileCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.badge,
                                 color: isDark
-                                    ? const Color(0x8A000000)
+                                    ? const Color(0xFFFFFFFF)
                                     : const Color(0x8A000000),
                                 fontWeight: AppFontWeight.medium,
                               ),
@@ -5701,7 +5699,7 @@ class MatchListTileCard extends ConsumerWidget {
                 builder: (ctx) => AppDialog(
                   backgroundColor: isDark
                       ? const Color(0xFF1C1C1E)
-                      : context.appColors.textColor,
+                      : context.appColors.inputBackground,
                   titleWidget: Text(
                     '試合の削除',
                     style: TextStyle(
@@ -6143,7 +6141,7 @@ class _OrderReorderBottomSheetState
                           height: 5,
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xDE000000)
+                                ? const Color(0xFFFFFFFF)
                                 : const Color(0x33000000),
                             borderRadius: AppRadius.medium,
                           ),

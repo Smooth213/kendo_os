@@ -304,7 +304,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xDE000000) : const Color(0x33000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x33000000),
               borderRadius: AppRadius.micro,
             ),
           ),
@@ -445,7 +445,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isDark ? const Color(0xDE000000) : const Color(0x33000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x33000000),
             ),
           ),
           child: Column(
@@ -528,7 +528,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0xFF252527)
-                  : context.appColors.textColor,
+                  : context.appColors.inputBackground,
               borderRadius: AppRadius.medium,
               border: Border.all(color: context.appColors.separatorColor),
             ),
@@ -719,7 +719,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     Icons.info_outline,
                     size: 13,
                     color: isDark
-                        ? const Color(0x8A000000)
+                        ? const Color(0xFFFFFFFF)
                         : const Color(0x8A000000),
                   ),
                   const SizedBox(width: AppSpacing.xs),
@@ -729,7 +729,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       style: TextStyle(
                         fontSize: AppFontSize.caption,
                         color: isDark
-                            ? const Color(0x8A000000)
+                            ? const Color(0xFFFFFFFF)
                             : const Color(0x8A000000),
                       ),
                     ),
@@ -743,7 +743,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,
                   color: isDark
-                      ? const Color(0x33000000)
+                      ? const Color(0xFFFFFFFF)
                       : const Color(0xDE000000),
                 ),
               ),
@@ -771,9 +771,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 style: TextStyle(
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,
-                  color: isDark
-                      ? const Color(0x33000000)
-                      : const Color(0xDE000000),
+                  color: textColor,
                 ),
               ),
               const SizedBox(height: 6),
@@ -970,7 +968,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       fontWeight: AppFontWeight.bold,
                       color: isDark
                           ? const Color(0xFF2196F3)
-                          : const Color(0xFF2196F3),
+                          : AppKendoColors.pureWhite,
                     ),
                   ),
                 ],
@@ -1024,7 +1022,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isDark ? const Color(0xDE000000) : const Color(0x33000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x33000000),
             ),
           ),
           child: Column(
@@ -1168,7 +1166,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           style: TextStyle(
             fontSize: AppFontSize.small,
             fontWeight: AppFontWeight.bold,
-            color: isDark ? const Color(0x8A000000) : const Color(0xDE000000),
+            color: textColor,
           ),
         ),
         const SizedBox(height: 6),
@@ -1179,7 +1177,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
             ),
             filled: true,
             fillColor: isDark
@@ -1193,7 +1191,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark
-                    ? const Color(0xDE000000)
+                    ? const Color(0xFFFFFFFF)
                     : const Color(0x33000000),
               ),
             ),
@@ -1201,7 +1199,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark
-                    ? const Color(0xDE000000)
+                    ? const Color(0xFFFFFFFF)
                     : const Color(0x33000000),
               ),
             ),

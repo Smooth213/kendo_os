@@ -16,7 +16,7 @@ class ViewerKachinukiScoreboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerTextColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
 
     return LiquidBackground(

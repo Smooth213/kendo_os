@@ -40,9 +40,12 @@ class AppChoiceChip extends StatelessWidget {
 
     final effectiveSelectedColor =
         customSelectedColor ?? selectedColor ?? themeColors.softAccent;
+    final unselectedTextColor = isDark
+        ? themeColors.textColor.withValues(alpha: 0.85)
+        : themeColors.subTextColor;
     final effectiveTextColor = selected
         ? (customTextColor ?? themeColors.primaryAccent)
-        : themeColors.subTextColor;
+        : unselectedTextColor;
 
     return ChoiceChip(
       avatar: icon != null
@@ -59,13 +62,15 @@ class AppChoiceChip extends StatelessWidget {
       selected: selected,
       onSelected: onSelected,
       selectedColor: effectiveSelectedColor,
-      backgroundColor: themeColors.inputBackground,
-      side: BorderSide(
-        color: selected
-            ? themeColors.primaryAccent
-            : themeColors.separatorColor,
-        width: 1,
-      ),
+      backgroundColor: backgroundColor ?? themeColors.inputBackground,
+      side:
+          side ??
+          BorderSide(
+            color: selected
+                ? themeColors.primaryAccent
+                : themeColors.separatorColor,
+            width: 1,
+          ),
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
       padding:
           padding ??
@@ -108,6 +113,10 @@ class AppActionChip extends StatelessWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
+    final actionTextColor = isDark
+        ? themeColors.textColor.withValues(alpha: 0.85)
+        : themeColors.subTextColor;
+
     return ActionChip(
       avatar: icon != null
           ? Icon(icon, size: 16, color: iconColor ?? themeColors.primaryAccent)
@@ -116,13 +125,13 @@ class AppActionChip extends StatelessWidget {
         style: TextStyle(
           fontSize: AppFontSize.bodySmall,
           fontWeight: AppFontWeight.regular,
-          color: themeColors.subTextColor,
+          color: actionTextColor,
         ),
         child: label,
       ),
       onPressed: onPressed,
       backgroundColor: backgroundColor ?? themeColors.inputBackground,
-      side: BorderSide(color: themeColors.separatorColor, width: 1),
+      side: side ?? BorderSide(color: themeColors.separatorColor, width: 1),
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
       padding:
           padding ??
@@ -164,9 +173,12 @@ class AppFilterChip extends StatelessWidget {
 
     final effectiveSelectedColor =
         customSelectedColor ?? themeColors.softAccent;
+    final unselectedTextColor = isDark
+        ? themeColors.textColor.withValues(alpha: 0.85)
+        : themeColors.subTextColor;
     final effectiveTextColor = selected
         ? (customTextColor ?? themeColors.primaryAccent)
-        : themeColors.subTextColor;
+        : unselectedTextColor;
 
     return FilterChip(
       avatar: icon != null

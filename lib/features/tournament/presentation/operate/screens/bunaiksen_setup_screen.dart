@@ -107,7 +107,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 keyboardType: TextInputType.number,
                 style: TextStyle(
                   color: isDark
-                      ? context.appColors.textColor
+                      ? const Color(0xFFFFFFFF)
                       : context.appColors.cardBackground,
                 ),
                 decoration: _buildTextFieldDecoration(labelText: '分'),
@@ -706,7 +706,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
           : (isAssigned
                 ? (context.appColors.separatorColor)
                 : (isDark
-                      ? context.appColors.textColor
+                      ? const Color(0xFFFFFFFF)
                       : context.appColors.textColor)),
       side: BorderSide(
         color: isAssigned
@@ -890,7 +890,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             color: candidateData.isNotEmpty
                                 ? AppKendoColors.hansokuRed
                                 : (isDark
-                                      ? context.appColors.textColor
+                                      ? const Color(0xFFFFFFFF)
                                       : context.appColors.textColor),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(
@@ -945,7 +945,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             color: candidateData.isNotEmpty
                                 ? context.appColors.subTextColor
                                 : (isDark
-                                      ? context.appColors.textColor
+                                      ? const Color(0xFFFFFFFF)
                                       : context.appColors.textColor),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(

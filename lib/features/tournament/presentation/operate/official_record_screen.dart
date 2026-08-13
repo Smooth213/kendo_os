@@ -68,7 +68,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
     final headerTextColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
 
     final registeredTeamsAsync = ref.watch(
@@ -153,7 +153,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   icon: Icon(
                     Icons.home,
                     color: isDark
-                        ? context.appColors.textColor
+                        ? const Color(0xFFFFFFFF)
                         : context.appColors.primaryAccent,
                     size: 16,
                   ),
@@ -161,7 +161,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     'トップへ',
                     style: TextStyle(
                       color: isDark
-                          ? context.appColors.textColor
+                          ? const Color(0xFFFFFFFF)
                           : context.appColors.primaryAccent,
                       fontWeight: AppFontWeight.bold,
                       fontSize: AppFontSize.small,
@@ -186,7 +186,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               isScrollable: true,
               labelColor: headerTextColor,
               unselectedLabelColor: isDark
-                  ? const Color(0x8A000000)
+                  ? const Color(0xFFFFFFFF)
                   : const Color(0x8A000000),
               indicatorColor: const Color(0xFF3F51B5),
               tabs: categories.map((cat) => Tab(text: cat)).toList(),
@@ -316,7 +316,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                         _buildHeaderActionButton(
                           icon: Icons.print,
                           label: 'PDF',
-                          color: context.appColors.textColor,
+                          color: context.appColors.errorColor,
                           onPressed: isExporting
                               ? null
                               : () => _handleExport(
@@ -1762,7 +1762,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 renseikaiWin,
                 renseikaiLoss,
                 renseikaiDraw,
-                AppKendoColors.ipponGold,
+                const Color(0xFFD97706),
               ),
               _buildSummaryItem(
                 '🏆 本戦',
@@ -1804,12 +1804,12 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? const Color(0xDE000000)
+                        ? const Color(0xFF2C2C2E)
                         : const Color(0xFFF2F2F7),
                     borderRadius: AppRadius.medium,
                     border: Border.all(
                       color: isDark
-                          ? const Color(0xDE000000)
+                          ? const Color(0xFFFFFFFF)
                           : const Color(0x33000000),
                     ),
                   ),

@@ -82,7 +82,7 @@ class StandingsScreen extends ConsumerWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
     final textColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.cardBackground;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
@@ -91,7 +91,7 @@ class StandingsScreen extends ConsumerWidget {
         ? const Color(0xFF38383A)
         : context.appColors.separatorColor;
     final headerTextColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
 
     final playerListAsync = ref.watch(playerListProvider);
@@ -277,10 +277,10 @@ class StandingsScreen extends ConsumerWidget {
                             : context.appColors.primaryAccent;
                       } else if (index == 1) {
                         avatarColor = isDark
-                            ? const Color(0xDE000000)
+                            ? const Color(0xFFFFFFFF)
                             : const Color(0x33000000);
                         iconColor = isDark
-                            ? const Color(0x33000000)
+                            ? const Color(0xFFFFFFFF)
                             : const Color(0x8A000000);
                       } else if (index == 2) {
                         avatarColor = isDark

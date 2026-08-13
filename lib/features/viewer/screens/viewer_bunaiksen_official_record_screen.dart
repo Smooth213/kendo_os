@@ -59,7 +59,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen_viewer');
     final cardColor = themeColors.cardBackground;
     final headerTextColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : themeColors.primaryAccent;
 
     final categoryGroups = ref.watch(
@@ -465,7 +465,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         ? const Color(0xFF38383A)
         : const Color(0x33000000);
     final headerTextColor = isDark
-        ? const Color(0x8A000000)
+        ? const Color(0xFFFFFFFF)
         : const Color(0x8A000000);
     final daihyoBgColor = isDark
         ? const Color(0xFFE53935).withValues(alpha: 0.15)
@@ -547,7 +547,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
                     color: isDark
-                        ? const Color(0x8A000000)
+                        ? const Color(0xFFFFFFFF)
                         : const Color(0xDE000000),
                   ),
                 ),
@@ -587,7 +587,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                                             ? const Color(0xFFE53935)
                                             : const Color(0xFFE53935))
                                       : (isDark
-                                            ? const Color(0x33000000)
+                                            ? const Color(0xFFFFFFFF)
                                             : const Color(0xDE000000)),
                                 ),
                               ),
@@ -661,7 +661,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                         fontSize: AppFontSize.bodySmall,
                         fontWeight: AppFontWeight.bold,
                         color: isDark
-                            ? const Color(0x33000000)
+                            ? const Color(0xFFFFFFFF)
                             : const Color(0xDE000000),
                       ),
                     ),
@@ -869,7 +869,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                   fontSize: AppFontSize.subhead,
                   fontWeight: AppFontWeight.black,
                   color: isDark
-                      ? const Color(0x8A000000)
+                      ? const Color(0xFFFFFFFF)
                       : const Color(0x8A000000),
                 ),
               ),
@@ -980,7 +980,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
     final style = TextStyle(
       fontSize: AppFontSize.caption,
       fontWeight: AppFontWeight.bold,
-      color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+      color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
     );
 
     Widget nameCol = Column(
@@ -1009,7 +1009,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
             initial,
             style: style.copyWith(
               fontSize: AppFontSize.micro,
-              color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
             ),
           ),
         ),
@@ -1036,7 +1036,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
           fontSize: AppFontSize.small,
-          color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
         ),
         textAlign: TextAlign.center,
       ),
@@ -1374,7 +1374,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                                           backgroundColor:
                                               context.appColors.separatorColor,
                                           foregroundColor: isDark
-                                              ? context.appColors.textColor
+                                              ? const Color(0xFFFFFFFF)
                                               : context
                                                     .appColors
                                                     .cardBackground,
@@ -1508,7 +1508,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
           text,
           style: TextStyle(
             fontSize: AppFontSize.badge,
-            color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
+            color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
           ),
         ),
       ),
@@ -1593,7 +1593,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
               style: TextStyle(
                 fontWeight: AppFontWeight.bold,
                 color: isDark
-                    ? const Color(0x8A000000)
+                    ? const Color(0xFFFFFFFF)
                     : const Color(0xDE000000),
               ),
             ),

@@ -541,7 +541,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   ),
                   child: Material(
                     color: isDark
-                        ? context.appColors.textColor
+                        ? const Color(0xFFFFFFFF)
                         : context.appColors.cardBackground,
                     borderRadius: AppRadius.medium,
                     child: currentFilteredUnits.isEmpty
@@ -749,7 +749,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                               style: TextStyle(
                                 fontSize: AppFontSize.caption,
                                 color: isDark
-                                    ? const Color(0x8A000000)
+                                    ? const Color(0xFFFFFFFF)
                                     : const Color(0x8A000000),
                                 fontWeight: AppFontWeight.bold,
                               ),

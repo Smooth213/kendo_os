@@ -265,7 +265,7 @@ class ScoreTableCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isDark
                           ? context.appColors.cardBackground
-                          : context.appColors.textColor,
+                          : context.appColors.inputBackground,
                       borderRadius: AppRadius.small,
                       border: Border.all(
                         color: context.appColors.separatorColor,
@@ -285,9 +285,7 @@ class ScoreTableCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: AppFontSize.bodySmall,
                         fontWeight: AppFontWeight.bold,
-                        color: isDark
-                            ? const Color(0x33000000)
-                            : const Color(0xDE000000),
+                        color: themeColors.textColor,
                       ),
                     ),
                   ),

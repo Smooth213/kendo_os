@@ -262,7 +262,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                   side: BorderSide(
                     color: isDark
-                        ? const Color(0x8A000000)
+                        ? const Color(0xFFFFFFFF)
                         : const Color(0x8A000000),
                   ),
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
@@ -272,7 +272,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
                     color: isDark
-                        ? const Color(0x33000000)
+                        ? const Color(0xFFFFFFFF)
                         : const Color(0xFF000000),
                   ),
                 ),
@@ -2951,7 +2951,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
-                                          ? const Color(0x33000000)
+                                          ? const Color(0xFFFFFFFF)
                                           : const Color(0xDE000000),
                                       fontSize: AppFontSize.subhead,
                                     ),
@@ -2973,7 +2973,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                               : const Color(0x33000000),
                                           backgroundColor: isDark
                                               ? const Color(0xFF2C2C2E)
-                                              : context.appColors.textColor,
+                                              : context
+                                                    .appColors
+                                                    .inputBackground,
                                           labelStyle: TextStyle(
                                             color: whiteCtrl.text == p
                                                 ? (context.appColors.textColor)
@@ -3570,7 +3572,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     labelStyle: TextStyle(
                                       color: redCtrl.text == p
                                           ? (isDark
-                                                ? context.appColors.textColor
+                                                ? const Color(0xFFFFFFFF)
                                                 : context
                                                       .appColors
                                                       .primaryAccent)
@@ -3686,7 +3688,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     labelStyle: TextStyle(
                                       color: whiteCtrl.text == p
                                           ? (isDark
-                                                ? context.appColors.textColor
+                                                ? const Color(0xFFFFFFFF)
                                                 : context
                                                       .appColors
                                                       .primaryAccent)
@@ -4329,7 +4331,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               label,
               style: TextStyle(
                 color: isDark
-                    ? const Color(0x8A000000)
+                    ? const Color(0xFFFFFFFF)
                     : const Color(0x8A000000),
                 fontSize: AppFontSize.bodySmall,
               ),
@@ -4415,7 +4417,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       leading: Icon(
                         Icons.history,
                         color: isDark
-                            ? const Color(0x8A000000)
+                            ? const Color(0xFFFFFFFF)
                             : const Color(0x8A000000),
                       ),
                       title: Text(

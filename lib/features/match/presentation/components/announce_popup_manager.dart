@@ -75,7 +75,7 @@ void _showAnnounceDialog(
           style: TextStyle(
             fontSize: AppFontSize.body,
             height: 1.5,
-            color: isDark ? const Color(0x33000000) : const Color(0xFF2C3E50),
+            color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF2C3E50),
           ),
         ),
         actions: [

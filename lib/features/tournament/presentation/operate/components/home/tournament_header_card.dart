@@ -108,11 +108,7 @@ class TournamentHeaderCard extends ConsumerWidget {
             ),
             Row(
               children: [
-                Icon(
-                  Icons.calendar_today,
-                  color: const Color(0x8A000000),
-                  size: 16,
-                ),
+                Icon(Icons.calendar_today, color: subTextColor, size: 16),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   DateFormat('yyyy年MM月dd日').format(tournament.date),
@@ -122,11 +118,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.lg),
-                Icon(
-                  Icons.location_on,
-                  color: const Color(0x8A000000),
-                  size: 16,
-                ),
+                Icon(Icons.location_on, color: subTextColor, size: 16),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(

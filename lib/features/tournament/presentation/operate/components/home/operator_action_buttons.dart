@@ -93,7 +93,7 @@ class OperatorActionButtons extends ConsumerWidget {
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.body,
                 color: isDark
-                    ? context.appColors.textColor
+                    ? const Color(0xFFFFFFFF)
                     : context.appColors.textColor,
               ),
             ),
@@ -105,7 +105,7 @@ class OperatorActionButtons extends ConsumerWidget {
               ),
               backgroundColor: isDark
                   ? const Color(0xFF1C1C1E)
-                  : context.appColors.textColor,
+                  : context.appColors.cardBackground,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
             ),
           ),

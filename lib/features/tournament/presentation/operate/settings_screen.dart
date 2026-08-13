@@ -486,7 +486,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color dynamicTextColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : textIndigo;
     final Color dynamicCardColor = isDark
         ? const Color(0xFF161B22)

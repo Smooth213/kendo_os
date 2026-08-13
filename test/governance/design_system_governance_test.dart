@@ -8,8 +8,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 // ============================================================================
 // 🛡️ DESIGN SYSTEM GOVERNANCE FORTRESS TEST
 // kendo OS デザインシステム完全統一が今後永久に崩れないよう、
-// 生の Material UI 直書きコンポーネント（SnackBar, ModalBottomSheet, AppBar,
-// AlertDialog, ChoiceChip, ActionChip, FilterChip）の混入を全自動検知・遮断します。
+// 全UI要素・ダイアログ・ボトムシート・硬直色・フォント・パディング・カラー反転等の混入を全自動検知・遮断します。
 // ============================================================================
 void main() {
   group('🛡️ kendo OS Design System Governance Protection Test', () {
@@ -32,10 +31,8 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          // AppSnackBar の基盤定義ファイル自身は除外
-          if (file.path.contains('lib/shared/utils/app_snack_bar.dart')) {
+          if (file.path.contains('lib/shared/utils/app_snack_bar.dart'))
             continue;
-          }
 
           final content = file.readAsStringSync();
           if (content.contains('showSnackBar(')) {
@@ -57,10 +54,8 @@ void main() {
       final violations = <String>[];
 
       for (final file in dartFiles) {
-        // AppBottomSheet の基盤定義ファイル自身は除外
-        if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart')) {
+        if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart'))
           continue;
-        }
 
         final content = file.readAsStringSync();
         if (content.contains('showModalBottomSheet(')) {
@@ -83,7 +78,6 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          // AppChip の基盤定義ファイル自身は除外
           if (file.path.contains('lib/shared/widgets/app_chip.dart')) continue;
 
           final content = file.readAsStringSync();
@@ -108,10 +102,7 @@ void main() {
       final violations = <String>[];
 
       for (final file in dartFiles) {
-        // AppHeader の基盤定義ファイル自身は除外
-        if (file.path.contains('lib/shared/widgets/app_header.dart')) {
-          continue;
-        }
+        if (file.path.contains('lib/shared/widgets/app_header.dart')) continue;
 
         final content = file.readAsStringSync();
         if (RegExp(r'\bAppBar\s*\(').hasMatch(content)) {
@@ -134,10 +125,8 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          // AppDialog の基盤定義ファイル自身のみ除外
-          if (file.path.contains('lib/shared/widgets/app_dialog.dart')) {
+          if (file.path.contains('lib/shared/widgets/app_dialog.dart'))
             continue;
-          }
 
           final content = file.readAsStringSync();
           if (content.contains('showDialog(') ||
@@ -216,7 +205,6 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          // トークン定義自身および PDF ペインターは除外
           if (file.path.contains('lib/shared/theme/app_tokens.dart') ||
               file.path.contains('lib/features/pdf/')) {
             continue;
@@ -246,7 +234,6 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          // トークン定義自身および PDF ペインターは除外
           if (file.path.contains('lib/shared/theme/app_tokens.dart') ||
               file.path.contains('lib/features/pdf/')) {
             continue;
@@ -276,7 +263,6 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          // トークン定義自身および PDF ペインターは除外
           if (file.path.contains('lib/shared/theme/app_tokens.dart') ||
               file.path.contains('lib/features/pdf/')) {
             continue;
@@ -325,10 +311,8 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          // AppBottomSheet の基盤定義ファイル自身は除外
-          if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart')) {
+          if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart'))
             continue;
-          }
 
           final content = file.readAsStringSync();
           if (content.contains('showModalBottomSheet')) {
@@ -362,6 +346,200 @@ void main() {
         expect(AppFontSize.jumbo, equals(32.0));
         expect(AppEdgeInsets.zero, equals(EdgeInsets.zero));
         expect(AppEdgeInsets.allSm, equals(const EdgeInsets.all(8.0)));
+      },
+    );
+
+    test(
+      '14. 背景色反転バグ防止: backgroundColor / fillColor / surfaceTintColor / cardColor への textColor (黒) 誤用が全アプリで 0 件であること',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) continue;
+          if (file.path.contains('lib/features/pdf/')) continue;
+
+          final content = file.readAsStringSync();
+          final matches = RegExp(
+            r'(backgroundColor|fillColor|surfaceTintColor|cardColor)\s*:\s*isDark\s*\?[^:]+:\s*(context\.appColors\.)?textColor\b',
+            multiLine: true,
+            dotAll: true,
+          ).allMatches(content);
+
+          if (matches.isNotEmpty) {
+            violations.add('${file.path} (${matches.length}件)');
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              '背景色指定に textColor (黒) を割り当てるライトモード漆黒化反転バグが検出されました。cardBackground / inputBackground / scaffoldBackground を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '15. ダークモード文字消失防止: ダークモード時 (isDark: true) のプロパティ色への黒透過色 (0x33000000, 0x8A000000, 0xDE000000) 直接指定が全アプリで 0 件であること',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) continue;
+          if (file.path.contains('lib/features/pdf/')) continue;
+
+          final content = file.readAsStringSync();
+          final matches = RegExp(
+            r'\bcolor\s*:\s*isDark\s*\?\s*const\s*Color\((0x33000000|0x8A000000|0xDE000000)\)',
+          ).allMatches(content);
+
+          if (matches.isNotEmpty) {
+            violations.add('${file.path} (${matches.length}件)');
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'ダークモード時に文字/アイコン色へ黒透過色 (0x33000000 / 0x8A000000 / 0xDE000000) が直接指定されている箇所が検出されました。ダークモードで視認性が消失します。context.appColors.textColor または subTextColor を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test('16. チップ同色視認性保証: buildChip 等での背景色と文字色の完全同色指定が全アプリで 0 件であること', () {
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        if (file.path.contains('lib/shared/theme/')) continue;
+
+        final content = file.readAsStringSync();
+        final matches = RegExp(
+          r'buildChip\([^,\n]+,\s*([a-zA-Z0-9_]+),\s*\1\b',
+        ).allMatches(content);
+
+        if (matches.isNotEmpty) {
+          violations.add('${file.path} (${matches.length}件)');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'buildChip 呼び出しで背景色と文字色が同一指定されている視認性不具合が検出されました。\n'
+            '違反ファイル:\n${violations.join('\n')}',
+      );
+    });
+
+    test(
+      '17. 硬直色 (Colors.white / black / red 等) 防止: UIコンポーネントにおける Flutter 組み込み Colors.* 直書きが全アプリで 0 件であること',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) continue;
+          if (file.path.contains('lib/features/pdf/')) continue;
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart'))
+            continue;
+
+          final content = file.readAsStringSync();
+          // コメント行を取り除いて純粋なコード部分のみを検証
+          final cleanCode = content
+              .split('\n')
+              .where((line) => !line.trim().startsWith('//'))
+              .join('\n');
+          final matches = RegExp(
+            r'(?<!\.)\bColors\.(white|black|grey|red|blue|amber|orange|purple|deepPurple|indigo|teal|green|yellow|brown|pink|cyan|lime)\b',
+          ).allMatches(cleanCode);
+
+          if (matches.isNotEmpty) {
+            violations.add('${file.path} (${matches.length}件)');
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'UIコンポーネント内で硬直色 (Colors.white / black / red 等) の直書きが検出されました。AppThemeColors または AppKendoColors を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '18. フォントサイズ生数値指定防止: UIコンポーネントにおける fontSize: 直数値 (10, 12, 14, 16 等) の直接指定が全アプリで 0 件であること',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) continue;
+          if (file.path.contains('lib/features/pdf/')) continue;
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart'))
+            continue;
+
+          final content = file.readAsStringSync();
+          final matches = RegExp(
+            r'fontSize:\s*(?!AppFontSize\.)\d+(\.\d+)?',
+          ).allMatches(content);
+
+          if (matches.isNotEmpty) {
+            violations.add('${file.path} (${matches.length}件)');
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'UIコンポーネント内で fontSize: 直数値指定が検出されました。AppFontSize (caption / small / body / subhead / headline / header) を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '19. 黄色文字低コントラスト防止: 白背景カードや要約欄における TextStyle 内での ipponGold (純黄色) 文字色の直接使用が全アプリで 0 件であること',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) continue;
+          if (file.path.contains('lib/features/pdf/')) continue;
+          if (file.path.contains('lib/shared/widgets/scoreboard.dart'))
+            continue;
+          if (file.path.contains(
+            'lib/features/viewer/presentation/viewer_match_screen.dart',
+          ))
+            continue;
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart'))
+            continue;
+
+          final content = file.readAsStringSync();
+          final matches = RegExp(
+            r'TextStyle\s*\([^)]*color\s*:\s*AppKendoColors\.ipponGold\b',
+            multiLine: true,
+            dotAll: true,
+          ).allMatches(content);
+
+          if (matches.isNotEmpty) {
+            violations.add('${file.path} (${matches.length}件)');
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              '白背景上で視認性が極めて低い AppKendoColors.ipponGold (純黄色) の文字色指定が検出されました。視認性の高い Color(0xFFD97706) (ダークアンバー) または context.appColors を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
       },
     );
   });

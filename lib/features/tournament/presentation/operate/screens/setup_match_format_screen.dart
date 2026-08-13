@@ -1319,9 +1319,7 @@ class _SetupMatchFormatScreenState
                       children: [
                         Icon(
                           Icons.group_off_outlined,
-                          color: isDark
-                              ? const Color(0x8A000000)
-                              : const Color(0x8A000000),
+                          color: context.appColors.subTextColor,
                           size: 40,
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -1329,9 +1327,7 @@ class _SetupMatchFormatScreenState
                           '「$_category」のチームが未登録です。\n右上の「チームを追加・編集」から\n登録を行ってください。',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: isDark
-                                ? const Color(0x33000000)
-                                : const Color(0x8A000000),
+                            color: context.appColors.subTextColor,
                             fontSize: AppFontSize.bodySmall,
                             fontWeight: AppFontWeight.bold,
                             height: 1.5,
@@ -1386,9 +1382,7 @@ class _SetupMatchFormatScreenState
                                 Icons.shield,
                                 color: isSelected
                                     ? _themeColors.primaryAccent
-                                    : (isDark
-                                          ? const Color(0x8A000000)
-                                          : const Color(0x8A000000)),
+                                    : context.appColors.subTextColor,
                                 size: 24,
                               ),
                             ),
@@ -1414,9 +1408,7 @@ class _SetupMatchFormatScreenState
                                       ? _themeColors.primaryAccent.withValues(
                                           alpha: 0.8,
                                         )
-                                      : (isDark
-                                            ? const Color(0x8A000000)
-                                            : const Color(0x8A000000)),
+                                      : context.appColors.subTextColor,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1429,7 +1421,7 @@ class _SetupMatchFormatScreenState
                               color: isSelected
                                   ? _themeColors.primaryAccent
                                   : (isDark
-                                        ? const Color(0x8A000000)
+                                        ? const Color(0xFFFFFFFF)
                                         : const Color(0x33000000)),
                               size: 28,
                             ),

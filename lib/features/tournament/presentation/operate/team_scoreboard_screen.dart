@@ -73,8 +73,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
             backgroundColor: isDark
-                ? context.appColors.cardBackground
-                : context.appColors.textColor,
+                ? context.appColors.scaffoldBackground
+                : context.appColors.scaffoldBackground,
             appBar: const AppHeader(title: 'スコアボード'),
             body: const Center(child: CircularProgressIndicator()),
           );
@@ -114,7 +114,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
     final headerColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
     final borderColor = isDark
         ? const Color(0xFF38383A)
@@ -318,7 +318,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     color: isDark
                                         ? context.appColors.cardBackground
-                                        : context.appColors.textColor,
+                                        : context.appColors.cardBackground,
                                     borderRadius: AppRadius.small,
                                     border: Border.all(
                                       color: context.appColors.separatorColor,
@@ -338,7 +338,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                       fontSize: AppFontSize.bodySmall,
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
-                                          ? const Color(0x33000000)
+                                          ? const Color(0xFFFFFFFF)
                                           : const Color(0xDE000000),
                                     ),
                                   ),
@@ -417,7 +417,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                           builder: (ctx) => Dialog(
                             backgroundColor: isDark
                                 ? const Color(0xFF2C2C2E)
-                                : context.appColors.textColor,
+                                : context.appColors.cardBackground,
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.round,
                             ),
@@ -521,13 +521,13 @@ class TeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '白',
           isH: true,
-          color: isDark ? const Color(0x33000000) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
           fs: 14,
         ),
         _cell(
           w,
           isH: true,
-          color: isDark ? const Color(0x33000000) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
           fs: 16,
         ), // 13→16
       ],
@@ -620,7 +620,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         : const Color(0xFFE53935);
     final matchTypeColor = isDaihyo
         ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
-        : (isDark ? const Color(0x33000000) : const Color(0xDE000000));
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xDE000000));
 
     return TableRow(
       decoration: isDaihyo ? BoxDecoration(color: daihyoBgColor) : null,
@@ -669,7 +669,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
   ) {
     final color = isRed
         ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
-        : (isDark ? const Color(0x33000000) : const Color(0xFF607D8B));
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
 
     final isFusen = pts.any((p) => p.mark == '◯');
 
@@ -899,7 +899,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '${result.whitePoints} / ${result.whiteWins}',
           isH: true,
-          color: isDark ? const Color(0x8A000000) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
           fs: 18,
         ),
       ],

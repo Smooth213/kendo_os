@@ -134,7 +134,7 @@ class _AnnounceHistoryBottomSheetState
                 margin: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xDE000000)
+                      ? const Color(0xFFFFFFFF)
                       : const Color(0x33000000),
                   borderRadius: AppRadius.micro,
                 ),
@@ -322,7 +322,7 @@ class _AnnounceHistoryBottomSheetState
                           fontSize: AppFontSize.bodySmall,
                           height: 1.4,
                           color: isDark
-                              ? const Color(0x8A000000)
+                              ? const Color(0xFFFFFFFF)
                               : const Color(0xDE000000),
                         ),
                       ),

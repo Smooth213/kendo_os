@@ -43,12 +43,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     bool isFinished = true,
   }) {
     final textColor = isFinished
-        ? (isDark ? const Color(0x8A000000) : const Color(0x8A000000))
+        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000));
     // 区切り文字を少しグレーにして、スコア本体(メやコ)と明確に区別する
     final iconColor = isFinished
-        ? (isDark ? const Color(0xDE000000) : const Color(0x8A000000))
-        : (isDark ? const Color(0x8A000000) : const Color(0x8A000000));
+        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000));
 
     // 完全無得点の引き分け
     if (match.redScore == 0 && match.whiteScore == 0) {
@@ -315,7 +315,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Card(
                           color: isDark
-                              ? const Color(0xDE000000)
+                              ? const Color(0xFFFFFFFF)
                               : const Color(0xFFFFFFFF),
                           shape: RoundedRectangleBorder(
                             borderRadius: AppRadius.large,
@@ -467,7 +467,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           : (context.appColors.textColor);
                       final Color noteC = isFinished
                           ? (isDark
-                                ? context.appColors.textColor
+                                ? const Color(0xFFFFFFFF)
                                 : context.appColors.subTextColor)
                           : AppKendoColors.grey;
 
@@ -877,7 +877,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: AppFontSize.small,
                   color: isDark
-                      ? const Color(0x8A000000)
+                      ? const Color(0xFFFFFFFF)
                       : const Color(0x8A000000),
                 ),
                 textAlign: TextAlign.center,
@@ -1097,7 +1097,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               Icons.timer_outlined,
                               size: 16,
                               color: isDark
-                                  ? const Color(0x8A000000)
+                                  ? const Color(0xFFFFFFFF)
                                   : const Color(0xDE000000),
                             ),
                             const SizedBox(width: 6),
@@ -1197,7 +1197,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               Icons.emoji_events_outlined,
                               size: 16,
                               color: isDark
-                                  ? const Color(0x8A000000)
+                                  ? const Color(0xFFFFFFFF)
                                   : const Color(0xDE000000),
                             ),
                             const SizedBox(width: 6),

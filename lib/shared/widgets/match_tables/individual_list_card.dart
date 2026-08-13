@@ -257,7 +257,7 @@ class IndividualListCard extends StatelessWidget {
                             fontSize: AppFontSize.caption,
                             fontWeight: AppFontWeight.bold,
                             color: isDark
-                                ? const Color(0x8A000000)
+                                ? const Color(0xFFFFFFFF)
                                 : const Color(0xDE000000),
                           ),
                         ),

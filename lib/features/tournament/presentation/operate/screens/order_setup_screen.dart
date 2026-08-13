@@ -149,7 +149,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   Future<void> _selectPlayer(int index, List<PlayerModel> masterPlayers) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.cardBackground;
 
     String searchText = '';
@@ -283,7 +283,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       prefixIcon: const Icon(Icons.search),
                       filled: true,
                       fillColor: isDark
-                          ? const Color(0xDE000000)
+                          ? const Color(0xFFFFFFFF)
                           : const Color(0xFFF2F2F7),
                       border: OutlineInputBorder(
                         borderRadius: AppRadius.small,
@@ -443,7 +443,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                       autofocus: i == 0,
                       style: TextStyle(
                         color: isDark
-                            ? context.appColors.textColor
+                            ? const Color(0xFFFFFFFF)
                             : context.appColors.cardBackground,
                       ),
                       decoration: InputDecoration(
@@ -512,7 +512,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                 autofocus: true,
                 style: TextStyle(
                   color: isDark
-                      ? context.appColors.textColor
+                      ? const Color(0xFFFFFFFF)
                       : context.appColors.cardBackground,
                 ),
                 decoration: InputDecoration(
@@ -1170,9 +1170,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 style: TextStyle(fontSize: AppFontSize.small),
                               ),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: _themeColors.primaryAccent,
+                                foregroundColor: isDark
+                                    ? AppKendoColors.pureWhite
+                                    : _themeColors.primaryAccent,
                                 side: BorderSide(
-                                  color: _themeColors.softAccent,
+                                  color: isDark
+                                      ? _themeColors.primaryAccent
+                                      : _themeColors.softAccent,
                                 ),
                               ),
                             ),
@@ -1209,8 +1213,14 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                 style: TextStyle(fontSize: AppFontSize.small),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: _themeColors.softAccent,
-                                foregroundColor: _themeColors.primaryAccent,
+                                backgroundColor: isDark
+                                    ? _themeColors.primaryAccent.withValues(
+                                        alpha: 0.35,
+                                      )
+                                    : _themeColors.softAccent,
+                                foregroundColor: isDark
+                                    ? AppKendoColors.pureWhite
+                                    : _themeColors.primaryAccent,
                                 elevation: 0,
                               ),
                             ),

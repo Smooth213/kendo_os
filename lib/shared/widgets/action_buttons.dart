@@ -229,7 +229,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
 
   Color _getDisplayColor(bool isDark) {
     if (widget.disabled) {
-      return isDark ? const Color(0xDE000000) : const Color(0x33000000);
+      return isDark ? const Color(0xFFFFFFFF) : const Color(0x33000000);
     }
     return _isHolding
         ? Color.lerp(widget.color, AppKendoColors.pureBlack, 0.2)!

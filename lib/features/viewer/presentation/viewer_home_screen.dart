@@ -241,13 +241,13 @@ class ViewerHomeScreen extends ConsumerWidget {
                   tournamentId: tournamentId,
                   isStaffRoom: false,
                   color: isDark
-                      ? context.appColors.textColor
+                      ? const Color(0xFFFFFFFF)
                       : themeColors.primaryAccent,
                 ),
                 ManualHelpButton(
                   manualPath: 'docs/manuals/faq/viewer_faq.md',
                   color: isDark
-                      ? context.appColors.textColor
+                      ? const Color(0xFFFFFFFF)
                       : themeColors.primaryAccent,
                 ),
                 IconButton(
@@ -270,7 +270,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                   icon: Icon(
                     Icons.qr_code_2,
                     color: isDark
-                        ? context.appColors.textColor
+                        ? const Color(0xFFFFFFFF)
                         : themeColors.primaryAccent,
                   ),
                   tooltip: '大会を共有する',
@@ -383,7 +383,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                               fontWeight: AppFontWeight.bold,
                               fontSize: AppFontSize.body,
                               color: isDark
-                                  ? context.appColors.textColor
+                                  ? const Color(0xFFFFFFFF)
                                   : const Color(0xDE000000),
                             ),
                           ),
@@ -431,7 +431,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     color: isDark
                                         ? const Color(0xFF161618)
-                                        : context.appColors.textColor,
+                                        : context.appColors.inputBackground,
                                     borderRadius: AppRadius.medium,
                                     border: Border.all(
                                       color: isDark
@@ -553,7 +553,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                         filled: true,
                                         fillColor: isDark
                                             ? const Color(0xFF2C2C2E)
-                                            : context.appColors.textColor,
+                                            : context.appColors.inputBackground,
                                         border: OutlineInputBorder(
                                           borderRadius: AppRadius.small,
                                           borderSide: BorderSide(
@@ -2857,9 +2857,7 @@ class ViewerMatchListTileCard extends ConsumerWidget {
               : context.appColors.subTextColor)
         : (context.appColors.textColor);
     final Color noteC = isFinished
-        ? (isDark
-              ? context.appColors.textColor
-              : context.appColors.subTextColor)
+        ? (isDark ? const Color(0xFFFFFFFF) : context.appColors.subTextColor)
         : context.appColors.subTextColor;
 
     Widget buildMarkItem(dynamic p, Color textColor) {

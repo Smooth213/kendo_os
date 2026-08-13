@@ -35,11 +35,11 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
     bool isFinished = true,
   }) {
     final textColor = isFinished
-        ? (isDark ? const Color(0x8A000000) : const Color(0x8A000000))
+        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000));
     final iconColor = isFinished
-        ? (isDark ? const Color(0xDE000000) : const Color(0x8A000000))
-        : (isDark ? const Color(0x8A000000) : const Color(0x8A000000));
+        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000));
 
     if (match.redScore == 0 && match.whiteScore == 0) {
       return Padding(
@@ -305,7 +305,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                           padding: const EdgeInsets.all(AppSpacing.lg),
                           child: Card(
                             color: isDark
-                                ? const Color(0xDE000000)
+                                ? const Color(0xFFFFFFFF)
                                 : const Color(0xFFFFFFFF),
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.large,
@@ -385,7 +385,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                             : (context.appColors.textColor);
                         final Color noteC = isFinished
                             ? (isDark
-                                  ? context.appColors.textColor
+                                  ? const Color(0xFFFFFFFF)
                                   : context.appColors.subTextColor)
                             : AppKendoColors.grey;
 

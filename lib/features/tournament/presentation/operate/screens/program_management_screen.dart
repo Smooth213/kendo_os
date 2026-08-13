@@ -389,7 +389,7 @@ class _ProgramManagementScreenState
                               // ★ ダークモード対応: ダーク時は暗い入力欄背景、ライト時は白
                               fillColor: isDark
                                   ? const Color(0xFF2C2C3E)
-                                  : context.appColors.textColor,
+                                  : context.appColors.inputBackground,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.md,
                                 vertical: AppSpacing.md,

@@ -381,7 +381,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 Icons.info_outline,
                                 size: 13,
                                 color: isDark
-                                    ? const Color(0x8A000000)
+                                    ? const Color(0xFFFFFFFF)
                                     : const Color(0x8A000000),
                               ),
                               const SizedBox(width: AppSpacing.xs),
@@ -391,7 +391,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                   style: TextStyle(
                                     fontSize: AppFontSize.caption,
                                     color: isDark
-                                        ? const Color(0x8A000000)
+                                        ? const Color(0xFFFFFFFF)
                                         : const Color(0x8A000000),
                                   ),
                                 ),
@@ -405,7 +405,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                               fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
-                                  ? const Color(0x33000000)
+                                  ? const Color(0xFFFFFFFF)
                                   : const Color(0xDE000000),
                             ),
                           ),
@@ -441,7 +441,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                               fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
-                                  ? const Color(0x33000000)
+                                  ? const Color(0xFFFFFFFF)
                                   : const Color(0xDE000000),
                             ),
                           ),
@@ -680,7 +680,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     filled: true,
                     fillColor: isDark
                         ? const Color(0xFF1C1C1E)
-                        : context.appColors.textColor,
+                        : context.appColors.inputBackground,
                   ),
                 );
               },
@@ -692,7 +692,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 borderRadius: AppRadius.medium,
                 color: isDark
                     ? const Color(0xFF2C2C2E)
-                    : context.appColors.textColor,
+                    : context.appColors.cardBackground,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: 250,
@@ -1016,7 +1016,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         fontWeight: AppFontWeight.bold,
                         color: isSelected
                             ? (isDark
-                                  ? context.appColors.textColor
+                                  ? const Color(0xFFFFFFFF)
                                   : accentColor.shade900)
                             : (context.appColors.subTextColor),
                       ),

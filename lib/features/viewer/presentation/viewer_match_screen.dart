@@ -145,7 +145,7 @@ class ViewerMatchScreen extends ConsumerWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final iconColor = isDark
-        ? context.appColors.textColor
+        ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
 
     return LiquidBackground(
@@ -609,7 +609,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
-                        color: AppKendoColors.ipponGold,
+                        color: const Color(0xFFD97706),
                         letterSpacing: 2,
                       ),
                     ),
@@ -660,7 +660,7 @@ class LargeViewerScoreboard extends StatelessWidget {
   ) {
     final color = side == Side.red
         ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
-        : (isDark ? const Color(0x33000000) : const Color(0xFF607D8B));
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
 
     return SizedBox(
       width: 120,

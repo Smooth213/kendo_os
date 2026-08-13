@@ -208,7 +208,7 @@ class HomeScreen extends ConsumerWidget {
                           icon: Icon(
                             Icons.home,
                             color: isDark
-                                ? context.appColors.textColor
+                                ? const Color(0xFFFFFFFF)
                                 : themeColors.primaryAccent,
                             size: 18,
                           ),
@@ -217,7 +217,7 @@ class HomeScreen extends ConsumerWidget {
                             style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(
                                   color: isDark
-                                      ? context.appColors.textColor
+                                      ? const Color(0xFFFFFFFF)
                                       : themeColors.primaryAccent,
                                   fontWeight: AppFontWeight.bold,
                                 ),
