@@ -577,5 +577,200 @@ void main() {
         );
       },
     );
+
+    test(
+      '20. [5大監視 1] チップ文字・背景同色化防止: チップコンポーネント及び buildChip 内で背景色と文字色が同色または低コントラスト指定されるパターンの完全監視',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          // buildChip(..., sameColor, sameColor)
+          final buildChipMatches = RegExp(
+            r'buildChip\s*\(\s*[^,]+,\s*([a-zA-Z0-9_.]+)\s*,\s*\1\s*\)',
+          ).allMatches(content);
+          if (buildChipMatches.isNotEmpty) {
+            violations.add('${file.path} (buildChip 背景と文字が同一色)');
+          }
+
+          // customSelectedColor があるのに customTextColor が未設定で同色化するパターン
+          if (file.path.contains('smart_player_input.dart') ||
+              file.path.contains('multi_player_select_input.dart')) {
+            if (content.contains('customSelectedColor:') &&
+                !content.contains('customTextColor:')) {
+              violations.add('${file.path} (チップ選択時背景と文字色の同色化未防護)');
+            }
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'チップの背景色と文字色が同色になり文字が消失する実装が検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '21. [5大監視 2] ライトモード時 カード/ボタン/アコーディオン背景黒化防止: collapsedBackgroundColor や Card/Container の color への textColor (黒) 割り当ての完全監視',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          // collapsedBackgroundColor: ... ? ... : context.appColors.textColor
+          if (RegExp(
+            r'collapsedBackgroundColor\s*:\s*[^\n;]*context\.appColors\.textColor\b',
+          ).hasMatch(content)) {
+            violations.add(
+              '${file.path} (collapsedBackgroundColor に textColor(黒) が指定されています)',
+            );
+          }
+
+          // isDark ? const Color(0xFFFFFFFF) : context.appColors.textColor
+          if (content.contains(
+            'isDark ? const Color(0xFFFFFFFF) : context.appColors.textColor',
+          )) {
+            violations.add('${file.path} (コンテナ背景色に textColor(黒) が指定されています)');
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'ライトモード時にカードやアコーディオン背景が黒に反転する破壊コードが検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '22. [5大監視 3] ダークモード時 文字の黒透過同化防止: ダークモード分岐時や共通TextStyle内での黒色系(0x8A000000等)の文字色直接指定の完全監視',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) continue;
+          if (file.path.contains('lib/features/pdf/')) continue;
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          // isDark ? const Color(0x...000000)
+          final darkBlackMatches = RegExp(
+            r'isDark\s*\?\s*const Color\(0x[0-9A-Fa-f]{2}000000\)',
+          ).allMatches(content);
+          if (darkBlackMatches.isNotEmpty) {
+            violations.add(
+              '${file.path} (ダークモード時に黒透過色を文字/アイコンに指定: ${darkBlackMatches.length}件)',
+            );
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'ダークモード時に文字・アイコンが黒色系となり背景と同化して消失するコードが検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '23. [5大監視 4] 大会記録 サマリー黄色文字視認性低下防止: 公式記録・ビューアー・サマリーにおける ipponGold の文字色直接使用の完全監視',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) continue;
+          if (file.path.contains('lib/features/pdf/')) continue;
+          if (file.path.contains('scoreboard.dart')) continue;
+          if (file.path.contains('viewer_match_screen.dart')) continue;
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          // official_record や summary 関連での ipponGold 文字使用
+          if (file.path.contains('official_record') ||
+              file.path.contains('summary') ||
+              file.path.contains('bunaiksen')) {
+            if (RegExp(
+              r'TextStyle\s*\([^)]*color\s*:\s*AppKendoColors\.ipponGold\b',
+              multiLine: true,
+              dotAll: true,
+            ).hasMatch(content)) {
+              violations.add('${file.path} (サマリー/記録画面で純黄色文字が直接使用されています)');
+            }
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              '白地サマリーや公式記録で文字が読めなくなる黄色文字(ipponGold)の直接使用が検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '24. [5大監視 5] PDFボタン・アクションボタン背景色・アイコン統一監視: 生の ElevatedButton.styleFrom(primary/backgroundColor: 硬直色) 直書きの排除と統一デザインの保証',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) continue;
+          if (file.path.contains('lib/features/pdf/presentation/widgets/'))
+            continue;
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          // PDF や共有ボタンで生の赤や黒などの硬直色直書き
+          if (file.path.contains('pdf') ||
+              file.path.contains('record') ||
+              file.path.contains('export')) {
+            if (content.contains('Colors.redAccent') ||
+                content.contains('Colors.black54')) {
+              violations.add('${file.path} (PDF/出力ボタンで非統一硬直色が使用されています)');
+            }
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'PDFボタンや出力アクションボタンで統一テーマから乖離した硬直色が検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }

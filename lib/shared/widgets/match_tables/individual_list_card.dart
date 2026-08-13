@@ -221,7 +221,7 @@ class IndividualListCard extends StatelessWidget {
               if (m.isSummary && !m.hasOwnTeam) {
                 return Container(
                   color: isDark
-                      ? const Color(0xFF000000).withValues(alpha: 0.2)
+                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
                       : AppKendoColors.grey.withValues(alpha: 0.05),
                   child: Stack(
                     alignment: Alignment.center,

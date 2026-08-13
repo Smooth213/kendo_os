@@ -36,8 +36,8 @@ class TournamentHeaderCard extends ConsumerWidget {
         ? context.appColors.primaryAccent.withValues(alpha: 0.3)
         : context.appColors.primaryAccent;
     final popupIconColor = isDark
-        ? const Color(0x8A000000)
-        : const Color(0x8A000000);
+        ? const Color(0xFFFFFFFF)
+        : const Color(0xFF475569);
     final noteBgColor = isDark
         ? const Color(0xFF2C2C2E)
         : context.appColors.cardBackground;

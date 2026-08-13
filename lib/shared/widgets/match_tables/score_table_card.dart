@@ -254,7 +254,7 @@ class ScoreTableCard extends StatelessWidget {
               top: 40,
               child: Container(
                 color: isDark
-                    ? const Color(0xFF000000).withValues(alpha: 0.3)
+                    ? const Color(0xFFFFFFFF).withValues(alpha: 0.3)
                     : const Color(0xFFFFFFFF).withValues(alpha: 0.6),
                 child: Center(
                   child: Container(

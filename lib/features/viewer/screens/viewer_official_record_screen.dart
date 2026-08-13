@@ -32,7 +32,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
     const String screenTitle = '大会 公式記録';
 
-    final bgColor = isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7);
+    final bgColor = isDark ? const Color(0xFFFFFFFF) : const Color(0xFFF2F2F7);
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
