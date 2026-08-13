@@ -665,8 +665,12 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/theme/')) continue;
-          if (file.path.contains('lib/features/pdf/')) continue;
+          if (file.path.contains('lib/shared/theme/')) {
+            continue;
+          }
+          if (file.path.contains('lib/features/pdf/')) {
+            continue;
+          }
           if (file.path.endsWith('.freezed.dart') ||
               file.path.endsWith('.g.dart')) {
             continue;
@@ -701,10 +705,18 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/theme/')) continue;
-          if (file.path.contains('lib/features/pdf/')) continue;
-          if (file.path.contains('scoreboard.dart')) continue;
-          if (file.path.contains('viewer_match_screen.dart')) continue;
+          if (file.path.contains('lib/shared/theme/')) {
+            continue;
+          }
+          if (file.path.contains('lib/features/pdf/')) {
+            continue;
+          }
+          if (file.path.contains('scoreboard.dart')) {
+            continue;
+          }
+          if (file.path.contains('viewer_match_screen.dart')) {
+            continue;
+          }
           if (file.path.endsWith('.freezed.dart') ||
               file.path.endsWith('.g.dart')) {
             continue;
@@ -742,9 +754,12 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/theme/')) continue;
-          if (file.path.contains('lib/features/pdf/presentation/widgets/'))
+          if (file.path.contains('lib/shared/theme/')) {
             continue;
+          }
+          if (file.path.contains('lib/features/pdf/presentation/widgets/')) {
+            continue;
+          }
           if (file.path.endsWith('.freezed.dart') ||
               file.path.endsWith('.g.dart')) {
             continue;
