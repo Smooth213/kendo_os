@@ -1495,13 +1495,13 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                           ),
                                           icon: const Icon(
                                             Icons.block,
-                                            color: AppKendoColors.redAccent,
+                                            color: AppKendoColors.pureWhite,
                                             size: 14,
                                           ),
                                           label: const Text(
                                             '欠員',
                                             style: TextStyle(
-                                              color: AppKendoColors.redAccent,
+                                              color: AppKendoColors.pureWhite,
                                               fontWeight: AppFontWeight.bold,
                                               fontSize: AppFontSize.small,
                                             ),
