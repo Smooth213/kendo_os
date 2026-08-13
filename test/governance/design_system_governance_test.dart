@@ -31,8 +31,9 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/utils/app_snack_bar.dart'))
+          if (file.path.contains('lib/shared/utils/app_snack_bar.dart')) {
             continue;
+          }
 
           final content = file.readAsStringSync();
           if (content.contains('showSnackBar(')) {
@@ -54,8 +55,9 @@ void main() {
       final violations = <String>[];
 
       for (final file in dartFiles) {
-        if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart'))
+        if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart')) {
           continue;
+        }
 
         final content = file.readAsStringSync();
         if (content.contains('showModalBottomSheet(')) {
@@ -78,7 +80,9 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/widgets/app_chip.dart')) continue;
+          if (file.path.contains('lib/shared/widgets/app_chip.dart')) {
+            continue;
+          }
 
           final content = file.readAsStringSync();
           if (RegExp(
@@ -102,7 +106,9 @@ void main() {
       final violations = <String>[];
 
       for (final file in dartFiles) {
-        if (file.path.contains('lib/shared/widgets/app_header.dart')) continue;
+        if (file.path.contains('lib/shared/widgets/app_header.dart')) {
+          continue;
+        }
 
         final content = file.readAsStringSync();
         if (RegExp(r'\bAppBar\s*\(').hasMatch(content)) {
@@ -125,8 +131,9 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/widgets/app_dialog.dart'))
+          if (file.path.contains('lib/shared/widgets/app_dialog.dart')) {
             continue;
+          }
 
           final content = file.readAsStringSync();
           if (content.contains('showDialog(') ||
@@ -311,8 +318,9 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart'))
+          if (file.path.contains('lib/shared/widgets/app_bottom_sheet.dart')) {
             continue;
+          }
 
           final content = file.readAsStringSync();
           if (content.contains('showModalBottomSheet')) {
@@ -355,8 +363,12 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/theme/')) continue;
-          if (file.path.contains('lib/features/pdf/')) continue;
+          if (file.path.contains('lib/shared/theme/')) {
+            continue;
+          }
+          if (file.path.contains('lib/features/pdf/')) {
+            continue;
+          }
 
           final content = file.readAsStringSync();
           final matches = RegExp(
@@ -386,8 +398,12 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/theme/')) continue;
-          if (file.path.contains('lib/features/pdf/')) continue;
+          if (file.path.contains('lib/shared/theme/')) {
+            continue;
+          }
+          if (file.path.contains('lib/features/pdf/')) {
+            continue;
+          }
 
           final content = file.readAsStringSync();
           final matches = RegExp(
@@ -413,7 +429,9 @@ void main() {
       final violations = <String>[];
 
       for (final file in dartFiles) {
-        if (file.path.contains('lib/shared/theme/')) continue;
+        if (file.path.contains('lib/shared/theme/')) {
+          continue;
+        }
 
         final content = file.readAsStringSync();
         final matches = RegExp(
@@ -440,11 +458,16 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/theme/')) continue;
-          if (file.path.contains('lib/features/pdf/')) continue;
-          if (file.path.endsWith('.freezed.dart') ||
-              file.path.endsWith('.g.dart'))
+          if (file.path.contains('lib/shared/theme/')) {
             continue;
+          }
+          if (file.path.contains('lib/features/pdf/')) {
+            continue;
+          }
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
 
           final content = file.readAsStringSync();
           // コメント行を取り除いて純粋なコード部分のみを検証
@@ -477,11 +500,16 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/theme/')) continue;
-          if (file.path.contains('lib/features/pdf/')) continue;
-          if (file.path.endsWith('.freezed.dart') ||
-              file.path.endsWith('.g.dart'))
+          if (file.path.contains('lib/shared/theme/')) {
             continue;
+          }
+          if (file.path.contains('lib/features/pdf/')) {
+            continue;
+          }
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
 
           final content = file.readAsStringSync();
           final matches = RegExp(
@@ -509,17 +537,24 @@ void main() {
         final violations = <String>[];
 
         for (final file in dartFiles) {
-          if (file.path.contains('lib/shared/theme/')) continue;
-          if (file.path.contains('lib/features/pdf/')) continue;
-          if (file.path.contains('lib/shared/widgets/scoreboard.dart'))
+          if (file.path.contains('lib/shared/theme/')) {
             continue;
+          }
+          if (file.path.contains('lib/features/pdf/')) {
+            continue;
+          }
+          if (file.path.contains('lib/shared/widgets/scoreboard.dart')) {
+            continue;
+          }
           if (file.path.contains(
             'lib/features/viewer/presentation/viewer_match_screen.dart',
-          ))
+          )) {
             continue;
+          }
           if (file.path.endsWith('.freezed.dart') ||
-              file.path.endsWith('.g.dart'))
+              file.path.endsWith('.g.dart')) {
             continue;
+          }
 
           final content = file.readAsStringSync();
           final matches = RegExp(

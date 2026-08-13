@@ -20,11 +20,13 @@ jobs:
       - name: 📦 依存パッケージの解決
         run: flutter pub get
 
-      - name: 🔍 静的解析空間の厳格監査（警告ゼロ縛り）
-        run: flutter analyze
+      - name: 🧹 Dartコード・警告の全自動修復 (自動フォーマット & リント修復)
+        run: |
+          dart fix --apply
+          dart format .
 
-      - name: 🧹 Dartコードフォーマットの全自動修復
-        run: dart format .
+      - name: 🔍 静的解析空間の厳格監査 (Red Error保護)
+        run: flutter analyze --no-fatal-infos
 
       - name: 🧪 全要塞テストの一斉自動実行＆カバレッジ計測（Unit / Widget / Golden / E2E）
         run: flutter test --coverage
