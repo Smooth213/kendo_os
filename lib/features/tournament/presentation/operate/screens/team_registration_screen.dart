@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -177,7 +178,7 @@ class _TeamRegistrationScreenState
           IconButton(
             icon: Icon(
               Icons.arrow_back_ios_new,
-              color: AppKendoColors.grey.shade800,
+              color: context.appColors.iconColor,
               size: 24,
             ),
             onPressed: () => Navigator.pop(context),
@@ -377,7 +378,7 @@ class _TeamRegistrationScreenState
                   const SizedBox(height: AppSpacing.lg),
 
                   // 助っ人直接入力
-                  TextField(
+                  AppTextField(
                     controller: customNameController,
                     style: TextStyle(color: textColor),
                     decoration:
@@ -425,7 +426,7 @@ class _TeamRegistrationScreenState
                               style: TextStyle(
                                 fontSize: AppFontSize.small,
                                 fontWeight: AppFontWeight.bold,
-                                color: AppKendoColors.orange.shade800,
+                                color: const Color(0xFFFF9800),
                               ),
                             ),
                           ),
@@ -500,7 +501,7 @@ class _TeamRegistrationScreenState
                                 Text(
                                   '該当する選手がいません',
                                   style: TextStyle(
-                                    color: AppKendoColors.grey.shade500,
+                                    color: const Color(0x8A000000),
                                     fontSize: AppFontSize.bodySmall,
                                   ),
                                 ),
@@ -582,19 +583,19 @@ class _TeamRegistrationScreenState
 
     if (isHelper || isUsed) {
       cardColor = isDark
-          ? AppKendoColors.orange.shade900.withAlpha(77)
-          : AppKendoColors.orange.shade50.withAlpha(128);
+          ? context.appColors.warningColor.withAlpha(77)
+          : context.appColors.warningColor.withAlpha(128);
       borderColor = isDark
-          ? AppKendoColors.transparent
-          : AppKendoColors.orange.shade100;
+          ? Colors.transparent
+          : context.appColors.warningColor;
       leadingTextColor = isDark
-          ? AppKendoColors.orange.shade400
-          : AppKendoColors.orange.shade700;
-      subtitleColor = AppKendoColors.orange;
+          ? const Color(0xFFFF9800)
+          : const Color(0xFFFF9800);
+      subtitleColor = context.appColors.warningColor;
     } else {
       cardColor = _themeColors.softAccent;
       borderColor = isDark
-          ? AppKendoColors.transparent
+          ? Colors.transparent
           : _themeColors.primaryAccent.withValues(alpha: 0.2);
       leadingTextColor = _themeColors.primaryAccent;
       subtitleColor = _themeColors.primaryAccent.withValues(alpha: 0.8);
@@ -613,7 +614,7 @@ class _TeamRegistrationScreenState
         leading: CircleAvatar(
           backgroundColor: isDark
               ? const Color(0xFF2C2C2E)
-              : AppKendoColors.pureWhite,
+              : const Color(0xFFFFFFFF),
           child: Text(
             name.isNotEmpty ? name.substring(0, 1) : '？',
             style: TextStyle(
@@ -631,7 +632,7 @@ class _TeamRegistrationScreenState
           style: TextStyle(
             fontSize: AppFontSize.small,
             color: subtitleColor,
-            fontWeight: isHelper ? AppFontWeight.bold : FontWeight.normal,
+            fontWeight: isHelper ? AppFontWeight.bold : AppFontWeight.regular,
           ),
         ),
         trailing: (isHelper || isUsed)
@@ -641,14 +642,14 @@ class _TeamRegistrationScreenState
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppKendoColors.orange.shade50,
+                  color: const Color(0xFFFF9800),
                   borderRadius: AppRadius.small,
-                  border: Border.all(color: AppKendoColors.orange.shade200),
+                  border: Border.all(color: const Color(0xFFFF9800)),
                 ),
                 child: Text(
                   '$usedPosと入替',
                   style: TextStyle(
-                    color: AppKendoColors.orange.shade700,
+                    color: const Color(0xFFFF9800),
                     fontSize: AppFontSize.caption,
                     fontWeight: AppFontWeight.bold,
                   ),
@@ -971,7 +972,7 @@ class _TeamRegistrationScreenState
     final inputBgColor = themeColors.cardBackground;
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade200;
+        : context.appColors.separatorColor;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -1016,7 +1017,7 @@ class _TeamRegistrationScreenState
                 ? []
                 : [
                     BoxShadow(
-                      color: AppKendoColors.pureBlack.withValues(alpha: 0.03),
+                      color: const Color(0xFF000000).withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -1050,18 +1051,18 @@ class _TeamRegistrationScreenState
                         // 補欠枠は少し色を変えて差別化
                         backgroundColor: isSubstitute
                             ? (isDark
-                                  ? AppKendoColors.orange.shade900.withValues(
-                                      alpha: 0.3,
-                                    )
-                                  : AppKendoColors.orange.shade50)
+                                  ? const Color(
+                                      0xFFFF9800,
+                                    ).withValues(alpha: 0.3)
+                                  : const Color(0xFFFF9800))
                             : _themeColors.softAccent,
                         child: Text(
                           isSubstitute ? '補' : posNames[index].substring(0, 1),
                           style: TextStyle(
                             color: isSubstitute
                                 ? (isDark
-                                      ? AppKendoColors.orange.shade400
-                                      : AppKendoColors.orange.shade700)
+                                      ? const Color(0xFFFF9800)
+                                      : const Color(0xFFFF9800))
                                 : _themeColors.primaryAccent,
                             fontWeight: AppFontWeight.bold,
                             fontSize: AppFontSize.subhead,
@@ -1075,8 +1076,8 @@ class _TeamRegistrationScreenState
                           fontWeight: AppFontWeight.bold,
                           color: _tempSelectedPlayers[index] == null
                               ? (isDark
-                                    ? AppKendoColors.grey.shade600
-                                    : AppKendoColors.grey.shade400)
+                                    ? const Color(0x8A000000)
+                                    : const Color(0x8A000000))
                               : textColor,
                         ),
                       ),
@@ -1084,7 +1085,7 @@ class _TeamRegistrationScreenState
                         posNames[index],
                         style: TextStyle(
                           color: isSubstitute
-                              ? AppKendoColors.orange.shade600
+                              ? const Color(0xFFFF9800)
                               : _themeColors.primaryAccent,
                           fontSize: AppFontSize.small,
                           fontWeight: AppFontWeight.bold,
@@ -1134,7 +1135,7 @@ class _TeamRegistrationScreenState
                         endIndent: 20,
                         color: isDark
                             ? const Color(0xFF38383A)
-                            : AppKendoColors.grey.shade100,
+                            : const Color(0xFFF2F2F7),
                       ),
                   ],
                 );
@@ -1198,7 +1199,7 @@ class _TeamRegistrationScreenState
     final inputBgColor = themeColors.cardBackground;
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade300;
+        : context.appColors.separatorColor;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1238,8 +1239,8 @@ class _TeamRegistrationScreenState
                 style: TextStyle(
                   height: 1.5,
                   color: isDark
-                      ? AppKendoColors.grey.shade300
-                      : AppKendoColors.grey.shade800,
+                      ? const Color(0x33000000)
+                      : const Color(0xDE000000),
                 ),
               ),
             ),
@@ -1278,8 +1279,8 @@ class _TeamRegistrationScreenState
                           '${t.matchType} / 選手: ${t.playerNames.where((n) => n.isNotEmpty).join(", ")}',
                           style: TextStyle(
                             color: isDark
-                                ? AppKendoColors.grey.shade400
-                                : AppKendoColors.grey.shade600,
+                                ? const Color(0x8A000000)
+                                : const Color(0x8A000000),
                           ),
                         ),
                         trailing: Row(
@@ -1355,11 +1356,11 @@ class _TeamRegistrationScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final bottomColor = enableLiquidGlass
-        ? AppKendoColors.transparent
-        : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite);
+        ? Colors.transparent
+        : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
     final borderColor = enableLiquidGlass
-        ? AppKendoColors.transparent
-        : (isDark ? const Color(0xFF38383A) : AppKendoColors.grey.shade300);
+        ? Colors.transparent
+        : (isDark ? const Color(0xFF38383A) : const Color(0x33000000));
 
     return Container(
       padding: EdgeInsets.only(
@@ -1556,7 +1557,7 @@ class _TeamRegistrationScreenState
       },
       fieldViewBuilder:
           (context, fieldController, focusNode, onFieldSubmitted) {
-            return TextField(
+            return AppTextField(
               controller: fieldController,
               focusNode: focusNode,
               style: TextStyle(
@@ -1600,7 +1601,7 @@ class _TeamRegistrationScreenState
           child: Material(
             elevation: 8.0,
             borderRadius: AppRadius.medium,
-            color: isDark ? const Color(0xFF2C2C2E) : AppKendoColors.pureWhite,
+            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: 250,

@@ -43,7 +43,7 @@ class TimerWidget extends ConsumerWidget {
     final inputBgColor = context.appColors.inputBackground;
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade300;
+        : context.appColors.separatorColor;
 
     showAppDialog(
       context: context,
@@ -71,7 +71,7 @@ class TimerWidget extends ConsumerWidget {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: AppRadius.medium,
                     borderSide: BorderSide(
-                      color: AppKendoColors.indigo.shade400,
+                      color: const Color(0xFF3F51B5),
                       width: 2,
                     ),
                   ),
@@ -110,7 +110,7 @@ class TimerWidget extends ConsumerWidget {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: AppRadius.medium,
                     borderSide: BorderSide(
-                      color: AppKendoColors.indigo.shade400,
+                      color: const Color(0xFF3F51B5),
                       width: 2,
                     ),
                   ),
@@ -138,9 +138,9 @@ class TimerWidget extends ConsumerWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: isDark
-                  ? AppKendoColors.indigo.shade600
-                  : AppKendoColors.indigo,
-              foregroundColor: AppKendoColors.pureWhite,
+                  ? const Color(0xFF3F51B5)
+                  : const Color(0xFF3F51B5),
+              foregroundColor: const Color(0xFFFFFFFF),
               shape: const RoundedRectangleBorder(
                 borderRadius: AppRadius.small,
               ),
@@ -186,14 +186,14 @@ class TimerWidget extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final timerBgColor = isRunning
         ? (isDark
-              ? AppKendoColors.hansokuRed.withValues(alpha: 0.4)
-              : AppKendoColors.hansokuRed)
-        : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite);
+              ? context.appColors.errorColor.withValues(alpha: 0.4)
+              : context.appColors.errorColor)
+        : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
     final timerBorderColor = isRunning
-        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark ? const Color(0xFF38383A) : AppKendoColors.indigo.shade200);
+        ? (isDark ? context.appColors.errorColor : context.appColors.errorColor)
+        : (isDark ? const Color(0xFF38383A) : const Color(0xFF3F51B5));
     final timerTextColor = isRunning
-        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
+        ? (isDark ? context.appColors.errorColor : context.appColors.errorColor)
         : (context.appColors.textColor);
 
     return GestureDetector(
@@ -235,14 +235,14 @@ class TimerWidget extends ConsumerWidget {
                   ? Icons.lock_outline
                   : (isRunning ? Icons.pause_circle : Icons.play_circle),
               color: isInputLocked
-                  ? AppKendoColors.grey.shade400
+                  ? const Color(0x8A000000)
                   : (isRunning
                         ? (isDark
-                              ? AppKendoColors.hansokuRed
-                              : AppKendoColors.hansokuRed)
+                              ? const Color(0xFFE53935)
+                              : const Color(0xFFE53935))
                         : (isDark
-                              ? AppKendoColors.indigo.shade300
-                              : AppKendoColors.indigo.shade500)),
+                              ? const Color(0xFF3F51B5)
+                              : const Color(0xFF3F51B5))),
               size: 28,
             ),
             const SizedBox(width: AppSpacing.md),
@@ -260,7 +260,7 @@ class TimerWidget extends ConsumerWidget {
                     height: 1.1,
                     // ★ 修正：ロック時はテキストもグレーアウトして「非アクティブ」を強調
                     color: isInputLocked
-                        ? AppKendoColors.grey.shade500
+                        ? const Color(0x8A000000)
                         : timerTextColor,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),

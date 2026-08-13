@@ -35,13 +35,11 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
     bool isFinished = true,
   }) {
     final textColor = isFinished
-        ? (isDark ? AppKendoColors.grey.shade600 : AppKendoColors.grey.shade500)
-        : (isDark ? AppKendoColors.pureWhite : AppKendoColors.pureBlack);
+        ? (isDark ? const Color(0x8A000000) : const Color(0x8A000000))
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000));
     final iconColor = isFinished
-        ? (isDark ? AppKendoColors.grey.shade700 : AppKendoColors.grey.shade400)
-        : (isDark
-              ? AppKendoColors.grey.shade600
-              : AppKendoColors.grey.shade400);
+        ? (isDark ? const Color(0xDE000000) : const Color(0x8A000000))
+        : (isDark ? const Color(0x8A000000) : const Color(0x8A000000));
 
     if (match.redScore == 0 && match.whiteScore == 0) {
       return Padding(
@@ -172,7 +170,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                       : themeColors.primaryAccent),
             foregroundColor: (enableLiquidGlass || isDark)
                 ? themeColors.primaryAccent
-                : AppKendoColors.pureWhite,
+                : const Color(0xFFFFFFFF),
             title: '$dateDisplay の記録 (観戦)',
             elevation: 0,
             centerTitle: true,
@@ -223,7 +221,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                             colorScheme: isDark
                                 ? ColorScheme.dark(
                                     primary: themeColors.primaryAccent,
-                                    onPrimary: AppKendoColors.pureWhite,
+                                    onPrimary: context.appColors.textColor,
                                     surface: themeColors.cardBackground,
                                     onSurface: AppKendoColors.pureWhite,
                                   )
@@ -307,8 +305,8 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                           padding: const EdgeInsets.all(AppSpacing.lg),
                           child: Card(
                             color: isDark
-                                ? AppKendoColors.grey.shade900
-                                : AppKendoColors.pureWhite,
+                                ? const Color(0xDE000000)
+                                : const Color(0xFFFFFFFF),
                             shape: RoundedRectangleBorder(
                               borderRadius: AppRadius.large,
                             ),
@@ -378,17 +376,17 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                         final Color bg = isFinished
                             ? (isDark
                                   ? const Color(0xFF161618)
-                                  : AppKendoColors.grey.shade50)
+                                  : context.appColors.cardBackground)
                             : (context.appColors.cardBackground);
                         final Color textC = isFinished
                             ? (isDark
-                                  ? AppKendoColors.grey.shade600
-                                  : AppKendoColors.grey.shade500)
+                                  ? context.appColors.subTextColor
+                                  : context.appColors.subTextColor)
                             : (context.appColors.textColor);
                         final Color noteC = isFinished
                             ? (isDark
-                                  ? AppKendoColors.grey.shade700
-                                  : AppKendoColors.grey.shade500)
+                                  ? context.appColors.textColor
+                                  : context.appColors.subTextColor)
                             : AppKendoColors.grey;
 
                         return Padding(
@@ -405,12 +403,12 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                               borderRadius: AppRadius.large,
                               side: BorderSide(
                                 color: isDark
-                                    ? AppKendoColors.pureWhite.withValues(
-                                        alpha: 0.10,
-                                      )
-                                    : AppKendoColors.pureBlack.withValues(
-                                        alpha: 0.05,
-                                      ),
+                                    ? const Color(
+                                        0xFFFFFFFF,
+                                      ).withValues(alpha: 0.10)
+                                    : const Color(
+                                        0xFF000000,
+                                      ).withValues(alpha: 0.05),
                               ),
                             ),
                             child: InkWell(
@@ -454,7 +452,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: isPlaying
-                                                ? AppKendoColors.blue.shade600
+                                                ? const Color(0xFF2196F3)
                                                 : (isFinished
                                                       ? (isDark
                                                             ? Colors
@@ -624,7 +622,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.blueGrey.shade700,
+                  backgroundColor: const Color(0xFF607D8B),
                   foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                 ),

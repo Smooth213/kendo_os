@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -540,8 +541,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   ),
                   child: Material(
                     color: isDark
-                        ? AppKendoColors.grey.shade900
-                        : AppKendoColors.grey.shade50,
+                        ? context.appColors.textColor
+                        : context.appColors.cardBackground,
                     borderRadius: AppRadius.medium,
                     child: currentFilteredUnits.isEmpty
                         ? const Center(
@@ -748,8 +749,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                               style: TextStyle(
                                 fontSize: AppFontSize.caption,
                                 color: isDark
-                                    ? AppKendoColors.grey.shade400
-                                    : AppKendoColors.grey.shade600,
+                                    ? const Color(0x8A000000)
+                                    : const Color(0x8A000000),
                                 fontWeight: AppFontWeight.bold,
                               ),
                             ),
@@ -822,9 +823,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       ),
                       borderRadius: AppRadius.small,
                       border: Border.all(
-                        color: AppKendoColors.ipponGold.withAlpha(
-                          isDark ? 60 : 30,
-                        ),
+                        color: const Color(
+                          0xFFD4AF37,
+                        ).withAlpha(isDark ? 60 : 30),
                       ),
                     ),
                     child: Row(
@@ -841,8 +842,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                             style: TextStyle(
                               fontSize: AppFontSize.small,
                               color: isDark
-                                  ? AppKendoColors.ipponGold
-                                  : AppKendoColors.ipponGold,
+                                  ? const Color(0xFFD4AF37)
+                                  : const Color(0xFFD4AF37),
                             ),
                           ),
                         ),
@@ -1005,8 +1006,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                                 style: TextStyle(
                                   fontSize: AppFontSize.caption,
                                   color: isDark
-                                      ? AppKendoColors.blue.shade300
-                                      : AppKendoColors.blue.shade700,
+                                      ? const Color(0xFF2196F3)
+                                      : const Color(0xFF2196F3),
                                 ),
                               ),
                             ),
@@ -1051,7 +1052,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                           ),
                           SizedBox(
                             width: 100,
-                            child: TextField(
+                            child: AppTextField(
                               controller: _overallTimeController,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
@@ -1084,10 +1085,10 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
               decoration: BoxDecoration(
                 color: isDark
                     ? const Color(0xFF1C1C1E)
-                    : AppKendoColors.pureWhite,
+                    : const Color(0xFFFFFFFF),
                 boxShadow: [
                   BoxShadow(
-                    color: AppKendoColors.pureBlack.withAlpha(isDark ? 50 : 20),
+                    color: const Color(0xFF000000).withAlpha(isDark ? 50 : 20),
                     blurRadius: 10,
                     offset: const Offset(0, -4),
                   ),
@@ -1132,8 +1133,10 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   foregroundColor: AppKendoColors.pureWhite,
                   disabledBackgroundColor: context.appColors.separatorColor,
                   disabledForegroundColor: isDark
-                      ? AppKendoColors.pureWhite.withValues(alpha: 0.3)
-                      : AppKendoColors.pureBlack.withValues(alpha: 0.38),
+                      ? context.appColors.textColor.withValues(alpha: 0.3)
+                      : context.appColors.cardBackground.withValues(
+                          alpha: 0.38,
+                        ),
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
                   elevation: 0,
@@ -1180,8 +1183,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       ),
       child: Material(
         color: isDark
-            ? AppKendoColors.grey.shade900.withAlpha(128)
-            : AppKendoColors.grey.shade50,
+            ? context.appColors.textColor.withAlpha(128)
+            : context.appColors.cardBackground,
         borderRadius: AppRadius.large,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -1231,9 +1234,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF2C2C2E)
-                : AppKendoColors.grey.shade100,
+            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
             borderRadius: AppRadius.medium,
           ),
           child: DropdownButton<String>(
@@ -1275,7 +1276,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
           decoration: BoxDecoration(
             color: isDark
                 ? const Color(0xFF2C2C2E)
-                : AppKendoColors.grey.shade100,
+                : context.appColors.cardBackground,
             borderRadius: AppRadius.medium,
           ),
           child: DropdownButton<T>(

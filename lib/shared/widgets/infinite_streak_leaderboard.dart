@@ -48,7 +48,7 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
           title: Text(
             e.key,
             style: TextStyle(
-              fontWeight: isTop ? AppFontWeight.bold : FontWeight.normal,
+              fontWeight: isTop ? AppFontWeight.bold : AppFontWeight.regular,
               color: themeColors.textColor,
             ),
           ),

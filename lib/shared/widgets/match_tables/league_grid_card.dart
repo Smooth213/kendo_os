@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -150,16 +149,16 @@ class LeagueGridCard extends StatelessWidget {
                     if (cellData == null) return const SizedBox(height: 65);
 
                     Color symbolColor = isDark
-                        ? AppKendoColors.ipponGold
-                        : AppKendoColors.ipponGold;
+                        ? const Color(0xFFD4AF37)
+                        : const Color(0xFFD4AF37);
                     if (cellData.result == 'win') {
                       symbolColor = isDark
-                          ? AppKendoColors.hansokuRed
-                          : AppKendoColors.hansokuRed;
+                          ? const Color(0xFFE53935)
+                          : const Color(0xFFE53935);
                     } else if (cellData.result == 'loss') {
                       symbolColor = isDark
-                          ? AppKendoColors.blue.shade300
-                          : AppKendoColors.indigo.shade700;
+                          ? const Color(0xFF2196F3)
+                          : const Color(0xFF3F51B5);
                     }
 
                     final textColor = themeColors.textColor;
@@ -300,17 +299,15 @@ class LeagueGridCard extends StatelessWidget {
       alignment: Alignment.center,
       color: isRank
           ? (isDark
-                ? AppKendoColors.orange.withValues(alpha: 0.2)
-                : AppKendoColors.orange.shade50)
+                ? context.appColors.warningColor.withValues(alpha: 0.2)
+                : context.appColors.warningColor)
           : null,
       child: Text(
         text,
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
           fontSize: isRank ? 16 : 13,
-          color: isRank
-              ? AppKendoColors.orange.shade800
-              : themeColors.textColor,
+          color: isRank ? const Color(0xFFFF9800) : themeColors.textColor,
         ),
       ),
     );

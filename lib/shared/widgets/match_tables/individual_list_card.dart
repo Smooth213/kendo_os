@@ -121,7 +121,7 @@ class IndividualListCard extends StatelessWidget {
                         m.note.isNotEmpty ? m.note : '第${index + 1}試合',
                         style: TextStyle(
                           fontSize: AppFontSize.badge,
-                          color: AppKendoColors.grey.shade500,
+                          color: const Color(0x8A000000),
                           fontWeight: AppFontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -136,7 +136,7 @@ class IndividualListCard extends StatelessWidget {
                               m.redTeam,
                               style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: AppKendoColors.grey.shade500,
+                                color: const Color(0x8A000000),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -169,7 +169,7 @@ class IndividualListCard extends StatelessWidget {
                       child: Text(
                         m.isDraw ? '✕' : '-',
                         style: TextStyle(
-                          color: AppKendoColors.grey.shade400,
+                          color: const Color(0x8A000000),
                           fontWeight: AppFontWeight.light,
                           fontSize: AppFontSize.subhead,
                         ),
@@ -191,7 +191,7 @@ class IndividualListCard extends StatelessWidget {
                               m.whiteTeam,
                               style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: AppKendoColors.grey.shade500,
+                                color: const Color(0x8A000000),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -221,7 +221,7 @@ class IndividualListCard extends StatelessWidget {
               if (m.isSummary && !m.hasOwnTeam) {
                 return Container(
                   color: isDark
-                      ? AppKendoColors.pureBlack.withValues(alpha: 0.2)
+                      ? const Color(0xFF000000).withValues(alpha: 0.2)
                       : AppKendoColors.grey.withValues(alpha: 0.05),
                   child: Stack(
                     alignment: Alignment.center,
@@ -235,10 +235,10 @@ class IndividualListCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: isDark
                               ? const Color(0xFF1C1C1E)
-                              : AppKendoColors.pureWhite,
+                              : const Color(0xFFFFFFFF),
                           borderRadius: AppRadius.small,
                           border: Border.all(
-                            color: AppKendoColors.grey.shade400,
+                            color: const Color(0x8A000000),
                             width: 0.5,
                           ),
                           boxShadow: [
@@ -257,8 +257,8 @@ class IndividualListCard extends StatelessWidget {
                             fontSize: AppFontSize.caption,
                             fontWeight: AppFontWeight.bold,
                             color: isDark
-                                ? AppKendoColors.grey.shade400
-                                : AppKendoColors.grey.shade700,
+                                ? const Color(0x8A000000)
+                                : const Color(0xDE000000),
                           ),
                         ),
                       ),

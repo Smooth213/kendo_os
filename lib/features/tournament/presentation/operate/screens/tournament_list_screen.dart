@@ -94,7 +94,7 @@ class TournamentListScreen extends ConsumerWidget {
                       height: 80,
                       color: isDark
                           ? const Color(0xFF38383A)
-                          : AppKendoColors.grey.shade300,
+                          : const Color(0x33000000),
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     Text(
@@ -162,10 +162,10 @@ class TournamentListScreen extends ConsumerWidget {
                       side: enableLiquidGlass
                           ? BorderSide(
                               color: isDark
-                                  ? AppKendoColors.pureWhite.withValues(
+                                  ? context.appColors.textColor.withValues(
                                       alpha: 0.15,
                                     )
-                                  : AppKendoColors.pureBlack.withValues(
+                                  : context.appColors.cardBackground.withValues(
                                       alpha: 0.08,
                                     ),
                               width: 0.5,

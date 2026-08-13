@@ -61,10 +61,10 @@ class GlassButton extends ConsumerWidget {
 
     final Color fallbackBgColor = isDark
         ? const Color(0xFF1C1C1E)
-        : AppKendoColors.pureWhite;
+        : context.appColors.textColor;
     final Color fallbackBorderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade300;
+        : context.appColors.separatorColor;
 
     // 背景色: Liquid Glass 無効時は指定色をそのまま（不透明で）適用
     final baseBgColor = surfaceColor ?? color;
@@ -75,7 +75,7 @@ class GlassButton extends ConsumerWidget {
     // 枠線色: Liquid Glass 無効時は枠線を消す
     final borderColor = enableLiquidGlass
         ? (isDark ? color.withValues(alpha: 0.6) : color.withValues(alpha: 0.4))
-        : (child != null ? fallbackBorderColor : AppKendoColors.transparent);
+        : (child != null ? fallbackBorderColor : Colors.transparent);
 
     // 文字色: Liquid Glass 無効時は白文字
     final textColor = enableLiquidGlass
@@ -85,7 +85,7 @@ class GlassButton extends ConsumerWidget {
     // アイコンの色はベースカラーから少し明度を調整して視認性を高める
     final accentColor = enableLiquidGlass
         ? (isDark ? _lighten(color, 0.2) : _darken(color, 0.2))
-        : AppKendoColors.pureWhite;
+        : context.appColors.textColor;
 
     Widget buttonContent = Material(
       color: bgColor,

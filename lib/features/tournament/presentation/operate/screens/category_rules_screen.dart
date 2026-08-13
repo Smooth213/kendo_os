@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -490,7 +491,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, 'yes'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppKendoColors.indigo.shade700,
+                backgroundColor: const Color(0xFF3F51B5),
                 foregroundColor: AppKendoColors.pureWhite,
               ),
               child: const Text(
@@ -729,26 +730,26 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           child: Row(
             children: [
               Expanded(
-                child: TextField(
+                child: AppTextField(
                   controller: _newCategoryController,
                   decoration: InputDecoration(
                     hintText: '部門名を入力（例：小学生低学年の部）',
                     hintStyle: TextStyle(
                       color: isDark
                           ? AppKendoColors.grey
-                          : AppKendoColors.grey.shade400,
+                          : const Color(0x8A000000),
                       fontSize: AppFontSize.bodySmall,
                     ),
                     filled: true,
                     fillColor: isDark
                         ? const Color(0xFF1C1C1E)
-                        : AppKendoColors.pureWhite,
+                        : const Color(0xFFFFFFFF),
                     border: OutlineInputBorder(
                       borderRadius: AppRadius.medium,
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
-                            : AppKendoColors.grey.shade300,
+                            : const Color(0x33000000),
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
@@ -756,13 +757,13 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
-                            : AppKendoColors.grey.shade200,
+                            : const Color(0x33000000),
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: AppRadius.medium,
                       borderSide: BorderSide(
-                        color: AppKendoColors.indigo.shade500,
+                        color: const Color(0xFF3F51B5),
                         width: 2.0,
                       ),
                     ),
@@ -773,7 +774,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               IconButton.filled(
                 icon: const Icon(Icons.add),
                 style: IconButton.styleFrom(
-                  backgroundColor: AppKendoColors.indigo.shade700,
+                  backgroundColor: const Color(0xFF3F51B5),
                 ),
                 onPressed: () =>
                     _addNewCategory(tournament, _newCategoryController.text),
@@ -834,14 +835,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       Icon(
                         Icons.gavel,
                         size: 48,
-                        color: AppKendoColors.grey.shade400,
+                        color: const Color(0x8A000000),
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
                         '部門別ルールが未登録です。\n上の入力欄から部門を追加してください。',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: AppKendoColors.grey.shade500,
+                          color: const Color(0x8A000000),
                           fontSize: AppFontSize.bodySmall,
                           height: 1.5,
                         ),
@@ -894,18 +895,18 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                             side: enableLiquidGlass
                                 ? BorderSide(
                                     color: isDark
-                                        ? AppKendoColors.pureWhite.withValues(
-                                            alpha: 0.15,
-                                          )
-                                        : AppKendoColors.pureBlack.withValues(
-                                            alpha: 0.08,
-                                          ),
+                                        ? const Color(
+                                            0xFFFFFFFF,
+                                          ).withValues(alpha: 0.15)
+                                        : const Color(
+                                            0xFF000000,
+                                          ).withValues(alpha: 0.08),
                                     width: 0.5,
                                   )
                                 : BorderSide(
                                     color: isDark
                                         ? const Color(0xFF38383A)
-                                        : AppKendoColors.grey.shade200,
+                                        : const Color(0x33000000),
                                   ),
                           ),
                           color: enableLiquidGlass
@@ -913,12 +914,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                                     ? const Color(
                                         0xFF1C1C1E,
                                       ).withValues(alpha: 0.35)
-                                    : AppKendoColors.pureWhite.withValues(
-                                        alpha: 0.65,
-                                      ))
+                                    : const Color(
+                                        0xFFFFFFFF,
+                                      ).withValues(alpha: 0.65))
                               : (isDark
                                     ? const Color(0xFF1C1C1E)
-                                    : AppKendoColors.pureWhite),
+                                    : context.appColors.textColor),
                           child: ListTile(
                             onTap: () => _showRuleDetailBottomSheet(
                               context,
@@ -974,7 +975,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     AppThemeColors? themeColors,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = themeColors?.primaryAccent ?? AppKendoColors.indigo;
+    final primaryColor =
+        themeColors?.primaryAccent ?? context.appColors.primaryAccent;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -984,13 +986,13 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       ),
       decoration: BoxDecoration(
         color: isDark
-            ? AppKendoColors.pureWhite.withValues(alpha: 0.05)
-            : AppKendoColors.grey.shade50,
+            ? context.appColors.textColor.withValues(alpha: 0.05)
+            : context.appColors.cardBackground,
         borderRadius: AppRadius.medium,
         border: Border.all(
           color: isDark
-              ? AppKendoColors.pureWhite.withValues(alpha: 0.12)
-              : AppKendoColors.grey.shade200,
+              ? context.appColors.textColor.withValues(alpha: 0.12)
+              : const Color(0x33000000),
         ),
       ),
       child: Row(
@@ -1015,8 +1017,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                     style: TextStyle(
                       fontSize: AppFontSize.caption,
                       color: isDark
-                          ? AppKendoColors.grey.shade400
-                          : AppKendoColors.grey.shade600,
+                          ? context.appColors.subTextColor
+                          : context.appColors.subTextColor,
                     ),
                   ),
                 ],
@@ -1027,12 +1029,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0xFF2C2C2E)
-                  : AppKendoColors.pureWhite,
+                  : context.appColors.textColor,
               borderRadius: AppRadius.xlarge,
               border: Border.all(
                 color: isDark
-                    ? AppKendoColors.pureWhite.withValues(alpha: 0.24)
-                    : AppKendoColors.grey.shade300,
+                    ? context.appColors.textColor.withValues(alpha: 0.24)
+                    : const Color(0x33000000),
               ),
               boxShadow: [
                 BoxShadow(
@@ -1054,7 +1056,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   ),
                   color: value > minValue
                       ? primaryColor
-                      : AppKendoColors.grey.shade400,
+                      : const Color(0x8A000000),
                   onPressed: value > minValue
                       ? () {
                           final newVal = (value - step).clamp(
@@ -1089,7 +1091,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   ),
                   color: value < maxValue
                       ? primaryColor
-                      : AppKendoColors.grey.shade400,
+                      : const Color(0x8A000000),
                   onPressed: value < maxValue
                       ? () {
                           final newVal = (value + step).clamp(
@@ -1188,7 +1190,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   ),
                   fillColor: isDark
                       ? const Color(0xFF1C1C1E)
-                      : AppKendoColors.pureWhite,
+                      : const Color(0xFFFFFFFF),
                   filled: true,
                 ),
                 items: const [
@@ -1474,14 +1476,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           decoration: BoxDecoration(
             color: enableLiquidGlass
                 ? AppKendoColors.transparent
-                : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite),
+                : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF)),
             border: Border(
               top: BorderSide(
                 color: enableLiquidGlass
-                    ? AppKendoColors.transparent
+                    ? Colors.transparent
                     : (isDark
                           ? const Color(0xFF38383A)
-                          : AppKendoColors.grey.shade200),
+                          : context.appColors.separatorColor),
                 width: 0.5,
               ),
             ),
@@ -1617,9 +1619,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             style: TextStyle(
               fontSize: AppFontSize.caption,
               fontWeight: AppFontWeight.bold,
-              color: isDark
-                  ? AppKendoColors.grey.shade400
-                  : AppKendoColors.grey.shade600,
+              color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
             ),
           ),
         ),
@@ -2229,12 +2229,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 decoration: BoxDecoration(
                   color: isDark
                       ? const Color(0xFF2C2C2E)
-                      : AppKendoColors.grey.shade50,
+                      : const Color(0xFFF2F2F7),
                   borderRadius: AppRadius.medium,
                   border: Border.all(
                     color: isDark
                         ? const Color(0xFF38383A)
-                        : AppKendoColors.grey.shade200,
+                        : const Color(0x33000000),
                   ),
                 ),
                 child: Column(
@@ -2876,7 +2876,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                         bottom: AppSpacing.roundValue,
                       ),
                       decoration: BoxDecoration(
-                        color: AppKendoColors.grey.shade400,
+                        color: const Color(0x8A000000),
                         borderRadius: AppRadius.medium,
                       ),
                     ),
@@ -3039,20 +3039,20 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               ),
               buildChip(
                 _formatMinutes(ruleSet.renseikaiRule.matchTimeMinutes),
-                AppKendoColors.grey.shade200,
+                const Color(0x33000000),
                 AppKendoColors.pureBlack,
               ),
               if (ruleSet.renseikaiRule.isRunningTime)
                 buildChip(
                   '流し',
-                  AppKendoColors.blue.shade100,
-                  AppKendoColors.blue.shade900,
+                  const Color(0xFF2196F3),
+                  const Color(0xFF2196F3),
                 ),
               if (ruleSet.renseikaiRule.hasHantei)
                 buildChip(
                   '引分有',
-                  AppKendoColors.green.shade100,
-                  AppKendoColors.green.shade900,
+                  AppKendoColors.successGreen,
+                  AppKendoColors.successGreen,
                 ),
             ],
           ),
@@ -3062,20 +3062,20 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             children: [
               buildChip(
                 '🏆 本戦',
-                AppKendoColors.indigo.shade100,
-                AppKendoColors.indigo.shade900,
+                const Color(0xFF3F51B5),
+                const Color(0xFF3F51B5),
               ),
               buildChip(
                 _formatMinutes(ruleSet.normalRule.matchTimeMinutes),
-                AppKendoColors.grey.shade200,
+                const Color(0x33000000),
                 AppKendoColors.pureBlack,
               ),
               if (ruleSet.normalRule.isEnchoUnlimited ||
                   ruleSet.normalRule.enchoCount > 0)
                 buildChip(
                   '代表戦/延長有',
-                  AppKendoColors.purple.shade100,
-                  AppKendoColors.purple.shade900,
+                  const Color(0xFF9C27B0),
+                  const Color(0xFF9C27B0),
                 ),
             ],
           ),
@@ -3085,19 +3085,19 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             children: [
               buildChip(
                 '🤝 申し合わせ',
-                AppKendoColors.teal.shade100,
-                AppKendoColors.teal.shade900,
+                const Color(0xFF009688),
+                const Color(0xFF009688),
               ),
               buildChip(
                 _formatMinutes(ruleSet.moushiawaseRule.matchTimeMinutes),
-                AppKendoColors.grey.shade200,
+                const Color(0x33000000),
                 AppKendoColors.pureBlack,
               ),
               if (ruleSet.moushiawaseRule.hasHantei)
                 buildChip(
                   '引分有',
-                  AppKendoColors.green.shade100,
-                  AppKendoColors.green.shade900,
+                  AppKendoColors.successGreen,
+                  AppKendoColors.successGreen,
                 ),
             ],
           ),
@@ -3114,26 +3114,26 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           children: [
             buildChip(
               '標準ルール',
-              AppKendoColors.blue.shade100,
-              AppKendoColors.blue.shade900,
+              const Color(0xFF2196F3),
+              const Color(0xFF2196F3),
             ),
             buildChip(
               _formatMinutes(ruleSet.normalRule.matchTimeMinutes),
-              AppKendoColors.grey.shade200,
+              const Color(0x33000000),
               AppKendoColors.pureBlack,
             ),
             buildChip(
               ruleSet.normalRule.enchoCount > 0
                   ? "延長${ruleSet.normalRule.enchoCount}回"
                   : (ruleSet.normalRule.isEnchoUnlimited ? "延長無制限" : "延長なし"),
-              AppKendoColors.purple.shade100,
-              AppKendoColors.purple.shade900,
+              const Color(0xFF9C27B0),
+              const Color(0xFF9C27B0),
             ),
             if (ruleSet.normalRule.hasHantei)
               buildChip(
                 '判定あり',
-                AppKendoColors.green.shade100,
-                AppKendoColors.green.shade900,
+                AppKendoColors.successGreen,
+                AppKendoColors.successGreen,
               ),
           ],
         ),
@@ -3145,12 +3145,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               children: [
                 buildChip(
                   '上位戦',
-                  AppKendoColors.deepOrange.shade100,
-                  AppKendoColors.deepOrange.shade900,
+                  const Color(0xFFFF5722),
+                  const Color(0xFFFF5722),
                 ),
                 buildChip(
                   _formatMinutes(ruleSet.advancedRule.matchTimeMinutes),
-                  AppKendoColors.grey.shade200,
+                  const Color(0x33000000),
                   AppKendoColors.pureBlack,
                 ),
                 buildChip(
@@ -3159,8 +3159,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                       : (ruleSet.advancedRule.isEnchoUnlimited
                             ? "延長無制限"
                             : "延長なし"),
-                  AppKendoColors.purple.shade100,
-                  AppKendoColors.purple.shade900,
+                  const Color(0xFF9C27B0),
+                  const Color(0xFF9C27B0),
                 ),
               ],
             ),

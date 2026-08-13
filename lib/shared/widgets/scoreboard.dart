@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -161,10 +162,10 @@ class MatchScoreboard extends ConsumerWidget {
     final isFinished = match.status == 'approved' || match.status == 'finished';
 
     final nameColor = side == Side.red
-        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
+        ? (isDark ? context.appColors.errorColor : context.appColors.errorColor)
         : (isDark
-              ? AppKendoColors.grey.shade300
-              : AppKendoColors.blueGrey.shade800);
+              ? context.appColors.separatorColor
+              : context.appColors.subTextColor);
 
     return SizedBox(
       width: 380, // 左右均等な幅を明示的に確保
@@ -186,7 +187,7 @@ class MatchScoreboard extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: isDark
                     ? const Color(0xFF1C1C1E)
-                    : AppKendoColors.grey.shade100,
+                    : const Color(0xFFF2F2F7),
                 borderRadius: AppRadius.small,
               ),
               child: FittedBox(
@@ -396,11 +397,11 @@ class MatchScoreboard extends ConsumerWidget {
       ), // ★ 横幅にゆとりを持たせる
       decoration: BoxDecoration(
         color: isDark
-            ? AppKendoColors.indigo.shade900
-            : AppKendoColors.indigo.shade700,
+            ? context.appColors.primaryAccent
+            : context.appColors.primaryAccent,
         borderRadius: AppRadius.full, // ★ 角丸を調整
         border: isDark
-            ? Border.all(color: AppKendoColors.indigo.shade400, width: 1.5)
+            ? Border.all(color: const Color(0xFF3F51B5), width: 1.5)
             : null,
         boxShadow: [
           BoxShadow(

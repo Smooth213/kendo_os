@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,14 +26,14 @@ class RuleConfigPanel extends ConsumerWidget {
     final rule = ref.watch(matchRuleProvider);
     final summary = ref.watch(ruleSummaryProvider);
     final notifier = ref.read(matchRuleProvider.notifier);
-    final primaryColor = AppKendoColors.purple.shade700;
+    final primaryColor = context.appColors.primaryAccent;
 
     return Card(
       elevation: 0,
       color: AppKendoColors.pureWhite,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.large,
-        side: BorderSide(color: AppKendoColors.grey.shade300),
+        side: BorderSide(color: const Color(0x33000000)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -64,7 +65,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   children: RulePreset.officials.map((preset) {
                     return AppActionChip(
                       label: Text(preset.name),
-                      backgroundColor: AppKendoColors.purple.shade50,
+                      backgroundColor: const Color(0xFF9C27B0),
                       onPressed: () => notifier.applyPreset(preset),
                     );
                   }).toList(),
@@ -79,7 +80,7 @@ class RuleConfigPanel extends ConsumerWidget {
               horizontal: AppSpacing.lg,
               vertical: AppSpacing.md,
             ),
-            color: AppKendoColors.blueGrey.shade50,
+            color: const Color(0xFF607D8B),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -94,7 +95,7 @@ class RuleConfigPanel extends ConsumerWidget {
                     summary,
                     style: TextStyle(
                       fontSize: AppFontSize.body,
-                      color: AppKendoColors.blueGrey.shade800,
+                      color: const Color(0xFF607D8B),
                       height: 1.4,
                     ),
                   ),
@@ -112,7 +113,7 @@ class RuleConfigPanel extends ConsumerWidget {
                 fontSize: AppFontSize.body,
               ),
             ),
-            collapsedBackgroundColor: AppKendoColors.grey.shade50,
+            collapsedBackgroundColor: const Color(0xFFF2F2F7),
             childrenPadding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               // 1. 規定本数の切り替え
@@ -122,7 +123,7 @@ class RuleConfigPanel extends ConsumerWidget {
                   '規定本数（勝敗ライン）',
                   style: TextStyle(
                     fontSize: AppFontSize.small,
-                    color: AppKendoColors.grey.shade600,
+                    color: const Color(0x8A000000),
                   ),
                 ),
               ),
@@ -151,7 +152,7 @@ class RuleConfigPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: AppFontSize.body,
                       fontWeight: AppFontWeight.bold,
-                      color: AppKendoColors.grey.shade800,
+                      color: const Color(0xDE000000),
                     ),
                   ),
                   Switch(
@@ -183,7 +184,7 @@ class RuleConfigPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: AppFontSize.body,
                       fontWeight: AppFontWeight.bold,
-                      color: AppKendoColors.grey.shade800,
+                      color: const Color(0xDE000000),
                     ),
                   ),
                   Switch(

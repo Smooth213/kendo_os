@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
@@ -294,13 +295,13 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           ),
           decoration: BoxDecoration(
             color: isDark
-                ? AppKendoColors.pureBlack.withValues(alpha: 0.5)
-                : AppKendoColors.pureWhite.withValues(alpha: 0.7),
+                ? context.appColors.cardBackground.withValues(alpha: 0.5)
+                : context.appColors.textColor.withValues(alpha: 0.7),
             borderRadius: AppRadius.large,
             border: Border.all(
               color: isDark
-                  ? AppKendoColors.pureWhite.withValues(alpha: 0.1)
-                  : AppKendoColors.pureBlack.withValues(alpha: 0.1),
+                  ? context.appColors.textColor.withValues(alpha: 0.1)
+                  : const Color(0xFF000000).withValues(alpha: 0.1),
             ),
           ),
           child: Row(
@@ -308,7 +309,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppKendoColors.grey.shade800,
+                    backgroundColor: const Color(0xDE000000),
                     foregroundColor: AppKendoColors.pureWhite,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.md,
@@ -426,13 +427,13 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           ),
           decoration: BoxDecoration(
             color: isDark
-                ? AppKendoColors.pureBlack.withValues(alpha: 0.5)
-                : AppKendoColors.pureWhite.withValues(alpha: 0.7),
+                ? context.appColors.cardBackground.withValues(alpha: 0.5)
+                : context.appColors.textColor.withValues(alpha: 0.7),
             borderRadius: AppRadius.large,
             border: Border.all(
               color: isDark
-                  ? AppKendoColors.pureWhite.withValues(alpha: 0.1)
-                  : AppKendoColors.pureBlack.withValues(alpha: 0.1),
+                  ? context.appColors.textColor.withValues(alpha: 0.1)
+                  : const Color(0xFF000000).withValues(alpha: 0.1),
             ),
           ),
           child: Row(
@@ -440,7 +441,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppKendoColors.grey.shade800,
+                    backgroundColor: const Color(0xDE000000),
                     foregroundColor: AppKendoColors.pureWhite,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.md,
@@ -658,13 +659,13 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
             constraints: const BoxConstraints(maxWidth: 450),
             decoration: BoxDecoration(
               color: isDark
-                  ? AppKendoColors.pureWhite.withValues(alpha: 0.05)
-                  : AppKendoColors.pureBlack.withValues(alpha: 0.02),
+                  ? context.appColors.textColor.withValues(alpha: 0.05)
+                  : context.appColors.cardBackground.withValues(alpha: 0.02),
               borderRadius: AppRadius.xlarge,
               border: Border.all(
                 color: isDark
-                    ? AppKendoColors.pureWhite.withValues(alpha: 0.1)
-                    : AppKendoColors.pureBlack.withValues(alpha: 0.05),
+                    ? context.appColors.textColor.withValues(alpha: 0.1)
+                    : context.appColors.cardBackground.withValues(alpha: 0.05),
               ),
             ),
             child: Column(
@@ -770,26 +771,26 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       final isDark = Theme.of(context).brightness == Brightness.dark;
       final borderColor = isDark
           ? AppKendoColors.tealAccent
-          : AppKendoColors.indigo.shade600;
+          : context.appColors.primaryAccent;
       final searchIconColor = isDark
           ? AppKendoColors.tealAccent
-          : AppKendoColors.indigo.shade700;
+          : context.appColors.primaryAccent;
 
       return Container(
         height: 40,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.compact),
         decoration: BoxDecoration(
           color: isDark
-              ? AppKendoColors.pureBlack.withValues(alpha: 0.26)
-              : AppKendoColors.pureWhite,
+              ? context.appColors.cardBackground.withValues(alpha: 0.26)
+              : context.appColors.textColor,
           borderRadius: AppRadius.medium,
           border: Border.all(color: borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
               color:
                   (isDark
-                          ? AppKendoColors.pureBlack
-                          : AppKendoColors.grey.shade300)
+                          ? context.appColors.cardBackground
+                          : const Color(0x33000000))
                       .withValues(alpha: 0.15),
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -802,13 +803,13 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
             Icon(Icons.search, color: searchIconColor, size: 20),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
-              child: TextField(
+              child: AppTextField(
                 controller: _searchController,
                 autofocus: true,
                 style: TextStyle(
                   color: isDark
-                      ? AppKendoColors.pureWhite
-                      : AppKendoColors.pureBlack,
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0xFF000000),
                   fontSize: AppFontSize.body,
                   fontWeight: AppFontWeight.medium,
                 ),
@@ -932,12 +933,12 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
       child: Container(
         width: MediaQuery.of(context).size.width > 600 ? 320 : null,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A1A1A) : AppKendoColors.pureWhite,
+          color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFFFFFF),
           border: Border(
             right: BorderSide(
               color: isDark
-                  ? AppKendoColors.pureWhite.withValues(alpha: 0.12)
-                  : AppKendoColors.pureBlack.withValues(alpha: 0.12),
+                  ? context.appColors.textColor.withValues(alpha: 0.12)
+                  : context.appColors.cardBackground.withValues(alpha: 0.12),
             ),
           ),
         ),
@@ -945,7 +946,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           children: [
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
-              child: TextField(
+              child: AppTextField(
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'タイトル、見出し、キーワード検索...',
@@ -962,8 +963,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                       : null,
                   filled: true,
                   fillColor: isDark
-                      ? AppKendoColors.pureWhite.withValues(alpha: 0.10)
-                      : AppKendoColors.pureBlack.withValues(alpha: 0.05),
+                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
+                      : const Color(0xFF000000).withValues(alpha: 0.05),
                   border: OutlineInputBorder(
                     borderRadius: AppRadius.small,
                     borderSide: BorderSide.none,
@@ -994,8 +995,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                     separatorBuilder: (_, _) => Divider(
                       height: 1,
                       color: isDark
-                          ? AppKendoColors.pureWhite.withValues(alpha: 0.10)
-                          : AppKendoColors.pureBlack.withValues(alpha: 0.12),
+                          ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
+                          : const Color(0xFF000000).withValues(alpha: 0.12),
                     ),
                     itemBuilder: (ctx, i) {
                       final path = results[i]['path'];
@@ -1008,7 +1009,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                           style: TextStyle(
                             fontWeight: isSelected
                                 ? AppFontWeight.bold
-                                : FontWeight.normal,
+                                : AppFontWeight.regular,
                             color: isSelected
                                 ? AppKendoColors.blueAccent
                                 : null,
@@ -1104,8 +1105,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 p: const TextStyle(fontSize: AppFontSize.subhead, height: 1.7),
                 code: TextStyle(
                   backgroundColor: isDark
-                      ? AppKendoColors.pureWhite.withValues(alpha: 0.10)
-                      : AppKendoColors.pureBlack.withValues(alpha: 0.12),
+                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
+                      : const Color(0xFF000000).withValues(alpha: 0.12),
                 ),
                 a: const TextStyle(
                   color: AppKendoColors.blueAccent,

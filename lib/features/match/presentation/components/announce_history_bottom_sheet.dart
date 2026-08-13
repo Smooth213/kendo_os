@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -110,7 +111,7 @@ class _AnnounceHistoryBottomSheetState
       decoration: BoxDecoration(
         color: isDark
             ? const Color(0xFF1C1C1E)
-            : AppKendoColors.pureWhite, // 90%のクリーンな白ベース
+            : context.appColors.textColor, // 90%のクリーンな白ベース
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppRadius.roundValue),
         ),
@@ -133,8 +134,8 @@ class _AnnounceHistoryBottomSheetState
                 margin: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? AppKendoColors.grey.shade700
-                      : AppKendoColors.grey.shade300,
+                      ? const Color(0xDE000000)
+                      : const Color(0x33000000),
                   borderRadius: AppRadius.micro,
                 ),
               ),
@@ -148,7 +149,7 @@ class _AnnounceHistoryBottomSheetState
                     Icon(
                       Icons.notifications_active_outlined,
                       color: isDark
-                          ? AppKendoColors.pureWhite
+                          ? const Color(0xFFFFFFFF)
                           : const Color(0xFF2C3E50),
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -159,7 +160,7 @@ class _AnnounceHistoryBottomSheetState
                           fontSize: AppFontSize.bodyMedium,
                           fontWeight: AppFontWeight.bold,
                           color: isDark
-                              ? AppKendoColors.pureWhite
+                              ? const Color(0xFFFFFFFF)
                               : const Color(0xFF2C3E50),
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -258,7 +259,7 @@ class _AnnounceHistoryBottomSheetState
                       ) // 未読時はサクラピンクの淡い輪郭
                     : (isDark
                           ? const Color(0xFF38383A)
-                          : AppKendoColors.grey.shade200),
+                          : const Color(0x33000000)),
                 width: 1.2,
               ),
             ),
@@ -299,8 +300,8 @@ class _AnnounceHistoryBottomSheetState
                                 color: isStaffOnly
                                     ? AppKendoColors.deepOrange
                                     : (isDark
-                                          ? AppKendoColors.pureWhite
-                                          : AppKendoColors.pureBlack),
+                                          ? const Color(0xFFFFFFFF)
+                                          : const Color(0xFF000000)),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -321,8 +322,8 @@ class _AnnounceHistoryBottomSheetState
                           fontSize: AppFontSize.bodySmall,
                           height: 1.4,
                           color: isDark
-                              ? AppKendoColors.grey.shade400
-                              : AppKendoColors.grey.shade700,
+                              ? const Color(0x8A000000)
+                              : const Color(0xDE000000),
                         ),
                       ),
                     ],
@@ -371,7 +372,7 @@ class NotificationBellButton extends ConsumerWidget {
             color ??
             (Theme.of(context).brightness == Brightness.dark
                 ? AppKendoColors.pureWhite
-                : AppKendoColors.indigo.shade900),
+                : context.appColors.primaryAccent),
       ),
       tooltip: '通知履歴',
       onPressed: () =>

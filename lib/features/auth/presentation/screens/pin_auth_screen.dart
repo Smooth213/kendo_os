@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -28,7 +29,7 @@ class PinAuthScreen extends ConsumerWidget {
     // ★ アプリ全体と統一した iOS 風 (Liquid Glass) のガラス背景
     final cardBgColor = isDark
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-        : AppKendoColors.pureWhite.withValues(alpha: 0.6);
+        : context.appColors.textColor.withValues(alpha: 0.6);
 
     final textColor = context.appColors.textColor;
     final subTextColor = context.appColors.subTextColor;
@@ -83,8 +84,8 @@ class PinAuthScreen extends ConsumerWidget {
                         color: cardBgColor,
                         border: Border.all(
                           color: isDark
-                              ? AppKendoColors.pureWhite.withValues(alpha: 0.2)
-                              : AppKendoColors.pureWhite.withValues(alpha: 0.7),
+                              ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
+                              : const Color(0xFFFFFFFF).withValues(alpha: 0.7),
                           width: 1.5,
                         ),
                       ),
@@ -114,7 +115,7 @@ class PinAuthScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xxl),
-                          TextField(
+                          AppTextField(
                             controller: controller,
                             keyboardType: TextInputType.number,
                             obscureText: true,
@@ -127,21 +128,21 @@ class PinAuthScreen extends ConsumerWidget {
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: isDark
-                                  ? AppKendoColors.pureWhite.withValues(
-                                      alpha: 0.1,
-                                    )
-                                  : AppKendoColors.pureWhite.withValues(
-                                      alpha: 0.5,
-                                    ),
+                                  ? const Color(
+                                      0xFFFFFFFF,
+                                    ).withValues(alpha: 0.1)
+                                  : const Color(
+                                      0xFFFFFFFF,
+                                    ).withValues(alpha: 0.5),
                               hintText: '••••',
                               hintStyle: TextStyle(
                                 color: isDark
-                                    ? AppKendoColors.pureWhite.withValues(
-                                        alpha: 0.3,
-                                      )
-                                    : AppKendoColors.pureBlack.withValues(
-                                        alpha: 0.26,
-                                      ),
+                                    ? const Color(
+                                        0xFFFFFFFF,
+                                      ).withValues(alpha: 0.3)
+                                    : const Color(
+                                        0xFF000000,
+                                      ).withValues(alpha: 0.26),
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: AppRadius.large,

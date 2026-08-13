@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -97,7 +98,7 @@ class _MasterManagementScreenState
 
     final Color primaryColor = isDark
         ? AppKendoColors.purpleAccent
-        : AppKendoColors.purple.shade700;
+        : context.appColors.primaryAccent;
     final Color textColor = context.appColors.textColor;
 
     return LiquidBackground(
@@ -166,7 +167,7 @@ class _MasterManagementScreenState
                       'assets/kendo_icon.png',
                       width: 80,
                       height: 80,
-                      color: AppKendoColors.grey.shade300,
+                      color: const Color(0x33000000),
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     Text(
@@ -275,7 +276,7 @@ class _MasterManagementScreenState
                         IconButton(
                           icon: Icon(
                             Icons.edit_note,
-                            color: AppKendoColors.grey.shade400,
+                            color: context.appColors.subTextColor,
                           ),
                           tooltip: '道場名・学校名を一括変更',
                           onPressed: () => _showEditOrgBottomSheet(
@@ -308,10 +309,8 @@ class _MasterManagementScreenState
                     },
                     style: SegmentedButton.styleFrom(
                       selectedBackgroundColor: isDark
-                          ? AppKendoColors.purple.shade900.withValues(
-                              alpha: 0.4,
-                            )
-                          : AppKendoColors.purple.shade50,
+                          ? const Color(0xFF9C27B0).withValues(alpha: 0.4)
+                          : const Color(0xFF9C27B0),
                       selectedForegroundColor: primaryColor,
                       side: BorderSide(color: context.appColors.separatorColor),
                     ),
@@ -343,8 +342,8 @@ class _MasterManagementScreenState
                                 fontSize: AppFontSize.bodySmall,
                                 fontWeight: AppFontWeight.semiBold,
                                 color: isDark
-                                    ? AppKendoColors.grey.shade500
-                                    : AppKendoColors.grey.shade600,
+                                    ? const Color(0x8A000000)
+                                    : const Color(0x8A000000),
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -448,22 +447,22 @@ class _MasterManagementScreenState
     final isMale = player.gender == '男子';
 
     final genderColor = isMale
-        ? (isDark ? AppKendoColors.blue.shade300 : AppKendoColors.blue.shade600)
+        ? (isDark ? context.appColors.infoColor : context.appColors.infoColor)
         : (isDark
-              ? AppKendoColors.pink.shade300
-              : AppKendoColors.pink.shade600);
+              ? context.appColors.errorColor
+              : context.appColors.errorColor);
     final bgColor = isMale
         ? (isDark
-              ? AppKendoColors.blue.withValues(alpha: 0.25)
-              : AppKendoColors.blue.withValues(alpha: 0.1))
+              ? context.appColors.infoColor.withValues(alpha: 0.25)
+              : context.appColors.infoColor.withValues(alpha: 0.1))
         : (isDark
-              ? AppKendoColors.pink.withValues(alpha: 0.25)
-              : AppKendoColors.pink.withValues(alpha: 0.1));
+              ? context.appColors.errorColor.withValues(alpha: 0.25)
+              : context.appColors.errorColor.withValues(alpha: 0.1));
 
     final bool isSelected = _selectedPlayerIds.contains(player.id);
     final selectedColor = isDark
-        ? AppKendoColors.purple.withValues(alpha: 0.2)
-        : AppKendoColors.purple.shade50;
+        ? context.appColors.primaryAccent.withValues(alpha: 0.2)
+        : const Color(0xFF9C27B0);
 
     final tile = Material(
       color: _isSelectionMode && isSelected
@@ -503,8 +502,8 @@ class _MasterManagementScreenState
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.circle_outlined,
                     color: isSelected
-                        ? AppKendoColors.purple.shade700
-                        : AppKendoColors.grey.shade400,
+                        ? const Color(0xFF9C27B0)
+                        : const Color(0x8A000000),
                     size: 22,
                   ),
                 ),
@@ -548,7 +547,7 @@ class _MasterManagementScreenState
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: AppKendoColors.green.shade600,
+                              color: AppKendoColors.successGreen,
                               borderRadius: AppRadius.tiny,
                             ),
                             child: const Row(
@@ -581,8 +580,8 @@ class _MasterManagementScreenState
                             '${player.nameKana} ',
                             style: TextStyle(
                               color: isDark
-                                  ? AppKendoColors.grey.shade500
-                                  : AppKendoColors.grey.shade400,
+                                  ? const Color(0x8A000000)
+                                  : const Color(0x8A000000),
                               fontSize: AppFontSize.caption,
                             ),
                           ),
@@ -590,8 +589,8 @@ class _MasterManagementScreenState
                           '${player.gradeName} / ${player.gender}',
                           style: TextStyle(
                             color: isDark
-                                ? AppKendoColors.grey.shade400
-                                : AppKendoColors.grey.shade500,
+                                ? const Color(0x8A000000)
+                                : const Color(0x8A000000),
                             fontSize: AppFontSize.caption,
                           ),
                         ),
@@ -814,8 +813,8 @@ class _MasterManagementScreenState
                       height: 5,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? AppKendoColors.grey.shade700
-                            : AppKendoColors.grey.shade300,
+                            ? const Color(0xDE000000)
+                            : const Color(0x33000000),
                         borderRadius: AppRadius.medium,
                       ),
                     ),
@@ -861,7 +860,7 @@ class _MasterManagementScreenState
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         controller: lastNameKanaController,
                         style: TextStyle(
                           color: textColor,
@@ -893,7 +892,7 @@ class _MasterManagementScreenState
                     ),
                     const SizedBox(width: AppSpacing.lg),
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         controller: firstNameKanaController,
                         style: TextStyle(
                           color: textColor,
@@ -931,7 +930,7 @@ class _MasterManagementScreenState
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         controller: lastNameController,
                         style: TextStyle(
                           color: textColor,
@@ -945,7 +944,7 @@ class _MasterManagementScreenState
                               : Icon(
                                   Icons.person,
                                   color: isDark
-                                      ? AppKendoColors.grey.shade400
+                                      ? const Color(0x8A000000)
                                       : AppKendoColors.grey,
                                 ),
                           isDense: isKeyboardVisible,
@@ -965,7 +964,7 @@ class _MasterManagementScreenState
                     ),
                     const SizedBox(width: AppSpacing.lg),
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         controller: firstNameController,
                         style: TextStyle(
                           color: textColor,
@@ -999,7 +998,7 @@ class _MasterManagementScreenState
                     fontSize: AppFontSize.bodySmall,
                     fontWeight: AppFontWeight.bold,
                     color: isDark
-                        ? AppKendoColors.grey.shade400
+                        ? const Color(0x8A000000)
                         : AppKendoColors.grey,
                   ),
                 ),
@@ -1041,7 +1040,7 @@ class _MasterManagementScreenState
                     prefixIcon: Icon(
                       Icons.school,
                       color: isDark
-                          ? AppKendoColors.grey.shade400
+                          ? const Color(0x8A000000)
                           : AppKendoColors.grey,
                     ),
                     border: OutlineInputBorder(borderRadius: AppRadius.medium),
@@ -1077,7 +1076,7 @@ class _MasterManagementScreenState
                         'キャンセル',
                         style: TextStyle(
                           color: isDark
-                              ? AppKendoColors.grey.shade400
+                              ? context.appColors.subTextColor
                               : AppKendoColors.grey,
                           fontWeight: AppFontWeight.bold,
                         ),
@@ -1176,13 +1175,13 @@ class _MasterManagementScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
         ? AppKendoColors.purpleAccent
-        : AppKendoColors.purple.shade700;
+        : context.appColors.primaryAccent;
     final dialogBgColor = isDark
         ? const Color(0xFF1E1E1E)
-        : AppKendoColors.pureWhite;
+        : context.appColors.textColor;
     final inputBgColor = isDark
         ? const Color(0xFF2C2C2C)
-        : AppKendoColors.grey.shade50;
+        : context.appColors.cardBackground;
     final textColor = context.appColors.textColor;
 
     final initialName = ref.read(currentDojoNameProvider).value ?? '';
@@ -1229,8 +1228,8 @@ class _MasterManagementScreenState
                       height: 5,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? AppKendoColors.grey.shade700
-                            : AppKendoColors.grey.shade300,
+                            ? const Color(0xDE000000)
+                            : const Color(0x33000000),
                         borderRadius: AppRadius.medium,
                       ),
                     ),
@@ -1242,7 +1241,7 @@ class _MasterManagementScreenState
                       fontWeight: AppFontWeight.bold,
                       color: isDark
                           ? AppKendoColors.purpleAccent
-                          : AppKendoColors.purple.shade800,
+                          : const Color(0xFF9C27B0),
                       fontSize: AppFontSize.header,
                     ),
                   ),
@@ -1255,7 +1254,7 @@ class _MasterManagementScreenState
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  TextField(
+                  AppTextField(
                     controller: controller,
                     autofocus: false,
                     style: TextStyle(color: textColor),
@@ -1264,7 +1263,7 @@ class _MasterManagementScreenState
                       prefixIcon: Icon(
                         Icons.account_balance,
                         color: isDark
-                            ? AppKendoColors.grey.shade400
+                            ? const Color(0x8A000000)
                             : AppKendoColors.grey,
                       ),
                       border: OutlineInputBorder(
@@ -1284,7 +1283,7 @@ class _MasterManagementScreenState
                           'キャンセル',
                           style: TextStyle(
                             color: isDark
-                                ? AppKendoColors.grey.shade400
+                                ? context.appColors.subTextColor
                                 : AppKendoColors.grey,
                             fontWeight: AppFontWeight.bold,
                           ),
@@ -1344,13 +1343,13 @@ class _MasterManagementScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
         ? AppKendoColors.purpleAccent
-        : AppKendoColors.purple.shade700;
+        : context.appColors.primaryAccent;
 
     showAppDialog(
       context: context,
       builder: (ctx) => AppDialog(
         titleIcon: Icons.warning_amber_rounded,
-        iconColor: AppKendoColors.orange.shade700,
+        iconColor: context.appColors.warningColor,
         title: '道場名の登録が必要です',
         content: const Text(
           '選手を登録する前に、まずは道場名・学校名を登録してください。',
@@ -1402,13 +1401,13 @@ class _MasterManagementScreenState
       style: OutlinedButton.styleFrom(
         backgroundColor: isSel
             ? color.withValues(alpha: isDark ? 0.2 : 0.1)
-            : (isDark ? const Color(0xFF2C2C2C) : AppKendoColors.grey.shade50),
+            : (isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF2F2F7)),
         side: BorderSide(
           color: isSel
               ? color
               : (isDark
-                    ? AppKendoColors.grey.shade700
-                    : AppKendoColors.grey.shade300),
+                    ? context.appColors.textColor
+                    : context.appColors.separatorColor),
           width: isSel ? 2 : 1,
         ),
         shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
@@ -1460,7 +1459,7 @@ class _MasterManagementScreenState
                     width: 48,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: AppKendoColors.grey.shade400,
+                      color: const Color(0x8A000000),
                       borderRadius: AppRadius.medium,
                     ),
                   ),
@@ -1473,7 +1472,7 @@ class _MasterManagementScreenState
                     ),
                     child: Icon(
                       Icons.cleaning_services,
-                      color: AppKendoColors.purple.shade700,
+                      color: const Color(0xFF9C27B0),
                     ),
                   ),
                   title: Text(
@@ -1503,7 +1502,7 @@ class _MasterManagementScreenState
                     height: 1,
                     color: isDark
                         ? const Color(0xFF38383A)
-                        : AppKendoColors.grey.shade300,
+                        : context.appColors.separatorColor,
                   ),
                 ),
                 ListTile(
@@ -1511,10 +1510,7 @@ class _MasterManagementScreenState
                     backgroundColor: AppKendoColors.indigo.withValues(
                       alpha: 0.1,
                     ),
-                    child: Icon(
-                      Icons.school,
-                      color: AppKendoColors.indigo.shade700,
-                    ),
+                    child: Icon(Icons.school, color: const Color(0xFF3F51B5)),
                   ),
                   title: Text(
                     '新年度の一括進級',
@@ -1548,7 +1544,7 @@ class _MasterManagementScreenState
       context: context,
       builder: (ctx) => AppDialog(
         titleIcon: Icons.school,
-        iconColor: AppKendoColors.purple.shade700,
+        iconColor: context.appColors.primaryAccent,
         title: '新年度の一括進級',
         content: const Text(
           'すべての選手の学年を1つ繰り上げます。\n（例：小学6年 ➔ 中学1年）\n\n※この操作は取り消せません。本当によろしいですか？',
@@ -1565,7 +1561,7 @@ class _MasterManagementScreenState
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppKendoColors.purple.shade700,
+              backgroundColor: const Color(0xFF9C27B0),
               foregroundColor: AppKendoColors.pureWhite,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
               elevation: 0,
@@ -1701,7 +1697,7 @@ class _MasterManagementScreenState
     List<PlayerModel> players,
   ) {
     final controller = TextEditingController(text: currentOrg);
-    final primaryColor = AppKendoColors.purple.shade700;
+    final primaryColor = context.appColors.primaryAccent;
 
     showAppBottomSheet(
       context: context,
@@ -1744,7 +1740,7 @@ class _MasterManagementScreenState
                       width: 48,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: AppKendoColors.grey.shade300,
+                        color: const Color(0x33000000),
                         borderRadius: AppRadius.medium,
                       ),
                     ),
@@ -1755,7 +1751,7 @@ class _MasterManagementScreenState
                     '所属名の変更',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
-                      color: AppKendoColors.purple.shade800,
+                      color: const Color(0xFF9C27B0),
                       fontSize: AppFontSize.header,
                     ),
                   ),
@@ -1768,7 +1764,7 @@ class _MasterManagementScreenState
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  TextField(
+                  AppTextField(
                     controller: controller,
                     autofocus: false,
                     decoration: InputDecoration(
@@ -1781,7 +1777,7 @@ class _MasterManagementScreenState
                         borderRadius: AppRadius.medium,
                       ),
                       filled: true,
-                      fillColor: AppKendoColors.grey.shade50,
+                      fillColor: const Color(0xFFF2F2F7),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xxl),
@@ -1897,7 +1893,7 @@ class _MasterManagementScreenState
       context: context,
       builder: (ctx) => AppDialog(
         titleIcon: Icons.cleaning_services,
-        iconColor: AppKendoColors.purple.shade700,
+        iconColor: context.appColors.primaryAccent,
         title: 'データとストレージ管理',
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1917,11 +1913,8 @@ class _MasterManagementScreenState
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: CircleAvatar(
-                backgroundColor: AppKendoColors.purple.shade50,
-                child: Icon(
-                  Icons.cached,
-                  color: AppKendoColors.purple.shade700,
-                ),
+                backgroundColor: const Color(0xFF9C27B0),
+                child: Icon(Icons.cached, color: const Color(0xFF9C27B0)),
               ),
               title: const Text(
                 '一時キャッシュをクリア',
@@ -1940,8 +1933,8 @@ class _MasterManagementScreenState
                   AppSnackBar.showSuccess(context, 'キャッシュをクリアし、メモリを解放しました ✨');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.purple.shade50,
-                  foregroundColor: AppKendoColors.purple.shade800,
+                  backgroundColor: context.appColors.primaryAccent,
+                  foregroundColor: context.appColors.primaryAccent,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),
@@ -1957,11 +1950,8 @@ class _MasterManagementScreenState
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: CircleAvatar(
-                backgroundColor: AppKendoColors.blue.shade50,
-                child: Icon(
-                  Icons.download,
-                  color: AppKendoColors.blue.shade700,
-                ),
+                backgroundColor: const Color(0xFF2196F3),
+                child: Icon(Icons.download, color: const Color(0xFF2196F3)),
               ),
               title: const Text(
                 '全データをJSONでバックアップ',
@@ -2016,8 +2006,8 @@ class _MasterManagementScreenState
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.blue.shade50,
-                  foregroundColor: AppKendoColors.blue.shade800,
+                  backgroundColor: context.appColors.infoColor,
+                  foregroundColor: context.appColors.infoColor,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),
@@ -2151,7 +2141,7 @@ class _MasterManagementScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
         ? AppKendoColors.purpleAccent
-        : AppKendoColors.purple.shade700;
+        : context.appColors.primaryAccent;
 
     showAppBottomSheet(
       context: context,
@@ -2189,7 +2179,7 @@ class _MasterManagementScreenState
                     width: 48,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: AppKendoColors.grey.shade300,
+                      color: const Color(0x33000000),
                       borderRadius: AppRadius.medium,
                     ),
                   ),
@@ -2216,7 +2206,7 @@ class _MasterManagementScreenState
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         controller: nameController,
                         autofocus: false,
                         decoration: InputDecoration(
@@ -2224,7 +2214,7 @@ class _MasterManagementScreenState
                           filled: true,
                           fillColor: isDark
                               ? const Color(0xFF2C2C2E)
-                              : AppKendoColors.grey.shade50,
+                              : const Color(0xFFF2F2F7),
                           border: OutlineInputBorder(
                             borderRadius: AppRadius.medium,
                             borderSide: BorderSide.none,
@@ -2287,7 +2277,7 @@ class _MasterManagementScreenState
                           elevation: 0,
                           color: isDark
                               ? const Color(0xFF2C2C2E)
-                              : AppKendoColors.grey.shade50,
+                              : context.appColors.cardBackground,
                           margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                           child: ListTile(
                             title: Text(

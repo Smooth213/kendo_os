@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,16 +30,16 @@ class SyncStatusBar extends ConsumerWidget {
     Color barColor;
     switch (activeRole) {
       case Role.admin:
-        barColor = AppKendoColors.indigo.shade800;
+        barColor = context.appColors.primaryAccent;
         break;
       case Role.scorer:
-        barColor = AppKendoColors.teal.shade700;
+        barColor = const Color(0xFF009688);
         break;
       case Role.editor:
-        barColor = AppKendoColors.purple.shade700;
+        barColor = const Color(0xFF9C27B0);
         break;
       case Role.viewer:
-        barColor = AppKendoColors.blueGrey.shade700;
+        barColor = const Color(0xFF607D8B);
         break;
     }
 
@@ -109,7 +110,7 @@ class SyncStatusBar extends ConsumerWidget {
                                 fontWeight: AppFontWeight.bold,
                                 color: deadLetterCount > 0
                                     ? AppKendoColors.yellowAccent
-                                    : AppKendoColors.blue.shade100,
+                                    : context.appColors.infoColor,
                               ),
                             ),
                             if (deadLetterCount > 0) ...[
@@ -168,7 +169,7 @@ class SyncStatusBar extends ConsumerWidget {
           ? Icons.cloud_upload_outlined
           : Icons.cloud_done_outlined,
       color: status == SyncStatus.pending
-          ? AppKendoColors.orange.shade300
+          ? const Color(0xFFFF9800)
           : AppKendoColors.greenAccent,
       size: 14,
     );
@@ -214,8 +215,8 @@ class SyncStatusBar extends ConsumerWidget {
                         Center(
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppKendoColors.orange.shade100,
-                              foregroundColor: AppKendoColors.orange.shade900,
+                              backgroundColor: const Color(0xFFFF9800),
+                              foregroundColor: const Color(0xFFFF9800),
                             ),
                             icon: const Icon(Icons.delete_sweep),
                             label: const Text('サーバーのデータを優先し、未送信を破棄する'),

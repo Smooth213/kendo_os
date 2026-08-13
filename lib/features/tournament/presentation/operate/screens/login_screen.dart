@@ -24,7 +24,7 @@ class LoginScreen extends ConsumerWidget {
 
     // iOS Native カラーパレット
     final Color bgColor = isDark
-        ? AppKendoColors.pureBlack
+        ? context.appColors.cardBackground
         : const Color(0xFFF2F2F7);
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
@@ -64,7 +64,7 @@ class LoginScreen extends ConsumerWidget {
                   width: 140,
                   height: 140,
                   color: isDark
-                      ? AppKendoColors.pureWhite
+                      ? const Color(0xFFFFFFFF)
                       : buttonColor, // ダークモードではアイコンを白抜きにしても美しい
                 ),
               ),
@@ -126,9 +126,7 @@ class LoginScreen extends ConsumerWidget {
                       ),
                       child: Icon(
                         Icons.shield_outlined,
-                        color: isDark
-                            ? pinkAccent
-                            : AppKendoColors.indigo.shade700,
+                        color: isDark ? pinkAccent : const Color(0xFF3F51B5),
                         size: 22,
                       ),
                     ),
@@ -151,7 +149,7 @@ class LoginScreen extends ConsumerWidget {
                             displayDojoId,
                             style: TextStyle(
                               fontSize: AppFontSize.title,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: AppFontWeight.bold,
                               color: primaryText,
                               letterSpacing: 1.1,
                             ),
@@ -177,7 +175,7 @@ class LoginScreen extends ConsumerWidget {
                           Icon(
                             Icons.check_circle,
                             size: 14,
-                            color: AppKendoColors.green.shade500,
+                            color: AppKendoColors.successGreen,
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(

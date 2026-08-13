@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -144,8 +145,8 @@ class ViewerMatchScreen extends ConsumerWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final iconColor = isDark
-        ? AppKendoColors.pureWhite
-        : AppKendoColors.indigo.shade900;
+        ? context.appColors.textColor
+        : context.appColors.primaryAccent;
 
     return LiquidBackground(
       child: Scaffold(
@@ -232,7 +233,7 @@ class ViewerMatchScreen extends ConsumerWidget {
   ) {
     return Container(
       width: double.infinity,
-      color: AppKendoColors.blueGrey.shade700,
+      color: context.appColors.subTextColor,
       padding: const EdgeInsets.symmetric(
         vertical: AppSpacing.xs,
         horizontal: AppSpacing.lg,
@@ -322,7 +323,7 @@ class ViewerMatchScreen extends ConsumerWidget {
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.blueGrey.shade700,
+                  backgroundColor: const Color(0xFF607D8B),
                   foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                 ),
@@ -460,10 +461,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isRedWinner,
               cardColor: isDark
                   ? const Color(0xFF2C1616)
-                  : AppKendoColors.hansokuRed,
+                  : context.appColors.errorColor,
               textColor: isDark
-                  ? AppKendoColors.hansokuRed
-                  : AppKendoColors.hansokuRed,
+                  ? context.appColors.errorColor
+                  : context.appColors.errorColor,
             ),
           ),
 
@@ -481,10 +482,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isWhiteWinner,
               cardColor: isDark
                   ? const Color(0xFF1C2430)
-                  : AppKendoColors.blueGrey.shade50,
+                  : context.appColors.subTextColor,
               textColor: isDark
-                  ? AppKendoColors.grey.shade300
-                  : AppKendoColors.blueGrey.shade800,
+                  ? context.appColors.separatorColor
+                  : context.appColors.subTextColor,
             ),
           ),
         ],
@@ -519,10 +520,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isRedWinner,
               cardColor: isDark
                   ? const Color(0xFF2C1616)
-                  : AppKendoColors.hansokuRed,
+                  : context.appColors.errorColor,
               textColor: isDark
-                  ? AppKendoColors.hansokuRed
-                  : AppKendoColors.hansokuRed,
+                  ? context.appColors.errorColor
+                  : context.appColors.errorColor,
             ),
           ),
 
@@ -540,10 +541,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isWhiteWinner,
               cardColor: isDark
                   ? const Color(0xFF1C2430)
-                  : AppKendoColors.blueGrey.shade50,
+                  : context.appColors.subTextColor,
               textColor: isDark
-                  ? AppKendoColors.grey.shade300
-                  : AppKendoColors.blueGrey.shade800,
+                  ? context.appColors.separatorColor
+                  : context.appColors.subTextColor,
             ),
           ),
         ],
@@ -570,8 +571,8 @@ class LargeViewerScoreboard extends StatelessWidget {
           color: isWinner
               ? AppKendoColors.ipponGold
               : (isDark
-                    ? AppKendoColors.pureWhite.withValues(alpha: 0.10)
-                    : AppKendoColors.pureBlack.withValues(alpha: 0.12)),
+                    ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
+                    : const Color(0xFF000000).withValues(alpha: 0.12)),
           width: isWinner ? 4.0 : 1.0,
         ),
         boxShadow: isWinner
@@ -658,10 +659,8 @@ class LargeViewerScoreboard extends StatelessWidget {
     Side side,
   ) {
     final color = side == Side.red
-        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark
-              ? AppKendoColors.grey.shade300
-              : AppKendoColors.blueGrey.shade800);
+        ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
+        : (isDark ? const Color(0x33000000) : const Color(0xFF607D8B));
 
     return SizedBox(
       width: 120,
@@ -756,8 +755,8 @@ class LargeViewerScoreboard extends StatelessWidget {
     final timerColor = isTimerRunning
         ? AppKendoColors.orangeAccent
         : (isDark
-              ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
-              : AppKendoColors.pureBlack);
+              ? const Color(0xFFFFFFFF).withValues(alpha: 0.7)
+              : const Color(0xFF000000));
 
     final content = Container(
       padding: const EdgeInsets.symmetric(
@@ -765,7 +764,7 @@ class LargeViewerScoreboard extends StatelessWidget {
         horizontal: AppSpacing.xl,
       ),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E24) : AppKendoColors.grey.shade200,
+        color: isDark ? const Color(0xFF1E1E24) : const Color(0x33000000),
         borderRadius: AppRadius.large,
         border: Border.all(
           color: isTimerRunning
@@ -798,7 +797,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: AppKendoColors.indigo.shade600,
+                color: const Color(0xFF3F51B5),
                 borderRadius: AppRadius.small,
               ),
               child: Text(

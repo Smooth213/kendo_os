@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -228,9 +229,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
 
   Color _getDisplayColor(bool isDark) {
     if (widget.disabled) {
-      return isDark
-          ? AppKendoColors.grey.shade900
-          : AppKendoColors.grey.shade200;
+      return isDark ? const Color(0xDE000000) : const Color(0x33000000);
     }
     return _isHolding
         ? Color.lerp(widget.color, AppKendoColors.pureBlack, 0.2)!
@@ -241,7 +240,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
     return TextStyle(
       fontSize: widget.isFoul ? (isTablet ? 32 : 24) : (isTablet ? 56 : 48),
       fontWeight: AppFontWeight.bold,
-      color: widget.disabled ? AppKendoColors.grey.shade600 : widget.textColor,
+      color: widget.disabled ? const Color(0x8A000000) : widget.textColor,
       letterSpacing: 2.0,
       height: 1.3,
     );
@@ -273,12 +272,12 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
                   color: _getDisplayColor(isDark),
                   border: Border.all(
                     color: _isHolding
-                        ? AppKendoColors.pureWhite
+                        ? context.appColors.textColor
                         : (isDark
-                              ? AppKendoColors.pureWhite.withValues(alpha: 0.12)
-                              : AppKendoColors.pureBlack.withValues(
-                                  alpha: 0.12,
-                                )),
+                              ? const Color(0xFFFFFFFF).withValues(alpha: 0.12)
+                              : const Color(
+                                  0xFF000000,
+                                ).withValues(alpha: 0.12)),
                     width: _isHolding ? 4 : 1,
                   ),
                 ),

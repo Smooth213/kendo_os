@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 /// 技マークを表示するための共通データ構造
@@ -89,7 +87,7 @@ class PointBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isRed
-        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
+        ? (isDark ? context.appColors.errorColor : context.appColors.errorColor)
         : (context.appColors.infoColor);
 
     return SizedBox(

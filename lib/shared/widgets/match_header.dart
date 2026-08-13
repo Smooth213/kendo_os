@@ -106,9 +106,9 @@ class MatchHeader extends ConsumerWidget implements PreferredSizeWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isApproved
-                      ? AppKendoColors.green.shade700
+                      ? AppKendoColors.successGreen
                       : (isAllDone
-                            ? AppKendoColors.orange.shade700
+                            ? const Color(0xFFFF9800)
                             : AppKendoColors.pureWhite.withValues(alpha: 0.24)),
                   borderRadius: AppRadius.medium,
                 ),
@@ -161,11 +161,11 @@ class _MasterTimerBanner extends ConsumerWidget {
 
     final bgColor = isTimeUp
         ? (isDark
-              ? AppKendoColors.hansokuRed.withValues(alpha: 0.3)
-              : AppKendoColors.hansokuRed)
+              ? context.appColors.errorColor.withValues(alpha: 0.3)
+              : context.appColors.errorColor)
         : (isDark
-              ? AppKendoColors.indigo.shade900.withValues(alpha: 0.3)
-              : AppKendoColors.indigo.shade50);
+              ? context.appColors.primaryAccent.withValues(alpha: 0.3)
+              : context.appColors.primaryAccent);
 
     return Container(
       width: double.infinity,
@@ -179,9 +179,7 @@ class _MasterTimerBanner extends ConsumerWidget {
             fontWeight: AppFontWeight.bold,
             color: isTimeUp
                 ? AppKendoColors.red
-                : (isDark
-                      ? AppKendoColors.indigo.shade200
-                      : AppKendoColors.indigo),
+                : (isDark ? const Color(0xFF3F51B5) : const Color(0xFF3F51B5)),
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -198,7 +199,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         style: TextStyle(color: AppKendoColors.blueGrey),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      TextField(
+                      AppTextField(
                         controller: _leagueParticipantsController,
                         decoration: const InputDecoration(
                           labelText: '参加者リスト',
@@ -263,7 +264,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       const SizedBox(height: AppSpacing.md),
                     ],
 
-                    TextField(
+                    AppTextField(
                       controller: _categoryController,
                       onChanged: (text) => setState(() {}),
                       decoration: const InputDecoration(
@@ -282,12 +283,12 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFF2C2C2E)
-                            : AppKendoColors.pureWhite,
+                            : const Color(0xFFFFFFFF),
                         borderRadius: AppRadius.large,
                         border: Border.all(
                           color: isDark
                               ? const Color(0xFF38383A)
-                              : AppKendoColors.grey.shade300,
+                              : const Color(0x33000000),
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -309,7 +310,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 size: 18,
                                 color: isDark
                                     ? AppKendoColors.cyanAccent
-                                    : AppKendoColors.indigo,
+                                    : const Color(0xFF3F51B5),
                               ),
                               const SizedBox(width: AppSpacing.sm),
                               Text(
@@ -344,7 +345,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                             ],
                           ),
                           const SizedBox(height: AppSpacing.md),
-                          TextField(
+                          AppTextField(
                             controller: _courtController,
                             textAlign: TextAlign.left,
                             style: TextStyle(
@@ -368,7 +369,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 borderSide: BorderSide(
                                   color: isDark
                                       ? const Color(0xFF38383A)
-                                      : AppKendoColors.grey.shade300,
+                                      : const Color(0x33000000),
                                 ),
                               ),
                             ),
@@ -380,8 +381,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 Icons.info_outline,
                                 size: 13,
                                 color: isDark
-                                    ? AppKendoColors.grey.shade400
-                                    : AppKendoColors.grey.shade600,
+                                    ? const Color(0x8A000000)
+                                    : const Color(0x8A000000),
                               ),
                               const SizedBox(width: AppSpacing.xs),
                               Expanded(
@@ -390,8 +391,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                   style: TextStyle(
                                     fontSize: AppFontSize.caption,
                                     color: isDark
-                                        ? AppKendoColors.grey.shade400
-                                        : AppKendoColors.grey.shade600,
+                                        ? const Color(0x8A000000)
+                                        : const Color(0x8A000000),
                                   ),
                                 ),
                               ),
@@ -404,8 +405,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                               fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
-                                  ? AppKendoColors.grey.shade300
-                                  : AppKendoColors.grey.shade700,
+                                  ? const Color(0x33000000)
+                                  : const Color(0xDE000000),
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -440,8 +441,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                               fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
-                                  ? AppKendoColors.grey.shade300
-                                  : AppKendoColors.grey.shade700,
+                                  ? const Color(0x33000000)
+                                  : const Color(0xDE000000),
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -480,7 +481,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           const SizedBox(height: AppSpacing.lg),
                           const Divider(),
                           const SizedBox(height: AppSpacing.sm),
-                          TextField(
+                          AppTextField(
                             controller: _noteController,
                             maxLines: 2,
                             style: TextStyle(
@@ -494,7 +495,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                                 borderSide: BorderSide(
                                   color: isDark
                                       ? const Color(0xFF38383A)
-                                      : AppKendoColors.grey.shade300,
+                                      : context.appColors.separatorColor,
                                 ),
                               ),
                             ),
@@ -533,7 +534,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final currentTeam = isRed ? _redTeam : _whiteTeam;
 
     return Card(
-      color: isRed ? AppKendoColors.hansokuRed : AppKendoColors.grey.shade100,
+      color: isRed ? AppKendoColors.hansokuRed : const Color(0xFFF2F2F7),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
@@ -627,7 +628,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
           },
           fieldViewBuilder:
               (context, fieldController, textFieldFocusNode, onFieldSubmitted) {
-                return TextField(
+                return AppTextField(
                   controller: fieldController,
                   focusNode: textFieldFocusNode,
                   onTap: () {
@@ -669,7 +670,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
-                            : AppKendoColors.grey.shade400,
+                            : const Color(0x8A000000),
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -679,7 +680,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     filled: true,
                     fillColor: isDark
                         ? const Color(0xFF1C1C1E)
-                        : AppKendoColors.pureWhite,
+                        : context.appColors.textColor,
                   ),
                 );
               },
@@ -691,7 +692,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 borderRadius: AppRadius.medium,
                 color: isDark
                     ? const Color(0xFF2C2C2E)
-                    : AppKendoColors.pureWhite,
+                    : context.appColors.textColor,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: 250,
@@ -863,15 +864,15 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                   vertical: 2,
                 ),
                 decoration: BoxDecoration(
-                  color: AppKendoColors.indigo.shade50,
+                  color: const Color(0xFF3F51B5),
                   borderRadius: AppRadius.medium,
-                  border: Border.all(color: AppKendoColors.indigo.shade200),
+                  border: Border.all(color: const Color(0xFF3F51B5)),
                 ),
                 child: Text(
                   '部門ルール適用中: $cleanCategory',
                   style: TextStyle(
                     fontSize: AppFontSize.caption,
-                    color: AppKendoColors.indigo.shade800,
+                    color: const Color(0xFF3F51B5),
                     fontWeight: AppFontWeight.bold,
                   ),
                 ),
@@ -974,14 +975,14 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                 ? (isDark
                       ? accentColor.shade900.withValues(alpha: 0.4)
                       : accentColor.shade50)
-                : (isDark ? const Color(0xFF2C2C2E) : AppKendoColors.pureWhite),
+                : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF)),
             borderRadius: AppRadius.medium,
             border: Border.all(
               color: isSelected
                   ? (isDark ? accentColor.shade300 : accentColor.shade700)
                   : (isDark
                         ? const Color(0xFF38383A)
-                        : AppKendoColors.grey.shade300),
+                        : const Color(0x33000000)),
               width: isSelected ? 2.0 : 1.0,
             ),
             boxShadow: isSelected
@@ -1015,7 +1016,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         fontWeight: AppFontWeight.bold,
                         color: isSelected
                             ? (isDark
-                                  ? AppKendoColors.pureWhite
+                                  ? context.appColors.textColor
                                   : accentColor.shade900)
                             : (context.appColors.subTextColor),
                       ),
@@ -1027,11 +1028,11 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         fontSize: AppFontSize.small,
                         color: isSelected
                             ? (isDark
-                                  ? AppKendoColors.pureWhite.withValues(
+                                  ? context.appColors.textColor.withValues(
                                       alpha: 0.7,
                                     )
                                   : accentColor.shade800)
-                            : AppKendoColors.grey.shade600,
+                            : context.appColors.subTextColor,
                       ),
                     ),
                   ],

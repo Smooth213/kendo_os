@@ -33,6 +33,17 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.infoColor,
   });
 
+  Color get surface => cardBackground;
+  Color get disabledColor => subTextColor.withValues(alpha: 0.4);
+  Color get disabledTextColor => subTextColor.withValues(alpha: 0.5);
+  Color get borderColor => separatorColor;
+  Color get subtleBorderColor => separatorColor.withValues(alpha: 0.5);
+  Color get amber => warningColor;
+  Color get iconColor => textColor;
+  Color get subtleIconColor => subTextColor;
+  Color get onPrimaryAccent => Colors.white;
+  Color get cardShadowColor => Colors.black.withValues(alpha: 0.1);
+
   @override
   AppThemeColors copyWith({
     Color? primaryAccent,

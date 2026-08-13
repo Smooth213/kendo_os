@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -134,8 +135,8 @@ class _MultiPlayerSelectInputState
                             'キャンセル',
                             style: TextStyle(
                               color: isDark
-                                  ? AppKendoColors.grey.shade400
-                                  : AppKendoColors.grey.shade600,
+                                  ? context.appColors.subTextColor
+                                  : context.appColors.subTextColor,
                             ),
                           ),
                         ),
@@ -171,7 +172,7 @@ class _MultiPlayerSelectInputState
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.lg,
                     ),
-                    child: TextField(
+                    child: AppTextField(
                       autofocus: true,
                       decoration: InputDecoration(
                         hintText: '名前で検索、または出稽古を追加',
@@ -362,7 +363,7 @@ class _MultiPlayerSelectInputState
         ? ''
         : '${widget.initialSelected.length}名選択中: ${widget.initialSelected.join(", ")}';
 
-    return TextField(
+    return AppTextField(
       readOnly: true, // キーボードは出さずボトムシートを開く
       onTap: _showMultiSelectSheet,
       controller: TextEditingController(text: displayText),
@@ -378,16 +379,14 @@ class _MultiPlayerSelectInputState
           borderRadius: AppRadius.small,
           borderSide: BorderSide(
             color: isDark
-                ? AppKendoColors.grey.shade700
-                : AppKendoColors.grey.shade400,
+                ? context.appColors.textColor
+                : context.appColors.subTextColor,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.small,
           borderSide: BorderSide(
-            color: isDark
-                ? AppKendoColors.grey.shade700
-                : AppKendoColors.grey.shade400,
+            color: isDark ? const Color(0xDE000000) : const Color(0x8A000000),
           ),
         ),
         focusedBorder: OutlineInputBorder(

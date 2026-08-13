@@ -18,7 +18,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: AppKendoColors.transparent,
+        backgroundColor: Colors.transparent,
         appBar: AppHeader(
           title: '運用ダッシュボード (Observability)',
           actions: const [
@@ -92,7 +92,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
     bool isDark,
   ) {
     return Card(
-      color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
+      color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
       child: Padding(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -40,7 +41,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: AppKendoColors.transparent,
+        backgroundColor: Colors.transparent,
         appBar: const AppHeader(
           title: 'システム監査ログ',
           actions: [
@@ -55,14 +56,14 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              child: TextField(
+              child: AppTextField(
                 decoration: InputDecoration(
                   labelText: '試合IDで絞り込み (フィルタ)',
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: isDark
                       ? const Color(0xFF2C2C2E)
-                      : AppKendoColors.pureWhite,
+                      : const Color(0xFFFFFFFF),
                   border: OutlineInputBorder(
                     borderRadius: AppRadius.medium,
                     borderSide: BorderSide.none,
@@ -162,8 +163,8 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                                 '詳細: $details',
                                 style: TextStyle(
                                   color: isDark
-                                      ? AppKendoColors.grey.shade300
-                                      : AppKendoColors.pureBlack,
+                                      ? context.appColors.separatorColor
+                                      : context.appColors.cardBackground,
                                   fontSize: AppFontSize.bodySmall,
                                 ),
                               ),

@@ -146,8 +146,8 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isDark
-                      ? AppKendoColors.indigo.withValues(alpha: 0.3)
-                      : AppKendoColors.indigo.withValues(alpha: 0.15),
+                      ? const Color(0xFF3F51B5).withValues(alpha: 0.3)
+                      : const Color(0xFF3F51B5).withValues(alpha: 0.15),
                 ),
               ),
             ),
@@ -161,8 +161,8 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isDark
-                      ? AppKendoColors.teal.withValues(alpha: 0.25)
-                      : AppKendoColors.teal.withValues(alpha: 0.12),
+                      ? const Color(0xFF009688).withValues(alpha: 0.25)
+                      : const Color(0xFF009688).withValues(alpha: 0.12),
                 ),
               ),
             ),

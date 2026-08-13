@@ -46,7 +46,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
     final cardColor = themeColors.cardBackground;
     final headerTextColor = isDark
-        ? AppKendoColors.pureWhite
+        ? context.appColors.textColor
         : themeColors.primaryAccent;
 
     final categoryGroups = ref.watch(
@@ -152,7 +152,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                         bottom: BorderSide(
                           color: isDark
                               ? const Color(0xFF38383A)
-                              : AppKendoColors.grey.shade200,
+                              : const Color(0x33000000),
                         ),
                       ),
                     ),
@@ -163,7 +163,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                             context,
                             Icons.print,
                             'PDF印刷',
-                            AppKendoColors.grey.shade800,
+                            context.appColors.textColor,
                             isExporting
                                 ? null
                                 : () => _handleExport(
@@ -326,8 +326,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         borderRadius: AppRadius.large,
         side: BorderSide(
           color: isDark
-              ? AppKendoColors.pureWhite.withValues(alpha: 0.10)
-              : AppKendoColors.grey.shade300,
+              ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
+              : const Color(0x33000000),
         ),
       ),
       child: Column(
@@ -336,16 +336,16 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             color: isDark
-                ? AppKendoColors.indigo.shade900.withValues(alpha: 0.4)
-                : AppKendoColors.indigo.shade50,
+                ? const Color(0xFF3F51B5).withValues(alpha: 0.4)
+                : const Color(0xFF3F51B5),
             width: double.infinity,
             child: Text(
               '勝ち抜き戦：$rTeam vs $wTeam',
               style: TextStyle(
                 fontWeight: AppFontWeight.bold,
                 color: isDark
-                    ? AppKendoColors.indigo.shade100
-                    : AppKendoColors.indigo.shade900,
+                    ? const Color(0xFF3F51B5)
+                    : const Color(0xFF3F51B5),
               ),
             ),
           ),
@@ -448,13 +448,13 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade300;
+        : const Color(0x33000000);
     final headerTextColor = isDark
-        ? AppKendoColors.grey.shade400
-        : AppKendoColors.grey.shade700;
+        ? const Color(0x8A000000)
+        : const Color(0xDE000000);
     final daihyoBgColor = isDark
-        ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-        : AppKendoColors.hansokuRed;
+        ? const Color(0xFFE53935).withValues(alpha: 0.15)
+        : const Color(0xFFE53935);
 
     // ★ 修正：スコアが入力されている試合は、ステータスに関わらず「完了」として扱う
     bool allFinished = matches.every((m) {
@@ -524,7 +524,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 color: isDark
                     ? const Color(0xFF2C2C2E)
-                    : AppKendoColors.grey.shade100,
+                    : const Color(0xFFF2F2F7),
                 width: double.infinity,
                 child: Text(
                   cleanNote.isNotEmpty
@@ -533,8 +533,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
                     color: isDark
-                        ? AppKendoColors.grey.shade300
-                        : AppKendoColors.grey.shade800,
+                        ? const Color(0x33000000)
+                        : const Color(0xDE000000),
                   ),
                 ),
               ),
@@ -551,7 +551,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF2C2C2E)
-                          : AppKendoColors.grey.shade50,
+                          : const Color(0xFFF2F2F7),
                     ),
                     children: [
                       const SizedBox.shrink(),
@@ -570,11 +570,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                   fontWeight: AppFontWeight.bold,
                                   color: m.matchType == '代表戦'
                                       ? (isDark
-                                            ? AppKendoColors.hansokuRed
-                                            : AppKendoColors.hansokuRed)
+                                            ? const Color(0xFFE53935)
+                                            : const Color(0xFFE53935))
                                       : (isDark
-                                            ? AppKendoColors.grey.shade300
-                                            : AppKendoColors.grey.shade800),
+                                            ? const Color(0x33000000)
+                                            : const Color(0xDE000000)),
                                 ),
                               ),
                             ),
@@ -615,8 +615,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               top: 40,
               child: Container(
                 color: isDark
-                    ? AppKendoColors.pureBlack.withValues(alpha: 0.3)
-                    : AppKendoColors.pureWhite.withValues(alpha: 0.6),
+                    ? const Color(0xFF000000).withValues(alpha: 0.3)
+                    : const Color(0xFFFFFFFF).withValues(alpha: 0.6),
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -625,13 +625,13 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? AppKendoColors.pureBlack
-                          : AppKendoColors.pureWhite,
+                          ? const Color(0xFF000000)
+                          : const Color(0xFFFFFFFF),
                       borderRadius: AppRadius.small,
                       border: Border.all(
                         color: isDark
-                            ? AppKendoColors.grey.shade800
-                            : AppKendoColors.grey.shade300,
+                            ? const Color(0xDE000000)
+                            : const Color(0x33000000),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -649,8 +649,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                         fontSize: AppFontSize.bodySmall,
                         fontWeight: AppFontWeight.bold,
                         color: isDark
-                            ? AppKendoColors.grey.shade300
-                            : AppKendoColors.grey.shade700,
+                            ? const Color(0x33000000)
+                            : const Color(0xDE000000),
                       ),
                     ),
                   ),
@@ -664,11 +664,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
   Widget _teamResultCell(String winner, bool isDark, bool allFinished) {
     final textColor = isDark
-        ? AppKendoColors.pureWhite
-        : AppKendoColors.pureBlack;
+        ? const Color(0xFFFFFFFF)
+        : const Color(0xFF000000);
     final dividerColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade300;
+        : const Color(0x33000000);
 
     return Container(
       height: 70,
@@ -696,8 +696,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'red'
                               ? (isDark
-                                    ? AppKendoColors.hansokuRed
-                                    : AppKendoColors.hansokuRed)
+                                    ? const Color(0xFFE53935)
+                                    : const Color(0xFFE53935))
                               : textColor,
                         ),
                       ),
@@ -712,8 +712,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'white'
                               ? (isDark
-                                    ? AppKendoColors.blue.shade400
-                                    : AppKendoColors.blue.shade600)
+                                    ? const Color(0xFF2196F3)
+                                    : const Color(0xFF2196F3))
                               : textColor,
                         ),
                       ),
@@ -743,11 +743,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               style: TextStyle(
                 color: isRed
                     ? (isDark
-                          ? AppKendoColors.hansokuRed
-                          : AppKendoColors.hansokuRed)
+                          ? const Color(0xFFE53935)
+                          : const Color(0xFFE53935))
                     : (isDark
-                          ? AppKendoColors.blue.shade400
-                          : AppKendoColors.blue.shade700),
+                          ? const Color(0xFF2196F3)
+                          : const Color(0xFF2196F3)),
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.caption,
               ),
@@ -786,9 +786,9 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       return Container(
         color: isDaihyo
             ? (isDark
-                  ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                  : AppKendoColors.hansokuRed)
-            : AppKendoColors.transparent,
+                  ? const Color(0xFFE53935).withValues(alpha: 0.15)
+                  : const Color(0xFFE53935))
+            : Colors.transparent,
       );
     }
 
@@ -800,9 +800,9 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     return Container(
       color: isDaihyo
           ? (isDark
-                ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                : AppKendoColors.hansokuRed)
-          : AppKendoColors.transparent,
+                ? const Color(0xFFE53935).withValues(alpha: 0.15)
+                : const Color(0xFFE53935))
+          : Colors.transparent,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -821,7 +821,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
   Widget _scoreCell(MatchModel m, bool isDark, bool isSummary) {
     if (isSummary) {
-      return Container(height: 70, color: AppKendoColors.transparent);
+      return Container(height: 70, color: Colors.transparent);
     }
     final isDone = m.status == 'finished' || m.status == 'approved';
     final rScore = (m.redScore as num).toInt();
@@ -856,8 +856,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         children: [
           Divider(
             color: isDark
-                ? AppKendoColors.pureWhite.withValues(alpha: 0.10)
-                : AppKendoColors.grey.shade300,
+                ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
+                : const Color(0x33000000),
             thickness: 1,
             height: 0,
           ),
@@ -871,8 +871,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                   fontSize: AppFontSize.subhead,
                   fontWeight: AppFontWeight.black,
                   color: isDark
-                      ? AppKendoColors.grey.shade500
-                      : AppKendoColors.grey.shade500,
+                      ? const Color(0x8A000000)
+                      : const Color(0x8A000000),
                 ),
               ),
             ),
@@ -909,10 +909,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     bool isDark,
   ) {
     final color = isRed
-        ? (isDark ? AppKendoColors.hansokuRed : AppKendoColors.hansokuRed)
-        : (isDark
-              ? AppKendoColors.blue.shade400
-              : AppKendoColors.blue.shade700);
+        ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
+        : (isDark ? const Color(0xFF2196F3) : const Color(0xFF2196F3));
     return SizedBox(
       width: 36,
       height: 36,
@@ -987,9 +985,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     final style = TextStyle(
       fontSize: AppFontSize.caption,
       fontWeight: AppFontWeight.bold,
-      color: isDark
-          ? AppKendoColors.grey.shade400
-          : AppKendoColors.grey.shade800,
+      color: isDark ? const Color(0x8A000000) : const Color(0xDE000000),
     );
 
     Widget nameCol = Column(
@@ -1018,9 +1014,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
             initial,
             style: style.copyWith(
               fontSize: AppFontSize.micro,
-              color: isDark
-                  ? AppKendoColors.grey.shade600
-                  : AppKendoColors.grey.shade500,
+              color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
             ),
           ),
         ),
@@ -1047,9 +1041,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
         style: TextStyle(
           fontWeight: AppFontWeight.bold,
           fontSize: AppFontSize.small,
-          color: isDark
-              ? AppKendoColors.grey.shade400
-              : AppKendoColors.grey.shade800,
+          color: isDark ? const Color(0x8A000000) : const Color(0xDE000000),
         ),
         textAlign: TextAlign.center,
       ),
@@ -1112,13 +1104,13 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade400;
+        : const Color(0x8A000000);
     final headerColor = isDark
         ? const Color(0xFF2C2C2E)
-        : AppKendoColors.indigo.shade50;
+        : const Color(0xFF3F51B5);
     final blankColor = isDark
         ? const Color(0xFF1C1C1E)
-        : AppKendoColors.grey.shade200;
+        : const Color(0x33000000);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -1196,8 +1188,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.caption,
                           color: isDark
-                              ? AppKendoColors.pureWhite
-                              : AppKendoColors.pureBlack,
+                              ? const Color(0xFFFFFFFF)
+                              : const Color(0xFF000000),
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 2,
@@ -1288,29 +1280,29 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
                     String result = 'draw';
                     Color symbolColor = isDark
-                        ? AppKendoColors.ipponGold
-                        : AppKendoColors.ipponGold;
+                        ? const Color(0xFFD4AF37)
+                        : const Color(0xFFD4AF37);
                     if (rWins > cWins) {
                       result = 'win';
                       symbolColor = isDark
-                          ? AppKendoColors.hansokuRed
-                          : AppKendoColors.hansokuRed;
+                          ? const Color(0xFFE53935)
+                          : const Color(0xFFE53935);
                     } else if (cWins > rWins) {
                       result = 'loss';
                       symbolColor = isDark
-                          ? AppKendoColors.blue.shade300
-                          : AppKendoColors.indigo.shade700;
+                          ? const Color(0xFF2196F3)
+                          : const Color(0xFF3F51B5);
                     } else if (rPoints != cPoints) {
                       if (rPoints > cPoints) {
                         result = 'win';
                         symbolColor = isDark
-                            ? AppKendoColors.hansokuRed
-                            : AppKendoColors.hansokuRed;
+                            ? const Color(0xFFE53935)
+                            : const Color(0xFFE53935);
                       } else {
                         result = 'loss';
                         symbolColor = isDark
-                            ? AppKendoColors.blue.shade300
-                            : AppKendoColors.indigo.shade700;
+                            ? const Color(0xFF2196F3)
+                            : const Color(0xFF3F51B5);
                       }
                     }
 
@@ -1321,8 +1313,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                     }
 
                     final textColor = isDark
-                        ? AppKendoColors.pureWhite
-                        : AppKendoColors.pureBlack;
+                        ? const Color(0xFFFFFFFF)
+                        : const Color(0xFF000000);
 
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
@@ -1351,7 +1343,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     color: isDark
                                         ? const Color(0xFF1C1C1E)
-                                        : AppKendoColors.pureWhite,
+                                        : const Color(0xFFFFFFFF),
                                     borderRadius: AppRadius.round,
                                     boxShadow: [
                                       BoxShadow(
@@ -1391,11 +1383,11 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                                         onPressed: () => Navigator.pop(ctx),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: isDark
-                                              ? AppKendoColors.grey.shade800
-                                              : AppKendoColors.grey.shade200,
+                                              ? const Color(0xDE000000)
+                                              : const Color(0x33000000),
                                           foregroundColor: isDark
-                                              ? AppKendoColors.pureWhite
-                                              : AppKendoColors.pureBlack,
+                                              ? const Color(0xFFFFFFFF)
+                                              : const Color(0xFF000000),
                                           shape: const StadiumBorder(),
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 40,
@@ -1527,9 +1519,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
           text,
           style: TextStyle(
             fontSize: AppFontSize.badge,
-            color: isDark
-                ? AppKendoColors.grey.shade400
-                : AppKendoColors.grey.shade600,
+            color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
           ),
         ),
       ),
@@ -1542,8 +1532,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
       alignment: Alignment.center,
       color: isRank
           ? (isDark
-                ? AppKendoColors.orange.withValues(alpha: 0.2)
-                : AppKendoColors.orange.shade50)
+                ? const Color(0xFFFF9800).withValues(alpha: 0.2)
+                : const Color(0xFFFF9800))
           : null,
       child: Text(
         text,
@@ -1551,8 +1541,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
           fontWeight: AppFontWeight.bold,
           fontSize: isRank ? 16 : 13,
           color: isRank
-              ? AppKendoColors.orange.shade800
-              : (isDark ? AppKendoColors.pureWhite : AppKendoColors.pureBlack),
+              ? const Color(0xFFFF9800)
+              : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000)),
         ),
       ),
     );
@@ -1567,13 +1557,13 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   }) {
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade300;
+        : const Color(0x33000000);
     final headerBgColor = isDark
         ? const Color(0xFF2C2C2E)
-        : AppKendoColors.grey.shade50;
+        : const Color(0xFFF2F2F7);
     final textColor = isDark
-        ? AppKendoColors.pureWhite
-        : AppKendoColors.pureBlack;
+        ? const Color(0xFFFFFFFF)
+        : const Color(0xFF000000);
 
     // ヘッダー名からシステムID（英数字とハイフンの羅列）を隠す処理
     final uuidRegex = RegExp(
@@ -1617,8 +1607,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
               style: TextStyle(
                 fontWeight: AppFontWeight.bold,
                 color: isDark
-                    ? AppKendoColors.grey.shade300
-                    : AppKendoColors.grey.shade800,
+                    ? const Color(0x33000000)
+                    : const Color(0xDE000000),
               ),
             ),
           ),
@@ -1693,7 +1683,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                         m.note.isNotEmpty ? m.note : '第${index + 1}試合',
                         style: TextStyle(
                           fontSize: AppFontSize.badge,
-                          color: AppKendoColors.grey.shade500,
+                          color: const Color(0x8A000000),
                           fontWeight: AppFontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -1708,7 +1698,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                               rTeam,
                               style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: AppKendoColors.grey.shade500,
+                                color: const Color(0x8A000000),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1736,7 +1726,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       child: Text(
                         isDraw ? '✕' : '-',
                         style: TextStyle(
-                          color: AppKendoColors.grey.shade400,
+                          color: const Color(0x8A000000),
                           fontWeight: AppFontWeight.light,
                           fontSize: AppFontSize.subhead,
                         ),
@@ -1753,7 +1743,7 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                               wTeam,
                               style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: AppKendoColors.grey.shade500,
+                                color: const Color(0x8A000000),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -137,7 +138,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.lg,
                     ),
-                    child: TextField(
+                    child: AppTextField(
                       autofocus: true, // 開いた瞬間にキーボードを出す
                       decoration: InputDecoration(
                         hintText: '名前で検索、または出稽古を追加',
@@ -309,7 +310,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-    return TextField(
+    return AppTextField(
       controller: widget.controller,
       readOnly: true, // 直接入力させず、ボトムシートに誘導する
       onTap: _showPlayerSelectSheet, // タップでボトムシートを開く

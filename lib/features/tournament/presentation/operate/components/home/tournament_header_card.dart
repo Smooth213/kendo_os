@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -26,20 +27,20 @@ class TournamentHeaderCard extends ConsumerWidget {
     final cardColor = themeColors.cardBackground;
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade200;
+        : context.appColors.separatorColor;
     final textColor = context.appColors.textColor;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : AppKendoColors.grey.shade700;
+        : context.appColors.textColor;
     final iconBgColor = isDark
-        ? AppKendoColors.ipponGold.withValues(alpha: 0.3)
-        : AppKendoColors.ipponGold;
+        ? context.appColors.primaryAccent.withValues(alpha: 0.3)
+        : context.appColors.primaryAccent;
     final popupIconColor = isDark
-        ? AppKendoColors.grey.shade400
-        : AppKendoColors.grey.shade500;
+        ? context.appColors.subTextColor
+        : context.appColors.subTextColor;
     final noteBgColor = isDark
         ? const Color(0xFF2C2C2E)
-        : AppKendoColors.grey.shade50;
+        : context.appColors.cardBackground;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -109,7 +110,7 @@ class TournamentHeaderCard extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.calendar_today,
-                  color: AppKendoColors.grey.shade500,
+                  color: const Color(0x8A000000),
                   size: 16,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -123,7 +124,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.lg),
                 Icon(
                   Icons.location_on,
-                  color: AppKendoColors.grey.shade500,
+                  color: const Color(0x8A000000),
                   size: 16,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -178,7 +179,7 @@ class TournamentHeaderCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite,
+          color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xlargeValue),
           ),
@@ -192,7 +193,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                 width: 48,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: AppKendoColors.grey.shade400,
+                  color: const Color(0x8A000000),
                   borderRadius: AppRadius.medium,
                 ),
               ),
@@ -297,7 +298,7 @@ class TournamentHeaderCard extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
+                  AppTextField(
                     controller: nameController,
                     style: TextStyle(color: textColor),
                     decoration: InputDecoration(
@@ -353,15 +354,15 @@ class TournamentHeaderCard extends ConsumerWidget {
                             Icons.calendar_today,
                             size: 20,
                             color: isDark
-                                ? AppKendoColors.indigo.shade400
-                                : AppKendoColors.indigo.shade600,
+                                ? const Color(0xFF3F51B5)
+                                : const Color(0xFF3F51B5),
                           ),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  TextField(
+                  AppTextField(
                     controller: venueController,
                     style: TextStyle(color: textColor),
                     decoration: InputDecoration(
@@ -373,7 +374,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  TextField(
+                  AppTextField(
                     controller: notesController,
                     style: TextStyle(color: textColor),
                     decoration: InputDecoration(
@@ -398,7 +399,7 @@ class TournamentHeaderCard extends ConsumerWidget {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.indigo.shade600,
+                  backgroundColor: const Color(0xFF3F51B5),
                   foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.small),

@@ -68,8 +68,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
     final headerTextColor = isDark
-        ? AppKendoColors.pureWhite
-        : AppKendoColors.indigo.shade900;
+        ? context.appColors.textColor
+        : context.appColors.primaryAccent;
 
     final registeredTeamsAsync = ref.watch(
       registeredTeamsProvider(tournamentId),
@@ -153,24 +153,24 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   icon: Icon(
                     Icons.home,
                     color: isDark
-                        ? AppKendoColors.pureWhite
-                        : AppKendoColors.indigo.shade700,
+                        ? context.appColors.textColor
+                        : context.appColors.primaryAccent,
                     size: 16,
                   ),
                   label: Text(
                     'トップへ',
                     style: TextStyle(
                       color: isDark
-                          ? AppKendoColors.pureWhite
-                          : AppKendoColors.indigo.shade700,
+                          ? context.appColors.textColor
+                          : context.appColors.primaryAccent,
                       fontWeight: AppFontWeight.bold,
                       fontSize: AppFontSize.small,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark
-                        ? AppKendoColors.pureWhite.withValues(alpha: 0.15)
-                        : AppKendoColors.indigo.shade50,
+                        ? context.appColors.textColor.withValues(alpha: 0.15)
+                        : const Color(0xFF3F51B5),
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -186,9 +186,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               isScrollable: true,
               labelColor: headerTextColor,
               unselectedLabelColor: isDark
-                  ? AppKendoColors.grey.shade600
-                  : AppKendoColors.grey.shade500,
-              indicatorColor: AppKendoColors.indigo.shade600,
+                  ? const Color(0x8A000000)
+                  : const Color(0x8A000000),
+              indicatorColor: const Color(0xFF3F51B5),
               tabs: categories.map((cat) => Tab(text: cat)).toList(),
             ),
           ),
@@ -306,7 +306,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                         bottom: BorderSide(
                           color: isDark
                               ? const Color(0xFF38383A)
-                              : AppKendoColors.grey.shade200,
+                              : const Color(0x33000000),
                         ),
                       ),
                     ),
@@ -316,7 +316,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                         _buildHeaderActionButton(
                           icon: Icons.print,
                           label: 'PDF',
-                          color: AppKendoColors.grey.shade800,
+                          color: context.appColors.textColor,
                           onPressed: isExporting
                               ? null
                               : () => _handleExport(
@@ -356,7 +356,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                         _buildHeaderActionButton(
                           icon: Icons.table_chart,
                           label: 'CSV',
-                          color: AppKendoColors.indigo.shade600,
+                          color: context.appColors.primaryAccent,
                           onPressed: isExporting
                               ? null
                               : () => _handleExport(
@@ -440,7 +440,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                               side: BorderSide(
                                 color: isDark
                                     ? const Color(0xFF38383A)
-                                    : AppKendoColors.grey.shade300,
+                                    : const Color(0x33000000),
                               ),
                             ),
                             clipBehavior: Clip.antiAlias,
@@ -450,17 +450,18 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(AppSpacing.md),
                                   color: isDark
-                                      ? AppKendoColors.indigo.shade900
-                                            .withValues(alpha: 0.4)
-                                      : AppKendoColors.indigo.shade50,
+                                      ? const Color(
+                                          0xFF3F51B5,
+                                        ).withValues(alpha: 0.4)
+                                      : const Color(0xFF3F51B5),
                                   width: double.infinity,
                                   child: Text(
                                     titleText,
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
-                                          ? AppKendoColors.indigo.shade100
-                                          : AppKendoColors.indigo.shade900,
+                                          ? const Color(0xFF3F51B5)
+                                          : const Color(0xFF3F51B5),
                                     ),
                                   ),
                                 ),
@@ -472,8 +473,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                       AppSpacing.lg,
                                     ),
                                     color: isDark
-                                        ? AppKendoColors.pureBlack
-                                        : AppKendoColors.pureWhite,
+                                        ? context.appColors.cardBackground
+                                        : context.appColors.textColor,
                                     width:
                                         canvasWidth <
                                             MediaQuery.of(context).size.width
@@ -503,8 +504,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 ownTeams,
                               );
                           final textColor = isDark
-                              ? AppKendoColors.pureWhite
-                              : AppKendoColors.indigo.shade900;
+                              ? const Color(0xFFFFFFFF)
+                              : const Color(0xFF3F51B5);
 
                           // 通常の試合と決定戦を分離
                           final normalMatches = matches
@@ -652,10 +653,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                       '順位決定戦',
                                       tieBouts,
                                       cardColor: isDark
-                                          ? AppKendoColors.orange.withValues(
-                                              alpha: 0.1,
-                                            )
-                                          : AppKendoColors.orange.shade50,
+                                          ? const Color(
+                                              0xFFFF9800,
+                                            ).withValues(alpha: 0.1)
+                                          : const Color(0xFFFF9800),
                                       isDark: isDark,
                                       ref: ref,
                                       applySort: false,
@@ -673,10 +674,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                         matchupName,
                                         bouts,
                                         cardColor: isDark
-                                            ? AppKendoColors.orange.withValues(
-                                                alpha: 0.1,
-                                              )
-                                            : AppKendoColors.orange.shade50,
+                                            ? const Color(
+                                                0xFFFF9800,
+                                              ).withValues(alpha: 0.1)
+                                            : const Color(0xFFFF9800),
                                         isDark: isDark,
                                       ),
                                     );
@@ -1124,7 +1125,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFF1C1C1E)
-                            : AppKendoColors.pureWhite,
+                            : const Color(0xFFFFFFFF),
                         borderRadius: AppRadius.round,
                         boxShadow: [
                           BoxShadow(
@@ -1670,11 +1671,11 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       ),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : AppKendoColors.pureWhite,
+        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF),
         borderRadius: AppRadius.large,
         boxShadow: [
           BoxShadow(
-            color: AppKendoColors.pureBlack.withValues(alpha: 0.05),
+            color: const Color(0xFF000000).withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1711,10 +1712,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? AppKendoColors.indigo.shade900.withValues(alpha: 0.5)
-                        : AppKendoColors.indigo.shade50,
+                        ? const Color(0xFF3F51B5).withValues(alpha: 0.5)
+                        : const Color(0xFF3F51B5),
                     borderRadius: AppRadius.round,
-                    border: Border.all(color: AppKendoColors.indigo.shade200),
+                    border: Border.all(color: const Color(0xFF3F51B5)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -1731,8 +1732,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                         fontWeight: AppFontWeight.bold,
                         fontSize: AppFontSize.bodySmall,
                         color: isDark
-                            ? AppKendoColors.pureWhite
-                            : AppKendoColors.indigo.shade900,
+                            ? const Color(0xFFFFFFFF)
+                            : const Color(0xFF3F51B5),
                       ),
                       items: ['全体', ...teamsList].map((t) {
                         return DropdownMenuItem<String>(
@@ -1768,14 +1769,14 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 honsenWin,
                 honsenLoss,
                 honsenDraw,
-                AppKendoColors.indigo.shade900,
+                const Color(0xFF3F51B5),
               ),
               _buildSummaryItem(
                 '🤝 申し合わせ',
                 moushiawaseWin,
                 moushiawaseLoss,
                 moushiawaseDraw,
-                AppKendoColors.teal.shade900,
+                const Color(0xFF009688),
               ),
             ],
           ),
@@ -1803,13 +1804,13 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? AppKendoColors.grey.shade800
-                        : AppKendoColors.grey.shade100,
+                        ? const Color(0xDE000000)
+                        : const Color(0xFFF2F2F7),
                     borderRadius: AppRadius.medium,
                     border: Border.all(
                       color: isDark
-                          ? AppKendoColors.grey.shade700
-                          : AppKendoColors.grey.shade300,
+                          ? const Color(0xDE000000)
+                          : const Color(0x33000000),
                     ),
                   ),
                   child: Text(

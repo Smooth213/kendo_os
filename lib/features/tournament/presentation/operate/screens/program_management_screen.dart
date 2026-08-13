@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -356,7 +357,7 @@ class _ProgramManagementScreenState
                       // ★ ダークモード対応: ダーク時は暗い背景、ライト時はインディゴ系の薄い背景
                       color: isDark
                           ? const Color(0xFF1C1C2E)
-                          : AppKendoColors.indigo.shade50,
+                          : const Color(0xFF3F51B5),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -382,13 +383,13 @@ class _ProgramManagementScreenState
                             decoration: InputDecoration(
                               hintText: '例：1日目 進行表',
                               hintStyle: TextStyle(
-                                color: AppKendoColors.grey.shade400,
+                                color: context.appColors.subTextColor,
                               ),
                               filled: true,
                               // ★ ダークモード対応: ダーク時は暗い入力欄背景、ライト時は白
                               fillColor: isDark
                                   ? const Color(0xFF2C2C3E)
-                                  : AppKendoColors.pureWhite,
+                                  : context.appColors.textColor,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.md,
                                 vertical: AppSpacing.md,
@@ -396,13 +397,13 @@ class _ProgramManagementScreenState
                               border: OutlineInputBorder(
                                 borderRadius: AppRadius.small,
                                 borderSide: BorderSide(
-                                  color: AppKendoColors.indigo.shade200,
+                                  color: const Color(0xFF3F51B5),
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: AppRadius.small,
                                 borderSide: BorderSide(
-                                  color: AppKendoColors.indigo.shade200,
+                                  color: const Color(0xFF3F51B5),
                                 ),
                               ),
                               errorStyle: const TextStyle(
@@ -447,7 +448,7 @@ class _ProgramManagementScreenState
                                     size: 13,
                                     color: showValidationHighlight
                                         ? AppKendoColors.hansokuRed
-                                        : AppKendoColors.orange.shade700,
+                                        : const Color(0xFFFF9800),
                                   ),
                                   const SizedBox(width: AppSpacing.xs),
                                   Text(
@@ -456,7 +457,7 @@ class _ProgramManagementScreenState
                                       fontSize: AppFontSize.caption,
                                       color: showValidationHighlight
                                           ? AppKendoColors.hansokuRed
-                                          : AppKendoColors.orange.shade700,
+                                          : const Color(0xFFFF9800),
                                       fontWeight: showValidationHighlight
                                           ? AppFontWeight.bold
                                           : AppFontWeight.semiBold,
@@ -477,14 +478,12 @@ class _ProgramManagementScreenState
                                 // ★ ダークモード対応: ダーク時は暗いガイドカード
                                 color: isDark
                                     ? const Color(0xFF252540)
-                                    : AppKendoColors.indigo.shade50.withAlpha(
-                                        200,
-                                      ),
+                                    : const Color(0xFF3F51B5).withAlpha(200),
                                 borderRadius: AppRadius.small,
                                 border: Border.all(
                                   color: isDark
                                       ? const Color(0xFF3A3A6A)
-                                      : AppKendoColors.indigo.shade100,
+                                      : const Color(0xFF3F51B5),
                                   width: 1,
                                 ),
                               ),
@@ -494,7 +493,7 @@ class _ProgramManagementScreenState
                                   Icon(
                                     Icons.info_outline,
                                     size: 18,
-                                    color: AppKendoColors.indigo.shade700,
+                                    color: const Color(0xFF3F51B5),
                                   ),
                                   const SizedBox(width: AppSpacing.sm),
                                   Expanded(
@@ -507,8 +506,8 @@ class _ProgramManagementScreenState
                                         fontWeight: AppFontWeight.semiBold,
                                         // ★ ダークモード対応: ダーク時は明るい色
                                         color: isDark
-                                            ? AppKendoColors.indigo.shade200
-                                            : AppKendoColors.indigo.shade900,
+                                            ? const Color(0xFF3F51B5)
+                                            : const Color(0xFF3F51B5),
                                         height: 1.4,
                                       ),
                                     ),
@@ -529,7 +528,7 @@ class _ProgramManagementScreenState
                         data: Theme.of(context).copyWith(
                           canvasColor: isDark
                               ? const Color(0xFF1C1C1E)
-                              : AppKendoColors.pureWhite,
+                              : context.appColors.textColor,
                         ),
                         child: ReorderableListView.builder(
                           padding: const EdgeInsets.symmetric(
@@ -554,10 +553,10 @@ class _ProgramManagementScreenState
                               selected: isSelected,
                               // ★ ダークモード対応: 選択時のハイライト色
                               selectedTileColor: isDark
-                                  ? AppKendoColors.indigo.shade900.withAlpha(
+                                  ? context.appColors.primaryAccent.withAlpha(
                                       180,
                                     )
-                                  : AppKendoColors.indigo.shade50,
+                                  : context.appColors.primaryAccent,
                               // ★ ダークモード対応: 未選択時のタイル背景色
                               tileColor: isDark
                                   ? const Color(0xFF1C1C1E)
@@ -581,7 +580,7 @@ class _ProgramManagementScreenState
                                   fontSize: AppFontSize.small,
                                   fontWeight: isSelected
                                       ? AppFontWeight.bold
-                                      : FontWeight.normal,
+                                      : AppFontWeight.regular,
                                 ),
                               ),
                               trailing: const Icon(Icons.drag_handle, size: 20),
@@ -793,7 +792,7 @@ class _ProgramManagementScreenState
                 // サムネイル表示
                 program.fileType == 'pdf'
                     ? Container(
-                        color: AppKendoColors.grey.shade200,
+                        color: context.appColors.separatorColor,
                         child: const Icon(
                           Icons.picture_as_pdf,
                           size: 64,
@@ -804,7 +803,7 @@ class _ProgramManagementScreenState
                         _getSafeUrl(program.fileUrl),
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          color: AppKendoColors.grey.shade200,
+                          color: context.appColors.separatorColor,
                           child: const Icon(
                             Icons.broken_image,
                             color: AppKendoColors.grey,
@@ -870,7 +869,7 @@ class _ProgramManagementScreenState
             child: Container(
               width: 48,
               height: 48,
-              color: AppKendoColors.grey.shade200,
+              color: context.appColors.separatorColor,
               child: program.fileType == 'pdf'
                   ? const Icon(
                       Icons.picture_as_pdf,

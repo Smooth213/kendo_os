@@ -486,11 +486,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color dynamicTextColor = isDark
-        ? AppKendoColors.pureWhite
+        ? context.appColors.textColor
         : textIndigo;
     final Color dynamicCardColor = isDark
         ? const Color(0xFF161B22)
-        : AppKendoColors.pureWhite;
+        : context.appColors.textColor;
 
     return Expanded(
       child: GestureDetector(
@@ -532,15 +532,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     height: 34,
                     color: isActive
                         ? dynamicTextColor
-                        : AppKendoColors.grey.shade400,
+                        : const Color(0x8A000000),
                   ),
                 )
               else if (icon != null)
                 Icon(
                   icon,
-                  color: isActive
-                      ? dynamicTextColor
-                      : AppKendoColors.grey.shade400,
+                  color: isActive ? dynamicTextColor : const Color(0x8A000000),
                   size: 28,
                 ),
 
@@ -548,9 +546,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text(
                 title,
                 style: TextStyle(
-                  color: isActive
-                      ? dynamicTextColor
-                      : AppKendoColors.grey.shade600,
+                  color: isActive ? dynamicTextColor : const Color(0x8A000000),
                   fontSize: AppFontSize.small,
                   fontWeight: AppFontWeight.bold,
                 ),
@@ -576,8 +572,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title.toUpperCase(),
         style: TextStyle(
           color: isDark
-              ? AppKendoColors.grey.shade500
-              : AppKendoColors.grey.shade600,
+              ? context.appColors.subTextColor
+              : context.appColors.subTextColor,
           fontSize: AppFontSize.bodySmall,
           fontWeight: AppFontWeight.semiBold,
           letterSpacing: 0.5,
@@ -644,8 +640,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         text,
         style: TextStyle(
           color: isDark
-              ? AppKendoColors.grey.shade500
-              : AppKendoColors.grey.shade600,
+              ? context.appColors.subTextColor
+              : context.appColors.subTextColor,
           fontSize: AppFontSize.small,
           height: 1.4,
         ),

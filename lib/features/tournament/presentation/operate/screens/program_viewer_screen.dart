@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -379,11 +380,11 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         appBar: AppHeader(
           backgroundColor: isDark
               ? const Color(0xFF1C1C1E)
-              : AppKendoColors.pureWhite,
+              : context.appColors.textColor,
           foregroundColor: context.appColors.textColor,
           elevation: _isDrawingMode ? 0 : 1,
           titleWidget: _isSearchMode
-              ? TextField(
+              ? AppTextField(
                   controller: _searchTextController,
                   autofocus: true,
                   decoration: const InputDecoration(
@@ -470,7 +471,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       Icons.bolt,
                       color: (currentProgram.isOcrProcessed ?? false)
                           ? AppKendoColors.amber
-                          : AppKendoColors.grey.shade400,
+                          : const Color(0xFFBDBDBD),
                       size: 20,
                     ),
                   ),
@@ -535,7 +536,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 decoration: BoxDecoration(
                   color: isDark
                       ? const Color(0xFF1C1C1E)
-                      : AppKendoColors.pureWhite,
+                      : const Color(0xFFFFFFFF),
                   boxShadow: [
                     BoxShadow(
                       color: AppKendoColors.pureBlack.withAlpha(26),
@@ -551,8 +552,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: isDark
-                              ? const Color(0xFF2C2C2E)
-                              : AppKendoColors.grey.shade100,
+                              ? const Color(0xFF424242)
+                              : const Color(0xFFF5F5F5),
                           borderRadius: AppRadius.small,
                         ),
                         padding: const EdgeInsets.symmetric(
@@ -646,13 +647,13 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF3A3A3C)
-                            : AppKendoColors.blueGrey.shade50.withAlpha(220),
+                            ? const Color(0xFF424242)
+                            : const Color(0xFFECEFF1).withAlpha(220),
                         borderRadius: AppRadius.small,
                         border: Border.all(
                           color: isDark
-                              ? AppKendoColors.transparent
-                              : AppKendoColors.blueGrey.shade100,
+                              ? const Color(0xFF616161)
+                              : const Color(0xFFCFD8DC),
                           width: 1,
                         ),
                       ),
@@ -669,7 +670,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             icon: Icons.cleaning_services,
                             tooltip: '消しゴム',
                             isDark: isDark,
-                            activeColor: AppKendoColors.blueGrey.shade600,
+                            activeColor: const Color(0xFF607D8B),
                           ),
 
                           // 小さな縦仕切り線
@@ -677,8 +678,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             height: 20,
                             width: 1,
                             color: isDark
-                                ? AppKendoColors.grey.shade700
-                                : AppKendoColors.blueGrey.shade200,
+                                ? const Color(0xDE000000)
+                                : const Color(0xFF607D8B),
                             margin: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.xs,
                             ),
@@ -695,10 +696,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             icon: Icon(
                               Icons.undo,
                               color: isDark
-                                  ? AppKendoColors.pureWhite.withValues(
-                                      alpha: 0.7,
-                                    )
-                                  : AppKendoColors.blueGrey.shade600,
+                                  ? const Color(
+                                      0xFFFFFFFF,
+                                    ).withValues(alpha: 0.7)
+                                  : const Color(0xFF607D8B),
                             ),
                             tooltip: '1つ戻す',
                             onPressed: () {
@@ -725,8 +726,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             icon: Icon(
                               Icons.delete_sweep,
                               color: isDark
-                                  ? AppKendoColors.grey.shade400
-                                  : AppKendoColors.blueGrey.shade700,
+                                  ? const Color(0x8A000000)
+                                  : const Color(0xFF607D8B),
                             ),
                             tooltip: 'すべて消す',
                             onPressed: () async {
@@ -832,7 +833,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         decoration: BoxDecoration(
                           color: isDark
                               ? const Color(0xFF1C1C1E)
-                              : AppKendoColors.pureWhite,
+                              : context.appColors.textColor,
                           borderRadius: AppRadius.large,
                           border: Border.all(
                             color: context.appColors.separatorColor,
@@ -846,7 +847,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                   ? Icons.picture_as_pdf_outlined
                                   : Icons.image_not_supported_outlined,
                               size: 64,
-                              color: AppKendoColors.indigo.shade400,
+                              color: context.appColors.primaryAccent,
                             ),
                             const SizedBox(height: 20),
                             Text(
@@ -863,12 +864,12 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               style: TextStyle(
                                 fontSize: AppFontSize.small,
                                 color: isDark
-                                    ? AppKendoColors.pureWhite.withValues(
-                                        alpha: 0.7,
-                                      )
-                                    : AppKendoColors.pureBlack.withValues(
-                                        alpha: 0.54,
-                                      ),
+                                    ? const Color(
+                                        0xFFFFFFFF,
+                                      ).withValues(alpha: 0.7)
+                                    : const Color(
+                                        0xFF000000,
+                                      ).withValues(alpha: 0.54),
                                 height: 1.5,
                               ),
                               textAlign: TextAlign.center,
@@ -1286,10 +1287,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isDark
-                      ? AppKendoColors.grey.shade800
-                      : AppKendoColors.pureWhite)
-                : AppKendoColors.transparent,
+                ? (isDark ? const Color(0xDE000000) : const Color(0xFFFFFFFF))
+                : Colors.transparent,
             borderRadius: AppRadius.sub,
             boxShadow: isSelected
                 ? [
@@ -1308,7 +1307,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 ? activeColor
                 : (isDark
                       ? AppKendoColors.white38
-                      : AppKendoColors.pureBlack.withValues(alpha: 0.38)),
+                      : const Color(0xFF000000).withValues(alpha: 0.38)),
           ),
         ),
       ),
@@ -1442,7 +1441,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 : AppKendoColors.transparent,
             borderRadius: AppRadius.medium,
             border: Border.all(
-              color: isSelected ? color : AppKendoColors.grey.shade300,
+              color: isSelected ? color : context.appColors.separatorColor,
               width: 2,
             ),
           ),
@@ -1459,7 +1458,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     color: color,
                     fontWeight: isSelected
                         ? AppFontWeight.bold
-                        : FontWeight.normal,
+                        : AppFontWeight.regular,
                     fontSize: AppFontSize.small,
                   ),
                 ),

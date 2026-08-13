@@ -68,4 +68,5 @@ class AppKendoColors {
   static const Color white60 = Colors.white60;
   static const Color white38 = Colors.white38;
   static const Color black45 = Colors.black45;
+  static const Color successGreen = Colors.green;
 }

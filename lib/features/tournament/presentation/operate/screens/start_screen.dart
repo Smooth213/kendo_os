@@ -31,7 +31,7 @@ class StartScreen extends ConsumerWidget {
     final textColor = context.appColors.textColor;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : AppKendoColors.grey.shade600;
+        : context.appColors.subTextColor;
 
     return GlassButton.custom(
       onPressed: onTap,
@@ -113,11 +113,11 @@ class StartScreen extends ConsumerWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerStartColor = isDark
-        ? AppKendoColors.indigo.shade900
-        : AppKendoColors.indigo.shade700;
+        ? context.appColors.primaryAccent
+        : context.appColors.primaryAccent;
     final headerEndColor = isDark
         ? const Color(0xFF1A237E)
-        : AppKendoColors.blue.shade500;
+        : context.appColors.infoColor;
 
     return LiquidBackground(
       child: Scaffold(
@@ -145,7 +145,7 @@ class StartScreen extends ConsumerWidget {
                     ? []
                     : [
                         BoxShadow(
-                          color: AppKendoColors.indigo.withValues(alpha: 0.3),
+                          color: const Color(0xFF3F51B5).withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -279,7 +279,7 @@ class StartScreen extends ConsumerWidget {
                                     icon: Icons.add_circle,
                                     title: '新しい大会\nを作る',
                                     subtitle: '大会・錬成会',
-                                    color: AppKendoColors.indigo.shade600,
+                                    color: context.appColors.primaryAccent,
                                     onTap: () =>
                                         context.push('/create-tournament'),
                                   ),
@@ -292,7 +292,7 @@ class StartScreen extends ConsumerWidget {
                                   icon: Icons.list_alt,
                                   title: '今日の試合\nを作る・見る',
                                   subtitle: '試合進行・記録',
-                                  color: AppKendoColors.indigo.shade800,
+                                  color: context.appColors.primaryAccent,
                                   onTap: () => context.push(
                                     '/tournament-list',
                                     extra: false,
@@ -310,7 +310,7 @@ class StartScreen extends ConsumerWidget {
                                   icon: Icons.history,
                                   title: '過去の大会\nを見る',
                                   subtitle: 'アーカイブ',
-                                  color: AppKendoColors.blueGrey.shade600,
+                                  color: context.appColors.subTextColor,
                                   onTap: () => context.push(
                                     '/tournament-list',
                                     extra: true,
@@ -325,7 +325,7 @@ class StartScreen extends ConsumerWidget {
                                     icon: Icons.manage_accounts,
                                     title: '選手名簿\n(マスタ) 管理',
                                     subtitle: '道場生データ',
-                                    color: AppKendoColors.purple.shade600,
+                                    color: context.appColors.primaryAccent,
                                     onTap: () => context.push('/master'),
                                   ),
                                 ),
@@ -350,15 +350,15 @@ class StartScreen extends ConsumerWidget {
                               'assets/kendo_icon.png',
                               width: 72,
                               height: 72,
-                              color: AppKendoColors.grey.shade400.withValues(
-                                alpha: 0.2,
-                              ),
+                              color: const Color(
+                                0x8A000000,
+                              ).withValues(alpha: 0.2),
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Text(
                               'Kendo Sync v1.0.0',
                               style: TextStyle(
-                                color: AppKendoColors.grey.shade400,
+                                color: const Color(0x8A000000),
                                 fontSize: AppFontSize.small,
                                 fontWeight: AppFontWeight.bold,
                                 letterSpacing: 1.5,

@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -115,12 +116,12 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final cardBgColor = isDark
             ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-            : AppKendoColors.pureWhite.withValues(alpha: 0.6);
+            : context.appColors.textColor.withValues(alpha: 0.6);
         final textColor = context.appColors.textColor;
         final subTextColor = context.appColors.subTextColor;
         final borderColor = isDark
-            ? AppKendoColors.pureWhite.withValues(alpha: 0.2)
-            : AppKendoColors.pureWhite.withValues(alpha: 0.7);
+            ? context.appColors.textColor.withValues(alpha: 0.2)
+            : context.appColors.textColor.withValues(alpha: 0.7);
 
         return Dialog(
           backgroundColor: AppKendoColors.transparent,
@@ -236,15 +237,15 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBgColor = isDark
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-        : AppKendoColors.pureWhite.withValues(alpha: 0.6);
+        : context.appColors.textColor.withValues(alpha: 0.6);
     final textColor = context.appColors.textColor;
     final subTextColor = context.appColors.subTextColor;
     final borderColor = isDark
-        ? AppKendoColors.pureWhite.withValues(alpha: 0.2)
-        : AppKendoColors.pureWhite.withValues(alpha: 0.7);
+        ? context.appColors.textColor.withValues(alpha: 0.2)
+        : context.appColors.textColor.withValues(alpha: 0.7);
     final inputBgColor = isDark
-        ? AppKendoColors.pureWhite.withValues(alpha: 0.05)
-        : AppKendoColors.pureBlack.withValues(alpha: 0.05);
+        ? context.appColors.textColor.withValues(alpha: 0.05)
+        : context.appColors.cardBackground.withValues(alpha: 0.05);
 
     return Dialog(
       backgroundColor: AppKendoColors.transparent,
@@ -319,7 +320,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                               focusNode,
                               onFieldSubmitted,
                             ) {
-                              return TextField(
+                              return AppTextField(
                                 controller: fieldController,
                                 focusNode: focusNode,
                                 style: TextStyle(
@@ -362,7 +363,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                               borderRadius: AppRadius.medium,
                               color: isDark
                                   ? const Color(0xFF2C2C2E)
-                                  : AppKendoColors.pureWhite,
+                                  : context.appColors.textColor,
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
                                   maxHeight: 200,

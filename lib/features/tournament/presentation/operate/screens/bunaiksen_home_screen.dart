@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -42,14 +43,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     bool isFinished = true,
   }) {
     final textColor = isFinished
-        ? (isDark ? AppKendoColors.grey.shade600 : AppKendoColors.grey.shade500)
-        : (isDark ? AppKendoColors.pureWhite : AppKendoColors.pureBlack);
+        ? (isDark ? const Color(0x8A000000) : const Color(0x8A000000))
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000));
     // 区切り文字を少しグレーにして、スコア本体(メやコ)と明確に区別する
     final iconColor = isFinished
-        ? (isDark ? AppKendoColors.grey.shade700 : AppKendoColors.grey.shade400)
-        : (isDark
-              ? AppKendoColors.grey.shade600
-              : AppKendoColors.grey.shade400);
+        ? (isDark ? const Color(0xDE000000) : const Color(0x8A000000))
+        : (isDark ? const Color(0x8A000000) : const Color(0x8A000000));
 
     // 完全無得点の引き分け
     if (match.redScore == 0 && match.whiteScore == 0) {
@@ -172,7 +171,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               ? AppKendoColors.transparent
               : themeColors.cardBackground,
           foregroundColor: isDark
-              ? AppKendoColors.pureWhite
+              ? const Color(0xFFFFFFFF)
               : themeColors.primaryAccent,
           title: isToday ? '今日の部内戦' : '$dateDisplay の記録',
           elevation: 0,
@@ -213,7 +212,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         colorScheme: isDark
                             ? ColorScheme.dark(
                                 primary: themeColors.primaryAccent,
-                                onPrimary: AppKendoColors.pureWhite,
+                                onPrimary: context.appColors.textColor,
                                 surface: themeColors.cardBackground,
                                 onSurface: AppKendoColors.pureWhite,
                               )
@@ -316,8 +315,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Card(
                           color: isDark
-                              ? AppKendoColors.grey.shade900
-                              : AppKendoColors.pureWhite,
+                              ? const Color(0xDE000000)
+                              : const Color(0xFFFFFFFF),
                           shape: RoundedRectangleBorder(
                             borderRadius: AppRadius.large,
                           ),
@@ -457,19 +456,19 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                       final Color bg = isFinished
                           ? (isDark
                                 ? const Color(0xFF161618)
-                                : AppKendoColors.grey.shade50)
+                                : const Color(0xFFF2F2F7))
                           : (isDark
                                 ? const Color(0xFF1C1C1E)
-                                : AppKendoColors.pureWhite);
+                                : context.appColors.textColor);
                       final Color textC = isFinished
                           ? (isDark
-                                ? AppKendoColors.grey.shade600
-                                : AppKendoColors.grey.shade500)
+                                ? context.appColors.subTextColor
+                                : context.appColors.subTextColor)
                           : (context.appColors.textColor);
                       final Color noteC = isFinished
                           ? (isDark
-                                ? AppKendoColors.grey.shade700
-                                : AppKendoColors.grey.shade500)
+                                ? context.appColors.textColor
+                                : context.appColors.subTextColor)
                           : AppKendoColors.grey;
 
                       // ★ 修正：一体化のため、外側のPaddingでリストの余白を管理
@@ -514,12 +513,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               borderRadius: AppRadius.large,
                               side: BorderSide(
                                 color: isDark
-                                    ? AppKendoColors.pureWhite.withValues(
-                                        alpha: 0.10,
-                                      )
-                                    : AppKendoColors.pureBlack.withValues(
-                                        alpha: 0.05,
-                                      ),
+                                    ? const Color(
+                                        0xFFFFFFFF,
+                                      ).withValues(alpha: 0.10)
+                                    : const Color(
+                                        0xFF000000,
+                                      ).withValues(alpha: 0.05),
                               ),
                             ),
                             child: InkWell(
@@ -560,7 +559,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: isPlaying
-                                                ? AppKendoColors.blue.shade600
+                                                ? const Color(0xFF2196F3)
                                                 : (isFinished
                                                       ? (isDark
                                                             ? Colors
@@ -802,7 +801,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 icon: const Icon(Icons.share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.blueGrey.shade700,
+                  backgroundColor: const Color(0xFF607D8B),
                   foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                 ),
@@ -859,7 +858,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppKendoColors.grey.shade400,
+                  color: const Color(0x8A000000),
                   borderRadius: AppRadius.micro,
                 ),
               ),
@@ -878,8 +877,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: AppFontSize.small,
                   color: isDark
-                      ? AppKendoColors.grey.shade400
-                      : AppKendoColors.grey.shade600,
+                      ? const Color(0x8A000000)
+                      : const Color(0x8A000000),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -896,9 +895,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         ),
                         borderRadius: AppRadius.large,
                         border: Border.all(
-                          color: AppKendoColors.hansokuRed.withValues(
-                            alpha: 0.5,
-                          ),
+                          color: const Color(0xFFE53935).withValues(alpha: 0.5),
                           width: 1.5,
                         ),
                       ),
@@ -934,7 +931,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF2C2C2E)
-                                    : AppKendoColors.pureWhite,
+                                    : const Color(0xFFFFFFFF),
                                 borderRadius: AppRadius.small,
                                 border: Border.all(
                                   color: AppKendoColors.hansokuRed.withValues(
@@ -991,8 +988,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         borderRadius: AppRadius.large,
                         border: Border.all(
                           color: isDark
-                              ? AppKendoColors.blueGrey.shade400
-                              : AppKendoColors.blueGrey.shade300,
+                              ? const Color(0xFF607D8B)
+                              : const Color(0xFF607D8B),
                           width: 1.5,
                         ),
                       ),
@@ -1004,10 +1001,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               fontSize: AppFontSize.body,
                               fontWeight: AppFontWeight.bold,
                               color: isDark
-                                  ? AppKendoColors.pureWhite.withValues(
-                                      alpha: 0.7,
-                                    )
-                                  : AppKendoColors.blueGrey.shade700,
+                                  ? const Color(
+                                      0xFFFFFFFF,
+                                    ).withValues(alpha: 0.7)
+                                  : const Color(0xFF607D8B),
                             ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
@@ -1018,8 +1015,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                 ref,
                                 '白',
                                 isDark
-                                    ? AppKendoColors.blueGrey.shade300
-                                    : AppKendoColors.blueGrey.shade700,
+                                    ? context.appColors.subTextColor
+                                    : context.appColors.subTextColor,
                               );
                               if (picked != null) {
                                 setStateSheet(() => whitePlayer = picked);
@@ -1034,13 +1031,14 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF2C2C2E)
-                                    : AppKendoColors.pureWhite,
+                                    : context.appColors.textColor,
                                 borderRadius: AppRadius.small,
                                 border: Border.all(
                                   color: isDark
-                                      ? AppKendoColors.blueGrey.shade600
-                                      : AppKendoColors.blueGrey.shade300
-                                            .withValues(alpha: 0.5),
+                                      ? const Color(0xFF607D8B)
+                                      : const Color(
+                                          0xFF607D8B,
+                                        ).withValues(alpha: 0.5),
                                 ),
                               ),
                               child: Row(
@@ -1061,10 +1059,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                   Icon(
                                     Icons.arrow_drop_down,
                                     color: isDark
-                                        ? AppKendoColors.pureWhite.withValues(
-                                            alpha: 0.7,
-                                          )
-                                        : AppKendoColors.blueGrey.shade700,
+                                        ? const Color(
+                                            0xFFFFFFFF,
+                                          ).withValues(alpha: 0.7)
+                                        : const Color(0xFF607D8B),
                                   ),
                                 ],
                               ),
@@ -1083,7 +1081,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: isDark
                       ? const Color(0xFF2C2C2E)
-                      : AppKendoColors.grey.shade100,
+                      : const Color(0xFFF2F2F7),
                   borderRadius: AppRadius.large,
                 ),
                 child: Column(
@@ -1099,8 +1097,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               Icons.timer_outlined,
                               size: 16,
                               color: isDark
-                                  ? AppKendoColors.grey.shade400
-                                  : AppKendoColors.grey.shade700,
+                                  ? const Color(0x8A000000)
+                                  : const Color(0xDE000000),
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -1118,7 +1116,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF3A3A3C)
-                                : AppKendoColors.pureWhite,
+                                : const Color(0xFFFFFFFF),
                             borderRadius: AppRadius.round,
                             border: Border.all(
                               color: themeColors.primaryAccent.withValues(
@@ -1199,8 +1197,8 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               Icons.emoji_events_outlined,
                               size: 16,
                               color: isDark
-                                  ? AppKendoColors.grey.shade400
-                                  : AppKendoColors.grey.shade700,
+                                  ? const Color(0x8A000000)
+                                  : const Color(0xDE000000),
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -1231,12 +1229,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       ? themeColors.primaryAccent
                                       : (isDark
                                             ? const Color(0xFF3A3A3C)
-                                            : AppKendoColors.pureWhite),
+                                            : const Color(0xFFFFFFFF)),
                                   borderRadius: AppRadius.large,
                                   border: Border.all(
                                     color: !selectedIsIpponShobu
                                         ? themeColors.primaryAccent
-                                        : AppKendoColors.grey.shade300,
+                                        : const Color(0x33000000),
                                   ),
                                 ),
                                 child: Text(
@@ -1245,7 +1243,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                     fontSize: AppFontSize.small,
                                     fontWeight: !selectedIsIpponShobu
                                         ? AppFontWeight.bold
-                                        : FontWeight.normal,
+                                        : AppFontWeight.regular,
                                     color: !selectedIsIpponShobu
                                         ? AppKendoColors.pureWhite
                                         : themeColors.textColor,
@@ -1270,12 +1268,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                       ? themeColors.primaryAccent
                                       : (isDark
                                             ? const Color(0xFF3A3A3C)
-                                            : AppKendoColors.pureWhite),
+                                            : const Color(0xFFFFFFFF)),
                                   borderRadius: AppRadius.large,
                                   border: Border.all(
                                     color: selectedIsIpponShobu
                                         ? themeColors.primaryAccent
-                                        : AppKendoColors.grey.shade300,
+                                        : const Color(0x33000000),
                                   ),
                                 ),
                                 child: Text(
@@ -1284,7 +1282,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                     fontSize: AppFontSize.small,
                                     fontWeight: selectedIsIpponShobu
                                         ? AppFontWeight.bold
-                                        : FontWeight.normal,
+                                        : AppFontWeight.regular,
                                     color: selectedIsIpponShobu
                                         ? AppKendoColors.pureWhite
                                         : themeColors.textColor,
@@ -1443,7 +1441,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     // 検索窓・自由テキスト入力
-                    TextField(
+                    AppTextField(
                       autofocus: false,
                       decoration: InputDecoration(
                         hintText: '名前を入力または名簿から1タップ選択',
@@ -1460,7 +1458,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         filled: true,
                         fillColor: isDark
                             ? const Color(0xFF2C2C2E)
-                            : AppKendoColors.grey.shade100,
+                            : const Color(0xFFF2F2F7),
                         border: OutlineInputBorder(
                           borderRadius: AppRadius.medium,
                           borderSide: BorderSide.none,
@@ -1525,10 +1523,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                     : '該当する選手がいません',
                                 style: TextStyle(
                                   color: isDark
-                                      ? AppKendoColors.pureWhite.withValues(
-                                          alpha: 0.54,
-                                        )
-                                      : AppKendoColors.grey.shade600,
+                                      ? const Color(
+                                          0xFFFFFFFF,
+                                        ).withValues(alpha: 0.54)
+                                      : const Color(0x8A000000),
                                 ),
                               ),
                             )
@@ -1542,7 +1540,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                   ),
                                   color: isDark
                                       ? const Color(0xFF2C2C2E)
-                                      : AppKendoColors.grey.shade50,
+                                      : const Color(0xFFF2F2F7),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: AppRadius.medium,
                                   ),

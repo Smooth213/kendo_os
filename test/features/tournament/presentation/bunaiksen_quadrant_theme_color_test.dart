@@ -308,7 +308,7 @@ void main() {
         expect(appBarFinder, findsOneWidget);
 
         final AppBar appBar = tester.widget<AppBar>(appBarFinder);
-        expect(appBar.backgroundColor, Colors.indigo.shade600);
+        expect(appBar.backgroundColor, Colors.indigo.shade700);
 
         final titleFinder = find.descendant(
           of: appBarFinder,

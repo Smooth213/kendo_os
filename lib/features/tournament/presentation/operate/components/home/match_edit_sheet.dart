@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -303,9 +304,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: isDark
-                  ? AppKendoColors.grey.shade700
-                  : AppKendoColors.grey.shade300,
+              color: isDark ? const Color(0xDE000000) : const Color(0x33000000),
               borderRadius: AppRadius.micro,
             ),
           ),
@@ -348,8 +347,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             indicatorColor: widget.themeColors.primaryAccent,
             labelColor: widget.themeColors.primaryAccent,
             unselectedLabelColor: isDark
-                ? AppKendoColors.grey.shade400
-                : AppKendoColors.grey.shade600,
+                ? context.appColors.subTextColor
+                : context.appColors.subTextColor,
             labelPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.xxs,
             ),
@@ -397,7 +396,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 color: backgroundColor,
                 boxShadow: [
                   BoxShadow(
-                    color: AppKendoColors.pureBlack.withAlpha(isDark ? 50 : 20),
+                    color: const Color(0xFF000000).withAlpha(isDark ? 50 : 20),
                     blurRadius: 10,
                     offset: const Offset(0, -4),
                   ),
@@ -443,14 +442,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF2C2C2E)
-                : AppKendoColors.grey.shade100,
+            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isDark
-                  ? AppKendoColors.grey.shade700
-                  : AppKendoColors.grey.shade300,
+              color: isDark ? const Color(0xDE000000) : const Color(0x33000000),
             ),
           ),
           child: Column(
@@ -533,7 +528,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0xFF252527)
-                  : AppKendoColors.pureWhite,
+                  : context.appColors.textColor,
               borderRadius: AppRadius.medium,
               border: Border.all(color: context.appColors.separatorColor),
             ),
@@ -552,7 +547,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         controller: _redPlayerControllers[index],
                         style: const TextStyle(
                           color: AppKendoColors.red,
@@ -583,7 +578,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       ),
                     ),
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         controller: _whitePlayerControllers[index],
                         style: TextStyle(
                           color: textColor,
@@ -593,8 +588,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                           hintText: '白 選手名',
                           filled: true,
                           fillColor: isDark
-                              ? AppKendoColors.pureWhite.withAlpha(15)
-                              : AppKendoColors.grey.shade100,
+                              ? const Color(0xFFFFFFFF).withAlpha(15)
+                              : const Color(0xFFF2F2F7),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: AppSpacing.sm,
@@ -724,8 +719,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                     Icons.info_outline,
                     size: 13,
                     color: isDark
-                        ? AppKendoColors.grey.shade400
-                        : AppKendoColors.grey.shade600,
+                        ? const Color(0x8A000000)
+                        : const Color(0x8A000000),
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
@@ -734,8 +729,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       style: TextStyle(
                         fontSize: AppFontSize.caption,
                         color: isDark
-                            ? AppKendoColors.grey.shade400
-                            : AppKendoColors.grey.shade600,
+                            ? const Color(0x8A000000)
+                            : const Color(0x8A000000),
                       ),
                     ),
                   ),
@@ -748,8 +743,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,
                   color: isDark
-                      ? AppKendoColors.grey.shade300
-                      : AppKendoColors.grey.shade700,
+                      ? const Color(0x33000000)
+                      : const Color(0xDE000000),
                 ),
               ),
               const SizedBox(height: 6),
@@ -777,8 +772,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,
                   color: isDark
-                      ? AppKendoColors.grey.shade300
-                      : AppKendoColors.grey.shade700,
+                      ? const Color(0x33000000)
+                      : const Color(0xDE000000),
                 ),
               ),
               const SizedBox(height: 6),
@@ -951,14 +946,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           margin: const EdgeInsets.only(bottom: AppSpacing.lg),
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF232326)
-                : AppKendoColors.blue.shade50,
+            color: isDark ? const Color(0xFF232326) : const Color(0xFF2196F3),
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isDark
-                  ? AppKendoColors.blue.shade800
-                  : AppKendoColors.blue.shade200,
+              color: isDark ? const Color(0xFF2196F3) : const Color(0xFF2196F3),
             ),
           ),
           child: Column(
@@ -978,8 +969,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       fontSize: AppFontSize.bodySmall,
                       fontWeight: AppFontWeight.bold,
                       color: isDark
-                          ? AppKendoColors.blue.shade200
-                          : AppKendoColors.blue.shade900,
+                          ? const Color(0xFF2196F3)
+                          : const Color(0xFF2196F3),
                     ),
                   ),
                 ],
@@ -1030,14 +1021,10 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF2C2C2E)
-                : AppKendoColors.grey.shade100,
+            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
             borderRadius: AppRadius.large,
             border: Border.all(
-              color: isDark
-                  ? AppKendoColors.grey.shade700
-                  : AppKendoColors.grey.shade300,
+              color: isDark ? const Color(0xDE000000) : const Color(0x33000000),
             ),
           ),
           child: Column(
@@ -1181,27 +1168,23 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           style: TextStyle(
             fontSize: AppFontSize.small,
             fontWeight: AppFontWeight.bold,
-            color: isDark
-                ? AppKendoColors.grey.shade400
-                : AppKendoColors.grey.shade700,
+            color: isDark ? const Color(0x8A000000) : const Color(0xDE000000),
           ),
         ),
         const SizedBox(height: 6),
-        TextField(
+        AppTextField(
           controller: controller,
           maxLines: maxLines,
           style: TextStyle(color: textColor, fontSize: AppFontSize.body),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: isDark
-                  ? AppKendoColors.grey.shade600
-                  : AppKendoColors.grey.shade400,
+              color: isDark ? const Color(0x8A000000) : const Color(0x8A000000),
             ),
             filled: true,
             fillColor: isDark
                 ? const Color(0xFF1C1C1E)
-                : AppKendoColors.pureWhite,
+                : const Color(0xFFFFFFFF),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
               vertical: 10,
@@ -1210,16 +1193,16 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark
-                    ? AppKendoColors.grey.shade700
-                    : AppKendoColors.grey.shade300,
+                    ? const Color(0xDE000000)
+                    : const Color(0x33000000),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
                 color: isDark
-                    ? AppKendoColors.grey.shade700
-                    : AppKendoColors.grey.shade300,
+                    ? const Color(0xDE000000)
+                    : const Color(0x33000000),
               ),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -101,13 +102,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
         content: Row(
           children: [
             Expanded(
-              child: TextField(
+              child: AppTextField(
                 controller: minController,
                 keyboardType: TextInputType.number,
                 style: TextStyle(
                   color: isDark
-                      ? AppKendoColors.pureWhite
-                      : AppKendoColors.pureBlack,
+                      ? context.appColors.textColor
+                      : context.appColors.cardBackground,
                 ),
                 decoration: _buildTextFieldDecoration(labelText: '分'),
               ),
@@ -123,13 +124,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               ),
             ),
             Expanded(
-              child: TextField(
+              child: AppTextField(
                 controller: secController,
                 keyboardType: TextInputType.number,
                 style: TextStyle(
                   color: isDark
-                      ? AppKendoColors.pureWhite
-                      : AppKendoColors.pureBlack,
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0xFF000000),
                 ),
                 decoration: _buildTextFieldDecoration(labelText: '秒'),
               ),
@@ -275,7 +276,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             labelColor: _themeColors.primaryAccent,
             unselectedLabelColor: isDark
                 ? AppKendoColors.grey
-                : AppKendoColors.grey.shade600,
+                : const Color(0x8A000000),
             indicatorColor: _themeColors.primaryAccent,
             indicatorWeight: 3,
             labelStyle: const TextStyle(fontWeight: AppFontWeight.bold),
@@ -301,8 +302,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 ),
               ),
               backgroundColor: isDark
-                  ? AppKendoColors.grey.shade800.withAlpha(128)
-                  : AppKendoColors.grey.shade100,
+                  ? context.appColors.textColor.withAlpha(128)
+                  : context.appColors.cardBackground,
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -326,9 +327,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 fontSize: AppFontSize.caption,
                                 color: isDark
                                     ? AppKendoColors.white60
-                                    : AppKendoColors.pureBlack.withValues(
-                                        alpha: 0.54,
-                                      ),
+                                    : const Color(
+                                        0xFF000000,
+                                      ).withValues(alpha: 0.54),
                               ),
                             ),
                           ),
@@ -584,7 +585,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   style: TextStyle(
                     fontSize: AppFontSize.display,
                     fontWeight: AppFontWeight.bold,
-                    color: AppKendoColors.grey.shade500,
+                    color: const Color(0x8A000000),
                   ),
                 ),
               ),
@@ -593,8 +594,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   controller: _whitePlayerController,
                   label: '白選手',
                   accentColor: Theme.of(context).brightness == Brightness.dark
-                      ? AppKendoColors.grey.shade300
-                      : AppKendoColors.grey.shade700,
+                      ? context.appColors.separatorColor
+                      : context.appColors.textColor,
                 ),
               ),
             ],
@@ -705,8 +706,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
           : (isAssigned
                 ? (context.appColors.separatorColor)
                 : (isDark
-                      ? AppKendoColors.grey.shade700
-                      : AppKendoColors.pureWhite)),
+                      ? context.appColors.textColor
+                      : context.appColors.textColor)),
       side: BorderSide(
         color: isAssigned
             ? AppKendoColors.transparent
@@ -889,8 +890,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             color: candidateData.isNotEmpty
                                 ? AppKendoColors.hansokuRed
                                 : (isDark
-                                      ? AppKendoColors.grey.shade900
-                                      : AppKendoColors.pureWhite),
+                                      ? context.appColors.textColor
+                                      : context.appColors.textColor),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(
                                 color: AppKendoColors.hansokuRed,
@@ -942,13 +943,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                         builder: (context, candidateData, rejectedData) {
                           return Card(
                             color: candidateData.isNotEmpty
-                                ? AppKendoColors.blueGrey.shade100
+                                ? context.appColors.subTextColor
                                 : (isDark
-                                      ? AppKendoColors.grey.shade900
-                                      : AppKendoColors.pureWhite),
+                                      ? context.appColors.textColor
+                                      : context.appColors.textColor),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(
-                                color: AppKendoColors.blueGrey.shade300,
+                                color: context.appColors.subTextColor,
                                 width: candidateData.isNotEmpty ? 2 : 1,
                               ),
                               borderRadius: AppRadius.large,
@@ -956,13 +957,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             child: ListTile(
                               dense: true, // 少しコンパクトに
                               leading: CircleAvatar(
-                                backgroundColor:
-                                    AppKendoColors.blueGrey.shade100,
+                                backgroundColor: const Color(0xFF607D8B),
                                 radius: 14,
                                 child: Text(
                                   currentPositions[index].substring(0, 1),
                                   style: TextStyle(
-                                    color: AppKendoColors.blueGrey.shade800,
+                                    color: const Color(0xFF607D8B),
                                     fontSize: AppFontSize.badge,
                                     fontWeight: AppFontWeight.bold,
                                   ),
@@ -1082,7 +1082,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                     ? Center(
                         child: Text(
                           '選手を追加してください',
-                          style: TextStyle(color: AppKendoColors.grey.shade500),
+                          style: TextStyle(
+                            color: context.appColors.subTextColor,
+                          ),
                         ),
                       )
                     : ReorderableListView.builder(
@@ -1247,7 +1249,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                     ? Center(
                         child: Text(
                           '選手を追加してください',
-                          style: TextStyle(color: AppKendoColors.grey.shade500),
+                          style: TextStyle(
+                            color: context.appColors.subTextColor,
+                          ),
                         ),
                       )
                     : ReorderableListView.builder(
@@ -1264,13 +1268,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                             leading: CircleAvatar(
                               backgroundColor: index < 2
                                   ? AppKendoColors.hansokuRed
-                                  : AppKendoColors.grey.shade300,
+                                  : context.appColors.separatorColor,
                               child: Text(
                                 '${index + 1}',
                                 style: TextStyle(
                                   color: index < 2
                                       ? AppKendoColors.hansokuRed
-                                      : AppKendoColors.grey.shade700,
+                                      : context.appColors.textColor,
                                   fontSize: AppFontSize.small,
                                   fontWeight: AppFontWeight.bold,
                                 ),
@@ -1281,7 +1285,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                               style: TextStyle(
                                 fontWeight: index < 2
                                     ? AppFontWeight.bold
-                                    : FontWeight.normal,
+                                    : AppFontWeight.regular,
                               ),
                             ),
                             subtitle: index == 0

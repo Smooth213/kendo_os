@@ -110,14 +110,14 @@ class _CreateTournamentScreenState
 
         // iOS Native: ダークモード時は彩度を抑えた深みのあるTealへ
         final color1 = isDark
-            ? AppKendoColors.indigo.shade800
-            : AppKendoColors.indigo.shade400;
+            ? context.appColors.primaryAccent
+            : context.appColors.primaryAccent;
         final color2 = isDark
-            ? AppKendoColors.indigo.shade900
-            : AppKendoColors.indigo.shade700;
+            ? context.appColors.primaryAccent
+            : context.appColors.primaryAccent;
         final endColor = isDark
-            ? AppKendoColors.indigo.shade800
-            : AppKendoColors.indigo.shade300;
+            ? context.appColors.primaryAccent
+            : context.appColors.primaryAccent;
         final gradientColor = Color.lerp(color1, color2, t)!;
 
         return Container(
@@ -237,11 +237,11 @@ class _CreateTournamentScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color inputBgColor = isDark
         ? const Color(0xFF1C1C1E)
-        : AppKendoColors.pureWhite;
+        : context.appColors.textColor;
     final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
-        : AppKendoColors.grey.shade400;
+        : context.appColors.subTextColor;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -276,14 +276,14 @@ class _CreateTournamentScreenState
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)
-                    : AppKendoColors.grey.shade200,
+                    : const Color(0x33000000),
                 width: 1.0,
               ), // iOS Border
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
-                color: AppKendoColors.indigo.shade500,
+                color: const Color(0xFF3F51B5),
                 width: 2.0,
               ),
             ),
@@ -318,9 +318,7 @@ class _CreateTournamentScreenState
           ),
           shape: RoundedRectangleBorder(
             side: BorderSide(
-              color: isDark
-                  ? const Color(0xFF38383A)
-                  : AppKendoColors.grey.shade200,
+              color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
               width: 1.0,
             ),
             borderRadius: AppRadius.medium,
@@ -340,11 +338,11 @@ class _CreateTournamentScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color inputBgColor = isDark
         ? const Color(0xFF1C1C1E)
-        : AppKendoColors.pureWhite;
+        : context.appColors.textColor;
     final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
-        : AppKendoColors.grey.shade400;
+        : context.appColors.subTextColor;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -384,14 +382,14 @@ class _CreateTournamentScreenState
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)
-                    : AppKendoColors.grey.shade200,
+                    : const Color(0x33000000),
                 width: 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
-                color: AppKendoColors.indigo.shade500,
+                color: const Color(0xFF3F51B5),
                 width: 2.0,
               ),
             ),
@@ -419,14 +417,14 @@ class _CreateTournamentScreenState
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)
-                    : AppKendoColors.grey.shade200,
+                    : const Color(0x33000000),
                 width: 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
               borderSide: BorderSide(
-                color: AppKendoColors.indigo.shade500,
+                color: const Color(0xFF3F51B5),
                 width: 2.0,
               ),
             ),
@@ -443,11 +441,11 @@ class _CreateTournamentScreenState
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isLastPage = _currentPage == 1;
     final Color bottomBarColor = enableLiquidGlass
-        ? AppKendoColors.transparent
-        : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite);
+        ? Colors.transparent
+        : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
     final Color separatorColor = enableLiquidGlass
-        ? AppKendoColors.transparent
-        : (isDark ? const Color(0xFF38383A) : AppKendoColors.grey.shade300);
+        ? Colors.transparent
+        : (isDark ? const Color(0xFF38383A) : const Color(0x33000000));
 
     return Container(
       padding: EdgeInsets.only(
@@ -479,7 +477,7 @@ class _CreateTournamentScreenState
                 child: Icon(
                   Icons.arrow_back_ios_new,
                   size: 20,
-                  color: AppKendoColors.indigo.shade500,
+                  color: const Color(0xFF3F51B5),
                 ), // ダークでも見やすいIndigo
               ),
             ),

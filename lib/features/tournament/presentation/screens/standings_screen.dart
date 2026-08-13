@@ -82,17 +82,17 @@ class StandingsScreen extends ConsumerWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
     final textColor = isDark
-        ? AppKendoColors.pureWhite
-        : AppKendoColors.pureBlack;
+        ? context.appColors.textColor
+        : context.appColors.cardBackground;
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
-        : AppKendoColors.grey.shade700;
+        : context.appColors.textColor;
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : AppKendoColors.grey.shade200;
+        : context.appColors.separatorColor;
     final headerTextColor = isDark
-        ? AppKendoColors.pureWhite
-        : AppKendoColors.indigo.shade900;
+        ? context.appColors.textColor
+        : context.appColors.primaryAccent;
 
     final playerListAsync = ref.watch(playerListProvider);
 
@@ -199,7 +199,7 @@ class StandingsScreen extends ConsumerWidget {
                       height: 80,
                       color: isDark
                           ? const Color(0xFF38383A)
-                          : AppKendoColors.grey.shade300,
+                          : const Color(0x33000000),
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     Text(
@@ -261,34 +261,34 @@ class StandingsScreen extends ConsumerWidget {
 
                       Color avatarColor = isDark
                           ? const Color(0xFF2C2C2E)
-                          : AppKendoColors.grey.shade200;
+                          : context.appColors.separatorColor;
                       Color iconColor = isDark
-                          ? AppKendoColors.grey.shade400
-                          : AppKendoColors.grey.shade700;
+                          ? context.appColors.subTextColor
+                          : context.appColors.textColor;
 
                       if (index == 0) {
                         avatarColor = isDark
-                            ? AppKendoColors.ipponGold.withValues(alpha: 0.3)
-                            : AppKendoColors.ipponGold;
+                            ? context.appColors.primaryAccent.withValues(
+                                alpha: 0.3,
+                              )
+                            : context.appColors.primaryAccent;
                         iconColor = isDark
-                            ? AppKendoColors.ipponGold
-                            : AppKendoColors.ipponGold;
+                            ? context.appColors.primaryAccent
+                            : context.appColors.primaryAccent;
                       } else if (index == 1) {
                         avatarColor = isDark
-                            ? AppKendoColors.grey.shade800
-                            : AppKendoColors.grey.shade300;
+                            ? const Color(0xDE000000)
+                            : const Color(0x33000000);
                         iconColor = isDark
-                            ? AppKendoColors.grey.shade300
-                            : AppKendoColors.grey.shade600;
+                            ? const Color(0x33000000)
+                            : const Color(0x8A000000);
                       } else if (index == 2) {
                         avatarColor = isDark
-                            ? AppKendoColors.brown.shade900.withValues(
-                                alpha: 0.5,
-                              )
-                            : AppKendoColors.orange.shade100;
+                            ? const Color(0xFF795548).withValues(alpha: 0.5)
+                            : const Color(0xFFFF9800);
                         iconColor = isDark
-                            ? AppKendoColors.orange.shade300
-                            : AppKendoColors.brown.shade400;
+                            ? const Color(0xFFFF9800)
+                            : const Color(0xFF795548);
                       }
 
                       return Card(
@@ -341,8 +341,8 @@ class StandingsScreen extends ConsumerWidget {
                                 style: TextStyle(
                                   fontWeight: AppFontWeight.bold,
                                   color: isDark
-                                      ? AppKendoColors.indigo.shade300
-                                      : AppKendoColors.indigo.shade600,
+                                      ? const Color(0xFF3F51B5)
+                                      : const Color(0xFF3F51B5),
                                   fontSize: AppFontSize.bodyMedium,
                                 ),
                               ),
@@ -374,8 +374,8 @@ class StandingsScreen extends ConsumerWidget {
               'エラーが発生しました: $e',
               style: TextStyle(
                 color: isDark
-                    ? AppKendoColors.pureWhite
-                    : AppKendoColors.pureBlack,
+                    ? const Color(0xFFFFFFFF)
+                    : const Color(0xFF000000),
               ),
             ),
           ),

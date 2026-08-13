@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:kendo_os/security/pin_guard.dart';
@@ -44,7 +45,7 @@ class CriticalActionGuard {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  TextField(
+                  AppTextField(
                     controller: pinController,
                     obscureText: true,
                     keyboardType: TextInputType.number,

@@ -208,7 +208,7 @@ class HomeScreen extends ConsumerWidget {
                           icon: Icon(
                             Icons.home,
                             color: isDark
-                                ? AppKendoColors.pureWhite
+                                ? context.appColors.textColor
                                 : themeColors.primaryAccent,
                             size: 18,
                           ),
@@ -217,14 +217,14 @@ class HomeScreen extends ConsumerWidget {
                             style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(
                                   color: isDark
-                                      ? AppKendoColors.pureWhite
+                                      ? context.appColors.textColor
                                       : themeColors.primaryAccent,
                                   fontWeight: AppFontWeight.bold,
                                 ),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDark
-                                ? AppKendoColors.pureWhite.withValues(
+                                ? context.appColors.textColor.withValues(
                                     alpha: 0.1,
                                   )
                                 : themeColors.softAccent,
@@ -242,7 +242,7 @@ class HomeScreen extends ConsumerWidget {
                       icon: Icon(
                         Icons.qr_code_2,
                         color: isDark
-                            ? AppKendoColors.pureWhite
+                            ? const Color(0xFFFFFFFF)
                             : themeColors.primaryAccent,
                       ),
                       tooltip: '大会を共有する',
@@ -290,12 +290,11 @@ class HomeScreen extends ConsumerWidget {
                             border: enableLiquidGlass
                                 ? Border.all(
                                     color: isDark
-                                        ? AppKendoColors.pureWhite.withValues(
-                                            alpha: 0.15,
-                                          )
-                                        : AppKendoColors.pureBlack.withValues(
-                                            alpha: 0.08,
-                                          ),
+                                        ? context.appColors.textColor
+                                              .withValues(alpha: 0.15)
+                                        : const Color(
+                                            0xFF000000,
+                                          ).withValues(alpha: 0.08),
                                     width: 0.5,
                                   )
                                 : null,
@@ -567,19 +566,17 @@ class HomeScreen extends ConsumerWidget {
 
     final cardBgColor = enableLiquidGlass
         ? themeColors.primaryAccent.withValues(alpha: isDark ? 0.15 : 0.08)
-        : (isDark ? const Color(0xFF1C1C1E) : AppKendoColors.pureWhite);
+        : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
 
     final cardBorder = enableLiquidGlass
         ? Border.all(
             color: isDark
-                ? AppKendoColors.pureWhite.withValues(alpha: 0.1)
-                : AppKendoColors.pureBlack.withValues(alpha: 0.05),
+                ? const Color(0xFFFFFFFF).withValues(alpha: 0.1)
+                : const Color(0xFF000000).withValues(alpha: 0.05),
             width: 0.5,
           )
         : Border.all(
-            color: isDark
-                ? const Color(0xFF38383A)
-                : AppKendoColors.grey.shade200,
+            color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
           );
 
     final content = Column(
@@ -713,8 +710,8 @@ class HomeScreen extends ConsumerWidget {
   }) {
     final activeTextColor = themeColors.textColor;
     final inactiveTextColor = isDark
-        ? AppKendoColors.pureWhite.withValues(alpha: 0.54)
-        : AppKendoColors.pureBlack.withValues(alpha: 0.54);
+        ? const Color(0xFFFFFFFF).withValues(alpha: 0.54)
+        : const Color(0xFF000000).withValues(alpha: 0.54);
 
     return Material(
       color: AppKendoColors.transparent,
@@ -731,7 +728,7 @@ class HomeScreen extends ConsumerWidget {
               Icon(
                 isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
                 color: isCompleted
-                    ? AppKendoColors.green.shade600
+                    ? AppKendoColors.successGreen
                     : AppKendoColors.grey,
                 size: 20,
               ),

@@ -88,8 +88,8 @@ class ScoreTableCard extends StatelessWidget {
     final headerBgColor = themeColors.inputBackground;
     final headerTextColor = themeColors.subTextColor;
     final daihyoBgColor = isDark
-        ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-        : AppKendoColors.hansokuRed;
+        ? context.appColors.errorColor.withValues(alpha: 0.15)
+        : context.appColors.errorColor;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -147,8 +147,8 @@ class ScoreTableCard extends StatelessWidget {
                                   fontWeight: AppFontWeight.bold,
                                   color: m.matchType == '代表戦'
                                       ? (isDark
-                                            ? AppKendoColors.hansokuRed
-                                            : AppKendoColors.hansokuRed)
+                                            ? context.appColors.errorColor
+                                            : context.appColors.errorColor)
                                       : (context.appColors.separatorColor),
                                 ),
                               ),
@@ -175,8 +175,8 @@ class ScoreTableCard extends StatelessWidget {
                       _teamCell(
                         info.sideLabelRed,
                         isDark
-                            ? AppKendoColors.hansokuRed
-                            : AppKendoColors.hansokuRed,
+                            ? const Color(0xFFE53935)
+                            : const Color(0xFFE53935),
                       ),
                       ...matches.map(
                         (m) => _nameCell(
@@ -219,8 +219,8 @@ class ScoreTableCard extends StatelessWidget {
                       _teamCell(
                         info.sideLabelWhite,
                         isDark
-                            ? AppKendoColors.blueGrey.shade300
-                            : AppKendoColors.blueGrey.shade700,
+                            ? context.appColors.subTextColor
+                            : context.appColors.subTextColor,
                       ),
                       ...matches.map(
                         (m) => _nameCell(
@@ -254,8 +254,8 @@ class ScoreTableCard extends StatelessWidget {
               top: 40,
               child: Container(
                 color: isDark
-                    ? AppKendoColors.pureBlack.withValues(alpha: 0.3)
-                    : AppKendoColors.pureWhite.withValues(alpha: 0.6),
+                    ? const Color(0xFF000000).withValues(alpha: 0.3)
+                    : const Color(0xFFFFFFFF).withValues(alpha: 0.6),
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -264,8 +264,8 @@ class ScoreTableCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? AppKendoColors.pureBlack
-                          : AppKendoColors.pureWhite,
+                          ? context.appColors.cardBackground
+                          : context.appColors.textColor,
                       borderRadius: AppRadius.small,
                       border: Border.all(
                         color: context.appColors.separatorColor,
@@ -286,8 +286,8 @@ class ScoreTableCard extends StatelessWidget {
                         fontSize: AppFontSize.bodySmall,
                         fontWeight: AppFontWeight.bold,
                         color: isDark
-                            ? AppKendoColors.grey.shade300
-                            : AppKendoColors.grey.shade700,
+                            ? const Color(0x33000000)
+                            : const Color(0xDE000000),
                       ),
                     ),
                   ),
@@ -338,8 +338,8 @@ class ScoreTableCard extends StatelessWidget {
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'red'
                               ? (isDark
-                                    ? AppKendoColors.hansokuRed
-                                    : AppKendoColors.hansokuRed)
+                                    ? const Color(0xFFE53935)
+                                    : const Color(0xFFE53935))
                               : textColor,
                         ),
                       ),
@@ -354,8 +354,8 @@ class ScoreTableCard extends StatelessWidget {
                           fontWeight: AppFontWeight.bold,
                           color: winner == 'white'
                               ? (isDark
-                                    ? AppKendoColors.blue.shade400
-                                    : AppKendoColors.blue.shade600)
+                                    ? const Color(0xFF2196F3)
+                                    : const Color(0xFF2196F3))
                               : textColor,
                         ),
                       ),
@@ -395,9 +395,9 @@ class ScoreTableCard extends StatelessWidget {
       return Container(
         color: isDaihyo
             ? (isDark
-                  ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                  : AppKendoColors.hansokuRed)
-            : AppKendoColors.transparent,
+                  ? const Color(0xFFE53935).withValues(alpha: 0.15)
+                  : const Color(0xFFE53935))
+            : Colors.transparent,
       );
     }
 
@@ -409,9 +409,9 @@ class ScoreTableCard extends StatelessWidget {
     final cell = Container(
       color: isDaihyo
           ? (isDark
-                ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                : AppKendoColors.hansokuRed)
-          : AppKendoColors.transparent,
+                ? const Color(0xFFE53935).withValues(alpha: 0.15)
+                : const Color(0xFFE53935))
+          : Colors.transparent,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(

@@ -1,4 +1,5 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -21,7 +22,7 @@ class OperatorActionButtons extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
-    final MaterialColor viewerThemeColor = isBunaiksen
+    final Color viewerThemeColor = isBunaiksen
         ? AppKendoColors.purple
         : AppKendoColors.blueGrey;
 
@@ -83,8 +84,8 @@ class OperatorActionButtons extends ConsumerWidget {
               Icons.picture_as_pdf,
               size: 20,
               color: isDark
-                  ? AppKendoColors.red.shade100
-                  : AppKendoColors.hansokuRed,
+                  ? context.appColors.errorColor
+                  : context.appColors.errorColor,
             ),
             label: Text(
               '大会プログラムの管理・追加',
@@ -92,19 +93,19 @@ class OperatorActionButtons extends ConsumerWidget {
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.body,
                 color: isDark
-                    ? AppKendoColors.pureWhite
-                    : AppKendoColors.grey.shade800,
+                    ? context.appColors.textColor
+                    : context.appColors.textColor,
               ),
             ),
             style: OutlinedButton.styleFrom(
               side: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)
-                    : AppKendoColors.grey.shade300,
+                    : const Color(0x33000000),
               ),
               backgroundColor: isDark
                   ? const Color(0xFF1C1C1E)
-                  : AppKendoColors.pureWhite,
+                  : context.appColors.textColor,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
             ),
           ),
@@ -119,10 +120,9 @@ class OperatorActionButtons extends ConsumerWidget {
     bool enableLiquidGlass,
     IconData icon,
     String title,
-    MaterialColor color,
+    Color color,
     VoidCallback onTap,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GlassButton(
       onPressed: onTap,
       color: color,
@@ -132,8 +132,8 @@ class OperatorActionButtons extends ConsumerWidget {
         Icons.arrow_forward_ios,
         size: 14,
         color: enableLiquidGlass
-            ? (isDark ? color.shade500 : color.shade300)
-            : AppKendoColors.pureWhite.withValues(alpha: 0.7),
+            ? color
+            : context.appColors.textColor.withValues(alpha: 0.7),
       ),
     );
   }
