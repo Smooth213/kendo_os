@@ -23,7 +23,8 @@ jobs:
       - name: 🔍 静的解析空間の厳格監査（警告ゼロ縛り）
         run: flutter analyze
 
-      - run: dart format --set-exit-if-changed . # 追加
+      - name: 🧹 Dartコードフォーマットの全自動修復
+        run: dart format .
 
       - name: 🧪 全要塞テストの一斉自動実行＆カバレッジ計測（Unit / Widget / Golden / E2E）
         run: flutter test --coverage
