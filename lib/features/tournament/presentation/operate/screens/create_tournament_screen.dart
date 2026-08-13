@@ -241,7 +241,7 @@ class _CreateTournamentScreenState
     final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
-        : context.appColors.subTextColor;
+        : const Color(0x8A000000);
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -269,7 +269,7 @@ class _CreateTournamentScreenState
             ),
             prefixIcon: const Icon(
               Icons.emoji_events,
-              color: AppKendoColors.ipponGold,
+              color: Color(0xFFD97706),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppRadius.medium,
@@ -342,7 +342,7 @@ class _CreateTournamentScreenState
     final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
-        : context.appColors.subTextColor;
+        : const Color(0x8A000000);
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),

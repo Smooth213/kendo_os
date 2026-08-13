@@ -1258,10 +1258,18 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppKendoColors.ipponGold.withValues(alpha: 0.1),
+                    color:
+                        (isDark
+                                ? AppKendoColors.ipponGold
+                                : const Color(0xFFD97706))
+                            .withValues(alpha: 0.1),
                     borderRadius: AppRadius.medium,
                     border: Border.all(
-                      color: AppKendoColors.ipponGold.withValues(alpha: 0.3),
+                      color:
+                          (isDark
+                                  ? AppKendoColors.ipponGold
+                                  : const Color(0xFFD97706))
+                              .withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(

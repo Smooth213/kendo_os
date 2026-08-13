@@ -244,9 +244,7 @@ class MatchTimelineList extends ConsumerWidget {
                           hintText: '選手名・チーム名で検索...',
                           hintStyle: TextStyle(
                             fontSize: AppFontSize.small,
-                            color: isDark
-                                ? context.appColors.subTextColor
-                                : context.appColors.subTextColor,
+                            color: context.appColors.subTextColor,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.md,
@@ -596,7 +594,7 @@ class MatchTimelineList extends ConsumerWidget {
                       fontSize: AppFontSize.subhead,
                       fontWeight: AppFontWeight.bold,
                       color: isDark
-                          ? const Color(0xFF3F51B5)
+                          ? context.appColors.primaryAccent
                           : const Color(0xFF3F51B5),
                       letterSpacing: 1.2,
                     ),
@@ -779,32 +777,26 @@ class MatchTimelineList extends ConsumerWidget {
                             children: [
                               Icon(
                                 Icons.business,
-                                color: isDark
-                                    ? const Color(0xFF3F51B5)
-                                    : const Color(0xFF3F51B5),
+                                color: AppKendoColors.pureWhite,
                                 size: 20,
                               ),
                               const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Text(
                                   teamName,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: AppFontSize.headline,
                                     fontWeight: AppFontWeight.bold,
-                                    color: isDark
-                                        ? const Color(0xFFFFFFFF)
-                                        : const Color(0xFF3F51B5),
+                                    color: AppKendoColors.pureWhite,
                                   ),
                                 ),
                               ),
 
                               if (!isReadOnlyUI) ...[
                                 IconButton(
-                                  icon: Icon(
+                                  icon: const Icon(
                                     Icons.add_comment,
-                                    color: isDark
-                                        ? const Color(0xFF3F51B5)
-                                        : const Color(0xFF3F51B5),
+                                    color: AppKendoColors.pureWhite,
                                     size: 20,
                                   ),
                                   tooltip: '見出し（コメント）を追加',
@@ -834,11 +826,9 @@ class MatchTimelineList extends ConsumerWidget {
                                 ),
                                 if (canManageTournamentUI)
                                   IconButton(
-                                    icon: Icon(
+                                    icon: const Icon(
                                       Icons.edit_note,
-                                      color: isDark
-                                          ? context.appColors.primaryAccent
-                                          : context.appColors.primaryAccent,
+                                      color: AppKendoColors.pureWhite,
                                       size: 20,
                                     ),
                                     tooltip: 'チーム名を修正して統合',
@@ -1384,12 +1374,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                               : AppKendoColors
                                                                     .pureWhite,
                                                           collapsedBackgroundColor:
-                                                              isDark
-                                                              ? const Color(
-                                                                  0xFF161618,
-                                                                )
-                                                              : AppKendoColors
-                                                                    .pureWhite,
+                                                              const Color(
+                                                                0xFFFAFAFC,
+                                                              ),
                                                           iconColor: isDark
                                                               ? Colors
                                                                     .indigo
@@ -1553,9 +1540,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                           child: Icon(
                                                                             Icons.info_outline,
                                                                             color:
-                                                                                isDark
-                                                                                ? context.appColors.subTextColor
-                                                                                : context.appColors.subTextColor,
+                                                                                context.appColors.subTextColor,
                                                                             size:
                                                                                 16,
                                                                           ),
@@ -1881,7 +1866,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? AppFontWeight.black
                                                                                   : AppFontWeight.bold,
                                                                               color: showLeftOwn
-                                                                                  ? AppKendoColors.ipponGold
+                                                                                  ? const Color(
+                                                                                      0xFFD97706,
+                                                                                    )
                                                                                   : titleColor,
                                                                             ),
                                                                             textAlign:
@@ -1954,9 +1941,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 '($showRightPts)',
                                                                                 style: TextStyle(
                                                                                   fontSize: AppFontSize.caption,
-                                                                                  color: isDark
-                                                                                      ? context.appColors.subTextColor
-                                                                                      : context.appColors.subTextColor,
+                                                                                  color: context.appColors.subTextColor,
                                                                                 ),
                                                                               ),
                                                                             ],
@@ -1972,7 +1957,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? AppFontWeight.black
                                                                                   : AppFontWeight.bold,
                                                                               color: showRightOwn
-                                                                                  ? AppKendoColors.ipponGold
+                                                                                  ? const Color(
+                                                                                      0xFFD97706,
+                                                                                    )
                                                                                   : titleColor,
                                                                             ),
                                                                             textAlign:
@@ -2368,9 +2355,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                       final Color
                                                                       mTitleColor =
                                                                           boutsAllFinished
-                                                                          ? (isDark
-                                                                                ? context.appColors.subTextColor
-                                                                                : context.appColors.subTextColor)
+                                                                          ? (context.appColors.subTextColor)
                                                                           : (context.appColors.textColor);
 
                                                                       return Container(
@@ -2547,7 +2532,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       icon: Icon(
                                                                                                         Icons.flash_on,
                                                                                                         size: 11,
-                                                                                                        color: AppKendoColors.ipponGold,
+                                                                                                        color: const Color(
+                                                                                                          0xFFD97706,
+                                                                                                        ),
                                                                                                       ),
                                                                                                       label: Text(
                                                                                                         '簡易入力',
@@ -2751,7 +2738,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         ? AppFontWeight.black
                                                                                                         : AppFontWeight.bold,
                                                                                                     color: showLeftOwn
-                                                                                                        ? AppKendoColors.ipponGold
+                                                                                                        ? const Color(
+                                                                                                            0xFFD97706,
+                                                                                                          )
                                                                                                         : mTitleColor,
                                                                                                   ),
                                                                                                   textAlign: TextAlign.end,
@@ -2815,7 +2804,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       '($showRightPts)',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: AppFontSize.badge,
-                                                                                                        color: context.appColors.subTextColor,
+                                                                                                        color: const Color(
+                                                                                                          0x8A000000,
+                                                                                                        ),
                                                                                                       ),
                                                                                                     ),
                                                                                                   ],
@@ -2830,7 +2821,9 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         ? AppFontWeight.black
                                                                                                         : AppFontWeight.bold,
                                                                                                     color: showRightOwn
-                                                                                                        ? AppKendoColors.ipponGold
+                                                                                                        ? const Color(
+                                                                                                            0xFFD97706,
+                                                                                                          )
                                                                                                         : mTitleColor,
                                                                                                   ),
                                                                                                   textAlign: TextAlign.start,
@@ -3199,17 +3192,13 @@ class MatchTimelineList extends ConsumerWidget {
                                   m.status == 'approved',
                             );
                             final Color pTitleColor = pAllFinished
-                                ? (isDark
-                                      ? context.appColors.subTextColor
-                                      : context.appColors.subTextColor)
+                                ? (context.appColors.subTextColor)
                                 : (context.appColors.textColor);
                             final Color pSubTitleColor = pAllFinished
                                 ? (isDark
                                       ? const Color(0xFFFFFFFF)
-                                      : context.appColors.subTextColor)
-                                : (isDark
-                                      ? context.appColors.subTextColor
-                                      : context.appColors.subTextColor);
+                                      : const Color(0x8A000000))
+                                : (context.appColors.subTextColor);
 
                             return Container(
                               margin: const EdgeInsets.symmetric(
@@ -3245,7 +3234,7 @@ class MatchTimelineList extends ConsumerWidget {
                                         : const Color(0xFFFFFFFF),
                                     collapsedBackgroundColor: isDark
                                         ? const Color(0xFF161618)
-                                        : context.appColors.textColor,
+                                        : const Color(0xFFFAFAFC),
                                     iconColor: isDark
                                         ? context.appColors.primaryAccent
                                         : context.appColors.primaryAccent,
@@ -5192,13 +5181,11 @@ class MatchListTileCard extends ConsumerWidget {
         ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
         : (isDark ? const Color(0xFF1E1E20) : const Color(0xFFFFFFFF));
     final Color textC = isFinished
-        ? (isDark
-              ? context.appColors.subTextColor
-              : context.appColors.subTextColor)
+        ? (context.appColors.subTextColor)
         : (context.appColors.textColor);
     final Color noteC = isFinished
-        ? (isDark ? const Color(0xFFFFFFFF) : context.appColors.subTextColor)
-        : context.appColors.subTextColor;
+        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
+        : const Color(0x8A000000);
 
     // 🛡️ 補正④: 細線独立カードモデリング化の意匠を適用
     final tile = Container(
@@ -5269,7 +5256,7 @@ class MatchListTileCard extends ConsumerWidget {
                               icon: Icon(
                                 Icons.flash_on,
                                 size: 11,
-                                color: AppKendoColors.ipponGold,
+                                color: const Color(0xFFD97706),
                               ),
                               label: Text(
                                 '簡易',
@@ -5310,9 +5297,7 @@ class MatchListTileCard extends ConsumerWidget {
                           padding: const EdgeInsets.all(AppSpacing.xs),
                           child: Icon(
                             Icons.info_outline,
-                            color: isDark
-                                ? context.appColors.subTextColor
-                                : context.appColors.subTextColor,
+                            color: context.appColors.subTextColor,
                             size: 16,
                           ),
                         ),
@@ -5385,9 +5370,7 @@ class MatchListTileCard extends ConsumerWidget {
                         color: isPlaying
                             ? AppKendoColors.pureWhite
                             : (isFinished
-                                  ? (isDark
-                                        ? context.appColors.subTextColor
-                                        : const Color(0x8A000000))
+                                  ? (context.appColors.subTextColor)
                                   : (isDark
                                         ? const Color(0xFFFFFFFF)
                                         : const Color(0xDE000000))),
@@ -5578,7 +5561,7 @@ class MatchListTileCard extends ConsumerWidget {
                                     ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isRedOwn
-                                    ? AppKendoColors.ipponGold
+                                    ? const Color(0xFFD97706)
                                     : (context.appColors.textColor),
                               ),
                               textAlign: TextAlign.start,
@@ -5651,7 +5634,7 @@ class MatchListTileCard extends ConsumerWidget {
                                     ? AppFontWeight.black
                                     : AppFontWeight.bold,
                                 color: isWhiteOwn
-                                    ? AppKendoColors.ipponGold
+                                    ? const Color(0xFFD97706)
                                     : (context.appColors.textColor),
                               ),
                               textAlign: TextAlign.end,

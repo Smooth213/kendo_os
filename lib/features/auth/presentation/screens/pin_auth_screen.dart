@@ -28,8 +28,8 @@ class PinAuthScreen extends ConsumerWidget {
 
     // ★ アプリ全体と統一した iOS 風 (Liquid Glass) のガラス背景
     final cardBgColor = isDark
-        ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-        : context.appColors.textColor.withValues(alpha: 0.6);
+        ? const Color(0xFF1C1C1E).withValues(alpha: 0.75)
+        : const Color(0xFFFFFFFF).withValues(alpha: 0.85);
 
     final textColor = context.appColors.textColor;
     final subTextColor = context.appColors.subTextColor;

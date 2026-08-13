@@ -116,9 +116,9 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final cardBgColor = isDark
             ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-            : context.appColors.textColor.withValues(alpha: 0.6);
+            : const Color(0xFFFFFFFF).withValues(alpha: 0.85);
         final textColor = context.appColors.textColor;
-        final subTextColor = context.appColors.subTextColor;
+        final subTextColor = const Color(0x8A000000);
         final borderColor = isDark
             ? context.appColors.textColor.withValues(alpha: 0.2)
             : context.appColors.textColor.withValues(alpha: 0.7);
@@ -144,7 +144,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                       children: [
                         const Icon(
                           Icons.report_problem_rounded,
-                          color: AppKendoColors.ipponGold,
+                          color: Color(0xFFD97706),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
@@ -237,9 +237,9 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBgColor = isDark
         ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-        : context.appColors.textColor.withValues(alpha: 0.6);
+        : const Color(0xFFFFFFFF).withValues(alpha: 0.85);
     final textColor = context.appColors.textColor;
-    final subTextColor = context.appColors.subTextColor;
+    final subTextColor = const Color(0x8A000000);
     final borderColor = isDark
         ? context.appColors.textColor.withValues(alpha: 0.2)
         : context.appColors.textColor.withValues(alpha: 0.7);

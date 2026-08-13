@@ -154,7 +154,9 @@ class HomeScreen extends ConsumerWidget {
                   bottom: false,
                   child: Container(
                     width: double.infinity,
-                    color: AppKendoColors.ipponGold,
+                    color: (isDark
+                        ? AppKendoColors.ipponGold
+                        : const Color(0xFFD97706)),
                     padding: const EdgeInsets.symmetric(
                       vertical: 6,
                       horizontal: AppSpacing.lg,

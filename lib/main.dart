@@ -375,7 +375,7 @@ void main() {
                                     color: AppKendoColors.transparent,
                                     child: Container(
                                       width: double.infinity,
-                                      color: AppKendoColors.ipponGold,
+                                      color: const Color(0xFFD97706),
                                       padding: const EdgeInsets.only(
                                         top: 34,
                                         bottom: AppSpacing.sm,
@@ -838,7 +838,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                   if (isOffline)
                     Container(
                       width: double.infinity,
-                      color: AppKendoColors.ipponGold,
+                      color: const Color(0xFFD97706),
                       padding: EdgeInsets.only(
                         top: MediaQuery.of(context).padding.top + 8,
                         bottom: AppSpacing.sm,

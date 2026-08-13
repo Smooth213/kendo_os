@@ -36,8 +36,8 @@ class TournamentHeaderCard extends ConsumerWidget {
         ? context.appColors.primaryAccent.withValues(alpha: 0.3)
         : context.appColors.primaryAccent;
     final popupIconColor = isDark
-        ? context.appColors.subTextColor
-        : context.appColors.subTextColor;
+        ? const Color(0x8A000000)
+        : const Color(0x8A000000);
     final noteBgColor = isDark
         ? const Color(0xFF2C2C2E)
         : context.appColors.cardBackground;
@@ -68,7 +68,7 @@ class TournamentHeaderCard extends ConsumerWidget {
                   ),
                   child: const Icon(
                     Icons.emoji_events,
-                    color: AppKendoColors.ipponGold,
+                    color: Color(0xFFD97706),
                     size: 24,
                   ),
                 ),

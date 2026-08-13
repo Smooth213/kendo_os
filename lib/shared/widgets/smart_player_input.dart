@@ -197,6 +197,9 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                                 label: Text(filterName),
                                 selected: isSelected,
                                 customSelectedColor: activeColor,
+                                customTextColor: isSelected
+                                    ? AppKendoColors.pureWhite
+                                    : null,
                                 onSelected: (bool selected) {
                                   if (selected) {
                                     setStateSheet(() {

@@ -818,9 +818,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: AppKendoColors.ipponGold.withAlpha(
-                        isDark ? 30 : 15,
-                      ),
+                      color: Color(0xFFD97706).withAlpha(isDark ? 30 : 15),
                       borderRadius: AppRadius.small,
                       border: Border.all(
                         color: const Color(
@@ -832,7 +830,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       children: [
                         const Icon(
                           Icons.info_outline,
-                          color: AppKendoColors.ipponGold,
+                          color: Color(0xFFD97706),
                           size: 18,
                         ),
                         const SizedBox(width: AppSpacing.sm),

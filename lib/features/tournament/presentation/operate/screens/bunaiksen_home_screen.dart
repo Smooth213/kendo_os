@@ -43,12 +43,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     bool isFinished = true,
   }) {
     final textColor = isFinished
-        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
+        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF475569))
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000));
     // 区切り文字を少しグレーにして、スコア本体(メやコ)と明確に区別する
     final iconColor = isFinished
-        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
-        : (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000));
+        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF475569))
+        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF475569));
 
     // 完全無得点の引き分け
     if (match.redScore == 0 && match.whiteScore == 0) {
@@ -1031,7 +1031,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF2C2C2E)
-                                    : context.appColors.textColor,
+                                    : const Color(0xFFFFFFFF),
                                 borderRadius: AppRadius.small,
                                 border: Border.all(
                                   color: isDark

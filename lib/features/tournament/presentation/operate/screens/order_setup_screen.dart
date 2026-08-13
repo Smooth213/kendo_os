@@ -16,7 +16,6 @@ import 'package:kendo_os/shared/utils/text_sanitizer.dart'; // ★ 追加：お�
 import '../providers/match_list_provider.dart'; // ★ 追加：試合履歴の取得に必要
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイル上部
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -1175,8 +1174,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                                     : _themeColors.primaryAccent,
                                 side: BorderSide(
                                   color: isDark
-                                      ? _themeColors.primaryAccent
-                                      : _themeColors.softAccent,
+                                      ? const Color(0xFF64B5F6)
+                                      : _themeColors.primaryAccent,
+                                  width: 1.2,
                                 ),
                               ),
                             ),
@@ -1214,13 +1214,11 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: isDark
-                                    ? _themeColors.primaryAccent.withValues(
-                                        alpha: 0.35,
-                                      )
-                                    : _themeColors.softAccent,
+                                    ? const Color(0xFF1E293B)
+                                    : const Color(0xFFE2E8F0),
                                 foregroundColor: isDark
                                     ? AppKendoColors.pureWhite
-                                    : _themeColors.primaryAccent,
+                                    : const Color(0xFF0F172A),
                                 elevation: 0,
                               ),
                             ),
@@ -1559,12 +1557,16 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     onPressed: _addExtraPosition,
                     icon: Icon(
                       Icons.add_circle_outline,
-                      color: _themeColors.primaryAccent,
+                      color: isDark
+                          ? const Color(0xFF64B5F6)
+                          : _themeColors.primaryAccent,
                     ),
                     label: Text(
                       'イレギュラー枠を追加する（錬成会用）',
                       style: TextStyle(
-                        color: _themeColors.primaryAccent,
+                        color: isDark
+                            ? const Color(0xFF64B5F6)
+                            : _themeColors.primaryAccent,
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),
@@ -1572,7 +1574,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   const SizedBox(height: AppSpacing.sm),
                   SizedBox(
                     width: double.infinity,
-                    child: GlassButton(
+                    child: ElevatedButton(
                       onPressed: () async {
                         // ★ 修正：ここではチェックせず、後の pairings 生成直前のバリデーションに集約します
                         final bool? isStartNow = await showAppDialog<bool>(
@@ -1929,13 +1931,31 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                           AppSnackBar.showError(context, '保存に失敗しました: $e');
                         }
                       },
-                      color: _themeColors.primaryAccent,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.lg,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _themeColors.primaryAccent,
+                        foregroundColor: AppKendoColors.pureWhite,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.md,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: AppRadius.medium,
+                        ),
+                        elevation: 2,
                       ),
-                      icon: Icons.check_circle,
-                      label: 'このオーダーで確定して進む',
-                      expandContent: false,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.check_circle, size: 20),
+                          SizedBox(width: AppSpacing.sm),
+                          Text(
+                            'このオーダーで確定して進む',
+                            style: TextStyle(
+                              fontSize: AppFontSize.subhead,
+                              fontWeight: AppFontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

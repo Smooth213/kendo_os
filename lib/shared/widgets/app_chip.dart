@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -40,11 +41,12 @@ class AppChoiceChip extends StatelessWidget {
 
     final effectiveSelectedColor =
         customSelectedColor ?? selectedColor ?? themeColors.softAccent;
-    final unselectedTextColor = isDark
-        ? themeColors.textColor.withValues(alpha: 0.85)
-        : themeColors.subTextColor;
+    final unselectedTextColor = themeColors.textColor;
     final effectiveTextColor = selected
-        ? (customTextColor ?? themeColors.primaryAccent)
+        ? (customTextColor ??
+              (customSelectedColor != null
+                  ? AppKendoColors.pureWhite
+                  : themeColors.primaryAccent))
         : unselectedTextColor;
 
     return ChoiceChip(
@@ -113,9 +115,7 @@ class AppActionChip extends StatelessWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-    final actionTextColor = isDark
-        ? themeColors.textColor.withValues(alpha: 0.85)
-        : themeColors.subTextColor;
+    final actionTextColor = themeColors.textColor;
 
     return ActionChip(
       avatar: icon != null
@@ -173,11 +173,12 @@ class AppFilterChip extends StatelessWidget {
 
     final effectiveSelectedColor =
         customSelectedColor ?? themeColors.softAccent;
-    final unselectedTextColor = isDark
-        ? themeColors.textColor.withValues(alpha: 0.85)
-        : themeColors.subTextColor;
+    final unselectedTextColor = themeColors.textColor;
     final effectiveTextColor = selected
-        ? (customTextColor ?? themeColors.primaryAccent)
+        ? (customTextColor ??
+              (customSelectedColor != null
+                  ? AppKendoColors.pureWhite
+                  : themeColors.primaryAccent))
         : unselectedTextColor;
 
     return FilterChip(

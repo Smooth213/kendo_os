@@ -147,7 +147,7 @@ class ScoreActionPanel extends ConsumerWidget {
         ),
         child: HoldConfirmButton(
           label: label,
-          color: AppKendoColors.ipponGold,
+          color: const Color(0xFFD97706),
           textColor: AppKendoColors.pureBlack,
           disabled: effectiveLocked,
           isFoul: true,

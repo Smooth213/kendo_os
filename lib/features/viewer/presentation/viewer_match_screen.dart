@@ -233,7 +233,7 @@ class ViewerMatchScreen extends ConsumerWidget {
   ) {
     return Container(
       width: double.infinity,
-      color: context.appColors.subTextColor,
+      color: const Color(0x8A000000),
       padding: const EdgeInsets.symmetric(
         vertical: AppSpacing.xs,
         horizontal: AppSpacing.lg,
@@ -482,10 +482,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isWhiteWinner,
               cardColor: isDark
                   ? const Color(0xFF1C2430)
-                  : context.appColors.subTextColor,
+                  : const Color(0x8A000000),
               textColor: isDark
                   ? context.appColors.separatorColor
-                  : context.appColors.subTextColor,
+                  : const Color(0x8A000000),
             ),
           ),
         ],
@@ -541,10 +541,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isWhiteWinner,
               cardColor: isDark
                   ? const Color(0xFF1C2430)
-                  : context.appColors.subTextColor,
+                  : const Color(0x8A000000),
               textColor: isDark
                   ? context.appColors.separatorColor
-                  : context.appColors.subTextColor,
+                  : const Color(0x8A000000),
             ),
           ),
         ],
@@ -569,7 +569,7 @@ class LargeViewerScoreboard extends StatelessWidget {
         borderRadius: AppRadius.xlarge,
         border: Border.all(
           color: isWinner
-              ? AppKendoColors.ipponGold
+              ? const Color(0xFFD97706)
               : (isDark
                     ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
                     : const Color(0xFF000000).withValues(alpha: 0.12)),
@@ -578,7 +578,7 @@ class LargeViewerScoreboard extends StatelessWidget {
         boxShadow: isWinner
             ? [
                 BoxShadow(
-                  color: AppKendoColors.ipponGold.withValues(alpha: 0.3),
+                  color: Color(0xFFD97706).withValues(alpha: 0.3),
                   blurRadius: 15,
                   spreadRadius: 2,
                 ),
@@ -600,7 +600,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.emoji_events,
-                      color: AppKendoColors.ipponGold,
+                      color: Color(0xFFD97706),
                       size: 28,
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -609,7 +609,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
-                        color: const Color(0xFFD97706),
+                        color: Color(0xFFD97706),
                         letterSpacing: 2,
                       ),
                     ),
@@ -642,7 +642,7 @@ class LargeViewerScoreboard extends StatelessWidget {
                 List.filled(foulCount, '▲').join(''),
                 style: const TextStyle(
                   fontSize: AppFontSize.hero, // 反則マークも特大表示
-                  color: AppKendoColors.ipponGold,
+                  color: Color(0xFFD97706),
                   fontWeight: AppFontWeight.bold,
                   letterSpacing: 4,
                 ),

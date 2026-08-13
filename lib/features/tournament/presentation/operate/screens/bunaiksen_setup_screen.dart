@@ -108,7 +108,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 style: TextStyle(
                   color: isDark
                       ? const Color(0xFFFFFFFF)
-                      : context.appColors.cardBackground,
+                      : context.appColors.textColor,
                 ),
                 decoration: _buildTextFieldDecoration(labelText: '分'),
               ),
@@ -676,7 +676,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
             name,
             style: TextStyle(
               color: isAssigned
-                  ? AppKendoColors.grey
+                  ? (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8))
                   : (context.appColors.textColor),
               fontWeight: AppFontWeight.bold,
             ),
@@ -888,10 +888,12 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                         builder: (context, candidateData, rejectedData) {
                           return Card(
                             color: candidateData.isNotEmpty
-                                ? AppKendoColors.hansokuRed
+                                ? AppKendoColors.hansokuRed.withValues(
+                                    alpha: 0.2,
+                                  )
                                 : (isDark
-                                      ? const Color(0xFFFFFFFF)
-                                      : context.appColors.textColor),
+                                      ? const Color(0xFF2C1C1E)
+                                      : const Color(0xFFFFF5F5)),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(
                                 color: AppKendoColors.hansokuRed,
@@ -906,8 +908,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 radius: 14,
                                 child: Text(
                                   currentPositions[index].substring(0, 1),
-                                  style: TextStyle(
-                                    color: AppKendoColors.hansokuRed,
+                                  style: const TextStyle(
+                                    color: AppKendoColors.pureWhite,
                                     fontSize: AppFontSize.badge,
                                     fontWeight: AppFontWeight.bold,
                                   ),
@@ -918,7 +920,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 style: TextStyle(
                                   fontWeight: AppFontWeight.bold,
                                   color: _redTeam[index] == null
-                                      ? AppKendoColors.grey
+                                      ? (isDark
+                                            ? const Color(0xFF94A3B8)
+                                            : const Color(0xFF64748B))
                                       : (context.appColors.textColor),
                                 ),
                               ),
@@ -943,13 +947,13 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                         builder: (context, candidateData, rejectedData) {
                           return Card(
                             color: candidateData.isNotEmpty
-                                ? context.appColors.subTextColor
+                                ? const Color(0xFF607D8B).withValues(alpha: 0.2)
                                 : (isDark
-                                      ? const Color(0xFFFFFFFF)
-                                      : context.appColors.textColor),
+                                      ? const Color(0xFF1E293B)
+                                      : const Color(0xFFF8FAFC)),
                             shape: RoundedRectangleBorder(
                               side: BorderSide(
-                                color: context.appColors.subTextColor,
+                                color: const Color(0xFF607D8B),
                                 width: candidateData.isNotEmpty ? 2 : 1,
                               ),
                               borderRadius: AppRadius.large,
@@ -961,8 +965,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 radius: 14,
                                 child: Text(
                                   currentPositions[index].substring(0, 1),
-                                  style: TextStyle(
-                                    color: const Color(0xFF607D8B),
+                                  style: const TextStyle(
+                                    color: AppKendoColors.pureWhite,
                                     fontSize: AppFontSize.badge,
                                     fontWeight: AppFontWeight.bold,
                                   ),
@@ -973,7 +977,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                 style: TextStyle(
                                   fontWeight: AppFontWeight.bold,
                                   color: _whiteTeam[index] == null
-                                      ? AppKendoColors.grey
+                                      ? (isDark
+                                            ? const Color(0xFF94A3B8)
+                                            : const Color(0xFF64748B))
                                       : (context.appColors.textColor),
                                 ),
                               ),

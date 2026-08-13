@@ -43,7 +43,9 @@ class InfiniteStreakLeaderboard extends ConsumerWidget {
           contentPadding: EdgeInsets.zero,
           leading: Icon(
             Icons.military_tech,
-            color: isTop ? AppKendoColors.ipponGold : themeColors.subTextColor,
+            color: isTop
+                ? (isDark ? AppKendoColors.ipponGold : const Color(0xFFD97706))
+                : themeColors.subTextColor,
           ),
           title: Text(
             e.key,
