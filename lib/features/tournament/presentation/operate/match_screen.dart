@@ -3917,9 +3917,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(ctx);
-                  context.push(
-                    '/new-match?tournamentId=${match.tournamentId ?? ""}',
-                  );
+                  _showNextMatchDialog(context, ref, match);
                 },
                 icon: const Icon(Icons.add_circle_outline),
                 label: const Text(

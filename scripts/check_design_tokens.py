@@ -81,7 +81,7 @@ def check_tokens():
 
             # 12. Contrast & inverted background color issues (using textColor as background color)
             if '/pdf/' not in rel_path:
-                raw_contrast_issues += len(re.findall(r'(backgroundColor|fillColor|surfaceTintColor|cardColor)\s*:\s*[^;\n]*isDark\s*\?\s*[^;\n]+\s*:\s*(context\.appColors\.)?textColor\b', content))
+                raw_contrast_issues += len(re.findall(r'(backgroundColor|fillColor|surfaceTintColor|cardColor|color)\s*:\s*[^;\n]*isDark\s*\?[^;\n]+:\s*(context\.appColors\.)?textColor(\.(withValues|withOpacity)\([^)]*\))?', content))
 
             # 13. Direct showModalBottomSheet (bypassing showAppBottomSheet)
             if filename != 'app_bottom_sheet.dart':
@@ -117,7 +117,7 @@ def check_tokens():
     print(f" 9. 生 TextField 呼び出し件数: {raw_textfields} 件")
     print(f"10. 生 FontWeight 参照件数: {raw_font_weights} 件")
     print(f"11. 手動 isDark 色分岐件数: {raw_isdark_branches} 件")
-    print(f"12. 背景色テキスト色反転・破綻件数: {raw_contrast_issues} 件")
+    print(f"12. 背景色テキスト色反転・透過誤用件数: {raw_contrast_issues} 件")
     print(f"13. ボトムシート 未移行件数 (showModalBottomSheet): {raw_bottom_sheets} 件")
     print(f"14. 生 Chip シリーズ件数 (Choice/Action/Filter): {raw_chips} 件")
     print(f"15. 生 AlertDialog 件数: {raw_alert_dialogs} 件")

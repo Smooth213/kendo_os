@@ -31,6 +31,8 @@ import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -149,7 +151,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 ),
                 child: ElevatedButton.icon(
                   onPressed: () => context.go('/'),
-
                   icon: Icon(
                     Icons.home,
                     color: isDark
@@ -170,7 +171,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark
                         ? context.appColors.textColor.withValues(alpha: 0.15)
-                        : const Color(0xFF3F51B5),
+                        : themeColors.softAccent,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -1379,7 +1380,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
   ) {
     if (matches.isEmpty) return const SizedBox.shrink();
 
-    // 1. 自チーム名の確定（登録されている自チームのみをリスト化）
+    // 1. 自チーム名の確定
     final List<String> teamsList;
     if (registeredTeamNames.isNotEmpty) {
       teamsList = registeredTeamNames.toList()..sort();
@@ -1402,16 +1403,14 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       teamsList = teamsSet.toList()..sort();
     }
 
-    // 自チーム判定
+    // 自チーム判定ヘルパー
     bool isMyTeam(String teamName) {
       if (registeredTeamNames.isNotEmpty) {
         return registeredTeamNames.contains(teamName);
       }
-      // 登録がない場合は一覧の最初のチームをメイン自チームとして扱う
       return teamsList.isNotEmpty && teamsList.first == teamName;
     }
 
-    // 自チーム選手判定
     bool isMyPlayer(String playerName, String teamName) {
       if (registeredPlayerNames.isNotEmpty) {
         return registeredPlayerNames.contains(playerName);
@@ -1419,27 +1418,37 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       return isMyTeam(teamName);
     }
 
+    bool isMatchPlayed(MatchModel m) {
+      if (m.status == 'finished') return true;
+      if (m.redScore > 0 || m.whiteScore > 0) return true;
+      if (m.events.isNotEmpty) return true;
+      return false;
+    }
+
     int renseikaiWin = 0, renseikaiLoss = 0, renseikaiDraw = 0;
     int honsenWin = 0, honsenLoss = 0, honsenDraw = 0;
     int moushiawaseWin = 0, moushiawaseLoss = 0, moushiawaseDraw = 0;
 
-    final Map<String, _PlayerStats> playerStatsMap = {};
+    // 技別集計（チーム全体）
+    int teamMen = 0,
+        teamKote = 0,
+        teamDou = 0,
+        teamTsuki = 0,
+        teamHansoku = 0,
+        teamOther = 0;
+    int teamTotalScored = 0;
+    int teamTotalConceded = 0;
 
-    // groupName ごとに試合をまとめる（団体戦・勝ち抜き戦・リーグ団体戦のチーム単位集計）
+    final Map<String, _DetailedPlayerStats> playerStatsMap = {};
+    final List<_ExpeditionCardResult> cardResults = [];
+
+    // 団体戦・勝ち抜き戦（groupNameごと）
     final Map<String, List<MatchModel>> groupMap = {};
     for (final m in matches) {
       final key = (m.groupName != null && m.groupName!.isNotEmpty)
           ? m.groupName!
           : m.id;
       groupMap.putIfAbsent(key, () => []).add(m);
-    }
-
-    // ★ 試合が実施済み（終了済み、スコア入力済み、または打突イベントあり）かを判定するヘルパー
-    bool isMatchPlayed(MatchModel m) {
-      if (m.status == 'finished') return true;
-      if (m.redScore > 0 || m.whiteScore > 0) return true;
-      if (m.events.isNotEmpty) return true;
-      return false;
     }
 
     for (final entry in groupMap.entries) {
@@ -1453,7 +1462,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           firstMatch.matchType.contains('団体');
 
       if (isTeamMatch) {
-        // ★ 団体戦 / 勝ち抜き戦 / リーグ団体戦: チーム対戦カード全体の勝敗を算出
+        // ★ 団体戦 / 勝ち抜き戦: 全日本剣道連盟公式審判規則に準拠した勝敗判定
         final rTeam = firstMatch.redName.contains(':')
             ? firstMatch.redName.split(':').first.trim()
             : firstMatch.redName.trim();
@@ -1464,7 +1473,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         final bool rIsMine = isMyTeam(rTeam);
         final bool wIsMine = isMyTeam(wTeam);
 
-        // 自チームがどちらにも含まれない対戦は集計対象外
         if (!rIsMine && !wIsMine) continue;
 
         final bool isTargetRed =
@@ -1476,63 +1484,179 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
         if (!isTargetRed && !isTargetWhite) continue;
 
-        // 実施済みの試合（終了済み、またはスコア/イベントあり）を取得
         final playedBouts = bouts.where((b) => isMatchPlayed(b)).toList();
-
-        // 1試合も実施されていない（全試合前）カードはサマリーから除外
         if (playedBouts.isEmpty) continue;
 
-        int redWins = 0;
-        int whiteWins = 0;
+        int myWins = 0;
+        int oppWins = 0;
+        int myPoints = 0;
+        int oppPoints = 0;
+        bool hasDaihyo = false;
+        bool? daihyoIsMyWin;
 
         if (firstMatch.isKachinuki) {
           final lastMatch = bouts.last;
           if (isMatchPlayed(lastMatch)) {
             if (lastMatch.redRemaining.length >
                 lastMatch.whiteRemaining.length) {
-              redWins = 1;
+              if (isTargetRed) {
+                myWins = 1;
+              } else {
+                oppWins = 1;
+              }
             } else if (lastMatch.whiteRemaining.length >
                 lastMatch.redRemaining.length) {
-              whiteWins = 1;
+              if (isTargetWhite) {
+                myWins = 1;
+              } else {
+                oppWins = 1;
+              }
             }
           } else {
-            // 途中経過の場合でも勝者数でカウント
             for (final b in playedBouts) {
-              if (b.redScore > b.whiteScore) {
-                redWins++;
-              } else if (b.whiteScore > b.redScore) {
-                whiteWins++;
+              if (isTargetRed) {
+                if (b.redScore > b.whiteScore) {
+                  myWins++;
+                } else if (b.whiteScore > b.redScore) {
+                  oppWins++;
+                }
+              } else {
+                if (b.whiteScore > b.redScore) {
+                  myWins++;
+                } else if (b.redScore > b.whiteScore) {
+                  oppWins++;
+                }
               }
             }
           }
         } else {
           for (final b in playedBouts) {
-            if (b.redScore > b.whiteScore) {
-              redWins++;
-            } else if (b.whiteScore > b.redScore) {
-              whiteWins++;
+            final int rScore = (b.redScore as num).toInt();
+            final int wScore = (b.whiteScore as num).toInt();
+
+            if (b.matchType == '代表戦') {
+              hasDaihyo = true;
+              if (rScore > wScore) {
+                daihyoIsMyWin = isTargetRed;
+              } else if (wScore > rScore) {
+                daihyoIsMyWin = isTargetWhite;
+              }
+            } else {
+              if (isTargetRed) {
+                myPoints += rScore;
+                oppPoints += wScore;
+                if (rScore > wScore) {
+                  myWins++;
+                } else if (wScore > rScore) {
+                  oppWins++;
+                }
+              } else {
+                myPoints += wScore;
+                oppPoints += rScore;
+                if (wScore > rScore) {
+                  myWins++;
+                } else if (rScore > wScore) {
+                  oppWins++;
+                }
+              }
+            }
+
+            // 団体戦内の各選手個人戦績＆打突集計
+            final rPlayer = b.redName.contains(':')
+                ? b.redName.split(':').last.trim()
+                : b.redName.trim();
+            final wPlayer = b.whiteName.contains(':')
+                ? b.whiteName.split(':').last.trim()
+                : b.whiteName.trim();
+
+            if (isTargetRed &&
+                rPlayer.isNotEmpty &&
+                isMyPlayer(rPlayer, rTeam)) {
+              final stats = playerStatsMap.putIfAbsent(
+                rPlayer,
+                () => _DetailedPlayerStats(),
+              );
+              if (rScore == wScore) {
+                stats.draw++;
+              } else if (rScore > wScore) {
+                stats.win++;
+              } else {
+                stats.loss++;
+              }
+            }
+            if (isTargetWhite &&
+                wPlayer.isNotEmpty &&
+                isMyPlayer(wPlayer, wTeam)) {
+              final stats = playerStatsMap.putIfAbsent(
+                wPlayer,
+                () => _DetailedPlayerStats(),
+              );
+              if (wScore == rScore) {
+                stats.draw++;
+              } else if (wScore > rScore) {
+                stats.win++;
+              } else {
+                stats.loss++;
+              }
             }
           }
         }
 
+        // 全剣連 勝敗判定ロジック
         bool isWin = false;
-        final bool isCardFinished = bouts.every((b) => isMatchPlayed(b));
         bool isDraw = false;
+        String resultType = '引き分け';
 
-        if (redWins > whiteWins) {
-          if (isTargetRed) isWin = true;
-        } else if (whiteWins > redWins) {
-          if (isTargetWhite) isWin = true;
+        if (myWins > oppWins) {
+          isWin = true;
+          resultType = '勝数勝ち';
+        } else if (oppWins > myWins) {
+          isWin = false;
+          resultType = '敗戦';
         } else {
-          // 引き分け（または途中経過で同点）
-          if (isCardFinished || playedBouts.length >= (bouts.length / 2)) {
-            isDraw = true;
+          // 勝数同数 ➔ 総取得本数（本数差勝ち）の比較
+          if (myPoints > oppPoints) {
+            isWin = true;
+            resultType = '本数差勝ち';
+          } else if (oppPoints > myPoints) {
+            isWin = false;
+            resultType = '本数差負け';
           } else {
-            continue;
+            // 勝数・本数ともに同数 ➔ 代表戦判定
+            if (hasDaihyo && daihyoIsMyWin != null) {
+              if (daihyoIsMyWin == true) {
+                isWin = true;
+                resultType = '代表戦勝ち';
+              } else {
+                isWin = false;
+                resultType = '代表戦負け';
+              }
+            } else {
+              isDraw = true;
+              resultType = '引き分け';
+            }
           }
         }
 
+        final opponentTeam = isTargetRed ? wTeam : rTeam;
+        final cardTitle = firstMatch.groupName ?? '団体戦';
         final scene = firstMatch.matchScene;
+
+        cardResults.add(
+          _ExpeditionCardResult(
+            cardTitle: cardTitle,
+            opponentTeamName: opponentTeam,
+            myWins: myWins,
+            oppWins: oppWins,
+            myPoints: myPoints,
+            oppPoints: oppPoints,
+            resultType: resultType,
+            isWin: isWin,
+            isDraw: isDraw,
+            scene: scene,
+          ),
+        );
+
         if (scene == 'renseikai') {
           if (isDraw) {
             renseikaiDraw++;
@@ -1559,11 +1683,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           }
         }
       } else {
-        // ★ 個人戦 / リーグ個人戦: 実施済みの試合（isMatchPlayed）のみを集計
+        // ★ 個人戦: 個人成績にのみ反映（上段チーム成績には含めない）
         for (final m in bouts) {
-          if (!isMatchPlayed(m)) {
-            continue;
-          }
+          if (!isMatchPlayed(m)) continue;
 
           final rTeam = m.redName.contains(':')
               ? m.redName.split(':').first.trim()
@@ -1571,7 +1693,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           final wTeam = m.whiteName.contains(':')
               ? m.whiteName.split(':').first.trim()
               : m.whiteName.trim();
-
           final rPlayer = m.redName.contains(':')
               ? m.redName.split(':').last.trim()
               : m.redName.trim();
@@ -1581,7 +1702,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
           final bool rIsMine = isMyTeam(rTeam) || isMyPlayer(rPlayer, rTeam);
           final bool wIsMine = isMyTeam(wTeam) || isMyPlayer(wPlayer, wTeam);
-
           if (!rIsMine && !wIsMine) continue;
 
           final bool isTargetRed =
@@ -1590,25 +1710,14 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           final bool isTargetWhite =
               (_selectedSummaryTeam == '全体' && wIsMine) ||
               (_selectedSummaryTeam == wTeam);
-
           if (!isTargetRed && !isTargetWhite) continue;
 
           final isDraw = m.redScore == m.whiteScore;
-          bool isWin = false;
 
-          if (!isDraw) {
-            if (isTargetRed && m.redScore > m.whiteScore) {
-              isWin = true;
-            } else if (isTargetWhite && m.whiteScore > m.redScore) {
-              isWin = true;
-            }
-          }
-
-          // 自チームの選手のみを個人成績マップに記録
           if (isTargetRed && rPlayer.isNotEmpty && isMyPlayer(rPlayer, rTeam)) {
             final stats = playerStatsMap.putIfAbsent(
               rPlayer,
-              () => _PlayerStats(),
+              () => _DetailedPlayerStats(),
             );
             if (isDraw) {
               stats.draw++;
@@ -1623,7 +1732,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               isMyPlayer(wPlayer, wTeam)) {
             final stats = playerStatsMap.putIfAbsent(
               wPlayer,
-              () => _PlayerStats(),
+              () => _DetailedPlayerStats(),
             );
             if (isDraw) {
               stats.draw++;
@@ -1633,36 +1742,103 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               stats.loss++;
             }
           }
+        }
+      }
+    }
 
-          final scene = m.matchScene;
-          if (scene == 'renseikai') {
-            if (isDraw) {
-              renseikaiDraw++;
-            } else if (isWin) {
-              renseikaiWin++;
-            } else {
-              renseikaiLoss++;
-            }
-          } else if (scene == 'moushiawase') {
-            if (isDraw) {
-              moushiawaseDraw++;
-            } else if (isWin) {
-              moushiawaseWin++;
-            } else {
-              moushiawaseLoss++;
-            }
+    // ★ 技別（有効打突）および相手反則による取得の精緻な計測
+    for (final m in matches) {
+      if (!isMatchPlayed(m)) continue;
+
+      final rTeam = m.redName.contains(':')
+          ? m.redName.split(':').first.trim()
+          : m.redName.trim();
+      final wTeam = m.whiteName.contains(':')
+          ? m.whiteName.split(':').first.trim()
+          : m.whiteName.trim();
+      final rPlayer = m.redName.contains(':')
+          ? m.redName.split(':').last.trim()
+          : m.redName.trim();
+      final wPlayer = m.whiteName.contains(':')
+          ? m.whiteName.split(':').last.trim()
+          : m.whiteName.trim();
+
+      final bool rIsMine = isMyTeam(rTeam) || isMyPlayer(rPlayer, rTeam);
+      final bool wIsMine = isMyTeam(wTeam) || isMyPlayer(wPlayer, wTeam);
+      if (!rIsMine && !wIsMine) continue;
+
+      final bool isTargetRed =
+          (_selectedSummaryTeam == '全体' && rIsMine) ||
+          (_selectedSummaryTeam == rTeam);
+      final bool isTargetWhite =
+          (_selectedSummaryTeam == '全体' && wIsMine) ||
+          (_selectedSummaryTeam == wTeam);
+      if (!isTargetRed && !isTargetWhite) continue;
+
+      for (final ev in m.events) {
+        if (ev.isCanceled) continue;
+        if (!ev.isIppon) continue;
+
+        final bool evIsMine =
+            (ev.side == Side.red && isTargetRed) ||
+            (ev.side == Side.white && isTargetWhite);
+        final bool evIsOpp =
+            (ev.side == Side.red && isTargetWhite) ||
+            (ev.side == Side.white && isTargetRed);
+
+        if (evIsMine) {
+          teamTotalScored++;
+          final String myPlayer = ev.side == Side.red ? rPlayer : wPlayer;
+          final pStats = playerStatsMap.putIfAbsent(
+            myPlayer,
+            () => _DetailedPlayerStats(),
+          );
+          pStats.totalPoints++;
+
+          if (ev.isHansoku) {
+            teamHansoku++;
+            pStats.hansoku++;
           } else {
-            if (isDraw) {
-              honsenDraw++;
-            } else if (isWin) {
-              honsenWin++;
-            } else {
-              honsenLoss++;
+            switch (ev.strikeType) {
+              case StrikeType.men:
+                teamMen++;
+                pStats.men++;
+                break;
+              case StrikeType.kote:
+                teamKote++;
+                pStats.kote++;
+                break;
+              case StrikeType.dou:
+                teamDou++;
+                pStats.dou++;
+                break;
+              case StrikeType.tsuki:
+                teamTsuki++;
+                pStats.tsuki++;
+                break;
+              default:
+                teamOther++;
+                pStats.other++;
+                break;
             }
+          }
+        } else if (evIsOpp) {
+          teamTotalConceded++;
+          final String myPlayer = ev.side == Side.red ? wPlayer : rPlayer;
+          if (myPlayer.isNotEmpty) {
+            final pStats = playerStatsMap.putIfAbsent(
+              myPlayer,
+              () => _DetailedPlayerStats(),
+            );
+            pStats.concededPoints++;
           }
         }
       }
     }
+
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -1704,53 +1880,133 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   ),
                 ],
               ),
-              if (teamsList.length > 1)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.compact,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF3F51B5).withValues(alpha: 0.5)
-                        : const Color(0xFF3F51B5),
+              Row(
+                children: [
+                  // ★ 詳細分析ボトムシートを開くボタン
+                  InkWell(
+                    onTap: () {
+                      _showExpeditionDetailBottomSheet(
+                        context: context,
+                        isDark: isDark,
+                        teamName: _selectedSummaryTeam,
+                        teamMen: teamMen,
+                        teamKote: teamKote,
+                        teamDou: teamDou,
+                        teamTsuki: teamTsuki,
+                        teamHansoku: teamHansoku,
+                        teamOther: teamOther,
+                        totalScored: teamTotalScored,
+                        totalConceded: teamTotalConceded,
+                        cardResults: cardResults,
+                      );
+                    },
                     borderRadius: AppRadius.round,
-                    border: Border.all(color: const Color(0xFF3F51B5)),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: teamsList.contains(_selectedSummaryTeam)
-                          ? _selectedSummaryTeam
-                          : '全体',
-                      isDense: true,
-                      icon: const Icon(
-                        Icons.arrow_drop_down,
-                        color: AppKendoColors.indigo,
-                        size: 20,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xxs,
                       ),
-                      style: TextStyle(
-                        fontWeight: AppFontWeight.bold,
-                        fontSize: AppFontSize.bodySmall,
+                      decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFFFFFFFF)
-                            : const Color(0xFF3F51B5),
+                            ? const Color(0xFF38383A)
+                            : themeColors.softAccent,
+                        borderRadius: AppRadius.round,
                       ),
-                      items: ['全体', ...teamsList].map((t) {
-                        return DropdownMenuItem<String>(
-                          value: t,
-                          child: Text(t == '全体' ? '全チーム合計' : t),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _selectedSummaryTeam = val;
-                          });
-                        }
-                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.bar_chart,
+                            size: 14,
+                            color: isDark
+                                ? const Color(0xFFFFFFFF)
+                                : context.appColors.primaryAccent,
+                          ),
+                          const SizedBox(width: AppSpacing.xxs),
+                          Text(
+                            '詳細分析 ›',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: isDark
+                                  ? const Color(0xFFFFFFFF)
+                                  : context.appColors.primaryAccent,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                  if (teamsList.length > 1) ...[
+                    const SizedBox(width: AppSpacing.sm),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.compact,
+                        vertical: AppSpacing.xxs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF3F51B5).withValues(alpha: 0.3)
+                            : const Color(0xFFEEF2FF),
+                        borderRadius: AppRadius.round,
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF3F51B5)
+                              : context.appColors.primaryAccent.withValues(
+                                  alpha: 0.3,
+                                ),
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: teamsList.contains(_selectedSummaryTeam)
+                              ? _selectedSummaryTeam
+                              : '全体',
+                          isDense: true,
+                          dropdownColor: isDark
+                              ? const Color(0xFF2C2C2E)
+                              : const Color(0xFFFFFFFF),
+                          icon: Icon(
+                            Icons.arrow_drop_down,
+                            color: isDark
+                                ? const Color(0xFFFFFFFF)
+                                : context.appColors.primaryAccent,
+                            size: 20,
+                          ),
+                          style: TextStyle(
+                            fontWeight: AppFontWeight.bold,
+                            fontSize: AppFontSize.bodySmall,
+                            color: isDark
+                                ? const Color(0xFFFFFFFF)
+                                : context.appColors.primaryAccent,
+                          ),
+                          items: ['全体', ...teamsList].map((t) {
+                            return DropdownMenuItem<String>(
+                              value: t,
+                              child: Text(
+                                t == '全体' ? '全チーム合計' : t,
+                                style: TextStyle(
+                                  color: isDark
+                                      ? const Color(0xFFFFFFFF)
+                                      : context.appColors.textColor,
+                                  fontWeight: AppFontWeight.bold,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() {
+                                _selectedSummaryTeam = val;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
           const Divider(height: 20),
@@ -1782,13 +2038,18 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           ),
           if (playerStatsMap.isNotEmpty) ...[
             const Divider(height: 24),
-            const Text(
-              '👤 個人戦・選手別成績',
-              style: TextStyle(
-                fontWeight: AppFontWeight.bold,
-                fontSize: AppFontSize.bodySmall,
-                color: AppKendoColors.grey,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text(
+                  '👤 選手別成績（タップでカルテ表示）',
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    fontSize: AppFontSize.bodySmall,
+                    color: AppKendoColors.grey,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
@@ -1797,28 +2058,61 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               children: playerStatsMap.entries.map((entry) {
                 final pName = entry.key;
                 final st = entry.value;
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF2C2C2E)
-                        : const Color(0xFFF2F2F7),
-                    borderRadius: AppRadius.medium,
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0xFFFFFFFF)
-                          : const Color(0x33000000),
+                return InkWell(
+                  onTap: () {
+                    _showPlayerDetailBottomSheet(
+                      context: context,
+                      isDark: isDark,
+                      playerName: pName,
+                      stats: st,
+                    );
+                  },
+                  borderRadius: AppRadius.medium,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: AppSpacing.xs,
                     ),
-                  ),
-                  child: Text(
-                    '$pName: ${st.win}勝${st.loss}敗${st.draw > 0 ? "${st.draw}分" : ""}',
-                    style: TextStyle(
-                      fontSize: AppFontSize.small,
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.textColor,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF2C2C2E)
+                          : const Color(0xFFF2F2F7),
+                      borderRadius: AppRadius.medium,
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFFFFFFFF).withValues(alpha: 0.15)
+                            : const Color(0xFF000000).withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$pName: ${st.win}勝${st.loss}敗${st.draw > 0 ? "${st.draw}分" : ""}',
+                          style: TextStyle(
+                            fontSize: AppFontSize.small,
+                            fontWeight: AppFontWeight.bold,
+                            color: context.appColors.textColor,
+                          ),
+                        ),
+                        if (st.totalPoints > 0) ...[
+                          const SizedBox(width: AppSpacing.xxs),
+                          Text(
+                            '(${st.totalPoints}本)',
+                            style: const TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: AppKendoColors.indigo,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 14,
+                          color: AppKendoColors.grey.withValues(alpha: 0.7),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -1827,6 +2121,495 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           ],
         ],
       ),
+    );
+  }
+
+  // ★ チーム遠征詳細分析ボトムシート
+  void _showExpeditionDetailBottomSheet({
+    required BuildContext context,
+    required bool isDark,
+    required String teamName,
+    required int teamMen,
+    required int teamKote,
+    required int teamDou,
+    required int teamTsuki,
+    required int teamHansoku,
+    required int teamOther,
+    required int totalScored,
+    required int totalConceded,
+    required List<_ExpeditionCardResult> cardResults,
+  }) {
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        final totalStrikes =
+            teamMen + teamKote + teamDou + teamTsuki + teamHansoku + teamOther;
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+          ),
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ヘッダー
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.insights,
+                        color: AppKendoColors.indigo,
+                        size: 22,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        '📊 遠征成績 詳細分析 ($teamName)',
+                        style: TextStyle(
+                          fontSize: AppFontSize.title,
+                          fontWeight: AppFontWeight.bold,
+                          color: context.appColors.textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
+              ),
+              const Divider(height: AppSpacing.xl),
+              Expanded(
+                child: ListView(
+                  children: [
+                    // セクション 1: 🎯 有効打突・技別決定数メーター
+                    Text(
+                      '🎯 有効打突・取得技内訳',
+                      style: TextStyle(
+                        fontSize: AppFontSize.subhead,
+                        fontWeight: AppFontWeight.bold,
+                        color: context.appColors.textColor,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF2C2C2E)
+                            : const Color(0xFFF9FAFB),
+                        borderRadius: AppRadius.large,
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFFFFFFFF).withValues(alpha: 0.1)
+                              : const Color(0xFF000000).withValues(alpha: 0.05),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildStrikeStatBadge(
+                                '面 (メ)',
+                                teamMen,
+                                totalStrikes,
+                                AppKendoColors.teal,
+                              ),
+                              _buildStrikeStatBadge(
+                                '小手 (コ)',
+                                teamKote,
+                                totalStrikes,
+                                AppKendoColors.indigo,
+                              ),
+                              _buildStrikeStatBadge(
+                                '胴 (ド)',
+                                teamDou,
+                                totalStrikes,
+                                const Color(0xFFD97706),
+                              ),
+                              _buildStrikeStatBadge(
+                                '突き (ツ)',
+                                teamTsuki,
+                                totalStrikes,
+                                const Color(0xFF8B5CF6),
+                              ),
+                              _buildStrikeStatBadge(
+                                '反則 (反)',
+                                teamHansoku,
+                                totalStrikes,
+                                AppKendoColors.hansokuRed,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          const Divider(height: 1),
+                          const SizedBox(height: AppSpacing.sm),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '総取得本数: $totalScored本',
+                                style: const TextStyle(
+                                  fontWeight: AppFontWeight.bold,
+                                  fontSize: AppFontSize.bodySmall,
+                                  color: AppKendoColors.teal,
+                                ),
+                              ),
+                              Text(
+                                '総失本数: $totalConceded本',
+                                style: const TextStyle(
+                                  fontWeight: AppFontWeight.bold,
+                                  fontSize: AppFontSize.bodySmall,
+                                  color: AppKendoColors.hansokuRed,
+                                ),
+                              ),
+                              Text(
+                                '得失差: ${totalScored - totalConceded >= 0 ? "+${totalScored - totalConceded}" : "${totalScored - totalConceded}"}',
+                                style: TextStyle(
+                                  fontWeight: AppFontWeight.bold,
+                                  fontSize: AppFontSize.bodySmall,
+                                  color: (totalScored - totalConceded) >= 0
+                                      ? AppKendoColors.teal
+                                      : AppKendoColors.hansokuRed,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+
+                    // セクション 2: ⚖️ 全剣連基準 対戦カード一覧
+                    Text(
+                      '⚖️ 団体戦 対戦カード履歴 (全剣連基準)',
+                      style: TextStyle(
+                        fontSize: AppFontSize.subhead,
+                        fontWeight: AppFontWeight.bold,
+                        color: context.appColors.textColor,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    if (cardResults.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.lg,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '団体戦の対戦履歴はありません',
+                            style: TextStyle(color: AppKendoColors.grey),
+                          ),
+                        ),
+                      )
+                    else
+                      ...cardResults.map((res) {
+                        final Color badgeBg = res.isWin
+                            ? AppKendoColors.teal.withValues(alpha: 0.15)
+                            : (res.isDraw
+                                  ? AppKendoColors.grey.withValues(alpha: 0.15)
+                                  : AppKendoColors.hansokuRed.withValues(
+                                      alpha: 0.15,
+                                    ));
+                        final Color badgeText = res.isWin
+                            ? AppKendoColors.teal
+                            : (res.isDraw
+                                  ? AppKendoColors.grey
+                                  : AppKendoColors.hansokuRed);
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.sm,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF2C2C2E)
+                                : const Color(0xFFFFFFFF),
+                            borderRadius: AppRadius.medium,
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(
+                                      0xFFFFFFFF,
+                                    ).withValues(alpha: 0.1)
+                                  : const Color(
+                                      0xFF000000,
+                                    ).withValues(alpha: 0.08),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    res.cardTitle,
+                                    style: const TextStyle(
+                                      fontSize: AppFontSize.caption,
+                                      color: AppKendoColors.grey,
+                                      fontWeight: AppFontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'vs ${res.opponentTeamName}',
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.body,
+                                      fontWeight: AppFontWeight.bold,
+                                      color: context.appColors.textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${res.myWins}(${res.myPoints}) - ${res.oppWins}(${res.oppPoints})',
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.bodyMedium,
+                                      fontWeight: AppFontWeight.bold,
+                                      color: context.appColors.textColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.sm,
+                                      vertical: AppSpacing.xxs,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: badgeBg,
+                                      borderRadius: AppRadius.round,
+                                    ),
+                                    child: Text(
+                                      res.resultType,
+                                      style: TextStyle(
+                                        fontSize: AppFontSize.caption,
+                                        fontWeight: AppFontWeight.bold,
+                                        color: badgeText,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ★ 選手個人カルテ ボトムシート
+  void _showPlayerDetailBottomSheet({
+    required BuildContext context,
+    required bool isDark,
+    required String playerName,
+    required _DetailedPlayerStats stats,
+  }) {
+    showAppBottomSheet(
+      context: context,
+      isScrollControlled: false,
+      builder: (ctx) {
+        final totalMatches = stats.win + stats.loss + stats.draw;
+        final winRate = totalMatches > 0
+            ? (stats.win / totalMatches * 100).toStringAsFixed(1)
+            : '0.0';
+        final totalStrikes =
+            stats.men +
+            stats.kote +
+            stats.dou +
+            stats.tsuki +
+            stats.hansoku +
+            stats.other;
+
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.person,
+                        color: AppKendoColors.indigo,
+                        size: 24,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        '👤 $playerName 選手の個人カルテ',
+                        style: TextStyle(
+                          fontSize: AppFontSize.title,
+                          fontWeight: AppFontWeight.bold,
+                          color: context.appColors.textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
+              ),
+              const Divider(height: AppSpacing.lg),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatPill(
+                    '総試合数',
+                    '$totalMatches 試合',
+                    AppKendoColors.grey,
+                  ),
+                  _buildStatPill(
+                    '勝敗',
+                    '${stats.win}勝 ${stats.loss}敗 ${stats.draw > 0 ? "${stats.draw}分" : ""}',
+                    AppKendoColors.indigo,
+                  ),
+                  _buildStatPill('勝率', '$winRate %', AppKendoColors.teal),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                '🎯 取得技の内訳',
+                style: TextStyle(
+                  fontSize: AppFontSize.subhead,
+                  fontWeight: AppFontWeight.bold,
+                  color: context.appColors.textColor,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : const Color(0xFFF9FAFB),
+                  borderRadius: AppRadius.large,
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFFFFFFFF).withValues(alpha: 0.1)
+                        : const Color(0xFF000000).withValues(alpha: 0.05),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStrikeStatBadge(
+                      '面 (メ)',
+                      stats.men,
+                      totalStrikes,
+                      AppKendoColors.teal,
+                    ),
+                    _buildStrikeStatBadge(
+                      '小手 (コ)',
+                      stats.kote,
+                      totalStrikes,
+                      AppKendoColors.indigo,
+                    ),
+                    _buildStrikeStatBadge(
+                      '胴 (ド)',
+                      stats.dou,
+                      totalStrikes,
+                      const Color(0xFFD97706),
+                    ),
+                    _buildStrikeStatBadge(
+                      '突き (ツ)',
+                      stats.tsuki,
+                      totalStrikes,
+                      const Color(0xFF8B5CF6),
+                    ),
+                    _buildStrikeStatBadge(
+                      '反則 (反)',
+                      stats.hansoku,
+                      totalStrikes,
+                      AppKendoColors.hansokuRed,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStrikeStatBadge(
+    String label,
+    int count,
+    int total,
+    Color color,
+  ) {
+    final pct = total > 0 ? (count / total * 100).toStringAsFixed(0) : '0';
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: AppFontSize.caption,
+            fontWeight: AppFontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '$count本',
+          style: const TextStyle(
+            fontSize: AppFontSize.bodyMedium,
+            fontWeight: AppFontWeight.bold,
+          ),
+        ),
+        Text(
+          '$pct%',
+          style: const TextStyle(
+            fontSize: AppFontSize.caption,
+            color: AppKendoColors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatPill(String title, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: AppFontSize.caption,
+            color: AppKendoColors.grey,
+            fontWeight: AppFontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: AppFontSize.bodyMedium,
+            fontWeight: AppFontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
@@ -1869,8 +2652,42 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
   }
 }
 
-class _PlayerStats {
+class _DetailedPlayerStats {
   int win = 0;
   int loss = 0;
   int draw = 0;
+  int men = 0;
+  int kote = 0;
+  int dou = 0;
+  int tsuki = 0;
+  int hansoku = 0;
+  int other = 0;
+  int totalPoints = 0;
+  int concededPoints = 0;
+}
+
+class _ExpeditionCardResult {
+  final String cardTitle;
+  final String opponentTeamName;
+  final int myWins;
+  final int oppWins;
+  final int myPoints;
+  final int oppPoints;
+  final String resultType;
+  final bool isWin;
+  final bool isDraw;
+  final String scene;
+
+  _ExpeditionCardResult({
+    required this.cardTitle,
+    required this.opponentTeamName,
+    required this.myWins,
+    required this.oppWins,
+    required this.myPoints,
+    required this.oppPoints,
+    required this.resultType,
+    required this.isWin,
+    required this.isDraw,
+    required this.scene,
+  });
 }

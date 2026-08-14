@@ -787,5 +787,111 @@ void main() {
         );
       },
     );
+
+    test(
+      '25. [新死角監視 1] 透過修飾 (.withValues() / .withOpacity()) を含むライトモード背景色への textColor(黒) 誤用防止',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) {
+            continue;
+          }
+          if (file.path.contains('lib/features/pdf/')) {
+            continue;
+          }
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          // isDark ? ... : context.appColors.textColor(.withValues/.withOpacity) パターン
+          final match = RegExp(
+            r'(backgroundColor|fillColor|surfaceTintColor|cardColor|color)\s*:\s*[^;\n]*isDark\s*\?[^;\n]+:\s*(context\.appColors\.)?textColor(\.(withValues|withOpacity)\([^)]*\))?',
+          ).firstMatch(content);
+
+          if (match != null) {
+            violations.add('${file.path}: ${match.group(0)}');
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'ライトモードの背景色に textColor (黒/黒透過) が誤って割り当てられている箇所が検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test('26. [新死角監視 2] DropdownButton / ピル型コンテナにおける背景色と文字色・アイコンの同色化防止', () {
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        if (file.path.contains('lib/shared/theme/')) {
+          continue;
+        }
+        if (file.path.endsWith('.freezed.dart') ||
+            file.path.endsWith('.g.dart')) {
+          continue;
+        }
+
+        final content = file.readAsStringSync();
+
+        // DropdownButton 周辺で同じ 0xFF3F51B5 や indigo が背景と文字色に同時に指定されるパターン
+        if (content.contains('DropdownButton') &&
+            content.contains('Color(0xFF3F51B5)') &&
+            content.contains(
+              'color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF3F51B5)',
+            )) {
+          violations.add('${file.path}: DropdownButton の文字色と背景色が同色指定されています');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'DropdownButton / ピル型UIで背景色と文字色が同色化している箇所が検出されました。\n'
+            '違反ファイル:\n${violations.join('\n')}',
+      );
+    });
+
+    test('27. [新死角監視 3] ボタンにおける背景色とアイコン・文字色の同色アクセント潰れ防止', () {
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        if (file.path.contains('lib/shared/theme/')) {
+          continue;
+        }
+        if (file.path.endsWith('.freezed.dart') ||
+            file.path.endsWith('.g.dart')) {
+          continue;
+        }
+
+        final content = file.readAsStringSync();
+
+        // ElevatedButton で backgroundColor に 0xFF3F51B5 (青) を指定しながら文字/アイコンに primaryAccent を指定するパターン
+        if (content.contains('ElevatedButton') &&
+            content.contains('backgroundColor: isDark ?') &&
+            content.contains('const Color(0xFF3F51B5)') &&
+            content.contains(
+              'color: isDark ? const Color(0xFFFFFFFF) : context.appColors.primaryAccent',
+            )) {
+          violations.add('${file.path}: ボタンの背景色と文字色が同系色で潰れています');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'ボタンの背景色と文字色・アイコン色が同系色で潰れている箇所が検出されました。\n'
+            '違反ファイル:\n${violations.join('\n')}',
+      );
+    });
   });
 }

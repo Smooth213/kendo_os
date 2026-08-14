@@ -295,13 +295,22 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           ),
           decoration: BoxDecoration(
             color: isDark
-                ? context.appColors.cardBackground.withValues(alpha: 0.5)
-                : context.appColors.textColor.withValues(alpha: 0.7),
+                ? const Color(0xFF1C1C1E).withValues(alpha: 0.85)
+                : const Color(0xFFFFFFFF).withValues(alpha: 0.9),
             borderRadius: AppRadius.large,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(
+                  0xFF000000,
+                ).withValues(alpha: isDark ? 0.3 : 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
             border: Border.all(
               color: isDark
-                  ? context.appColors.textColor.withValues(alpha: 0.1)
-                  : const Color(0xFF000000).withValues(alpha: 0.1),
+                  ? const Color(0xFFFFFFFF).withValues(alpha: 0.15)
+                  : const Color(0xFF000000).withValues(alpha: 0.08),
             ),
           ),
           child: Row(
@@ -309,7 +318,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xDE000000),
+                    backgroundColor: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : context.appColors.primaryAccent,
                     foregroundColor: AppKendoColors.pureWhite,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.md,
@@ -427,13 +438,22 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           ),
           decoration: BoxDecoration(
             color: isDark
-                ? context.appColors.cardBackground.withValues(alpha: 0.5)
-                : context.appColors.textColor.withValues(alpha: 0.7),
+                ? const Color(0xFF1C1C1E).withValues(alpha: 0.85)
+                : const Color(0xFFFFFFFF).withValues(alpha: 0.9),
             borderRadius: AppRadius.large,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(
+                  0xFF000000,
+                ).withValues(alpha: isDark ? 0.3 : 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
             border: Border.all(
               color: isDark
-                  ? context.appColors.textColor.withValues(alpha: 0.1)
-                  : const Color(0xFF000000).withValues(alpha: 0.1),
+                  ? const Color(0xFFFFFFFF).withValues(alpha: 0.15)
+                  : const Color(0xFF000000).withValues(alpha: 0.08),
             ),
           ),
           child: Row(
@@ -441,7 +461,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xDE000000),
+                    backgroundColor: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : context.appColors.primaryAccent,
                     foregroundColor: AppKendoColors.pureWhite,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.md,
