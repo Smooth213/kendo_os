@@ -301,9 +301,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                   color: context.appColors.subTextColor,
                 ),
               ),
-              backgroundColor: isDark
-                  ? context.appColors.textColor.withAlpha(128)
-                  : context.appColors.cardBackground,
+              backgroundColor: context.appColors.cardBackground,
+              collapsedBackgroundColor: context.appColors.cardBackground,
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(

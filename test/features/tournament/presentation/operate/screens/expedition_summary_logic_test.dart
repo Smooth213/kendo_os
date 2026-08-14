@@ -203,7 +203,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // サマリーカードが表示されていることを検証
-        expect(find.text('🏆 遠征成績サマリー'), findsOneWidget);
+        expect(find.text('成績サマリー'), findsOneWidget);
 
         // 団体戦1試合（本数差勝ち）のみが「本戦 1勝 0敗」として集計されていることを検証（個人戦は団体成績に混入しない）
         expect(find.text('1勝 0敗 '), findsOneWidget);
@@ -217,7 +217,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // チーム詳細ボトムシートの内容（技別内訳・全剣連対戦カード履歴）を検証
-        expect(find.text('📊 遠征成績 詳細分析 (全体)'), findsOneWidget);
+        expect(find.text('成績 詳細分析 (全体)'), findsOneWidget);
         expect(find.text('🎯 有効打突・取得技内訳'), findsOneWidget);
         expect(find.text('面 (メ)'), findsOneWidget);
         expect(find.text('小手 (コ)'), findsOneWidget);
@@ -225,6 +225,9 @@ void main() {
         expect(find.text('突き (ツ)'), findsOneWidget);
         expect(find.text('⚖️ 団体戦 対戦カード履歴 (全剣連基準)'), findsOneWidget);
         expect(find.text('本数差勝ち'), findsOneWidget);
+
+        // ★ 案C: 試合名が時間＋シーン名（例: "本戦"）を含んでいることを検証
+        expect(find.textContaining('本戦'), findsWidgets);
 
         // ボトムシートを閉じる
         await tester.tap(find.byIcon(Icons.close));
@@ -238,9 +241,133 @@ void main() {
         await tester.pumpAndSettle();
 
         // 選手個人カルテの内容を検証
-        expect(find.text('👤 山田 選手の個人カルテ'), findsOneWidget);
+        expect(find.text('山田 選手の個人カルテ'), findsOneWidget);
         expect(find.text('勝率'), findsOneWidget);
         expect(find.text('🎯 取得技の内訳'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '2. スマートフォン画面幅（375px）でサマリーヘッダーおよび対戦カードがオーバーフローせず正常にレンダリングされること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(375, 812);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        final now = DateTime(2026, 8, 14, 10, 15);
+
+        final boutA = MatchModel(
+          id: 'cardA_1',
+          tournamentId: 't1',
+          matchType: '先鋒',
+          category: '小学生高学年',
+          groupName: 'edb185f4-131b-4380-b27b-e0619d79804e', // ★ UUID
+          redName: '道上剣友会A : 山田',
+          whiteName: '相手チーム : 田中',
+          redScore: 2,
+          whiteScore: 0,
+          status: 'finished',
+          lastUpdatedAt: now,
+          matchScene: 'renseikai',
+          events: [
+            ScoreEvent(
+              id: 'ev1',
+              side: Side.red,
+              strikeType: StrikeType.men,
+              isIppon: true,
+              timestamp: now,
+            ),
+          ],
+        );
+
+        final router = GoRouter(
+          initialLocation: '/official-record/t1',
+          routes: [
+            GoRoute(
+              path: '/official-record/:id',
+              builder: (context, state) => OfficialRecordScreen(
+                tournamentId: state.pathParameters['id']!,
+              ),
+            ),
+          ],
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            tournamentProvider('t1').overrideWith(
+              (ref) => Stream.value(
+                TournamentModel(
+                  id: 't1',
+                  organizationId: 'org_1',
+                  name: 'テスト大会',
+                  date: DateTime.now(),
+                  categories: ['小学生高学年'],
+                  venue: '日本武道館',
+                ),
+              ),
+            ),
+            matchListProvider.overrideWith((ref) => [boutA]),
+            registeredTeamsProvider('t1').overrideWith(
+              (ref) => Stream.value([
+                const TeamModel(
+                  id: 't_michigamiA',
+                  tournamentId: 't1',
+                  teamName: '道上剣友会A',
+                  category: '小学生高学年',
+                  playerNames: ['山田'],
+                ),
+                const TeamModel(
+                  id: 't_michigamiB',
+                  tournamentId: 't1',
+                  teamName: '道上剣友会B',
+                  category: '小学生高学年',
+                  playerNames: ['佐藤'],
+                ),
+              ]),
+            ),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+            isarProvider.overrideWithValue(null),
+          ],
+        );
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              theme: ThemeData.light(),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 375px幅でサマリーヘッダーが正常に描画され、エラーがないことを検証
+        expect(find.text('成績サマリー'), findsOneWidget);
+        expect(find.text('詳細分析 ›'), findsOneWidget);
+
+        // 詳細分析を開いてUUIDが排除され「10:15 錬成会」と表示されていることを検証
+        await tester.tap(find.text('詳細分析 ›'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('10:15 錬成会'), findsOneWidget);
+        expect(find.textContaining('edb185f4'), findsNothing);
       },
     );
   });

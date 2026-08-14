@@ -88,8 +88,8 @@ class ScoreTableCard extends StatelessWidget {
     final headerBgColor = themeColors.inputBackground;
     final headerTextColor = themeColors.subTextColor;
     final daihyoBgColor = isDark
-        ? context.appColors.errorColor.withValues(alpha: 0.15)
-        : context.appColors.errorColor;
+        ? const Color(0xFFE53935).withValues(alpha: 0.15)
+        : const Color(0xFFFFF5F5);
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -147,8 +147,8 @@ class ScoreTableCard extends StatelessWidget {
                                   fontWeight: AppFontWeight.bold,
                                   color: m.matchType == '代表戦'
                                       ? (isDark
-                                            ? context.appColors.errorColor
-                                            : context.appColors.errorColor)
+                                            ? const Color(0xFFFF6B6B)
+                                            : AppKendoColors.hansokuRed)
                                       : (context.appColors.separatorColor),
                                 ),
                               ),
@@ -408,7 +408,7 @@ class ScoreTableCard extends StatelessWidget {
       color: isDaihyo
           ? (isDark
                 ? const Color(0xFFE53935).withValues(alpha: 0.15)
-                : const Color(0xFFE53935))
+                : const Color(0xFFFFF5F5))
           : Colors.transparent,
       child: Center(
         child: Padding(

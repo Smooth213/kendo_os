@@ -132,6 +132,9 @@ class MatchStateMachine {
         if (event == StateTransitionEvent.approve) {
           return MatchLifecycleState.completed;
         }
+        if (event == StateTransitionEvent.decideWinner) {
+          return MatchLifecycleState.completed; // 既に完了している場合の二重決定イベントを安全に受容
+        }
         if (event == StateTransitionEvent.undo) {
           return MatchLifecycleState.inProgress;
         }
@@ -172,13 +175,24 @@ extension MatchLifecycleStateLegacyExt on MatchLifecycleState {
   static MatchLifecycleState fromLegacyString(String legacyStatus) {
     switch (legacyStatus) {
       case 'waiting':
+      case 'scheduled':
+      case 'ready':
+      case 'not_started':
+      case 'waiting_for_players':
         return MatchLifecycleState.ready;
       case 'in_progress':
+      case 'paused':
+      case 'encho':
+      case 'hantei_pending':
         return MatchLifecycleState.inProgress;
       case 'finished':
-        return MatchLifecycleState.completed;
       case 'approved':
+      case 'completed':
         return MatchLifecycleState.completed;
+      case 'fusen':
+        return MatchLifecycleState.fusen;
+      case 'canceled':
+        return MatchLifecycleState.canceled;
       case 'corrupted':
         return MatchLifecycleState.corrupted;
       default:

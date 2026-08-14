@@ -496,12 +496,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
     ); // LiquidBackground
   }
 
-  // ★ 修正：ヘッダーのチーム名もサイズアップ
+  // ★ 修正：ヘッダーのチーム名もサイズアップ＆配色最適化
   TableRow _buildHeaderRow(String r, String w, bool isDark) {
-    final headerBg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFF3F51B5);
+    final headerBg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF1F5F9);
     final textColor = isDark
         ? const Color(0xFFFFFFFF)
-        : const Color(0xFF000000);
+        : const Color(0xFF1E293B);
     return TableRow(
       decoration: BoxDecoration(color: headerBg),
       children: [
@@ -509,27 +509,27 @@ class TeamScoreboardScreen extends ConsumerWidget {
         _cell(
           r,
           isH: true,
-          color: isDark ? const Color(0xFFE53935) : const Color(0xFFE53935),
+          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
           fs: 16,
-        ), // 13→16
+        ),
         _cell(
           '赤',
           isH: true,
-          color: isDark ? const Color(0xFFE53935) : const Color(0xFFE53935),
+          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
           fs: 14,
         ),
         _cell(
           '白',
           isH: true,
-          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
           fs: 14,
         ),
         _cell(
           w,
           isH: true,
-          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1E293B),
           fs: 16,
-        ), // 13→16
+        ),
       ],
     );
   }
@@ -613,13 +613,13 @@ class TeamScoreboardScreen extends ConsumerWidget {
     final rPts = ptsMap['red'] ?? [];
     final wPts = ptsMap['white'] ?? [];
 
-    // ★ Phase 8: 代表戦の行をうっすら赤くし、文字も赤くハイライトする
+    // ★ Phase 8: 代表戦の行を上品な薄い赤Tintにし、文字も赤くハイライトする
     final isDaihyo = m.matchType == '代表戦';
     final daihyoBgColor = isDark
         ? const Color(0xFFE53935).withValues(alpha: 0.15)
-        : const Color(0xFFE53935);
+        : const Color(0xFFFFF5F5);
     final matchTypeColor = isDaihyo
-        ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
+        ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xDE000000));
 
     return TableRow(
@@ -668,7 +668,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
     bool isDark,
   ) {
     final color = isRed
-        ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
+        ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
 
     final isFusen = pts.any((p) => p.mark == '◯');
@@ -698,36 +698,23 @@ class TeamScoreboardScreen extends ConsumerWidget {
           SizedBox(
             width: 48,
             height: 48,
-            child: Stack(
-              children: [
-                if (isFusen) ...[
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    child: _ptMark(TeamPointDisplay('◯', false), color, isDark),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: _ptMark(TeamPointDisplay('◯', false), color, isDark),
-                  ),
-                ] else ...[
-                  // 斜め配置の隅に少し余裕(2px)を持たせて、大丸との接触を回避
-                  if (pts.isNotEmpty)
-                    Positioned(
-                      top: 2,
-                      left: 2,
-                      child: _ptMark(pts[0], color, isDark),
+            child: isFusen
+                ? Center(
+                    child: Text(
+                      '◯',
+                      style: TextStyle(
+                        fontSize: AppFontSize.hero,
+                        color: color,
+                        fontWeight: AppFontWeight.bold,
+                      ),
                     ),
-                  if (pts.length > 1)
-                    Positioned(
-                      bottom: 2,
-                      right: 2,
-                      child: _ptMark(pts[1], color, isDark),
-                    ),
-                ],
-              ],
-            ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: pts
+                        .map((p) => _ptMark(p, color, isDark))
+                        .toList(),
+                  ),
           ),
 
           if (isRed && isDraw)
@@ -738,8 +725,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: AppFontSize.hero,
                   color: isDark
-                      ? const Color(0xFFE53935).withValues(alpha: 0.6)
-                      : const Color(0xFFE53935),
+                      ? const Color(0xFFFF6B6B).withValues(alpha: 0.6)
+                      : AppKendoColors.hansokuRed,
                   fontWeight: AppFontWeight.light,
                 ),
               ),
@@ -820,12 +807,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  // ★ Phase 7: UI内での勝敗計算を削除し、引数を Result オブジェクトに統一
+  // ★ Phase 7: UI内での勝敗計算を削除し、引数を Result オブジェクトに統一＆配色最適化
   TableRow _buildTotalRow(TeamMatchResult result, bool isDark) {
-    final bg = isDark ? const Color(0xFF3A2E12) : const Color(0xFFD4AF37);
+    final bg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF8FAFC);
     final textColor = isDark
         ? const Color(0xFFFFFFFF)
-        : const Color(0xFF000000);
+        : const Color(0xFF1E293B);
     final isTeamTie = (result.teamWinner == 'draw');
 
     return TableRow(
@@ -835,7 +822,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
         _cell(
           '${result.redPoints} / ${result.redWins}',
           isH: true,
-          color: isDark ? const Color(0xFFE53935) : const Color(0xFFE53935),
+          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
           fs: 18,
         ),
 
@@ -857,8 +844,8 @@ class TeamScoreboardScreen extends ConsumerWidget {
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.headline,
                           color: isDark
-                              ? const Color(0xFFD4AF37)
-                              : const Color(0xFFD4AF37),
+                              ? AppKendoColors.ipponGold
+                              : const Color(0xFFD97706),
                         ),
                       ),
                     )

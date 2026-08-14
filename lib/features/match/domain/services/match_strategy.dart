@@ -55,16 +55,30 @@ class IndividualMatchStrategy implements MatchStrategy {
     required MatchModel match,
     required Map<String, dynamic>? lastSettings,
   }) {
-    final bool hasExt = lastSettings?['hasExtension'] ?? true;
-    final int maxExt = lastSettings?['extensionCount'] ?? 1;
-    int currentExtCount = '延長'.allMatches(match.note).length;
+    final rule = match.rule;
+    final bool hasExt =
+        match.hasExtension ||
+        (rule != null
+            ? (rule.isEnchoUnlimited ||
+                  rule.enchoCount > 0 ||
+                  rule.enchoCount == -1 ||
+                  rule.enchoCount == -2)
+            : (lastSettings?['hasExtension'] ?? true));
+    final int maxExt =
+        match.extensionCount ??
+        (rule != null
+            ? (rule.isEnchoUnlimited ? -2 : rule.enchoCount)
+            : (lastSettings?['extensionCount'] ?? 1));
+    final int currentExtCount = '延長'.allMatches(match.note).length;
 
     if (hasExt && (maxExt == -2 || maxExt == -1 || currentExtCount < maxExt)) {
       return NextMatchAction.startExtension;
     }
 
-    if ((lastSettings?['hasHantei'] ?? true) ||
-        match.matchType.contains('個人戦')) {
+    final bool hasHantei =
+        match.hasHantei ||
+        (rule?.hasHantei ?? (lastSettings?['hasHantei'] ?? true));
+    if (hasHantei || match.matchType.contains('個人戦')) {
       return NextMatchAction.showHantei;
     }
 
@@ -113,15 +127,32 @@ class TeamMatchStrategy implements MatchStrategy {
     required Map<String, dynamic>? lastSettings,
   }) {
     if (match.matchType == '代表戦') {
-      final bool hasExt = lastSettings?['hasExtension'] ?? true;
-      final int maxExt = lastSettings?['extensionCount'] ?? 1;
+      final rule = match.rule;
+      final bool hasExt =
+          match.hasExtension ||
+          (rule?.daihyoHasExtension ??
+              (lastSettings?['daihyoHasExtension'] ??
+                  lastSettings?['hasExtension'] ??
+                  true));
+      final int maxExt =
+          match.extensionCount ??
+          (rule?.daihyoEnchoCount ??
+              (lastSettings?['daihyoEnchoCount'] ??
+                  lastSettings?['extensionCount'] ??
+                  -2));
       final int currentExtCount = '延長'.allMatches(match.note).length;
 
       if (hasExt &&
           (maxExt == -2 || maxExt == -1 || currentExtCount < maxExt)) {
         return NextMatchAction.startExtension;
       }
-      return (lastSettings?['hasHantei'] ?? true)
+      final bool hasHantei =
+          match.hasHantei ||
+          (rule?.daihyoHasHantei ??
+              (lastSettings?['daihyoHasHantei'] ??
+                  lastSettings?['hasHantei'] ??
+                  false));
+      return hasHantei
           ? NextMatchAction.showHantei
           : NextMatchAction.finishMatch;
     }
@@ -164,18 +195,35 @@ class KachinukiStrategy implements MatchStrategy {
   }) {
     final bool isTaishoVsTaisho =
         match.redRemaining.isEmpty && match.whiteRemaining.isEmpty;
-    final String kType = lastSettings?['kachinukiUnlimitedType'] ?? '';
+    final rule = match.rule;
+    final String kType =
+        rule?.kachinukiUnlimitedType ??
+        (lastSettings?['kachinukiUnlimitedType'] ?? '');
 
     if (isTaishoVsTaisho && kType == '大将引き分け延長') {
-      final bool hasExt = lastSettings?['hasExtension'] ?? true;
-      final int maxExt = lastSettings?['extensionCount'] ?? 1;
+      final bool hasExt =
+          match.hasExtension ||
+          (rule != null
+              ? (rule.isEnchoUnlimited ||
+                    rule.enchoCount > 0 ||
+                    rule.enchoCount == -1 ||
+                    rule.enchoCount == -2)
+              : (lastSettings?['hasExtension'] ?? true));
+      final int maxExt =
+          match.extensionCount ??
+          (rule != null
+              ? (rule.isEnchoUnlimited ? -2 : rule.enchoCount)
+              : (lastSettings?['extensionCount'] ?? 1));
       final int currentExtCount = '延長'.allMatches(match.note).length;
 
       if (hasExt &&
           (maxExt == -2 || maxExt == -1 || currentExtCount < maxExt)) {
         return NextMatchAction.startExtension;
       }
-      return (lastSettings?['hasHantei'] ?? true)
+      final bool hasHantei =
+          match.hasHantei ||
+          (rule?.hasHantei ?? (lastSettings?['hasHantei'] ?? true));
+      return hasHantei
           ? NextMatchAction.showHantei
           : NextMatchAction.finishMatch;
     }

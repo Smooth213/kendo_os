@@ -1374,9 +1374,13 @@ class MatchTimelineList extends ConsumerWidget {
                                                               : AppKendoColors
                                                                     .pureWhite,
                                                           collapsedBackgroundColor:
-                                                              const Color(
-                                                                0xFFFAFAFC,
-                                                              ),
+                                                              isDark
+                                                              ? const Color(
+                                                                  0xFF1C1C1E,
+                                                                )
+                                                              : const Color(
+                                                                  0xFFFAFAFC,
+                                                                ),
                                                           iconColor: isDark
                                                               ? Colors
                                                                     .indigo
@@ -1687,18 +1691,18 @@ class MatchTimelineList extends ConsumerWidget {
                                                                             ? AppKendoColors.pureWhite
                                                                             : (allFinished
                                                                                   ? (isDark
-                                                                                        ? const Color(
-                                                                                            0x8A000000,
+                                                                                        ? AppKendoColors.pureWhite.withValues(
+                                                                                            alpha: 0.6,
                                                                                           )
-                                                                                        : const Color(
-                                                                                            0x8A000000,
+                                                                                        : AppKendoColors.pureBlack.withValues(
+                                                                                            alpha: 0.54,
                                                                                           ))
                                                                                   : (isDark
-                                                                                        ? const Color(
-                                                                                            0x8A000000,
+                                                                                        ? AppKendoColors.pureWhite.withValues(
+                                                                                            alpha: 0.87,
                                                                                           )
-                                                                                        : const Color(
-                                                                                            0xDE000000,
+                                                                                        : AppKendoColors.pureBlack.withValues(
+                                                                                            alpha: 0.87,
                                                                                           ))),
                                                                       ),
                                                                     ),
@@ -1866,9 +1870,13 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? AppFontWeight.black
                                                                                   : AppFontWeight.bold,
                                                                               color: showLeftOwn
-                                                                                  ? const Color(
-                                                                                      0xFFD97706,
-                                                                                    )
+                                                                                  ? (isDark
+                                                                                        ? const Color(
+                                                                                            0xFFF59E0B,
+                                                                                          )
+                                                                                        : const Color(
+                                                                                            0xFFD97706,
+                                                                                          ))
                                                                                   : titleColor,
                                                                             ),
                                                                             textAlign:
@@ -1905,13 +1913,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                 '($showLeftPts)',
                                                                                 style: TextStyle(
                                                                                   fontSize: AppFontSize.caption,
-                                                                                  color: isDark
-                                                                                      ? const Color(
-                                                                                          0x8A000000,
-                                                                                        )
-                                                                                      : const Color(
-                                                                                          0x8A000000,
-                                                                                        ),
+                                                                                  color: context.appColors.subTextColor,
                                                                                 ),
                                                                               ),
                                                                               Padding(
@@ -1922,9 +1924,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   'ー',
                                                                                   style: TextStyle(
                                                                                     fontSize: AppFontSize.body,
-                                                                                    color: const Color(
-                                                                                      0x8A000000,
-                                                                                    ),
+                                                                                    color: context.appColors.subTextColor,
                                                                                     fontWeight: AppFontWeight.bold,
                                                                                   ),
                                                                                 ),
@@ -1957,9 +1957,13 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                   ? AppFontWeight.black
                                                                                   : AppFontWeight.bold,
                                                                               color: showRightOwn
-                                                                                  ? const Color(
-                                                                                      0xFFD97706,
-                                                                                    )
+                                                                                  ? (isDark
+                                                                                        ? const Color(
+                                                                                            0xFFF59E0B,
+                                                                                          )
+                                                                                        : const Color(
+                                                                                            0xFFD97706,
+                                                                                          ))
                                                                                   : titleColor,
                                                                             ),
                                                                             textAlign:
@@ -2413,9 +2417,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                     ),
                                                                               collapsedBackgroundColor: isDark
                                                                                   ? const Color(
-                                                                                      0xFF161618,
+                                                                                      0xFF1C1C1E,
                                                                                     )
-                                                                                  : context.appColors.textColor,
+                                                                                  : const Color(
+                                                                                      0xFFFAFAFC,
+                                                                                    ),
                                                                               iconColor: isDark
                                                                                   ? context.appColors.primaryAccent
                                                                                   : context.appColors.primaryAccent,
@@ -3233,7 +3239,7 @@ class MatchTimelineList extends ConsumerWidget {
                                         ? const Color(0xFF1C1C1E)
                                         : const Color(0xFFFFFFFF),
                                     collapsedBackgroundColor: isDark
-                                        ? const Color(0xFF161618)
+                                        ? const Color(0xFF1C1C1E)
                                         : const Color(0xFFFAFAFC),
                                     iconColor: isDark
                                         ? context.appColors.primaryAccent

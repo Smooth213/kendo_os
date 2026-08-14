@@ -1419,10 +1419,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
     }
 
     bool isMatchPlayed(MatchModel m) {
-      if (m.status == 'finished') return true;
-      if (m.redScore > 0 || m.whiteScore > 0) return true;
-      if (m.events.isNotEmpty) return true;
-      return false;
+      return m.status == 'finished' || m.status == 'approved';
     }
 
     int renseikaiWin = 0, renseikaiLoss = 0, renseikaiDraw = 0;
@@ -1459,10 +1456,22 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       final bool isTeamMatch =
           bouts.length > 1 ||
           firstMatch.isKachinuki ||
-          firstMatch.matchType.contains('団体');
+          firstMatch.matchType.contains('団体') ||
+          firstMatch.matchType == '先鋒' ||
+          firstMatch.matchType == '次鋒' ||
+          firstMatch.matchType == '中堅' ||
+          firstMatch.matchType == '副将' ||
+          firstMatch.matchType == '大将' ||
+          firstMatch.matchType == '代表戦';
 
       if (isTeamMatch) {
-        // ★ 団体戦 / 勝ち抜き戦: 全日本剣道連盟公式審判規則に準拠した勝敗判定
+        // ★ 団体戦 / 勝ち抜き戦: 全試合が決着済みの場合のみサマリーに集計（試合途中は除外）
+        final allBoutsFinished = bouts.every(
+          (b) => b.status == 'finished' || b.status == 'approved',
+        );
+        if (!firstMatch.isKachinuki && !allBoutsFinished) continue;
+        if (firstMatch.isKachinuki && !isMatchPlayed(bouts.last)) continue;
+
         final rTeam = firstMatch.redName.contains(':')
             ? firstMatch.redName.split(':').first.trim()
             : firstMatch.redName.trim();
@@ -1639,8 +1648,45 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         }
 
         final opponentTeam = isTargetRed ? wTeam : rTeam;
-        final cardTitle = firstMatch.groupName ?? '団体戦';
         final scene = firstMatch.matchScene;
+
+        // ★ 案C: 試合時刻・シーン名（「10:15 錬成会」など）の自動生成
+        final DateTime? matchTime =
+            firstMatch.lastUpdatedAt ??
+            firstMatch.timerStartedAt ??
+            (firstMatch.events.isNotEmpty
+                ? firstMatch.events.first.timestamp
+                : null);
+        final String timeStr = matchTime != null
+            ? DateFormat('HH:mm').format(matchTime)
+            : '';
+
+        final String sceneLabel = scene == 'renseikai'
+            ? '錬成会'
+            : (scene == 'moushiawase'
+                  ? '申し合わせ'
+                  : (scene == 'honsen' ? '本戦' : '団体戦'));
+        final String timeSceneLabel = timeStr.isNotEmpty
+            ? '$timeStr $sceneLabel'
+            : sceneLabel;
+
+        // UUIDやシステム文字列（英数字の羅列）を安全に検知・排除
+        final uuidRegex = RegExp(
+          r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+        );
+        final rawGroupName = (firstMatch.groupName ?? '').trim();
+        final isUuid =
+            uuidRegex.hasMatch(rawGroupName) ||
+            rawGroupName.length > 25 ||
+            rawGroupName == '__default__' ||
+            rawGroupName.contains(' vs ');
+
+        final String cardTitle;
+        if (!isUuid && rawGroupName.isNotEmpty && rawGroupName != '団体戦') {
+          cardTitle = '$rawGroupName ($timeSceneLabel)';
+        } else {
+          cardTitle = timeSceneLabel;
+        }
 
         cardResults.add(
           _ExpeditionCardResult(
@@ -1860,10 +1906,14 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: const [
                   Icon(
                     Icons.analytics_outlined,
@@ -1872,7 +1922,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   ),
                   SizedBox(width: AppSpacing.sm),
                   Text(
-                    '🏆 遠征成績サマリー',
+                    '成績サマリー',
                     style: TextStyle(
                       fontWeight: AppFontWeight.bold,
                       fontSize: AppFontSize.bodyMedium,
@@ -1881,6 +1931,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 ],
               ),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // ★ 詳細分析ボトムシートを開くボタン
                   InkWell(
@@ -2158,23 +2209,29 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.insights,
-                        color: AppKendoColors.indigo,
-                        size: 22,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        '📊 遠征成績 詳細分析 ($teamName)',
-                        style: TextStyle(
-                          fontSize: AppFontSize.title,
-                          fontWeight: AppFontWeight.bold,
-                          color: context.appColors.textColor,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.insights,
+                          color: AppKendoColors.indigo,
+                          size: 22,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            '成績 詳細分析 ($teamName)',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: AppFontSize.title,
+                              fontWeight: AppFontWeight.bold,
+                              color: context.appColors.textColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -2212,51 +2269,62 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                       child: Column(
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _buildStrikeStatBadge(
-                                '面 (メ)',
-                                teamMen,
-                                totalStrikes,
-                                AppKendoColors.teal,
+                              Expanded(
+                                child: _buildStrikeStatBadge(
+                                  '面 (メ)',
+                                  teamMen,
+                                  totalStrikes,
+                                  AppKendoColors.teal,
+                                ),
                               ),
-                              _buildStrikeStatBadge(
-                                '小手 (コ)',
-                                teamKote,
-                                totalStrikes,
-                                AppKendoColors.indigo,
+                              Expanded(
+                                child: _buildStrikeStatBadge(
+                                  '小手 (コ)',
+                                  teamKote,
+                                  totalStrikes,
+                                  AppKendoColors.indigo,
+                                ),
                               ),
-                              _buildStrikeStatBadge(
-                                '胴 (ド)',
-                                teamDou,
-                                totalStrikes,
-                                const Color(0xFFD97706),
+                              Expanded(
+                                child: _buildStrikeStatBadge(
+                                  '胴 (ド)',
+                                  teamDou,
+                                  totalStrikes,
+                                  const Color(0xFFD97706),
+                                ),
                               ),
-                              _buildStrikeStatBadge(
-                                '突き (ツ)',
-                                teamTsuki,
-                                totalStrikes,
-                                const Color(0xFF8B5CF6),
+                              Expanded(
+                                child: _buildStrikeStatBadge(
+                                  '突き (ツ)',
+                                  teamTsuki,
+                                  totalStrikes,
+                                  const Color(0xFF8B5CF6),
+                                ),
                               ),
-                              _buildStrikeStatBadge(
-                                '反則 (反)',
-                                teamHansoku,
-                                totalStrikes,
-                                AppKendoColors.hansokuRed,
+                              Expanded(
+                                child: _buildStrikeStatBadge(
+                                  '反則 (反)',
+                                  teamHansoku,
+                                  totalStrikes,
+                                  AppKendoColors.hansokuRed,
+                                ),
                               ),
                             ],
                           ),
                           const SizedBox(height: AppSpacing.md),
                           const Divider(height: 1),
                           const SizedBox(height: AppSpacing.sm),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.xs,
                             children: [
                               Text(
                                 '総取得本数: $totalScored本',
                                 style: const TextStyle(
                                   fontWeight: AppFontWeight.bold,
-                                  fontSize: AppFontSize.bodySmall,
+                                  fontSize: AppFontSize.caption,
                                   color: AppKendoColors.teal,
                                 ),
                               ),
@@ -2264,7 +2332,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 '総失本数: $totalConceded本',
                                 style: const TextStyle(
                                   fontWeight: AppFontWeight.bold,
-                                  fontSize: AppFontSize.bodySmall,
+                                  fontSize: AppFontSize.caption,
                                   color: AppKendoColors.hansokuRed,
                                 ),
                               ),
@@ -2272,7 +2340,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                 '得失差: ${totalScored - totalConceded >= 0 ? "+${totalScored - totalConceded}" : "${totalScored - totalConceded}"}',
                                 style: TextStyle(
                                   fontWeight: AppFontWeight.bold,
-                                  fontSize: AppFontSize.bodySmall,
+                                  fontSize: AppFontSize.caption,
                                   color: (totalScored - totalConceded) >= 0
                                       ? AppKendoColors.teal
                                       : AppKendoColors.hansokuRed,
@@ -2344,31 +2412,38 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                             ),
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    res.cardTitle,
-                                    style: const TextStyle(
-                                      fontSize: AppFontSize.caption,
-                                      color: AppKendoColors.grey,
-                                      fontWeight: AppFontWeight.bold,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      res.cardTitle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: AppFontSize.caption,
+                                        color: AppKendoColors.grey,
+                                        fontWeight: AppFontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'vs ${res.opponentTeamName}',
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.body,
-                                      fontWeight: AppFontWeight.bold,
-                                      color: context.appColors.textColor,
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'vs ${res.opponentTeamName}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: AppFontSize.body,
+                                        fontWeight: AppFontWeight.bold,
+                                        color: context.appColors.textColor,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: AppSpacing.sm),
                               Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     '${res.myWins}(${res.myPoints}) - ${res.oppWins}(${res.oppPoints})',
@@ -2378,7 +2453,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                       color: context.appColors.textColor,
                                     ),
                                   ),
-                                  const SizedBox(width: AppSpacing.sm),
+                                  const SizedBox(width: AppSpacing.xs),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: AppSpacing.sm,
@@ -2445,23 +2520,29 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.person,
-                        color: AppKendoColors.indigo,
-                        size: 24,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        '👤 $playerName 選手の個人カルテ',
-                        style: TextStyle(
-                          fontSize: AppFontSize.title,
-                          fontWeight: AppFontWeight.bold,
-                          color: context.appColors.textColor,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.person,
+                          color: AppKendoColors.indigo,
+                          size: 24,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            '$playerName 選手の個人カルテ',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: AppFontSize.title,
+                              fontWeight: AppFontWeight.bold,
+                              color: context.appColors.textColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -2510,37 +2591,46 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   ),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStrikeStatBadge(
-                      '面 (メ)',
-                      stats.men,
-                      totalStrikes,
-                      AppKendoColors.teal,
+                    Expanded(
+                      child: _buildStrikeStatBadge(
+                        '面 (メ)',
+                        stats.men,
+                        totalStrikes,
+                        AppKendoColors.teal,
+                      ),
                     ),
-                    _buildStrikeStatBadge(
-                      '小手 (コ)',
-                      stats.kote,
-                      totalStrikes,
-                      AppKendoColors.indigo,
+                    Expanded(
+                      child: _buildStrikeStatBadge(
+                        '小手 (コ)',
+                        stats.kote,
+                        totalStrikes,
+                        AppKendoColors.indigo,
+                      ),
                     ),
-                    _buildStrikeStatBadge(
-                      '胴 (ド)',
-                      stats.dou,
-                      totalStrikes,
-                      const Color(0xFFD97706),
+                    Expanded(
+                      child: _buildStrikeStatBadge(
+                        '胴 (ド)',
+                        stats.dou,
+                        totalStrikes,
+                        const Color(0xFFD97706),
+                      ),
                     ),
-                    _buildStrikeStatBadge(
-                      '突き (ツ)',
-                      stats.tsuki,
-                      totalStrikes,
-                      const Color(0xFF8B5CF6),
+                    Expanded(
+                      child: _buildStrikeStatBadge(
+                        '突き (ツ)',
+                        stats.tsuki,
+                        totalStrikes,
+                        const Color(0xFF8B5CF6),
+                      ),
                     ),
-                    _buildStrikeStatBadge(
-                      '反則 (反)',
-                      stats.hansoku,
-                      totalStrikes,
-                      AppKendoColors.hansokuRed,
+                    Expanded(
+                      child: _buildStrikeStatBadge(
+                        '反則 (反)',
+                        stats.hansoku,
+                        totalStrikes,
+                        AppKendoColors.hansokuRed,
+                      ),
                     ),
                   ],
                 ),

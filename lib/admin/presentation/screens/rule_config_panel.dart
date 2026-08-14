@@ -113,7 +113,13 @@ class RuleConfigPanel extends ConsumerWidget {
                 fontSize: AppFontSize.body,
               ),
             ),
-            collapsedBackgroundColor: const Color(0xFFF2F2F7),
+            collapsedBackgroundColor:
+                Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF1C1C1E)
+                : const Color(0xFFF2F2F7),
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF1C1C1E)
+                : const Color(0xFFFFFFFF),
             childrenPadding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               // 1. 規定本数の切り替え

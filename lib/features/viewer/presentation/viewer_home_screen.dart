@@ -1937,7 +1937,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                                                                       boutsAllFinished
                                                                       ? (isDark
                                                                             ? context.appColors.subTextColor
-                                                                            : context.appColors.cardBackground)
+                                                                            : context.appColors.subTextColor)
                                                                       : (context
                                                                             .appColors
                                                                             .textColor);

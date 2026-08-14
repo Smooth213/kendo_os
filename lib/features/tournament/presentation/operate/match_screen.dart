@@ -1596,12 +1596,27 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                           );
                                                       if (!confirmed) return;
 
-                                                      final dynamic rawTime =
-                                                          lastSettings['extensionTimeMinutes'];
+                                                      final rule = match.rule;
                                                       final double extMins =
-                                                          (rawTime is num)
-                                                          ? rawTime.toDouble()
-                                                          : 3.0;
+                                                          (match.extensionTimeMinutes !=
+                                                                  null &&
+                                                              match.extensionTimeMinutes! >
+                                                                  0)
+                                                          ? match
+                                                                .extensionTimeMinutes!
+                                                          : (match.matchType ==
+                                                                    '代表戦'
+                                                                ? (rule?.daihyoEnchoTimeMinutes ??
+                                                                      ((lastSettings['daihyoEnchoTimeMinutes'] ??
+                                                                                  lastSettings['extensionTimeMinutes'] ??
+                                                                                  3.0)
+                                                                              as num)
+                                                                          .toDouble())
+                                                                : (rule?.enchoTimeMinutes ??
+                                                                      ((lastSettings['extensionTimeMinutes'] ??
+                                                                                  3.0)
+                                                                              as num)
+                                                                          .toDouble()));
                                                       final int
                                                       currentExtCount = '延長'
                                                           .allMatches(

@@ -893,5 +893,65 @@ void main() {
             '違反ファイル:\n${violations.join('\n')}',
       );
     });
+
+    test(
+      '28. [新死角監視 4] アコーディオン（ExpansionTile / ExpansionTileThemeData）のダーク/ライトモード背景色・文字色テーマ完全保護監視',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) {
+            continue;
+          }
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          if (content.contains('ExpansionTile') ||
+              content.contains('ExpansionTileThemeData')) {
+            // 1. isDark 分岐のない collapsedBackgroundColor: const Color(0xFFFAFAFC)
+            if (content.contains(
+                  'collapsedBackgroundColor:\n                                const Color(0xFFFAFAFC)',
+                ) ||
+                content.contains(
+                  'collapsedBackgroundColor: const Color(0xFFFAFAFC)',
+                )) {
+              violations.add(
+                '${file.path}: collapsedBackgroundColor に isDark 分岐なしで白固定値 (0xFFFAFAFC) が指定されています',
+              );
+            }
+            // 2. collapsedBackgroundColor への textColor (黒) 誤用
+            if (content.contains('collapsedBackgroundColor: isDark ?') &&
+                content.contains(': context.appColors.textColor')) {
+              violations.add(
+                '${file.path}: collapsedBackgroundColor のライトモード側に textColor (黒) が指定されています',
+              );
+            }
+            // 3. backgroundColor への textColor(白) 誤用
+            if (content.contains(
+                  'backgroundColor: isDark ? context.appColors.textColor',
+                ) ||
+                content.contains(
+                  'backgroundColor: isDark\n                  ? context.appColors.textColor',
+                )) {
+              violations.add(
+                '${file.path}: backgroundColor のダークモード側に textColor が指定されています',
+              );
+            }
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'アコーディオンの背景色・折りたたみ時背景色でテーマ破綻（ダーク時白飛び、ライト時黒化など）が検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }

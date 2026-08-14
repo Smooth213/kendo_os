@@ -49,14 +49,9 @@ class MatchCalculatorHelper {
   static bool isEnchoFromModel(MatchModel match) {
     final isFinished = match.status == 'approved' || match.status == 'finished';
     if (!isFinished) return false;
+    // 実際に延長戦に突入した記録（noteに「延長」が含まれる）がある場合のみ true
     if (match.note.contains('延長')) return true;
-    if (match.matchType == '代表戦' ||
-        match.matchType == '大将延長戦' ||
-        match.matchType.contains('代表') ||
-        match.matchType.contains('延長')) {
-      return true;
-    }
-    if (match.hasExtension && match.redScore != match.whiteScore) {
+    if (match.matchType == '大将延長戦' || match.matchType.contains('延長')) {
       return true;
     }
     return false;
@@ -66,11 +61,9 @@ class MatchCalculatorHelper {
   static bool isEnchoFromProjection(MatchListProjection match) {
     final isFinished = match.status == 'approved' || match.status == 'finished';
     if (!isFinished) return false;
+    // 実際に延長戦に突入した記録（noteに「延長」が含まれる）がある場合のみ true
     if (match.note.contains('延長')) return true;
-    if (match.matchType == '代表戦' ||
-        match.matchType == '大将延長戦' ||
-        match.matchType.contains('代表') ||
-        match.matchType.contains('延長')) {
+    if (match.matchType == '大将延長戦' || match.matchType.contains('延長')) {
       return true;
     }
     return false;
