@@ -23,6 +23,11 @@ def check_tokens():
     raw_font_weights = 0
     raw_isdark_branches = 0
     raw_contrast_issues = 0
+    raw_bottom_sheets = 0
+    raw_chips = 0
+    raw_alert_dialogs = 0
+    raw_dark_black_texts = 0
+    raw_gold_text_issues = 0
 
     for f in files:
         with open(f, 'r', encoding='utf-8') as file:
@@ -76,8 +81,27 @@ def check_tokens():
 
             # 12. Contrast & inverted background color issues (using textColor as background color)
             if '/pdf/' not in rel_path:
-                # Find lines where card/button/container background is assigned textColor instead of cardBackground/inputBackground
                 raw_contrast_issues += len(re.findall(r'(backgroundColor|fillColor|surfaceTintColor|cardColor)\s*:\s*[^;\n]*isDark\s*\?\s*[^;\n]+\s*:\s*(context\.appColors\.)?textColor\b', content))
+
+            # 13. Direct showModalBottomSheet (bypassing showAppBottomSheet)
+            if filename != 'app_bottom_sheet.dart':
+                raw_bottom_sheets += len(re.findall(r'\bshowModalBottomSheet\b', content))
+
+            # 14. Direct Chip widgets (bypassing AppChoiceChip/AppActionChip/AppFilterChip)
+            if filename != 'app_chip.dart':
+                raw_chips += len(re.findall(r'\b(ChoiceChip|ActionChip|FilterChip|RawChip|InputChip)\s*\(', content))
+
+            # 15. Direct AlertDialog (bypassing AppDialog)
+            if filename != 'app_dialog.dart':
+                raw_alert_dialogs += len(re.findall(r'\bAlertDialog\s*\(', content))
+
+            # 16. Dark mode black text invisibility (isDark with 0x8A000000 etc.)
+            if filename != 'theme_color_extensions.dart' and '/pdf/' not in rel_path:
+                raw_dark_black_texts += len(re.findall(r'isDark\s*\?\s*const Color\(0x[0-9A-Fa-f]{2}000000\)', content))
+
+            # 17. Gold text low contrast issues
+            if filename not in ['scoreboard.dart', 'viewer_match_screen.dart', 'theme_color_extensions.dart'] and '/pdf/' not in rel_path:
+                raw_gold_text_issues += len(re.findall(r'TextStyle\s*\([^)]*color\s*:\s*AppKendoColors\.ipponGold\b', content))
 
     print("==================================================")
     print(" 📊 kendo OS デザインシステム 監査レポート")
@@ -94,10 +118,17 @@ def check_tokens():
     print(f"10. 生 FontWeight 参照件数: {raw_font_weights} 件")
     print(f"11. 手動 isDark 色分岐件数: {raw_isdark_branches} 件")
     print(f"12. 背景色テキスト色反転・破綻件数: {raw_contrast_issues} 件")
+    print(f"13. ボトムシート 未移行件数 (showModalBottomSheet): {raw_bottom_sheets} 件")
+    print(f"14. 生 Chip シリーズ件数 (Choice/Action/Filter): {raw_chips} 件")
+    print(f"15. 生 AlertDialog 件数: {raw_alert_dialogs} 件")
+    print(f"16. ダークモード文字黒透過消失件数: {raw_dark_black_texts} 件")
+    print(f"17. サマリー黄色文字 低コントラスト件数: {raw_gold_text_issues} 件")
     total_issues = (raw_appbars + raw_snackbars_colors + raw_border_radius + 
                     raw_edge_insets + raw_font_size + raw_colors + 
                     raw_kendo_shades + raw_direct_show_dialog + raw_textfields + 
-                    raw_font_weights + raw_isdark_branches + raw_contrast_issues)
+                    raw_font_weights + raw_isdark_branches + raw_contrast_issues +
+                    raw_bottom_sheets + raw_chips + raw_alert_dialogs +
+                    raw_dark_black_texts + raw_gold_text_issues)
     print("--------------------------------------------------")
     print(f" 🔴 残存問題 総数: {total_issues} 件")
     print("==================================================")

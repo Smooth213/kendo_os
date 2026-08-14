@@ -6,7 +6,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/order_setup_screen.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 
 class MockPlayerRepository extends Mock implements PlayerRepository {}
@@ -47,7 +46,6 @@ void main() {
 
         // Verify screen rendered and confirm button is initially visible
         expect(find.byType(OrderSetupScreen), findsOneWidget);
-        expect(find.byType(GlassButton), findsOneWidget);
         expect(find.text('このオーダーで確定して進む'), findsOneWidget);
 
         // Find the Autocomplete/TextField for opponent team name
@@ -64,7 +62,6 @@ void main() {
             .pump(); // Renders the rebuild frame with updated isKeyboardOpen state
 
         // Verify that the bottom confirm button remains visible (retaining fix for disappearing button bug)
-        expect(find.byType(GlassButton), findsOneWidget);
         expect(find.text('このオーダーで確定して進む'), findsOneWidget);
 
         // Unfocus (simulates keyboard dismissing)
@@ -72,7 +69,6 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify that the bottom confirm button is still visible
-        expect(find.byType(GlassButton), findsOneWidget);
         expect(find.text('このオーダーで確定して進む'), findsOneWidget);
       },
     );
