@@ -722,7 +722,7 @@ void main() {
           isFalse,
         );
 
-        // 2. Representative match (代表戦) finished -> isEncho = true
+        // 2. Representative match (代表戦) without extension (本戦決着) -> isEncho = false
         final daihyoMatch = const MatchModel(
           id: 'm2',
           matchType: '代表戦',
@@ -733,7 +733,23 @@ void main() {
           status: 'approved',
           note: '',
         );
-        expect(MatchCalculatorHelper.isEnchoFromModel(daihyoMatch), isTrue);
+        expect(MatchCalculatorHelper.isEnchoFromModel(daihyoMatch), isFalse);
+
+        // 2-2. Representative match (代表戦) with extension -> isEncho = true
+        final daihyoEnchoMatch = const MatchModel(
+          id: 'm2_ext',
+          matchType: '代表戦',
+          redName: '代表A',
+          whiteName: '代表B',
+          redScore: 1,
+          whiteScore: 0,
+          status: 'approved',
+          note: '代表戦 延長1回目',
+        );
+        expect(
+          MatchCalculatorHelper.isEnchoFromModel(daihyoEnchoMatch),
+          isTrue,
+        );
 
         // 3. Match with note containing "延長" -> isEncho = true
         final enchoNoteMatch = const MatchModel(
@@ -764,7 +780,7 @@ void main() {
           isTrue,
         );
 
-        // 5. Match with hasExtension enabled and a winner -> isEncho = true
+        // 5. Match with hasExtension rule enabled but finished in regulation -> isEncho = false
         final hasExtWinnerMatch = const MatchModel(
           id: 'm5',
           matchType: '通常',
@@ -774,11 +790,28 @@ void main() {
           whiteScore: 0,
           status: 'approved',
           hasExtension: true,
+          extensionCount: 0,
+          note: '',
         );
         expect(
           MatchCalculatorHelper.isEnchoFromModel(hasExtWinnerMatch),
-          isTrue,
+          isFalse,
         );
+
+        // 5-2. Match with actual extension -> isEncho = true
+        final actualExtMatch = const MatchModel(
+          id: 'm5_ext',
+          matchType: '通常',
+          redName: '選手E',
+          whiteName: '選手F',
+          redScore: 1,
+          whiteScore: 0,
+          status: 'approved',
+          hasExtension: true,
+          extensionCount: 1,
+          note: '延長1回目',
+        );
+        expect(MatchCalculatorHelper.isEnchoFromModel(actualExtMatch), isTrue);
 
         // 6. Unfinished match should return false
         final unfinishedEnchoMatch = const MatchModel(

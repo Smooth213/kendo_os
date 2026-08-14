@@ -134,7 +134,7 @@ void main() {
       expect(tileThemeWidget.data.backgroundColor, const Color(0xFF1C1C1E));
       expect(
         tileThemeWidget.data.collapsedBackgroundColor,
-        const Color(0xFF161618),
+        const Color(0xFF1C1C1E),
       );
 
       // -----------------------------------------------------------------------

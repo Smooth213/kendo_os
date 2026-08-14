@@ -102,7 +102,7 @@ void main() {
       );
       expect(
         expansionTileThemeWidget.data.collapsedBackgroundColor,
-        const Color(0xFF161618),
+        const Color(0xFF1C1C1E),
       );
     },
   );

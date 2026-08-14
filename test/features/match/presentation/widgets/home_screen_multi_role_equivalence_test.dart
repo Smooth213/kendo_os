@@ -115,7 +115,7 @@ void main() {
         find.byType(ExpansionTileTheme).first,
       );
       expect(tileTheme.data.backgroundColor, const Color(0xFF1C1C1E));
-      expect(tileTheme.data.collapsedBackgroundColor, const Color(0xFF161618));
+      expect(tileTheme.data.collapsedBackgroundColor, const Color(0xFF1C1C1E));
 
       // ★ 修正: アコーディオンを展開して内部の MatchListTileCard (Slidable) をレンダリングさせる
       final expansionTile = find.byKey(const ValueKey('player_剣道太郎'));
