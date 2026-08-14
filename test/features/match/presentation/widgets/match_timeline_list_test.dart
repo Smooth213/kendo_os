@@ -20,6 +20,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class FakeSyncEngine implements SyncEngine {
   @override
@@ -108,7 +109,14 @@ void main() {
     List<String> customTeamNames = const [],
     List<PlayerModel> players = const [],
     Map<String, List<String>> teamPlayers = const {},
+    bool isDark = false,
   }) {
+    final themeData = ThemeData(
+      brightness: isDark ? Brightness.dark : Brightness.light,
+      splashFactory: NoSplash.splashFactory, // ★ 追加: テスト時のInkSparkleエラーを回避
+      extensions: [AppThemeColors.ofMode(isDark: isDark, mode: 'normal')],
+    );
+
     return ProviderScope(
       overrides: [
         // ★ 修正: MatchTimelineListが依存する `matchListByTournamentProvider` をオーバーライドし、Isarへの依存を断ち切る
@@ -159,9 +167,7 @@ void main() {
         isSearchVisibleProvider.overrideWith((ref) => false),
       ],
       child: MaterialApp(
-        theme: ThemeData(
-          splashFactory: NoSplash.splashFactory, // ★ 追加: テスト時のInkSparkleエラーを回避
-        ),
+        theme: themeData,
         home: const Scaffold(body: MatchTimelineList(tournamentId: 't1')),
       ),
     );
@@ -1074,5 +1080,156 @@ void main() {
         expect(container.read(currentDojoIdProvider), equals(initialDojoId));
       },
     );
+
+    testWidgets('7. 団体戦 vs 個人戦のヘッダーコメント表示＆ダークモード文字色視認性検証', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      final teamMatch = createMockMatch(
+        id: 'team_m1',
+        category: '団体戦A',
+        groupName: 'group1',
+        matchType: '先鋒',
+        order: 1.0,
+        note: '第1試合場, 2回戦 13時開始',
+        redName: '白虎剣友会 : 佐藤',
+        whiteName: '青龍道場 : 田中',
+      );
+
+      final individualMatch = createMockMatch(
+        id: 'indiv_m1',
+        category: '個人戦B',
+        groupName: '',
+        matchType: '個人戦',
+        order: 2.0,
+        note: '第2試合場, 1回戦 14時開始',
+        redName: '高橋',
+        whiteName: '鈴木',
+      );
+
+      // 🌙 【ダークモード検証】
+      await tester.pumpWidget(
+        buildTestableWidget(
+          [teamMatch, individualMatch],
+          customTeamNames: ['白虎剣友会'],
+          isDark: true,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 団体戦アコーディオンを展開
+      await tester.tap(find.byType(ExpansionTile).at(0));
+      await tester.pumpAndSettle();
+
+      // 個人戦アコーディオンを展開
+      await tester.tap(find.byType(ExpansionTile).at(1));
+      await tester.pumpAndSettle();
+
+      // 1. 団体戦子カードの検証:
+      // 「第1試合場, 2回戦 13時開始」が子カードから削ぎ落とされ、【先鋒】のみが表示されること
+      expect(find.textContaining('【先鋒】'), findsOneWidget);
+      // 子カード内に「第1試合場, 2回戦 13時開始 【先鋒】」という結合テキストが存在しないこと
+      expect(find.textContaining('第1試合場, 2回戦 13時開始 【先鋒】'), findsNothing);
+
+      // 2. 個人戦カードの検証:
+      // 「第2試合場, 1回戦 14時開始」がそのまま表示されること
+      expect(find.textContaining('第2試合場, 1回戦 14時開始'), findsOneWidget);
+
+      // 3. ダークモードでの文字色視認性検証:
+      // 【先鋒】および個人戦コメントの RichText を取得し、テキストカラーが黒透過色 (0x8A000000) ではなく
+      // context.appColors.subTextColor (ダークモード用ライトグレー) であることを確認
+      final richTextsDark = tester.widgetList<RichText>(find.byType(RichText));
+      bool checkedTeam = false;
+      bool checkedIndiv = false;
+      for (final rt in richTextsDark) {
+        final span = rt.text;
+        final plain = span.toPlainText();
+        if (plain.contains('【先鋒】')) {
+          expect(span.style?.color, isNot(equals(const Color(0x8A000000))));
+          checkedTeam = true;
+        }
+        if (plain.contains('第2試合場, 1回戦 14時開始')) {
+          expect(span.style?.color, isNot(equals(const Color(0x8A000000))));
+          checkedIndiv = true;
+        }
+      }
+      expect(checkedTeam, isTrue);
+      expect(checkedIndiv, isTrue);
+    });
+
+    testWidgets('8. 団体戦 vs 個人戦のヘッダーコメント表示＆ライトモード文字色視認性検証', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      final teamMatch = createMockMatch(
+        id: 'team_m1',
+        category: '団体戦A',
+        groupName: 'group1',
+        matchType: '先鋒',
+        order: 1.0,
+        note: '第1試合場, 2回戦 13時開始',
+        redName: '白虎剣友会 : 佐藤',
+        whiteName: '青龍道場 : 田中',
+      );
+
+      final individualMatch = createMockMatch(
+        id: 'indiv_m1',
+        category: '個人戦B',
+        groupName: '',
+        matchType: '個人戦',
+        order: 2.0,
+        note: '第2試合場, 1回戦 14時開始',
+        redName: '高橋',
+        whiteName: '鈴木',
+      );
+
+      // ☀️ 【ライトモード検証】
+      await tester.pumpWidget(
+        buildTestableWidget(
+          [teamMatch, individualMatch],
+          customTeamNames: ['白虎剣友会'],
+          isDark: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 団体戦・個人戦アコーディオンを展開
+      await tester.tap(find.byType(ExpansionTile).at(0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(ExpansionTile).at(1));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('【先鋒】'), findsOneWidget);
+      expect(find.textContaining('第2試合場, 1回戦 14時開始'), findsOneWidget);
+
+      // ライトモードでの文字色視認性検証
+      final richTextsLight = tester.widgetList<RichText>(find.byType(RichText));
+      bool checkedTeamLight = false;
+      bool checkedIndivLight = false;
+      for (final rt in richTextsLight) {
+        final span = rt.text;
+        final plain = span.toPlainText();
+        if (plain.contains('【先鋒】')) {
+          expect(span.style?.color, isNotNull);
+          checkedTeamLight = true;
+        }
+        if (plain.contains('第2試合場, 1回戦 14時開始')) {
+          expect(span.style?.color, isNotNull);
+          checkedIndivLight = true;
+        }
+      }
+      expect(checkedTeamLight, isTrue);
+      expect(checkedIndivLight, isTrue);
+    });
   });
 }

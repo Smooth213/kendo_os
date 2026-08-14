@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
@@ -33,6 +32,7 @@ import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart'; // ★ 追加
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import '../bulk_rule_edit_sheet.dart';
+import '../rule_info_bottom_sheet.dart';
 import 'match_edit_sheet.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
@@ -2778,9 +2778,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       '($showLeftPts)',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: AppFontSize.badge,
-                                                                                                        color: const Color(
-                                                                                                          0x8A000000,
-                                                                                                        ),
+                                                                                                        color: context.appColors.subTextColor,
                                                                                                       ),
                                                                                                     ),
                                                                                                     Padding(
@@ -2791,9 +2789,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                         'ー',
                                                                                                         style: TextStyle(
                                                                                                           fontSize: AppFontSize.bodySmall,
-                                                                                                          color: const Color(
-                                                                                                            0x8A000000,
-                                                                                                          ),
+                                                                                                          color: context.appColors.subTextColor,
                                                                                                           fontWeight: AppFontWeight.bold,
                                                                                                         ),
                                                                                                       ),
@@ -2810,9 +2806,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                                                       '($showRightPts)',
                                                                                                       style: TextStyle(
                                                                                                         fontSize: AppFontSize.badge,
-                                                                                                        color: const Color(
-                                                                                                          0x8A000000,
-                                                                                                        ),
+                                                                                                        color: context.appColors.subTextColor,
                                                                                                       ),
                                                                                                     ),
                                                                                                   ],
@@ -3200,11 +3194,8 @@ class MatchTimelineList extends ConsumerWidget {
                             final Color pTitleColor = pAllFinished
                                 ? (context.appColors.subTextColor)
                                 : (context.appColors.textColor);
-                            final Color pSubTitleColor = pAllFinished
-                                ? (isDark
-                                      ? const Color(0xFFFFFFFF)
-                                      : const Color(0x8A000000))
-                                : (context.appColors.subTextColor);
+                            final Color pSubTitleColor =
+                                context.appColors.subTextColor;
 
                             return Container(
                               margin: const EdgeInsets.symmetric(
@@ -3583,309 +3574,7 @@ String _generateDescriptiveLeagueTitle(
 }
 
 void _showRuleInfoSheet(BuildContext context, MatchModel match) {
-  HapticFeedback.mediumImpact();
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  final bool isBunaiksen =
-      match.tournamentId?.startsWith('bunaiksen_') ?? false;
-  final themeColors = AppThemeColors.ofMode(
-    isDark: isDark,
-    mode: isBunaiksen ? 'bunaiksen' : 'normal',
-  );
-  final rule = match.rule;
-
-  final bool isLegacyLeague = match.note.contains('[リーグ戦]');
-  final bool isLeague = (rule?.isLeague ?? false) || isLegacyLeague;
-  final bool isIndividual =
-      !match.isKachinuki &&
-      (match.matchType == 'individual' ||
-          match.matchType == '選手' ||
-          match.matchType.contains('個人戦') ||
-          (rule != null &&
-              rule.positions.length == 1 &&
-              (rule.positions.first == '選手' || rule.positions.first == '個人戦')));
-
-  String formatText = isIndividual ? '個人戦' : '団体戦';
-  if (rule?.isRenseikai ?? false) {
-    formatText = '錬成会';
-  } else if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
-    formatText = '勝ち抜き戦';
-  } else if (isLeague) {
-    formatText = 'リーグ戦（総当たり）';
-  }
-
-  final double matchTime =
-      rule?.matchTimeMinutes ?? match.matchTimeMinutes.toDouble();
-  final isRunningTime = rule?.isRunningTime ?? match.isRunningTime;
-  String timeStr = matchTime == matchTime.toInt()
-      ? '${matchTime.toInt()}分'
-      : '${matchTime.toInt()}分${((matchTime % 1) * 60).toInt()}秒';
-  final String timeDesc = '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
-
-  final bool enchoUnlimited = rule?.isEnchoUnlimited ?? false;
-  final double enchoMins =
-      rule?.enchoTimeMinutes ?? match.extensionTimeMinutes?.toDouble() ?? 0.0;
-  final int enchoCount = rule?.enchoCount ?? match.extensionCount ?? 1;
-  final bool enchoEnabled =
-      match.hasExtension || enchoUnlimited || enchoMins > 0;
-
-  String enchoDesc = 'なし';
-  if (enchoEnabled) {
-    if (enchoUnlimited) {
-      enchoDesc = 'あり (無制限)';
-    } else {
-      String extTimeStr = enchoMins == enchoMins.toInt()
-          ? '${enchoMins.toInt()}分'
-          : '${enchoMins.toInt()}分${((enchoMins % 1) * 60).toInt()}秒';
-      enchoDesc = 'あり ($extTimeStr・$enchoCount回)';
-    }
-  }
-
-  final bool hanteiEnabled = rule?.hasHantei ?? match.hasHantei;
-  String daihyoDesc = rule != null
-      ? (rule.hasRepresentativeMatch
-            ? (rule.isDaihyoIpponShobu ? 'あり (一本勝負)' : 'あり (三本勝負)')
-            : 'なし')
-      : '不明（古いデータ）';
-
-  showAppBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    builder: (ctx) => Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.md,
-        AppSpacing.xl,
-        AppSpacing.xl,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 48,
-              height: 5,
-              decoration: BoxDecoration(
-                color: const Color(0x8A000000),
-                borderRadius: AppRadius.medium,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Icon(
-                Icons.gavel_rounded,
-                color: themeColors.primaryAccent,
-                size: 22,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                '試合レギュレーション',
-                style: TextStyle(
-                  fontSize: AppFontSize.headline,
-                  fontWeight: AppFontWeight.bold,
-                  color: context.appColors.textColor,
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 32),
-          if (rule == null)
-            Container(
-              margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppKendoColors.orange.withValues(alpha: 0.1),
-                borderRadius: AppRadius.small,
-                border: Border.all(color: context.appColors.warningColor),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    color: const Color(0xFFFF9800),
-                    size: 20,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      'この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。',
-                      style: TextStyle(
-                        color: const Color(0xFFFF9800),
-                        fontSize: AppFontSize.small,
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          _buildRuleRow('試合形式', formatText, isDark),
-          _buildRuleRow('試合時間', timeDesc, isDark),
-          if (rule?.isRenseikai ?? false) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Text(
-                '錬成会設定',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  fontWeight: AppFontWeight.bold,
-                  color: themeColors.primaryAccent,
-                ),
-              ),
-            ),
-            _buildRuleRow('進行方式', rule!.renseikaiType, isDark),
-            if (rule.renseikaiType == '時間制')
-              _buildRuleRow('制限時間', '${rule.overallTimeMinutes} 分', isDark),
-          ] else ...[
-            _buildRuleRow('延長戦', enchoDesc, isDark),
-            _buildRuleRow('判定', hanteiEnabled ? 'あり' : 'なし', isDark),
-          ],
-          if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Text(
-                '勝ち抜き戦設定',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  fontWeight: AppFontWeight.bold,
-                  color: themeColors.primaryAccent,
-                ),
-              ),
-            ),
-            _buildRuleRow(
-              '無制限条件',
-              rule?.kachinukiUnlimitedType ?? '大将対大将',
-              isDark,
-            ),
-            if (rule != null && rule.positions.isNotEmpty)
-              _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
-          ],
-          if (!isIndividual &&
-              !(rule?.isRenseikai ?? false) &&
-              !match.isKachinuki &&
-              !(rule?.isKachinuki ?? false) &&
-              !isLeague) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Text(
-                '団体戦・チーム設定',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  fontWeight: AppFontWeight.bold,
-                  color: themeColors.primaryAccent,
-                ),
-              ),
-            ),
-            _buildRuleRow('代表戦', daihyoDesc, isDark),
-            if (rule != null && rule.positions.isNotEmpty)
-              _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
-          ],
-          if (!isIndividual &&
-              (rule?.isRenseikai ?? false) &&
-              rule != null &&
-              rule.positions.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Text(
-                'ポジション設定',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  fontWeight: AppFontWeight.bold,
-                  color: themeColors.primaryAccent,
-                ),
-              ),
-            ),
-            _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
-          ],
-          if (rule != null && rule.isLeague) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Text(
-                'リーグ戦設定',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  fontWeight: AppFontWeight.bold,
-                  color: AppKendoColors.orange,
-                ),
-              ),
-            ),
-            if (!isIndividual && rule.positions.isNotEmpty)
-              _buildRuleRow('ポジション', rule.positions.join('、'), isDark),
-            _buildRuleRow(
-              '勝ち点設定',
-              '勝: ${rule.winPoint} / 分: ${rule.drawPoint} / 負: ${rule.lossPoint}',
-              isDark,
-            ),
-            _buildRuleRow('同点時代表戦', rule.hasLeagueDaihyo ? 'あり' : 'なし', isDark),
-          ],
-          if (match.note.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.sm),
-            _buildRuleRow('備考・メモ', match.note, isDark),
-          ],
-          const SizedBox(height: AppSpacing.xl),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(ctx),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.appColors.separatorColor,
-                foregroundColor: context.appColors.textColor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.modernValue,
-                ),
-              ),
-              child: const Text(
-                '閉じる',
-                style: TextStyle(fontWeight: AppFontWeight.bold),
-              ),
-            ),
-          ),
-          SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _buildRuleRow(String label, String value, bool isDark) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 100,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
-              fontSize: AppFontSize.bodySmall,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-              fontWeight: AppFontWeight.bold,
-              fontSize: AppFontSize.body,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+  showRuleInfoBottomSheet(context, match);
 }
 
 void _showTieBreakDialog(
@@ -5183,15 +4872,26 @@ class MatchListTileCard extends ConsumerWidget {
       displayNote = displayNote.replaceAll('[SUMMARY]', '').trim();
     }
 
+    // ★ 修正: 団体戦・勝ち抜き戦の子カードでは、[タグ]以外のコメント（第1試合場など）を削ぎ落としてスッキリ表示（個人戦・リーグ個人戦は残す）
+    if (!isIndividual &&
+        match.groupName != null &&
+        match.groupName!.isNotEmpty) {
+      final regExp = RegExp(r'\[.*?\]');
+      final tagMatches = regExp.allMatches(displayNote);
+      if (tagMatches.isNotEmpty) {
+        displayNote = tagMatches.map((m) => m.group(0)).join(' ');
+      } else {
+        displayNote = '';
+      }
+    }
+
     final Color bg = isFinished
         ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
         : (isDark ? const Color(0xFF1E1E20) : const Color(0xFFFFFFFF));
     final Color textC = isFinished
         ? (context.appColors.subTextColor)
         : (context.appColors.textColor);
-    final Color noteC = isFinished
-        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
-        : const Color(0x8A000000);
+    final Color noteC = context.appColors.subTextColor;
 
     // 🛡️ 補正④: 細線独立カードモデリング化の意匠を適用
     final tile = Container(

@@ -3,7 +3,6 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -14,7 +13,7 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
 
 class KachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;
@@ -94,103 +93,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
   }
 
   void _showRuleInfoSheet(BuildContext context, MatchModel match) {
-    HapticFeedback.mediumImpact();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final rule = match.rule;
-    final bool isLegacyLeague = match.note.contains('[リーグ戦]');
-    final bool isLeague = (rule?.isLeague ?? false) || isLegacyLeague;
-    final bool isIndividual =
-        match.matchType == 'individual' ||
-        match.matchType == '選手' ||
-        match.matchType.contains('個人戦');
-
-    String formatText = isIndividual ? '個人戦' : '団体戦';
-    if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
-      formatText = '勝ち抜き戦';
-    } else if (isLeague) {
-      formatText = 'リーグ戦';
-    }
-
-    showAppBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xlargeValue),
-          ),
-        ),
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.md,
-          AppSpacing.xl,
-          AppSpacing.xl,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: const Color(0x8A000000),
-                  borderRadius: AppRadius.medium,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildRuleRow('試合形式', formatText, isDark),
-            const SizedBox(height: AppSpacing.xl),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('閉じる'),
-              ),
-            ),
-            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRuleRow(String label, String value, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isDark
-                    ? const Color(0xFFFFFFFF)
-                    : const Color(0x8A000000),
-                fontSize: AppFontSize.bodySmall,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                color: isDark
-                    ? const Color(0xFFFFFFFF)
-                    : const Color(0xFF000000),
-                fontWeight: AppFontWeight.bold,
-                fontSize: AppFontSize.body,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    showRuleInfoBottomSheet(context, match);
   }
 
   // =========================================================================
