@@ -209,7 +209,6 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
             ]
             // === 団体戦（トーナメント団体戦） ===
             else if (!isIndividual && !isLeague) ...[
-              if (hasExtension) _buildRuleRow('ポジション延長', enchoDesc, context),
               _buildSectionHeader('団体戦・チーム設定', themeColors.primaryAccent),
               _buildRuleRow(
                 '代表戦',
