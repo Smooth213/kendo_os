@@ -28,6 +28,7 @@ def check_tokens():
     raw_alert_dialogs = 0
     raw_dark_black_texts = 0
     raw_gold_text_issues = 0
+    raw_separator_text_issues = 0
 
     for f in files:
         with open(f, 'r', encoding='utf-8') as file:
@@ -103,6 +104,10 @@ def check_tokens():
             if filename not in ['scoreboard.dart', 'viewer_match_screen.dart', 'theme_color_extensions.dart'] and '/pdf/' not in rel_path:
                 raw_gold_text_issues += len(re.findall(r'TextStyle\s*\([^)]*color\s*:\s*AppKendoColors\.ipponGold\b', content))
 
+            # 18. separatorColor text misuse
+            if filename not in ['theme_color_extensions.dart', 'app_theme_colors.dart'] and '/pdf/' not in rel_path:
+                raw_separator_text_issues += len(re.findall(r'TextStyle\s*\([^)]*color\s*:\s*[^,\)]*separatorColor[^,\)]*', content))
+
     print("==================================================")
     print(" 📊 kendo OS デザインシステム 監査レポート")
     print("==================================================")
@@ -123,12 +128,13 @@ def check_tokens():
     print(f"15. 生 AlertDialog 件数: {raw_alert_dialogs} 件")
     print(f"16. ダークモード文字黒透過消失件数: {raw_dark_black_texts} 件")
     print(f"17. サマリー黄色文字 低コントラスト件数: {raw_gold_text_issues} 件")
+    print(f"18. 枠線色 (separatorColor) 文字色誤用件数: {raw_separator_text_issues} 件")
     total_issues = (raw_appbars + raw_snackbars_colors + raw_border_radius + 
                     raw_edge_insets + raw_font_size + raw_colors + 
                     raw_kendo_shades + raw_direct_show_dialog + raw_textfields + 
                     raw_font_weights + raw_isdark_branches + raw_contrast_issues +
                     raw_bottom_sheets + raw_chips + raw_alert_dialogs +
-                    raw_dark_black_texts + raw_gold_text_issues)
+                    raw_dark_black_texts + raw_gold_text_issues + raw_separator_text_issues)
     print("--------------------------------------------------")
     print(f" 🔴 残存問題 総数: {total_issues} 件")
     print("==================================================")

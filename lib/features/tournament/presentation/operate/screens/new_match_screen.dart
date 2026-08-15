@@ -24,6 +24,9 @@ import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import '../components/new_match/new_match_smart_autocomplete.dart';
+import '../components/new_match/new_match_team_selector_card.dart';
+import '../components/new_match/new_match_heading_notes_card.dart';
 
 // 選手マスタ取得用プロバイダ
 final newMatchPlayerMasterProvider =
@@ -178,7 +181,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     // 3. モード別の入力UI
                     if (_creationMode == '単発試合') ...[
                       // ★ Phase 3 追加: 最強のオートコンプリートに差し替え
-                      _buildSmartAutocomplete(
+                      NewMatchSmartAutocomplete(
                         controller: _redNameController,
                         focusNode: _redFocusNode,
                         suggestions: combinedSuggestions,
@@ -186,7 +189,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         isDark: isDark,
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      _buildSmartAutocomplete(
+                      NewMatchSmartAutocomplete(
                         controller: _whiteNameController,
                         focusNode: _whiteFocusNode,
                         suggestions: combinedSuggestions,
@@ -220,9 +223,55 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                           }
                           return Column(
                             children: [
-                              _buildTeamSelector('赤', orgs, true),
+                              StreamBuilder<List<TeamTemplate>>(
+                                stream: _redOrg != null
+                                    ? ref
+                                          .watch(organizationRepositoryProvider)
+                                          .watchTeamTemplates(_redOrg!.id)
+                                    : const Stream.empty(),
+                                builder: (context, teamSnap) {
+                                  return NewMatchTeamSelectorCard(
+                                    colorLabel: '赤',
+                                    orgs: orgs,
+                                    isRed: true,
+                                    selectedOrg: _redOrg,
+                                    selectedTeam: _redTeam,
+                                    teamTemplates: teamSnap.data ?? [],
+                                    onOrgChanged: (val) => setState(() {
+                                      _redOrg = val;
+                                      _redTeam = null;
+                                    }),
+                                    onTeamChanged: (val) => setState(() {
+                                      _redTeam = val;
+                                    }),
+                                  );
+                                },
+                              ),
                               const SizedBox(height: AppSpacing.lg),
-                              _buildTeamSelector('白', orgs, false),
+                              StreamBuilder<List<TeamTemplate>>(
+                                stream: _whiteOrg != null
+                                    ? ref
+                                          .watch(organizationRepositoryProvider)
+                                          .watchTeamTemplates(_whiteOrg!.id)
+                                    : const Stream.empty(),
+                                builder: (context, teamSnap) {
+                                  return NewMatchTeamSelectorCard(
+                                    colorLabel: '白',
+                                    orgs: orgs,
+                                    isRed: false,
+                                    selectedOrg: _whiteOrg,
+                                    selectedTeam: _whiteTeam,
+                                    teamTemplates: teamSnap.data ?? [],
+                                    onOrgChanged: (val) => setState(() {
+                                      _whiteOrg = val;
+                                      _whiteTeam = null;
+                                    }),
+                                    onTeamChanged: (val) => setState(() {
+                                      _whiteTeam = val;
+                                    }),
+                                  );
+                                },
+                              ),
                             ],
                           );
                         },
@@ -278,230 +327,13 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     _buildRuleSelectionSection(categoryRules, isDark),
                     const SizedBox(height: AppSpacing.lg),
                     // ★ 統合された「試合場・進行見出し」および「試合メモ」入力セクション
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF2C2C2E)
-                            : const Color(0xFFFFFFFF),
-                        borderRadius: AppRadius.large,
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF38383A)
-                              : const Color(0x33000000),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppKendoColors.pureBlack.withAlpha(
-                              isDark ? 30 : 10,
-                            ),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.stadium,
-                                size: 18,
-                                color: isDark
-                                    ? AppKendoColors.cyanAccent
-                                    : const Color(0xFF3F51B5),
-                              ),
-                              const SizedBox(width: AppSpacing.sm),
-                              Text(
-                                '試合場・進行見出しの設定',
-                                style: TextStyle(
-                                  fontWeight: AppFontWeight.bold,
-                                  color: context.appColors.textColor,
-                                ),
-                              ),
-                              const Spacer(),
-                              if (_courtController.text.isNotEmpty)
-                                TextButton.icon(
-                                  icon: const Icon(Icons.clear, size: 14),
-                                  label: const Text(
-                                    'クリア',
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.caption,
-                                    ),
-                                  ),
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.sm,
-                                    ),
-                                    visualDensity: VisualDensity.compact,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _courtController.clear();
-                                    });
-                                  },
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          AppTextField(
-                            controller: _courtController,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              color: context.appColors.textColor,
-                              fontSize: AppFontSize.bodySmall,
-                              fontWeight: AppFontWeight.semiBold,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: '試合場・進行の見出し',
-                              hintText: '例: 準決勝, 第1試合場, 23試合目',
-                              hintStyle: const TextStyle(
-                                fontSize: AppFontSize.bodyMedium,
-                              ),
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                                vertical: AppSpacing.md,
-                              ),
-                              border: const OutlineInputBorder(),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: isDark
-                                      ? const Color(0xFF38383A)
-                                      : const Color(0x33000000),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                size: 13,
-                                color: isDark
-                                    ? const Color(0xFFFFFFFF)
-                                    : const Color(0x8A000000),
-                              ),
-                              const SizedBox(width: AppSpacing.xs),
-                              Expanded(
-                                child: Text(
-                                  '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.caption,
-                                    color: isDark
-                                        ? const Color(0xFFFFFFFF)
-                                        : const Color(0x8A000000),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            '🏟️ 試合場（コート）を選択',
-                            style: TextStyle(
-                              fontSize: AppFontSize.caption,
-                              fontWeight: AppFontWeight.bold,
-                              color: isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : const Color(0xDE000000),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children: ['第1試合場', '第2試合場', '第3試合場', '部内戦コート'].map(
-                              (preset) {
-                                final isSelected = _courtController.text
-                                    .split(',')
-                                    .map((e) => e.trim())
-                                    .contains(preset);
-                                return AppFilterChip(
-                                  selected: isSelected,
-                                  label: Text(
-                                    preset,
-                                    style: const TextStyle(
-                                      fontSize: AppFontSize.caption,
-                                    ),
-                                  ),
-                                  onSelected: (_) {
-                                    _toggleHeadingPreset(preset);
-                                  },
-                                );
-                              },
-                            ).toList(),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            '🏆 回戦・ラウンド・試合順を選択',
-                            style: TextStyle(
-                              fontSize: AppFontSize.caption,
-                              fontWeight: AppFontWeight.bold,
-                              color: isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : const Color(0xDE000000),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children:
-                                [
-                                  '1回戦',
-                                  '2回戦',
-                                  '準決勝',
-                                  '決勝戦',
-                                  'Aリーグ',
-                                  'Bリーグ',
-                                  '3試合目',
-                                  '5試合目',
-                                ].map((preset) {
-                                  final isSelected = _courtController.text
-                                      .split(',')
-                                      .map((e) => e.trim())
-                                      .contains(preset);
-                                  return AppFilterChip(
-                                    selected: isSelected,
-                                    label: Text(
-                                      preset,
-                                      style: const TextStyle(
-                                        fontSize: AppFontSize.caption,
-                                      ),
-                                    ),
-                                    onSelected: (_) {
-                                      _toggleHeadingPreset(preset);
-                                    },
-                                  );
-                                }).toList(),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          const Divider(),
-                          const SizedBox(height: AppSpacing.sm),
-                          AppTextField(
-                            controller: _noteController,
-                            maxLines: 2,
-                            style: TextStyle(
-                              color: context.appColors.textColor,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: '試合のメモ・詳細コメント',
-                              hintText: 'メモや追記事項があれば入力してください',
-                              border: const OutlineInputBorder(),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: isDark
-                                      ? const Color(0xFF38383A)
-                                      : context.appColors.separatorColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    NewMatchHeadingNotesCard(
+                      courtController: _courtController,
+                      noteController: _noteController,
+                      isDark: isDark,
+                      onClearCourt: () =>
+                          setState(() => _courtController.clear()),
+                      onHeadingPresetToggled: _toggleHeadingPreset,
                     ),
                     const SizedBox(height: AppSpacing.xxl),
 
@@ -522,220 +354,6 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTeamSelector(
-    String colorLabel,
-    List<Organization> orgs,
-    bool isRed,
-  ) {
-    final currentOrg = isRed ? _redOrg : _whiteOrg;
-    final currentTeam = isRed ? _redTeam : _whiteTeam;
-
-    return Card(
-      color: isRed ? AppKendoColors.hansokuRed : const Color(0xFFF2F2F7),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$colorLabelチーム選択',
-              style: TextStyle(
-                fontWeight: AppFontWeight.bold,
-                color: isRed ? AppKendoColors.red : AppKendoColors.pureBlack,
-              ),
-            ),
-            DropdownButton<Organization>(
-              value: currentOrg,
-              isExpanded: true,
-              hint: const Text('組織（道場・学校）を選択'),
-              items: orgs
-                  .map((o) => DropdownMenuItem(value: o, child: Text(o.name)))
-                  .toList(),
-              onChanged: (val) => setState(() {
-                if (isRed) {
-                  _redOrg = val;
-                  _redTeam = null;
-                } else {
-                  _whiteOrg = val;
-                  _whiteTeam = null;
-                }
-              }),
-            ),
-            if (currentOrg != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              StreamBuilder<List<TeamTemplate>>(
-                stream: ref
-                    .watch(organizationRepositoryProvider)
-                    .watchTeamTemplates(currentOrg.id),
-                builder: (context, snapshot) {
-                  final teams = snapshot.data ?? [];
-                  return DropdownButton<TeamTemplate>(
-                    value: currentTeam,
-                    isExpanded: true,
-                    hint: const Text('チームテンプレを選択'),
-                    items: teams
-                        .map(
-                          (t) =>
-                              DropdownMenuItem(value: t, child: Text(t.name)),
-                        )
-                        .toList(),
-                    onChanged: (val) => setState(() {
-                      if (isRed) {
-                        _redTeam = val;
-                      } else {
-                        _whiteTeam = val;
-                      }
-                    }),
-                  );
-                },
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ★ Phase 3 追加: 絶対に空欄タップ時のみ出現する最強のオートコンプリート
-  Widget _buildSmartAutocomplete({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required List<String> suggestions,
-    required String labelText,
-    required bool isDark,
-  }) {
-    bool isTapped = false; // ボトムシート的な動きをさせるためのローカルフラグ
-
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return RawAutocomplete<String>(
-          textEditingController: controller,
-          focusNode: focusNode,
-          optionsBuilder: (TextEditingValue textEditingValue) {
-            // 確実な制御：フォーカスが無い、またはタップされていない時は絶対に出さない
-            if (!focusNode.hasFocus || !isTapped) {
-              return const Iterable<String>.empty();
-            }
-            final query = textEditingValue.text.trim();
-            // 空欄の場合は全件表示、入力があれば絞り込み
-            if (query.isEmpty) {
-              return suggestions;
-            }
-            return suggestions.where((s) => s.contains(query));
-          },
-          fieldViewBuilder:
-              (context, fieldController, textFieldFocusNode, onFieldSubmitted) {
-                return AppTextField(
-                  controller: fieldController,
-                  focusNode: textFieldFocusNode,
-                  onTap: () {
-                    setState(() {
-                      isTapped = true;
-                    });
-                    // 魔法のハック：1文字空欄を入れて戻すことで、Flutterのキャッシュを貫通して強制的にリストを描画する
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      final currentVal = fieldController.value;
-                      fieldController.value = const TextEditingValue(text: ' ');
-                      fieldController.value = currentVal;
-                    });
-                  },
-                  onChanged: (text) {
-                    setState(() {
-                      isTapped = true;
-                    });
-                  },
-                  onSubmitted: (text) {
-                    setState(() {
-                      isTapped = false;
-                    });
-                    onFieldSubmitted();
-                  },
-                  style: TextStyle(color: context.appColors.textColor),
-                  decoration: InputDecoration(
-                    labelText: labelText,
-                    prefixIcon: const Icon(
-                      Icons.person,
-                      color: AppKendoColors.blueGrey,
-                    ),
-                    suffixIcon: const Icon(
-                      Icons.arrow_drop_down,
-                      color: AppKendoColors.grey,
-                    ),
-                    border: OutlineInputBorder(borderRadius: AppRadius.small),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.small,
-                      borderSide: BorderSide(
-                        color: isDark
-                            ? const Color(0xFF38383A)
-                            : const Color(0x8A000000),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.small,
-                      borderSide: BorderSide(color: AppKendoColors.redAccent),
-                    ),
-                    filled: true,
-                    fillColor: isDark
-                        ? const Color(0xFF1C1C1E)
-                        : context.appColors.inputBackground,
-                  ),
-                );
-              },
-          optionsViewBuilder: (context, onSelected, options) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                elevation: 8.0,
-                borderRadius: AppRadius.medium,
-                color: isDark
-                    ? const Color(0xFF2C2C2E)
-                    : context.appColors.cardBackground,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: 250,
-                    // 親がmaxWidth:600なので、画面幅に応じて適切に制限
-                    maxWidth: MediaQuery.of(context).size.width > 600
-                        ? 568
-                        : MediaQuery.of(context).size.width - 32,
-                  ),
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    itemCount: options.length,
-                    itemBuilder: (context, index) {
-                      final option = options.elementAt(index);
-                      return ListTile(
-                        title: Text(
-                          option,
-                          style: TextStyle(
-                            color: context.appColors.textColor,
-                            fontWeight: AppFontWeight.bold,
-                          ),
-                        ),
-                        trailing: const Icon(
-                          Icons.add_circle_outline,
-                          color: AppKendoColors.redAccent,
-                          size: 18,
-                        ),
-                        onTap: () {
-                          onSelected(option);
-                          setState(() {
-                            isTapped = false;
-                          }); // 選択完了後にフラグを下げてリストを隠す
-                          FocusScope.of(context).unfocus(); // キーボードも隠す
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
     );
   }
 

@@ -162,10 +162,8 @@ class MatchScoreboard extends ConsumerWidget {
     final isFinished = match.status == 'approved' || match.status == 'finished';
 
     final nameColor = side == Side.red
-        ? (isDark ? context.appColors.errorColor : context.appColors.errorColor)
-        : (isDark
-              ? context.appColors.separatorColor
-              : context.appColors.subTextColor);
+        ? context.appColors.errorColor
+        : context.appColors.textColor;
 
     return SizedBox(
       width: 380, // 左右均等な幅を明示的に確保

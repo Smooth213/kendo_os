@@ -121,7 +121,7 @@ class IndividualListCard extends StatelessWidget {
                         m.note.isNotEmpty ? m.note : '第${index + 1}試合',
                         style: TextStyle(
                           fontSize: AppFontSize.badge,
-                          color: const Color(0x8A000000),
+                          color: context.appColors.subTextColor,
                           fontWeight: AppFontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -136,7 +136,7 @@ class IndividualListCard extends StatelessWidget {
                               m.redTeam,
                               style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: const Color(0x8A000000),
+                                color: context.appColors.subTextColor,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -169,7 +169,7 @@ class IndividualListCard extends StatelessWidget {
                       child: Text(
                         m.isDraw ? '✕' : '-',
                         style: TextStyle(
-                          color: const Color(0x8A000000),
+                          color: context.appColors.subTextColor,
                           fontWeight: AppFontWeight.light,
                           fontSize: AppFontSize.subhead,
                         ),
@@ -191,7 +191,7 @@ class IndividualListCard extends StatelessWidget {
                               m.whiteTeam,
                               style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: const Color(0x8A000000),
+                                color: context.appColors.subTextColor,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -238,7 +238,7 @@ class IndividualListCard extends StatelessWidget {
                               : const Color(0xFFFFFFFF),
                           borderRadius: AppRadius.small,
                           border: Border.all(
-                            color: const Color(0x8A000000),
+                            color: context.appColors.separatorColor,
                             width: 0.5,
                           ),
                           boxShadow: [

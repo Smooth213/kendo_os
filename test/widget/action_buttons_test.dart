@@ -200,5 +200,50 @@ void main() {
         );
       },
     );
+
+    testWidgets(
+      '【入力完了ロック時グレーアウト検証】disabled: true の時、ダークモードで白飛び(0xFFFFFFFF)せず適切な暗灰色(0xFF2C2C2E)でグレーアウトすること',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            themeMode: ThemeMode.dark,
+            darkTheme: ThemeData.dark(),
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 200,
+                  height: 100,
+                  child: HoldConfirmButton(
+                    label: 'メ',
+                    color: const Color(0xFFE53935),
+                    textColor: Colors.white,
+                    disabled: true, // 入力完了・ロック状態
+                    onConfirm: () {},
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final containerFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Container &&
+              widget.decoration is BoxDecoration &&
+              (widget.decoration as BoxDecoration).color ==
+                  const Color(0xFF2C2C2E),
+        );
+
+        expect(
+          containerFinder,
+          findsOneWidget,
+          reason: 'ダークモード時のdisabledボタン背景が暗灰色(0xFF2C2C2E)でグレーアウトされていること',
+        );
+
+        final textWidget = tester.widget<Text>(find.text('メ'));
+        expect(textWidget.style?.color, equals(const Color(0x66FFFFFF)));
+      },
+    );
   });
 }

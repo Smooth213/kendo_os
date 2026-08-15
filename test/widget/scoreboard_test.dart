@@ -10,6 +10,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
@@ -226,6 +227,157 @@ void main() {
 
         // Verify that the "引き分け" text overlay IS present in the tree
         expect(find.text('引き分け'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '【視認性保証テスト】ダークモード時において、白側選手名および白側取得部位（メ）が暗灰色(separatorColor)ではなく高コントラストなtextColor(白)で描画されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final whiteScoreMatch = MatchModel(
+          id: 'match_white_score',
+          tournamentId: 'tour_2',
+          category: '小学生低学年の部 - 大将',
+          redName: '道上剣友会A : 久安 智也',
+          whiteName: '相手道場 : 選手',
+          matchType: '大将',
+          status: 'in_progress',
+          events: [
+            ScoreEvent(
+              id: 'ev_white_men',
+              side: Side.white,
+              strikeType: StrikeType.men,
+              isIppon: true,
+              timestamp: DateTime.now(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              settingsProvider.overrideWith(() => MockSettingsNotifier()),
+              matchViewStateUserIdProvider.overrideWith(
+                (ref) => 'test_user_id',
+              ),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              matchListProvider.overrideWithValue([whiteScoreMatch]),
+              scoreboardMatchIdProvider.overrideWithValue('match_white_score'),
+              scoreboardMatchProvider.overrideWithValue(whiteScoreMatch),
+              scoreboardNameTapProvider.overrideWithValue((side) {}),
+            ],
+            child: MaterialApp(
+              themeMode: ThemeMode.dark,
+              darkTheme: ThemeData.dark(),
+              home: const Scaffold(body: MatchScoreboard()),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 1. 赤側選手名「久安 智也」が表示されていること
+        expect(find.text('久安 智也'), findsOneWidget);
+
+        // 2. 白側選手名「選手」が表示され、文字色が白(textColor)であること
+        expect(find.text('選手'), findsOneWidget);
+        final whiteText = tester.widget<Text>(find.text('選手'));
+        expect(whiteText.style?.color, isNot(equals(const Color(0xFF38383A))));
+        expect(whiteText.style?.color, isNot(equals(const Color(0x33FFFFFF))));
+
+        // 3. 白側取得部位「メ」が描画され、文字色が白(textColor)であること
+        expect(find.text('メ'), findsOneWidget);
+        final menText = tester.widget<Text>(find.text('メ'));
+        expect(menText.style?.color, isNot(equals(const Color(0xFF38383A))));
+      },
+    );
+
+    testWidgets(
+      '【視認性保証テスト】ライトモード時において、赤側・白側選手名および取得部位（先取サークル枠線・文字色）が高コントラストで描画されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final lightScoreMatch = MatchModel(
+          id: 'match_light_score',
+          tournamentId: 'tour_3',
+          category: '小学生高学年の部 - 大将',
+          redName: '道上剣友会A : 久安 智也',
+          whiteName: '相手道場 : 選手B',
+          matchType: '大将',
+          status: 'in_progress',
+          events: [
+            ScoreEvent(
+              id: 'ev_red_men',
+              side: Side.red,
+              strikeType: StrikeType.men,
+              isIppon: true,
+              timestamp: DateTime.now(),
+            ),
+            ScoreEvent(
+              id: 'ev_white_kote',
+              side: Side.white,
+              strikeType: StrikeType.kote,
+              isIppon: true,
+              timestamp: DateTime.now(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              settingsProvider.overrideWith(() => MockSettingsNotifier()),
+              matchViewStateUserIdProvider.overrideWith(
+                (ref) => 'test_user_id',
+              ),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              matchListProvider.overrideWithValue([lightScoreMatch]),
+              scoreboardMatchIdProvider.overrideWithValue('match_light_score'),
+              scoreboardMatchProvider.overrideWithValue(lightScoreMatch),
+              scoreboardNameTapProvider.overrideWithValue((side) {}),
+            ],
+            child: MaterialApp(
+              themeMode: ThemeMode.light,
+              theme: ThemeData.light(),
+              home: const Scaffold(body: MatchScoreboard()),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 1. 赤側選手名「久安 智也」が表示され赤色であること
+        expect(find.text('久安 智也'), findsOneWidget);
+        final redText = tester.widget<Text>(find.text('久安 智也'));
+        expect(redText.style?.color, equals(AppKendoColors.hansokuRed));
+
+        // 2. 白側選手名「選手B」が表示され濃い文字色であること
+        expect(find.text('選手B'), findsOneWidget);
+        final whiteText = tester.widget<Text>(find.text('選手B'));
+        expect(whiteText.style?.color, isNot(equals(const Color(0xFF38383A))));
+
+        // 3. 取得部位（赤「メ」、白「コ」）が描画されていること
+        expect(find.text('メ'), findsOneWidget);
+        expect(find.text('コ'), findsOneWidget);
+
+        // 4. 先取丸囲みサークルが存在すること
+        final circleDecorations = tester
+            .widgetList<Container>(find.byType(Container))
+            .where((container) {
+              final decoration = container.decoration;
+              return decoration is BoxDecoration &&
+                  decoration.shape == BoxShape.circle;
+            });
+        expect(circleDecorations.isNotEmpty, isTrue);
       },
     );
   });

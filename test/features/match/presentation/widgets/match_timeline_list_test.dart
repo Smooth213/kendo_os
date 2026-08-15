@@ -21,6 +21,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 class FakeSyncEngine implements SyncEngine {
   @override
@@ -1231,5 +1232,114 @@ void main() {
       expect(checkedTeamLight, isTrue);
       expect(checkedIndivLight, isTrue);
     });
+
+    testWidgets(
+      '15. 【視認性保証テスト】MatchListTileCard の中央スコアセパレーター（ー）および引き分けマーク（✕）が黒潰れ(0x8A000000)せず、高コントラストな subTextColor で描画されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 2000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final scoreMatch = MatchModel(
+          id: 'match_score_dash',
+          tournamentId: 't1',
+          category: '一般の部',
+          groupName: '',
+          order: 1.0,
+          redName: '道上剣友会 : 塚本 大道',
+          whiteName: '相手02 : 選手',
+          matchType: '個人戦',
+          status: 'finished',
+          redScore: 1,
+          whiteScore: 2,
+          events: [
+            ScoreEvent(
+              id: 'ev1',
+              side: Side.red,
+              strikeType: StrikeType.men,
+              isIppon: true,
+              timestamp: DateTime.now(),
+            ),
+            ScoreEvent(
+              id: 'ev2',
+              side: Side.white,
+              strikeType: StrikeType.kote,
+              isIppon: true,
+              timestamp: DateTime.now(),
+            ),
+            ScoreEvent(
+              id: 'ev3',
+              side: Side.white,
+              strikeType: StrikeType.kote,
+              isIppon: true,
+              timestamp: DateTime.now(),
+            ),
+          ],
+        );
+
+        final drawMatch = MatchModel(
+          id: 'match_draw_cross',
+          tournamentId: 't1',
+          category: '一般の部',
+          groupName: '',
+          order: 2.0,
+          redName: '道上剣友会 : 久安 智也',
+          whiteName: '相手02 : 選手',
+          matchType: '個人戦',
+          status: 'finished',
+          redScore: 0,
+          whiteScore: 0,
+          events: [],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              matchListProvider.overrideWith((ref) => [scoreMatch, drawMatch]),
+              customTeamNamesProvider.overrideWith(
+                (ref) => Stream.value(['道上剣友会']),
+              ),
+              permissionProvider.overrideWith(
+                (ref) => const PermissionState(
+                  isReadOnly: false,
+                  canManageTournament: true,
+                ),
+              ),
+            ],
+            child: MaterialApp(
+              themeMode: ThemeMode.dark,
+              darkTheme: ThemeData(
+                brightness: Brightness.dark,
+                extensions: [
+                  AppThemeColors.ofMode(isDark: true, mode: 'normal'),
+                ],
+              ),
+              home: Scaffold(
+                body: Column(
+                  children: [
+                    MatchListTileCard(initialMatch: scoreMatch),
+                    MatchListTileCard(initialMatch: drawMatch),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 1. スコアがある試合のハイフン「ー」が表示され、黒潰れしていないこと
+        expect(find.text('ー'), findsOneWidget);
+        final dashText = tester.widget<Text>(find.text('ー'));
+        expect(dashText.style?.color, isNot(equals(const Color(0x8A000000))));
+
+        // 2. 引き分けの試合のクロス「×」が表示され、黒潰れしていないこと
+        expect(find.text('×'), findsOneWidget);
+        final crossText = tester.widget<Text>(find.text('×'));
+        expect(crossText.style?.color, isNot(equals(const Color(0x8A000000))));
+      },
+    );
   });
 }

@@ -987,5 +987,46 @@ void main() {
             '違反ファイル:\n${violations.join('\n')}',
       );
     });
+
+    test('30. [新死角監視 6] スコアボード・選手名・取得部位における低コントラスト・暗色文字色指定の完全防止監視', () {
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        if (file.path.endsWith('.freezed.dart') ||
+            file.path.endsWith('.g.dart')) {
+          continue;
+        }
+
+        final content = file.readAsStringSync();
+
+        // scoreboard.dart における nameColor への separatorColor 割り当ての再発防止
+        if (file.path.endsWith('scoreboard.dart')) {
+          if (content.contains('nameColor') &&
+              content.contains('separatorColor')) {
+            violations.add(
+              '${file.path}: nameColor に separatorColor が指定されています',
+            );
+          }
+        }
+
+        // PointBox / PointMarkBadge における文字色への separatorColor 割り当ての防止
+        if (file.path.endsWith('point_mark_badge.dart')) {
+          if (content.contains('PointMarkBadge') &&
+              content.contains('separatorColor')) {
+            violations.add(
+              '${file.path}: PointMarkBadge に separatorColor が文字色として指定されています',
+            );
+          }
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'スコアボードや選手名・取得部位の文字色に暗い枠線色 separatorColor が使用され、視認性が破壊されている箇所が検出されました。\n'
+            '違反ファイル:\n${violations.join('\n')}',
+      );
+    });
   });
 }

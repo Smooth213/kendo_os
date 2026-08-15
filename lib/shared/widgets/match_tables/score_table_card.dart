@@ -5,6 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/widgets/vertical_name_text.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
+import 'package:kendo_os/shared/widgets/match_tables/components/score_table_cell.dart';
 
 class ScoreTableMatchItem {
   final String id;
@@ -204,7 +205,16 @@ class ScoreTableCard extends StatelessWidget {
                     children: [
                       const SizedBox.shrink(),
                       ...matches.map(
-                        (m) => _scoreCell(m, isDark, info.isSummary),
+                        (m) => ScoreTableCell(
+                          isSummary: info.isSummary,
+                          isFinished: m.isFinished,
+                          isEncho: m.isEncho,
+                          redScore: m.redScore,
+                          whiteScore: m.whiteScore,
+                          redPoints: m.redPoints,
+                          whitePoints: m.whitePoints,
+                          isDark: isDark,
+                        ),
                       ),
                       _teamResultCell(
                         context,
@@ -429,99 +439,6 @@ class ScoreTableCard extends StatelessWidget {
       return InkWell(onTap: onTap, child: cell);
     }
     return cell;
-  }
-
-  Widget _scoreCell(ScoreTableMatchItem m, bool isDark, bool isSummary) {
-    if (isSummary) return const SizedBox(height: 70);
-
-    return Container(
-      height: 70,
-      alignment: Alignment.center,
-      child: Builder(
-        builder: (context) {
-          final themeColors =
-              Theme.of(context).extension<AppThemeColors>() ??
-              AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              Divider(
-                color: themeColors.separatorColor,
-                thickness: 1,
-                height: 0,
-              ),
-              if (m.isFinished && m.redScore == m.whiteScore)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xxs,
-                  ),
-                  color: themeColors.cardBackground,
-                  child: Text(
-                    '✕',
-                    style: TextStyle(
-                      fontSize: AppFontSize.subhead,
-                      fontWeight: AppFontWeight.bold,
-                      color: themeColors.hintColor,
-                    ),
-                  ),
-                )
-              else if (m.isEncho)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xxs,
-                    vertical: 1,
-                  ),
-                  color: themeColors.cardBackground,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '延',
-                        style: TextStyle(
-                          fontSize: AppFontSize.badge,
-                          fontWeight: AppFontWeight.bold,
-                          height: 1.0,
-                          color: themeColors.textColor,
-                        ),
-                      ),
-                      Text(
-                        '長',
-                        style: TextStyle(
-                          fontSize: AppFontSize.badge,
-                          fontWeight: AppFontWeight.bold,
-                          height: 1.0,
-                          color: themeColors.textColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              Column(
-                children: [
-                  Expanded(
-                    child: PointBox(
-                      points: m.redPoints,
-                      isWinner: m.isFinished && m.redScore > m.whiteScore,
-                      isRed: true,
-                      isDark: isDark,
-                    ),
-                  ),
-                  Expanded(
-                    child: PointBox(
-                      points: m.whitePoints,
-                      isWinner: m.isFinished && m.whiteScore > m.redScore,
-                      isRed: false,
-                      isDark: isDark,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
   }
 
   Widget _summaryCell(BuildContext context, int wins, int pts, bool isDark) {

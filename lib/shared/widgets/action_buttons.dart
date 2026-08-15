@@ -229,7 +229,7 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
 
   Color _getDisplayColor(bool isDark) {
     if (widget.disabled) {
-      return isDark ? const Color(0xFFFFFFFF) : const Color(0x33000000);
+      return isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
     }
     return _isHolding
         ? Color.lerp(widget.color, AppKendoColors.pureBlack, 0.2)!
@@ -240,7 +240,9 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
     return TextStyle(
       fontSize: widget.isFoul ? (isTablet ? 32 : 24) : (isTablet ? 56 : 48),
       fontWeight: AppFontWeight.bold,
-      color: widget.disabled ? const Color(0x8A000000) : widget.textColor,
+      color: widget.disabled
+          ? (isDark ? const Color(0x66FFFFFF) : const Color(0x4D000000))
+          : widget.textColor,
       letterSpacing: 2.0,
       height: 1.3,
     );

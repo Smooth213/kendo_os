@@ -1726,8 +1726,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
                       child: Text(
                         isDraw ? '✕' : '-',
                         style: TextStyle(
-                          color: const Color(0x8A000000),
-                          fontWeight: AppFontWeight.light,
+                          color: context.appColors.subTextColor,
+                          fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.subhead,
                         ),
                       ),

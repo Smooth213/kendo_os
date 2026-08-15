@@ -4,8 +4,6 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
@@ -18,11 +16,13 @@ import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'dart:ui';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import '../components/home/home_screen_call_banner.dart';
+import '../components/home/home_screen_qr_dialog.dart';
+import '../components/home/home_screen_setup_checklist_card.dart';
 import '../components/home/match_timeline_list.dart';
 import '../components/home/operator_action_buttons.dart';
 import '../providers/match_list_provider.dart';
@@ -263,145 +263,26 @@ class HomeScreen extends ConsumerWidget {
                             return const SizedBox.shrink();
                           }
                           return asyncTeams.maybeWhen(
-                            data: (teams) => _buildSetupChecklist(
-                              context,
-                              tournament,
-                              teams,
-                              themeColors,
-                              isDark,
-                              enableLiquidGlass,
-                              tournamentId,
+                            data: (teams) => HomeScreenSetupChecklistCard(
+                              tournament: tournament,
+                              teams: teams,
+                              themeColors: themeColors,
+                              isDark: isDark,
+                              enableLiquidGlass: enableLiquidGlass,
+                              tournamentId: tournamentId,
                             ),
                             orElse: () => const SizedBox.shrink(),
                           );
                         },
                         orElse: () => const SizedBox.shrink(),
                       ),
-                    if (uniqueInProgress.isNotEmpty || uniqueWaiting.isNotEmpty)
-                      Builder(
-                        builder: (context) {
-                          final bannerColor = enableLiquidGlass
-                              ? themeColors.primaryAccent.withValues(
-                                  alpha: isDark ? 0.35 : 0.65,
-                                )
-                              : themeColors.primaryAccent;
-
-                          final bannerDecoration = BoxDecoration(
-                            color: bannerColor,
-                            borderRadius: AppRadius.large,
-                            border: enableLiquidGlass
-                                ? Border.all(
-                                    color: isDark
-                                        ? context.appColors.textColor
-                                              .withValues(alpha: 0.15)
-                                        : const Color(
-                                            0xFF000000,
-                                          ).withValues(alpha: 0.08),
-                                    width: 0.5,
-                                  )
-                                : null,
-                            boxShadow: [
-                              BoxShadow(
-                                color: themeColors.primaryAccent.withValues(
-                                  alpha: 0.3,
-                                ),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          );
-
-                          final bannerContent = Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (uniqueInProgress.isNotEmpty)
-                                _buildCallRow(
-                                  context,
-                                  '進行中',
-                                  uniqueInProgress.first,
-                                  AppKendoColors.orangeAccent,
-                                ),
-                              if (uniqueInProgress.isNotEmpty &&
-                                  uniqueWaiting.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: AppSpacing.sm,
-                                  ),
-                                  child: Divider(
-                                    color: AppKendoColors.pureWhite.withValues(
-                                      alpha: 0.24,
-                                    ),
-                                    height: 1,
-                                  ),
-                                ),
-                              if (uniqueWaiting.isNotEmpty)
-                                _buildCallRow(
-                                  context,
-                                  '次試合',
-                                  uniqueWaiting.first,
-                                  AppKendoColors.pureWhite,
-                                ),
-                              if (uniqueWaiting.length > 1)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: AppSpacing.sm,
-                                  ),
-                                  child: Text(
-                                    '次々試合: ${uniqueWaiting[1].note.isNotEmpty ? "(${uniqueWaiting[1].note}) " : ""}${_getMatchTitle(uniqueWaiting[1])}',
-                                    style: TextStyle(
-                                      color: AppKendoColors.pureWhite
-                                          .withValues(alpha: 0.7),
-                                      fontSize: AppFontSize.small,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                            ],
-                          );
-
-                          if (enableLiquidGlass) {
-                            return Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                AppSpacing.lg,
-                                AppSpacing.xs,
-                                AppSpacing.lg,
-                                AppSpacing.md,
-                              ),
-                              child: ClipRRect(
-                                borderRadius: AppRadius.large,
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                    sigmaX: 12.0,
-                                    sigmaY: 12.0,
-                                  ),
-                                  child: Container(
-                                    width: double.infinity,
-                                    margin: EdgeInsets.zero,
-                                    padding: const EdgeInsets.all(
-                                      AppSpacing.lg,
-                                    ),
-                                    decoration: bannerDecoration,
-                                    child: bannerContent,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-
-                          return Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.fromLTRB(
-                              AppSpacing.lg,
-                              AppSpacing.xs,
-                              AppSpacing.lg,
-                              AppSpacing.md,
-                            ),
-                            padding: const EdgeInsets.all(AppSpacing.lg),
-                            decoration: bannerDecoration,
-                            child: bannerContent,
-                          );
-                        },
-                      ),
+                    HomeScreenCallBanner(
+                      uniqueInProgress: uniqueInProgress,
+                      uniqueWaiting: uniqueWaiting,
+                      themeColors: themeColors,
+                      isDark: isDark,
+                      enableLiquidGlass: enableLiquidGlass,
+                    ),
                     if (!isReadOnly)
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -435,328 +316,9 @@ class HomeScreen extends ConsumerWidget {
         'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
     showAppDialog(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: '大会観戦リンク',
-        content: SizedBox(
-          width: 300,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                '離れた場所にいる保護者や仲間も、\n試合状況をリアルタイムで安心して見守れます。',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: AppFontSize.bodySmall),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                color: AppKendoColors.pureWhite,
-                child: QrImageView(
-                  data: shareUrl,
-                  version: QrVersions.auto,
-                  size: 200.0,
-                  backgroundColor: AppKendoColors.pureWhite,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ElevatedButton.icon(
-                onPressed: () => SharePlus.instance.share(
-                  ShareParams(
-                    text:
-                        '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
-                        'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
-                        'リンク: $shareUrl',
-                  ),
-                ),
-                icon: const Icon(Icons.share),
-                label: const Text('LINEやSNSでURLを送る'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.indigo,
-                  foregroundColor: AppKendoColors.pureWhite,
-                  elevation: 0,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              '閉じる',
-              style: TextStyle(color: AppKendoColors.grey),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCallRow(
-    BuildContext context,
-    String label,
-    dynamic match,
-    Color textColor,
-  ) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (match.note.isNotEmpty)
-          Text(
-            match.note,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: textColor.withValues(alpha: 0.7),
-              fontWeight: AppFontWeight.bold,
-            ),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: textColor,
-                fontWeight: AppFontWeight.bold,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Flexible(
-              child: Text(
-                _getMatchTitle(match),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: textColor,
-                  fontWeight: AppFontWeight.bold,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  String _getMatchTitle(dynamic match) {
-    final isGrouped = match.groupName != null && match.groupName!.isNotEmpty;
-    final isIndividual =
-        match.matchType == 'individual' ||
-        match.matchType == '選手' ||
-        match.matchType.contains('個人戦');
-    if (isGrouped && !isIndividual) {
-      return '${match.redName.contains(':') ? match.redName.split(':').first.trim() : match.redName} vs ${match.whiteName.contains(':') ? match.whiteName.split(':').first.trim() : match.whiteName}';
-    }
-    return '${match.redName} vs ${match.whiteName.contains(':') ? '${match.whiteName.split(':')[1].trim()} : ${match.whiteName.split(':')[0].trim()}' : match.whiteName}';
-  }
-
-  Widget _buildSetupChecklist(
-    BuildContext context,
-    TournamentModel tournament,
-    List<dynamic> teams,
-    AppThemeColors themeColors,
-    bool isDark,
-    bool enableLiquidGlass,
-    String tournamentId,
-  ) {
-    final hasTeams = teams.isNotEmpty;
-    final hasRules = tournament.categoryRules.isNotEmpty;
-
-    int completedSteps = 1; // 大会作成は常に完了
-    if (hasTeams) completedSteps++;
-    if (hasRules) completedSteps++;
-
-    final progress = completedSteps / 4.0;
-
-    final cardBgColor = enableLiquidGlass
-        ? themeColors.primaryAccent.withValues(alpha: isDark ? 0.15 : 0.08)
-        : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
-
-    final cardBorder = enableLiquidGlass
-        ? Border.all(
-            color: isDark
-                ? const Color(0xFFFFFFFF).withValues(alpha: 0.1)
-                : const Color(0xFF000000).withValues(alpha: 0.05),
-            width: 0.5,
-          )
-        : Border.all(
-            color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
-          );
-
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              Icons.assignment_turned_in,
-              color: themeColors.primaryAccent,
-              size: 22,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                '大会準備ステップ',
-                style: TextStyle(
-                  fontSize: AppFontSize.subhead,
-                  fontWeight: AppFontWeight.bold,
-                  color: themeColors.textColor,
-                ),
-              ),
-            ),
-            Text(
-              '${(progress * 100).toInt()}% 完了',
-              style: TextStyle(
-                fontSize: AppFontSize.bodySmall,
-                fontWeight: AppFontWeight.bold,
-                color: themeColors.primaryAccent,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        LinearProgressIndicator(
-          value: progress,
-          backgroundColor: context.appColors.separatorColor,
-          valueColor: AlwaysStoppedAnimation<Color>(themeColors.primaryAccent),
-          minHeight: 6,
-          borderRadius: AppRadius.tiny,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        _buildChecklistItem(
-          title: '大会基本情報の登録',
-          isCompleted: true,
-          themeColors: themeColors,
-          isDark: isDark,
-        ),
-        _buildChecklistItem(
-          title: '出場チーム・選手の登録',
-          isCompleted: hasTeams,
-          themeColors: themeColors,
-          isDark: isDark,
-          onTap: () => context.push('/team-registration/$tournamentId'),
-        ),
-        _buildChecklistItem(
-          title: '部門別ルールの設定',
-          isCompleted: hasRules,
-          themeColors: themeColors,
-          isDark: isDark,
-          onTap: () => context.push('/tournament/$tournamentId/category-rules'),
-        ),
-        _buildChecklistItem(
-          title: '最初の試合枠の作成',
-          isCompleted: false,
-          themeColors: themeColors,
-          isDark: isDark,
-          onTap: () => context.push('/setup-match/$tournamentId'),
-        ),
-      ],
-    );
-
-    if (enableLiquidGlass) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg,
-          AppSpacing.md,
-          AppSpacing.lg,
-          AppSpacing.sm,
-        ),
-        child: ClipRRect(
-          borderRadius: AppRadius.large,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: cardBgColor,
-                borderRadius: AppRadius.large,
-                border: cardBorder,
-              ),
-              child: content,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.sm,
-      ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: cardBgColor,
-        borderRadius: AppRadius.large,
-        border: cardBorder,
-        boxShadow: [
-          BoxShadow(
-            color: AppKendoColors.pureBlack.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: content,
-    );
-  }
-
-  Widget _buildChecklistItem({
-    required String title,
-    required bool isCompleted,
-    required AppThemeColors themeColors,
-    required bool isDark,
-    VoidCallback? onTap,
-  }) {
-    final activeTextColor = themeColors.textColor;
-    final inactiveTextColor = isDark
-        ? const Color(0xFFFFFFFF).withValues(alpha: 0.54)
-        : const Color(0xFF000000).withValues(alpha: 0.54);
-
-    return Material(
-      color: AppKendoColors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.small,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.sm,
-            horizontal: AppSpacing.xs,
-          ),
-          child: Row(
-            children: [
-              Icon(
-                isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: isCompleted
-                    ? AppKendoColors.successGreen
-                    : AppKendoColors.grey,
-                size: 20,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: AppFontSize.body,
-                    fontWeight: isCompleted
-                        ? AppFontWeight.medium
-                        : AppFontWeight.bold,
-                    color: isCompleted ? inactiveTextColor : activeTextColor,
-                    decoration: isCompleted ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-              ),
-              if (!isCompleted && onTap != null)
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: themeColors.primaryAccent,
-                  size: 14,
-                ),
-            ],
-          ),
-        ),
+      builder: (ctx) => HomeScreenQrDialog(
+        shareUrl: shareUrl,
+        onClose: () => Navigator.pop(ctx),
       ),
     );
   }
