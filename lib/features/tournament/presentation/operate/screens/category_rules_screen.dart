@@ -2857,8 +2857,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 );
               }
               if (ruleSet.useHonsenRule) {
-                if (sections.isNotEmpty)
+                if (sections.isNotEmpty) {
                   sections.add(const Divider(height: 32));
+                }
                 sections.add(
                   buildRuleSection(
                     '🏆 本戦ルール',
@@ -2869,8 +2870,9 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 );
               }
               if (ruleSet.useMoushiawaseRule) {
-                if (sections.isNotEmpty)
+                if (sections.isNotEmpty) {
                   sections.add(const Divider(height: 32));
+                }
                 sections.add(
                   buildRuleSection(
                     '🤝 申し合わせルール',
