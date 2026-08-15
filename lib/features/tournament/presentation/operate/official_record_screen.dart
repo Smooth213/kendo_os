@@ -21,6 +21,7 @@ import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
@@ -294,85 +295,41 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     categoryRegisteredTeamNames,
                     categoryRegisteredPlayerNames,
                   ),
-                  // ★ Phase 3: 三位一体の出力ボタン（PDF・画像・CSV）
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.md,
+                  OfficialRecordExportBar(
+                    isExporting: isExporting,
+                    isDark: isDark,
+                    onPdfPressed: () => _handleExport(
+                      context,
+                      ref,
+                      sortedGroupKeys,
+                      mergedGroups,
+                      cat,
+                      'pdf',
+                      tName: tName,
+                      tDate: tDate,
+                      tVenue: tVenue,
                     ),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF38383A)
-                              : const Color(0x33000000),
-                        ),
-                      ),
+                    onImagePressed: () => _handleExport(
+                      context,
+                      ref,
+                      sortedGroupKeys,
+                      mergedGroups,
+                      cat,
+                      'image',
+                      tName: tName,
+                      tDate: tDate,
+                      tVenue: tVenue,
                     ),
-                    child: Row(
-                      children: [
-                        // 1. PDF出力
-                        _buildHeaderActionButton(
-                          icon: Icons.print,
-                          label: 'PDF',
-                          color: context.appColors.errorColor,
-                          onPressed: isExporting
-                              ? null
-                              : () => _handleExport(
-                                  context,
-                                  ref,
-                                  sortedGroupKeys,
-                                  mergedGroups,
-                                  cat,
-                                  'pdf',
-                                  tName: tName,
-                                  tDate: tDate,
-                                  tVenue: tVenue,
-                                ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        // 2. 画像出力
-                        _buildHeaderActionButton(
-                          icon: Icons.share,
-                          label: '画像',
-                          color: const Color(0xFF06C755),
-                          onPressed: isExporting
-                              ? null
-                              : () => _handleExport(
-                                  context,
-                                  ref,
-                                  sortedGroupKeys,
-                                  mergedGroups,
-                                  cat,
-                                  'image',
-                                  tName: tName,
-                                  tDate: tDate,
-                                  tVenue: tVenue,
-                                ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        // 3. ★新規: CSV出力
-                        _buildHeaderActionButton(
-                          icon: Icons.table_chart,
-                          label: 'CSV',
-                          color: context.appColors.primaryAccent,
-                          onPressed: isExporting
-                              ? null
-                              : () => _handleExport(
-                                  context,
-                                  ref,
-                                  sortedGroupKeys,
-                                  mergedGroups,
-                                  cat,
-                                  'csv',
-                                  tName: tName,
-                                  tDate: tDate,
-                                  tVenue: tVenue,
-                                ),
-                        ),
-                      ],
+                    onCsvPressed: () => _handleExport(
+                      context,
+                      ref,
+                      sortedGroupKeys,
+                      mergedGroups,
+                      cat,
+                      'csv',
+                      tName: tName,
+                      tDate: tDate,
+                      tVenue: tVenue,
                     ),
                   ),
                   Expanded(
@@ -732,35 +689,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       }
     }
     return last;
-  }
-
-  // 出力ボタンの共通デザイン
-  Widget _buildHeaderActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback? onPressed,
-  }) {
-    return Expanded(
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 16),
-        label: Text(
-          label,
-          style: const TextStyle(
-            fontWeight: AppFontWeight.bold,
-            fontSize: AppFontSize.small,
-          ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: AppKendoColors.pureWhite,
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
-        ),
-      ),
-    );
   }
 
   // 出力処理の共通ハンドラ

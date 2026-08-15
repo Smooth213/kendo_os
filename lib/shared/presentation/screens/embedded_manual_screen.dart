@@ -2,7 +2,6 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -19,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/infrastructure/services/manual_download_service.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/manual/manual_floating_action_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 
 // ============================================================================
@@ -276,7 +276,60 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
     }
   }
 
-  // A4印刷・共有用コントロールバーの構築
+  Future<void> _handlePrintPdf({
+    required bool isAsset,
+    String? assetPath,
+    File? file,
+    required String fileName,
+  }) async {
+    try {
+      if (isAsset) {
+        final data = await rootBundle.load(assetPath!);
+        await Printing.layoutPdf(
+          onLayout: (_) => data.buffer.asUint8List(),
+          name: fileName,
+        );
+      } else {
+        final bytes = await file!.readAsBytes();
+        await Printing.layoutPdf(onLayout: (_) => bytes, name: fileName);
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.showError(context, '印刷の起動に失敗しました: $e');
+      }
+    }
+  }
+
+  Future<void> _handleSharePdf({
+    required bool isAsset,
+    String? assetPath,
+    File? file,
+    required String fileName,
+  }) async {
+    try {
+      Uint8List bytes;
+      if (isAsset) {
+        final data = await rootBundle.load(assetPath!);
+        bytes = data.buffer.asUint8List();
+      } else {
+        bytes = await file!.readAsBytes();
+      }
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(bytes, mimeType: 'application/pdf', name: fileName),
+          ],
+          text: '$fileName を共有します。',
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.showError(context, '共有に失敗しました: $e');
+      }
+    }
+  }
+
   Widget _buildFloatingActionBar({
     required bool isAsset,
     String? assetPath,
@@ -284,257 +337,48 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
     required String fileName,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ClipRRect(
-      borderRadius: AppRadius.large,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.sm,
-            horizontal: AppSpacing.lg,
-          ),
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1C1C1E).withValues(alpha: 0.85)
-                : const Color(0xFFFFFFFF).withValues(alpha: 0.9),
-            borderRadius: AppRadius.large,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(
-                  0xFF000000,
-                ).withValues(alpha: isDark ? 0.3 : 0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(
-              color: isDark
-                  ? const Color(0xFFFFFFFF).withValues(alpha: 0.15)
-                  : const Color(0xFF000000).withValues(alpha: 0.08),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark
-                        ? const Color(0xFF2C2C2E)
-                        : context.appColors.primaryAccent,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                      horizontal: AppSpacing.sm,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
-                  ),
-                  icon: const Icon(Icons.print, size: 18),
-                  label: const Text(
-                    'A4印刷',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      fontSize: AppFontSize.bodySmall,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onPressed: () async {
-                    try {
-                      if (isAsset) {
-                        final data = await rootBundle.load(assetPath!);
-                        await Printing.layoutPdf(
-                          onLayout: (_) => data.buffer.asUint8List(),
-                          name: fileName,
-                        );
-                      } else {
-                        final bytes = await file!.readAsBytes();
-                        await Printing.layoutPdf(
-                          onLayout: (_) => bytes,
-                          name: fileName,
-                        );
-                      }
-                    } catch (e) {
-                      if (mounted) {
-                        AppSnackBar.showError(context, '印刷の起動に失敗しました: $e');
-                      }
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF06C755),
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                      horizontal: AppSpacing.sm,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
-                  ),
-                  icon: const Icon(Icons.share, size: 18),
-                  label: const Text(
-                    '共有/保存',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      fontSize: AppFontSize.bodySmall,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onPressed: () async {
-                    try {
-                      Uint8List bytes;
-                      if (isAsset) {
-                        final data = await rootBundle.load(assetPath!);
-                        bytes = data.buffer.asUint8List();
-                      } else {
-                        bytes = await file!.readAsBytes();
-                      }
-
-                      await SharePlus.instance.share(
-                        ShareParams(
-                          files: [
-                            XFile.fromData(
-                              bytes,
-                              mimeType: 'application/pdf',
-                              name: fileName,
-                            ),
-                          ],
-                          text: '$fileName を共有します。',
-                        ),
-                      );
-                    } catch (e) {
-                      if (mounted) {
-                        AppSnackBar.showError(context, '共有に失敗しました: $e');
-                      }
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+    return ManualFloatingActionBar(
+      primaryLabel: 'A4印刷',
+      primaryIcon: Icons.print,
+      onPrimaryPressed: () => _handlePrintPdf(
+        isAsset: isAsset,
+        assetPath: assetPath,
+        file: file,
+        fileName: fileName,
       ),
+      secondaryLabel: '共有/保存',
+      secondaryIcon: Icons.share,
+      onSecondaryPressed: () => _handleSharePdf(
+        isAsset: isAsset,
+        assetPath: assetPath,
+        file: file,
+        fileName: fileName,
+      ),
+      isDark: isDark,
     );
   }
 
-  // Web用の共有・ブラウザ起動コントロールバー
   Widget _buildFloatingActionBarForWeb() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ClipRRect(
-      borderRadius: AppRadius.large,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.sm,
-            horizontal: AppSpacing.lg,
-          ),
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1C1C1E).withValues(alpha: 0.85)
-                : const Color(0xFFFFFFFF).withValues(alpha: 0.9),
-            borderRadius: AppRadius.large,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(
-                  0xFF000000,
-                ).withValues(alpha: isDark ? 0.3 : 0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(
-              color: isDark
-                  ? const Color(0xFFFFFFFF).withValues(alpha: 0.15)
-                  : const Color(0xFF000000).withValues(alpha: 0.08),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark
-                        ? const Color(0xFF2C2C2E)
-                        : context.appColors.primaryAccent,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                      horizontal: AppSpacing.sm,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
-                  ),
-                  icon: const Icon(Icons.open_in_new, size: 18),
-                  label: const Text(
-                    'PDF版をブラウザで開く',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      fontSize: AppFontSize.bodySmall,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onPressed: () async {
-                    // Google Docs PDF Viewerを中継して開くことで、モバイルSafariでのダウンロードフリーズを防ぎインライン表示させる
-                    final encodedUrl = Uri.encodeComponent(_fullManualUrl);
-                    final viewerUrl =
-                        'https://docs.google.com/viewer?url=$encodedUrl';
-                    final uri = Uri.parse(viewerUrl);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(
-                        uri,
-                        mode: LaunchMode.externalApplication,
-                      );
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF06C755),
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                      horizontal: AppSpacing.sm,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
-                  ),
-                  icon: const Icon(Icons.share, size: 18),
-                  label: const Text(
-                    '共有する',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      fontSize: AppFontSize.bodySmall,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onPressed: () async {
-                    await SharePlus.instance.share(
-                      ShareParams(
-                        text: 'Kendo Sync 総合取扱説明書はこちら: $_fullManualUrl',
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return ManualFloatingActionBar(
+      primaryLabel: 'PDF版をブラウザで開く',
+      primaryIcon: Icons.open_in_new,
+      onPrimaryPressed: () async {
+        final encodedUrl = Uri.encodeComponent(_fullManualUrl);
+        final viewerUrl = 'https://docs.google.com/viewer?url=$encodedUrl';
+        final uri = Uri.parse(viewerUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      secondaryLabel: '共有する',
+      secondaryIcon: Icons.share,
+      onSecondaryPressed: () async {
+        await SharePlus.instance.share(
+          ShareParams(text: 'Kendo Sync 総合取扱説明書はこちら: $_fullManualUrl'),
+        );
+      },
+      isDark: isDark,
     );
   }
 

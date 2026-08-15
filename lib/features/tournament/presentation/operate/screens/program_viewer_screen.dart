@@ -17,6 +17,7 @@ import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart
 import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repository.dart';
 import '../providers/role_provider.dart';
 import '../providers/permission_provider.dart'; // ★ 追加: 閲覧専用権限を識別するためのインポート
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_controls.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
@@ -620,20 +621,26 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             ),
                             const SizedBox(width: AppSpacing.xs),
                             // ペンツール
-                            _buildToolButton(
+                            ProgramViewerToolButton(
                               tool: 'pen',
                               icon: Icons.edit,
                               tooltip: 'ペン',
+                              isSelected: _selectedTool == 'pen',
                               isDark: isDark,
                               activeColor: activePenColor,
+                              onTap: () =>
+                                  setState(() => _selectedTool = 'pen'),
                             ),
                             // 蛍光マーカー
-                            _buildToolButton(
+                            ProgramViewerToolButton(
                               tool: 'marker',
                               icon: Icons.border_color,
                               tooltip: '蛍光マーカー',
+                              isSelected: _selectedTool == 'marker',
                               isDark: isDark,
                               activeColor: activePenColor,
+                              onTap: () =>
+                                  setState(() => _selectedTool = 'marker'),
                             ),
                           ],
                         ),
@@ -665,12 +672,15 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // 消しゴムツール
-                          _buildToolButton(
+                          ProgramViewerToolButton(
                             tool: 'eraser',
                             icon: Icons.cleaning_services,
                             tooltip: '消しゴム',
+                            isSelected: _selectedTool == 'eraser',
                             isDark: isDark,
                             activeColor: const Color(0xFF607D8B),
+                            onTap: () =>
+                                setState(() => _selectedTool = 'eraser'),
                           ),
 
                           // 小さな縦仕切り線
@@ -1267,53 +1277,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     );
   }
 
-  Widget _buildToolButton({
-    required String tool,
-    required IconData icon,
-    required String tooltip,
-    required bool isDark,
-    required Color activeColor,
-  }) {
-    final isSelected = _selectedTool == tool;
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: () => setState(() => _selectedTool = tool),
-        borderRadius: AppRadius.sub,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: 6,
-          ),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark ? const Color(0xFFFFFFFF) : const Color(0xFFFFFFFF))
-                : AppKendoColors.transparent,
-            borderRadius: AppRadius.sub,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppKendoColors.pureBlack.withAlpha(20),
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: isSelected
-                ? activeColor
-                : (isDark
-                      ? AppKendoColors.white38
-                      : const Color(0xFF000000).withValues(alpha: 0.38)),
-          ),
-        ),
-      ),
-    );
-  }
-
   // ペンの名前を返す補助関数
   String _getPenName(Color color) {
     if (color == AppKendoColors.pink) {
@@ -1375,16 +1338,26 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        _buildLargePenOption(
-                          context,
-                          AppKendoColors.pink,
-                          'ピンク (共有)',
+                        ProgramViewerPenOption(
+                          color: AppKendoColors.pink,
+                          label: 'ピンク (共有)',
+                          isSelected: _selectedPenColor == AppKendoColors.pink,
+                          onTap: () {
+                            setState(
+                              () => _selectedPenColor = AppKendoColors.pink,
+                            );
+                            Navigator.pop(context);
+                          },
                         ),
                         const SizedBox(width: 10),
-                        _buildLargePenOption(
-                          context,
-                          _yellowPenColor,
-                          'イエロー (共有)',
+                        ProgramViewerPenOption(
+                          color: _yellowPenColor,
+                          label: 'イエロー (共有)',
+                          isSelected: _selectedPenColor == _yellowPenColor,
+                          onTap: () {
+                            setState(() => _selectedPenColor = _yellowPenColor);
+                            Navigator.pop(context);
+                          },
                         ),
                       ],
                     ),
@@ -1401,16 +1374,29 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      _buildLargePenOption(
-                        context,
-                        AppKendoColors.blue,
-                        'ブルー (個人)',
+                      ProgramViewerPenOption(
+                        color: AppKendoColors.blue,
+                        label: 'ブルー (個人)',
+                        isSelected: _selectedPenColor == AppKendoColors.blue,
+                        onTap: () {
+                          setState(
+                            () => _selectedPenColor = AppKendoColors.blue,
+                          );
+                          Navigator.pop(context);
+                        },
                       ),
                       const SizedBox(width: 10),
-                      _buildLargePenOption(
-                        context,
-                        AppKendoColors.pureBlack,
-                        'ブラック (個人)',
+                      ProgramViewerPenOption(
+                        color: AppKendoColors.pureBlack,
+                        label: 'ブラック (個人)',
+                        isSelected:
+                            _selectedPenColor == AppKendoColors.pureBlack,
+                        onTap: () {
+                          setState(
+                            () => _selectedPenColor = AppKendoColors.pureBlack,
+                          );
+                          Navigator.pop(context);
+                        },
                       ),
                     ],
                   ),
@@ -1421,52 +1407,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           ),
         );
       },
-    );
-  }
-
-  // ボトムシート内の大きな選択ボタン
-  Widget _buildLargePenOption(BuildContext context, Color color, String label) {
-    final isSelected = _selectedPenColor == color;
-    return Expanded(
-      child: InkWell(
-        onTap: () {
-          setState(() => _selectedPenColor = color);
-          Navigator.pop(context);
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? color.withAlpha(26)
-                : AppKendoColors.transparent,
-            borderRadius: AppRadius.medium,
-            border: Border.all(
-              color: isSelected ? color : context.appColors.separatorColor,
-              width: 2,
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(Icons.edit, color: color, size: 28),
-              const SizedBox(height: AppSpacing.sm),
-              // ★ はみ出しエラー修正: ペン名が長くても絶対に改行・はみ出しが起きないようにFittedBoxでガード
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: isSelected
-                        ? AppFontWeight.bold
-                        : AppFontWeight.regular,
-                    fontSize: AppFontSize.small,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
