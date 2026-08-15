@@ -162,9 +162,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                               Text(
                                 '詳細: $details',
                                 style: TextStyle(
-                                  color: isDark
-                                      ? context.appColors.separatorColor
-                                      : context.appColors.cardBackground,
+                                  color: context.appColors.subTextColor,
                                   fontSize: AppFontSize.bodySmall,
                                 ),
                               ),

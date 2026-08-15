@@ -2639,7 +2639,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
     // Helper: formatMinutes
     String fmtMins(double mins) {
-      if (mins <= 0) return '無制限';
+      if (mins <= 0) return '時間制限なし';
       if (mins == mins.toInt()) return '${mins.toInt()}分';
       return '${mins.toInt()}分${((mins % 1) * 60).toInt()}秒';
     }
@@ -2661,11 +2661,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           matchType == '錬成会';
       final bool isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
       final bool isKachinuki = matchType == '勝ち抜き戦';
-      final bool isRenseikai = matchType == '錬成会';
-
-      // 団体戦のみ代表戦を持つ（リーグ・勝ち抜きは専用処理）
-      final bool hasDaihyo =
-          !isKachinuki && !isRenseikai && rule.hasRepresentativeMatch;
+      final bool isRenseikai = matchType == '錬成会' || (rule.isRenseikai);
 
       // --- Format text ---
       String formatText;
@@ -2688,32 +2684,27 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           '${fmtMins(rule.matchTimeMinutes)} (${rule.isRunningTime ? "通し/空回し" : "都度ストップ"})';
 
       // --- Ippon shobu ---
-      String ipponDesc = rule.isIpponShobu
-          ? '一本勝負'
-          : '三本勝負 (${rule.ipponLimit}本先取)';
+      String ipponDesc = rule.isIpponShobu ? '１本勝負' : '３本勝負 (２本先取)';
 
-      // --- Hansoku ---
-      String hansokuDesc = '${rule.hansokuLimit}反則で負け';
-
-      // --- Encho text ---
+      // --- Encho text (個人戦用) ---
       String enchoDesc;
       if (rule.isEnchoUnlimited) {
-        enchoDesc = 'あり (時間・回数 無制限)';
+        enchoDesc = 'あり (無制限)';
       } else if (rule.enchoCount > 0 || rule.enchoTimeMinutes > 0) {
         enchoDesc =
-            'あり (${fmtMins(rule.enchoTimeMinutes)}・${rule.enchoCount}回)';
+            'あり (${fmtMins(rule.enchoTimeMinutes)}・${rule.enchoCount > 0 ? rule.enchoCount : 1}回)';
       } else {
         enchoDesc = 'なし';
       }
 
-      // --- Hantei ---
+      // --- Hantei (個人戦用) ---
       String hanteiDesc = rule.hasHantei ? 'あり' : 'なし';
 
-      // --- Daihyo encho ---
+      // --- Daihyo encho (団体戦用) ---
       String daihyoEnchoDesc;
       if (!rule.daihyoHasExtension) {
         daihyoEnchoDesc = 'なし';
-      } else if (rule.daihyoEnchoCount == -2) {
+      } else if (rule.daihyoEnchoCount == -2 || rule.daihyoEnchoCount == 0) {
         daihyoEnchoDesc = 'あり (無制限)';
       } else {
         daihyoEnchoDesc =
@@ -2759,95 +2750,82 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             _buildSectionLabel('錬成会設定', accentColor),
             _buildDetailRow('進行方式', rule.renseikaiType, isDark),
             if (rule.renseikaiType == '時間制')
-              _buildDetailRow('全体の制限時間', '${rule.overallTimeMinutes}分', isDark),
+              _buildDetailRow('制限時間', '${rule.overallTimeMinutes}分', isDark),
           ],
 
-          // ─── 試合ルール（錬成会以外） ───
+          // ─── 試合ルール（個人戦のみ延長・判定を表示） ───
           if (!isRenseikai) ...[
             _buildSectionLabel('試合ルール', accentColor),
             _buildDetailRow('勝負方式', ipponDesc, isDark),
-            _buildDetailRow('反則', hansokuDesc, isDark),
-            _buildDetailRow('延長戦', enchoDesc, isDark),
-            _buildDetailRow('判定', hanteiDesc, isDark),
+            if (!isTeam) ...[
+              _buildDetailRow('延長戦', enchoDesc, isDark),
+              _buildDetailRow('判定', hanteiDesc, isDark),
+            ],
           ],
 
           // ─── 勝ち抜き戦設定 ───
           if (isKachinuki) ...[
             _buildSectionLabel('勝ち抜き戦設定', accentColor),
-            _buildDetailRow('大将VS大将', () {
-              final t = rule.kachinukiUnlimitedType;
-              if (t == 'なし' || t.isEmpty) return '引き分け';
-              return '延長戦を行う';
-            }(), isDark),
             _buildDetailRow(
-              '大将VS他ポジション',
-              rule.kachinukiUnlimitedType == '無制限' ? '延長戦を行う' : '引き分け',
+              '無制限条件',
+              rule.kachinukiUnlimitedType.isEmpty
+                  ? '大将対大将'
+                  : rule.kachinukiUnlimitedType,
               isDark,
             ),
           ],
 
-          // ─── 団体戦・チーム設定（通常団体戦のみ） ───
-          if (isTeam && !isKachinuki && !isRenseikai && !isLeague) ...[
+          // ─── 団体戦・チーム設定（通常トーナメント団体戦） ───
+          if (matchType == '団体戦') ...[
             _buildSectionLabel('団体戦・チーム設定', accentColor),
             _buildDetailRow(
               '代表戦',
-              rule.hasRepresentativeMatch
-                  ? 'あり (${rule.isDaihyoIpponShobu ? "一本勝負" : "三本勝負"})'
-                  : 'なし',
+              rule.hasRepresentativeMatch ? 'あり' : 'なし',
               isDark,
             ),
-          ],
-
-          // ─── 代表戦設定（通常団体戦の代表戦ありのとき） ───
-          if (isTeam &&
-              !isKachinuki &&
-              !isRenseikai &&
-              !isLeague &&
-              hasDaihyo) ...[
-            _buildSectionLabel('代表戦設定', accentColor),
-            _buildDetailRow(
-              '代表戦 時間',
-              rule.daihyoMatchTimeMinutes <= 0
-                  ? '無制限'
-                  : fmtMins(rule.daihyoMatchTimeMinutes),
-              isDark,
-            ),
-            _buildDetailRow('代表戦 延長戦', daihyoEnchoDesc, isDark),
-            _buildDetailRow(
-              '代表戦 判定',
-              rule.daihyoHasHantei ? 'あり' : 'なし',
-              isDark,
-            ),
+            if (rule.hasRepresentativeMatch) ...[
+              _buildDetailRow(
+                '代表戦勝負形式',
+                rule.isDaihyoIpponShobu ? '１本勝負' : '３本勝負',
+                isDark,
+              ),
+              _buildDetailRow(
+                '代表戦時間',
+                rule.daihyoMatchTimeMinutes <= 0
+                    ? '時間制限なし'
+                    : fmtMins(rule.daihyoMatchTimeMinutes),
+                isDark,
+              ),
+              _buildDetailRow('代表戦延長', daihyoEnchoDesc, isDark),
+              if (rule.daihyoHasHantei) _buildDetailRow('代表戦判定', 'あり', isDark),
+            ],
           ],
 
           // ─── リーグ戦設定 ───
           if (isLeague) ...[
             _buildSectionLabel('リーグ戦設定', AppKendoColors.orange),
             _buildDetailRow(
-              '勝ち点',
-              '勝: ${rule.winPoint} / 分: ${rule.drawPoint} / 負: ${rule.lossPoint}',
+              '勝点配分',
+              '勝: ${rule.winPoint}点 / 分: ${rule.drawPoint}点 / 負: ${rule.lossPoint}点',
               isDark,
             ),
             if (matchType == 'リーグ団体戦') ...[
               _buildDetailRow(
-                '同点代表戦',
+                '同点時代表戦',
                 rule.hasLeagueDaihyo ? 'あり' : 'なし',
                 isDark,
               ),
               if (rule.hasLeagueDaihyo) ...[
                 _buildDetailRow(
-                  '代表戦 時間',
+                  '代表戦時間',
                   rule.daihyoMatchTimeMinutes <= 0
-                      ? '無制限'
+                      ? '時間制限なし'
                       : fmtMins(rule.daihyoMatchTimeMinutes),
                   isDark,
                 ),
-                _buildDetailRow('代表戦 延長戦', daihyoEnchoDesc, isDark),
-                _buildDetailRow(
-                  '代表戦 判定',
-                  rule.daihyoHasHantei ? 'あり' : 'なし',
-                  isDark,
-                ),
+                _buildDetailRow('代表戦延長', daihyoEnchoDesc, isDark),
+                if (rule.daihyoHasHantei)
+                  _buildDetailRow('代表戦判定', 'あり', isDark),
               ],
             ],
           ],
@@ -2865,6 +2843,75 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           maxChildSize: 0.92,
           expand: false,
           builder: (context, scrollController) {
+            final List<Widget> sections = [];
+
+            if (ruleSet.isMultiScene) {
+              if (ruleSet.useRenseikaiRule) {
+                sections.add(
+                  buildRuleSection(
+                    '⚔️ 錬成会ルール',
+                    ruleSet.renseikaiRule,
+                    AppKendoColors.ipponGold,
+                    '錬成会',
+                  ),
+                );
+              }
+              if (ruleSet.useHonsenRule) {
+                if (sections.isNotEmpty)
+                  sections.add(const Divider(height: 32));
+                sections.add(
+                  buildRuleSection(
+                    '🏆 本戦ルール',
+                    ruleSet.normalRule,
+                    const Color(0xFF3F51B5),
+                    ruleSet.matchType,
+                  ),
+                );
+              }
+              if (ruleSet.useMoushiawaseRule) {
+                if (sections.isNotEmpty)
+                  sections.add(const Divider(height: 32));
+                sections.add(
+                  buildRuleSection(
+                    '🤝 申し合わせルール',
+                    ruleSet.moushiawaseRule,
+                    const Color(0xFF009688),
+                    '錬成会',
+                  ),
+                );
+              }
+            } else {
+              sections.add(
+                buildRuleSection(
+                  '通常戦ルール',
+                  ruleSet.normalRule,
+                  themeColors.primaryAccent,
+                  ruleSet.matchType,
+                ),
+              );
+
+              if (ruleSet.useAdvancedRule) {
+                sections.add(const SizedBox(height: AppSpacing.sm));
+                sections.add(const Divider());
+                sections.add(
+                  buildRuleSection(
+                    '上位戦（準決勝・決勝等）ルール',
+                    ruleSet.advancedRule,
+                    AppKendoColors.teal,
+                    ruleSet.matchType,
+                  ),
+                );
+                sections.add(const SizedBox(height: AppSpacing.sm));
+                sections.add(
+                  _buildDetailRow(
+                    '上位戦 適用ワード',
+                    ruleSet.advancedKeywords.join('、'),
+                    isDark,
+                  ),
+                );
+              }
+            }
+
             return SingleChildScrollView(
               controller: scrollController,
               padding: const EdgeInsets.fromLTRB(
@@ -2911,29 +2958,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   ),
                   const Divider(height: 32),
 
-                  buildRuleSection(
-                    '通常戦ルール',
-                    ruleSet.normalRule,
-                    themeColors.primaryAccent,
-                    ruleSet.matchType,
-                  ),
-
-                  if (ruleSet.useAdvancedRule) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    const Divider(),
-                    buildRuleSection(
-                      '上位戦（準決勝・決勝等）ルール',
-                      ruleSet.advancedRule,
-                      AppKendoColors.teal,
-                      ruleSet.matchType,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _buildDetailRow(
-                      '上位戦 適用ワード',
-                      ruleSet.advancedKeywords.join('、'),
-                      isDark,
-                    ),
-                  ],
+                  ...sections,
 
                   const SizedBox(height: AppSpacing.xl),
                   SizedBox(
@@ -3041,10 +3066,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     }
 
     if (ruleSet.isMultiScene) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: AppSpacing.xs),
+      final List<Widget> sceneChips = [];
+
+      if (ruleSet.useRenseikaiRule) {
+        sceneChips.add(
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
@@ -3072,7 +3097,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
             ],
           ),
-          const SizedBox(height: 2),
+        );
+      }
+
+      if (ruleSet.useHonsenRule) {
+        if (sceneChips.isNotEmpty) {
+          sceneChips.add(const SizedBox(height: 2));
+        }
+        sceneChips.add(
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
@@ -3095,7 +3127,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
             ],
           ),
-          const SizedBox(height: 2),
+        );
+      }
+
+      if (ruleSet.useMoushiawaseRule) {
+        if (sceneChips.isNotEmpty) {
+          sceneChips.add(const SizedBox(height: 2));
+        }
+        sceneChips.add(
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
@@ -3117,6 +3156,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
             ],
           ),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppSpacing.xs),
+          ...sceneChips,
         ],
       );
     }

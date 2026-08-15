@@ -186,11 +186,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             Text(
               '同点のため、判定（または引き分け）を選択してください',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isDark
-                    ? context.appColors.separatorColor
-                    : context.appColors.cardBackground,
-              ),
+              style: TextStyle(color: context.appColors.textColor),
             ),
             const SizedBox(height: AppSpacing.xl),
             Row(

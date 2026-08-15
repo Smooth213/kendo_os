@@ -527,8 +527,63 @@ void main() {
       // 無関係な項目が出ないこと
       expect(find.text('延長戦'), findsNothing);
       expect(find.text('判定'), findsNothing);
+      expect(find.text('ポジション延長'), findsNothing);
       expect(find.text('リーグ団体戦設定'), findsNothing);
       expect(find.text('勝ち抜き戦設定'), findsNothing);
     });
+
+    testWidgets(
+      '10. 【ポジション延長 誤表示回帰防止テスト】旧データや不正なデフォルト値（enchoTimeMinutes=3.0, enchoCount=0）を持つ団体戦データでも「ポジション延長」「延長戦」「判定」が100%非表示であること',
+      (WidgetTester tester) async {
+        final legacyTeamRule = const MatchRule(
+          matchTimeMinutes: 2.0,
+          isRunningTime: false,
+          isIpponShobu: false,
+          hasHantei: false,
+          enchoCount: 0,
+          enchoTimeMinutes: 3.0, // 旧データでデフォルト値が残っているパターン
+          isEnchoUnlimited: false,
+          hasRepresentativeMatch: true,
+          isDaihyoIpponShobu: true,
+          daihyoMatchTimeMinutes: 0.0,
+          daihyoHasExtension: true,
+          daihyoEnchoCount: -2,
+          positions: ['先鋒', '次鋒', '中堅', '副将', '大将'],
+        );
+
+        final legacyMatch = MatchModel(
+          id: 'legacy_team_m',
+          category: '一般の部',
+          groupName: '道上剣友会A vs 相手チーム',
+          matchType: '先鋒',
+          redName: '道上剣友会A:山田',
+          whiteName: '相手チーム:鈴木',
+          rule: legacyTeamRule,
+          hasExtension: true, // MatchModel 直下の古いフラグ
+          extensionTimeMinutes: 3,
+          extensionCount: 1,
+          note: '第1試合場, 2回戦 13時開始',
+        );
+
+        await tester.pumpWidget(
+          buildTestableApp(match: legacyMatch, isDark: true),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
+        await tester.pumpAndSettle();
+
+        // 団体戦の正しい設定が表示されること
+        expect(find.text('団体戦'), findsOneWidget);
+        expect(find.text('団体戦・チーム設定'), findsOneWidget);
+        expect(find.text('代表戦'), findsOneWidget);
+        expect(find.text('あり'), findsOneWidget);
+
+        // ★ ユーザー指摘の「ポジション延長」および「延長戦」「判定」が確実に非表示であること
+        expect(find.text('ポジション延長'), findsNothing);
+        expect(find.text('延長戦'), findsNothing);
+        expect(find.text('判定'), findsNothing);
+      },
+    );
   });
 }

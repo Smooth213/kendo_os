@@ -953,5 +953,39 @@ void main() {
         );
       },
     );
+
+    test('29. [新死角監視 5] TextStyle / Text における separatorColor (枠線色) の文字色誤用防止', () {
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        if (file.path.contains('lib/shared/theme/')) {
+          continue;
+        }
+        if (file.path.endsWith('.freezed.dart') ||
+            file.path.endsWith('.g.dart')) {
+          continue;
+        }
+
+        final content = file.readAsStringSync();
+
+        // TextStyle(..., color: ...separatorColor...) の誤用検知
+        // ただし Divider(color: ...), Border(color: ...), Container(decoration: ... Border.all(color: ...separatorColor)) は正常
+        final matches = RegExp(
+          r'TextStyle\s*\([^)]*color\s*:\s*[^,\)]*separatorColor[^,\)]*',
+        ).allMatches(content);
+
+        for (final match in matches) {
+          violations.add('${file.path}: ${match.group(0)}');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'TextStyle の文字色 (color) に枠線用の極薄色 separatorColor が誤って指定され、視認性が著しく低下している箇所が検出されました。\n'
+            '違反ファイル:\n${violations.join('\n')}',
+      );
+    });
   });
 }

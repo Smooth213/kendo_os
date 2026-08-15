@@ -149,7 +149,7 @@ class ScoreTableCard extends StatelessWidget {
                                       ? (isDark
                                             ? const Color(0xFFFF6B6B)
                                             : AppKendoColors.hansokuRed)
-                                      : (context.appColors.separatorColor),
+                                      : themeColors.textColor,
                                 ),
                               ),
                             ),
