@@ -16,6 +16,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_selection_card.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
@@ -434,9 +435,9 @@ class _TeamRegistrationScreenState
                             if (entry.key == index) {
                               return const SizedBox.shrink();
                             }
-                            return _buildSelectionCard(
-                              entry.value,
-                              '手入力選手',
+                            return TeamRegistrationSelectionCard(
+                              name: entry.value,
+                              subtitle: '手入力選手',
                               isUsed: true,
                               usedPos: posNames[entry.key],
                               isDark: isDark,
@@ -516,9 +517,10 @@ class _TeamRegistrationScreenState
                           });
                           final isUsed = usedIdx != null && usedIdx != index;
 
-                          return _buildSelectionCard(
-                            p.name,
-                            '${p.gradeName}${p.isBeginner ? " (🔰初心者)" : ""}',
+                          return TeamRegistrationSelectionCard(
+                            name: p.name,
+                            subtitle:
+                                '${p.gradeName}${p.isBeginner ? " (🔰初心者)" : ""}',
                             isUsed: isUsed,
                             usedPos: usedIdx != null
                                 ? (usedIdx! < posNames.length
@@ -560,107 +562,6 @@ class _TeamRegistrationScreenState
         _tempSelectedPlayers[index] = selected;
       });
     }
-  }
-
-  // ★ 追加：選手選択ダイアログ内の共通カードUI
-  Widget _buildSelectionCard(
-    String name,
-    String subtitle, {
-    required bool isUsed,
-    required String usedPos,
-    required bool isDark,
-    bool isHelper = false,
-    bool isBeginner = false,
-    required VoidCallback onTap,
-  }) {
-    final textColor = context.appColors.textColor;
-
-    // 状態に応じて色を決定 (助っ人 or 使用済み or 選択可能)
-    final Color cardColor;
-    final Color borderColor;
-    final Color leadingTextColor;
-    final Color subtitleColor;
-
-    if (isHelper || isUsed) {
-      cardColor = isDark
-          ? context.appColors.warningColor.withAlpha(77)
-          : context.appColors.warningColor.withAlpha(128);
-      borderColor = isDark
-          ? Colors.transparent
-          : context.appColors.warningColor;
-      leadingTextColor = isDark
-          ? const Color(0xFFFF9800)
-          : const Color(0xFFFF9800);
-      subtitleColor = context.appColors.warningColor;
-    } else {
-      cardColor = _themeColors.softAccent;
-      borderColor = isDark
-          ? Colors.transparent
-          : _themeColors.primaryAccent.withValues(alpha: 0.2);
-      leadingTextColor = _themeColors.primaryAccent;
-      subtitleColor = _themeColors.primaryAccent.withValues(alpha: 0.8);
-    }
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      elevation: 0,
-      color: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.medium,
-        side: BorderSide(color: borderColor),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: CircleAvatar(
-          backgroundColor: isDark
-              ? const Color(0xFF2C2C2E)
-              : const Color(0xFFFFFFFF),
-          child: Text(
-            name.isNotEmpty ? name.substring(0, 1) : '？',
-            style: TextStyle(
-              color: leadingTextColor,
-              fontWeight: AppFontWeight.bold,
-            ),
-          ),
-        ),
-        title: Text(
-          name,
-          style: TextStyle(fontWeight: AppFontWeight.bold, color: textColor),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: AppFontSize.small,
-            color: subtitleColor,
-            fontWeight: isHelper ? AppFontWeight.bold : AppFontWeight.regular,
-          ),
-        ),
-        trailing: (isHelper || isUsed)
-            ? Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF9800),
-                  borderRadius: AppRadius.small,
-                  border: Border.all(color: const Color(0xFFFF9800)),
-                ),
-                child: Text(
-                  '$usedPosと入替',
-                  style: TextStyle(
-                    color: const Color(0xFFFF9800),
-                    fontSize: AppFontSize.caption,
-                    fontWeight: AppFontWeight.bold,
-                  ),
-                ),
-              )
-            : Icon(
-                Icons.check_circle_outline,
-                color: _themeColors.primaryAccent,
-              ),
-      ),
-    );
   }
 
   InputDecoration _buildTextFieldDecoration({

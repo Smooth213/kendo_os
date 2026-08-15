@@ -6,8 +6,13 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_chips.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_detail_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_time_stepper_tile.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_league_points_section.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_simple_scene_rule_form.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
@@ -19,7 +24,6 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
@@ -937,7 +941,10 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                                 fontSize: AppFontSize.subhead,
                               ),
                             ),
-                            subtitle: _buildRuleChips(ruleSet),
+                            subtitle: CategoryRuleChips(
+                              ruleSet: ruleSet,
+                              isDark: isDark,
+                            ),
                           ),
                         ),
                       ),
@@ -961,152 +968,6 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildTimeStepperTile({
-    required String title,
-    required double value,
-    required double minValue,
-    required double maxValue,
-    required double step,
-    required ValueChanged<double> onChanged,
-    String? subtitle,
-    AppThemeColors? themeColors,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor =
-        themeColors?.primaryAccent ?? context.appColors.primaryAccent;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.modernValue,
-        vertical: AppSpacing.compact,
-      ),
-      decoration: BoxDecoration(
-        color: isDark
-            ? context.appColors.textColor.withValues(alpha: 0.05)
-            : context.appColors.cardBackground,
-        borderRadius: AppRadius.medium,
-        border: Border.all(
-          color: isDark
-              ? context.appColors.textColor.withValues(alpha: 0.12)
-              : const Color(0x33000000),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: AppFontWeight.semiBold,
-                    fontSize: AppFontSize.body,
-                    color: context.appColors.textColor,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: AppFontSize.caption,
-                      color: isDark
-                          ? context.appColors.subTextColor
-                          : context.appColors.subTextColor,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF2C2C2E)
-                  : context.appColors.inputBackground,
-              borderRadius: AppRadius.xlarge,
-              border: Border.all(
-                color: isDark
-                    ? context.appColors.textColor.withValues(alpha: 0.24)
-                    : const Color(0x33000000),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppKendoColors.pureBlack.withValues(alpha: 0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.remove, size: 18),
-                  padding: const EdgeInsets.all(AppSpacing.subValue),
-                  constraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
-                  color: value > minValue
-                      ? primaryColor
-                      : const Color(0x8A000000),
-                  onPressed: value > minValue
-                      ? () {
-                          final newVal = (value - step).clamp(
-                            minValue,
-                            maxValue,
-                          );
-                          onChanged(newVal);
-                        }
-                      : null,
-                ),
-                Container(
-                  constraints: const BoxConstraints(minWidth: 68),
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs,
-                  ),
-                  child: Text(
-                    _formatMinutes(value),
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      fontSize: AppFontSize.body,
-                      color: primaryColor,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add, size: 18),
-                  padding: const EdgeInsets.all(AppSpacing.subValue),
-                  constraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
-                  color: value < maxValue
-                      ? primaryColor
-                      : const Color(0x8A000000),
-                  onPressed: value < maxValue
-                      ? () {
-                          final newVal = (value + step).clamp(
-                            minValue,
-                            maxValue,
-                          );
-                          onChanged(newVal);
-                        }
-                      : null,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -1357,21 +1218,23 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                           children: [
                             ListView(
                               children: [
-                                _buildSimpleSceneRuleForm(
-                                  '⚔️ 錬成会ルール',
-                                  _renseikaiTime,
-                                  _renseikaiIsRunningTime,
-                                  _renseikaiHasHantei,
-                                  _renseikaiType,
-                                  _renseikaiOverallTime,
-                                  (val) => setState(() => _renseikaiTime = val),
-                                  (val) => setState(
+                                CategorySimpleSceneRuleForm(
+                                  title: '⚔️ 錬成会ルール',
+                                  time: _renseikaiTime,
+                                  isRunning: _renseikaiIsRunningTime,
+                                  hasHantei: _renseikaiHasHantei,
+                                  renseikaiType: _renseikaiType,
+                                  overallTime: _renseikaiOverallTime,
+                                  onTimeChanged: (val) =>
+                                      setState(() => _renseikaiTime = val),
+                                  onRunningChanged: (val) => setState(
                                     () => _renseikaiIsRunningTime = val,
                                   ),
-                                  (val) =>
+                                  onHanteiChanged: (val) =>
                                       setState(() => _renseikaiHasHantei = val),
-                                  (val) => setState(() => _renseikaiType = val),
-                                  (val) => setState(
+                                  onTypeChanged: (val) =>
+                                      setState(() => _renseikaiType = val),
+                                  onOverallTimeChanged: (val) => setState(
                                     () => _renseikaiOverallTime = val,
                                   ),
                                 ),
@@ -1388,24 +1251,24 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                             ),
                             ListView(
                               children: [
-                                _buildSimpleSceneRuleForm(
-                                  '🤝 申し合わせルール',
-                                  _moushiawaseTime,
-                                  _moushiawaseIsRunningTime,
-                                  _moushiawaseHasHantei,
-                                  _moushiawaseType,
-                                  _moushiawaseOverallTime,
-                                  (val) =>
+                                CategorySimpleSceneRuleForm(
+                                  title: '🤝 申し合わせルール',
+                                  time: _moushiawaseTime,
+                                  isRunning: _moushiawaseIsRunningTime,
+                                  hasHantei: _moushiawaseHasHantei,
+                                  renseikaiType: _moushiawaseType,
+                                  overallTime: _moushiawaseOverallTime,
+                                  onTimeChanged: (val) =>
                                       setState(() => _moushiawaseTime = val),
-                                  (val) => setState(
+                                  onRunningChanged: (val) => setState(
                                     () => _moushiawaseIsRunningTime = val,
                                   ),
-                                  (val) => setState(
+                                  onHanteiChanged: (val) => setState(
                                     () => _moushiawaseHasHantei = val,
                                   ),
-                                  (val) =>
+                                  onTypeChanged: (val) =>
                                       setState(() => _moushiawaseType = val),
-                                  (val) => setState(
+                                  onOverallTimeChanged: (val) => setState(
                                     () => _moushiawaseOverallTime = val,
                                   ),
                                 ),
@@ -1601,14 +1464,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         const SizedBox(height: AppSpacing.lg),
 
         // 1. 共通: 試合時間設定
-        _buildTimeStepperTile(
+        CategoryTimeStepperTile(
           title: '試合時間',
           subtitle: '30秒単位で自由に増減できます',
           value: matchTime,
           minValue: 0.5,
           maxValue: 15.0,
           step: 0.5,
-          themeColors: themeColors,
+          primaryColor: themeColors.primaryAccent,
           onChanged: (newVal) {
             setState(() {
               if (isNormal) {
@@ -1929,13 +1792,13 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                 ),
               ),
             ],
-            _buildTimeStepperTile(
+            CategoryTimeStepperTile(
               title: '延長戦の時間',
               value: enchoTime,
               minValue: 0.5,
               maxValue: 10.0,
               step: 0.5,
-              themeColors: themeColors,
+              primaryColor: themeColors.primaryAccent,
               onChanged: (newVal) {
                 setState(() {
                   if (isNormal) {
@@ -1966,7 +1829,39 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           ],
           if (_editingMatchType == 'リーグ個人戦') ...[
             const Divider(height: 32),
-            _buildLeaguePointsSection(isNormal, winPoint, lossPoint, drawPoint),
+            CategoryLeaguePointsSection(
+              keyPrefix: '${isNormal}_$_editingCategory',
+              winPoint: winPoint,
+              lossPoint: lossPoint,
+              drawPoint: drawPoint,
+              onWinChanged: (d) {
+                setState(() {
+                  if (isNormal) {
+                    _normalWinPoint = d;
+                  } else {
+                    _advancedWinPoint = d;
+                  }
+                });
+              },
+              onLossChanged: (d) {
+                setState(() {
+                  if (isNormal) {
+                    _normalLossPoint = d;
+                  } else {
+                    _advancedLossPoint = d;
+                  }
+                });
+              },
+              onDrawChanged: (d) {
+                setState(() {
+                  if (isNormal) {
+                    _normalDrawPoint = d;
+                  } else {
+                    _advancedDrawPoint = d;
+                  }
+                });
+              },
+            ),
           ],
           const Divider(height: 32),
         ] else if (_editingMatchType == '団体戦' ||
@@ -2101,13 +1996,13 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               },
             ),
             if (daihyoHasExtension) ...[
-              _buildTimeStepperTile(
+              CategoryTimeStepperTile(
                 title: '代表戦延長の時間',
                 value: daihyoEnchoTime,
                 minValue: 0.5,
                 maxValue: 10.0,
                 step: 0.5,
-                themeColors: themeColors,
+                primaryColor: themeColors.primaryAccent,
                 onChanged: (newVal) {
                   setState(() {
                     if (isNormal) {
@@ -2196,7 +2091,39 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           ],
           if (_editingMatchType == 'リーグ団体戦') ...[
             const Divider(height: 32),
-            _buildLeaguePointsSection(isNormal, winPoint, lossPoint, drawPoint),
+            CategoryLeaguePointsSection(
+              keyPrefix: '${isNormal}_$_editingCategory',
+              winPoint: winPoint,
+              lossPoint: lossPoint,
+              drawPoint: drawPoint,
+              onWinChanged: (d) {
+                setState(() {
+                  if (isNormal) {
+                    _normalWinPoint = d;
+                  } else {
+                    _advancedWinPoint = d;
+                  }
+                });
+              },
+              onLossChanged: (d) {
+                setState(() {
+                  if (isNormal) {
+                    _normalLossPoint = d;
+                  } else {
+                    _advancedLossPoint = d;
+                  }
+                });
+              },
+              onDrawChanged: (d) {
+                setState(() {
+                  if (isNormal) {
+                    _normalDrawPoint = d;
+                  } else {
+                    _advancedDrawPoint = d;
+                  }
+                });
+              },
+            ),
           ],
           const Divider(height: 32),
         ],
@@ -2505,106 +2432,6 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     );
   }
 
-  Widget _buildLeaguePointsSection(
-    bool isNormal,
-    double winPoint,
-    double lossPoint,
-    double drawPoint,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '勝ち点（リーグ戦の順位決定用）',
-          style: TextStyle(
-            fontWeight: AppFontWeight.bold,
-            fontSize: AppFontSize.body,
-            color: AppKendoColors.indigo,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                key: ValueKey('win_pt_${isNormal}_$_editingCategory'),
-                initialValue: winPoint.toString(),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: '勝ち（点）',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(AppSpacing.md),
-                ),
-                onChanged: (val) {
-                  final d = double.tryParse(val) ?? 0.0;
-                  setState(() {
-                    if (isNormal) {
-                      _normalWinPoint = d;
-                    } else {
-                      _advancedWinPoint = d;
-                    }
-                  });
-                },
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: TextFormField(
-                key: ValueKey('loss_pt_${isNormal}_$_editingCategory'),
-                initialValue: lossPoint.toString(),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: '負け（点）',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(AppSpacing.md),
-                ),
-                onChanged: (val) {
-                  final d = double.tryParse(val) ?? 0.0;
-                  setState(() {
-                    if (isNormal) {
-                      _normalLossPoint = d;
-                    } else {
-                      _advancedLossPoint = d;
-                    }
-                  });
-                },
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: TextFormField(
-                key: ValueKey('draw_pt_${isNormal}_$_editingCategory'),
-                initialValue: drawPoint.toString(),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: '引き分け（点）',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(AppSpacing.md),
-                ),
-                onChanged: (val) {
-                  final d = double.tryParse(val) ?? 0.0;
-                  setState(() {
-                    if (isNormal) {
-                      _normalDrawPoint = d;
-                    } else {
-                      _advancedDrawPoint = d;
-                    }
-                  });
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _buildSectionHeader(String title) {
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -2633,689 +2460,11 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     CategoryRuleSet ruleSet,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeColors =
-        Theme.of(context).extension<AppThemeColors>() ??
-        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-
-    // Helper: formatMinutes
-    String fmtMins(double mins) {
-      if (mins <= 0) return '時間制限なし';
-      if (mins == mins.toInt()) return '${mins.toInt()}分';
-      return '${mins.toInt()}分${((mins % 1) * 60).toInt()}秒';
-    }
-
-    // Helper: build a detailed rule section from a MatchRule
-    // matchType is the CategoryRuleSet.matchType value:
-    //   '個人戦' | '団体戦' | '勝ち抜き戦' | 'リーグ団体戦' | 'リーグ個人戦' | '錬成会'
-    Widget buildRuleSection(
-      String title,
-      MatchRule rule,
-      Color accentColor,
-      String matchType,
-    ) {
-      // ─── Derived flags from matchType ───
-      final bool isTeam =
-          matchType == '団体戦' ||
-          matchType == '勝ち抜き戦' ||
-          matchType == 'リーグ団体戦' ||
-          matchType == '錬成会';
-      final bool isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
-      final bool isKachinuki = matchType == '勝ち抜き戦';
-      final bool isRenseikai = matchType == '錬成会' || (rule.isRenseikai);
-
-      // --- Format text ---
-      String formatText;
-      if (isRenseikai) {
-        formatText = '錬成会';
-      } else if (isKachinuki) {
-        formatText = '勝ち抜き戦';
-      } else if (matchType == 'リーグ団体戦') {
-        formatText = 'リーグ戦（団体）';
-      } else if (matchType == 'リーグ個人戦') {
-        formatText = 'リーグ戦（個人）';
-      } else if (matchType == '団体戦') {
-        formatText = '団体戦';
-      } else {
-        formatText = '個人戦';
-      }
-
-      // --- Time text ---
-      String timeDesc =
-          '${fmtMins(rule.matchTimeMinutes)} (${rule.isRunningTime ? "通し/空回し" : "都度ストップ"})';
-
-      // --- Ippon shobu ---
-      String ipponDesc = rule.isIpponShobu ? '１本勝負' : '３本勝負 (２本先取)';
-
-      // --- Encho text (個人戦用) ---
-      String enchoDesc;
-      if (rule.isEnchoUnlimited) {
-        enchoDesc = 'あり (無制限)';
-      } else if (rule.enchoCount > 0 || rule.enchoTimeMinutes > 0) {
-        enchoDesc =
-            'あり (${fmtMins(rule.enchoTimeMinutes)}・${rule.enchoCount > 0 ? rule.enchoCount : 1}回)';
-      } else {
-        enchoDesc = 'なし';
-      }
-
-      // --- Hantei (個人戦用) ---
-      String hanteiDesc = rule.hasHantei ? 'あり' : 'なし';
-
-      // --- Daihyo encho (団体戦用) ---
-      String daihyoEnchoDesc;
-      if (!rule.daihyoHasExtension) {
-        daihyoEnchoDesc = 'なし';
-      } else if (rule.daihyoEnchoCount == -2 || rule.daihyoEnchoCount == 0) {
-        daihyoEnchoDesc = 'あり (無制限)';
-      } else {
-        daihyoEnchoDesc =
-            'あり (${fmtMins(rule.daihyoEnchoTimeMinutes)}・${rule.daihyoEnchoCount}回)';
-      }
-
-      // --- Build widgets ---
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ─── Section header bar ───
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: accentColor,
-                    borderRadius: AppRadius.micro,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: AppFontSize.bodyMedium,
-                    fontWeight: AppFontWeight.bold,
-                    color: accentColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ─── 試合基本情報 ───
-          _buildDetailRow('試合形式', formatText, isDark),
-          _buildDetailRow(isRenseikai ? '1対戦の時間' : '試合時間', timeDesc, isDark),
-
-          // ─── 錬成会設定 ───
-          if (isRenseikai) ...[
-            _buildSectionLabel('錬成会設定', accentColor),
-            _buildDetailRow('進行方式', rule.renseikaiType, isDark),
-            if (rule.renseikaiType == '時間制')
-              _buildDetailRow('制限時間', '${rule.overallTimeMinutes}分', isDark),
-          ],
-
-          // ─── 試合ルール（個人戦のみ延長・判定を表示） ───
-          if (!isRenseikai) ...[
-            _buildSectionLabel('試合ルール', accentColor),
-            _buildDetailRow('勝負方式', ipponDesc, isDark),
-            if (!isTeam) ...[
-              _buildDetailRow('延長戦', enchoDesc, isDark),
-              _buildDetailRow('判定', hanteiDesc, isDark),
-            ],
-          ],
-
-          // ─── 勝ち抜き戦設定 ───
-          if (isKachinuki) ...[
-            _buildSectionLabel('勝ち抜き戦設定', accentColor),
-            _buildDetailRow(
-              '無制限条件',
-              rule.kachinukiUnlimitedType.isEmpty
-                  ? '大将対大将'
-                  : rule.kachinukiUnlimitedType,
-              isDark,
-            ),
-          ],
-
-          // ─── 団体戦・チーム設定（通常トーナメント団体戦） ───
-          if (matchType == '団体戦') ...[
-            _buildSectionLabel('団体戦・チーム設定', accentColor),
-            _buildDetailRow(
-              '代表戦',
-              rule.hasRepresentativeMatch ? 'あり' : 'なし',
-              isDark,
-            ),
-            if (rule.hasRepresentativeMatch) ...[
-              _buildDetailRow(
-                '代表戦勝負形式',
-                rule.isDaihyoIpponShobu ? '１本勝負' : '３本勝負',
-                isDark,
-              ),
-              _buildDetailRow(
-                '代表戦時間',
-                rule.daihyoMatchTimeMinutes <= 0
-                    ? '時間制限なし'
-                    : fmtMins(rule.daihyoMatchTimeMinutes),
-                isDark,
-              ),
-              _buildDetailRow('代表戦延長', daihyoEnchoDesc, isDark),
-              if (rule.daihyoHasHantei) _buildDetailRow('代表戦判定', 'あり', isDark),
-            ],
-          ],
-
-          // ─── リーグ戦設定 ───
-          if (isLeague) ...[
-            _buildSectionLabel('リーグ戦設定', AppKendoColors.orange),
-            _buildDetailRow(
-              '勝点配分',
-              '勝: ${rule.winPoint}点 / 分: ${rule.drawPoint}点 / 負: ${rule.lossPoint}点',
-              isDark,
-            ),
-            if (matchType == 'リーグ団体戦') ...[
-              _buildDetailRow(
-                '同点時代表戦',
-                rule.hasLeagueDaihyo ? 'あり' : 'なし',
-                isDark,
-              ),
-              if (rule.hasLeagueDaihyo) ...[
-                _buildDetailRow(
-                  '代表戦時間',
-                  rule.daihyoMatchTimeMinutes <= 0
-                      ? '時間制限なし'
-                      : fmtMins(rule.daihyoMatchTimeMinutes),
-                  isDark,
-                ),
-                _buildDetailRow('代表戦延長', daihyoEnchoDesc, isDark),
-                if (rule.daihyoHasHantei)
-                  _buildDetailRow('代表戦判定', 'あり', isDark),
-              ],
-            ],
-          ],
-        ],
-      );
-    }
-
-    showAppBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.92,
-          expand: false,
-          builder: (context, scrollController) {
-            final List<Widget> sections = [];
-
-            if (ruleSet.isMultiScene) {
-              if (ruleSet.useRenseikaiRule) {
-                sections.add(
-                  buildRuleSection(
-                    '⚔️ 錬成会ルール',
-                    ruleSet.renseikaiRule,
-                    AppKendoColors.ipponGold,
-                    '錬成会',
-                  ),
-                );
-              }
-              if (ruleSet.useHonsenRule) {
-                if (sections.isNotEmpty) {
-                  sections.add(const Divider(height: 32));
-                }
-                sections.add(
-                  buildRuleSection(
-                    '🏆 本戦ルール',
-                    ruleSet.normalRule,
-                    const Color(0xFF3F51B5),
-                    ruleSet.matchType,
-                  ),
-                );
-              }
-              if (ruleSet.useMoushiawaseRule) {
-                if (sections.isNotEmpty) {
-                  sections.add(const Divider(height: 32));
-                }
-                sections.add(
-                  buildRuleSection(
-                    '🤝 申し合わせルール',
-                    ruleSet.moushiawaseRule,
-                    const Color(0xFF009688),
-                    '錬成会',
-                  ),
-                );
-              }
-            } else {
-              sections.add(
-                buildRuleSection(
-                  '通常戦ルール',
-                  ruleSet.normalRule,
-                  themeColors.primaryAccent,
-                  ruleSet.matchType,
-                ),
-              );
-
-              if (ruleSet.useAdvancedRule) {
-                sections.add(const SizedBox(height: AppSpacing.sm));
-                sections.add(const Divider());
-                sections.add(
-                  buildRuleSection(
-                    '上位戦（準決勝・決勝等）ルール',
-                    ruleSet.advancedRule,
-                    AppKendoColors.teal,
-                    ruleSet.matchType,
-                  ),
-                );
-                sections.add(const SizedBox(height: AppSpacing.sm));
-                sections.add(
-                  _buildDetailRow(
-                    '上位戦 適用ワード',
-                    ruleSet.advancedKeywords.join('、'),
-                    isDark,
-                  ),
-                );
-              }
-            }
-
-            return SingleChildScrollView(
-              controller: scrollController,
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.sm,
-                AppSpacing.xl,
-                AppSpacing.xl,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 48,
-                      height: 5,
-                      margin: const EdgeInsets.only(
-                        bottom: AppSpacing.roundValue,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0x8A000000),
-                        borderRadius: AppRadius.medium,
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.gavel_rounded,
-                        color: themeColors.primaryAccent,
-                        size: 24,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          '$categoryName のルール設定',
-                          style: TextStyle(
-                            fontSize: AppFontSize.headline,
-                            fontWeight: AppFontWeight.bold,
-                            color: context.appColors.textColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 32),
-
-                  ...sections,
-
-                  const SizedBox(height: AppSpacing.xl),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.appColors.separatorColor,
-                        foregroundColor: context.appColors.textColor,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.lg,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.medium,
-                        ),
-                      ),
-                      child: const Text(
-                        '閉じる',
-                        style: TextStyle(fontWeight: AppFontWeight.semiBold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.subValue),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: AppFontWeight.semiBold,
-                fontSize: AppFontSize.bodySmall,
-                color: AppKendoColors.grey,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: AppFontSize.bodySmall,
-                color: context.appColors.subTextColor,
-                fontWeight: AppFontWeight.medium,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionLabel(String label, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.xs),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: AppFontSize.small,
-          fontWeight: AppFontWeight.bold,
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRuleChips(CategoryRuleSet ruleSet) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final timeChipBg = isDark
-        ? const Color(0x33FFFFFF)
-        : const Color(0x1F000000);
-    final timeChipText = isDark
-        ? AppKendoColors.pureWhite
-        : AppKendoColors.pureBlack;
-
-    Widget buildChip(String label, Color bg, Color text) {
-      return Container(
-        margin: const EdgeInsets.only(right: 6, top: AppSpacing.xs),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: 3,
-        ),
-        decoration: BoxDecoration(color: bg, borderRadius: AppRadius.small),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: text,
-            fontSize: AppFontSize.caption,
-            fontWeight: AppFontWeight.bold,
-          ),
-        ),
-      );
-    }
-
-    if (ruleSet.isMultiScene) {
-      final List<Widget> sceneChips = [];
-
-      if (ruleSet.useRenseikaiRule) {
-        sceneChips.add(
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              buildChip(
-                '⚔️ 錬成会',
-                AppKendoColors.ipponGold,
-                AppKendoColors.pureBlack,
-              ),
-              buildChip(
-                _formatMinutes(ruleSet.renseikaiRule.matchTimeMinutes),
-                timeChipBg,
-                timeChipText,
-              ),
-              if (ruleSet.renseikaiRule.isRunningTime)
-                buildChip(
-                  '流し',
-                  const Color(0xFF2196F3),
-                  AppKendoColors.pureWhite,
-                ),
-              if (ruleSet.renseikaiRule.hasHantei)
-                buildChip(
-                  '引分有',
-                  AppKendoColors.successGreen,
-                  AppKendoColors.pureWhite,
-                ),
-            ],
-          ),
-        );
-      }
-
-      if (ruleSet.useHonsenRule) {
-        if (sceneChips.isNotEmpty) {
-          sceneChips.add(const SizedBox(height: 2));
-        }
-        sceneChips.add(
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              buildChip(
-                '🏆 本戦',
-                const Color(0xFF3F51B5),
-                AppKendoColors.pureWhite,
-              ),
-              buildChip(
-                _formatMinutes(ruleSet.normalRule.matchTimeMinutes),
-                timeChipBg,
-                timeChipText,
-              ),
-              if (ruleSet.normalRule.isEnchoUnlimited ||
-                  ruleSet.normalRule.enchoCount > 0)
-                buildChip(
-                  '代表戦/延長有',
-                  const Color(0xFF9C27B0),
-                  AppKendoColors.pureWhite,
-                ),
-            ],
-          ),
-        );
-      }
-
-      if (ruleSet.useMoushiawaseRule) {
-        if (sceneChips.isNotEmpty) {
-          sceneChips.add(const SizedBox(height: 2));
-        }
-        sceneChips.add(
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              buildChip(
-                '🤝 申し合わせ',
-                const Color(0xFF009688),
-                AppKendoColors.pureWhite,
-              ),
-              buildChip(
-                _formatMinutes(ruleSet.moushiawaseRule.matchTimeMinutes),
-                timeChipBg,
-                timeChipText,
-              ),
-              if (ruleSet.moushiawaseRule.hasHantei)
-                buildChip(
-                  '引分有',
-                  AppKendoColors.successGreen,
-                  AppKendoColors.pureWhite,
-                ),
-            ],
-          ),
-        );
-      }
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: AppSpacing.xs),
-          ...sceneChips,
-        ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: AppSpacing.xs),
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            buildChip(
-              '標準ルール',
-              const Color(0xFF2196F3),
-              AppKendoColors.pureWhite,
-            ),
-            buildChip(
-              _formatMinutes(ruleSet.normalRule.matchTimeMinutes),
-              timeChipBg,
-              timeChipText,
-            ),
-            buildChip(
-              ruleSet.normalRule.enchoCount > 0
-                  ? "延長${ruleSet.normalRule.enchoCount}回"
-                  : (ruleSet.normalRule.isEnchoUnlimited ? "延長無制限" : "延長なし"),
-              const Color(0xFF9C27B0),
-              AppKendoColors.pureWhite,
-            ),
-            if (ruleSet.normalRule.hasHantei)
-              buildChip(
-                '判定あり',
-                AppKendoColors.successGreen,
-                AppKendoColors.pureWhite,
-              ),
-          ],
-        ),
-        if (ruleSet.useAdvancedRule)
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.xs),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                buildChip(
-                  '上位戦',
-                  const Color(0xFFFF5722),
-                  AppKendoColors.pureWhite,
-                ),
-                buildChip(
-                  _formatMinutes(ruleSet.advancedRule.matchTimeMinutes),
-                  timeChipBg,
-                  timeChipText,
-                ),
-                buildChip(
-                  ruleSet.advancedRule.enchoCount > 0
-                      ? "延長${ruleSet.advancedRule.enchoCount}回"
-                      : (ruleSet.advancedRule.isEnchoUnlimited
-                            ? "延長無制限"
-                            : "延長なし"),
-                  const Color(0xFF9C27B0),
-                  const Color(0xFF9C27B0),
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSimpleSceneRuleForm(
-    String title,
-    double time,
-    bool isRunning,
-    bool hasHantei,
-    String renseikaiType,
-    int overallTime,
-    ValueChanged<double> onTimeChanged,
-    ValueChanged<bool> onRunningChanged,
-    ValueChanged<bool> onHanteiChanged,
-    ValueChanged<String> onTypeChanged,
-    ValueChanged<int> onOverallTimeChanged,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontWeight: AppFontWeight.bold,
-              fontSize: AppFontSize.subhead,
-              color: AppKendoColors.indigo,
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        const Text(
-          '錬成形式（試合方式）',
-          style: TextStyle(
-            fontWeight: AppFontWeight.semiBold,
-            fontSize: AppFontSize.bodySmall,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: ['一試合制', '時間制'].map((type) {
-            final isSelected = renseikaiType == type;
-            return Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: AppChoiceChip(
-                label: Text(type),
-                selected: isSelected,
-                onSelected: (selected) {
-                  if (selected) onTypeChanged(type);
-                },
-              ),
-            );
-          }).toList(),
-        ),
-        if (renseikaiType == '時間制') ...[
-          const SizedBox(height: AppSpacing.md),
-          TextFormField(
-            initialValue: overallTime.toString(),
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: '全体の制限時間（分）',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.all(AppSpacing.md),
-            ),
-            onChanged: (val) {
-              final i = int.tryParse(val) ?? 30;
-              onOverallTimeChanged(i);
-            },
-          ),
-        ],
-        _buildTimeStepperTile(
-          title: '1試合の時間',
-          value: time,
-          minValue: 0.5,
-          maxValue: 10.0,
-          step: 0.5,
-          onChanged: onTimeChanged,
-        ),
-        SwitchListTile.adaptive(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('流し（タイマーを止めない）'),
-          value: isRunning,
-          onChanged: onRunningChanged,
-        ),
-      ],
+    CategoryRuleDetailBottomSheet.show(
+      context,
+      categoryName: categoryName,
+      ruleSet: ruleSet,
+      isDark: isDark,
     );
   }
 }

@@ -19,6 +19,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_position_slot.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
@@ -1285,241 +1286,32 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                         final playerName = _selectedPlayers[index] ?? '未定';
                         final isSelected = _selectedPlayers.containsKey(index);
 
-                        return Card(
+                        return Padding(
                           key: ValueKey(
                             'order_slot_${_positions[index]}_$index',
                           ),
-                          margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-                          elevation: 0,
-                          color: inputBgColor,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              color: isSelected
-                                  ? _themeColors.primaryAccent
-                                  : borderColor,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            borderRadius: AppRadius.medium,
-                          ),
-                          child: Column(
-                            children: [
-                              InkWell(
-                                onTap: () async {
-                                  FocusManager.instance.primaryFocus?.unfocus();
-                                  await _selectPlayer(index, masterPlayers);
-                                  if (!mounted) return;
-                                  FocusManager.instance.primaryFocus?.unfocus();
-                                },
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(AppRadius.mediumValue),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(AppSpacing.lg),
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        backgroundColor: isSelected
-                                            ? _themeColors.softAccent
-                                            : (isDark
-                                                  ? const Color(0xFF2C2C2E)
-                                                  : AppKendoColors
-                                                        .grey
-                                                        .shade200),
-                                        child: Text(
-                                          posName.substring(0, 1),
-                                          style: TextStyle(
-                                            color: isSelected
-                                                ? _themeColors.primaryAccent
-                                                : subTextColor,
-                                            fontWeight: AppFontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: AppSpacing.lg),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              rule.teamName.isNotEmpty
-                                                  ? '${rule.teamName} : $posName'
-                                                  : posName,
-                                              style: TextStyle(
-                                                fontSize: AppFontSize.small,
-                                                color:
-                                                    _themeColors.primaryAccent,
-                                                fontWeight: AppFontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              playerName,
-                                              style: TextStyle(
-                                                fontSize: AppFontSize.headline,
-                                                fontWeight: AppFontWeight.bold,
-                                                color: isSelected
-                                                    ? textColor
-                                                    : subTextColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: AppSpacing.modernValue,
-                                          vertical: AppSpacing.subValue,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? _themeColors.softAccent
-                                              : (isDark
-                                                    ? const Color(0xFF2C2C2E)
-                                                    : AppKendoColors
-                                                          .grey
-                                                          .shade100),
-                                          borderRadius: AppRadius.round,
-                                        ),
-                                        child: Text(
-                                          isSelected ? '変更' : '選択',
-                                          style: TextStyle(
-                                            color: isSelected
-                                                ? _themeColors.primaryAccent
-                                                : subTextColor,
-                                            fontSize: AppFontSize.bodySmall,
-                                            fontWeight: AppFontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      ReorderableDragStartListener(
-                                        index: index,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(
-                                            AppSpacing.xs,
-                                          ),
-                                          child: Icon(
-                                            Icons.drag_handle,
-                                            color: subTextColor.withValues(
-                                              alpha: 0.6,
-                                            ),
-                                            size: 22,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              // ★ 修正：画像でご指摘いただいた通り、リーグ戦では相手の個別入力を非表示にしてスッキリさせる！
-                              if (!rule.isLeague) ...[
-                                Divider(
-                                  height: 1,
-                                  indent: 16,
-                                  endIndent: 16,
-                                  color: isDark
-                                      ? const Color(0xFF38383A)
-                                      : const Color(0x33000000),
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF1E1E1E)
-                                        : const Color(0xFFF2F2F7),
-                                    borderRadius: const BorderRadius.vertical(
-                                      bottom: Radius.circular(
-                                        AppRadius.mediumValue,
-                                      ),
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.lg,
-                                    vertical: AppSpacing.md,
-                                  ),
-                                  child: TextFormField(
-                                    key: ValueKey(_opponentPlayers[index]),
-                                    initialValue: _opponentPlayers[index],
-                                    onChanged: (val) =>
-                                        _opponentPlayers[index] = val,
-                                    style: TextStyle(color: textColor),
-                                    decoration: InputDecoration(
-                                      labelText: '対戦相手 ($posName)',
-                                      labelStyle: TextStyle(
-                                        color: subTextColor,
-                                      ),
-                                      hintText: '相手選手名（任意）',
-                                      hintStyle: TextStyle(color: subTextColor),
-                                      isDense: true,
-                                      prefixIcon: const Icon(
-                                        Icons.person_outline,
-                                        size: 20,
-                                        color: AppKendoColors.blueGrey,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: AppRadius.small,
-                                        borderSide: BorderSide(
-                                          color: borderColor,
-                                        ),
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: AppRadius.small,
-                                        borderSide: BorderSide(
-                                          color: borderColor,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: AppRadius.small,
-                                        borderSide: BorderSide(
-                                          color: _themeColors.primaryAccent,
-                                        ),
-                                      ),
-                                      fillColor: isDark
-                                          ? const Color(0xFF2C2C2E)
-                                          : const Color(0xFFFFFFFF),
-                                      filled: true,
-                                      suffixIcon: Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: AppSpacing.xs,
-                                        ),
-                                        child: TextButton.icon(
-                                          style: TextButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: AppSpacing.sm,
-                                            ),
-                                            minimumSize: Size.zero,
-                                            backgroundColor:
-                                                AppKendoColors.hansokuRed,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: AppRadius.sub,
-                                            ),
-                                          ),
-                                          icon: const Icon(
-                                            Icons.block,
-                                            color: AppKendoColors.pureWhite,
-                                            size: 14,
-                                          ),
-                                          label: const Text(
-                                            '欠員',
-                                            style: TextStyle(
-                                              color: AppKendoColors.pureWhite,
-                                              fontWeight: AppFontWeight.bold,
-                                              fontSize: AppFontSize.small,
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            setState(
-                                              () => _opponentPlayers[index] =
-                                                  '欠員',
-                                            );
-                                            FocusScope.of(context).unfocus();
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ], // ★ if (!rule.isLeague) を閉じる
-                            ],
+                          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                          child: OrderSetupPositionSlot(
+                            index: index,
+                            posName: posName,
+                            playerName: playerName,
+                            teamName: rule.teamName,
+                            isSelected: isSelected,
+                            onTap: () async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              await _selectPlayer(index, masterPlayers);
+                              if (!mounted) return;
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
+                            isDark: isDark,
+                            showOpponentField: !rule.isLeague,
+                            opponentPlayerName: _opponentPlayers[index] ?? '',
+                            onOpponentChanged: (val) =>
+                                _opponentPlayers[index] = val,
+                            onVacantPressed: () {
+                              setState(() => _opponentPlayers[index] = '欠員');
+                              FocusScope.of(context).unfocus();
+                            },
                           ),
                         );
                       },

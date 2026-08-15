@@ -19,6 +19,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_option_card.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
@@ -600,54 +601,6 @@ class _SetupMatchFormatScreenState
     return positions;
   }
 
-  Widget _buildDynamicSectionBox({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required Widget child,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(top: AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
-        borderRadius: AppRadius.medium,
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: AppKendoColors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(icon, color: color),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: AppFontWeight.bold,
-                        color: color,
-                        fontSize: AppFontSize.bodyMedium,
-                      ),
-                      softWrap: true,
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(),
-              child,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   InputDecoration _buildTextFieldDecoration({
     required String labelText,
     String? hintText,
@@ -786,63 +739,6 @@ class _SetupMatchFormatScreenState
               fontSize: AppFontSize.small,
               fontWeight: AppFontWeight.bold,
               color: accentColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReadOnlyRuleRow(String label, String value) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: AppFontWeight.semiBold,
-                fontSize: AppFontSize.bodySmall,
-                color: isDark
-                    ? context.appColors.subTextColor
-                    : context.appColors.subTextColor,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? context.appColors.textColor.withValues(alpha: 0.08)
-                      : _themeColors.softAccent,
-                  borderRadius: AppRadius.small,
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFFFFFFFF).withValues(alpha: 0.12)
-                        : _themeColors.primaryAccent.withValues(alpha: 0.15),
-                  ),
-                ),
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: AppFontSize.bodySmall,
-                    fontWeight: AppFontWeight.bold,
-                    color: isDark
-                        ? const Color(0xFFFFFFFF)
-                        : _themeColors.textColor,
-                  ),
-                ),
-              ),
             ),
           ),
         ],
@@ -1609,7 +1505,7 @@ class _SetupMatchFormatScreenState
           const SizedBox(height: AppSpacing.lg),
         ],
 
-        _buildDynamicSectionBox(
+        MatchFormatOptionCard(
           title: '現在適用中のルール: $displayRuleName',
           icon: isAdvanced ? Icons.stars : Icons.gavel,
           color: isAdvanced ? AppKendoColors.teal : _themeColors.primaryAccent,
@@ -1619,111 +1515,156 @@ class _SetupMatchFormatScreenState
               // ─── 錢成会設定 ───
               if (_isRenseikai) ...[
                 _buildSectionHeader('錬成会設定', headerColor),
-                _buildReadOnlyRuleRow('進行方式', _renseikaiType),
-                _buildReadOnlyRuleRow('1対戦の時間', _formatMinutesText(_matchTime)),
+                SetupReadOnlyRuleRow(
+                  label: '進行方式',
+                  value: _renseikaiType,
+                  accentColor: headerColor,
+                ),
+                SetupReadOnlyRuleRow(
+                  label: '1対戦の時間',
+                  value: _formatMinutesText(_matchTime),
+                  accentColor: headerColor,
+                ),
                 if (_renseikaiType == '時間制')
-                  _buildReadOnlyRuleRow(
-                    '全体の制限時間',
-                    '${int.tryParse(_overallTimeController.text) ?? 30}分',
+                  SetupReadOnlyRuleRow(
+                    label: '全体の制限時間',
+                    value:
+                        '${int.tryParse(_overallTimeController.text) ?? 30}分',
+                    accentColor: headerColor,
                   ),
               ],
 
               // ─── 試合ルール（錬成会以外） ───
               if (!_isRenseikai) ...[
                 _buildSectionHeader('試合ルール', headerColor),
-                _buildReadOnlyRuleRow('試合方式', _matchType),
-                _buildReadOnlyRuleRow(
-                  '試合時間',
-                  '${_formatMinutesText(_matchTime)} (${_isRunningTime ? "ランニング計測" : "通常計測"})',
+                SetupReadOnlyRuleRow(
+                  label: '試合方式',
+                  value: _matchType,
+                  accentColor: headerColor,
                 ),
-                _buildReadOnlyRuleRow(
-                  '勝負方式',
-                  _isIpponShobu ? '一本勝負' : '三本勝負 ($_ipponLimit本先取)',
+                SetupReadOnlyRuleRow(
+                  label: '試合時間',
+                  value:
+                      '${_formatMinutesText(_matchTime)} (${_isRunningTime ? "ランニング計測" : "通常計測"})',
+                  accentColor: headerColor,
                 ),
-                _buildReadOnlyRuleRow('反則', '$_hansokuLimit反則で負け'),
-                _buildReadOnlyRuleRow('延長戦', getExtensionText()),
-                _buildReadOnlyRuleRow('判定', _hasHantei ? '引き分け時に判定あり' : 'なし'),
+                SetupReadOnlyRuleRow(
+                  label: '勝負方式',
+                  value: _isIpponShobu ? '一本勝負' : '三本勝負 ($_ipponLimit本先取)',
+                  accentColor: headerColor,
+                ),
+                SetupReadOnlyRuleRow(
+                  label: '反則',
+                  value: '$_hansokuLimit反則で負け',
+                  accentColor: headerColor,
+                ),
+                SetupReadOnlyRuleRow(
+                  label: '延長戦',
+                  value: getExtensionText(),
+                  accentColor: headerColor,
+                ),
+                SetupReadOnlyRuleRow(
+                  label: '判定',
+                  value: _hasHantei ? '引き分け時に判定あり' : 'なし',
+                  accentColor: headerColor,
+                ),
               ],
 
               // ─── 勝ち抜き戦設定 ───
               if (_matchType == '勝ち抜き戦') ...[
                 _buildSectionHeader('勝ち抜き戦設定', headerColor),
-                _buildReadOnlyRuleRow(
-                  '大将VS大将',
-                  (_kachinukiUnlimitedType == 'なし' ||
+                SetupReadOnlyRuleRow(
+                  label: '大将VS大将',
+                  value:
+                      (_kachinukiUnlimitedType == 'なし' ||
                           _kachinukiUnlimitedType.isEmpty)
                       ? '引き分け'
                       : '延長戦を行う',
+                  accentColor: headerColor,
                 ),
-                _buildReadOnlyRuleRow(
-                  '大将VS他ポジション',
-                  _kachinukiUnlimitedType == '無制限' ? '延長戦を行う' : '引き分け',
+                SetupReadOnlyRuleRow(
+                  label: '大将VS他ポジション',
+                  value: _kachinukiUnlimitedType == '無制限' ? '延長戦を行う' : '引き分け',
+                  accentColor: headerColor,
                 ),
               ],
 
               // ─── 団体戦・チーム設定（通常団体戦のみ） ───
               if (_matchType == '団体戦') ...[
                 _buildSectionHeader('団体戦・チーム設定', headerColor),
-                _buildReadOnlyRuleRow(
-                  '代表戦',
-                  _hasLeagueDaihyo
+                SetupReadOnlyRuleRow(
+                  label: '代表戦',
+                  value: _hasLeagueDaihyo
                       ? 'あり (${_isDaihyoIpponShobu ? "一本勝負" : "三本勝負"})'
                       : 'なし',
+                  accentColor: headerColor,
                 ),
               ],
 
               // ─── 代表戦設定（通常団体戦の代表戦ありのみ） ───
               if (_matchType == '団体戦' && _hasLeagueDaihyo) ...[
                 _buildSectionHeader('代表戦設定', headerColor),
-                _buildReadOnlyRuleRow(
-                  '代表戦 時間',
-                  _daihyoMatchTime <= 0
+                SetupReadOnlyRuleRow(
+                  label: '代表戦 時間',
+                  value: _daihyoMatchTime <= 0
                       ? '無制限'
                       : _formatMinutesText(_daihyoMatchTime),
+                  accentColor: headerColor,
                 ),
-                _buildReadOnlyRuleRow(
-                  '代表戦 延長戦',
-                  !_daihyoHasExtension
+                SetupReadOnlyRuleRow(
+                  label: '代表戦 延長戦',
+                  value: !_daihyoHasExtension
                       ? 'なし'
                       : (_daihyoEnchoCount == -2
                             ? 'あり (無制限)'
                             : 'あり (${_formatMinutesText(_daihyoEnchoTime)}・$_daihyoEnchoCount回)'),
+                  accentColor: headerColor,
                 ),
-                _buildReadOnlyRuleRow('代表戦 判定', _daihyoHasHantei ? 'あり' : 'なし'),
+                SetupReadOnlyRuleRow(
+                  label: '代表戦 判定',
+                  value: _daihyoHasHantei ? 'あり' : 'なし',
+                  accentColor: headerColor,
+                ),
               ],
 
               // ─── リーグ戦設定 ───
               if (_matchType.contains('リーグ')) ...[
                 _buildSectionHeader('リーグ戦設定', AppKendoColors.orange),
-                _buildReadOnlyRuleRow(
-                  '勝ち点',
-                  '勝: ${double.tryParse(_winPointController.text) ?? 0}点 / '
+                SetupReadOnlyRuleRow(
+                  label: '勝ち点',
+                  value:
+                      '勝: ${double.tryParse(_winPointController.text) ?? 0}点 / '
                       '負: ${double.tryParse(_lossPointController.text) ?? 0}点 / '
                       '分: ${double.tryParse(_drawPointController.text) ?? 0}点',
+                  accentColor: AppKendoColors.orange,
                 ),
                 if (_matchType == 'リーグ団体戦') ...[
-                  _buildReadOnlyRuleRow(
-                    '同点代表戦',
-                    _hasLeagueDaihyo ? 'あり' : 'なし',
+                  SetupReadOnlyRuleRow(
+                    label: '同点代表戦',
+                    value: _hasLeagueDaihyo ? 'あり' : 'なし',
+                    accentColor: AppKendoColors.orange,
                   ),
                   if (_hasLeagueDaihyo) ...[
-                    _buildReadOnlyRuleRow(
-                      '代表戦 時間',
-                      _daihyoMatchTime <= 0
+                    SetupReadOnlyRuleRow(
+                      label: '代表戦 時間',
+                      value: _daihyoMatchTime <= 0
                           ? '無制限'
                           : _formatMinutesText(_daihyoMatchTime),
+                      accentColor: AppKendoColors.orange,
                     ),
-                    _buildReadOnlyRuleRow(
-                      '代表戦 延長戦',
-                      !_daihyoHasExtension
+                    SetupReadOnlyRuleRow(
+                      label: '代表戦 延長戦',
+                      value: !_daihyoHasExtension
                           ? 'なし'
                           : (_daihyoEnchoCount == -2
                                 ? 'あり (無制限)'
                                 : 'あり (${_formatMinutesText(_daihyoEnchoTime)}・$_daihyoEnchoCount回)'),
+                      accentColor: AppKendoColors.orange,
                     ),
-                    _buildReadOnlyRuleRow(
-                      '代表戦 判定',
-                      _daihyoHasHantei ? 'あり' : 'なし',
+                    SetupReadOnlyRuleRow(
+                      label: '代表戦 判定',
+                      value: _daihyoHasHantei ? 'あり' : 'なし',
+                      accentColor: AppKendoColors.orange,
                     ),
                   ],
                 ],
