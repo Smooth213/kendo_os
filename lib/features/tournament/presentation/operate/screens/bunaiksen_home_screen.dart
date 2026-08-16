@@ -12,8 +12,6 @@ import 'package:kendo_os/shared/widgets/infinite_streak_leaderboard.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 // ★ Phase 8: 削除機能と権限管理用プロバイダを追加
 import '../providers/match_command_provider.dart';
-import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
@@ -29,105 +27,13 @@ import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import '../components/bulk_rule_edit_sheet.dart';
 import '../components/home/match_edit_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_score_marks.dart';
 
 import 'package:uuid/uuid.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
-
-  // ★ 究極版：記号化しつつ、区切り文字を「中央揃えのアイコン」で美しく表示するWidgetエンジン
-  Widget _buildScoreMarks(
-    MatchModel match,
-    bool isDark, {
-    bool isFinished = true,
-  }) {
-    final textColor = isFinished
-        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF475569))
-        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000));
-    // 区切り文字を少しグレーにして、スコア本体(メやコ)と明確に区別する
-    final iconColor = isFinished
-        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF475569))
-        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF475569));
-
-    // 完全無得点の引き分け
-    if (match.redScore == 0 && match.whiteScore == 0) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        child: Icon(Icons.close, size: 18, color: iconColor), // 完璧な中央揃えの「✕」アイコン
-      );
-    }
-
-    // ★ 修正: KendoRuleEngine を使用し、Undoされたイベントを除外した正確な結果を使用
-    final engine = KendoRuleEngine();
-    final analysis = engine.analyzeHistory(match.events, match, match.rule);
-
-    final rDisplays = analysis.displays[Side.red] ?? [];
-    final wDisplays = analysis.displays[Side.white] ?? [];
-
-    // 表示用のマークを抽出して、1本目なら丸囲み文字に変換
-    String rMarksStr = rDisplays
-        .map((d) {
-          if (d.mark == 'メ') return d.isFirstMatchPoint ? '㋱' : 'メ';
-          if (d.mark == 'コ') return d.isFirstMatchPoint ? '㋙' : 'コ';
-          if (d.mark == 'ド') return d.isFirstMatchPoint ? '㋣' : 'ド';
-          if (d.mark == 'ツ') return d.isFirstMatchPoint ? '㋡' : 'ツ';
-          if (d.mark == '反') return '反';
-          if (d.mark == '判定') return '判';
-          if (d.mark == '◯') return d.isFirstMatchPoint ? '◎' : '◯';
-          return d.mark;
-        })
-        .join('');
-
-    String wMarksStr = wDisplays
-        .map((d) {
-          if (d.mark == 'メ') return d.isFirstMatchPoint ? '㋱' : 'メ';
-          if (d.mark == 'コ') return d.isFirstMatchPoint ? '㋙' : 'コ';
-          if (d.mark == 'ド') return d.isFirstMatchPoint ? '㋣' : 'ド';
-          if (d.mark == 'ツ') return d.isFirstMatchPoint ? '㋡' : 'ツ';
-          if (d.mark == '反') return '反';
-          if (d.mark == '判定') return '判';
-          if (d.mark == '◯') return d.isFirstMatchPoint ? '◎' : '◯';
-          return d.mark;
-        })
-        .join('');
-
-    final bool isDraw = match.redScore == match.whiteScore;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center, // ここで完璧な垂直中央揃えを実現
-      children: [
-        Text(
-          rMarksStr,
-          style: TextStyle(
-            fontSize: AppFontSize.header,
-            fontWeight: AppFontWeight.bold,
-            color: textColor,
-            height: 1.1,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-          // 引き分けなら「✕（close）」、勝敗がついていれば「-（remove）」のアイコンを表示
-          child: Icon(
-            isDraw ? Icons.close : Icons.remove,
-            size: 16,
-            color: iconColor,
-          ),
-        ),
-        Text(
-          wMarksStr,
-          style: TextStyle(
-            fontSize: AppFontSize.header,
-            fontWeight: AppFontWeight.bold,
-            color: textColor,
-            height: 1.1,
-          ),
-        ),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -633,9 +539,9 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                                             horizontal: AppSpacing.lg,
                                           ),
                                           child: isFinished
-                                              ? _buildScoreMarks(
-                                                  match,
-                                                  isDark,
+                                              ? BunaiksenScoreMarks(
+                                                  match: match,
+                                                  isDark: isDark,
                                                   isFinished: isFinished,
                                                 )
                                               : Text(

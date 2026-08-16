@@ -1,5 +1,4 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -21,9 +20,9 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_custom_time_dialog.dart';
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
   const BunaiksenSetupScreen({super.key});
@@ -85,87 +84,6 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
     });
   }
 
-  // ★ 追加: 任意の試合時間を入力するダイアログ
-  Future<double?> _showCustomTimeDialog(double currentTime) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final minController = TextEditingController(
-      text: currentTime.toInt().toString(),
-    );
-    final secController = TextEditingController(
-      text: ((currentTime % 1) * 60).toInt().toString(),
-    );
-
-    return showAppDialog<double>(
-      context: context,
-      builder: (ctx) => AppDialog(
-        title: '任意の試合時間',
-        content: Row(
-          children: [
-            Expanded(
-              child: AppTextField(
-                controller: minController,
-                keyboardType: TextInputType.number,
-                style: TextStyle(
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : context.appColors.textColor,
-                ),
-                decoration: _buildTextFieldDecoration(labelText: '分'),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Text(
-                ':',
-                style: TextStyle(
-                  fontSize: AppFontSize.display,
-                  fontWeight: AppFontWeight.bold,
-                ),
-              ),
-            ),
-            Expanded(
-              child: AppTextField(
-                controller: secController,
-                keyboardType: TextInputType.number,
-                style: TextStyle(
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xFF000000),
-                ),
-                decoration: _buildTextFieldDecoration(labelText: '秒'),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, null),
-            child: const Text(
-              'キャンセル',
-              style: TextStyle(color: AppKendoColors.grey),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _themeColors.primaryAccent,
-              foregroundColor: AppKendoColors.pureWhite,
-            ),
-            onPressed: () {
-              final m = int.tryParse(minController.text) ?? 0;
-              final s = int.tryParse(secController.text) ?? 0;
-              final total = m + (s / 60.0);
-              Navigator.pop(ctx, total);
-            },
-            child: const Text(
-              '設定する',
-              style: TextStyle(fontWeight: AppFontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   void dispose() {
     _tabController.dispose();
@@ -218,34 +136,6 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
       _redTeam = newRed;
       _whiteTeam = newWhite;
     });
-  }
-
-  InputDecoration _buildTextFieldDecoration({
-    required String labelText,
-    String? hintText,
-    Widget? prefixIcon,
-    String? suffixText,
-  }) {
-    return InputDecoration(
-      labelText: labelText,
-      labelStyle: TextStyle(color: _themeColors.subTextColor),
-      hintText: hintText,
-      hintStyle: TextStyle(color: _themeColors.hintColor),
-      suffixText: suffixText,
-      suffixStyle: TextStyle(color: _themeColors.subTextColor),
-      prefixIcon: prefixIcon,
-      filled: true,
-      fillColor: _themeColors.inputBackground,
-      border: OutlineInputBorder(borderRadius: AppRadius.medium),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
-        borderSide: BorderSide(color: _themeColors.separatorColor, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
-        borderSide: BorderSide(color: _themeColors.primaryAccent, width: 2),
-      ),
-    );
   }
 
   @override
@@ -391,9 +281,19 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                                     );
                               } else {
                                 // ★ 任意時間が選ばれたらダイアログを表示
-                                final customTime = await _showCustomTimeDialog(
-                                  rule.matchTimeMinutes,
-                                );
+                                final customTime =
+                                    await BunaiksenCustomTimeDialog.show(
+                                      context,
+                                      currentTime: rule.matchTimeMinutes,
+                                      isDark: isDark,
+                                      primaryAccent: _themeColors.primaryAccent,
+                                      subTextColor: _themeColors.subTextColor,
+                                      hintColor: _themeColors.hintColor,
+                                      inputBackground:
+                                          _themeColors.inputBackground,
+                                      separatorColor:
+                                          _themeColors.separatorColor,
+                                    );
                                 if (customTime != null && customTime > 0) {
                                   ref
                                       .read(bunaiksenRuleProvider.notifier)
