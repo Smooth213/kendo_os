@@ -10,9 +10,9 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_preset_card.dart';
 
 void showBulkRuleEditSheet(
   BuildContext context,
@@ -163,34 +163,6 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     _isRenseikai = isRenseikaiOrMoushiawase || targetRule.isRenseikai;
     _renseikaiType = targetRule.renseikaiType;
     _overallTimeController.text = targetRule.overallTimeMinutes.toString();
-  }
-
-  String _formatRuleSummary(MatchRule r) {
-    final timeStr = r.matchTimeMinutes.truncateToDouble() == r.matchTimeMinutes
-        ? r.matchTimeMinutes.toInt().toString()
-        : r.matchTimeMinutes.toString();
-    final formatStr = r.isIpponShobu ? '1本' : '3本';
-    return '$timeStr分・$formatStr';
-  }
-
-  Widget _buildSceneSubChip({
-    required String sceneKey,
-    required String label,
-    required MatchRule targetRule,
-  }) {
-    final isSel = _selectedSceneType == sceneKey;
-    return AppChoiceChip(
-      label: Text(label),
-      selected: isSel,
-      onSelected: (selected) {
-        if (selected) {
-          setState(() {
-            _selectedSceneType = sceneKey;
-            _applyCategoryRuleSet(targetRule, sceneKey: sceneKey);
-          });
-        }
-      },
-    );
   }
 
   // 錬成会
@@ -655,7 +627,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 _buildSectionHeader('STEP 2: 新しいルールを設定'),
                 const SizedBox(height: AppSpacing.lg),
 
-                // 部門別ルールプリセットからの選択UI (アイデア1: 部門選択 ➔ シーンサブチップ)
+                // 部門別ルールプリセットからの選択UI
                 ...(() {
                   final asyncTournament = ref.watch(
                     tournamentProvider(widget.tournamentId),
@@ -664,149 +636,27 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       asyncTournament.valueOrNull?.categoryRules ?? {};
                   if (categoryRules.isEmpty) return <Widget>[];
 
-                  final selectedRuleSet = _selectedCategoryRuleName != null
-                      ? categoryRules[_selectedCategoryRuleName]
-                      : null;
-
                   return [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: widget.themeColors.primaryAccent.withAlpha(
-                          isDark ? 25 : 12,
-                        ),
-                        borderRadius: AppRadius.large,
-                        border: Border.all(
-                          color: widget.themeColors.primaryAccent.withAlpha(
-                            isDark ? 80 : 40,
-                          ),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.auto_awesome,
-                                size: 16,
-                                color: widget.themeColors.primaryAccent,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '部門別ルールから一括セット',
-                                style: TextStyle(
-                                  fontSize: AppFontSize.bodySmall,
-                                  fontWeight: AppFontWeight.bold,
-                                  color: textColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-
-                          // 1段目: 部門名選択チップ
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: categoryRules.entries.map((entry) {
-                                final catName = entry.key;
-                                final ruleSet = entry.value;
-                                final isSel =
-                                    _selectedCategoryRuleName == catName;
-                                return Padding(
-                                  padding: const EdgeInsets.only(
-                                    right: AppSpacing.sm,
-                                  ),
-                                  child: AppChoiceChip(
-                                    label: Text(catName),
-                                    selected: isSel,
-                                    onSelected: (selected) {
-                                      if (selected) {
-                                        setState(() {
-                                          _selectedCategoryRuleName = catName;
-                                          _selectedSceneType = 'normal';
-                                          _applyCategoryRuleSet(
-                                            ruleSet.normalRule,
-                                          );
-                                        });
-                                      }
-                                    },
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-
-                          // 2段目: 選択中部門のシーンサブチップ（本戦・錬成会・申し合わせ・決勝戦）
-                          if (selectedRuleSet != null) ...[
-                            const SizedBox(height: 10),
-                            const Divider(height: 1, thickness: 1),
-                            const SizedBox(height: AppSpacing.sm),
-                            Text(
-                              '試合シーン・ルール用途を選択:',
-                              style: TextStyle(
-                                fontSize: AppFontSize.caption,
-                                color: isDark
-                                    ? const Color(0xFFFFFFFF)
-                                    : const Color(0x8A000000),
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  // 1) 本戦 (通常)
-                                  if (selectedRuleSet.useHonsenRule)
-                                    _buildSceneSubChip(
-                                      sceneKey: 'normal',
-                                      label:
-                                          '🏆 本戦 (${_formatRuleSummary(selectedRuleSet.normalRule)})',
-                                      targetRule: selectedRuleSet.normalRule,
-                                    ),
-
-                                  // 2) 錬成会 (練習試合)
-                                  if (selectedRuleSet.useRenseikaiRule) ...[
-                                    const SizedBox(width: 6),
-                                    _buildSceneSubChip(
-                                      sceneKey: 'renseikai',
-                                      label:
-                                          '⚔️ 錬成会 (${_formatRuleSummary(selectedRuleSet.renseikaiRule)})',
-                                      targetRule: selectedRuleSet.renseikaiRule,
-                                    ),
-                                  ],
-
-                                  // 3) 申し合わせ
-                                  if (selectedRuleSet.useMoushiawaseRule) ...[
-                                    const SizedBox(width: 6),
-                                    _buildSceneSubChip(
-                                      sceneKey: 'moushiawase',
-                                      label:
-                                          '🤝 申し合わせ (${_formatRuleSummary(selectedRuleSet.moushiawaseRule)})',
-                                      targetRule:
-                                          selectedRuleSet.moushiawaseRule,
-                                    ),
-                                  ],
-
-                                  // 4) 決勝・準決勝
-                                  if (selectedRuleSet.useAdvancedRule) ...[
-                                    const SizedBox(width: 6),
-                                    _buildSceneSubChip(
-                                      sceneKey: 'advanced',
-                                      label:
-                                          '🔥 決勝・準決勝 (${_formatRuleSummary(selectedRuleSet.advancedRule)})',
-                                      targetRule: selectedRuleSet.advancedRule,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                    BulkRulePresetCard(
+                      categoryRules: categoryRules,
+                      selectedCategoryRuleName: _selectedCategoryRuleName,
+                      selectedSceneType: _selectedSceneType,
+                      primaryAccent: widget.themeColors.primaryAccent,
+                      isDark: isDark,
+                      textColor: textColor,
+                      onSelectCategory: (catName, ruleSet) {
+                        setState(() {
+                          _selectedCategoryRuleName = catName;
+                          _selectedSceneType = 'normal';
+                          _applyCategoryRuleSet(ruleSet.normalRule);
+                        });
+                      },
+                      onSelectScene: (sceneKey, targetRule) {
+                        setState(() {
+                          _selectedSceneType = sceneKey;
+                          _applyCategoryRuleSet(targetRule, sceneKey: sceneKey);
+                        });
+                      },
                     ),
                   ];
                 })(),

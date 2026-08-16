@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/domain/entities/role_permission.dart'; // ★ Us
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/match_aggregate.dart';
 import 'package:kendo_os/features/match/application/usecases/match_usecases.dart';
+import 'package:kendo_os/features/match/application/usecases/scorer_lock_usecase.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 // =========================================================================
@@ -42,13 +43,15 @@ class MatchApplicationService {
   final AddScoreUseCase _addScore;
   final TimeUpUseCase _timeUp;
   final MatchDomainService _domainService;
+  final ScorerLockUseCase _scorerLock;
 
   MatchApplicationService(
     this._ref,
     this._addScore,
     this._timeUp,
-    this._domainService,
-  );
+    this._domainService, {
+    ScorerLockUseCase scorerLock = const ScorerLockUseCase(),
+  }) : _scorerLock = scorerLock;
 
   // ==========================================
   // ★ Phase 1-Step 1: 実行主体(User)の取得ヘルパー
@@ -826,15 +829,9 @@ class MatchApplicationService {
     final match = await _getMatchSafely(matchId);
     if (match == null) return false;
 
-    final now = DateTime.now();
-    final isLockExpired =
-        match.lockExpiresAt != null && match.lockExpiresAt!.isBefore(now);
-
-    if (match.scorerId == null || match.scorerId == userId || isLockExpired) {
-      final expiresAt = now.add(const Duration(minutes: 30));
-      await saveMatch(
-        match.copyWith(scorerId: userId, lockExpiresAt: expiresAt),
-      );
+    final updated = _scorerLock.tryClaimScorer(match, userId);
+    if (updated != null) {
+      await saveMatch(updated);
       return true;
     }
     return false;
@@ -842,8 +839,11 @@ class MatchApplicationService {
 
   Future<void> releaseScorer(String matchId, String userId) async {
     final match = await _getMatchSafely(matchId);
-    if (match != null && match.scorerId == userId) {
-      await saveMatch(match.copyWith(scorerId: null, lockExpiresAt: null));
+    if (match == null) return;
+
+    final updated = _scorerLock.releaseScorer(match, userId);
+    if (updated != null) {
+      await saveMatch(updated);
     }
   }
 
@@ -851,8 +851,8 @@ class MatchApplicationService {
     final match = await _getMatchSafely(matchId);
     if (match == null) return;
 
-    final expiresAt = DateTime.now().add(const Duration(minutes: 30));
-    await saveMatch(match.copyWith(scorerId: userId, lockExpiresAt: expiresAt));
+    final updated = _scorerLock.forceClaimScorer(match, userId);
+    await saveMatch(updated);
   }
 
   // --------------------------------------------------
@@ -1075,5 +1075,6 @@ final matchApplicationServiceProvider = Provider<MatchApplicationService>((
     ref.watch(addScoreUseCaseProvider),
     ref.watch(timeUpUseCaseProvider),
     MatchDomainService(),
+    scorerLock: ref.watch(scorerLockUseCaseProvider),
   );
 });

@@ -11,6 +11,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_player_slot_tile.dart';
 
 /// 🏆 試合・団体戦対戦枠の詳細編集を行うボトムシート
 class MatchEditSheet extends ConsumerStatefulWidget {
@@ -522,89 +523,13 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
 
         ...List.generate(widget.matches.length, (index) {
           final posLabel = _getPositionLabel(index, widget.matches.length);
-          return Container(
-            margin: const EdgeInsets.only(bottom: AppSpacing.md),
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF252527)
-                  : context.appColors.inputBackground,
-              borderRadius: AppRadius.medium,
-              border: Border.all(color: context.appColors.separatorColor),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  posLabel,
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    fontWeight: AppFontWeight.bold,
-                    color: widget.themeColors.primaryAccent,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: AppTextField(
-                        controller: _redPlayerControllers[index],
-                        style: const TextStyle(
-                          color: AppKendoColors.red,
-                          fontSize: AppFontSize.bodySmall,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: '赤 選手名',
-                          filled: true,
-                          fillColor: AppKendoColors.red.withAlpha(
-                            isDark ? 25 : 12,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: AppSpacing.sm,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadius.small,
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                      child: Text(
-                        'vs',
-                        style: TextStyle(color: AppKendoColors.grey),
-                      ),
-                    ),
-                    Expanded(
-                      child: AppTextField(
-                        controller: _whitePlayerControllers[index],
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: AppFontSize.bodySmall,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: '白 選手名',
-                          filled: true,
-                          fillColor: isDark
-                              ? const Color(0xFFFFFFFF).withAlpha(15)
-                              : const Color(0xFFF2F2F7),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: AppSpacing.sm,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadius.small,
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          return MatchEditPlayerSlotTile(
+            posLabel: posLabel,
+            redController: _redPlayerControllers[index],
+            whiteController: _whitePlayerControllers[index],
+            primaryAccent: widget.themeColors.primaryAccent,
+            isDark: isDark,
+            textColor: textColor,
           );
         }),
       ],

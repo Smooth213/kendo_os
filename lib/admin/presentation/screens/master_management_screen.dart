@@ -25,7 +25,6 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/team
 import 'package:flutter/services.dart'; // ★ 長押し時のバイブレーション用
 import 'package:flutter_slidable/flutter_slidable.dart'; // ★ iPhoneライクなスワイプ用
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
@@ -34,6 +33,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kendo_os/admin/presentation/components/master_empty_state_card.dart';
 
 // 選手一覧のProvider
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
@@ -159,52 +159,10 @@ class _MasterManagementScreenState
           data: (players) {
             // ★ 直感UX改修：Empty Stateも「透かしアイコン」の世界観に完全統一
             if (players.isEmpty && cloudDojoName.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/kendo_icon.png',
-                      width: 80,
-                      height: 80,
-                      color: const Color(0x33000000),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    Text(
-                      'まだ選手が登録されていません',
-                      style: TextStyle(
-                        fontSize: AppFontSize.headline,
-                        fontWeight: AppFontWeight.bold,
-                        color: primaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    const Text(
-                      '選手を追加する前に、まずはあなたたちの道場名・学校名を登録することから始めましょう！',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppKendoColors.grey,
-                        height: 1.5,
-                        fontSize: AppFontSize.body,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxl),
-                    if (!isReadOnly)
-                      SizedBox(
-                        width: 240,
-                        child: GlassButton(
-                          onPressed: () => _showInitialOrgBottomSheet(context),
-                          color: primaryColor,
-                          icon: Icons.account_balance,
-                          label: '道場名を登録する',
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.xl,
-                            vertical: AppSpacing.lg,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+              return MasterEmptyStateCard(
+                primaryColor: primaryColor,
+                isReadOnly: isReadOnly,
+                onRegisterDojo: () => _showInitialOrgBottomSheet(context),
               );
             }
 
